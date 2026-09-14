@@ -12,7 +12,7 @@ import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 
 /**
  * Configures the Quartz Job and CronTrigger for demand notification updates.
- * Default cron: every day at 10:30 PM.
+ * Default cron: every day at 04:00 AM.
  * Override via property: scheduler.notification.cron
  */
 @Configuration

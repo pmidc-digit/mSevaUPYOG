@@ -51,9 +51,9 @@ const PaymentHistory = ({ payments }) => {
         { Payments: [latestPayment] },
         pdfKey
       );
-      
+
       const fileStoreId = response?.filestoreIds?.[0];
-      
+
       if (fileStoreId) {
         const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
         window.open(fileStore[fileStoreId], "_blank");
@@ -163,9 +163,14 @@ const PaymentHistory = ({ payments }) => {
                       </div>
                       <div style={{ marginTop: isMobile ? "15px" : "0", alignSelf: isMobile ? "flex-start" : "center" }}>
                         <button
+                          style={{
+                            background: "#1a5ca8",
+                            color: "white",
+                            fontWeight: "600",
+                            padding: "10px",
+                            borderRadius: "10px",
+                          }}
                           onClick={() => handleDownloadReceipt(payment)}
-                         
-                          
                         >
                           {t("DOWNLOAD_RECEIPT_HEADER") || "Download Receipt"}
                         </button>

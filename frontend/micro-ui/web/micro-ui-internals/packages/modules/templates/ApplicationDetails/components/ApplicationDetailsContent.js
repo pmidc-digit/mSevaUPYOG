@@ -326,9 +326,8 @@ function ApplicationDetailsContent({
           d: (res) => {
             let resultstring = "";
             // <CHANGE> Try both assigner and assignes paths
-            resultstring = `+91 ${
-              _.get(res, `ProcessInstances[${index}].assigner.mobileNumber`) || _.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)
-            }`;
+            resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assigner.mobileNumber`) || _.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)
+              }`;
             return resultstring;
           },
         },
@@ -342,7 +341,7 @@ function ApplicationDetailsContent({
         name: checkpoint?.assigner?.name || checkpoint?.assignes?.[0]?.name || "N/A",
         mobileNumber:
           applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assigner?.uuid &&
-          applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            applicationData?.processInstance?.assignes?.[0]?.mobileNumber
             ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
             : checkpoint?.assigner?.mobileNumber || checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
         comment: checkpoint?.comment ? t(checkpoint.comment) : "",
@@ -511,13 +510,13 @@ function ApplicationDetailsContent({
   const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = currentPropertyId || "";
   const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
-const propertyDocumentValues =
-  propertySearchData?.Properties?.[0]?.documents ||
-  applicationDetails?.applicationData?.documents ||
-  [];
+  const propertyDocumentValues =
+    propertySearchData?.Properties?.[0]?.documents ||
+    applicationDetails?.applicationData?.documents ||
+    [];
 
-const propertyDocuments = propertyDocumentValues.length
-  ? [
+  const propertyDocuments = propertyDocumentValues.length
+    ? [
       {
         title: "PT_PROPERTY_DOCUMENTS",
         values: propertyDocumentValues.map((doc) => ({
@@ -526,7 +525,7 @@ const propertyDocuments = propertyDocumentValues.length
         })),
       },
     ]
-  : [];
+    : [];
   const PropertyInActive = () => {
     if (window.location.href.includes("employee")) {
       if (propertyStatus !== "ACTIVE") {
@@ -924,7 +923,7 @@ const propertyDocuments = propertyDocumentValues.length
         />
       )}
       {showHistory && <PaymentHistory payments={payments} />}
-      {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
+      {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG" && moduleCode !== "TL" && (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
       {isPTLocation && propertyDocuments.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
@@ -969,8 +968,7 @@ const propertyDocuments = propertyDocumentValues.length
                                 isCompleted={index === 0}
                                 info={checkpoint.comment}
                                 label={t(
-                                  `${timelineStatusPrefix}${
-                                    checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
+                                  `${timelineStatusPrefix}${checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
                                   }${timelineStatusPostfix}`
                                 )}
                                 customChild={getTimelineCaptions(checkpoint, index, workflowDetails?.data?.timeline)}
@@ -992,27 +990,30 @@ const propertyDocuments = propertyDocumentValues.length
         </React.Fragment>
       )}
 
-       {window.location.href.includes("/pt/") ? (
+      {window.location.href.includes("/pt/") ? (
         <ActionBar className="clear-search-container">
-          <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-          } onClick={PropertyActive} />
-          <PTActionButton label="Make Inactive" color="#B5451B" hoverColor="#8f3415" icon={
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-            </svg>
-          } onClick={PropertyInActive} />
+          {window.location.href.includes("/employee/") && (
+            <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            } onClick={PropertyActive} />
+          )}
+          {window.location.href.includes("/employee/") && (
+            <PTActionButton label="Make Inactive" color="#B5451B" hoverColor="#8f3415" icon={
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+              </svg>
+            } onClick={PropertyInActive} />)}
           <PTActionButton label="Edit Property" color="#1A5CA8" hoverColor="#134a8a" icon={
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           } onClick={EditProperty} />
           <PTActionButton label="Access Property" color="#003C71" hoverColor="#002554" icon={
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
             </svg>
           } onClick={AccessProperty} />
         </ActionBar>

@@ -144,7 +144,7 @@ public class DemandRepository {
 			return null; // avoid "IN ()" SQL
 		}
 
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (?) AND taxperiodfrom=? and taxperiodto=?";
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE status = 'ACTIVE' AND consumercode IN (?) AND taxperiodfrom=? and taxperiodto=?";
 
 		subQueryParams.add(consumercode);
 		subQueryParams.add(startDate);

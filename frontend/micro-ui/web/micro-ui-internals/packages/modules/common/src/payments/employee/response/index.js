@@ -447,8 +447,13 @@ export const SuccessfulPayment = (props) => {
         );
         fileStoreId = response?.filestoreIds[0];
       }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      let fileUrl = fileStore[fileStoreId];
+      if (!fileUrl) {
+        const fallbackStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: fileStoreId });
+        fileUrl = fallbackStore[fileStoreId];
+      }
+      window.open(fileUrl, "_blank");
     } finally {
       setPrinting(false);
     }

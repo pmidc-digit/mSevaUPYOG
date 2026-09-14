@@ -280,7 +280,7 @@ const RALApplicationDetails = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const menuRef = useRef();
   Digit.Hooks.useClickOutside(menuRef, () => setDisplayMenu(false), displayMenu);
-  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt" });
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rl-receipt-employee" });
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {

@@ -45,7 +45,6 @@ public class QuartzConfig {
         log.debug("QuartzConfig initialized.");
     }
 
-    @DependsOn("flywayInitializer")
     @Bean
     public SchedulerFactoryBean quartzScheduler() {
         SchedulerFactoryBean quartzScheduler = new SchedulerFactoryBean();
@@ -68,13 +67,13 @@ public class QuartzConfig {
 
     private Properties quartzProperties() {
         PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
-        propertiesFactoryBean.setLocation(new ClassPathResource("quartz.properties"));
+        propertiesFactoryBean.setLocation(new ClassPathResource("/quartz.properties"));
         Properties properties = null;
         try {
             propertiesFactoryBean.afterPropertiesSet();
             properties = propertiesFactoryBean.getObject();
         } catch (IOException e) {
-            log.warn("Cannot load quartz.properties.", e);
+            log.warn("Cannot load quartz.properties.");
         }
         return properties;
     }

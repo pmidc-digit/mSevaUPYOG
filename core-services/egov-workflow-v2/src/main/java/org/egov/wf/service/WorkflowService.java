@@ -132,6 +132,38 @@ public class WorkflowService {
     }
 
 
+    /**
+     * DB-only, paginated search used by the indexer's legacy-index backfill
+     * (POST /egov-indexer-v2/index-operations/_legacyindex).
+     * <p>
+     * Deliberately performs NO enrichment (no user lookups, no next-action
+     * resolution, no SLA recalculation) so it stays cheap and safe over a large
+     * historical range, and so the payload keeps the shape the indexer's mapping
+     * expects.
+     * <p>
+     * {@code offset}/{@code limit} are honoured and MUST be: the indexer pages by
+     * incrementing offset until it receives an empty page, so an unpaginated
+     * response would make the backfill job loop forever.
+     * Pass {@code history=true} for every transition row; otherwise the query
+     * returns only the latest row per businessId.
+     *
+     * @param requestInfo The RequestInfo of the caller
+     * @param criteria    Search params, tenantId is mandatory
+     * @return processInstances straight from the database
+     */
+    public List<ProcessInstance> plainSearch(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
+        if (StringUtils.isEmpty(criteria.getTenantId()))
+            throw new CustomException("EG_WF_TENANT_ID_REQUIRED_PLAIN_SEARCH",
+                    "tenantId is mandatory for plain search");
+
+        List<ProcessInstance> processInstances = workflowRepository.getProcessInstances(criteria);
+        log.info("plainSearch tenant={} offset={} limit={} history={} => {} processInstances",
+                criteria.getTenantId(), criteria.getOffset(), criteria.getLimit(), criteria.getHistory(),
+                processInstances.size());
+        return processInstances;
+    }
+
+
     public Integer count(RequestInfo requestInfo,ProcessInstanceSearchCriteria criteria){
         Integer count;
         

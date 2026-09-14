@@ -109,6 +109,49 @@ public class ProcessInstance   {
         @JsonProperty("escalated")
         private Boolean escalated = false;
 
+        /**
+         * True when this row is the current/latest transition for its businessId.
+         * Backed by the eg_wf_processinstance_v2.latest column and populated by the
+         * search row mapper. Required by the workflow legacy-index backfill so that
+         * consumers can tell the current state apart from historical transitions.
+         */
+        @JsonProperty("latest")
+        private Boolean latest = null;
+
+
+        /**
+         * Backwards-compatible copy of the constructor Lombok used to generate
+         * before {@code latest} was added to the model, so existing callers keep
+         * compiling unchanged. {@code latest} is deliberately left null here; set
+         * it through the builder or {@code setLatest(...)}. New code should prefer
+         * the builder or the generated all-args constructor.
+         */
+        public ProcessInstance(String id, String tenantId, String businessService, String businessId, String action,
+                               String moduleName, State state, String comment, List<Document> documents,
+                               User assigner, List<User> assignes, List<Action> nextActions, Long stateSla,
+                               Long businesssServiceSla, String previousStatus, Object entity,
+                               AuditDetails auditDetails, Integer rating, Boolean escalated) {
+            this.id = id;
+            this.tenantId = tenantId;
+            this.businessService = businessService;
+            this.businessId = businessId;
+            this.action = action;
+            this.moduleName = moduleName;
+            this.state = state;
+            this.comment = comment;
+            this.documents = documents;
+            this.assigner = assigner;
+            this.assignes = assignes;
+            this.nextActions = nextActions;
+            this.stateSla = stateSla;
+            this.businesssServiceSla = businesssServiceSla;
+            this.previousStatus = previousStatus;
+            this.entity = entity;
+            this.auditDetails = auditDetails;
+            this.rating = rating;
+            this.escalated = escalated;
+        }
+
 
         public ProcessInstance addDocumentsItem(Document documentsItem) {
             if (this.documents == null) {

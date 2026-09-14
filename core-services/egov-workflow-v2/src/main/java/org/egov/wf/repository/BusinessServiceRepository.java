@@ -89,6 +89,20 @@ public class BusinessServiceRepository {
 
 
     /**
+     * DB-only, paginated fetch used by the workflow legacy-index backfill
+     * (POST /egov-indexer-v2/index-operations/_legacyindex). No MDMS lookup, no
+     * cache, and no state-level splitting, so the caller controls tenant scope and
+     * paging explicitly via the criteria.
+     */
+    public List<BusinessService> getBusinessServicesForPlainSearch(BusinessServiceSearchCriteria criteria) {
+        List<Object> preparedStmtList = new ArrayList<>();
+        String query = queryBuilder.getBusinessServicesForPlainSearch(criteria, preparedStmtList);
+        log.info("query for businessService plain search: " + query + " params: " + preparedStmtList);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+    }
+
+
+    /**
      * Creates map of roles vs tenantId vs List of status uuids from all the avialable businessServices
      * @return
      */

@@ -68,6 +68,49 @@ public class BusinessServiceQueryBuilder {
     }
 
 
+    /**
+     * Tenant-scoped, paginated query used by the workflow legacy-index backfill.
+     * <p>
+     * Unlike {@link #getBusinessServices} this does no MDMS state-level splitting
+     * and applies a single tenant filter: a state-level tenantId (no dots) matches
+     * with LIKE so one run covers the state and its ULBs, while a ULB tenantId
+     * matches exactly.
+     * <p>
+     * OFFSET/LIMIT are mandatory: the indexer's legacy job pages by incrementing
+     * offset until a page comes back empty, so an unpaginated response would make
+     * the job loop forever.
+     */
+    public String getBusinessServicesForPlainSearch(BusinessServiceSearchCriteria criteria, List<Object> preparedStmtList) {
+        StringBuilder builder = new StringBuilder(BASE_QUERY);
+
+        String tenantId = criteria.getTenantId();
+        if (tenantId != null) {
+            addClauseIfRequired(preparedStmtList, builder);
+            if (tenantId.split("\\.").length == 1) {
+                builder.append(" bs.tenantId like ? ");
+                preparedStmtList.add('%' + tenantId + '%');
+            } else {
+                builder.append(" bs.tenantId = ? ");
+                preparedStmtList.add(tenantId);
+            }
+        }
+
+        List<String> businessServices = criteria.getBusinessServices();
+        if (!CollectionUtils.isEmpty(businessServices)) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append("  bs.businessService IN (").append(createQuery(businessServices)).append(")");
+            addToPreparedStatement(preparedStmtList, businessServices);
+        }
+
+        builder.append(" ORDER BY seq");
+        builder.append(" OFFSET ? LIMIT ?");
+        preparedStmtList.add(criteria.getOffset() != null && criteria.getOffset() >= 0 ? criteria.getOffset() : 0);
+        preparedStmtList.add(criteria.getLimit() != null && criteria.getLimit() > 0 ? criteria.getLimit() : 50);
+
+        return builder.toString();
+    }
+
+
     /*
      * private String createQuery(Set<String> ids) {
      *

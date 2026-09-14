@@ -67,6 +67,22 @@ public class WorkflowController {
                 return new ResponseEntity<>(response,HttpStatus.OK);
         }
 
+        /**
+         * DB-only, paginated search consumed by the indexer's legacy-index backfill
+         * (POST /egov-indexer-v2/index-operations/_legacyindex). Returns the raw rows
+         * with no enrichment. Pass history=true to receive every transition row;
+         * otherwise only the latest row per businessId is returned.
+         */
+        @RequestMapping(value="/process/_plainsearch", method = RequestMethod.POST)
+        public ResponseEntity<ProcessInstanceResponse> plainSearch(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+                                                              @Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
+            List<ProcessInstance> processInstances = workflowService.plainSearch(requestInfoWrapper.getRequestInfo(), criteria);
+            ProcessInstanceResponse response = ProcessInstanceResponse.builder().processInstances(processInstances)
+                    .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+
     /**
      * Returns the count of records matching the given criteria
      * @param requestInfoWrapper

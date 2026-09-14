@@ -9,13 +9,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class BusinessServiceSearchCriteria {
 
 
@@ -31,6 +29,30 @@ public class BusinessServiceSearchCriteria {
 
     @JsonIgnore
     private List<String> actionUuids;
+
+    /**
+     * Pagination for the indexer's legacy-index backfill. The indexer pages by
+     * incrementing offset until it receives an empty page, so these MUST be
+     * honoured by the plain-search query.
+     */
+    @JsonProperty("offset")
+    private Integer offset;
+
+    @JsonProperty("limit")
+    private Integer limit;
+
+    /**
+     * Kept with the original 4-arg signature (rather than Lombok's
+     * {@code @AllArgsConstructor}) so existing callers and tests remain
+     * source-compatible.
+     */
+    public BusinessServiceSearchCriteria(String tenantId, List<String> businessServices,
+                                         List<String> stateUuids, List<String> actionUuids) {
+        this.tenantId = tenantId;
+        this.businessServices = businessServices;
+        this.stateUuids = stateUuids;
+        this.actionUuids = actionUuids;
+    }
 
 
     public BusinessServiceSearchCriteria(BusinessServiceSearchCriteria criteria) {

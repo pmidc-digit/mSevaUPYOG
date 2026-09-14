@@ -65,6 +65,22 @@ public class BusinessServiceController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
+    /**
+     * DB-only, paginated search consumed by the indexer's legacy-index backfill
+     * (POST /egov-indexer-v2/index-operations/_legacyindex). Honors the offset/limit
+     * query params because the indexer pages until it receives an empty page.
+     */
+    @RequestMapping(value="/businessservice/_plainsearch", method = RequestMethod.POST)
+    public ResponseEntity<BusinessServiceResponse> plainSearch(@Valid @ModelAttribute BusinessServiceSearchCriteria searchCriteria,
+                                                               @Valid @RequestBody RequestInfoWrapper requestInfoWrapper) {
+
+        List<BusinessService> businessServices = businessMasterService.plainSearch(searchCriteria);
+        BusinessServiceResponse response = BusinessServiceResponse.builder().businessServices(businessServices)
+                .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(),true))
+                .build();
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
     @RequestMapping(value="/businessservice/_update", method = RequestMethod.POST)
     public ResponseEntity<BusinessServiceResponse> update(@Valid @RequestBody BusinessServiceRequest businessServiceRequest) {
         List<BusinessService> businessServices = businessMasterService.update(businessServiceRequest);

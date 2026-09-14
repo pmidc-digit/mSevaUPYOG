@@ -1,6 +1,7 @@
 package org.egov.wf.service;
 
 import com.jayway.jsonpath.JsonPath;
+import org.egov.tracer.model.CustomException;
 import org.egov.wf.config.WorkflowConfig;
 import org.egov.wf.producer.Producer;
 import org.egov.wf.repository.BusinessServiceRepository;
@@ -15,6 +16,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,6 +79,23 @@ public class BusinessMasterService {
         enrichmentService.enrichTenantIdForStateLevel(tenantId,businessServices);
 
         return businessServices;
+    }
+
+
+    /**
+     * DB-only, paginated search used by the workflow legacy-index backfill
+     * (POST /egov-indexer-v2/index-operations/_legacyindex).
+     * <p>
+     * Intentionally NOT cached (each call pages through a different offset) and
+     * performs no enrichment, so the response keeps the shape the indexer's
+     * mapping expects.
+     */
+    public List<BusinessService> plainSearch(BusinessServiceSearchCriteria criteria) {
+        if (StringUtils.isEmpty(criteria.getTenantId()))
+            throw new CustomException("EG_WF_TENANT_ID_REQUIRED_PLAIN_SEARCH",
+                    "tenantId is mandatory for plain search");
+
+        return repository.getBusinessServicesForPlainSearch(criteria);
     }
 
 

@@ -394,6 +394,7 @@ const CLUInbox = ({ parentRoute }) => {
     onSortingByData,
     tenantId,
     globalSearch: topBarSearch,
+    cities,
   });
 
   const {
@@ -590,16 +591,18 @@ const CLUInbox = ({ parentRoute }) => {
           tableData={tableData}
           tableProps={propsForInboxTable}
           tableHeader="ES_INBOX_INBOX"
-          pagination={!String(topBarSearch || "").trim() && (
-            <InboxPagination
-              offset={formState.tableForm?.offset || 0}
-              limit={formState.tableForm?.limit || 10}
-              totalCount={totalCountData}
-              onPageSizeChange={onPageSizeChange}
-              onNextPage={onNextPage}
-              onPrevPage={onPrevPage}
-            />
-          )}
+          pagination={
+            !String(topBarSearch || "").trim() && (
+              <InboxPagination
+                offset={formState.tableForm?.offset || 0}
+                limit={formState.tableForm?.limit || 10}
+                totalCount={totalCountData}
+                onPageSizeChange={onPageSizeChange}
+                onNextPage={onNextPage}
+                onPrevPage={onPrevPage}
+              />
+            )
+          }
         />
       )}
       {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}

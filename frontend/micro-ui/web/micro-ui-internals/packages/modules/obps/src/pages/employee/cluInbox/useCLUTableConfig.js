@@ -4,10 +4,26 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
 
-const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId, globalSearch }) => {
+const useCLUTableConfig = ({
+  parentRoute,
+  onPageSizeChange,
+  formState,
+  totalCount,
+  table,
+  dispatch,
+  onSortingByData,
+  tenantId,
+  globalSearch,
+  cities,
+}) => {
   const { t } = useTranslation();
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
+
+  const filterCityName = (id, cityNames) => {
+    const fiterData = cityNames?.find((item) => item?.code === id);
+    return fiterData?.ulbName;
+  };
 
   const tableColumnConfig = useMemo(() => {
     return [
@@ -78,6 +94,11 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         disableSortBy: true,
       },
       {
+        Header: t("ULB"),
+        accessor: (row) => filterCityName(row?.tenantId, cities),
+        disableSortBy: true,
+      },
+      {
         Header: t("CATEGORY"),
         accessor: (row) => row?.category,
         disableSortBy: true,
@@ -109,7 +130,7 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         disableSortBy: true,
       },
     ];
-  }, []);
+  }, [cities]);
 
   return {
     getCellProps: (cellInfo) => {

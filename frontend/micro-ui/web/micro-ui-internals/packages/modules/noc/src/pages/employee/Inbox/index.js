@@ -341,6 +341,7 @@ const Inbox = ({ parentRoute }) => {
     onSortingByData,
     tenantId,
     globalSearch: topBarSearch,
+    cities,
   });
 
   const {
@@ -468,9 +469,7 @@ const Inbox = ({ parentRoute }) => {
           tenantSelector={
             tenantId === "pb.punjab" && cities?.length ? (
               <div className="new-inbox-tenant-selector">
-                <div className="filter-label sub-filter-label noc-pages-employee-inbox-index--style-1" >
-                  {t("BPA_CITIES_DROPDOWN_LABEL")}
-                </div>
+                <div className="filter-label sub-filter-label noc-pages-employee-inbox-index--style-1">{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
                 <div className="new-inbox-tenant-dropdown">
                   <Dropdown
                     option={cities}
@@ -520,16 +519,18 @@ const Inbox = ({ parentRoute }) => {
           tableData={tableData}
           tableProps={propsForInboxTable}
           tableHeader="ES_INBOX_INBOX"
-          pagination={!String(topBarSearch || "").trim() && (
-            <InboxPagination
-              offset={formState.tableForm?.offset || 0}
-              limit={formState.tableForm?.limit || 10}
-              totalCount={totalCountData}
-              onPageSizeChange={onPageSizeChange}
-              onNextPage={onNextPage}
-              onPrevPage={onPrevPage}
-            />
-          )}
+          pagination={
+            !String(topBarSearch || "").trim() && (
+              <InboxPagination
+                offset={formState.tableForm?.offset || 0}
+                limit={formState.tableForm?.limit || 10}
+                totalCount={totalCountData}
+                onPageSizeChange={onPageSizeChange}
+                onNextPage={onNextPage}
+                onPrevPage={onPrevPage}
+              />
+            )
+          }
         />
       )}
       {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}

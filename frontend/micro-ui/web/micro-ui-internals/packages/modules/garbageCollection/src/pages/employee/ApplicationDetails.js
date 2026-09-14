@@ -13,6 +13,7 @@ import {
   ActionBar,
   Menu,
   SubmitBar,
+  PaymentHistory,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import NDCDocumentTimline from "../../components/ChallanDocument";
@@ -465,6 +466,8 @@ const ChallanApplicationDetails = () => {
             )}
           </Card>
         )} */}
+
+        {/* <PaymentHistory consumerCode={getChallanData?.applicationNo} service="gc-services" tenantId={tenantId} title="Garbage Payment History" /> */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
         {!hideStatuses.includes(getChallanData?.applicationStatus) && actions && (

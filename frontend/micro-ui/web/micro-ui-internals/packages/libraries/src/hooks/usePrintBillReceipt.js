@@ -409,7 +409,7 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
         setLoader?.(false);
       }
     },
-    [setLoader, pdfkey]
+    [tenantId, setLoader, setShowToast, t, pdfkey]
   );
 
   return { printReceipt };

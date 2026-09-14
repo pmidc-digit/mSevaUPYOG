@@ -472,3 +472,4 @@ export {
   LoginIcon,
   CitizenConsentForm
 };
+export { default as PaymentHistory } from "./atoms/PaymentHistory";

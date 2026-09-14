@@ -17,7 +17,10 @@ class PaymentStatusUpdateEventFormatter{
     let topicList = [];
     topicList.push(config.billsAndReceiptsUseCase.pgUpdateTransaction);
     topicList.push(config.billsAndReceiptsUseCase.paymentUpdateTopic);
-    let consumerGroup = new kafka.ConsumerGroup(consumerGroupOptions, topicList);
+    let paymentConsumerOptions = Object.assign({}, consumerGroupOptions, {
+      groupId: config.kafka.paymentConsumerGroupId
+    });
+    let consumerGroup = new kafka.ConsumerGroup(paymentConsumerOptions, topicList);
     let self = this;
     consumerGroup.on('message', function(message) {
       try {

@@ -44,6 +44,8 @@ const envVariables = {
 
         kafkaConsumerEnabled: process.env.KAFKA_CONSUMER_ENABLED || true,
         kafkaConsumerGroupId: process.env.KAFKA_CONSUMER_GROUP_ID || 'xstate-chatbot',
+        pgrConsumerGroupId: process.env.KAFKA_PGR_CONSUMER_GROUP_ID || (process.env.KAFKA_CONSUMER_GROUP_ID ? process.env.KAFKA_CONSUMER_GROUP_ID + '-pgr' : 'xstate-chatbot-pgr'),
+        paymentConsumerGroupId: process.env.KAFKA_PAYMENT_CONSUMER_GROUP_ID || (process.env.KAFKA_CONSUMER_GROUP_ID ? process.env.KAFKA_CONSUMER_GROUP_ID + '-payment' : 'xstate-chatbot-payment'),
         sessionTimeout: parseInt(process.env.KAFKA_SESSION_TIMEOUT) || 60000,
         heartbeatInterval: parseInt(process.env.KAFKA_HEARTBEAT_INTERVAL) || 3000,
     },

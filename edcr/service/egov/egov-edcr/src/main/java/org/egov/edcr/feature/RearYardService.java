@@ -457,10 +457,10 @@ public class RearYardService extends GeneralRule {
 //	    		Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
 //	    		minPlotArea.ifPresent(min1 -> LOG.info("Min plot are required : " + min1));
 	    		        
-	    		if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-	    			errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
-	    			pl.addErrors(errors);			        
-	    		}
+//	    		if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
+//	    			errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
+//	    			pl.addErrors(errors);			        
+//	    		}
 	    		
 	    		
 	    		

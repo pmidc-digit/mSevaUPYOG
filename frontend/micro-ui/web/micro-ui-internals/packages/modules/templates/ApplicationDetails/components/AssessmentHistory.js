@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom';
 
 const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatus, applicationData }) => {
     const history = useHistory();
-
+    const isEmployee = window.location.href.includes("employee");
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleAccordion = () => {
@@ -16,7 +16,7 @@ const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatu
             return;
         }
 
-        const isEmployee = window.location.href.includes("employee");
+        
         const pathname = isEmployee
             ? `/digit-ui/employee/pt/assessment-details/${propertyId}`
             : `/digit-ui/citizen/pt/property/assessment-details/${propertyId}`;
@@ -134,6 +134,7 @@ const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatu
                             <p><strong>Number:</strong> {assessment.assessmentNumber}</p> */}
                                     {/* <button onClick={() => alert(`Re-assessing ${assessment.assessmentNumber}`)}>Re-assess</button>
                             <button onClick={() => alert(`Cancelled ${assessment.assessmentNumber}`)}>Cancel</button> */}
+<<<<<<< HEAD
 
                                     <div className="button-group" style={{ display: 'flex', gap: '10px' }}>
                                         <button style={{ display: "flex", borderRadius: '8px', backgroundColor: '#2947a3', padding: '10px', color: 'white' }} onClick={() => handleReassess(assessment)}>Re-assess</button>
@@ -155,6 +156,17 @@ const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatu
                                 {index !== (assessmentData.length - 1) && <hr />}
                             </div>
                         ))}
+=======
+                            
+<div className="button-group" style={{display:'flex',gap:'10px'}}>
+          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} onClick={() => handleReassess(assessment)}>Re-assess</button>
+        { isEmployee &&   <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}} onClick={() => handleCancel(assessment)}>Cancel</button> }
+        </div>
+</div>
+                          {index!==(assessmentData.length - 1) &&  <hr />}
+                        </div>
+                    ))}
+>>>>>>> MicroUI_PROD_Vite
                 </div>
             )}
         </div>

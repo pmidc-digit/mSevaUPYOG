@@ -10,6 +10,7 @@ import BillGenerate from "./BillGenerate";
 
 const RALBreadCrumbs = ({ location, t }) => {
   const crumbs = [
+<<<<<<< HEAD
     {
       path: "/digit-ui/employee",
       content: t("ES_COMMON_HOME"),
@@ -37,6 +38,34 @@ const RALBreadCrumbs = ({ location, t }) => {
       show: location.pathname.includes("/rentandlease/bill-genie") ? true : false,
     },
   ];
+=======
+  {
+    path: "/digit-ui/employee",
+    content: t("ES_COMMON_HOME"),
+    show: true
+  },
+  {
+    path: "/digit-ui/employee/rentandlease/inbox",
+    content: t("CS_COMMON_INBOX"),
+    show: location.pathname.includes("/rentandlease/inbox") || location.pathname.includes("/rentAndLease/inbox") ? true : false
+  },
+  {
+    path: "/digit-ui/employee/rentandlease/allot-property",
+    content: "Allot Property",
+    show: location.pathname.includes("/rentandlease/allot-property") || location.pathname.includes("/rentAndLease/allot-property") ? true : false
+  },
+  {
+    path: "/digit-ui/employee/rentandlease/property",
+    content: "Application Overview",
+    show: location.pathname.includes("/rentandlease/property") || location.pathname.includes("/rentAndLease/property") ? true : false
+  },
+  {
+    path: "/digit-ui/employee/rentandlease/bill-genie",
+    content: t("RAL_BILL_GENIE_HEADER"),
+    show: location.pathname.includes("/rentandlease/bill-genie") ? true : false
+  }];
+
+>>>>>>> MicroUI_PROD_Vite
 
   return <BreadCrumb crumbs={crumbs} />;
 };
@@ -50,8 +79,8 @@ const EmployeeApp = ({ path, url, userType }) => {
       uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
       services: ["RENT_N_LEASE_NEW", "RENT_AND_LEASE_LG"],
       applicationStatus: [],
-      locality: [],
-    },
+      locality: []
+    }
   };
 
   const NewRentAndLeaseStepperForm = Digit?.ComponentRegistryService?.getComponent("NewRentAndLeaseStepperForm");
@@ -66,26 +95,26 @@ const EmployeeApp = ({ path, url, userType }) => {
         <PrivateRoute exact path={`${path}/`} component={() => <RentAndLeaseModule matchPath={path} userType={userType} />} />
         <PrivateRoute
           path={`${path}/inbox`}
-          component={() => (
-            <Inbox
-              useNewInboxAPI={true}
-              parentRoute={path}
-              businessService="RENT_N_LEASE_NEW,RENT_AND_LEASE_LG"
-              moduleCode="RAL"
-              filterComponent="RAL_INBOX_FILTER"
-              initialStates={inboxInitialState}
-              isInbox={true}
-            />
-          )}
-        />{" "}
+          component={() =>
+          <Inbox
+            useNewInboxAPI={true}
+            parentRoute={path}
+            businessService="RENT_N_LEASE_NEW,RENT_AND_LEASE_LG"
+            moduleCode="RAL"
+            filterComponent="RAL_INBOX_FILTER"
+            initialStates={inboxInitialState}
+            isInbox={true} />
+
+          } />
+        {" "}
         <PrivateRoute path={`${path}/allot-property/:id?`} component={NewRentAndLeaseStepperForm} />
         <PrivateRoute path={`${path}/property/:acknowledgementIds/:tenantId`} component={RALApplicationDetails} />
         <PrivateRoute path={`${path}/response/:applicationNumber`} component={RALResponse} />
         <PrivateRoute path={`${path}/bill-genie`} component={BillGenie} />
         <PrivateRoute path={`${path}/bill-generate`} component={BillGenerate} />
       </div>
-    </React.Fragment>
-  );
+    </React.Fragment>);
+
 };
 
 export default EmployeeApp;

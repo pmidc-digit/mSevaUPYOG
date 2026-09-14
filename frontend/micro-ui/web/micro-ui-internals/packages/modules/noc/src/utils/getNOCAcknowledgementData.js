@@ -1,5 +1,5 @@
 import React from "react";
-import { pdfDownloadLink, pdfDocumentName } from "./index";
+import { pdfDownloadLink, pdfDocumentName, convertToDDMMYYYY } from "./index";
 import { Loader } from "@mseva/digit-ui-react-components";
 import EXIF from "./exif-compat";
 
@@ -209,7 +209,7 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_VASIKA_DATE"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate || "N/A",
+      value: convertToDDMMYYYY(appData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) || appData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate || "N/A",
     },
     {
       title: t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL"),
@@ -286,6 +286,7 @@ const getSpecificationDetails = (appData, t) => {
   ];
 
   const specNocType = appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType?.name || appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType;
+<<<<<<< HEAD
   const isFinalOrDigitization = specNocType === "Final" || specNocType === "FINAL" || specNocType === "Digitization of Manual NOC" || specNocType === "DIGITIZATION_OF_MANUAL_NOC";
 
   if (isFinalOrDigitization) {
@@ -293,17 +294,37 @@ const getSpecificationDetails = (appData, t) => {
       values.push({
         title: t("NOC_EXISTING_NOC_TYPE_LABEL"),
         value: appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocType || "N/A",
+=======
+  const isFinal = specNocType === "Final" || specNocType === "FINAL";
+  const isDigitization = specNocType === "Digitization of Manual NOC" || specNocType === "DIGITIZATION_OF_MANUAL_NOC";
+  const existingType = appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocType;
+  const hasExistingNoc = typeof existingType === "string" ? Boolean(existingType.trim()) : Boolean(existingType?.name || existingType?.code);
+
+  if ((isFinal && hasExistingNoc) || isDigitization) {
+    if (isFinal) {
+      values.push({
+        title: t("NOC_EXISTING_NOC_TYPE_LABEL"),
+        value: (typeof existingType === "string" ? existingType : existingType?.name || existingType?.code) || "N/A",
+>>>>>>> MicroUI_PROD_Vite
       });
     }
     values.push({
       title: t("NOC_NUMBER_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocNumber || "N/A",
     });
+<<<<<<< HEAD
     const existingType = appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocType;
     if (existingType === "Offline" || specNocType === "Digitization of Manual NOC" || specNocType === "DIGITIZATION_OF_MANUAL_NOC") {
       values.push({
         title: t("NOC_DATE_LABEL"),
         value: appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocDate || "N/A",
+=======
+    const existCode = typeof existingType === "string" ? existingType.toUpperCase() : (existingType?.code || existingType?.name || "").toUpperCase();
+    if (existCode === "OFFLINE" || isDigitization) {
+      values.push({
+        title: t("NOC_DATE_LABEL"),
+        value: convertToDDMMYYYY(appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocDate) || appData?.nocDetails?.additionalDetails?.siteDetails?.existingNocDate || "N/A",
+>>>>>>> MicroUI_PROD_Vite
       });
     }
   }

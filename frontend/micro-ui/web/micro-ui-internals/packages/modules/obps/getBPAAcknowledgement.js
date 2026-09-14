@@ -716,8 +716,13 @@ const getMohallaLocale = (value = "", tenantId = "") => {
 
        // Add the new sections here:
         getApplicationFeeDetails(application, collectionData, t),
+<<<<<<< HEAD
         getSanctionFeeDetails(application, t),
         getPaymentHistoryDetails(collectionData, t),
+=======
+        getPaymentHistoryDetails(collectionData, t),
+        getSanctionFeeDetails(application, t),
+>>>>>>> MicroUI_PROD_Vite
         getFeeHistoryDetails(application, t),
         await getDocuments(application, t),
         await getSitePhotographs(application, t, stateCode),

@@ -95,15 +95,11 @@
 
 .close-btn {
   padding: 5px 10px;
-  &:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.32) !important;
-  }
-}
 
-.upload-file-message {
-  padding: 15px 0px;
-  font-size: 14px;
+  &:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.32) !important;
+  }
 }
 
 .advisory-text {
@@ -132,6 +128,7 @@
   display: inline;
   padding-left: 30px;
 }
+
 .back-button-container {
   cursor: pointer;
   width: fit-content;
@@ -275,6 +272,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -289,7 +287,7 @@
   padding-bottom: 12px;
   padding-left: 5px;
 }
- 
+
 .rich-textbox-wrapper {
   width: 100%;
 }
@@ -315,11 +313,11 @@
 }
 
 .rich-textbox-toolbar button:hover {
-  background: rgba(47,59,69,0.06);
+  background: rgba(47, 59, 69, 0.06);
 }
 
 .rich-textbox-toolbar button:active {
-  background: rgba(47,59,69,0.12);
+  background: rgba(47, 59, 69, 0.12);
 }
 
 .rich-textbox-toolbar button[title="Bold"] {
@@ -2808,7 +2806,7 @@
   max-height: 120px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
 
@@ -2954,7 +2952,7 @@
 .obps-pages-citizen-applications-clumy-applications--style-3 {
   padding: 12px;
   border-radius: 8px;
-  box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .obps-pages-citizen-applications-clumy-applications--style-4 {
@@ -3038,7 +3036,7 @@
 .obps-pages-citizen-applications-layout-my-applications--style-3 {
   padding: 12px;
   border-radius: 8px;
-  box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .obps-pages-citizen-applications-layout-my-applications--style-4 {
@@ -3360,7 +3358,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -3374,7 +3372,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -3470,7 +3468,7 @@
   right: -40px;
   width: 200px;
   height: 200px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -3481,7 +3479,7 @@
   left: -30px;
   width: 250px;
   height: 250px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -3490,16 +3488,16 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 20px;
   padding: 4px 14px;
   margin-bottom: 14px;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .obps-pages-citizen-custom-landing-page-index--style-11 {
   font-size: 12px;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   letter-spacing: 0.5px;
 }
@@ -3514,11 +3512,11 @@
 
 .obps-pages-citizen-custom-landing-page-index--style-13 {
   font-size: 11px;
-  background: rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.85);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
   padding: 4px 12px;
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .obps-pages-citizen-custom-landing-page-index--style-14 {
@@ -3599,7 +3597,7 @@
   font-family: monospace;
   font-size: 12px;
   color: #1F1F1F;
-  background: rgba(255,255,255,0.7);
+  background: rgba(255, 255, 255, 0.7);
   padding: 8px 12px;
   border-radius: 6px;
   line-height: 1.9;
@@ -3624,7 +3622,7 @@
 
 .obps-pages-citizen-custom-landing-page-index--style-27 {
   font-family: monospace;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   padding: 2px 10px;
   border-radius: 4px;
   font-weight: 700;
@@ -3861,7 +3859,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -3870,7 +3868,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -3891,7 +3889,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -3922,7 +3920,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -4003,7 +4001,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -4062,7 +4060,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -4086,7 +4084,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -4110,7 +4108,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -4124,7 +4122,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -4138,7 +4136,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }
@@ -4567,7 +4565,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: baseline;
-  gap:  20px;
+  gap: 20px;
 }
 
 .obps-pages-citizen-stakeholder-registration-check-page--style-1 {
@@ -4598,7 +4596,7 @@
   max-height: 100px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 10px;
 }
 
@@ -4761,7 +4759,7 @@
   max-height: 120px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
   margin-top: 245px;
 }
@@ -5023,7 +5021,7 @@
   padding: 20px;
   margin-bottom: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
   background: #fff;
 }

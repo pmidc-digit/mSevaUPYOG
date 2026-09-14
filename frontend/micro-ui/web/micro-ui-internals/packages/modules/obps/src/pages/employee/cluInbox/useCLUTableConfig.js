@@ -4,7 +4,11 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
 
+<<<<<<< HEAD
 const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId, globalSearch }) => {
+=======
+const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId }) => {
+>>>>>>> MicroUI_PROD_Vite
   const { t } = useTranslation();
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;

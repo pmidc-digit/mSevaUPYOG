@@ -883,7 +883,11 @@ const CLUApplicationDetails = () => {
           />
         )}
         {hasPayments && (
+<<<<<<< HEAD
           <div className="obps-pages-citizen-applications-cluapplication-details--style-8">
+=======
+          <div style={{ marginTop: "16px" }}>
+>>>>>>> MicroUI_PROD_Vite
             <OBPSPaymentHistory payments={combinedPayments} />
           </div>
         )}

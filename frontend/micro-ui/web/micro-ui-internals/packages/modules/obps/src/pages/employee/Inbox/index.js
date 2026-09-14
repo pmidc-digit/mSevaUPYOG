@@ -171,6 +171,33 @@ const Inbox = ({ parentRoute }) => {
     ASSIGNED_TO_ALL: 0,
   });
   const capturedAssigneeCountsTenant = useRef(null);
+<<<<<<< HEAD
+=======
+
+  const setSelectedTenantIdValue = useCallback(
+    (key, value) => {
+      dispatch({ action: "mutateSelectedTenantId", data: { ...formState.selectedTenantId, [key]: value } });
+    },
+    [formState.selectedTenantId]
+  );
+
+  const getResolvedStatusIds = useCallback((applicationStatuses = []) => {
+    return [
+      ...new Set(
+        applicationStatuses.reduce((acc, item) => {
+          if (Array.isArray(item?.statusids) && item.statusids.length) {
+            acc.push(...item.statusids);
+          } else if (item?.statusid) {
+            acc.push(item.statusid);
+          } else if (item?.code) {
+            acc.push(item.code);
+          }
+          return acc;
+        }, [])
+      ),
+    ];
+  }, []);
+>>>>>>> MicroUI_PROD_Vite
 
   const setSelectedTenantIdValue = useCallback(
     (key, value) => {
@@ -212,8 +239,24 @@ const Inbox = ({ parentRoute }) => {
     });
   }, [cities, formState?.selectedTenantId, isEmployee, tenantId]);
 
+  // const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
+
+  useEffect(() => {
+    if (!(isEmployee && tenantId === "pb.punjab")) return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, isEmployee, tenantId]);
+
   const memoizedFilters = useMemo(() => {
+<<<<<<< HEAD
     const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
+=======
+>>>>>>> MicroUI_PROD_Vite
     const normalizedFilterForm = {
       ...(formState?.filterForm || filterFormDefaultValues),
       businessService:
@@ -253,10 +296,16 @@ const Inbox = ({ parentRoute }) => {
 
     return {
       ...memoizedFilters,
+<<<<<<< HEAD
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
   }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
+=======
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+>>>>>>> MicroUI_PROD_Vite
 
   const assignedToMeFilters = useMemo(
     () => ({
@@ -510,6 +559,10 @@ const Inbox = ({ parentRoute }) => {
     });
   }, [formState?.filterForm?.applicationStatus, topBarStatusData]);
 
+<<<<<<< HEAD
+=======
+  const searchDebounceRef = useRef(null);
+>>>>>>> MicroUI_PROD_Vite
   const hasInitializedFilterForm = useRef(false);
 
   const onNextPage = () =>

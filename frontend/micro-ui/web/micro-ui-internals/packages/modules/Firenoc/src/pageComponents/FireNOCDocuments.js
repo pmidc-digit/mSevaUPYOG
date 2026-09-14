@@ -117,6 +117,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
           </CardLabel>
         )}
 
+<<<<<<< HEAD
         <div 
         style={{ 
           display: "flex", 
@@ -143,6 +144,22 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
               {t(doc.code.replaceAll(".", "_"))}
               {doc.required && <span className="requiredField">*</span>}
             </CardLabel>
+=======
+        <div className="fire-noc-doc-required-field" style={{width: "100%"}}>
+          {/* Dropdown for documents with multiple options (e.g., Identity Proof) */}
+          {doc.hasDropdown && dropdownOptions.length > 0 && (
+            <div style={{ marginBottom: "8px" }}>
+              <Dropdown
+                className="form-field"
+                option={dropdownOptions}
+                optionKey="name"
+                select={(val) => setSelectedDocument(val)}
+                selected={selectedDocument}
+                t={t}
+                placeholder={t("Select Document Type")}
+              />
+            </div>
+>>>>>>> MicroUI_PROD_Vite
           )}
         </div>
         {/* 4. Right Column: File Upload */}
@@ -163,6 +180,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
           />
+<<<<<<< HEAD
           <p style={{ paddingTop: "10px", fontSize: "14px", margin: 0 }}>
             {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
           </p>
@@ -170,6 +188,14 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
       </div>
 
          
+=======
+
+          <p style={{ padding: "10px", fontSize: "14px" }}>
+            {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
+          </p>
+        </div>
+      </LabelFieldPair>   
+>>>>>>> MicroUI_PROD_Vite
 
       {doc.description && (
         <p style={{ padding: "0 10px 10px", fontSize: "13px", color: "#717171" }}>

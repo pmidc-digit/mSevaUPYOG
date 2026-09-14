@@ -47,9 +47,19 @@ const FireNOCMyApplications = () => {
   const handlePayment = (application) => {
     const appNo = application?.fireNOCDetails?.applicationNumber;
     const tenantId = application?.tenantId;
+<<<<<<< HEAD
      
       history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}?tenantId=${tenantId}`);
     
+=======
+    if(application?.fireNOCDetails && Object.keys(application.fireNOCDetails)?.length > 0){
+        history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}?tenantId=${tenantId}`);
+      }
+    else{  
+      alert(t("No data found for application"));
+      return
+    };
+>>>>>>> MicroUI_PROD_Vite
   }
   if (isLoading) return <Loader />;
 

@@ -79,7 +79,11 @@ function getBase64Image(tenantId) {
 
 async function getBase64FromUrl(url) {
   const res = await fetch(url);
+<<<<<<< HEAD
   if (!res.ok) throw new Error(`HTTP ${res.status}`); 
+=======
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+>>>>>>> MicroUI_PROD_Vite
   const blob = await res.blob();
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -336,7 +340,10 @@ const jsPdfGeneratorFormattedNOC = async ({
   ulbType,
   ulbName,
   hideUlbRow = false,
+<<<<<<< HEAD
   showLogo = false,
+=======
+>>>>>>> MicroUI_PROD_Vite
   openInNewTab = false
 }) => {
   console.log("ulbType", ulbType)
@@ -375,7 +382,11 @@ const jsPdfGeneratorFormattedNOC = async ({
 
     header: {},
     content: [
+<<<<<<< HEAD
       ...await createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName, hideUlbRow, showLogo),
+=======
+      ...await createHeaderFormattedNOC(details, name, base64Image, phoneNumber, email, logo, tenantId, heading, applicationNumber, ulbType, ulbName, hideUlbRow),
+>>>>>>> MicroUI_PROD_Vite
       ...contentFormatted
     ],
     footer: function (currentPage, pageCount) {
@@ -1952,7 +1963,7 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
   return headerData;
 }
 
-function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl,ulbType) {
+function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, qrCodeDataUrl, ulbType) {
   const ulb = tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   headerData.push({
@@ -2052,6 +2063,7 @@ function createHeaderDetailsBPAREG(details, name, phoneNumber, email, logo, tena
 
   return headerData;
 }
+
 
 function createHeader(headerDetails, logo, tenantId) {
   let headerData = [];
@@ -2640,7 +2652,11 @@ async function createHeaderFormatted(details, name, qrCodeDataUrl, phoneNumber, 
   return headerData;
 }
 
+<<<<<<< HEAD
 async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName , hideUlbRow = false , showLogo = false) {
+=======
+async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumber, email, logo, tenantId, heading, applicationNumber,ulbType, ulbName , hideUlbRow = false) {
+>>>>>>> MicroUI_PROD_Vite
   const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   const tenantDetails = await getMDMSDetails(tenantId);

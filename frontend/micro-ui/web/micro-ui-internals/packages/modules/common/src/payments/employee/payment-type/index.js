@@ -207,6 +207,10 @@ export const SelectPaymentType = (props) => {
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
       const redirectUrl = _.get(data, TRANSACTION_REDIRECTURL) || "";
+<<<<<<< HEAD
+=======
+      console.log("data=========", data);
+>>>>>>> MicroUI_PROD_Vite
       if (paymentAmount === 0 || billDetails.totalAmount === 0) {
         setPaymentLoading(false);
         if (data?.ResponseInfo?.status === "SUCCESSFUL") {
@@ -217,6 +221,7 @@ export const SelectPaymentType = (props) => {
         return;
       }
 
+<<<<<<< HEAD
       const selectedGateway = data?.Transaction?.gateway || paymentConfig.gateway;
 
       if (
@@ -237,6 +242,13 @@ export const SelectPaymentType = (props) => {
         link.remove();
       } else if (redirectUrl) {
         window.location.href = redirectUrl;
+=======
+      if (d?.paymentType === gatewayType.RAZORPAY && redirectUrl?.includes("razorpay")) {
+        displayRazorpay(data);
+      } else if (redirectUrl) {
+        //redirection to non razorpay payment gateway url provided by transaction api response
+        window.location = redirectUrl;
+>>>>>>> MicroUI_PROD_Vite
       } else {
         setPaymentLoading(false);
         setShowToast({ key: true, label: t("CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER") });

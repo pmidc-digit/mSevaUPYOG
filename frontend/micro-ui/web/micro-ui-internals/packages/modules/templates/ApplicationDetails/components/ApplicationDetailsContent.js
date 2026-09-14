@@ -120,11 +120,9 @@ function ApplicationDetailsContent({
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
 
-  const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.useCustomMDMS(
-    Digit.ULBService.getStateId(),
-    "egf-master",
-    [{ name: "FinancialYear", filter: "[?(@.module == 'PT')]" }]
-  );
+  const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "egf-master", [
+    { name: "FinancialYear", filter: "[?(@.module == 'PT')]" },
+  ]);
   const currentPropertyId = applicationDetails?.applicationData?.propertyId || propertyId;
   const isPTLocation = window.location.href.includes("/pt/");
   const { data: propertySearchData } = Digit.Hooks.pt.usePropertySearch(
@@ -139,9 +137,7 @@ function ApplicationDetailsContent({
 
   useEffect(() => {
     if (financialYearsData?.["egf-master"]?.["FinancialYear"]) {
-      const sorted = [...financialYearsData["egf-master"]["FinancialYear"]].sort(
-        (a, b) => b.startingDate - a.startingDate
-      );
+      const sorted = [...financialYearsData["egf-master"]["FinancialYear"]].sort((a, b) => b.startingDate - a.startingDate);
       setFinancialYears(sorted);
     }
   }, [financialYearsData]);
@@ -480,7 +476,11 @@ function ApplicationDetailsContent({
       creationReason: "STATUS",
       additionalDetails: {
         ...(propertyData.additionalDetails || {}),
+<<<<<<< HEAD
         propertytobestatus: status,   // "ACTIVE" or "INACTIVE" based on what's being triggered
+=======
+        propertytobestatus: status, // "ACTIVE" or "INACTIVE" based on what's being triggered
+>>>>>>> MicroUI_PROD_Vite
       },
       workflow: {
         ...propertyData.workflow,
@@ -510,6 +510,7 @@ function ApplicationDetailsContent({
   const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = currentPropertyId || "";
   const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
+<<<<<<< HEAD
   const propertyDocumentValues =
     propertySearchData?.Properties?.[0]?.documents ||
     applicationDetails?.applicationData?.documents ||
@@ -525,6 +526,20 @@ function ApplicationDetailsContent({
         })),
       },
     ]
+=======
+  const propertyDocumentValues = propertySearchData?.Properties?.[0]?.documents || applicationDetails?.applicationData?.documents || [];
+
+  const propertyDocuments = propertyDocumentValues.length
+    ? [
+        {
+          title: "PT_PROPERTY_DOCUMENTS",
+          values: propertyDocumentValues.map((doc) => ({
+            ...doc,
+            title: doc.documentType,
+          })),
+        },
+      ]
+>>>>>>> MicroUI_PROD_Vite
     : [];
   const PropertyInActive = () => {
     if (window.location.href.includes("employee")) {
@@ -600,12 +615,11 @@ function ApplicationDetailsContent({
     const pID = applicationDetails?.applicationData?.propertyId || propertyId;
     setShowAccessModal(false);
     const isEmployee = window.location.href.includes("employee");
-    const pathname = isEmployee
-      ? `/digit-ui/employee/pt/assessment-details/${pID}`
-      : `/digit-ui/citizen/pt/property/assessment-details/${pID}`;
+    const pathname = isEmployee ? `/digit-ui/employee/pt/assessment-details/${pID}` : `/digit-ui/citizen/pt/property/assessment-details/${pID}`;
     history.replace({
       pathname,
       state: {
+        submitLabel: "Complete Assessment",
         Assessment: {
           financialYear: selectedFinancialYear?.name || selectedFinancialYear?.code,
           propertyId: pID,
@@ -923,9 +937,19 @@ function ApplicationDetailsContent({
         />
       )}
       {showHistory && <PaymentHistory payments={payments} />}
+<<<<<<< HEAD
       {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG" && moduleCode !== "TL" && (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
+=======
+      {showHistory &&
+        moduleCode !== "WS" &&
+        moduleCode !== "SW" &&
+        moduleCode !== "OBPS" &&
+        moduleCode !== "BPAStakeholder" &&
+        moduleCode !== "BPAREG" &&
+        moduleCode !== "TL" && <ApplicationHistory applicationData={applicationDetails?.applicationData} />}
+>>>>>>> MicroUI_PROD_Vite
       {isPTLocation && propertyDocuments.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
@@ -992,6 +1016,7 @@ function ApplicationDetailsContent({
 
       {window.location.href.includes("/pt/") ? (
         <ActionBar className="clear-search-container">
+<<<<<<< HEAD
           {window.location.href.includes("/employee/") && (
             <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1016,6 +1041,96 @@ function ApplicationDetailsContent({
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
             </svg>
           } onClick={AccessProperty} />
+=======
+          {window.location.href.includes("employee") && (
+            <>
+              <PTActionButton
+                label="Make Active"
+                color="#00703C"
+                hoverColor="#005a30"
+                icon={
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                }
+                onClick={PropertyActive}
+              />
+              <PTActionButton
+                label="Make Inactive"
+                color="#B5451B"
+                hoverColor="#8f3415"
+                icon={
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                  </svg>
+                }
+                onClick={PropertyInActive}
+              />
+            </>
+          )}
+          <PTActionButton
+            label="Edit Property"
+            color="#1A5CA8"
+            hoverColor="#134a8a"
+            icon={
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            }
+            onClick={EditProperty}
+          />
+          <PTActionButton
+            label="Assess Property"
+            color="#003C71"
+            hoverColor="#002554"
+            icon={
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            }
+            onClick={AccessProperty}
+          />
+>>>>>>> MicroUI_PROD_Vite
         </ActionBar>
       ) : null}
       {showAccessModal && (
@@ -1049,4 +1164,3 @@ function ApplicationDetailsContent({
 }
 
 export default ApplicationDetailsContent;
-

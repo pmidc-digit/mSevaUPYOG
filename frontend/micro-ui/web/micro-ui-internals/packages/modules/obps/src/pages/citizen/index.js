@@ -44,6 +44,7 @@ const OBPSBreadCrumbs = ({ location }) => {
 
   const getBreadcrumbs = () => {
     const breadcrumbs = [];
+<<<<<<< HEAD
     const isMyApplications =
       location.pathname?.includes("obps/my-applications") ||
       location.pathname?.includes("obps/bpa-app") ||
@@ -64,6 +65,8 @@ const OBPSBreadCrumbs = ({ location }) => {
       else if (location.pathname?.includes("obps/layout/application-overview")) subCardKey = "citizen-layout";
       else if (location.pathname?.includes("obps/clu/application-overview")) subCardKey = "citizen-clu";
     }
+=======
+>>>>>>> MicroUI_PROD_Vite
     const hasSecondBreadcrumb =
       location.pathname.includes("obps/bpa") ||
       location.pathname.includes("obps/ocbpa") ||
@@ -74,8 +77,12 @@ const OBPSBreadCrumbs = ({ location }) => {
       location.pathname.includes("obps/clu") ||
       location.pathname.includes("obps/edcr") ||
       location.pathname.includes("/response") ||
+<<<<<<< HEAD
       location.pathname.includes("obps/search")||
       location.pathname.includes("obps/home")
+=======
+      location.pathname.includes("obps/search");
+>>>>>>> MicroUI_PROD_Vite
 
     const bpainbox =
       location.pathname.includes("obps/bpa-app") ||
@@ -89,6 +96,7 @@ const OBPSBreadCrumbs = ({ location }) => {
       location.pathname.includes("obps/layout/my-applications") ||
       location.pathname.includes("obps/layout/response") ||
       location.pathname.includes("/obps/my-applications/citizen-layout");
+<<<<<<< HEAD
       
       const cluinbox =
         location.pathname.includes("obps/clu/application-overview") ||
@@ -96,6 +104,8 @@ const OBPSBreadCrumbs = ({ location }) => {
         location.pathname.includes("obps/clu/response") ||
         location.pathname.includes("/obps/my-applications/citizen-clu");
 
+=======
+>>>>>>> MicroUI_PROD_Vite
 
     breadcrumbs.push(
       <span key="home">
@@ -122,16 +132,25 @@ const OBPSBreadCrumbs = ({ location }) => {
       breadcrumbs.push(
         <span key="obps">
           <Link
+<<<<<<< HEAD
             to="/digit-ui/citizen/obps/home"
+=======
+            to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/obps-home"}
+>>>>>>> MicroUI_PROD_Vite
             style={{ textDecoration: "none", marginRight: "5px" }}
           >
             {t("OBAPS Home")}
           </Link>
+<<<<<<< HEAD
           {((bpainbox && isUserRegistered) || isMyApplications) && <span style={{ marginRight: "5px" }}>/</span>}
+=======
+          {(bpainbox || layoutinbox) && isUserRegistered && <span style={{ marginRight: "5px" }}>/</span>}
+>>>>>>> MicroUI_PROD_Vite
         </span>
       );
     }
 
+<<<<<<< HEAD
     if (isMyApplications) {
       breadcrumbs.push(
         <span key="my-applications">
@@ -166,6 +185,8 @@ const OBPSBreadCrumbs = ({ location }) => {
 
 
 
+=======
+>>>>>>> MicroUI_PROD_Vite
     if (bpainbox && isUserRegistered) {
       breadcrumbs.push(
         <span key="bpa-inbox">
@@ -175,6 +196,19 @@ const OBPSBreadCrumbs = ({ location }) => {
           {/* {hasThirdBreadcrumb && <span style={{ marginRight: "5px" }}>/</span>} */}
         </span>
       );
+<<<<<<< HEAD
+=======
+    }
+
+    if (layoutinbox && isUserRegistered) {
+      breadcrumbs.push(
+        <span key="layout-inbox">
+          <Link to="/digit-ui/citizen/obps/layout/my-applications" style={{ textDecoration: "none" }}>
+             {t("CS_COMMON_INBOX")}
+          </Link>
+        </span>
+      );
+>>>>>>> MicroUI_PROD_Vite
     }
 
     if (layoutinbox && isUserRegistered) {

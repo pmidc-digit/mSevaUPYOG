@@ -81,10 +81,13 @@ const CLUEditApplication = () => {
   const formData = formState.formData;
   const step = formState.step;
 
+  const location = useLocation();
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+
   //Makesure to pass tenantId correctly
   let tenantId;
   if(window.location.pathname.includes("employee")){
-   tenantId = window.localStorage.getItem("Employee.tenant-id");
+   tenantId = queryTenantId || window.localStorage.getItem("Employee.tenant-id");
   }else{
    tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }

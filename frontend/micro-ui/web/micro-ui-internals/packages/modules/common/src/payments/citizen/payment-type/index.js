@@ -75,8 +75,16 @@ export const SelectPaymentType = (props) => {
   const history = useHistory();
   const { pathname, search } = useLocation();
   // const menu = ["RAZORPAY"];
-  let { consumerCode, businessService } = useParams();
-  const tenantId = state?.tenantId || __tenantId || Digit.ULBService.getCurrentTenantId();
+  const paramsData = new URLSearchParams(search);
+  const urlTenantId = paramsData.get("tenantId");
+  let { consumerCode, businessService} = useParams();
+  const tenantId = urlTenantId || state?.tenantId || __tenantId || Digit.ULBService.getCurrentTenantId();
+  const isFireNocPayment = businessService === "FIRENOC";
+  const { isFireNOCLoading, data: fireNOC } = Digit.Hooks.firenoc.useFIRENOCApplicationDetails({
+    tenantId,
+    applicationNumber: consumerCode,
+  });
+  //console.log("tenantId",tenantId)
   const propertyId = state?.propertyId;
   const stateTenant = Digit.ULBService.getStateId();
   const { control, handleSubmit, setValue } = useForm();
@@ -92,6 +100,7 @@ export const SelectPaymentType = (props) => {
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
     {}
   );
+
   if (window.location.href.includes("ISWSCON") || wrkflow === "WNS") consumerCode = decodeURIComponent(consumerCode);
   if (wrkflow === "WNS") consumerCode = stringReplaceAll(consumerCode, "+", "/");
   useEffect(() => {
@@ -121,6 +130,10 @@ export const SelectPaymentType = (props) => {
       return;
     } else if (!mobileRegex.test(d.mobileNumber)) {
       setShowOwnerToast({ key: true, label: t("ERR_INVALID_MOBILE") });
+      return;
+    }
+    if(isFireNocPayment &&!isFireNOCLoading && (!fireNOC?.fireNOCDetails || Object.keys(fireNOC.fireNOCDetails).length === 0)){
+      setShowToast({ key: "true", error: true, message: "No application details found" });
       return;
     }
 
@@ -215,6 +228,10 @@ export const SelectPaymentType = (props) => {
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
       const redirectUrl = _.get(data, TRANSACTION_REDIRECTURL) || "";
+<<<<<<< HEAD
+=======
+      console.log("data=========", data);
+>>>>>>> MicroUI_PROD_Vite
       if (paymentAmount === 0 || billDetails.totalAmount === 0) {
         setPaymentLoading(false);
         if (data?.ResponseInfo?.status === "SUCCESSFUL") {
@@ -311,6 +328,7 @@ export const SelectPaymentType = (props) => {
       //   }
       // }
       // window.location = redirectUrl;
+<<<<<<< HEAD
       const selectedGateway = data?.Transaction?.gateway || paymentConfig.gateway;
       
        if (selectedGateway === gatewayType.RAZORPAY || selectedGateway === gatewayType.OBPASRAZORPAY ||selectedGateway?.toUpperCase()?.includes("RAZORPAY")) {
@@ -328,6 +346,13 @@ export const SelectPaymentType = (props) => {
       }else if (redirectUrl) {
         //redirection to non razorpay payment gateway url provided by transaction api response
         window.location.href = redirectUrl;
+=======
+      if (d?.paymentType === gatewayType.RAZORPAY && redirectUrl?.includes("razorpay")) {
+        displayRazorpay(data);
+      } else if (redirectUrl) {
+        //redirection to non razorpay payment gateway url provided by transaction api response
+        window.location = redirectUrl;
+>>>>>>> MicroUI_PROD_Vite
       }else {
         //Do Nothing
         setPaymentLoading(false);
@@ -422,7 +447,7 @@ export const SelectPaymentType = (props) => {
     window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
   }
 
-  if (paymentLoading || isPaymentLoading || isLoading) {
+  if (paymentLoading || isPaymentLoading || isLoading || isFireNOCLoading) {
     window.scrollTo({
       top: 0,
       behavior: "smooth", // for smooth scrolling

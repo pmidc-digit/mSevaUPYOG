@@ -37,9 +37,18 @@ const NOCResponseCitizen = (props) => {
   };
 
   const handlePayment = () => {
+<<<<<<< HEAD
     
       history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
     
+=======
+    if (nocData && Object.keys(nocData)?.length > 0 && nocCode) {
+      history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
+    } else {
+      alert(t("No data found for application"));
+      return
+    }
+>>>>>>> MicroUI_PROD_Vite
   };
 
   const getFirenocNocApplication = async () => {

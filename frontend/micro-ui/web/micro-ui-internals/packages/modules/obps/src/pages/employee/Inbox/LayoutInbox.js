@@ -32,7 +32,10 @@ const LayoutInbox = ({ parentRoute }) => {
   const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
+<<<<<<< HEAD
   const [apiMobileSearch, setApiMobileSearch] = useState("");
+=======
+>>>>>>> MicroUI_PROD_Vite
   const prefix = "WF_EMPLOYEE_LAYOUT_STATUS";
 
   const searchFormDefaultValues = useMemo(
@@ -178,8 +181,12 @@ const LayoutInbox = ({ parentRoute }) => {
     ];
   }, []);
 
+<<<<<<< HEAD
   // const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
   const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
+=======
+  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+>>>>>>> MicroUI_PROD_Vite
 
   useEffect(() => {
     if (tenantId !== "pb.punjab") return;
@@ -199,11 +206,15 @@ const LayoutInbox = ({ parentRoute }) => {
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
       searchForm: formState?.searchForm || searchFormDefaultValues,
+<<<<<<< HEAD
       tableForm: {
         ...tableForm,
         limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
         offset: isTopBarSearchActive ? 0 : tableForm.offset,
       },
+=======
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+>>>>>>> MicroUI_PROD_Vite
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -228,16 +239,27 @@ const LayoutInbox = ({ parentRoute }) => {
     },
   });
 
+<<<<<<< HEAD
+=======
+  console.log('inboxData', inboxData)
+
+>>>>>>> MicroUI_PROD_Vite
   const assigneeCountBaseFilters = useMemo(() => {
     const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
     delete countFilterForm.applicationStatus;
 
     return {
       ...memoizedFilters,
+<<<<<<< HEAD
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
   }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
+=======
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+>>>>>>> MicroUI_PROD_Vite
 
   const assignedToMeFilters = useMemo(
     () => ({
@@ -533,7 +555,11 @@ const LayoutInbox = ({ parentRoute }) => {
           isInboxLoading={isInboxLoading}
           assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}
+<<<<<<< HEAD
           prefix={prefix}
+=======
+          prefix= {prefix}
+>>>>>>> MicroUI_PROD_Vite
           rawStatuses={inboxData?.statuses || []}
         />
       }

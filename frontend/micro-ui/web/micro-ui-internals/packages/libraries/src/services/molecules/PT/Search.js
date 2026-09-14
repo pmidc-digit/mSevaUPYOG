@@ -199,6 +199,10 @@ export const PTSearch = {
     return response.Properties[0];
   },
   transformPropertyToApplicationDetails: ({ property: response, t }) => {
+<<<<<<< HEAD
+=======
+    console.log('response in property:', response);
+>>>>>>> MicroUI_PROD_Vite
     
     return [
       {

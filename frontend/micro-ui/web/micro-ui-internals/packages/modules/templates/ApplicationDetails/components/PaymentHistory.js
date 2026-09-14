@@ -51,9 +51,15 @@ const PaymentHistory = ({ payments }) => {
         { Payments: [latestPayment] },
         pdfKey
       );
+<<<<<<< HEAD
 
       const fileStoreId = response?.filestoreIds?.[0];
 
+=======
+      
+      const fileStoreId = response?.filestoreIds?.[0];
+      
+>>>>>>> MicroUI_PROD_Vite
       if (fileStoreId) {
         const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
         window.open(fileStore[fileStoreId], "_blank");
@@ -163,6 +169,7 @@ const PaymentHistory = ({ payments }) => {
                       </div>
                       <div style={{ marginTop: isMobile ? "15px" : "0", alignSelf: isMobile ? "flex-start" : "center" }}>
                         <button
+<<<<<<< HEAD
                           style={{
                             background: "#1a5ca8",
                             color: "white",
@@ -173,6 +180,13 @@ const PaymentHistory = ({ payments }) => {
                           onClick={() => handleDownloadReceipt(payment)}
                         >
                           {t("DOWNLOAD_RECEIPT_HEADER") || "Download Receipt"}
+=======
+                          onClick={() => handleDownloadReceipt(payment)}
+                         
+                          
+                        >
+                          {t("PT_DOWNLOAD_RECEIPT") || "Download Receipt"}
+>>>>>>> MicroUI_PROD_Vite
                         </button>
                       </div>
                     </div>

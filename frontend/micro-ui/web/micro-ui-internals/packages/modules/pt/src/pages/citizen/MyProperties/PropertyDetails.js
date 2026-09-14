@@ -28,9 +28,15 @@ const CloseBtn = (props) => {
 const PropertyDetails = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
+<<<<<<< HEAD
   const { id: applicationNumber } = useParams();
 
   console.log("application Number", applicationNumber)
+=======
+  const { id:applicationNumber } = useParams(); 
+   const isCitizen = window.location.href.includes("citizen");
+  //console.log("application Number",applicationNumber)
+>>>>>>> MicroUI_PROD_Vite
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
   const [enableAudit, setEnableAudit] = useState(false);
@@ -50,7 +56,10 @@ const PropertyDetails = () => {
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 780);
 
   let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, 'pb', applicationNumber);
+<<<<<<< HEAD
 
+=======
+>>>>>>> MicroUI_PROD_Vite
   useEffect(() => {
     sessionStorage.removeItem("revalidateddone");
   }, []);
@@ -59,7 +68,11 @@ const PropertyDetails = () => {
     {
       businessService: "PT",
       consumerCode: applicationNumber,
+<<<<<<< HEAD
       tenantId,
+=======
+      tenantId : applicationDetails?.tenantId,
+>>>>>>> MicroUI_PROD_Vite
     },
     {
       refetchOnMount: "always",
@@ -80,8 +93,12 @@ const PropertyDetails = () => {
   //    console.log(error)
   //   }
   // },[])
+<<<<<<< HEAD
   console.log("fetchBillData", fetchBillData)
   console.log("applicationDetails", applicationDetails)
+=======
+ 
+>>>>>>> MicroUI_PROD_Vite
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.pt.usePropertySearch(
     {
       tenantId,
@@ -94,7 +111,10 @@ const PropertyDetails = () => {
     }
   );
   const mutation = Digit.Hooks.pt.usePropertyAPI(tenantId, false);
+<<<<<<< HEAD
   console.log("mutation", mutation)
+=======
+>>>>>>> MicroUI_PROD_Vite
   const { data: UpdateNumberConfig } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["UpdateNumber"], {
     select: (data) => {
       return data?.PropertyTax?.UpdateNumber?.[0];
@@ -102,8 +122,12 @@ const PropertyDetails = () => {
     retry: false,
     enable: false,
   });
+<<<<<<< HEAD
   console.log("auditData", auditData)
   console.log("updateNumberConfig", UpdateNumberConfig)
+=======
+
+>>>>>>> MicroUI_PROD_Vite
   React.useEffect(() => {
     const onResize = () => {
       if (window.innerWidth <= 780 && !isMobile) {
@@ -170,7 +194,11 @@ const PropertyDetails = () => {
     moduleCode: "PT.UPDATE",
     role: "PT_CEMP",
   });
+<<<<<<< HEAD
   console.log("workflowDetails", workflowDetails)
+=======
+
+>>>>>>> MicroUI_PROD_Vite
   const closeToast = () => {
     setShowToast(null);
   };
@@ -248,18 +276,33 @@ const PropertyDetails = () => {
   }
   useEffect(() => {
     // if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title !== "PT_TOTAL_DUES") {
+<<<<<<< HEAD
     if (fetchBillData && fetchBillData?.Bill?.length > 0 && fetchBillData?.Bill?.[0]?.totalAmount > 0) {
       let dateString = fetchBillData?.Bill?.[0]?.billDetails?.map(detail => {
         const fromYear = new Date(detail.fromPeriod).getFullYear();
         const toYear = new Date(detail.toPeriod).getFullYear();
         return `${fromYear}-${toYear}(Rs.${detail.amount})`;
       }).join(',');
+=======
+     if (fetchBillData && fetchBillData?.Bill?.length>0 && fetchBillData?.Bill?.[0]?.totalAmount > 0) {
+      // Check if bill section already exists at the beginning
+      if (appDetailsToShow?.applicationDetails?.[0]?.values?.[0]?.title === "PT_TOTAL_DUES") {
+        return;
+      }
+
+      let dateString=fetchBillData?.Bill?.[0]?.billDetails?.map(detail => {
+    const fromYear = new Date(detail.fromPeriod).getFullYear();
+    const toYear = new Date(detail.toPeriod).getFullYear();
+    return `${fromYear}-${toYear}(Rs.${detail.amount})`;
+  }).join(',');
+>>>>>>> MicroUI_PROD_Vite
 
       appDetailsToShow?.applicationDetails?.unshift({
         title: " ",
         asSectionHeader: true,
         // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
+<<<<<<< HEAD
           <LinkLabel
             onClick={() => {
               const element = document.getElementById("payment-history");
@@ -280,6 +323,41 @@ const PropertyDetails = () => {
           >
             {t("PT_VIEW_PAYMENT")}
           </LinkLabel>
+=======
+          <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+            <LinkLabel
+              onClick={() => {
+               isCitizen ?
+                history.push( `/digit-ui/citizen/payment/collect/PT/${applicationNumber}?tenantId=${applicationDetails?.tenantId}`)
+                :
+                history.push( `/digit-ui/employee/payment/collect/PT/${applicationNumber}?tenantId=${applicationDetails?.tenantId}`)
+              }}
+              style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '100px', borderRadius: '8px', backgroundColor: '#2947a3', color: 'white', cursor: 'pointer', textDecoration: 'none' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '100px', borderRadius: '8px', backgroundColor: '#2947a3', color: 'white', cursor: 'pointer', textDecoration: 'none' }}
+            >
+              {t("PT_PAY_DUE")}
+            </LinkLabel>
+            <LinkLabel
+              onClick={() => {
+                const element = document.getElementById("payment-history");
+                if (element) {
+                  const header = element.querySelector(".accordion-header");
+                  const body = element.querySelector(".accordion-body");
+                  if (header && !body) {
+                    header.click();
+                  }
+                  setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                } else {
+                  history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`, state: { tenantId: appDetailsToShow?.applicationData?.tenantId } });
+                }
+              }}
+              style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' }}
+            >
+              {t("PT_VIEW_PAYMENT")}
+            </LinkLabel>
+          </div>
+>>>>>>> MicroUI_PROD_Vite
         ),
         values: [
           // {
@@ -484,8 +562,13 @@ const PropertyDetails = () => {
               {showUpdateSurveyId
                 ? `PropertiesId${showUpdateSurveyId.propertyId} Existing Survey Id/UID: ${showUpdateSurveyId.existingSurveyId}`
                 : showUpdateNo
+<<<<<<< HEAD
                   ? t("PTUPNO_HEADER")
                   : t("PT_OWNER_HISTORY")}
+=======
+                ? t("PTUPNO_HEADER")
+                : t("PT_OWNER_HISTORY")}
+>>>>>>> MicroUI_PROD_Vite
             </h1>
           }
           headerBarEnd={
@@ -499,7 +582,11 @@ const PropertyDetails = () => {
           }
           hideSubmit={true}
           isDisabled={false}
+<<<<<<< HEAD
           popupStyles={showUpdateNo || showUpdateSurveyId ? { width: isMobile ? "473px" : "50%" } : { width: "75%" }}
+=======
+          popupStyles={showUpdateNo || showUpdateSurveyId ? { width: isMobile ? "473px" : "50%"} : { width: "75%"}}
+>>>>>>> MicroUI_PROD_Vite
         >
           {showUpdateNo && (
             <UpdatePropertyNumberComponent

@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route, useRouteMatch, useLocation } from "react-router-dom";
+import { Switch, Route, useRouteMatch, useLocation, useParams } from "react-router-dom";
 import { BreadCrumb, AppContainer, PrivateRoute } from "@mseva/digit-ui-react-components";
 import PayersDetails from "./payers-details";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,17 @@ import { SuccessfulPayment, SuccessfulZeroPayment, FailedPayment } from "./respo
 
 const NDCBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
+
+  const pathSegments = location.pathname.split("/");
+  const collectIndex = pathSegments.indexOf("collect");
+  const successIndex = pathSegments.indexOf("success");
+  const zeroIndex = pathSegments.indexOf("zero");
+  const businessService =
+    collectIndex !== -1 ? pathSegments[collectIndex + 1] :
+    successIndex !== -1 ? pathSegments[successIndex + 1] :
+    zeroIndex !== -1 ? pathSegments[zeroIndex + 1] :
+    null;
+
   const crumbs = [
     {
       path: "/digit-ui/citizen",
@@ -21,7 +32,27 @@ const NDCBreadCrumbs = ({ location }) => {
       show: location.pathname.includes("citizen/payment/") ? true : false,
     },
   ];
-  return <BreadCrumb crumbs={crumbs} />;
+
+  const ptCrumbs =[
+     {
+      path: "/digit-ui/citizen",
+      content: t("ES_COMMON_HOME"),
+      show: true,
+    },
+    {
+      path: "/digit-ui/citizen/pt-home",
+      content: `${t("Property")} Home`,
+      show: location.pathname.includes("citizen/payment/") ? true : false,
+    },
+    {
+      path: "/digit-ui/citizen/ndc-home",
+      content: `${t("Payment")} Page`,
+      show: location.pathname.includes("citizen/payment/") ? true : false,
+    },
+  ];
+
+  const selectedCrumbs = businessService === "PT" ? ptCrumbs : crumbs;
+  return <BreadCrumb crumbs={selectedCrumbs} />;
 };
 
 const CitizenPayment = ({ stateCode, cityCode, moduleCode }) => {

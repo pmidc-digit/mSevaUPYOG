@@ -1318,7 +1318,7 @@ const NOCEmployeeApplicationOverview = () => {
 
               <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
               <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
-              <Row label={t("NOC_VASIKA_DATE")} text={detail?.vasikaDate || "N/A"} />
+              <Row label={t("NOC_VASIKA_DATE")} text={convertToDDMMYYYY(detail?.vasikaDate) || detail?.vasikaDate || "N/A"} />
               <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
             </StatusTable>
           </div>
@@ -1335,7 +1335,11 @@ const NOCEmployeeApplicationOverview = () => {
           const isOffline = existNocCode === "OFFLINE";
 
           return (
+<<<<<<< HEAD
             <div key={index} className="noc-pages-employee-application-overview-application-overview--style-8">
+=======
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+>>>>>>> MicroUI_PROD_Vite
               <StatusTable>
                 <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
                 <Row
@@ -1344,7 +1348,11 @@ const NOCEmployeeApplicationOverview = () => {
                 />
 
                 <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
+<<<<<<< HEAD
                 {(isFinalNoc || isDigitizationOfManual) && (
+=======
+                {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
+>>>>>>> MicroUI_PROD_Vite
                   <React.Fragment>
                     {isFinalNoc && (
                       <Row
@@ -1352,13 +1360,21 @@ const NOCEmployeeApplicationOverview = () => {
                         text={
                           detail?.existingNocType?.name ||
                           detail?.existingNocType?.code ||
+<<<<<<< HEAD
                           (typeof detail?.existingNocType === "string" ? detail?.existingNocType : "N/A")
+=======
+                          (typeof detail?.existingNocType === "string" && detail?.existingNocType ? detail?.existingNocType : "N/A")
+>>>>>>> MicroUI_PROD_Vite
                         }
                       />
                     )}
                     <Row label={t("NOC_NUMBER_LABEL")} text={detail?.existingNocNumber || "N/A"} />
                     {(isOffline || isDigitizationOfManual) && (
+<<<<<<< HEAD
                       <Row label={t("NOC_DATE_LABEL")} text={detail?.existingNocDate || "N/A"} />
+=======
+                      <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(detail?.existingNocDate) || detail?.existingNocDate || "N/A"} />
+>>>>>>> MicroUI_PROD_Vite
                     )}
                     {detail?.existingNocDocument && (
                       <Row

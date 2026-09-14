@@ -521,10 +521,14 @@ const MyApplication = () => {
           </button>
           <button
             onClick={() => {
+<<<<<<< HEAD
               history.push({
                 pathname: "/digit-ui/citizen/noc/noc-my-application",
                 state: { fromOBPS: true }
               });
+=======
+              history.push("/digit-ui/citizen/noc/noc-my-application");
+>>>>>>> MicroUI_PROD_Vite
             }}
             type="button"
             className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card success ${true ? "active" : ""}`}

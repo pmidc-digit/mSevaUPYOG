@@ -5,16 +5,12 @@ export const TENANT_IDS = {
 
 export const OBPS_BPA_BUSINESS_SERVICES = ["BPA_LOW", "BPA", "BPA_OC", "BPA_MC", "BPA_NP", "BPA_MC_HIGH", "BPA_NP_HIGH", "BPA_NP_OTH", "BPA_MC_OTH"];
 
-export const OBPS_BPA_NOR_BUSINESS_SERVICES = [ "BPA", "BPA_MC", "BPA_NP", "BPA_MC_HIGH", "BPA_NP_HIGH", "BPA_NP_OTH", "BPA_MC_OTH"];
+export const OBPS_BPA_NOR_BUSINESS_SERVICES = ["BPA", "BPA_MC", "BPA_NP", "BPA_MC_HIGH", "BPA_NP_HIGH", "BPA_NP_OTH", "BPA_MC_OTH"];
 
-export const OBPS_BPA_LOW_BUSINESS_SERVICES = [ "BPA_LOW"];
+export const OBPS_BPA_LOW_BUSINESS_SERVICES = ["BPA_LOW"];
 
 export const OBPS_BPA_OC_BUSINESS_SERVICES = ["BPA_OC"];
 
 export const OBPS_CLU_BUSINESS_SERVICES = ["CLU_MC", "CLU_NP", "CLU_MC_HIGH", "CLU_NP_HIGH", "CLU_MC_OTH", "CLU_NP_OTH"];
 
 export const MSEVA_APP_LINK = "https://play.google.com/store/apps/details?id=com.mseva.punjab";
-
-export const MSEVA_YOUTUBE_LINK = "https://www.youtube.com/@esewapunjabdolgpunjab";
-
-export const OBPS_EMPLOYEE_USER_MANUAL = "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FAugust%2F26%2F1787725881375NxuybOpbkN.pdf";

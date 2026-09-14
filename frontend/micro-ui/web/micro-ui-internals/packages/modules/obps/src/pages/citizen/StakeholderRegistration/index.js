@@ -102,20 +102,47 @@ const StakeholderRegistration = () => {
     const getDocsFin = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
     const finalDocVal = getDocsFin?.value?.result?.Licenses?.[0];
 
-    let setselectedAction;
+    const cleanDocs = (docs) => {
+      if (!Array.isArray(docs)) return docs;
+      const seen = new Set();
+      const cleaned = [];
+      for (let i = docs.length - 1; i >= 0; i--) {
+        const doc = docs[i];
+        if (doc?.documentType && !seen.has(doc.documentType)) {
+          seen.add(doc.documentType);
+          cleaned.unshift(doc);
+        }
+      }
+      return cleaned;
+    };
 
-    console.log("setselectedAction", setselectedAction);
+    const rawDocs = getDocsFin?.value?.documents?.documents || getDocsFin?.documents?.documents || [];
+    const formattedDocs = Array.isArray(rawDocs)
+      ? rawDocs.map((doc) => ({
+          documentType: doc?.documentType,
+          fileStoreId: typeof doc?.fileStoreId === "object" ? doc?.fileStoreId?.fileStoreId : doc?.fileStoreId,
+          documentUid: doc?.documentUid || null,
+          active: true,
+          tenantId: doc?.tenantId || tenantId,
+          id: doc?.id || null,
+        }))
+      : [];
 
-    if (!selectedAction) setselectedAction = "APPLY";
-    else setselectedAction = selectedAction.action;
+    const applicationDocuments = cleanDocs(
+      formattedDocs?.length > 0 ? formattedDocs : finalDocVal?.tradeLicenseDetail?.applicationDocuments
+    );
 
-    console.log("setselectedAction", setselectedAction);
+    let setselectedAction = !selectedAction ? "APPLY" : typeof selectedAction === "object" ? selectedAction.action : selectedAction;
 
     const finalPayload = {
       Licenses: [
         {
           ...finalDocVal,
           action: setselectedAction,
+          tradeLicenseDetail: {
+            ...finalDocVal?.tradeLicenseDetail,
+            applicationDocuments: applicationDocuments,
+          },
         },
       ],
     };

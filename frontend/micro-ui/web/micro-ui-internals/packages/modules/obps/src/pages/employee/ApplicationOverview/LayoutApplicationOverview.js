@@ -37,9 +37,14 @@ import { SiteInspection } from "../../../pageComponents/SiteInspection";
 import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import ZoneModal from "../../../components/ZoneModal";
 import CustomOwnerImage from "../../../components/CustomOwnerImage";
+<<<<<<< HEAD
 import { amountToWords, formatDuration, formatDate, decryptId } from "../../../utils/index";
 import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
+=======
+import { formatDuration, formatDate, decryptId } from "../../../utils/index";
+import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
+>>>>>>> MicroUI_PROD_Vite
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -494,7 +499,12 @@ const LayoutEmployeeApplicationOverview = () => {
         const ulbGrade = city?.ulbGrade; // confirm exact codes: NP / MC / Corp
         const districtName = city?.districtName;
         const applicationNo = displayData?.applicationNo || applicationDetails?.Layout?.[0]?.applicationNo;
+<<<<<<< HEAD
         const rawSubmissionDate = applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
+=======
+        const rawSubmissionDate =
+          applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
+>>>>>>> MicroUI_PROD_Vite
         const submissionDate = rawSubmissionDate ? Number(rawSubmissionDate) : undefined;
         const rawIssueDate = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate;
         const issueDate = rawIssueDate ? Number(rawIssueDate) : undefined;
@@ -502,9 +512,18 @@ const LayoutEmployeeApplicationOverview = () => {
         const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
         const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
         const villageName = site?.villageName || site?.district?.villageName;
+<<<<<<< HEAD
         const areaSqm = site?.areaLeftForRoadWidening;
 
         const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
+=======
+        const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
+
+        const primaryOwner =
+          applicationDetails?.Layout?.[0]?.owners?.find((o) => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") ||
+          displayData?.owners?.[0] ||
+          owner;
+>>>>>>> MicroUI_PROD_Vite
         const applicantType = (
           primaryOwner?.additionalDetails?.aplicantType?.code ||
           primaryOwner?.additionalDetails?.applicantType?.code ||
@@ -517,9 +536,13 @@ const LayoutEmployeeApplicationOverview = () => {
         const rawAuthPerson = primaryOwner?.additionalDetails?.authorisedPerson || primaryOwner?.additionalDetails?.authorisedPersonName;
         const authorisedPersonName = typeof rawAuthPerson === "object" ? rawAuthPerson?.name : rawAuthPerson;
 
+<<<<<<< HEAD
         const applicantName = isFirm
           ? (authorisedPersonName || primaryOwner?.name || owner?.name || "")
           : (primaryOwner?.name || owner?.name || "");
+=======
+        const applicantName = isFirm ? authorisedPersonName || primaryOwner?.name || owner?.name || "" : primaryOwner?.name || owner?.name || "";
+>>>>>>> MicroUI_PROD_Vite
 
         // Firm / Company Name vs Individual Promoter
         const firmName =
@@ -528,18 +551,29 @@ const LayoutEmployeeApplicationOverview = () => {
           primaryOwner?.additionalDetails?.promoterFirmName ||
           primaryOwner?.additionalDetails?.institutionName;
 
+<<<<<<< HEAD
         const promoterFirmName = isFirm
           ? (firmName || primaryOwner?.name || "")
           : " ";
 
         const applicantAddress = primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
+=======
+        const promoterFirmName = isFirm ? firmName || primaryOwner?.name || "" : " ";
+
+        const applicantAddress =
+          primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
+>>>>>>> MicroUI_PROD_Vite
 
         // --- derived once, reused for both officerDesignation and signatoryDesignation ---
         const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm exact grade codes
         const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
+<<<<<<< HEAD
         const signatoryDesignation = isSmallerUlb
           ? t("SMALLER_ULB_DESIG")
           : t("BIGGER_ULB_DESIG");
+=======
+        const signatoryDesignation = isSmallerUlb ? t("SMALLER_ULB_DESIG") : t("BIGGER_ULB_DESIG");
+>>>>>>> MicroUI_PROD_Vite
 
         // same isSmallerUlb split decides which name goes with the Competent Authority
         const jurisdictionName = isSmallerUlb ? districtName : ulbName;
@@ -1632,7 +1666,11 @@ const LayoutEmployeeApplicationOverview = () => {
                   </div>
                 )}
 
+<<<<<<< HEAD
     
+=======
+      </Card>
+>>>>>>> MicroUI_PROD_Vite
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
       {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS") && (

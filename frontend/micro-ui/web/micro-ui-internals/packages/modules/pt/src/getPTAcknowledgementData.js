@@ -18,6 +18,10 @@ const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 
 const getOwner = (application, t, customTitle) => {
+<<<<<<< HEAD
+=======
+  console.log('application:', application);
+>>>>>>> MicroUI_PROD_Vite
   
   let owners = [];
   let ownershipCategory = application?.ownershipCategory;

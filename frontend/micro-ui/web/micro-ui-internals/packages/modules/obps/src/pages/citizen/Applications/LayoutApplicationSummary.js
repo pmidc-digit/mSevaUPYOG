@@ -322,6 +322,8 @@ const LayoutApplicationOverview = () => {
 
     const hasPayments = combinedPayments.length > 0;
 
+    const hasPayments = combinedPayments.length > 0;
+
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
 
   const downloadSanctionLetter = async () => {
@@ -885,6 +887,7 @@ const hasCMCApproval =
         </div>
       </div>
 
+<<<<<<< HEAD
       <Card>
         <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
         <CustomOwnerImage
@@ -954,8 +957,35 @@ const hasCMCApproval =
             </div>
           ))}
 
+=======
+      {/* 3️⃣ FEE DETAILS CARD */}
+    
+        <Card>
+          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+  {applicationDetails?.Layout?.[0]?.layoutDetails && (
+          <LayoutFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+              },
+              siteDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+              },
+            }}
+            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
+          />
+          )}
+          {hasPayments && (
+                <div style={{ marginTop: "16px" }}>
+                  <OBPSPaymentHistory payments={combinedPayments} />
+                </div>
+              )}
+>>>>>>> MicroUI_PROD_Vite
         </Card>
-      )}
+      
+
+      
 
 
       

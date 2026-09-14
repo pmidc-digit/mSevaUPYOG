@@ -200,7 +200,11 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         specificationIsSiteUnderMasterPlan: formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
         existingNocType: formData?.siteDetails?.existingNocType?.name || "",
         existingNocNumber: formData?.siteDetails?.existingNocNumber || "",
+<<<<<<< HEAD
         existingNocDate: formData?.siteDetails?.existingNocDate || "",
+=======
+        existingNocDate: formData?.siteDetails?.existingNocDate ? convertToDDMMYYYY(formData?.siteDetails?.existingNocDate) : "",
+>>>>>>> MicroUI_PROD_Vite
         existingNocDocument: formData?.siteDetails?.existingNocDocument || null,
         isNocValidated: formData?.siteDetails?.isNocValidated || false,
       },

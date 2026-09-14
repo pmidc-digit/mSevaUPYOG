@@ -241,7 +241,11 @@ const TopBar = ({
   return (
     <div className="topbar" style={topbarStyle}>
       {mobileView ? <Hamburger handleClick={toggleSidebar} color="#9E9E9E" /> : null}
+<<<<<<< HEAD
       <img className="city" src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/download.png" />
+=======
+      <img alt="mSeva Logo" className= "mseva-logo" src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/download.png" />
+>>>>>>> MicroUI_PROD_Vite
       <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
         {loggedin &&
           (cityDetails?.city?.ulbGrade ? (

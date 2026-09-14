@@ -98,7 +98,7 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
                 minLength: 1,
                 validate: (value) => EMAIL_REGEX.test(value),
                 maxLength: 100,
-              },
+              }
             },
             {
               label: "CORE_COMMON_DOB",

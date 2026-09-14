@@ -54,7 +54,11 @@ const OBPSPaymentHistory = ({ payments }) => {
             </div>
           ) : (
             <div className="obps-payment-history-table-wrapper">
+<<<<<<< HEAD
               <table className="custom-fix-fee-history-table obps-payment-history-table">
+=======
+              <table className="obps-payment-history-table">
+>>>>>>> MicroUI_PROD_Vite
                 <thead>
                   <tr>
                     <th className="custom-fix-fee-history-table-header">{t("PT_RECEIPT_NO") || "Receipt Number"}</th>

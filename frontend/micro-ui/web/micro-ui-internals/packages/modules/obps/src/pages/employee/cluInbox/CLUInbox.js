@@ -159,8 +159,11 @@ const CLUInbox = ({ parentRoute }) => {
   );
 
   const memoizedFilters = useMemo(() => {
+<<<<<<< HEAD
     const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
     const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
+=======
+>>>>>>> MicroUI_PROD_Vite
     const normalizedFilterForm = {
       ...(formState?.filterForm || filterFormDefaultValues),
     };
@@ -206,6 +209,17 @@ const CLUInbox = ({ parentRoute }) => {
     });
   }, [cities, formState?.selectedTenantId, tenantId]);
 
+  useEffect(() => {
+    if (tenantId !== "pb.punjab") return;
+    if (!cities?.length) return;
+    if (formState?.selectedTenantId?.tenantId) return;
+
+    dispatch({
+      action: "mutateSelectedTenantId",
+      data: { ...(formState?.selectedTenantId || {}), tenantId: cities[0].code },
+    });
+  }, [cities, formState?.selectedTenantId, tenantId]);
+
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useCLUInbox({
     tenantId: effectiveTenantId,
     filters: memoizedFilters,
@@ -220,10 +234,16 @@ const CLUInbox = ({ parentRoute }) => {
 
     return {
       ...memoizedFilters,
+<<<<<<< HEAD
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
   }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
+=======
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+>>>>>>> MicroUI_PROD_Vite
 
   const assignedToMeFilters = useMemo(
     () => ({
@@ -450,6 +470,10 @@ const CLUInbox = ({ parentRoute }) => {
     return topBarStatusData.filter((status) => selectedStatusKeys.includes(status?.applicationstatus));
   }, [formState?.filterForm?.applicationStatus, statusData, topBarStatusData]);
 
+<<<<<<< HEAD
+=======
+  const searchDebounceRef = useRef(null);
+>>>>>>> MicroUI_PROD_Vite
   const hasInitializedFilterForm = useRef(false);
 
   const onNextPage = () =>
@@ -540,7 +564,13 @@ const CLUInbox = ({ parentRoute }) => {
           tenantSelector={
             tenantId === "pb.punjab" && cities?.length ? (
               <div className="new-inbox-tenant-selector">
+<<<<<<< HEAD
                 <div className="filter-label sub-filter-label obps-pages-employee-clu-inbox-cluinbox--style-1">{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
+=======
+                <div className="filter-label sub-filter-label obps-pages-employee-clu-inbox-cluinbox--style-1" >
+                  {t("BPA_CITIES_DROPDOWN_LABEL")}
+                </div>
+>>>>>>> MicroUI_PROD_Vite
                 <div className="new-inbox-tenant-dropdown">
                   <Dropdown
                     option={cities}

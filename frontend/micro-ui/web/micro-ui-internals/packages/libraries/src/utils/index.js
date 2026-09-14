@@ -5,7 +5,7 @@ import * as locale from "./locale";
 import * as obps from "./obps";
 import * as pt from "./pt";
 import * as privacy from "./privacy";
-import PDFUtil, { downloadReceipt, downloadPDFFromLink, downloadBill, getFileUrl } from "./pdf";
+import PDFUtil, { downloadReceipt, downloadPDFFromLink, downloadBill, downloadTablePDF, getFileUrl } from "./pdf";
 import getFileTypeFromFileStoreURL from "./fileType";
 import {compressImage} from "./compressImage"
 
@@ -304,7 +304,7 @@ export default {
   downloadReceipt,
   downloadBill,
   downloadPDFFromLink,
-  // downloadBill,
+  downloadTablePDF,
   getFileUrl,
   getFileTypeFromFileStoreURL,
   browser: BrowserUtil,

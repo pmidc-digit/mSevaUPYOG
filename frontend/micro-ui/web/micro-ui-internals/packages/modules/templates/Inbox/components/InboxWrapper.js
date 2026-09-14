@@ -115,6 +115,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Card, Table } from "@mseva/digit-ui-react-components";
+import InboxExportMenu from "./InboxExportMenu";
 
 const FloatingTableScrollbar = ({ containerRef, enabled, tableData }) => {
   const dragState = useRef(false);
@@ -235,6 +236,8 @@ const InboxWrapper = ({
   tableHeader = "Assigned Applications",
   emptyMessage,
   pagination,
+  fetchAllData = null,
+  showExport = true,
   children,
 }) => {
   const { t } = useTranslation();
@@ -273,9 +276,19 @@ const InboxWrapper = ({
             {emptyMessage || t("CS_MYAPPLICATIONS_NO_APPLICATION")}
           </Card>
         ) : (
-          <div className="new-inbox-table-card" ref={tableCardRef}>
-            <div className="new-inbox-table-header">
-              {t(tableHeader)}
+          <div className="new-inbox-table-card">
+            <div className="new-inbox-table-header cardHeaderWithOptions">
+              <span>{t(tableHeader)}</span>
+              {showExport && tableData?.length > 0 && (
+                <InboxExportMenu
+                  columns={tableProps?.columns}
+                  data={tableData}
+                  totalCount={totalCount}
+                  fetchAllData={fetchAllData || tableProps?.fetchAllData}
+                  fileName={t(tableHeader) || "Applications"}
+                  t={t}
+                />
+              )}
             </div>
             <Table
               isPaginationRequired={false}

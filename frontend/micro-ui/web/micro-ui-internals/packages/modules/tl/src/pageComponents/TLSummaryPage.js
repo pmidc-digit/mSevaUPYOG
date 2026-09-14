@@ -17,13 +17,14 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const [showBreakupModal, setShowBreakupModal] = useState(false);
   const [breakupData, setBreakupData] = useState(null);
   const [breakupLoading, setBreakupLoading] = useState(false);
+  const [resolvedPaymentSnapshot, setResolvedPaymentSnapshot] = useState(null);
 
   const owners = (tradeLicenseDetail?.owners || []).filter((owner) => owner?.active !== false);
   const tradeUnits = (tradeLicenseDetail?.tradeUnits || []).filter((unit) => unit?.active !== false);
   const reduxAccessories = formData?.TraidDetails?.accessories || formData?.TraidDetailsRenew?.accessories;
   const accessories = Array.isArray(reduxAccessories)
     ? reduxAccessories
-        .filter((acc) => acc?.accessoryCategory?.code || (typeof acc?.accessoryCategory === "string" && acc?.accessoryCategory))
+        .filter((acc) => acc?.active !== false && (acc?.accessoryCategory?.code || (typeof acc?.accessoryCategory === "string" && acc?.accessoryCategory)))
         .map((acc) => ({
           accessoryCategory: acc?.accessoryCategory?.code || acc?.accessoryCategory,
           uom: acc?.accessoryCategory?.uom || acc?.uom || null,
@@ -369,22 +370,19 @@ const subOwnerShipCategoryValue = tradeLicenseDetail?.subOwnerShipCategory?.spli
         </div>
       ))}
 
-      <h2 className="bpa-summary-heading">{t("Accessories")}</h2>
-      {accessories.length > 0 ? accessories.map((acc, index) => (
-        <div key={index} className="bpa-summary-section">
-          <div className="TL-item-index">#{index + 1}</div>
-          {renderLabel(t("Accessory Category"), acc?.accessoryCategory ? t(`TRADELICENSE_ACCESSORIESCATEGORY_${acc.accessoryCategory.replace(/-/g, "_")}`) : null)}
-          {renderLabel(t("UOM"), acc?.uom)}
-          {renderLabel(t("UOM Value"), acc?.uomValue)}
-          {renderLabel(t("Quantity"), acc?.count)}
-        </div>
-      )) : (
-        <div className="bpa-summary-section">
-          {renderLabel(t("Accessory Category"), null)}
-          {renderLabel(t("UOM"), null)}
-          {renderLabel(t("UOM Value"), null)}
-          {renderLabel(t("Quantity"), null)}
-        </div>
+      {accessories && accessories.length > 0 && (
+        <Fragment>
+          <h2 className="bpa-summary-heading">{t("Accessories")}</h2>
+          {accessories.map((acc, index) => (
+            <div key={index} className="bpa-summary-section">
+              <div className="TL-item-index">#{index + 1}</div>
+              {renderLabel(t("Accessory Category"), acc?.accessoryCategory ? t(`TRADELICENSE_ACCESSORIESCATEGORY_${acc.accessoryCategory.replace(/-/g, "_")}`) : null)}
+              {renderLabel(t("UOM"), acc?.uom)}
+              {renderLabel(t("UOM Value"), acc?.uomValue)}
+              {renderLabel(t("Quantity"), acc?.count)}
+            </div>
+          ))}
+        </Fragment>
       )}
 
       <h2 className="bpa-summary-heading">{t("Property Address")}</h2>

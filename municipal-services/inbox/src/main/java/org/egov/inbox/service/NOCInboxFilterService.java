@@ -137,13 +137,7 @@ public class NOCInboxFilterService {
         // Map status display names directly for searcher (like BPA)
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("status") && moduleSearchCriteria.get("status") != null) {
             List<String> requestedStatuses = Arrays.asList(moduleSearchCriteria.get("status").toString().split(","));
-               List<String> matchingIds = StatusIdNameMap.entrySet().stream()
-                    .filter(entry -> requestedStatuses.contains(entry.getValue()))
-                    .map(Map.Entry::getKey)
-                    .collect(Collectors.toList());
-            if (!matchingIds.isEmpty()) {
-                searchCriteria.put("status", matchingIds);
-            }
+            searchCriteria.put("status", requestedStatuses);
         }
         else {
 			// If no status filter is provided, include all statuses

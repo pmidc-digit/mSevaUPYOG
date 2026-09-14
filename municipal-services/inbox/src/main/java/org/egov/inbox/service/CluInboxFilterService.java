@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
+import org.egov.inbox.config.InboxConfiguration;
 import org.egov.inbox.repository.ServiceRequestRepository;
 import org.egov.inbox.web.model.InboxSearchCriteria;
 import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
@@ -25,6 +26,9 @@ import static org.egov.inbox.util.TLConstants.STATUS_PARAM;
 @Slf4j
 @Service
 public class CluInboxFilterService {
+
+    @Autowired
+    private InboxConfiguration config;
 
     @Value("${egov.user.search.path}")
     private String userSearchEndpoint;
@@ -200,6 +204,9 @@ public class CluInboxFilterService {
         //if tenant id is pb.punjab then we make it a wildcard so that all ulbs can be fetched
         if (tenantId != null && tenantId.equals("pb.punjab")) {
             tenantId = tenantId.split("\\.")[0] + ".%";
+            if (config != null && !ObjectUtils.isEmpty(config.getCrossTenantExcludedTenantId())) {
+                searchCriteria.put("excludeTenantId", config.getCrossTenantExcludedTenantId());
+            }
         }
         searchCriteria.put(TENANT_ID_PARAM, tenantId);
         searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());

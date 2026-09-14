@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
+import org.egov.inbox.config.InboxConfiguration;
 import org.egov.inbox.repository.ServiceRequestRepository;
 import org.egov.inbox.web.model.InboxSearchCriteria;
 import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
@@ -31,6 +32,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class BPAInboxFilterService {
+
+    @Autowired
+    private InboxConfiguration config;
 
     @Value("${egov.user.host}")
     private String userHost;
@@ -154,7 +158,14 @@ public class BPAInboxFilterService {
             ProcessInstanceSearchCriteria processCriteria, List<String> userUUIDs, List<String> userRoles) {
         Map<String, Object> searchCriteria = new HashMap<>();
 
-        searchCriteria.put(TENANT_ID_PARAM, criteria.getTenantId());
+        String tenantId = criteria.getTenantId();
+        if (tenantId != null && tenantId.equals("pb.punjab")) {
+            tenantId = tenantId.split("\\.")[0] + ".%";
+            if (config != null && !ObjectUtils.isEmpty(config.getCrossTenantExcludedTenantId())) {
+                searchCriteria.put("excludeTenantId", config.getCrossTenantExcludedTenantId());
+            }
+        }
+        searchCriteria.put(TENANT_ID_PARAM, tenantId);
         searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());
 
         // Migration filter: default to false (non-migrated) unless isMigrated is true
@@ -353,7 +364,6 @@ public class BPAInboxFilterService {
                 StringBuilder citizenUri = new StringBuilder();
                 citizenUri.append(searcherHost).append(bpaCitizenInboxTenantWiseApplnNosEndpoint);
                 result = restTemplate.postForObject(citizenUri.toString(), searcherRequest, Map.class);
-                tenantWiseApplns = JsonPath.read(result, "$.BPA.*");
             }
         }
         return tenantWiseApplns;

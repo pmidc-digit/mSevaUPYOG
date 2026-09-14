@@ -40,15 +40,17 @@ export const PTSearch = {
         {
           title: "PT_PROPERTY_ADDRESS_HOUSE_NO",
           value: property?.address?.doorNo,
-          privacy: { uuid: property?.owners?.[0]?.uuid, fieldName: "doorNo", model: "Property",
-          showValue: false,
-          loadData: {
-            serviceName: "/property-services/property/_search",
-            requestBody: {},
-            requestParam: { tenantId, propertyIds },
-            jsonPath: "Properties[0].address.doorNo",
-            isArray: false,
-          }, },
+          privacy: {
+            uuid: property?.owners?.[0]?.uuid, fieldName: "doorNo", model: "Property",
+            showValue: false,
+            loadData: {
+              serviceName: "/property-services/property/_search",
+              requestBody: {},
+              requestParam: { tenantId, propertyIds },
+              jsonPath: "Properties[0].address.doorNo",
+              isArray: false,
+            },
+          },
         },
         {
           title: "PT_PROPERTY_ADDRESS_STREET_NAME",
@@ -86,7 +88,7 @@ export const PTSearch = {
         { title: "PT_SEARCHPROPERTY_TABEL_STATUS", value: Digit.Utils.locale.getTransformedLocale(`WF_PT_${property?.status}`) || "NA" },
       ],
     };
-    const ownersSequences=property?.owners?.additionalDetails!==null ? property?.owners?.sort((a,b)=>a?.additionalDetails?.ownerSequence-b?.additionalDetails?.ownerSequence): property?.owners
+    const ownersSequences = property?.owners?.additionalDetails !== null ? property?.owners?.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence) : property?.owners
     const ownerdetails = {
       title: "PT_OWNERSHIP_INFO_SUB_HEADER",
       additionalDetails: {
@@ -97,71 +99,87 @@ export const PTSearch = {
               status: owner.status,
               title: "ES_OWNER",
               values: [
-                { title: "PT_OWNERSHIP_INFO_NAME", value: owner?.name, privacy: { uuid: owner?.uuid, fieldName: "name", model: "User",showValue: false,
-                loadData: {
-                  serviceName: "/property-services/property/_search",
-                  requestBody: {},
-                  requestParam: { tenantId, propertyIds },
-                  jsonPath: "Properties[0].owners[0].name",
-                  isArray: false,
-                }, } },
-                { title: "PT_OWNERSHIP_INFO_GENDER", value: owner?.gender, privacy: { uuid: owner?.uuid, fieldName: "gender", model: "User",showValue: false,
-                loadData: {
-                  serviceName: "/property-services/property/_search",
-                  requestBody: {},
-                  requestParam: { tenantId, propertyIds },
-                  jsonPath: "Properties[0].owners[0].gender",
-                  isArray: false,
-                }, }  },
+                {
+                  title: "PT_OWNERSHIP_INFO_NAME", value: owner?.name, privacy: {
+                    uuid: owner?.uuid, fieldName: "name", model: "User", showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId, propertyIds },
+                      jsonPath: "Properties[0].owners[0].name",
+                      isArray: false,
+                    },
+                  }
+                },
+                {
+                  title: "PT_OWNERSHIP_INFO_GENDER", value: owner?.gender, privacy: {
+                    uuid: owner?.uuid, fieldName: "gender", model: "User", showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId, propertyIds },
+                      jsonPath: "Properties[0].owners[0].gender",
+                      isArray: false,
+                    },
+                  }
+                },
                 {
                   title: "PT_OWNERSHIP_INFO_MOBILE_NO",
                   value: owner?.mobileNumber,
-                  privacy: { uuid: owner?.uuid, fieldName: "mobileNumber", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, propertyIds },
-                    jsonPath: "Properties[0].owners[0].mobileNumber",
-                    isArray: false,
-                  }, },
+                  privacy: {
+                    uuid: owner?.uuid, fieldName: "mobileNumber", model: "User", showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId, propertyIds },
+                      jsonPath: "Properties[0].owners[0].mobileNumber",
+                      isArray: false,
+                    },
+                  },
                 },
                 {
                   title: "PT_OWNERSHIP_INFO_USER_CATEGORY",
                   value: `COMMON_MASTERS_OWNERTYPE_${owner?.ownerType}` || "NA",
-                  privacy: { uuid: owner?.uuid, fieldName: "ownerType", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, propertyIds },
-                    jsonPath: "Properties[0].owners[0].ownerType",
-                    //function needed here for localisation
-                    isArray: false,
-                  }, },
+                  privacy: {
+                    uuid: owner?.uuid, fieldName: "ownerType", model: "User", showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId, propertyIds },
+                      jsonPath: "Properties[0].owners[0].ownerType",
+                      //function needed here for localisation
+                      isArray: false,
+                    },
+                  },
                 },
                 {
                   title: "PT_SEARCHPROPERTY_TABEL_GUARDIANNAME",
                   value: owner?.fatherOrHusbandName,
-                  privacy: { uuid: owner?.uuid, fieldName: "guardian", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, propertyIds },
-                    jsonPath: "Properties[0].owners[0].fatherOrHusbandName",
-                    isArray: false,
-                  }, },
+                  privacy: {
+                    uuid: owner?.uuid, fieldName: "guardian", model: "User", showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId, propertyIds },
+                      jsonPath: "Properties[0].owners[0].fatherOrHusbandName",
+                      isArray: false,
+                    },
+                  },
                 },
                 { title: "PT_FORM3_OWNERSHIP_TYPE", value: property?.ownershipCategory },
                 {
                   title: "PT_OWNERSHIP_INFO_EMAIL_ID",
                   value: owner?.emailId,
-                  privacy: { uuid: owner?.uuid, fieldName: "emailId", model: "User", hide: !(owner?.emailId && owner?.emailId !== "NA"),showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, propertyIds },
-                    jsonPath: "Properties[0].owners[0].emailId",
-                    isArray: false,
-                  }, },
+                  privacy: {
+                    uuid: owner?.uuid, fieldName: "emailId", model: "User", hide: !(owner?.emailId && owner?.emailId !== "NA"), showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId, propertyIds },
+                      jsonPath: "Properties[0].owners[0].emailId",
+                      isArray: false,
+                    },
+                  },
                 },
                 {
                   title: "PT_OWNERSHIP_INFO_CORR_ADDR",
@@ -172,13 +190,13 @@ export const PTSearch = {
                     model: "User",
                     hide: !(owner?.permanentAddress || owner?.correspondenceAddress),
                     showValue: false,
-                loadData: {
-                  serviceName: "/property-services/property/_search",
-                  requestBody: {},
-                  requestParam: { tenantId, propertyIds },
-                  jsonPath: owner?.permanentAddress ? "Properties[0].owners[0].permanentAddress" :"Properties[0].owners[0].correspondenceAddress",
-                  isArray: false,
-                },
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId, propertyIds },
+                      jsonPath: owner?.permanentAddress ? "Properties[0].owners[0].permanentAddress" : "Properties[0].owners[0].correspondenceAddress",
+                      isArray: false,
+                    },
                   },
                 },
               ],
@@ -199,11 +217,7 @@ export const PTSearch = {
     return response.Properties[0];
   },
   transformPropertyToApplicationDetails: ({ property: response, t }) => {
-<<<<<<< HEAD
-=======
-    console.log('response in property:', response);
->>>>>>> MicroUI_PROD_Vite
-    
+
     return [
       {
         title: "PT_PROPERTY_ADDRESS_SUB_HEADER",
@@ -222,7 +236,7 @@ export const PTSearch = {
               loadData: {
                 serviceName: "/property-services/property/_search",
                 requestBody: {},
-                requestParam: { tenantId : response?.tenantId, propertyIds:response?.propertyId },
+                requestParam: { tenantId: response?.tenantId, propertyIds: response?.propertyId },
                 jsonPath: "Properties[0].address.doorNo",
                 isArray: false,
               },
@@ -240,7 +254,7 @@ export const PTSearch = {
               loadData: {
                 serviceName: "/property-services/property/_search",
                 requestBody: {},
-                requestParam: { tenantId : response?.tenantId, propertyIds:response?.propertyId },
+                requestParam: { tenantId: response?.tenantId, propertyIds: response?.propertyId },
                 jsonPath: "Properties[0].address.street",
                 isArray: false,
               },
@@ -251,9 +265,9 @@ export const PTSearch = {
             value: `${response?.tenantId?.toUpperCase()?.split(".")?.join("_")}_REVENUE_${response?.address?.locality?.code}`,
           },
           { title: "PT_PROPERTY_ADDRESS_PINCODE", value: response?.address?.pincode },
-          { title: "Existing Property ID", value: response?.oldPropertyId},
-          { title: "Survey Id/UID", value: response?.surveyId},
-          { title: "Year of creation of Property", value: response?.additionalDetails?.yearConstruction},
+          { title: "Existing Property ID", value: response?.oldPropertyId },
+          { title: "Survey Id/UID", value: response?.surveyId },
+          { title: "Year of creation of Property", value: response?.additionalDetails?.yearConstruction },
         ],
       },
       {
@@ -279,14 +293,13 @@ export const PTSearch = {
             ?.filter((e) => e.active)
             ?.sort?.((a, b) => a.floorNo - b.floorNo)
             ?.map((unit, index) => {
-              
+
               let floorName = `PROPERTYTAX_FLOOR_${unit?.floorNo}`;
               const values = [
                 {
                   title: "PT_ASSESSMENT_UNIT_USAGE_TYPE",
-                  value: `PROPERTYTAX_BILLING_SLAB_${
-                    unit?.usageCategory !== "RESIDENTIAL" && unit?.usageCategory !== "MIXED" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
-                  }`,
+                  value: `PROPERTYTAX_BILLING_SLAB_${unit?.usageCategory !== "RESIDENTIAL" && unit?.usageCategory !== "MIXED" ? unit?.usageCategory?.split(".")[1] : unit?.usageCategory
+                    }`,
                 },
                 {
                   title: "PT_ASSESMENT_INFO_OCCUPLANCY",
@@ -302,8 +315,8 @@ export const PTSearch = {
                 },
               ];
 
-              if (unit.occupancyType === "RENTED") values.push({ title: "PT_FORM2_TOTAL_ANNUAL_RENT", value: unit.arv },{ title: "Months on Rent", value: unit?.months || unit?.additionalDetails?.rentedformonths },{ title: "Usage for Pending Months", value: unit?.usage || unit?.additionalDetails?.usageForDueMonths });
- 
+              if (unit.occupancyType === "RENTED") values.push({ title: "PT_FORM2_TOTAL_ANNUAL_RENT", value: unit.arv }, { title: "Months on Rent", value: unit?.months || unit?.additionalDetails?.rentedformonths }, { title: "Usage for Pending Months", value: unit?.usage || unit?.additionalDetails?.usageForDueMonths });
+
               return {
                 title: floorName,
                 values: [
@@ -337,67 +350,79 @@ export const PTSearch = {
                 {
                   title: "PT_SEARCHPROPERTY_TABEL_GUARDIANNAME",
                   value: owner?.fatherOrHusbandName,
-                  privacy: { uuid: owner?.uuid, fieldName: "guardian", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].fatherOrHusbandName",
-                    isArray: false,
-                  }, },
+                  privacy: {
+                    uuid: owner?.uuid, fieldName: "guardian", model: "User", showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId: response?.tenantId, propertyIds: response?.propertyId },
+                      jsonPath: "Properties[0].owners[0].fatherOrHusbandName",
+                      isArray: false,
+                    },
+                  },
                 },
-                { title: "PT_OWNERSHIP_INFO_GENDER", value: owner?.gender, privacy: { uuid: owner?.uuid, fieldName: "gender", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].gender",
-                    isArray: false,
-                  }, } },
+                {
+                  title: "PT_OWNERSHIP_INFO_GENDER", value: owner?.gender, privacy: {
+                    uuid: owner?.uuid, fieldName: "gender", model: "User", showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId: response?.tenantId, propertyIds: response?.propertyId },
+                      jsonPath: "Properties[0].owners[0].gender",
+                      isArray: false,
+                    },
+                  }
+                },
                 { title: "PT_FORM3_OWNERSHIP_TYPE", value: response?.ownershipCategory },
                 {
                   title: "PT_OWNERSHIP_INFO_MOBILE_NO",
                   value: owner?.mobileNumber,
-                  privacy: { uuid: owner?.uuid, fieldName: "mobileNumber", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].mobileNumber",
-                    isArray: false,
-                  }, },
+                  privacy: {
+                    uuid: owner?.uuid, fieldName: "mobileNumber", model: "User", showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId: response?.tenantId, propertyIds: response?.propertyId },
+                      jsonPath: "Properties[0].owners[0].mobileNumber",
+                      isArray: false,
+                    },
+                  },
                 },
                 {
                   title: "PT_OWNERSHIP_INFO_EMAIL_ID",
                   value: owner?.emailId,
-                  privacy: { uuid: owner?.uuid, fieldName: "emailId", model: "User", hide: !(owner?.emailId && owner?.emailId !== "NA"),showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].emailId",
-                    isArray: false,
-                  }, },
+                  privacy: {
+                    uuid: owner?.uuid, fieldName: "emailId", model: "User", hide: !(owner?.emailId && owner?.emailId !== "NA"), showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId: response?.tenantId, propertyIds: response?.propertyId },
+                      jsonPath: "Properties[0].owners[0].emailId",
+                      isArray: false,
+                    },
+                  },
                 },
-                { title: "Ownership Percentage", value: owner?.ownerShipPercentage},
-                
-              
+                { title: "Ownership Percentage", value: owner?.ownerShipPercentage },
+
+
                 {
                   title: "PT_OWNERSHIP_INFO_USER_CATEGORY",
                   value: `COMMON_MASTERS_OWNERTYPE_${owner?.ownerType}` || "NA",
-                  privacy: { uuid: owner?.uuid, fieldName: "ownerType", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    //function needed here for localisation
-                    jsonPath: "Properties[0].owners[0].ownerType",
-                    isArray: false,
-                  }, },
+                  privacy: {
+                    uuid: owner?.uuid, fieldName: "ownerType", model: "User", showValue: false,
+                    loadData: {
+                      serviceName: "/property-services/property/_search",
+                      requestBody: {},
+                      requestParam: { tenantId: response?.tenantId, propertyIds: response?.propertyId },
+                      //function needed here for localisation
+                      jsonPath: "Properties[0].owners[0].ownerType",
+                      isArray: false,
+                    },
+                  },
                 },
-               
-              
-              
+
+
+
                 {
                   title: "PT_OWNERSHIP_INFO_CORR_ADDR",
                   value: owner?.correspondenceAddress || owner?.permanentAddress,
@@ -410,7 +435,7 @@ export const PTSearch = {
                     loadData: {
                       serviceName: "/property-services/property/_search",
                       requestBody: {},
-                      requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
+                      requestParam: { tenantId: response?.tenantId, propertyIds: response?.propertyId },
                       jsonPath: owner?.permanentAddress ? "Properties[0].owners[0].permanentAddress" : "Properties[0].owners[0].correspondenceAddress",
                       isArray: false,
                     },
@@ -426,8 +451,8 @@ export const PTSearch = {
                 // ?.filter((e) => e.status === "ACTIVE")
                 ?.map((document) => {
                   return {
-                     title: `PT_${document?.documentType.replace(".", "_")}`,
-                
+                    title: `PT_${document?.documentType.replace(".", "_")}`,
+
                     documentType: document?.documentType,
                     documentUid: document?.documentUid,
                     fileStoreId: document?.fileStoreId,
@@ -438,13 +463,13 @@ export const PTSearch = {
           ],
         },
       },
-  
+
     ];
   },
   applicationDetails: async (t, tenantId, propertyIds, userType, args) => {
     const filter = { propertyIds, ...args };
     const response = await PTSearch.application(tenantId, filter);
-    
+
     //const assessmentResponse = await PTService.assessmentSearch({tenantId, filter});
     return {
       tenantId: response?.tenantId,

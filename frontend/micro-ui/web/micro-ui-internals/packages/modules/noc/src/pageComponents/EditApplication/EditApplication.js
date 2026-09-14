@@ -123,9 +123,9 @@ const EditApplication = () => {
     { code: "YES", i18nKey: "YES", }, { code: "NO", i18nKey: "NO", },
   ];
   const existingNocTypeOptions = [
-          { code: "OFFLINE", name: "Offline" },
-          { code: "ONLINE", name: "Online" },
-        ];
+    { code: "OFFLINE", name: "Offline" },
+    { code: "ONLINE", name: "Online" },
+  ];
   const { data: fetchedLocalities, isLoading: isBoundaryLoading } = Digit.Hooks.useBoundaryLocalities(tenantId, "revenue", {}, t);
 
   const ulbListOptions = ulbList?.map((city) => ({
@@ -176,7 +176,7 @@ const EditApplication = () => {
   //   }
   // }, [fetchedLocalities, siteDetails?.zone]);
 
-  console.log("sitedetails",siteDetails?.existingNocType)
+  console.log("sitedetails", siteDetails?.existingNocType)
 
   useEffect(() => {
 
@@ -224,7 +224,6 @@ const EditApplication = () => {
       }
 
 
-<<<<<<< HEAD
       const updatedSiteDetails = {
         ...siteDetails,
         ulbName: ulbListOptions?.find((obj) => obj.name === siteDetails?.ulbName?.name || obj.name === siteDetails?.ulbName),
@@ -236,8 +235,6 @@ const EditApplication = () => {
         vasikaNumber: nocObject?.vasikaNumber,
         vasikaDate: formatDateForInput(nocObject?.vasikaDate),
 
-=======
->>>>>>> MicroUI_PROD_Vite
         zone: zoneOptions?.find((obj) => obj.name === siteDetails?.zone?.name || obj.name === siteDetails?.zone),
         localityAreaType:
           fetchedLocalities?.find((loc) => loc.name === siteDetails?.localityAreaType?.name) || siteDetails?.localityAreaType || null,
@@ -256,11 +253,7 @@ const EditApplication = () => {
         ),
         existingNocType: existingNocTypeOptions?.find((obj) => getCode(obj) === getCode(siteDetails?.existingNocType)) || null,
         existingNocNumber: siteDetails?.existingNocNumber || "",
-<<<<<<< HEAD
         existingNocDate: siteDetails?.existingNocDate || "",
-=======
-        existingNocDate: formatDateForInput(siteDetails?.existingNocDate),
->>>>>>> MicroUI_PROD_Vite
         existingNocDocument: siteDetails?.existingNocDocument || null,
         isNocValidated: siteDetails?.isNocValidated !== undefined ? siteDetails.isNocValidated : (getCode(siteDetails?.existingNocType) === "ONLINE" && siteDetails?.existingNocNumber ? true : false),
       };

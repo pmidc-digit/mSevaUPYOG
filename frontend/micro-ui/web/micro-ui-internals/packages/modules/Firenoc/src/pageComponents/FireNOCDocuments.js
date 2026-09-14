@@ -109,24 +109,23 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
     <div className="bpa-doc-required-wrapper">
       {isUploading && <Loader />}
 
-      
-        {doc.hasDropdown && (
-          <CardLabel style={{ fontWeight: "bold", fontSize: "16px", marginBottom: "8px" }}>
-            {t(doc.code.replaceAll(".", "_"))}
-            {doc.required && <span className="requiredField">*</span>}
-          </CardLabel>
-        )}
 
-<<<<<<< HEAD
-        <div 
-        style={{ 
-          display: "flex", 
-          gap: "24px", 
-          flexWrap: "wrap", 
-          alignItems: doc.hasDropdown ? "flex-start" : "center" 
+      {doc.hasDropdown && (
+        <CardLabel style={{ fontWeight: "bold", fontSize: "16px", marginBottom: "8px" }}>
+          {t(doc.code.replaceAll(".", "_"))}
+          {doc.required && <span className="requiredField">*</span>}
+        </CardLabel>
+      )}
+
+      <div
+        style={{
+          display: "flex",
+          gap: "24px",
+          flexWrap: "wrap",
+          alignItems: doc.hasDropdown ? "flex-start" : "center"
         }}
       >
-        
+
         {/* 3. Left Column: Either Dropdown OR the Label (if no dropdown) */}
         <div style={{ flex: 1, minWidth: "250px" }}>
           {doc.hasDropdown ? (
@@ -144,22 +143,6 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
               {t(doc.code.replaceAll(".", "_"))}
               {doc.required && <span className="requiredField">*</span>}
             </CardLabel>
-=======
-        <div className="fire-noc-doc-required-field" style={{width: "100%"}}>
-          {/* Dropdown for documents with multiple options (e.g., Identity Proof) */}
-          {doc.hasDropdown && dropdownOptions.length > 0 && (
-            <div style={{ marginBottom: "8px" }}>
-              <Dropdown
-                className="form-field"
-                option={dropdownOptions}
-                optionKey="name"
-                select={(val) => setSelectedDocument(val)}
-                selected={selectedDocument}
-                t={t}
-                placeholder={t("Select Document Type")}
-              />
-            </div>
->>>>>>> MicroUI_PROD_Vite
           )}
         </div>
         {/* 4. Right Column: File Upload */}
@@ -180,29 +163,22 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
           />
-<<<<<<< HEAD
           <p style={{ paddingTop: "10px", fontSize: "14px", margin: 0 }}>
             {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
           </p>
-        </div>
-      </div>
+        </div >
+      </div >
 
-         
-=======
 
-          <p style={{ padding: "10px", fontSize: "14px" }}>
-            {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
+
+      {
+        doc.description && (
+          <p style={{ padding: "0 10px 10px", fontSize: "13px", color: "#717171" }}>
+            {/* {t(doc.description.replaceAll(".", "_"))} */}
           </p>
-        </div>
-      </LabelFieldPair>   
->>>>>>> MicroUI_PROD_Vite
-
-      {doc.description && (
-        <p style={{ padding: "0 10px 10px", fontSize: "13px", color: "#717171" }}>
-          {/* {t(doc.description.replaceAll(".", "_"))} */}
-        </p>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }
 
@@ -213,8 +189,8 @@ const FireNOCDocuments = ({ t, config, onSelect, formData }) => {
 
   /* Seed from Redux so uploads survive back-navigation */
   const persistedDocs = useSelector(
-    (state) => 
-      state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments?.documents || 
+    (state) =>
+      state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments?.documents ||
       state?.noc?.NOCNewApplicationFormReducer?.formData?.documents?.documents?.documents || []
   );
   const [documents, setDocuments] = useState(persistedDocs);

@@ -32,10 +32,7 @@ const LayoutInbox = ({ parentRoute }) => {
   const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
-<<<<<<< HEAD
   const [apiMobileSearch, setApiMobileSearch] = useState("");
-=======
->>>>>>> MicroUI_PROD_Vite
   const prefix = "WF_EMPLOYEE_LAYOUT_STATUS";
 
   const searchFormDefaultValues = useMemo(
@@ -545,7 +542,7 @@ const LayoutInbox = ({ parentRoute }) => {
       }
       filterSection={
         <NewFilterFormFieldComponent
-          registerRef={() => {}}
+          registerRef={() => { }}
           controlFilterForm={controlFilterForm}
           setFilterFormValue={setFilterFormValue}
           filterFormState={formState?.filterForm}

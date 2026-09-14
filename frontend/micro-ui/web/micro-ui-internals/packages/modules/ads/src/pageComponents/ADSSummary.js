@@ -23,10 +23,10 @@ function ADSSummary({ t }) {
   const docs = Array.isArray(formData?.documents?.documents?.documents)
     ? formData?.documents?.documents?.documents
     : Array.isArray(formData.documents?.documents)
-    ? formData.documents.documents
-    : Array.isArray(formData.documents)
-    ? formData.documents
-    : [];
+      ? formData.documents.documents
+      : Array.isArray(formData.documents)
+        ? formData.documents
+        : [];
   const cartDetails = formData?.ads;
 
   const renderRow = (label, value) => (
@@ -46,10 +46,7 @@ function ADSSummary({ t }) {
     try {
       const response = await Digit.ADSServices.estimateCreate({ cartDetails: payload, tenantId }, tenantId);
       setIsLoading(false);
-<<<<<<< HEAD
       console.log("response", response);
-=======
->>>>>>> MicroUI_PROD_Vite
       setDemands(response?.demands?.[0]?.additionalDetails?.slotWiseBreakdown);
     } catch (error) {
       setIsLoading(false);

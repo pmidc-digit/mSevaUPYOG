@@ -59,7 +59,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
           const cluApp = searchRes?.Clu?.[0];
           if (cluApp) {
             fId = cluApp?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId ||
-                  cluApp?.additionalDetails?.sanctionLetterFilestoreId;
+              cluApp?.additionalDetails?.sanctionLetterFilestoreId;
             if (cluApp?.tenantId) {
               fetchTenantId = cluApp.tenantId;
             }
@@ -163,7 +163,7 @@ const LayoutApplicationOverview = () => {
   const [loading, setLoading] = useState(false);
   const [timeObj, setTimeObj] = useState(null);
   const state = Digit.ULBService.getStateId()
- const [feeAdjustments, setFeeAdjustments] = useState([]);
+  const [feeAdjustments, setFeeAdjustments] = useState([]);
   // const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, );
   const { isLoading, data } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: id }, tenantId, { cacheTime: 0 })
   const applicationDetails = data?.resData
@@ -314,15 +314,13 @@ const LayoutApplicationOverview = () => {
     { enabled: id ? true : false },
   )
 
- const combinedPayments = useMemo(() => {
-     const p1 = reciept_data?.Payments || [];
-     const p2 = reciept_data_pay?.Payments || [];
-     return [...p1, ...p2];
-   }, [reciept_data, reciept_data_pay]);
+  const combinedPayments = useMemo(() => {
+    const p1 = reciept_data?.Payments || [];
+    const p2 = reciept_data_pay?.Payments || [];
+    return [...p1, ...p2];
+  }, [reciept_data, reciept_data_pay]);
 
-    const hasPayments = combinedPayments.length > 0;
-
-    const hasPayments = combinedPayments.length > 0;
+  const hasPayments = combinedPayments.length > 0;
 
   const amountPaid = reciept_data?.Payments?.[0]?.totalAmountPaid
 
@@ -363,19 +361,19 @@ const LayoutApplicationOverview = () => {
     }
   }
   if (
-      applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId || applicationDetails?.Layout?.[0]?.applicationStatus === "ESIGNED"
-    ) {
-      dowloadOptions.push({
-        label: t("LETTER_OF_INTENT"),
-        onClick: () =>
-          getRecieptSearch({
-            tenantId: tenantId,
-            payments: reciept_data_pay?.Payments[0],
-            filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId,
-            pdfkey: "layout-loi"
-          }),
-      });
-    }
+    applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId || applicationDetails?.Layout?.[0]?.applicationStatus === "ESIGNED"
+  ) {
+    dowloadOptions.push({
+      label: t("LETTER_OF_INTENT"),
+      onClick: () =>
+        getRecieptSearch({
+          tenantId: tenantId,
+          payments: reciept_data_pay?.Payments[0],
+          filestoreId: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId,
+          pdfkey: "layout-loi"
+        }),
+    });
+  }
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL")
@@ -411,9 +409,9 @@ const LayoutApplicationOverview = () => {
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
   const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
-  const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
-  const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
-  
+  const prefix = `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
+  const Statusprefix = `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
+
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -439,15 +437,15 @@ const LayoutApplicationOverview = () => {
       data.revalidate()
     }
   }, [])
-  
-const hasCMCApproval =
-  workflowDetails?.data?.actionState?.timeline?.some(
-    (item) =>
-      item?.performedAction === "APPROVE" &&
-      item?.assigner?.roles?.some(
-        (role) => role?.code === "OBPAS_LAYOUT_CMC"
-      )
-  );
+
+  const hasCMCApproval =
+    workflowDetails?.data?.actionState?.timeline?.some(
+      (item) =>
+        item?.performedAction === "APPROVE" &&
+        item?.assigner?.roles?.some(
+          (role) => role?.code === "OBPAS_LAYOUT_CMC"
+        )
+    );
 
   const isApplicationComplete = () => {
     const layout = applicationDetails?.Layout?.[0];
@@ -618,12 +616,12 @@ const hasCMCApproval =
         //   workflowDetails.revalidate()
         //   setSelectedAction(null)
         // } else 
-         if (filtData?.action) {
+        if (filtData?.action) {
           history.replace({
             pathname: `/digit-ui/citizen/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
             state: { data: response },
           })
-        }else{
+        } else {
           setShowToast({ key: "true", success: true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" })
           workflowDetails.revalidate()
           setSelectedAction(null);
@@ -660,129 +658,128 @@ const hasCMCApproval =
   // }
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, filestoreId = null, ...params }) {
-  try {
-    setLoading(true);
-    if (!filestoreId) {
-      const site = displayData?.siteDetails?.[0];
-      const owner = displayData?.owners?.[0];
-      const city = site?.district?.city;
+    try {
+      setLoading(true);
+      if (!filestoreId) {
+        const site = displayData?.siteDetails?.[0];
+        const owner = displayData?.owners?.[0];
+        const city = site?.district?.city;
 
-      const usage = site?.buildingCategory?.name;
-      const fee = payments?.totalAmountPaid;
-      const amountinwords = amountToWords(fee);
+        const usage = site?.buildingCategory?.name;
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
 
-      // --- core fields, single source each, no aliasing ---
-      const ulbType = site?.ulbType || city?.ulbType;
-      const ulbName = site?.ulbName || city?.ulbName;
-      const ulbGrade = city?.ulbGrade; // confirm exact codes: NP / MC / Corp
-      const districtName = city?.districtName;
-      const applicationNo = displayData?.applicationNo;
-      const rawSubmissionDate = applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
-      const submissionDate = rawSubmissionDate ? Number(rawSubmissionDate) : undefined;
-      const rawIssueDate = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate;
-      const issueDate = rawIssueDate ? Number(rawIssueDate) : undefined;
-      const colonyTypeName = usage;
-      const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
-      const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
-      const villageName = site?.villageName || site?.district?.villageName;
-      const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
+        // --- core fields, single source each, no aliasing ---
+        const ulbType = site?.ulbType || city?.ulbType;
+        const ulbName = site?.ulbName || city?.ulbName;
+        const ulbGrade = city?.ulbGrade; // confirm exact codes: NP / MC / Corp
+        const districtName = city?.districtName;
+        const applicationNo = displayData?.applicationNo;
+        const rawSubmissionDate = applicationDetails?.Layout?.[0]?.submissionDate || applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn;
+        const submissionDate = rawSubmissionDate ? Number(rawSubmissionDate) : undefined;
+        const rawIssueDate = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate;
+        const issueDate = rawIssueDate ? Number(rawIssueDate) : undefined;
+        const colonyTypeName = usage;
+        const proposedSiteAddress = site?.proposedSiteAddress || site?.district?.proposedSiteAddress;
+        const hadbastNo = site?.hadbastNo || site?.district?.hadbastNo;
+        const villageName = site?.villageName || site?.district?.villageName;
+        const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
 
-      const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
-      const applicantType = (
-        primaryOwner?.additionalDetails?.aplicantType?.code ||
-        primaryOwner?.additionalDetails?.applicantType?.code ||
-        "INDIVIDUAL"
-      ).toUpperCase();
+        const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
+        const applicantType = (
+          primaryOwner?.additionalDetails?.aplicantType?.code ||
+          primaryOwner?.additionalDetails?.applicantType?.code ||
+          "INDIVIDUAL"
+        ).toUpperCase();
 
-      const isFirm = applicantType !== "INDIVIDUAL";
+        const isFirm = applicantType !== "INDIVIDUAL";
 
-      // Authorized Person vs Owner Name
-      const rawAuthPerson = primaryOwner?.additionalDetails?.authorisedPerson || primaryOwner?.additionalDetails?.authorisedPersonName;
-      const authorisedPersonName = typeof rawAuthPerson === "object" ? rawAuthPerson?.name : rawAuthPerson;
+        // Authorized Person vs Owner Name
+        const rawAuthPerson = primaryOwner?.additionalDetails?.authorisedPerson || primaryOwner?.additionalDetails?.authorisedPersonName;
+        const authorisedPersonName = typeof rawAuthPerson === "object" ? rawAuthPerson?.name : rawAuthPerson;
 
-      const applicantName = isFirm
-        ? (authorisedPersonName || primaryOwner?.name || owner?.name || "")
-        : (primaryOwner?.name || owner?.name || "");
+        const applicantName = isFirm
+          ? (authorisedPersonName || primaryOwner?.name || owner?.name || "")
+          : (primaryOwner?.name || owner?.name || "");
 
-      // Firm / Company Name vs Individual Promoter
-      const firmName =
-        primaryOwner?.additionalDetails?.firmName ||
-        primaryOwner?.additionalDetails?.companyName ||
-        primaryOwner?.additionalDetails?.promoterFirmName ||
-        primaryOwner?.additionalDetails?.institutionName;
+        // Firm / Company Name vs Individual Promoter
+        const firmName =
+          primaryOwner?.additionalDetails?.firmName ||
+          primaryOwner?.additionalDetails?.companyName ||
+          primaryOwner?.additionalDetails?.promoterFirmName ||
+          primaryOwner?.additionalDetails?.institutionName;
 
-      const promoterFirmName = isFirm
-        ? (firmName || primaryOwner?.name || "")
-        : " ";
+        const promoterFirmName = isFirm
+          ? (firmName || primaryOwner?.name || "")
+          : " ";
 
-      const applicantAddress = primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
+        const applicantAddress = primaryOwner?.permanentAddress || primaryOwner?.correspondenceAddress || primaryOwner?.address || proposedSiteAddress || "N/A";
 
-      // --- derived once, reused for both officerDesignation and signatoryDesignation ---
-      const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm actual grade codes
-      const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
-      const signatoryDesignation = isSmallerUlb
-        ? t("SMALLER_ULB_DESIG")
-        : t("BIGGER_ULB_DESIG");
+        // --- derived once, reused for both officerDesignation and signatoryDesignation ---
+        const isSmallerUlb = ["NP", "MC"].includes(ulbGrade); // Nagar Panchayat or Municipal Council — confirm actual grade codes
+        const officerDesignation = isSmallerUlb ? t("SMALLER_ULB_OFFICER") : t("BIGGER_ULB_OFFICER");
+        const signatoryDesignation = isSmallerUlb
+          ? t("SMALLER_ULB_DESIG")
+          : t("BIGGER_ULB_DESIG");
 
-      // same isSmallerUlb split decides which name goes with the Competent Authority
-      const jurisdictionName = isSmallerUlb ? districtName : ulbName;
+        // same isSmallerUlb split decides which name goes with the Competent Authority
+        const jurisdictionName = isSmallerUlb ? districtName : ulbName;
 
-      // --- composed projectDescription (fill in Project Name once that field exists) ---
-      const projectDescription = `${proposedSiteAddress || ""} on Land Measuring Area ${areaSqm || ""} sqm, Situated at Hadbast No. ${
-        hadbastNo || ""
-      }, Village - ${villageName || ""}, ${ulbName || ""}, Punjab.`;
+        // --- composed projectDescription (fill in Project Name once that field exists) ---
+        const projectDescription = `${proposedSiteAddress || ""} on Land Measuring Area ${areaSqm || ""} sqm, Situated at Hadbast No. ${hadbastNo || ""
+          }, Village - ${villageName || ""}, ${ulbName || ""}, Punjab.`;
 
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        {
-          Payments: [
-            {
-              ...payments,
-              usage,
-              amountinwords,
-              applicationDetails,
-              ulbType,
-              ulbName,
-              ulbGrade,
-              districtName,
-              jurisdictionName,
-              officerDesignation,
-              signatoryDesignation,
-              applicantName,
-              applicationNo,
-              submissionDate,
-              issueDate,
-              colonyTypeName,
-              projectDescription,
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          {
+            Payments: [
+              {
+                ...payments,
+                usage,
+                amountinwords,
+                applicationDetails,
+                ulbType,
+                ulbName,
+                ulbGrade,
+                districtName,
+                jurisdictionName,
+                officerDesignation,
+                signatoryDesignation,
+                applicantName,
+                applicationNo,
+                submissionDate,
+                issueDate,
+                colonyTypeName,
+                projectDescription,
 
-              // still open / not sourced yet:
-              officeName: signatoryDesignation, // ADC/MC basis for the header still to be confirmed
-              officeSubLine: isSmallerUlb ? `Office Wing, ${districtName}` : `${ulbType} - ${ulbName}`,
-              applicantAddress,
-              promoterFirmName,
-              dcrNo: undefined, // placeholder pending scrutiny module
-              dcrApprovalDate: undefined,
-              complianceDays: undefined,
-              extensionDays: undefined,
-            },
-          ],
-        },
-        pdfkey
-      );
-      filestoreId = response?.filestoreIds[0];
+                // still open / not sourced yet:
+                officeName: signatoryDesignation, // ADC/MC basis for the header still to be confirmed
+                officeSubLine: isSmallerUlb ? `Office Wing, ${districtName}` : `${ulbType} - ${ulbName}`,
+                applicantAddress,
+                promoterFirmName,
+                dcrNo: undefined, // placeholder pending scrutiny module
+                dcrApprovalDate: undefined,
+                complianceDays: undefined,
+                extensionDays: undefined,
+              },
+            ],
+          },
+          pdfkey
+        );
+        filestoreId = response?.filestoreIds[0];
+      }
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+
+      if (!fileStore?.[filestoreId]?.length) {
+        fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+      }
+      window.open(fileStore[filestoreId], "_blank");
+    } catch (error) {
+      console.error("receipt download error:", error);
+    } finally {
+      setLoading(false);
     }
-    let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
-
-    if (!fileStore?.[filestoreId]?.length) {
-      fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
-    }
-    window.open(fileStore[filestoreId], "_blank");
-  } catch (error) {
-    console.error("receipt download error:", error);
-  } finally {
-    setLoading(false);
   }
-}
 
   const getTimelineCaptions = (checkpoint, index, arr) => {
     const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint
@@ -840,19 +837,19 @@ const hasCMCApproval =
   };
 
   // Helper function to render label-value pairs only when value exists
- const renderLabel = (label, value) => {
-     if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
-       return null;
-     }
- 
-     // Extract value from object if it has 'name' property
-     let displayValue = value;
-     if (typeof value === "object" && value !== null) {
-       displayValue = value?.name || value?.code || JSON.stringify(value);
-     }
- 
-     return <Row label={label} text={displayValue} />;
-   };
+  const renderLabel = (label, value) => {
+    if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
+      return null;
+    }
+
+    // Extract value from object if it has 'name' property
+    let displayValue = value;
+    if (typeof value === "object" && value !== null) {
+      displayValue = value?.name || value?.code || JSON.stringify(value);
+    }
+
+    return <Row label={label} text={displayValue} />;
+  };
 
   const RenderRow = ({ label, value }) => {
     if (!value) return null;
@@ -887,7 +884,6 @@ const hasCMCApproval =
         </div>
       </div>
 
-<<<<<<< HEAD
       <Card>
         <CardSubHeader>{t("OWNER_OWNERPHOTO") || "OWNER'S PHOTO"}</CardSubHeader>
         <CustomOwnerImage
@@ -902,7 +898,7 @@ const hasCMCApproval =
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL") || t("Application No")} text={id} />
           <Row label={t("Application Date")} text={applicationDetails?.Layout?.[0]?.auditDetails?.createdTime ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.auditDetails?.createdTime), "dd/MM/yyyy") : "N/A"} />
           {(applicationDetails?.Layout?.[0]?.applicationStatus !== "INITIATED") && (
-          <Row label={t("Application Submission Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn), "dd/MM/yyyy") : "N/A"} />
+            <Row label={t("Application Submission Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.SubmittedOn), "dd/MM/yyyy") : "N/A"} />
           )}
           {(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) && (
             <Row label={t("Application Approval Date")} text={(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate) ? Digit.DateUtils.ConvertTimestampToDate(Number(applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.approvalDate), "dd/MM/yyyy") : "N/A"} />
@@ -916,17 +912,17 @@ const hasCMCApproval =
           <Card key={index}>
             <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
 
-              <StatusTable>
+            <StatusTable>
 
-                <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
-                <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
-                <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
-                <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
-                <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
-                <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
+              <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={detail?.professionalName} />
+              <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={detail?.professionalEmailId} />
+              <RenderRow label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} value={detail?.professionalRegId} />
+              <RenderRow label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} value={detail?.professionalMobileNumber} />
+              <RenderRow label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} value={detail?.professionalAddress} />
+              <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
 
-              </StatusTable>
-            
+            </StatusTable>
+
           </Card>
         ))}
 
@@ -937,7 +933,7 @@ const hasCMCApproval =
           {/* <CardSubHeader>{t("Owners Details") || "Owners Details"}</CardSubHeader> */}
           {sortedOwners.map((applicant, index) => (
             <div key={index} style={{ marginBottom: "20px" }}>
-               <CardSubHeader>{index === 0 ? t("PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
+              <CardSubHeader>{index === 0 ? t("PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
               <StatusTable key={index}>
 
                 {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
@@ -957,31 +953,6 @@ const hasCMCApproval =
             </div>
           ))}
 
-=======
-      {/* 3️⃣ FEE DETAILS CARD */}
-    
-        <Card>
-          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-  {applicationDetails?.Layout?.[0]?.layoutDetails && (
-          <LayoutFeeEstimationDetails
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
-              },
-              siteDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
-              },
-            }}
-            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
-          />
-          )}
-          {hasPayments && (
-                <div style={{ marginTop: "16px" }}>
-                  <OBPSPaymentHistory payments={combinedPayments} />
-                </div>
-              )}
->>>>>>> MicroUI_PROD_Vite
         </Card>
       
 
@@ -994,121 +965,121 @@ const hasCMCApproval =
       <Card>
         <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          
-            <StatusTable key={index}>
-              {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
-              {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
-                <React.Fragment>
-                  {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
-                  {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
-                    renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
-                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
-                    renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
-                  {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
-                    <Row className="document-row"
-                      label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
-                      text={
-                        <DocumentLink
-                          fileStoreId={
-                            typeof detail?.cluDocumentUpload === "string"
-                              ? detail?.cluDocumentUpload
-                              : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
-                          }
-                          cluNumber={detail?.cluNumber}
-                          stateCode={stateCode}
-                          t={t}
-                        />
-                      }
-                    />
-                  )}
-                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
-                </React.Fragment>
-              )}
-              {/* {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && ( */}
-                <React.Fragment>
-                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
-                </React.Fragment>
-              {/* )} */}
-              {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
 
-              {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
-              {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
-              {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName || detail?.ulbName?.name)}
-              {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
-              {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
-              {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
-              {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
-              {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), detail?.wardNo)}
-              {renderLabel(t("Khatuni No."), detail?.khanutiNo)}
-              {renderLabel(t("BPA_KHASRA_NO_LABEL"), detail?.khasraNo)}
-              {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
-              {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
-              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
-              {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
-              {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
-              
-              
-              
-              {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
-              
-              {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
+          <StatusTable key={index}>
+            {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
+            {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
+              <React.Fragment>
+                {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
+                {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
+                  renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
+                {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
+                  renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
+                  <Row className="document-row"
+                    label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                    text={
+                      <DocumentLink
+                        fileStoreId={
+                          typeof detail?.cluDocumentUpload === "string"
+                            ? detail?.cluDocumentUpload
+                            : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
+                        }
+                        cluNumber={detail?.cluNumber}
+                        stateCode={stateCode}
+                        t={t}
+                      />
+                    }
+                  />
+                )}
+                {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
+              </React.Fragment>
+            )}
+            {/* {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && ( */}
+            <React.Fragment>
+              {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
+            </React.Fragment>
+            {/* )} */}
+            {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
+
+            {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
+            {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
+            {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName || detail?.ulbName?.name)}
+            {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
+            {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
+            {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
+            {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
+            {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), detail?.wardNo)}
+            {renderLabel(t("Khatuni No."), detail?.khanutiNo)}
+            {renderLabel(t("BPA_KHASRA_NO_LABEL"), detail?.khasraNo)}
+            {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
+            {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
+            {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
+            {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
+            {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
 
 
-              {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
-              {renderLabel(t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"), detail?.areaLeftForRoadWidening)}
-              {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
-              {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
-              {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWS)}
-              {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), detail?.areaUnderEWSInPct)}
-              {renderLabel(t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL"), detail?.netTotalArea)}
-              {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
-              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
-              {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
-              {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderResidentialUseInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), detail?.areaUnderCommercialUseInPct)}
-              {usage?.toLowerCase().includes("industrial") ? (
-                <React.Fragment>
-                  {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderIndustrialUseInSqM)}
-                  {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL"), detail?.areaUnderIndustrialUseInPct)}
-                </React.Fragment>
-              ) : (
-                <React.Fragment>
-                  {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
-                  {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
-                </React.Fragment>
-              )}
-              {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), detail?.areaUnderCommunityCenterInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), detail?.areaUnderCommunityCenterInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL"), detail?.areaUnderParkInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_PARK_IN_PCT_LABEL"), detail?.areaUnderParkInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_SQ_M_LABEL"), detail?.areaUnderRoadInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_PCT_LABEL"), detail?.areaUnderRoadInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_SQ_M_LABEL"), detail?.areaUnderParkingInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_PCT_LABEL"), detail?.areaUnderParkingInPct)}
-              {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_SQ_M_LABEL"), detail?.areaUnderOtherAmenitiesInSqM)}
-              {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
 
-              {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
-            </StatusTable>
+            {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
 
-          
+            {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
+
+
+            {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
+            {renderLabel(t("BPA_TOTAL_AREA_UNDER_LAYOUT_IN_SQ_M_LABEL"), detail?.areaLeftForRoadWidening)}
+            {renderLabel(t("BPA_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), detail?.netPlotAreaAfterWidening)}
+            {renderLabel(t("BPA_BALANCE_AREA_IN_SQ_M_LABEL"), parseFloat(detail?.areaLeftForRoadWidening - detail?.netPlotAreaAfterWidening))}
+            {renderLabel(t("BPA_AREA_UNDER_EWS_IN_SQ_M_LABEL"), detail?.areaUnderEWS)}
+            {renderLabel(t("BPA_AREA_UNDER_EWS_IN_PCT_LABEL"), detail?.areaUnderEWSInPct)}
+            {renderLabel(t("BPA_NET_SITE_AREA_IN_SQ_M_LABEL"), detail?.netTotalArea)}
+            {renderLabel(t("BPA_ROAD_WIDTH_AT_SITE_LABEL"), detail?.roadWidthAtSite)}
+            {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)}
+            {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL_TYPE"), detail?.residentialType?.name || detail?.buildingCategory?.name)}
+            {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderResidentialUseInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_RESIDENTIAL_USE_IN_PCT_LABEL"), detail?.areaUnderResidentialUseInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderCommercialUseInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMERCIAL_USE_IN_PCT_LABEL"), detail?.areaUnderCommercialUseInPct)}
+            {usage?.toLowerCase().includes("industrial") ? (
+              <React.Fragment>
+                {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderIndustrialUseInSqM)}
+                {renderLabel(t("BPA_AREA_UNDER_INDUSTRIAL_USE_IN_PCT_LABEL"), detail?.areaUnderIndustrialUseInPct)}
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_SQ_M_LABEL"), detail?.areaUnderInstutionalUseInSqM)}
+                {renderLabel(t("BPA_AREA_UNDER_INSTUTIONAL_USE_IN_PCT_LABEL"), detail?.areaUnderInstutionalUseInPct)}
+              </React.Fragment>
+            )}
+            {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_SQ_M_LABEL"), detail?.areaUnderCommunityCenterInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_COMMUNITY_CENTER_IN_PCT_LABEL"), detail?.areaUnderCommunityCenterInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_PARK_IN_SQ_M_LABEL"), detail?.areaUnderParkInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_PARK_IN_PCT_LABEL"), detail?.areaUnderParkInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_SQ_M_LABEL"), detail?.areaUnderRoadInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_ROAD_IN_PCT_LABEL"), detail?.areaUnderRoadInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_SQ_M_LABEL"), detail?.areaUnderParkingInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_PARKING_IN_PCT_LABEL"), detail?.areaUnderParkingInPct)}
+            {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_SQ_M_LABEL"), detail?.areaUnderOtherAmenitiesInSqM)}
+            {renderLabel(t("BPA_AREA_UNDER_OTHER_AMENITIES_IN_PCT_LABEL"), detail?.areaUnderOtherAmenitiesInPct)}
+
+            {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
+          </StatusTable>
+
+
         ))}
       </Card>
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
-            <Card>
-              <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
-               {displayData?.siteDetails?.map((detail, index) => (
-                   <StatusTable key={index}>
-                     {renderLabel(t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"), detail?.specificationPlotArea)}
-                  </StatusTable>
-                        ))}
-            </Card>
-  
+      <Card>
+        <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
+        {displayData?.siteDetails?.map((detail, index) => (
+          <StatusTable key={index}>
+            {renderLabel(t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"), detail?.specificationPlotArea)}
+          </StatusTable>
+        ))}
+      </Card>
 
-      
+
+
 
       {/* 1️⃣ SITE COORDINATES CARD */}
       {displayData?.coordinates && displayData.coordinates.length > 0 && (
@@ -1141,65 +1112,65 @@ const hasCMCApproval =
         <Card>
           <CardSubHeader>{t("LAYOUT_DOCUMENTS_UPLOADED")}</CardSubHeader>
           {/* <StatusTable> */}
-            {/* <LayoutDocumentView documents={displayData.Documents} /> */}
-            <LayoutDocumentTableView documents={displayData?.Documents?.filter((doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO")} />
+          {/* <LayoutDocumentView documents={displayData.Documents} /> */}
+          <LayoutDocumentTableView documents={displayData?.Documents?.filter((doc) => doc.documentType != "OWNER.SITEPHOTOGRAPHONE" && doc.documentType != "OWNER.SITEPHOTOGRAPHTWO")} />
           {/* </StatusTable> */}
         </Card>
       )}
 
-       {/* 3️⃣ FEE DETAILS CARD */}
-    
-        <Card>
-          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-  {applicationDetails?.Layout?.[0]?.layoutDetails && (
-    <>
-     <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
-     {/* <StatusTable> */}
-          <LayoutFeeEstimationDetails
-            formData={{
-              apiData: { ...applicationDetails },
-              applicationDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
-              },
-              siteDetails: {
-                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
-              },
-            }}
-            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
-            hasPayments={reciept_data?.Payments?.length > 0}
-          />
-          {/* </StatusTable> */}
-          </>
-          )}
-          {hasPayments && (
-                <div style={{ marginTop: "16px" }}>
-                  <OBPSPaymentHistory payments={combinedPayments} />
-                </div>
-              )}
-        
+      {/* 3️⃣ FEE DETAILS CARD */}
 
-       {hasCMCApproval && (
-                <>
-                  <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY2")}</CardSubHeader>
-                  {applicationDetails?.Layout?.[0]?.layoutDetails && (
-                    <LayoutFeeEstimationDetailsTable
-                      formData={{
-                        apiData: { ...applicationDetails },
-                        applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
-                        siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
-                        calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
-                      }}
-                      feeType="PAY2"
-                      feeAdjustments={feeAdjustments}
-                      setFeeAdjustments={setFeeAdjustments}
-                      disable={true}
-                    />
-                  )}
-                  </>
-               
-              )}
-               </Card>
-      
+      <Card>
+        <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+        {applicationDetails?.Layout?.[0]?.layoutDetails && (
+          <>
+            <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
+            {/* <StatusTable> */}
+            <LayoutFeeEstimationDetails
+              formData={{
+                apiData: { ...applicationDetails },
+                applicationDetails: {
+                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+                },
+                siteDetails: {
+                  ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+                },
+              }}
+              feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
+              hasPayments={reciept_data?.Payments?.length > 0}
+            />
+            {/* </StatusTable> */}
+          </>
+        )}
+        {hasPayments && (
+          <div style={{ marginTop: "16px" }}>
+            <OBPSPaymentHistory payments={combinedPayments} />
+          </div>
+        )}
+
+
+        {hasCMCApproval && (
+          <>
+            <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY2")}</CardSubHeader>
+            {applicationDetails?.Layout?.[0]?.layoutDetails && (
+              <LayoutFeeEstimationDetailsTable
+                formData={{
+                  apiData: { ...applicationDetails },
+                  applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+                  siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+                  calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
+                }}
+                feeType="PAY2"
+                feeAdjustments={feeAdjustments}
+                setFeeAdjustments={setFeeAdjustments}
+                disable={true}
+              />
+            )}
+          </>
+
+        )}
+      </Card>
+
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
       {/* <Card>
@@ -1224,7 +1195,7 @@ const hasCMCApproval =
 
 
       <div id="timeline">
-        <NewApplicationTimeline workflowDetails={workflowDetails} prefix={prefix} Statusprefix={Statusprefix} t={t} timeObj={timeObj}/>
+        <NewApplicationTimeline workflowDetails={workflowDetails} prefix={prefix} Statusprefix={Statusprefix} t={t} timeObj={timeObj} />
       </div>
 
       {actions && actions.length > 0 && (

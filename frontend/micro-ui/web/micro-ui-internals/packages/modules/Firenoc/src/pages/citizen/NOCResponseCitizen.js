@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../../utils";
-import  getNOCSanctionLetter  from "../../utils/getNOCSanctionLetter";
+import getNOCSanctionLetter from "../../utils/getNOCSanctionLetter";
 
 const NOCResponseCitizen = (props) => {
   const location = useLocation();
@@ -37,35 +37,26 @@ const NOCResponseCitizen = (props) => {
   };
 
   const handlePayment = () => {
-<<<<<<< HEAD
-    
-      history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
-    
-=======
-    if (nocData && Object.keys(nocData)?.length > 0 && nocCode) {
-      history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
-    } else {
-      alert(t("No data found for application"));
-      return
-    }
->>>>>>> MicroUI_PROD_Vite
+
+    history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${nocCode}?tenantId=${tenantId}`);
+
   };
 
   const getFirenocNocApplication = async () => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter({application:nocData, t:t});
+      const nocSanctionData = await getNOCSanctionLetter({ application: nocData, t: t });
       let filestoreID = null;
-        try {
-          const response = await Digit.PaymentService.generatePdf(
-            tenantId,
-            { Payments: [{ Noc: nocSanctionData.Noc , tenantId }] },
-            "firenoc-application"
-          );
-          filestoreID = response?.filestoreIds[0];
-        } finally {
-          setLoading(false);
-        }
+      try {
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ Noc: nocSanctionData.Noc, tenantId }] },
+          "firenoc-application"
+        );
+        filestoreID = response?.filestoreIds[0];
+      } finally {
+        setLoading(false);
+      }
 
       const fileStore = await Digit.PaymentService.printReciept(tenantId, {
         fileStoreIds: filestoreID,

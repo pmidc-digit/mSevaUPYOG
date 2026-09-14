@@ -322,8 +322,9 @@ function ApplicationDetailsContent({
           d: (res) => {
             let resultstring = "";
             // <CHANGE> Try both assigner and assignes paths
-            resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assigner.mobileNumber`) || _.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)
-              }`;
+            resultstring = `+91 ${
+              _.get(res, `ProcessInstances[${index}].assigner.mobileNumber`) || _.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)
+            }`;
             return resultstring;
           },
         },
@@ -337,7 +338,7 @@ function ApplicationDetailsContent({
         name: checkpoint?.assigner?.name || checkpoint?.assignes?.[0]?.name || "N/A",
         mobileNumber:
           applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assigner?.uuid &&
-            applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+          applicationData?.processInstance?.assignes?.[0]?.mobileNumber
             ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
             : checkpoint?.assigner?.mobileNumber || checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
         comment: checkpoint?.comment ? t(checkpoint.comment) : "",
@@ -461,6 +462,10 @@ function ApplicationDetailsContent({
     setShowToast(null);
   };
 
+  const propertyDocuments = applicationDetails?.applicationDetails
+    ?.flatMap((detail) => detail?.additionalDetails?.documents || [])
+    ?.filter((document) => document?.values?.length > 0);
+
   // (Redirect handled centrally in ApplicationDetails template on mutation success)
 
   // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
@@ -489,27 +494,26 @@ function ApplicationDetailsContent({
         moduleName: "PT",
       },
     };
-    try {
-      const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
-      if (response && response.Properties && response.Properties.length > 0) {
-        if (status === "INACTIVE") {
-          alert("Application is in workflow first approve the application");
-        } else {
-          alert(`Property marked as ${status} successfully!`);
-        }
-        window.location.reload();
-      } else {
-        alert("Failed to update property status.");
-      }
-    } catch (err) {
-      console.error("Error updating property status:", err);
-      alert(`Something went wrong while making the property ${status}.`);
-    }
+    // try {
+    const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
+    //   const result = await response.json();
+    //   if (response.ok) {
+    //     alert(`Property marked as ${status} successfully!`);
+    //   } else {
+    //     alert("Failed to update property status.");
+    //     console.error(result);
+    //   }
+    // }
+    //  catch (err) {
+    //   console.error("Error inactivating property:", err);
+    //   alert(`Something went wrong while making the property ${status}.`);
+    // }
   };
 
   const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = currentPropertyId || "";
   const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
+<<<<<<< HEAD
 <<<<<<< HEAD
   const propertyDocumentValues =
     propertySearchData?.Properties?.[0]?.documents ||
@@ -541,6 +545,8 @@ function ApplicationDetailsContent({
       ]
 >>>>>>> MicroUI_PROD_Vite
     : [];
+=======
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
   const PropertyInActive = () => {
     if (window.location.href.includes("employee")) {
       if (propertyStatus !== "ACTIVE") {
@@ -601,8 +607,13 @@ function ApplicationDetailsContent({
     // alert("edit property");
   };
   const AccessProperty = () => {
-    if (["INACTIVE", "INWORKFLOW"].includes(propertyStatus?.toUpperCase())) {
-      alert("This operation is not allowed as Property is in INWORKFLOW or Inactive.");
+    const propertyStatus = applicationDetails?.applicationData?.status;
+    if (propertyStatus === "INWORKFLOW" || propertyStatus === "INACTIVE") {
+      setShowAccessModal(false);
+      setShowToast({
+        isError: true,
+        label: "This action cannot be done on Inactive property or the property in workflow",
+      });
       return;
     }
 
@@ -644,7 +655,7 @@ function ApplicationDetailsContent({
     if (moduleCode === "TL") {
       const appNo = applicationData?.applicationNumber;
       if (!appNo) return;
-      Digit.PaymentService.recieptSearch(applicationData?.tenantId || tenantId, "TL", { consumerCodes: appNo })
+      Digit.PaymentService.recieptSearch(tenantId, "TL", { consumerCodes: appNo })
         .then((response) => {
           console.log("TL Payment History response:", response);
           if (response?.Payments?.length > 0) {
@@ -658,32 +669,29 @@ function ApplicationDetailsContent({
     }
 
     // Only proceed for PT and BPREG modules
-    if (!currentPropertyId && !propertyId) {
+    if (!propertyId) {
       return;
     }
 
     try {
-      const consumerCodesList = [currentPropertyId, propertyId].filter((value, index, self) => value && self.indexOf(value) === index);
       let filters = {
-        consumerCodes: consumerCodesList.join(","),
+        consumerCodes: propertyId,
       };
       const auth = true;
 
-      const actualQueryTenantId = applicationData?.tenantId || tenantId;
-
       if (moduleCode === "BPAREG") {
-        Digit.OBPSService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth }).then((response) => {
+        Digit.OBPSService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
           setPayments(response?.Payments);
         });
       } else if (moduleCode === "PT") {
-        Digit.PTService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth }).then((response) => {
+        Digit.PTService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
           setPayments(response?.Payments);
         });
       }
     } catch (error) {
       console.error("❌ Payment search error for PT/BPREG:", error);
     }
-  }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber, applicationData?.tenantId]);
+  }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber]);
   return (
     <Card style={{ position: "relative" }}>
       {/* For UM-4418 changes */}
@@ -927,16 +935,9 @@ function ApplicationDetailsContent({
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
-      {showHistory && assessmentDetails?.length > 0 && (
-        <AssessmentHistory
-          assessmentData={filtered}
-          propertyId={currentPropertyId}
-          tenantId={applicationData?.tenantId || tenantId}
-          propertyStatus={propertyStatus}
-          applicationData={applicationData}
-        />
-      )}
+      {showHistory && assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
       {showHistory && <PaymentHistory payments={payments} />}
+<<<<<<< HEAD
 <<<<<<< HEAD
       {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG" && moduleCode !== "TL" && (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
@@ -951,6 +952,12 @@ function ApplicationDetailsContent({
         moduleCode !== "TL" && <ApplicationHistory applicationData={applicationDetails?.applicationData} />}
 >>>>>>> MicroUI_PROD_Vite
       {isPTLocation && propertyDocuments.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
+=======
+      {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
+        <ApplicationHistory applicationData={applicationDetails?.applicationData} />
+      )}
+      {window.location.href.includes("/pt/") && propertyDocuments?.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
@@ -992,7 +999,8 @@ function ApplicationDetailsContent({
                                 isCompleted={index === 0}
                                 info={checkpoint.comment}
                                 label={t(
-                                  `${timelineStatusPrefix}${checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
+                                  `${timelineStatusPrefix}${
+                                    checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
                                   }${timelineStatusPostfix}`
                                 )}
                                 customChild={getTimelineCaptions(checkpoint, index, workflowDetails?.data?.timeline)}
@@ -1014,8 +1022,9 @@ function ApplicationDetailsContent({
         </React.Fragment>
       )}
 
-      {window.location.href.includes("/pt/") ? (
+       {window.location.href.includes("/pt/") ? (
         <ActionBar className="clear-search-container">
+<<<<<<< HEAD
 <<<<<<< HEAD
           {window.location.href.includes("/employee/") && (
             <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
@@ -1030,15 +1039,27 @@ function ApplicationDetailsContent({
                 <circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
               </svg>
             } onClick={PropertyInActive} />)}
+=======
+          <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          } onClick={PropertyActive} />
+          <PTActionButton label="Make Inactive" color="#B5451B" hoverColor="#8f3415" icon={
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+          } onClick={PropertyInActive} />
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
           <PTActionButton label="Edit Property" color="#1A5CA8" hoverColor="#134a8a" icon={
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
           } onClick={EditProperty} />
           <PTActionButton label="Access Property" color="#003C71" hoverColor="#002554" icon={
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
             </svg>
           } onClick={AccessProperty} />
 =======
@@ -1164,3 +1185,7 @@ function ApplicationDetailsContent({
 }
 
 export default ApplicationDetailsContent;
+<<<<<<< HEAD
+=======
+
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)

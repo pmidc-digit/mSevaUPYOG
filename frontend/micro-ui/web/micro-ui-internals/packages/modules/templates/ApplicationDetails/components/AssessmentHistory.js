@@ -1,15 +1,21 @@
 import React, { useState } from 'react'
-import { useHistory } from 'react-router-dom';
 
+<<<<<<< HEAD
 const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatus, applicationData }) => {
     const history = useHistory();
     const isEmployee = window.location.href.includes("employee");
+=======
+const AssessmentHistory = ({ assessmentData }) => {
+
+
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleAccordion = () => {
         setIsOpen(!isOpen);
     };
 
+<<<<<<< HEAD
     const handleReassess = (assessment) => {
         if (["INACTIVE", "INWORKFLOW"].includes(propertyStatus?.toUpperCase())) {
             alert("This operation is not allowed as Property is in INWORKFLOW or Inactive.");
@@ -53,6 +59,14 @@ const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatu
         const options = { day: '2-digit', month: 'short', year: 'numeric' };
         return date.toLocaleDateString('en-GB', options).replace(/ /g, '-');
     }
+=======
+    
+function formatAssessmentDate(timestamp) {
+  const date = new Date(timestamp);
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  return date.toLocaleDateString('en-GB', options).replace(/ /g, '-');
+}
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
 
     return (
         <div className="accordion" style={{
@@ -62,7 +76,7 @@ const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatu
             fontFamily: "Roboto, sans-serif",
             border: "1px solid #ccc",
             borderRadius: "4px",
-            marginBottom: '10px'
+            marginBottom:'10px'
         }}>
             <div className="accordion-header"
                 style={{
@@ -84,56 +98,55 @@ const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatu
             </div>
             {isOpen && (
                 <div className="accordion-body" style={{ padding: " 15px", backgroundColor: "#fff" }}>
-                    {[...assessmentData]
-                        .sort((firstAssessment, secondAssessment) => secondAssessment.assessmentDate - firstAssessment.assessmentDate)
-                        .map((assessment, index) => (
-                            <div key={index} className="assessment-item" style={{ marginBottom: "15px" }}>
-                                <div className="assessment-row" style={{
+                    {assessmentData.map((assessment, index) => (
+                        <div key={index} className="assessment-item" style={{ marginBottom: "15px" }}>
+                            <div className="assessment-row" style={{
 
-                                    display: "flex",
-                                    gap: "100px",
-                                    marginBottom: "8px",
+                                display: "flex",
+                                gap: "100px",
+                                marginBottom: "8px",
+                               
+
+                            }}>
+                                <span style={{ fontWeight: "bold", minWidth: '60px', color:'black' }}>Assessment Date</span>
+                                <span style={{ flex: '1', color:'black' }}>{formatAssessmentDate(assessment.assessmentDate)}</span>
+                            </div>
+
+                             <div className="assessment-row" style={{
+
+                                display: "flex",
+                                gap: "100px",
+                                marginBottom: "8px",
+                                 color:'black'
+
+                            }}>
+                                <span className="label" style={{ fontWeight: "bold", minWidth: '60px', color:'black' }}>Assessment Year</span>
+                                <span className='value' style={{ flex: '1', color:'black' }}>{assessment.financialYear}</span>
+                            </div>
+
+                             <div className="assessment-row with-buttons" style={{
+
+                                display: "flex",
+                              //  gap: "100px",
+                                marginBottom: "8px",
+                                
+                               justifyContent: "space-between",
+                               alignItems: "center",
+             
 
 
-                                }}>
-                                    <span style={{ fontWeight: "bold", minWidth: '60px', color: 'black' }}>Assessment Date</span>
-                                    <span style={{ flex: '1', color: 'black', fontSize: '18px', fontWeight: '600' }}>{formatAssessmentDate(assessment.assessmentDate)}</span>
+                            }}>
+                                <div style={{display:'flex',gap:'75px'}}>
+                                <span className="label" style={{ fontWeight: "bold", minWidth: '60px', color:'black' }}>Assessment Number</span>
+                                <span className='value' style={{ flex: '1', color:'black' }}>{assessment.assessmentNumber}</span>
                                 </div>
-
-                                <div className="assessment-row" style={{
-
-                                    display: "flex",
-                                    gap: "100px",
-                                    marginBottom: "8px",
-                                    color: 'black'
-
-                                }}>
-                                    <span className="label" style={{ fontWeight: "bold", minWidth: '60px', color: 'black' }}>Assessment Year</span>
-                                    <span className='value' style={{ flex: '1', color: 'black' }}>{assessment.financialYear}</span>
-                                </div>
-
-                                <div className="assessment-row with-buttons" style={{
-
-                                    display: "flex",
-                                    //  gap: "100px",
-                                    marginBottom: "8px",
-
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-
-
-
-                                }}>
-                                    <div style={{ display: 'flex', gap: '75px' }}>
-                                        <span className="label" style={{ fontWeight: "bold", minWidth: '60px', color: 'black' }}>Assessment Number</span>
-                                        <span className='value' style={{ flex: '1', color: 'black' }}>{assessment.assessmentNumber}</span>
-                                    </div>
-
-                                    {/* <p><strong>Date:</strong> {assessment.assessmentDate}</p>
+                           
+                            {/* <p><strong>Date:</strong> {assessment.assessmentDate}</p>
                             <p><strong>Year:</strong> {assessment.financialYear}</p>
                             <p><strong>Number:</strong> {assessment.assessmentNumber}</p> */}
-                                    {/* <button onClick={() => alert(`Re-assessing ${assessment.assessmentNumber}`)}>Re-assess</button>
+                            {/* <button onClick={() => alert(`Re-assessing ${assessment.assessmentNumber}`)}>Re-assess</button>
                             <button onClick={() => alert(`Cancelled ${assessment.assessmentNumber}`)}>Cancel</button> */}
+<<<<<<< HEAD
 <<<<<<< HEAD
 
                                     <div className="button-group" style={{ display: 'flex', gap: '10px' }}>
@@ -161,12 +174,21 @@ const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatu
 <div className="button-group" style={{display:'flex',gap:'10px'}}>
           <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} onClick={() => handleReassess(assessment)}>Re-assess</button>
         { isEmployee &&   <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}} onClick={() => handleCancel(assessment)}>Cancel</button> }
+=======
+                            
+<div className="button-group" style={{display:'flex',gap:'10px'}}>
+          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} onClick={() => alert(`Re-assessing ${assessment.number}`)}>Re-assess</button>
+          <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}onClick={() => alert(`Cancelled ${assessment.number}`)}>Cancel</button>
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
         </div>
 </div>
                           {index!==(assessmentData.length - 1) &&  <hr />}
                         </div>
                     ))}
+<<<<<<< HEAD
 >>>>>>> MicroUI_PROD_Vite
+=======
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
                 </div>
             )}
         </div>

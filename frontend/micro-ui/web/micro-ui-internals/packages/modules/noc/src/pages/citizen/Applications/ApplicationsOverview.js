@@ -139,8 +139,8 @@ const CitizenApplicationOverview = () => {
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
       ? {
-          documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
-        }
+        documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
+      }
       : {}
   );
 
@@ -541,9 +541,9 @@ const CitizenApplicationOverview = () => {
 
     return conditionText
       ? {
-          ConditionLine: "The above approval is subjected to the following conditions:\n",
-          ConditionText: conditionText,
-        }
+        ConditionLine: "The above approval is subjected to the following conditions:\n",
+        ConditionText: conditionText,
+      }
       : "";
   }, [workflowDetails]);
 
@@ -826,11 +826,7 @@ const CitizenApplicationOverview = () => {
           const isOffline = existNocCode === "OFFLINE";
 
           return (
-<<<<<<< HEAD
             <div key={index} className="noc-pages-citizen-applications-applications-overview--style-7">
-=======
-            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
->>>>>>> MicroUI_PROD_Vite
               <StatusTable>
                 <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
                 <Row
@@ -839,11 +835,7 @@ const CitizenApplicationOverview = () => {
                 />
 
                 <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
-<<<<<<< HEAD
                 {(isFinalNoc || isDigitizationOfManual) && (
-=======
-                {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
->>>>>>> MicroUI_PROD_Vite
                   <React.Fragment>
                     {isFinalNoc && (
                       <Row
@@ -851,21 +843,13 @@ const CitizenApplicationOverview = () => {
                         text={
                           detail?.existingNocType?.name ||
                           detail?.existingNocType?.code ||
-<<<<<<< HEAD
                           (typeof detail?.existingNocType === "string" ? detail?.existingNocType : "N/A")
-=======
-                          (typeof detail?.existingNocType === "string" && detail?.existingNocType ? detail?.existingNocType : "N/A")
->>>>>>> MicroUI_PROD_Vite
                         }
                       />
                     )}
                     <Row label={t("NOC_NUMBER_LABEL")} text={detail?.existingNocNumber || "N/A"} />
                     {(isOffline || isDigitizationOfManual) && (
-<<<<<<< HEAD
                       <Row label={t("NOC_DATE_LABEL")} text={detail?.existingNocDate || "N/A"} />
-=======
-                      <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(detail?.existingNocDate) || detail?.existingNocDate || "N/A"} />
->>>>>>> MicroUI_PROD_Vite
                     )}
                     {detail?.existingNocDocument && (
                       <Row
@@ -1053,7 +1037,7 @@ const CitizenApplicationOverview = () => {
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}
-              // style={MenuStyle}
+            // style={MenuStyle}
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

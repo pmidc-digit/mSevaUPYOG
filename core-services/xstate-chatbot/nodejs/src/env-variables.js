@@ -44,6 +44,8 @@ const envVariables = {
 
         kafkaConsumerEnabled: process.env.KAFKA_CONSUMER_ENABLED || true,
         kafkaConsumerGroupId: process.env.KAFKA_CONSUMER_GROUP_ID || 'xstate-chatbot',
+        sessionTimeout: parseInt(process.env.KAFKA_SESSION_TIMEOUT) || 60000,
+        heartbeatInterval: parseInt(process.env.KAFKA_HEARTBEAT_INTERVAL) || 3000,
     },
 
     kaleyra: {

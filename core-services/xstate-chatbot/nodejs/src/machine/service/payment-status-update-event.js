@@ -20,17 +20,26 @@ class PaymentStatusUpdateEventFormatter{
     let consumerGroup = new kafka.ConsumerGroup(consumerGroupOptions, topicList);
     let self = this;
     consumerGroup.on('message', function(message) {
+      try {
         if(message.topic === config.billsAndReceiptsUseCase.paymentUpdateTopic) {
-          let paymentRequest = JSON.parse(message.value);
+          let paymentRequest;
+          try {
+            paymentRequest = typeof message.value === 'string' ? JSON.parse(message.value) : message.value;
+          } catch (parseErr) {
+            console.error('Failed to parse payment message JSON:', parseErr.message);
+            return;
+          }
 
-          if(paymentRequest.Payment.additionalDetails && paymentRequest.Payment.additionalDetails.isWhatsapp){
+          let payment = paymentRequest && (paymentRequest.Payment || (Array.isArray(paymentRequest.Payments) && paymentRequest.Payments[0]));
+
+          if(payment && payment.additionalDetails && (payment.additionalDetails.isWhatsapp === true || payment.additionalDetails.isWhatsapp === 'true')){
 
             self.paymentStatusMessage(paymentRequest)
             .then(() => {
                 console.log("payment message sent to citizen");        // TODO: Logs to be removed
             })
             .catch(error => {
-                console.error('error while sending event message');
+                console.error('error while sending event message:', error.message);
                 console.error(error.stack || error);
             });
 
@@ -39,166 +48,196 @@ class PaymentStatusUpdateEventFormatter{
         }
 
         if(message.topic === config.billsAndReceiptsUseCase.pgUpdateTransaction){
-          let transactionRequest = JSON.parse(message.value);
-          let status = transactionRequest.Transaction.txnStatus;
+          let transactionRequest;
+          try {
+            transactionRequest = typeof message.value === 'string' ? JSON.parse(message.value) : message.value;
+          } catch (parseErr) {
+            console.error('Failed to parse transaction message JSON:', parseErr.message);
+            return;
+          }
 
-          if(status === 'FAILURE' && transactionRequest.Transaction.additionalDetails.isWhatsapp){
+          let transaction = transactionRequest && transactionRequest.Transaction;
+          let status = transaction && transaction.txnStatus;
+
+          if(status === 'FAILURE' && transaction && transaction.additionalDetails && (transaction.additionalDetails.isWhatsapp === true || transaction.additionalDetails.isWhatsapp === 'true')){
               self.prepareTransactionFailedMessage(transactionRequest)
               .then(() => {
                 console.log("transaction failed message sent to citizen");        // TODO: Logs to be removed
               })
               .catch(error => {
-                console.error('error while sending event message');
+                console.error('error while sending event message:', error.message);
                 console.error(error.stack || error);
             });
           }
         }
-
+      } catch (unhandledErr) {
+        console.error('Unhandled error in payment consumer message handler:', unhandledErr.message);
+        console.error(unhandledErr.stack || unhandledErr);
+      }
     });
     consumerGroup.on('error', (error) => {
         console.error('Kafka consumer group error:', error.message);
         console.error(error.stack || error);
     });
-}
+  }
 
   async paymentStatusMessage(request){
-    let payment = request.Payment;
-    let locale = config.supportedLocales.split(',');
-    locale = locale[0];
-    let user = await userService.getUserForMobileNumber(payment.mobileNumber, config.rootTenantId);
-    let userId = user.userId;
-    let chatState = await chatStateRepository.getActiveStateForUserId(userId);
-    if(chatState)
-      locale = chatState.context.user.locale;
-  
-    if(payment.additionalDetails && payment.additionalDetails.isWhatsapp){
-      let tenantId = payment.tenantId;
-      tenantId = tenantId.split(".")[0]; 
-
-      let businessService = payment.paymentDetails[0].businessService;
-      let consumerCode    = payment.paymentDetails[0].bill.consumerCode;
-      let isOwner = true;
-      let ownerMobileNumberList = [];
-      let key;
-      if(businessService === 'TL')
-        key = 'tradelicense-receipt';
-
-      else if(businessService === 'PT'){
-        key = 'property-receipt';
-        let result = await this.getPTOwnerDetails(consumerCode, payment.tenantId, payment.mobileNumber, user.authToken);
-        isOwner = result.isMobileNumberPresent;
-        ownerMobileNumberList = result.ownerMobileNumberList;
-      }
-      
-      else if(businessService === 'WS' || businessService === 'SW'){
-        key = 'ws-onetime-receipt';
-        let result = await this.getWnsOwnerDeatils(consumerCode, payment.tenantId, businessService, payment.mobileNumber, user.authToken);
-        isOwner = result.isMobileNumberPresent;
-        ownerMobileNumberList = result.ownerMobileNumberList;
+    try {
+      let payment = request && (request.Payment || (Array.isArray(request.Payments) && request.Payments[0]));
+      if (!payment) {
+        console.warn("paymentStatusMessage: No Payment object found in request");
+        return;
       }
 
-      else
-        key = 'consolidatedreceipt';
-   
+      let locale = config.supportedLocales.split(',');
+      locale = locale[0];
+      let user = await userService.getUserForMobileNumber(payment.mobileNumber, config.rootTenantId);
+      let userId = user ? user.userId : null;
+      let chatState = userId ? await chatStateRepository.getActiveStateForUserId(userId) : null;
+      if(chatState && chatState.context && chatState.context.user && chatState.context.user.locale)
+        locale = chatState.context.user.locale;
+    
+      if(payment.additionalDetails && (payment.additionalDetails.isWhatsapp === true || payment.additionalDetails.isWhatsapp === 'true')){
+        let tenantId = payment.tenantId;
+        if(tenantId) tenantId = tenantId.split(".")[0]; 
 
-      let pdfUrl = config.egovServices.egovServicesHost + 'pdf-service/v1/_create';
-      pdfUrl = pdfUrl + '?key='+key+ '&tenantId=' + tenantId;
-
-      let msgId = request.RequestInfo.msgId.split('|');
-      msgId = msgId[0] + '|' + locale; 
-
-      let requestBody = {
-        RequestInfo: {
-          authToken: user.authToken,
-          msgId: msgId,
-          userInfo: user.userInfo
-        },
-        Payments:[]
-      };
-      requestBody.Payments.push(payment);
-      console.log("Before PT receipt custom changes: " + JSON.stringify(requestBody));
-
-      if(businessService === 'PT'){
-        this.ptreceipt(requestBody);
-      }
-      console.log("After PT receipt custom changes: " + JSON.stringify(requestBody));
-      console.log("URL: "+ pdfUrl);
-      console.log("user token: "+ user.authToken);
-
-      let options = {
-        method: 'POST',
-        origin: '*',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      }
-      let response = await fetch(pdfUrl, options);
-      if(response.status == 201){
-        let responseBody = await response.json();
-        let user = {
-          mobileNumber: payment.mobileNumber
-        };
-        let extraInfo = {
-          whatsAppBusinessNumber: config.whatsAppBusinessNumber.slice(2),
-          fileName: key
-        };
-
-        if(isOwner){
-          chatState.context.bills.paidBy = 'OWNER'
+        if(!payment.paymentDetails || !payment.paymentDetails[0]){
+          console.warn("paymentStatusMessage: No paymentDetails found in payment object");
+          return;
         }
+
+        let businessService = payment.paymentDetails[0].businessService;
+        let consumerCode    = payment.paymentDetails[0].bill ? payment.paymentDetails[0].bill.consumerCode : null;
+        let isOwner = true;
+        let ownerMobileNumberList = [];
+        let key;
+        let authToken = user ? user.authToken : '';
+        if(businessService === 'TL')
+          key = 'tradelicense-receipt';
+
+        else if(businessService === 'PT'){
+          key = 'property-receipt';
+          let result = await this.getPTOwnerDetails(consumerCode, payment.tenantId, payment.mobileNumber, authToken);
+          isOwner = result.isMobileNumberPresent;
+          ownerMobileNumberList = result.ownerMobileNumberList;
+        }
+        
+        else if(businessService === 'WS' || businessService === 'SW'){
+          key = 'ws-onetime-receipt';
+          let result = await this.getWnsOwnerDeatils(consumerCode, payment.tenantId, businessService, payment.mobileNumber, authToken);
+          isOwner = result.isMobileNumberPresent;
+          ownerMobileNumberList = result.ownerMobileNumberList;
+        }
+
         else
-          chatState.context.bills.paidBy = 'OTHER'
+          key = 'consolidatedreceipt';
+     
 
-        let active = !chatState.done;
-        await chatStateRepository.updateState(user.userId, active, JSON.stringify(chatState), new Date().getTime());
+        let pdfUrl = config.egovServices.egovServicesHost + 'pdf-service/v1/_create';
+        pdfUrl = pdfUrl + '?key='+key+ '&tenantId=' + tenantId;
 
+        let msgId = (request.RequestInfo && request.RequestInfo.msgId) 
+          ? request.RequestInfo.msgId.split('|')[0] + '|' + locale 
+          : config.msgId + '|' + locale; 
 
-        let waitMessage = [];
-        var messageContent = {
-          output: dialog.get_message(messageBundle.wait,locale),
-          type: "text"
+        let requestBody = {
+          RequestInfo: {
+            authToken: authToken,
+            msgId: msgId,
+            userInfo: user ? user.userInfo : null
+          },
+          Payments:[]
         };
-        waitMessage.push(messageContent);
-        await valueFirst.sendMessageToUser(user, waitMessage, extraInfo);
+        requestBody.Payments.push(payment);
+        console.log("Before PT receipt custom changes: " + JSON.stringify(requestBody));
 
-        let message = [];
-        var pdfContent = {
-          output: responseBody.filestoreIds[0],
-          type: "pdf"
-        };
-        message.push(pdfContent);
-        await valueFirst.sendMessageToUser(user, message, extraInfo);
+        if(businessService === 'PT'){
+          this.ptreceipt(requestBody);
+        }
+        console.log("After PT receipt custom changes: " + JSON.stringify(requestBody));
+        console.log("URL: "+ pdfUrl);
+        console.log("user token: "+ authToken);
 
-        let payBillmessage = [];
-        let templateContent = await this.prepareSucessMessage(payment, locale, isOwner);
-        payBillmessage.push(templateContent);
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        await valueFirst.sendMessageToUser(user, payBillmessage, extraInfo);
-
-        if(!isOwner){
-          /*let question = dialog.get_message(messageBundle.registration,locale);
-          question = question.replace('{{consumerCode}}',consumerCode);
-          let localisationCode = "BILLINGSERVICE_BUSINESSSERVICE_"+businessService;
-          let localisationMessages = await localisationService.getMessageBundleForCode(localisationCode);
-          let service = dialog.get_message(localisationMessages,locale)
-          question = question.replace('{{service}}', service.toLowerCase());*/
-
-          let question = dialog.get_message(messageBundle.endStatement,locale);
-          var registrationMessage = {
-            output: question,
-            type: "text"
+        let options = {
+          method: 'POST',
+          origin: '*',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        }
+        let response = await fetch(pdfUrl, options);
+        if(response.status == 201){
+          let responseBody = await response.json();
+          let recipientUser = {
+            mobileNumber: payment.mobileNumber
+          };
+          let extraInfo = {
+            whatsAppBusinessNumber: config.whatsAppBusinessNumber.slice(2),
+            fileName: key
           };
 
+          if(chatState && chatState.context){
+            if (!chatState.context.bills) chatState.context.bills = {};
+            if(isOwner){
+              chatState.context.bills.paidBy = 'OWNER';
+            }
+            else {
+              chatState.context.bills.paidBy = 'OTHER';
+            }
+
+            let active = !chatState.done;
+            if(userId){
+              await chatStateRepository.updateState(userId, active, JSON.stringify(chatState), new Date().getTime());
+            }
+          }
+
+          let waitMessage = [];
+          var messageContent = {
+            output: dialog.get_message(messageBundle.wait,locale),
+            type: "text"
+          };
+          waitMessage.push(messageContent);
+          await valueFirst.sendMessageToUser(recipientUser, waitMessage, extraInfo);
+
+          if (responseBody && responseBody.filestoreIds && responseBody.filestoreIds[0]) {
+            let message = [];
+            var pdfContent = {
+              output: responseBody.filestoreIds[0],
+              type: "pdf"
+            };
+            message.push(pdfContent);
+            await valueFirst.sendMessageToUser(recipientUser, message, extraInfo);
+          }
+
+          let payBillmessage = [];
+          let templateContent = await this.prepareSucessMessage(payment, locale, isOwner);
+          payBillmessage.push(templateContent);
           await new Promise(resolve => setTimeout(resolve, 3000));
-          await valueFirst.sendMessageToUser(user, [registrationMessage], extraInfo);
+          await valueFirst.sendMessageToUser(recipientUser, payBillmessage, extraInfo);
+
+          if(!isOwner){
+            let question = dialog.get_message(messageBundle.endStatement,locale);
+            var registrationMessage = {
+              output: question,
+              type: "text"
+            };
+
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            await valueFirst.sendMessageToUser(recipientUser, [registrationMessage], extraInfo);
+          }
+          if(userId){
+            telemetry.log(userId, 'payment', {message : {type: "whatsapp payment", status: "success", businessService: businessService, consumerCode: consumerCode,transactionNumber: payment.transactionNumber, locale: locale}});
+          }
+
+          let filestoreId = (responseBody && responseBody.filestoreIds) ? responseBody.filestoreIds[0] : null;
+          await this.sendMessageToOtherOwner(ownerMobileNumberList, payment.mobileNumber, payment.payerName, businessService, consumerCode, payment.transactionNumber, locale, filestoreId);
         }
-        telemetry.log(userId, 'payment', {message : {type: "whatsapp payment", status: "success", businessService: businessService, consumerCode: consumerCode,transactionNumber: payment.transactionNumber, locale: user.locale}});
-
-        await this.sendMessageToOtherOwner(ownerMobileNumberList, payment.mobileNumber, payment.payerName, businessService, consumerCode, payment.transactionNumber, user.locale, responseBody.filestoreIds[0]);
       }
+    } catch (err) {
+      console.error('Error in paymentStatusMessage:', err.message);
+      console.error(err.stack || err);
     }
-
   }
 
 convertEpochToDate (dateEpoch ) {
@@ -361,35 +400,49 @@ convertEpochToDate (dateEpoch ) {
   }
 
   async prepareTransactionFailedMessage(request){
-    let locale = config.supportedLocales.split(',');
-    locale = locale[0];
-    let payerUser = await userService.getUserForMobileNumber(request.Transaction.user.mobileNumber, config.rootTenantId);
-    let chatState = await chatStateRepository.getActiveStateForUserId(payerUser.userId);
-    if(chatState)
-      locale = chatState.context.user.locale;
+    try {
+      let transaction = request && request.Transaction;
+      if (!transaction || !transaction.user || !transaction.user.mobileNumber) {
+        console.warn("prepareTransactionFailedMessage: No valid Transaction user in request");
+        return;
+      }
 
-    let transactionNumber = request.Transaction.txnId;
-    let consumerCode = request.Transaction.consumerCode;
-    let businessService = request.Transaction.module;
-    /*
-    let tenantId = request.Transaction.tenantId;
-    let link = await this.getPaymentLink(consumerCode,tenantId,businessService,locale);*/
+      let locale = config.supportedLocales.split(',');
+      locale = locale[0];
+      let payerUser = await userService.getUserForMobileNumber(transaction.user.mobileNumber, config.rootTenantId);
+      let userId = payerUser ? payerUser.userId : null;
+      let chatState = userId ? await chatStateRepository.getActiveStateForUserId(userId) : null;
+      if(chatState && chatState.context && chatState.context.user && chatState.context.user.locale)
+        locale = chatState.context.user.locale;
 
-    let user = {
-      mobileNumber: request.Transaction.user.mobileNumber
-    };
+      let transactionNumber = transaction.txnId;
+      let consumerCode = transaction.consumerCode;
+      let businessService = transaction.module;
+      /*
+      let tenantId = transaction.tenantId;
+      let link = await this.getPaymentLink(consumerCode,tenantId,businessService,locale);*/
 
-    let extraInfo = {
-      whatsAppBusinessNumber: config.whatsAppBusinessNumber.slice(2),
-    };
+      let user = {
+        mobileNumber: transaction.user.mobileNumber
+      };
 
-    let message = [];
-    let template = dialog.get_message(messageBundle.paymentFail,locale);
-    template = template.replace('{{transaction_number}}',transactionNumber);
-    //template = template.replace('{{link}}',link);
-    message.push(template);
-    await valueFirst.sendMessageToUser(user, message,extraInfo);
-    telemetry.log(payerUser.userId, 'payment', {message : {type: "whatsapp payment", status: "failed", businessService: businessService, consumerCode: consumerCode,transactionNumber: transactionNumber, locale: locale}});
+      let extraInfo = {
+        whatsAppBusinessNumber: config.whatsAppBusinessNumber.slice(2),
+      };
+
+      let message = [];
+      let template = dialog.get_message(messageBundle.paymentFail,locale);
+      template = template.replace('{{transaction_number}}',transactionNumber);
+      //template = template.replace('{{link}}',link);
+      message.push(template);
+      await valueFirst.sendMessageToUser(user, message,extraInfo);
+      if(userId){
+        telemetry.log(userId, 'payment', {message : {type: "whatsapp payment", status: "failed", businessService: businessService, consumerCode: consumerCode,transactionNumber: transactionNumber, locale: locale}});
+      }
+    } catch (err) {
+      console.error('Error in prepareTransactionFailedMessage:', err.message);
+      console.error(err.stack || err);
+    }
   }
 
   /*async getShortenedURL(finalPath){

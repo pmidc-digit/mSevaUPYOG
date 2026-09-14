@@ -7,8 +7,6 @@ remindersService = require("../../machine/service/reminders-service");
 
 router.post("/message", async (req, res) => {
   try {
-    console.log("Request URL: " + req.originalUrl);
-    console.log('Request Body Object: ' + JSON.stringify(req.body));
     let reformattedMessage = await channelProvider.processMessageFromUser(req);
     if (reformattedMessage != null) {
       try {
@@ -36,10 +34,6 @@ router.all("/status", async (req, res) => {
     if (isDeliveryStatusWebhook) {
       // This is a delivery status webhook from WhatsApp provider
       const statusData = req.method === 'GET' ? req.query : req.body;
-      
-      console.log("WhatsApp Delivery Status Webhook:");
-      console.log("Method:", req.method);
-      console.log("Status Data:", JSON.stringify(statusData, null, 2));
       
       // Log specific delivery status fields
       const { TO, MESSAGE_STATUS, REASON_CODE, MESSAGE_ID, STATUS_ERROR, TIME, DELIVERED_DATE } = statusData;

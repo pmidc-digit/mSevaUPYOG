@@ -132,8 +132,6 @@ class ValueFirstWhatsAppProvider {
 
     async getUserMessage(requestBody){
 
-        console.log("Received requestBody:", JSON.stringify(requestBody, null, 2));
-
 
         let reformattedMessage={};
         let type;

@@ -7,7 +7,9 @@ var consumerGroupOptions = {
     autoCommit: true,
     protocol: ["roundrobin"],
     fromOffset: "latest",
-    outOfRangeOffset: "earliest"
+    outOfRangeOffset: "earliest",
+    sessionTimeout: config.kafka.sessionTimeout,
+    heartbeatInterval: config.kafka.heartbeatInterval
 };
 
 module.exports = consumerGroupOptions;

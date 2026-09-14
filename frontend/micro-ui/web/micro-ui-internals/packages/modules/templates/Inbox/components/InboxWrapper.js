@@ -116,110 +116,63 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Card, Table } from "@mseva/digit-ui-react-components";
 import InboxExportMenu from "./InboxExportMenu";
+import "./TopTableScrollbar.scss";
 
-const FloatingTableScrollbar = ({ containerRef, enabled, tableData }) => {
-  const dragState = useRef(false);
-  const [scrollbar, setScrollbar] = useState(null);
+const TopTableScrollbar = ({ containerRef, enabled, tableData }) => {
+  const scrollbarRef = useRef(null);
+  const [contentWidth, setContentWidth] = useState(0);
 
   useEffect(() => {
     if (!enabled) return undefined;
 
     const scrollContainer = containerRef.current?.querySelector(".obps-inbox-table-scroll");
-    if (!scrollContainer) return undefined;
+    const scrollbar = scrollbarRef.current;
+    if (!scrollContainer || !scrollbar) return undefined;
 
-    const updateScrollbar = () => {
-      const rect = scrollContainer.getBoundingClientRect();
-      const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-
-      if (scrollContainer.scrollWidth <= scrollContainer.clientWidth || !isVisible) {
-        setScrollbar(null);
-        return;
-      }
-
-      setScrollbar({
-        left: rect.left,
-        width: rect.width,
-        clientWidth: scrollContainer.clientWidth,
-        contentWidth: scrollContainer.scrollWidth,
-        scrollLeft: scrollContainer.scrollLeft,
-      });
+    const updateWidth = () => {
+      setContentWidth(scrollContainer.scrollWidth > scrollContainer.clientWidth ? scrollContainer.scrollWidth : 0);
     };
-
     const syncFromTable = () => {
-      setScrollbar((currentScrollbar) =>
-        currentScrollbar ? { ...currentScrollbar, scrollLeft: scrollContainer.scrollLeft } : currentScrollbar
-      );
+      if (scrollbar.scrollLeft !== scrollContainer.scrollLeft) scrollbar.scrollLeft = scrollContainer.scrollLeft;
+    };
+    const syncToTable = () => {
+      if (scrollContainer.scrollLeft !== scrollbar.scrollLeft) scrollContainer.scrollLeft = scrollbar.scrollLeft;
     };
 
-    updateScrollbar();
+    updateWidth();
     scrollContainer.addEventListener("scroll", syncFromTable);
-    window.addEventListener("resize", updateScrollbar);
-    window.addEventListener("scroll", updateScrollbar, true);
-    const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateScrollbar);
+    scrollbar.addEventListener("scroll", syncToTable);
+    window.addEventListener("resize", updateWidth);
+    const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateWidth);
     resizeObserver?.observe(scrollContainer);
+    const table = scrollContainer.querySelector("table");
+    if (table) resizeObserver?.observe(table);
 
     return () => {
       scrollContainer.removeEventListener("scroll", syncFromTable);
-      window.removeEventListener("resize", updateScrollbar);
-      window.removeEventListener("scroll", updateScrollbar, true);
+      scrollbar.removeEventListener("scroll", syncToTable);
+      window.removeEventListener("resize", updateWidth);
       resizeObserver?.disconnect();
     };
   }, [containerRef, enabled, tableData]);
 
-  const moveTableScroll = (clientX) => {
+  useEffect(() => {
     const scrollContainer = containerRef.current?.querySelector(".obps-inbox-table-scroll");
-    if (!scrollContainer || !scrollbar) return;
+    if (scrollbarRef.current && scrollContainer) scrollbarRef.current.scrollLeft = scrollContainer.scrollLeft;
+  }, [containerRef, contentWidth]);
 
-    const track = document.querySelector(".digit-table-floating-horizontal-scrollbar");
-    if (!track) return;
-
-    const trackRect = track.getBoundingClientRect();
-    const thumbWidth = Math.max(72, (scrollbar.width * scrollbar.clientWidth) / scrollbar.contentWidth);
-    const maxThumbOffset = Math.max(0, scrollbar.width - thumbWidth);
-    const maxScrollOffset = Math.max(0, scrollbar.contentWidth - scrollbar.clientWidth);
-    const thumbOffset = Math.min(Math.max(clientX - trackRect.left - thumbWidth / 2, 0), maxThumbOffset);
-
-    scrollContainer.scrollLeft = maxThumbOffset ? (thumbOffset / maxThumbOffset) * maxScrollOffset : 0;
-  };
-
-  const stopDragging = () => {
-    dragState.current = false;
-    window.removeEventListener("mousemove", onDrag);
-    window.removeEventListener("mouseup", stopDragging);
-  };
-
-  const onDrag = (event) => {
-    if (dragState.current) moveTableScroll(event.clientX);
-  };
-
-  const startDragging = (event) => {
-    event.preventDefault();
-    dragState.current = true;
-    moveTableScroll(event.clientX);
-    window.addEventListener("mousemove", onDrag);
-    window.addEventListener("mouseup", stopDragging);
-  };
-
-  useEffect(() => stopDragging, []);
-
-  if (!scrollbar) return null;
-
-  const thumbWidth = Math.max(72, (scrollbar.width * scrollbar.clientWidth) / scrollbar.contentWidth);
-  const maxThumbOffset = Math.max(0, scrollbar.width - thumbWidth);
-  const maxScrollOffset = Math.max(0, scrollbar.contentWidth - scrollbar.clientWidth);
-  const thumbOffset = maxScrollOffset ? (scrollbar.scrollLeft / maxScrollOffset) * maxThumbOffset : 0;
+  if (!enabled) return null;
 
   return (
     <div
-      className="digit-table-floating-horizontal-scrollbar"
-      style={{ left: scrollbar.left, width: scrollbar.width }}
+      ref={scrollbarRef}
+      className="digit-table-top-horizontal-scrollbar"
+      style={{ display: contentWidth ? "block" : "none" }}
+      role="region"
       aria-label="Horizontal table scroll"
-      onMouseDown={startDragging}
+      tabIndex={0}
     >
-      <div
-        className="digit-table-floating-horizontal-scrollbar-thumb"
-        style={{ width: thumbWidth, transform: `translateX(${thumbOffset}px)` }}
-      />
+      <div style={{ width: contentWidth, height: 1 }} />
     </div>
   );
 };
@@ -276,7 +229,7 @@ const InboxWrapper = ({
             {emptyMessage || t("CS_MYAPPLICATIONS_NO_APPLICATION")}
           </Card>
         ) : (
-          <div className="new-inbox-table-card">
+          <div className="new-inbox-table-card" ref={tableCardRef}>
             <div className="new-inbox-table-header cardHeaderWithOptions">
               <span>{t(tableHeader)}</span>
               {showExport && tableData?.length > 0 && (
@@ -290,16 +243,17 @@ const InboxWrapper = ({
                 />
               )}
             </div>
+            <TopTableScrollbar
+              containerRef={tableCardRef}
+              enabled={tableProps.stickyHorizontalScrollbar === true}
+              tableData={tableData}
+            />
             <Table
               isPaginationRequired={false}
               t={t}
               {...tableProps}
             />
-            <FloatingTableScrollbar
-              containerRef={tableCardRef}
-              enabled={tableProps.stickyHorizontalScrollbar === true}
-              tableData={tableData}
-            />
+
           </div>
         )}
 

@@ -12,8 +12,10 @@ const bills = {
       onEntry: assign((context, event) => {
         context.slots.bills = {};
         context.bills = {slots: {}};
-        if(context.intention == 'ws_bills')
-          context.service = 'WS';
+        if(context.intention == 'water_bill')
+          context.service = 'WS';  
+        else if(context.intention == 'sewerage_bill')
+          context.service = 'SW';
         else if(context.intention == 'pt_bills')
           context.service = 'PT';
         else
@@ -23,10 +25,10 @@ const bills = {
         id: 'fetchBillsForUser',
         src: (context) => billService.fetchBillsForUser(context.user,context.service),
         onDone: [
-          {
-            target: '#paytmLinkForERPWnS',
-            cond: (context) => context.service == 'WS' || context.service == 'SW'
-          },
+          // {
+          //   target: '#paytmLinkForERPWnS',
+          //   cond: (context) => context.service == 'WS' || context.service == 'SW'
+          // },
           {
             target: 'personalBills',
             cond: (context, event) => {

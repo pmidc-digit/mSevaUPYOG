@@ -685,7 +685,7 @@ const sevaMachine = Machine({
               cond: (context) => context.intention == "pt_bills",
             },
             {
-              target: "#bills",
+              target: "#waterSewerageMenu",
               cond: (context) => context.intention == "ws_bills",
             },
             {
@@ -715,6 +715,89 @@ const sevaMachine = Machine({
           always: "question",
         }, // sevamenu.error
         pgr: pgr,
+
+        waterSewerageMenu: {
+  id: "waterSewerageMenu",
+  initial: "question",
+
+  states: {
+    question: {
+      onEntry: assign((context, event) => {
+        (async () => {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          dialog.sendMessage(
+            context,
+            dialog.get_message(
+              messages.waterSewerageMenu.question,
+              context.user.locale
+            ),
+            true
+          );
+        })();
+      }),
+
+      on: {
+        USER_MESSAGE: "process",
+      },
+    },
+
+    process: {
+      onEntry: assign((context, event) => {
+        if (dialog.validateInputType(event, "text")) {
+          context.intention = dialog.get_intention(
+            grammer.waterSewerageMenu.question,
+            event,
+            true
+          );
+        } else {
+          context.intention = dialog.INTENTION_UNKOWN;
+        }
+      }),
+
+      always: [
+        {
+          target: "#bills",
+          cond: (context) =>
+            context.intention == "water_bill",
+          actions: assign((context) => {
+            context.service = "WS";
+            context.billType = "WATER";
+          }),
+        },
+
+        {
+          target: "#bills",
+          cond: (context) =>
+            context.intention == "sewerage_bill",
+          actions: assign((context) => {
+            context.service = "SW";
+            context.billType = "SEWERAGE";
+          }),
+        },
+
+        {
+          target: "error",
+        },
+      ],
+    },
+
+    error: {
+      onEntry: assign((context, event) => {
+        dialog.sendMessage(
+          context,
+          dialog.get_message(
+            dialog.global_messages.error.retry,
+            context.user.locale
+          ),
+          true
+        );
+      }),
+
+      always: "question",
+    },
+  },
+},
         // swach: swach,
         bills: bills,
         receipts: receipts,
@@ -846,12 +929,14 @@ let messages = {
   },
   sevamenu: {
     question: {
-      en_IN:
-        "How can we serve you today? Please type and send the number for your option 👇\n\n*1.* File New Complaint\n\n*2.* Track Complaints\n\n*3.* Pay Property Tax Bill\n\n*4.* View Payments History\n\n*6.* Change Language\n\n 👉  At any stage type and send *mseva* to go back to the main menu.",
-      hi_IN:
-        "आज हम आपकी सेवा कैसे कर सकते हैं? कृपया टाइप करें और अपने विकल्प के लिए नंबर भेजें 👇\n\n*1.* शिकायत दर्ज करें\n\n*2.* ट्रैक शिकायतें\n\n*3.* पानी और सीवरेज बिल का भुगतान करें\n\n*4.* संपत्ति कर बिल का भुगतान करें\n\n*5.* भुगतान इतिहास देखें\n\n*6.* भाषा बदलें\n\n👉 किसी भी स्तर पर टाइप करें और मुख्य मेनू पर वापस जाने के लिए mseva भेजें।",
-      pa_IN:
-        "ਅੱਜ ਅਸੀਂ ਤੁਹਾਡੀ ਸੇਵਾ ਕਿਵੇਂ ਕਰ ਸਕਦੇ ਹਾਂ? ਕਿਰਪਾ ਕਰਕੇ ਟਾਈਪ ਕਰੋ ਅਤੇ ਆਪਣੀ ਵਿਕਲਪ for ਲਈ ਨੰਬਰ ਭੇਜੋ 👇\n\n*1.* ਫਾਈਲ ਸ਼ਿਕਾਇਤ\n\n*2.* ਟਰੈਕ ਸ਼ਿਕਾਇਤਾਂ\n\n*3.* ਪਾਣੀ ਅਤੇ ਸੀਵਰੇਜ ਬਿੱਲ ਦਾ ਭੁਗਤਾਨ ਕਰੋ\n\n*4.* ਜਾਇਦਾਦ ਟੈਕਸ ਬਿੱਲ ਦਾ ਭੁਗਤਾਨ ਕਰੋ\n\n*5.* ਭੁਗਤਾਨ ਦਾ ਇਤਿਹਾਸ ਵੇਖੋ\n\n*6.* ਭਾਸ਼ਾ ਬਦਲੋ\n\n👉 ਕਿਸੇ ਵੀ ਪੜਾਅ ਤੇ ਟਾਈਪ ਕਰੋ ਅਤੇ ਮੁੱਖ ਮੇਨੂ ਤੇ ਵਾਪਸ ਜਾਣ ਲਈ mseva ਭੇਜੋ.",
+        en_IN:
+          "How can we serve you today? Please type and send the number for your option 👇\n\n*1.* File New Complaint\n\n*2.* Track Complaints\n\n*3.* Pay Water & Sewerage Bill\n\n*4.* Pay Property Tax Bill\n\n*5.* View Payments History\n\n*6.* Change Language\n\n 👉  At any stage type and send *mseva* to go back to the main menu.",
+
+        hi_IN:
+          "आज हम आपकी सेवा कैसे कर सकते हैं? कृपया टाइप करें और अपने विकल्प के लिए नंबर भेजें 👇\n\n*1.* शिकायत दर्ज करें\n\n*2.* शिकायत ट्रैक करें\n\n*3.* पानी और सीवरेज बिल का भुगतान करें\n\n*4.* संपत्ति कर बिल का भुगतान करें\n\n*5.* भुगतान इतिहास देखें\n\n*6.* भाषा बदलें\n\n👉 किसी भी स्तर पर टाइप करें और मुख्य मेनू पर वापस जाने के लिए mseva भेजें।",
+
+        pa_IN:
+          "ਅੱਜ ਅਸੀਂ ਤੁਹਾਡੀ ਸੇਵਾ ਕਿਵੇਂ ਕਰ ਸਕਦੇ ਹਾਂ? ਕਿਰਪਾ ਕਰਕੇ ਟਾਈਪ ਕਰੋ ਅਤੇ ਆਪਣੇ ਵਿਕਲਪ ਲਈ ਨੰਬਰ ਭੇਜੋ 👇\n\n*1.* ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰੋ\n\n*2.* ਸ਼ਿਕਾਇਤਾਂ ਟ੍ਰੈਕ ਕਰੋ\n\n*3.* ਪਾਣੀ ਅਤੇ ਸੀਵਰੇਜ ਬਿੱਲ ਦਾ ਭੁਗਤਾਨ ਕਰੋ\n\n*4.* ਜਾਇਦਾਦ ਟੈਕਸ ਬਿੱਲ ਦਾ ਭੁਗਤਾਨ ਕਰੋ\n\n*5.* ਭੁਗਤਾਨ ਦਾ ਇਤਿਹਾਸ ਵੇਖੋ\n\n*6.* ਭਾਸ਼ਾ ਬਦਲੋ\n\n👉 ਕਿਸੇ ਵੀ ਪੜਾਅ ਤੇ ਟਾਈਪ ਕਰੋ ਅਤੇ ਮੁੱਖ ਮੀਨੂ ਤੇ ਵਾਪਸ ਜਾਣ ਲਈ *mseva* ਭੇਜੋ।"
     },
   },
   swachsevamenu: {
@@ -864,6 +949,18 @@ let messages = {
         "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਵਿਕਲਪ ਲਈ ਨੰਬਰ ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ 👇\n\n*1.* Swach ਨਵੀਂ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰੋ।\n\n*2.* Swach ਪੁਰਾਣੀਆਂ ਸ਼ਿਕਾਇਤਾਂ ਦੀ ਸਥਿਤੀ ਵੇਖੋ\n\n*3.* ਹਾਜ਼ਰੀ\n\n👉 ਕਿਸੇ ਵੀ ਪੜਾਅ 'ਤੇ *swach* ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ ਤਾਂ ਕਿ ਮੁੱਖ ਮੀਨੂ 'ਚ ਵਾਪਸ ਜਾ ਸਕੋ।",
     },
   },
+  waterSewerageMenu: {
+  question: {
+    en_IN:
+      "Please select the service you want to proceed with 👇\n\n*1.* Pay Water Bill\n\n*2.* Pay Sewerage Bill\n\n👉 At any stage type and send *mseva* to go back to the main menu.",
+
+    hi_IN:
+      "कृपया वह सेवा चुनें जिसके लिए आप आगे बढ़ना चाहते हैं 👇\n\n*1.* पानी के बिल का भुगतान करें\n\n*2.* सीवरेज बिल का भुगतान करें\n\n👉 किसी भी चरण में *mseva* टाइप करके भेजें और मुख्य मेनू पर वापस जाएं।",
+
+    pa_IN:
+      "ਕਿਰਪਾ ਕਰਕੇ ਉਹ ਸੇਵਾ ਚੁਣੋ ਜਿਸ ਲਈ ਤੁਸੀਂ ਅੱਗੇ ਵਧਣਾ ਚਾਹੁੰਦੇ ਹੋ 👇\n\n*1.* ਪਾਣੀ ਦੇ ਬਿੱਲ ਦਾ ਭੁਗਤਾਨ ਕਰੋ\n\n*2.* ਸੀਵਰੇਜ ਬਿੱਲ ਦਾ ਭੁਗਤਾਨ ਕਰੋ\n\n👉 ਕਿਸੇ ਵੀ ਪੜਾਅ 'ਤੇ *mseva* ਟਾਈਪ ਕਰਕੇ ਭੇਜੋ ਅਤੇ ਮੁੱਖ ਮੀਨੂ 'ਤੇ ਵਾਪਸ ਜਾਓ।",
+  },
+},
   endstate: {
     en_IN: "Goodbye. Say hi to start another conversation",
     hi_IN: "अलविदा। एक और बातचीत शुरू करने के लिए नमस्ते कहें",
@@ -892,9 +989,9 @@ let grammer = {
         recognize: ["2", "track", "existing"],
       },
 
-      //{ intention: "ws_bills", recognize: ["3", "wsbill"] },
-      { intention: "pt_bills", recognize: ["3", "ptbill"] },
-      { intention: "receipts", recognize: ["4", "receipt"] },
+      { intention: "ws_bills", recognize: ["3", "wsbill"] },
+      { intention: "pt_bills", recognize: ["4", "ptbill"] },
+      { intention: "receipts", recognize: ["5", "receipt"] },
       {
         intention: "locale",
         recognize: ["6", "language", "english", "hindi", "punjabi"],
@@ -935,6 +1032,29 @@ let grammer = {
       },
     ],
   },
+  waterSewerageMenu: {
+  question: [
+    {
+      intention: "water_bill",
+      recognize: [
+        "1",
+        "water",
+        "water bill",
+        "pay water bill",
+      ],
+    },
+
+    {
+      intention: "sewerage_bill",
+      recognize: [
+        "2",
+        "sewerage",
+        "sewerage bill",
+        "pay sewerage bill",
+      ],
+    },
+  ],
+},
   confirmation: {
     choice: [
       { intention: "Yes", recognize: ["1", "yes", "Yes"] },

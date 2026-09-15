@@ -73,6 +73,11 @@
 			<url>
                 https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
 		</repository>
+		<repository>
+			<id>repo.egovernments.org.public</id>
+			<name>eGov Public Repository Group</name>
+			<url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-public/</url>
+		</repository>
 	</repositories>
   <build>
     <plugins>

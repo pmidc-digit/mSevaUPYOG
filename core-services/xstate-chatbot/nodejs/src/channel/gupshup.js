@@ -47,7 +47,7 @@ class GupShupWhatsAppProvider {
             }
 
             var urlSearchParams = new URLSearchParams();
-            
+
             urlSearchParams.append("channel", "whatsapp");
             urlSearchParams.append("source", "917834811114");
             urlSearchParams.append("destination", '91' + phone);
@@ -60,7 +60,15 @@ class GupShupWhatsAppProvider {
                 body: urlSearchParams
             }
 
-            fetch(url, request);
+            fetch(url, request)
+              .then(response => {
+                if (!response.ok) {
+                  console.error(`GupShup API error for phone ${phone}: ${response.status} ${response.statusText}`);
+                }
+              })
+              .catch(error => {
+                console.error(`Error sending message via GupShup for phone ${phone}:`, error.message);
+              });
         }
     }
 }

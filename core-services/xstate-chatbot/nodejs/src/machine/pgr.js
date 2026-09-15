@@ -288,11 +288,16 @@ const pgr =  {
                   invoke: {
                     id: 'getCityAndLocality',
                     src: (context, event) => {
-                      if(event.message.type === 'location') {
+                      // Add null checks for event and event.message
+                      if(event && event.message && event.message.type === 'location') {
                         context.slots.pgr.geocode = event.message.input;
                         return pgrService.getCityAndLocalityForGeocode(event.message.input, context.extraInfo.tenantId);
                       }
-                      context.message = event.message.input;
+                      if(event && event.message) {
+                        context.message = event.message.input;
+                      } else {
+                        context.message = '1'; // Default to skip location sharing
+                      }
                       return Promise.resolve();
                     },
                     onDone: [
@@ -432,7 +437,21 @@ const pgr =  {
                 process: {
                   invoke: {
                     id: 'cityFuzzySearch',
-                    src: (context, event) => pgrService.getCity(event.message.input,context.user.locale),
+                    src: (context, event) => {
+                      try {
+                        // Add null checking for event structure
+                        if (event && event.message && event.message.input) {
+                          return pgrService.getCity(event.message.input, context.user.locale);
+                        } else {
+                          // Handle case where event.message is undefined
+                          console.error("Invalid event structure for PGR city search:", event);
+                          return Promise.resolve(null);
+                        }
+                      } catch (error) {
+                        console.error("Error in PGR city search:", error);
+                        return Promise.resolve(null);
+                      }
+                    },
                     onDone: {
                       target: 'route',
                       cond: (context, event) => event.data,
@@ -538,7 +557,21 @@ const pgr =  {
                 process: {
                   invoke: {
                     id: 'localityFuzzySearch',
-                    src: (context, event) => pgrService.getLocality(event.message.input, context.slots.pgr["city"], context.user.locale),
+                    src: (context, event) => {
+                      try {
+                        // Add null checking for event structure
+                        if (event && event.message && event.message.input) {
+                          return pgrService.getLocality(event.message.input, context.slots.pgr["city"], context.user.locale);
+                        } else {
+                          // Handle case where event.message is undefined
+                          console.error("Invalid event structure for PGR locality search:", event);
+                          return Promise.resolve(null);
+                        }
+                      } catch (error) {
+                        console.error("Error in PGR locality search:", error);
+                        return Promise.resolve(null);
+                      }
+                    },
                     onDone: {
                       target: 'route',
                       cond: (context, event) => event.data,
@@ -806,8 +839,22 @@ const pgr =  {
                 console.log(complaintDetails);
                 let message = dialog.get_message(messages.fileComplaint.persistComplaint, context.user.locale);
                 console.log(message);
-                message = message.replace('{{complaintNumber}}', complaintDetails.complaintNumber);
-                message = message.replace('{{complaintLink}}', complaintDetails.complaintLink);
+                
+                // Add null checks for complaintDetails
+                if (complaintDetails && complaintDetails.complaintNumber) {
+                  message = message.replace('{{complaintNumber}}', complaintDetails.complaintNumber);
+                } else {
+                  console.warn('Complaint details or complaint number is missing');
+                  message = message.replace('{{complaintNumber}}', 'N/A');
+                }
+                
+                if (complaintDetails && complaintDetails.complaintLink) {
+                  message = message.replace('{{complaintLink}}', complaintDetails.complaintLink);
+                } else {
+                  console.warn('Complaint link is missing');
+                  message = message.replace('{{complaintLink}}', '#');
+                }
+                
                 let closingStatement = dialog.get_message(messages.fileComplaint.closingStatement, context.user.locale);
                 message = message + closingStatement;
                 dialog.sendMessage(context, message);
@@ -835,6 +882,9 @@ const pgr =  {
 
                // dialog.sendMessage(context, templateContent, true);
               })
+            },
+            onError: {
+              target: '#system_error'
             }
           }
         },

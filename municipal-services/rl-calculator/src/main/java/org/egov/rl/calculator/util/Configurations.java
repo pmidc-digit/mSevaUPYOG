@@ -61,6 +61,8 @@ public class Configurations {
 	private String rlServiceHost;
 	@Value("${egov.rl.search.endpoint}")
 	private String rlSearchEndpoint;
+	@Value("${update.rl.allotment:update-rl-allotment}")
+	private String updateAllotmentTopic;
 	@Value("${demand.generation.batch.size}")
 	private Integer demandGenerationBatchSize;
 	
@@ -128,13 +130,4 @@ public class Configurations {
 
     @Value("${is.workflow.enabled}")
     private Boolean isWorkflowEnabled;
-
-
-
-
-
-
-
-
-
 }

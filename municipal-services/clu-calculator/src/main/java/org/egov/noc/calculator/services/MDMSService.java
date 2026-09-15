@@ -74,6 +74,48 @@ public class MDMSService {
     	MdmsCriteriaReq mdmsCriteriaReq = getMDMSSanctionFeeRequest(requestInfo, tenantId, code, category, fromFY, feeType);
 		StringBuilder url = getMdmsSearchUrl();
 		Object result = serviceRequestRepository.fetchResult(url , mdmsCriteriaReq);
+
+		if (result instanceof java.util.Map && CLUConstants.FEE_TYPE_PAY2.equalsIgnoreCase(feeType)) {
+			try {
+				java.util.Map<String, Object> resultMap = (java.util.Map<String, Object>) result;
+				if (resultMap.containsKey("MdmsRes")) {
+					java.util.Map<String, Object> mdmsRes = (java.util.Map<String, Object>) resultMap.get("MdmsRes");
+					String moduleKey = CLUConstants.CLU_MODULE.toLowerCase();
+					if (mdmsRes.containsKey(moduleKey)) {
+						java.util.Map<String, Object> moduleMap = (java.util.Map<String, Object>) mdmsRes.get(moduleKey);
+						if (moduleMap.containsKey(CLUConstants.MDMS_CHARGES_TYPE)) {
+							java.util.List<java.util.Map<String, Object>> chargesTypeList = 
+									(java.util.List<java.util.Map<String, Object>>) moduleMap.get(CLUConstants.MDMS_CHARGES_TYPE);
+							if (chargesTypeList != null) {
+								java.util.List<java.util.Map<String, Object>> filteredList = new java.util.ArrayList<>();
+								java.util.List<java.util.Map<String, Object>> defaultList = new java.util.ArrayList<>();
+								for (java.util.Map<String, Object> chargesType : chargesTypeList) {
+									Object bCategory = chargesType.get("BuildingCategory");
+									if (bCategory == null) {
+										bCategory = chargesType.get("AppliedCategory");
+									}
+									if (bCategory != null && !bCategory.toString().trim().isEmpty()) {
+										if (bCategory.toString().equalsIgnoreCase(category)) {
+											filteredList.add(chargesType);
+										}
+									} else {
+										defaultList.add(chargesType);
+									}
+								}
+								if (!filteredList.isEmpty()) {
+									moduleMap.put(CLUConstants.MDMS_CHARGES_TYPE, filteredList);
+								} else {
+									moduleMap.put(CLUConstants.MDMS_CHARGES_TYPE, defaultList);
+								}
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.error("Error filtering MDMS charges by BuildingCategory: " + e.getMessage(), e);
+			}
+		}
+
 		return result;
 	}
 

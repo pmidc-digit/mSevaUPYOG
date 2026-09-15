@@ -77,9 +77,11 @@ const Inbox = ({ parentRoute }) => {
       case "mutateTableForm":
         Digit.SessionStorage.set("OBPS.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
-      case "mutateSelectedTenantId":
-        Digit.SessionStorage.set("OBPS.INBOX", { ...state, selectedTenantId: payload.data });
-        return { ...state, selectedTenantId: payload.data };
+      case "mutateSelectedTenantId": {
+        const updatedState = { ...state, selectedTenantId: payload.data, tableForm: { ...state.tableForm, offset: 0 } };
+        Digit.SessionStorage.set("OBPS.INBOX", updatedState);
+        return updatedState;
+      }
       default:
         break;
     }
@@ -183,10 +185,8 @@ const Inbox = ({ parentRoute }) => {
     ];
   }, []);
 
-  // const effectiveTenantId =
-  //   isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
-
-  const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
+  const effectiveTenantId =
+    isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
 
   useEffect(() => {
     if (!(isEmployee && tenantId === "pb.punjab")) return;

@@ -408,11 +408,18 @@ public class InboxService {
                     businessObj = findClosestBusinessObject(businessId, businessMap);
                 }
 
+                if (businessObj == null) {
+                    continue; // Skip if no business object found
+                }
+
+                Map<String, Object> businessObjMap = toMap((JSONObject) businessObj);
+                if (CollectionUtils.isEmpty(businessObjMap)) {
+                    continue; // Skip if business object conversion produced an empty/null map
+                }
+
                 Inbox inbox = new Inbox();
                 inbox.setProcessInstance(processInstance);
-
-                if (businessObj != null)
-                    inbox.setBusinessObject(toMap((JSONObject) businessObj));
+                inbox.setBusinessObject(businessObjMap);
 
                 inboxes.add(inbox);
             }

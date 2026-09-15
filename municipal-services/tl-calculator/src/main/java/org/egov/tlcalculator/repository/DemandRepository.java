@@ -1,8 +1,10 @@
 package org.egov.tlcalculator.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tlcalculator.config.TLCalculatorConfigs;
+import org.egov.tlcalculator.service.CalculationService;
 import org.egov.tlcalculator.web.models.demand.Demand;
 import org.egov.tlcalculator.web.models.demand.DemandRequest;
 import org.egov.tlcalculator.web.models.demand.DemandResponse;
@@ -14,6 +16,7 @@ import java.util.List;
 
 
 @Repository
+@Slf4j
 public class DemandRepository {
 
 
@@ -38,14 +41,23 @@ public class DemandRepository {
         url.append(config.getDemandCreateEndpoint());
         DemandRequest request = new DemandRequest(requestInfo,demands);
         Object result = serviceRequestRepository.fetchResult(url,request);
-        DemandResponse response = null;
-        try{
-            response = mapper.convertValue(result,DemandResponse.class);
+
+        log.info("Billing create demand result: {}", result);
+
+        try {
+            DemandResponse response =
+                    mapper.convertValue(result, DemandResponse.class);
+
+            return response.getDemands();
+
+        } catch (IllegalArgumentException e) {
+            log.error("Failed to convert billing response to DemandResponse. result={}",result,e);
+
+            throw new CustomException(
+                "PARSING ERROR",
+                "Failed to parse response of create demand"
+            );
         }
-        catch(IllegalArgumentException e){
-            throw new CustomException("PARSING ERROR","Failed to parse response of create demand");
-        }
-        return response.getDemands();
     }
 
 

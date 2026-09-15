@@ -28,6 +28,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Property
  */
@@ -38,6 +40,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RLProperty {// extends PropertyInfo {
 
 	@JsonProperty("propertyId")
@@ -58,46 +61,35 @@ public class RLProperty {// extends PropertyInfo {
 	@JsonProperty("address")
 	private String address;
 
+	@JsonProperty("areaCode")
+	private String areaCode;
+
 	@JsonProperty("geoLocation")
 	private GeoLocation geoLocation;
 	
 	@JsonProperty("propertyImage")
 	private String propertyImage;
 	
-	@JsonProperty("propertyType")
-//	@SafeHtml
-	private String propertyType;
-	
-	
-	@JsonProperty("locationType")
-	private String locationType;
-
 	@JsonProperty("baseRent")
 	private String baseRent;
 	
 	@JsonProperty("securityDeposit")
 	private String securityDeposit;
-	
-	@JsonProperty("financialYear")
-	private String financialYear;
-	
+
 	@JsonProperty("type")
 	private String type;
-	
-	@JsonProperty("taxApplicable")
-	private boolean taxApplicable;
-
-	@JsonProperty("refundApplicableOnDiscontinuation")
-	private boolean refundApplicableOnDiscontinuation;
-	
-	@JsonProperty("cowCessApplicable")
-	private boolean cowCessApplicable;
 	
 	@JsonProperty("feesPeriodCycle")
 	private String feesPeriodCycle;
 	
 	@JsonProperty("penaltyType")
 	private String penaltyType;
+	
+	@JsonProperty("penaltyRate")
+	private java.math.BigDecimal penaltyRate;
+
+	@JsonProperty("penaltyFlatAmount")
+	private java.math.BigDecimal penaltyFlatAmount;
 	
 //	@JsonProperty("latePayment")
 //	private String latePayment;

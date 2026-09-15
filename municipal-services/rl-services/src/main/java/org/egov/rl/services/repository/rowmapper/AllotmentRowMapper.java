@@ -64,6 +64,7 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					.build();
 					 getOwnerInfo(rs,allotmentDetails);
 					 getDocuments(rs,allotmentDetails);
+					 getRentRevisions(rs,allotmentDetails);
 			}else {
 				String allUuid=rs.getString("id");
 			    List<AllotmentDetails>	allotmentDetail=new ArrayList<>();
@@ -81,11 +82,53 @@ public class AllotmentRowMapper implements ResultSetExtractor<List<AllotmentDeta
 					 if(allotmentDetails.getDocuments()!=null&&!allotmentDetails.getDocuments().isEmpty()&&allotment.getDocuments().stream().noneMatch(onr->onr.getId().equalsIgnoreCase(docId))) {
 					 	 getDocuments(rs, allotmentDetails);			
 					 }
+
+					 String revId = rs.getString("rev_id");
+					 if (revId != null && (allotment.getRentRevisions() == null || allotment.getRentRevisions().stream().noneMatch(r -> r.getId().equalsIgnoreCase(revId)))) {
+					 	 getRentRevisions(rs, allotmentDetails);
+					 }
 				}	 			   		
 			}
 			allotmentDetailsMap.put(uuid, allotmentDetails);
 		}
 		return new ArrayList<>(allotmentDetailsMap.values());
+	}
+
+	private void getRentRevisions(ResultSet rs, AllotmentDetails allotmentDetails) {
+		try {
+			String revId = rs.getString("rev_id");
+			if (revId == null) return;
+
+			Long createdTime = rs.getLong("rev_createdTime");
+			if (rs.wasNull()) createdTime = null;
+			Long lastModifiedTime = rs.getLong("rev_lastmodifiedTime");
+			if (rs.wasNull()) lastModifiedTime = null;
+
+			AuditDetails audit = AuditDetails.builder()
+				.createdBy(rs.getString("rev_createdBy"))
+				.createdTime(createdTime)
+				.lastModifiedBy(rs.getString("rev_lastmodifiedBy"))
+				.lastModifiedTime(lastModifiedTime)
+				.build();
+
+			Boolean active = rs.getBoolean("rev_active");
+			if (rs.wasNull()) active = null;
+
+			RentRevision revision = RentRevision.builder()
+				.id(revId)
+				.allotmentId(rs.getString("rev_allotmentId"))
+				.revisedRent(rs.getBigDecimal("revised_rent"))
+				.revisionDate(rs.getLong("revision_date"))
+				.nextRevisionDate(rs.getLong("next_revision_date"))
+				.incrementPercentage(rs.getBigDecimal("increment_percentage"))
+				.tenantId(rs.getString("rev_tenantId"))
+				.active(active)
+				.auditDetails(audit)
+				.build();
+			allotmentDetails.addRentRevisionsItem(revision);
+		} catch (Exception e) {
+			throw new CustomException("PARSING_ERROR", "Error parsing RentRevision from ResultSet");
+		}
 	}
 
 	private void getOwnerInfo(ResultSet rs,AllotmentDetails allotmentDetails) {

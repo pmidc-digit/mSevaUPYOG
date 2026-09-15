@@ -386,107 +386,559 @@ export const SelectPaymentType = (props) => {
 
   return (
     <React.Fragment>
-      {/* <BackButton>{t("CS_COMMON_BACK")}</BackButton> */}
-      <form style={{ padding: "20px" }} onSubmit={handleSubmit(onSubmit)}>
-        <Header>{t("PAYMENT_CS_HEADER")}</Header>
-        <Card>
-          <div className="payment-amount-info" style={{ marginBottom: "26px" }}>
-            <CardLabel className="dark">{t("PAYMENT_CS_TOTAL_AMOUNT_DUE")}</CardLabel>
-            <CardSectionHeader>
-              {" "}
+      <style>{`
+        .payment-container {
+          max-width: 100%;
+          min-height: 100vh;
+          margin: 0;
+          padding: 48px 16px;
+          display: flex;
+          flex-direction: column;
+          background: #F9FAFB;
+        }
+
+        .payment-form-wrapper {
+          max-width: 64rem;
+          margin: 0 auto;
+          width: 100%;
+          flex: 1;
+        }
+
+        .payment-page-title {
+          margin-bottom: 48px;
+        }
+
+        .payment-page-title h1 {
+          font-size: 32px;
+          font-weight: 700;
+          color: #111827;
+          margin-bottom: 8px;
+        }
+
+        .payment-page-title p {
+          color: #6B7280;
+          font-size: 16px;
+        }
+
+        .payment-page-title strong {
+          font-weight: 600;
+          color: #111827;
+        }
+
+        .payment-breadcrumb {
+          font-size: 14px;
+          color: #6B7280;
+          margin-bottom: 32px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+
+        .payment-breadcrumb a {
+          color: #0052CC;
+          text-decoration: none;
+          cursor: pointer;
+          transition: color 0.2s;
+        }
+
+        .payment-breadcrumb a:hover {
+          color: #003D99;
+          text-decoration: underline;
+        }
+
+        .payment-breadcrumb-separator {
+          color: #E5E7EB;
+        }
+
+        .payment-amount-section {
+          background: linear-gradient(135deg, #0052CC 0%, #003D99 100%);
+          border-radius: 16px;
+          padding: 32px;
+          margin-bottom: 48px;
+          color: white;
+          box-shadow: 0 4px 12px rgba(5, 82, 204, 0.15);
+        }
+
+        .payment-amount-label {
+          font-size: 14px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          opacity: 0.9;
+          margin-bottom: 16px;
+          display: block;
+        }
+
+        .payment-amount-value {
+          font-size: 40px;
+          font-weight: 700;
+          margin-bottom: 16px;
+          line-height: 1.1;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .payment-amount-info {
+          font-size: 14px;
+          opacity: 0.9;
+        }
+
+        .payment-card {
+          background: white;
+          border: 1px solid #E5E7EB;
+          border-radius: 12px;
+          padding: 32px;
+          margin-bottom: 48px;
+        }
+
+        .payment-card-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #111827;
+          margin-bottom: 24px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .payment-card-title-icon {
+          width: 24px;
+          height: 24px;
+          background: #0052CC;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 14px;
+          flex-shrink: 0;
+          font-weight: 600;
+        }
+
+        .payment-methods {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .payment-method-option {
+          display: flex;
+          align-items: flex-start;
+          padding: 16px;
+          border: 2px solid #E5E7EB;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          background: white;
+          position: relative;
+        }
+
+        .payment-method-option:hover {
+          border-color: #0052CC;
+          background: #F0F4FF;
+        }
+
+        .payment-method-option input[type="radio"] {
+          width: 20px;
+          height: 20px;
+          cursor: pointer;
+          margin-right: 16px;
+          margin-top: 4px;
+          flex-shrink: 0;
+          accent-color: #0052CC;
+        }
+
+        .payment-method-option.selected {
+          border-color: #0052CC;
+          background: #F0F4FF;
+        }
+
+        .payment-method-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+
+        .payment-method-name {
+          font-size: 16px;
+          font-weight: 600;
+          color: #111827;
+          margin-bottom: 4px;
+        }
+
+        .payment-method-desc {
+          font-size: 14px;
+          color: #6B7280;
+        }
+
+        .payment-form-group {
+          margin-bottom: 20px;
+        }
+
+        .payment-form-group:last-child {
+          margin-bottom: 0;
+        }
+
+        .payment-form-label {
+          display: block;
+          font-size: 14px;
+          font-weight: 600;
+          color: #111827;
+          margin-bottom: 8px;
+        }
+
+        .payment-required {
+          color: #DC2626;
+        }
+
+        .payment-form-input,
+        .payment-form-select {
+          width: 100%;
+          padding: 12px 16px;
+          border: 1px solid #E5E7EB;
+          border-radius: 8px;
+          font-size: 16px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          background: white;
+          color: #111827;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .payment-form-input:focus,
+        .payment-form-select:focus {
+          outline: none;
+          border-color: #0052CC;
+          box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+        }
+
+        .payment-form-input::placeholder {
+          color: #9CA3AF;
+        }
+
+        .payment-form-select {
+          cursor: pointer;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 12px center;
+          background-size: 12px;
+          padding-right: 40px;
+        }
+
+        .payment-mobile-input-wrapper {
+          display: flex;
+          gap: 12px;
+        }
+
+        .payment-country-code {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          padding: 12px 16px;
+          background: #F9FAFB;
+          border-radius: 8px;
+          border: 1px solid #E5E7EB;
+          color: #6B7280;
+          font-weight: 600;
+          font-size: 16px;
+        }
+
+        .payment-button-group {
+          display: flex;
+          gap: 16px;
+          margin-top: 48px;
+        }
+
+        .payment-submit-btn {
+          flex: 1;
+          padding: 16px 24px;
+          background: #0052CC;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 4px 12px rgba(5, 82, 204, 0.3);
+        }
+
+        .payment-submit-btn:hover:not(:disabled) {
+          background: #003D99;
+          box-shadow: 0 4px 12px rgba(5, 82, 204, 0.4);
+        }
+
+        .payment-submit-btn:active:not(:disabled) {
+          transform: scale(0.98);
+        }
+
+        .payment-submit-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .payment-cancel-btn {
+          flex: 1;
+          padding: 16px 24px;
+          background: #F9FAFB;
+          color: #111827;
+          border: 1px solid #E5E7EB;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .payment-cancel-btn:hover {
+          background: #F3F4F6;
+        }
+
+        .payment-info-banner {
+          background: #F0F4FF;
+          border-left: 4px solid #0052CC;
+          padding: 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          color: #111827;
+          line-height: 1.6;
+          margin-top: 24px;
+        }
+
+        .payment-info-banner strong {
+          font-weight: 600;
+        }
+
+        @media (max-width: 640px) {
+          .payment-container {
+            padding: 32px 16px;
+          }
+
+          .payment-form-wrapper {
+            max-width: 100%;
+          }
+
+          .payment-page-title h1 {
+            font-size: 24px;
+          }
+
+          .payment-page-title {
+            margin-bottom: 32px;
+          }
+
+          .payment-amount-section {
+            padding: 24px;
+            margin-bottom: 32px;
+          }
+
+          .payment-amount-value {
+            font-size: 32px;
+          }
+
+          .payment-card {
+            padding: 24px;
+            margin-bottom: 32px;
+          }
+
+          .payment-card-title {
+            font-size: 15px;
+            margin-bottom: 16px;
+          }
+
+          .payment-button-group {
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 32px;
+          }
+
+          .payment-form-input,
+          .payment-form-select {
+            font-size: 16px;
+          }
+
+          .payment-breadcrumb {
+            font-size: 12px;
+          }
+        }
+      `}</style>
+
+      <div className="payment-container">
+        <div className="payment-form-wrapper">
+          {/* Page Title */}
+          <div className="payment-page-title">
+            <h1>{t("PAYMENT_CS_HEADER") || "Mohali Municipal Corporation"}</h1>
+            <p>Hello, <strong>{userInfo?.name || "User"}</strong></p>
+          </div>
+
+          {/* Breadcrumb */}
+          <nav className="payment-breadcrumb">
+            <a href="#">Home</a>
+            <span className="payment-breadcrumb-separator">/</span>
+            <a href="#">Property Home</a>
+            <span className="payment-breadcrumb-separator">/</span>
+            <span>{t("PAYMENT_CS_HEADER")}</span>
+          </nav>
+
+          {/* Amount Section */}
+          <div className="payment-amount-section">
+            <label className="payment-amount-label">{t("PAYMENT_CS_TOTAL_AMOUNT_DUE")}</label>
+            <div className="payment-amount-value">
               ₹ {paymentAmount !== undefined ? Number(paymentAmount).toFixed(2) : Number(billDetails?.totalAmount).toFixed(2)}
-            </CardSectionHeader>
-          </div>
-          <CardLabel>{t("PAYMENT_CS_SELECT_METHOD")}</CardLabel>
-          {menuList?.PAYMENT?.PaymentGateway?.length && (
-            <Controller
-              name="paymentType"
-              defaultValue={menuList?.PAYMENT?.PaymentGateway?.[0]?.gateway}
-              control={control}
-              render={(props) => (
-                <RadioButtons
-                  selectedOption={props.value}
-                  options={menuList?.PAYMENT?.PaymentGateway?.map((item) => item?.gateway)}
-                  onSelect={props.onChange}
-                />
-              )}
-            />
-          )}
-        </Card>
-        <Card>
-          <div className="payment-amount-info" style={{ marginBottom: "26px" }}>
-            <CardLabel className="dark">{t("PAYMENT_CS_PAYER_DETAILS")}</CardLabel>
-          </div>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAID_BY")} * `}</CardLabel>
-            <Controller
-              name={"paidBy"}
-              defaultValue={userOptions[0]}
-              control={control}
-              render={(props) => (
-                <Dropdown
-                  selected={props.value}
-                  option={userOptions}
-                  select={(val) => {
-                    if (val === "OWNER") {
-                      props.onChange(val);
-                      setValue("name", name || billDetails?.payerName || "");
-                      setValue("mobileNumber", mobileNumber || billDetails?.mobileNumber || "");
-                    } else if (val === "OTHER") {
-                      props.onChange(val);
-                      setValue("name", "");
-                      setValue("mobileNumber", "");
-                    }
-                  }}
-                />
-              )}
-            />
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAYER_NAME")} * `}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"name"}
-                defaultValue={name || billDetails?.payerName || ""}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                  />
-                )}
-              />
             </div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAYER_NUMBER")} * `}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"mobileNumber"}
-                defaultValue={mobileNumber || billDetails?.mobileNumber || ""}
-                render={(props) => (
-                  <MobileNumber
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e);
-                    }}
-                    componentInFront={<div className="employee-card-input employee-card-input--front numberdisplay">+91</div>}
-                  />
-                )}
-              />
+            <div className="payment-amount-info">
+              Property Tax Payment • Due by 30 Sept 2024
             </div>
-          </LabelFieldPair>
-        </Card>
-        {!showToast && (
-          <Card>
-            <SubmitBar label={t("PAYMENT_CS_BUTTON_LABEL")} submit={true} />
-          </Card>
-        )}
-      </form>
-      <InfoBanner label={t("CS_COMMON_INFO")} text={t("CS_PAYMENT_REDIRECT_NOTICE")} />
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Payment Method Card */}
+            <div className="payment-card">
+              <div className="payment-card-title">
+                <div className="payment-card-title-icon">1</div>
+                {t("PAYMENT_CS_SELECT_METHOD")}
+              </div>
+              {menuList?.PAYMENT?.PaymentGateway?.length && (
+                <div className="payment-methods">
+                  <Controller
+                    name="paymentType"
+                    defaultValue={menuList?.PAYMENT?.PaymentGateway?.[0]?.gateway}
+                    control={control}
+                    render={(props) => (
+                      <>
+                        {menuList?.PAYMENT?.PaymentGateway?.map((item) => (
+                          <label key={item?.gateway} className={`payment-method-option ${props.value === item?.gateway ? 'selected' : ''}`}>
+                            <input
+                              type="radio"
+                              name="paymentType"
+                              value={item?.gateway}
+                              checked={props.value === item?.gateway}
+                              onChange={() => props.onChange(item?.gateway)}
+                            />
+                            <div className="payment-method-content">
+                              <div className="payment-method-name">{item?.gateway}</div>
+                              <div className="payment-method-desc">Secure payment gateway</div>
+                            </div>
+                          </label>
+                        ))}
+                      </>
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Payer Details Card */}
+            <div className="payment-card">
+              <div className="payment-card-title">
+                <div className="payment-card-title-icon">2</div>
+                {t("PAYMENT_CS_PAYER_DETAILS")}
+              </div>
+
+              <div className="payment-form-group">
+                <label className="payment-form-label">
+                  {t("PAYMENT_CS_PAID_BY")} <span className="payment-required">*</span>
+                </label>
+                <Controller
+                  name={"paidBy"}
+                  defaultValue={userOptions[0]}
+                  control={control}
+                  render={(props) => (
+                    <select
+                      className="payment-form-select"
+                      value={props.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        props.onChange(val);
+                        if (val === "OWNER") {
+                          setValue("name", name || billDetails?.payerName || "");
+                          setValue("mobileNumber", mobileNumber || billDetails?.mobileNumber || "");
+                        } else if (val === "OTHER") {
+                          setValue("name", "");
+                          setValue("mobileNumber", "");
+                        }
+                      }}
+                    >
+                      {userOptions.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                  )}
+                />
+              </div>
+
+              <div className="payment-form-group">
+                <label className="payment-form-label">
+                  {t("PAYMENT_CS_PAYER_NAME")} <span className="payment-required">*</span>
+                </label>
+                <Controller
+                  control={control}
+                  name={"name"}
+                  defaultValue={name || billDetails?.payerName || ""}
+                  render={(props) => (
+                    <input
+                      type="text"
+                      className="payment-form-input"
+                      value={props.value}
+                      onChange={(e) => {
+                        props.onChange(e.target.value);
+                      }}
+                      placeholder="Enter your full name"
+                      required
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="payment-form-group">
+                <label className="payment-form-label">
+                  {t("PAYMENT_CS_PAYER_NUMBER")} <span className="payment-required">*</span>
+                </label>
+                <div className="payment-mobile-input-wrapper">
+                  <div className="payment-country-code">+91</div>
+                  <Controller
+                    control={control}
+                    name={"mobileNumber"}
+                    defaultValue={mobileNumber || billDetails?.mobileNumber || ""}
+                    render={(props) => (
+                      <input
+                        type="tel"
+                        className="payment-form-input"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        placeholder="98765 43210"
+                        inputMode="numeric"
+                        required
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Info Banner */}
+            <div className="payment-info-banner">
+              <strong>Secure Payment:</strong> Your payment information is encrypted and secured with industry-standard protocols.
+            </div>
+
+            {/* Submit Button Group */}
+            {!showToast && (
+              <div className="payment-button-group">
+                <button type="button" className="payment-cancel-btn">
+                  Cancel
+                </button>
+                <button type="submit" className="payment-submit-btn">
+                  {t("PAYMENT_CS_BUTTON_LABEL")}
+                </button>
+              </div>
+            )}
+          </form>
+        </div>
+      </div>
+
+      {/* Toasts */}
       {showToast && (
         <Toast
           error={showToast.key}

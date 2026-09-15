@@ -354,53 +354,58 @@ public class EstimationService {
 				/* =======================
 				 * METERED CONNECTION
 				 * ======================= */
-				if (WSCalculationConstant.meteredConnectionType
-						.equalsIgnoreCase(waterConnection.getConnectionType())) {
- 
+				if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(waterConnection.getConnectionType())) {
+					Boolean isMonthlyBillingEnabled = Boolean.TRUE.equals(applicableBillSlab.getIsmonthlybillingenabled());
+					long effectiveMonths = calculateEffectiveMonths(criteria.getFrom(), criteria.getTo());
 					Double meterReading = totalUOM;
- 
+
 					if (WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)
 							|| WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)) {
- 
 						Object avgObj = additionalDetail.get(WSCalculationConstant.AVARAGEMETERREADING);
- 
 						if (avgObj instanceof Number) {
-							meterReading = ((Number) avgObj).doubleValue();
+							double rawAvg = ((Number) avgObj).doubleValue();
+							if (isMonthlyBillingEnabled) {
+								double quarterRatio = effectiveMonths / 3.0;
+								meterReading = rawAvg * quarterRatio;
+							} else {
+								meterReading = rawAvg;
+							}
 						} else {
 							meterReading = totalUOM;
 						}
 					}
- 
+
 					BigDecimal remainingConsumption = BigDecimal.valueOf(meterReading);
 					BigDecimal totalAmount = BigDecimal.ZERO;
- 
+
 					// sort slabs by range
 					List<Slab> slabs = applicableBillSlab.getSlabs().stream()
 							.filter(s -> s.getEffectiveFrom() <= System.currentTimeMillis()
 									&& s.getEffectiveTo() >= System.currentTimeMillis())
 							.sorted(Comparator.comparing(Slab::getFrom))
 							.collect(Collectors.toList());
- 
+
 					for (Slab slab : slabs) {
- 
 						if (remainingConsumption.compareTo(BigDecimal.ZERO) <= 0) {
 							break;
 						}
- 
 						double slabFrom = slab.getFrom() == 0 ? 1 : slab.getFrom();
 						double slabTo = slab.getTo();
- 
 						BigDecimal slabRange = BigDecimal.valueOf(slabTo - slabFrom + 1);
- 
 						BigDecimal billableUnits = remainingConsumption.min(slabRange);
- 
 						BigDecimal slabAmount = billableUnits.multiply(BigDecimal.valueOf(slab.getCharge()));
- 
+
 						totalAmount = totalAmount.add(slabAmount);
 						remainingConsumption = remainingConsumption.subtract(billableUnits);
 					}
- 
-					BigDecimal minimumCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
+
+					BigDecimal minimumCharge;
+					if (isMonthlyBillingEnabled) {
+						double monthlyRate = applicableBillSlab.getMinimumCharge() / 3.0;
+						minimumCharge = BigDecimal.valueOf(monthlyRate * effectiveMonths);
+					} else {
+						minimumCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
+					}
 
 					Boolean isMinChargeApplied = applicableBillSlab.getIsminimumchargeapplied();
 					Boolean isMinChargeNotApplied = applicableBillSlab.getIsminimumchargenotapplied();
@@ -418,9 +423,7 @@ public class EstimationService {
 								}
 							}
 						}
-
 						boolean isLockedStatus = WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus);
-
 						if (isLockedStatus) {
 							totalAmount = minimumCharge;
 						}
@@ -430,10 +433,9 @@ public class EstimationService {
 							totalAmount = minimumCharge;
 						}
 					}
- 
+
 					waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
 					// PI-20289 Metered Breakdown penalty enable and working new logic
- 
 				}  else if (WSCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
 	                request.setTaxPeriodFrom(criteria.getFrom());
 	                request.setTaxPeriodTo(criteria.getTo());
@@ -792,6 +794,15 @@ public class EstimationService {
 		calendar.set(Calendar.MINUTE, 59);
 		calendar.set(Calendar.SECOND, 59);
 		calendar.set(Calendar.MILLISECOND, 999);
+	}
+
+	public long calculateEffectiveMonths(Long fromDate, Long toDate) {
+		if (fromDate == null || toDate == null || toDate <= fromDate) {
+			return 1L;
+		}
+		double days = (toDate - fromDate) / (1000.0 * 60 * 60 * 24.0);
+		long months = Math.round(days / 30.0);
+		return months < 1 ? 1L : months;
 	}
 
 	/**

@@ -34,7 +34,19 @@ public class BillingSlab {
 	@JsonAlias({"isMeterStatusApplied", "ismeterstatusapplied"})
 	private List<String> ismeterstatusapplied;
 
+	@JsonProperty("ismonthlybillingenabled")
+	@JsonAlias({"isMonthlyBillingEnabled", "ismonthlybillingenabled"})
+	private Boolean ismonthlybillingenabled = false;
+
 	private List<Slab> slabs = new ArrayList<>();
+
+	public Boolean getIsmonthlybillingenabled() {
+		return ismonthlybillingenabled;
+	}
+
+	public void setIsmonthlybillingenabled(Boolean ismonthlybillingenabled) {
+		this.ismonthlybillingenabled = ismonthlybillingenabled;
+	}
 
 	public Boolean getIsminimumchargeapplied() {
 		return isminimumchargeapplied;

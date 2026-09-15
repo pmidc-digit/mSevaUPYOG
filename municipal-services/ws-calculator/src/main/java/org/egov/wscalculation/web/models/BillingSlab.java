@@ -22,6 +22,10 @@ public class BillingSlab {
 	private String calculationAttribute = null;
 	private double minimumCharge;
 
+	@JsonProperty("isminimumchargeapplied")
+	@JsonAlias({"isMinimumChargeApplied", "isminimumchargeapplied"})
+	private Boolean isminimumchargeapplied;
+
 	@JsonProperty("isminimumchargenotapplied")
 	@JsonAlias({"isMinimumChargeNotApplied", "isminimumchargenotapplied"})
 	private Boolean isminimumchargenotapplied;
@@ -30,7 +34,27 @@ public class BillingSlab {
 	@JsonAlias({"isMeterStatusApplied", "ismeterstatusapplied"})
 	private List<String> ismeterstatusapplied;
 
+	@JsonProperty("ismonthlybillingenabled")
+	@JsonAlias({"isMonthlyBillingEnabled", "ismonthlybillingenabled"})
+	private Boolean ismonthlybillingenabled = false;
+
 	private List<Slab> slabs = new ArrayList<>();
+
+	public Boolean getIsmonthlybillingenabled() {
+		return ismonthlybillingenabled;
+	}
+
+	public void setIsmonthlybillingenabled(Boolean ismonthlybillingenabled) {
+		this.ismonthlybillingenabled = ismonthlybillingenabled;
+	}
+
+	public Boolean getIsminimumchargeapplied() {
+		return isminimumchargeapplied;
+	}
+
+	public void setIsminimumchargeapplied(Boolean isminimumchargeapplied) {
+		this.isminimumchargeapplied = isminimumchargeapplied;
+	}
 
 	public Boolean getIsminimumchargenotapplied() {
 		return isminimumchargenotapplied;
@@ -64,7 +88,8 @@ public class BillingSlab {
 	public String toString() {
 		return "BillingSlab [id=" + id + ", buildingType=" + buildingType + ", connectionType=" + connectionType
 				+ ", waterSubUsageType=" + waterSubUsageType + ", calculationAttribute=" + calculationAttribute
-				+ ", minimumCharge=" + minimumCharge + ", isminimumchargenotapplied=" + isminimumchargenotapplied
+				+ ", minimumCharge=" + minimumCharge + ", isminimumchargeapplied=" + isminimumchargeapplied
+				+ ", isminimumchargenotapplied=" + isminimumchargenotapplied
 				+ ", ismeterstatusapplied=" + ismeterstatusapplied + ", slabs=" + slabs.toString() + "]";
 	}
 }

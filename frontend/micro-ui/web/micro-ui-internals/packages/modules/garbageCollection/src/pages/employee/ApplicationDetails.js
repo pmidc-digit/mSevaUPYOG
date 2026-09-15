@@ -467,7 +467,7 @@ const ChallanApplicationDetails = () => {
           </Card>
         )} */}
 
-        {/* <PaymentHistory consumerCode={getChallanData?.applicationNo} service="gc-services" tenantId={tenantId} title="Garbage Payment History" /> */}
+        <PaymentHistory consumerCode={getChallanData?.connectionNo} service="GC" tenantId={tenantId} title="Garbage Payment History" />
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
 
         {!hideStatuses.includes(getChallanData?.applicationStatus) && actions && (

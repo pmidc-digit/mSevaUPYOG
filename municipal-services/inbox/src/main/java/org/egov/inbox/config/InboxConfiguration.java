@@ -133,5 +133,8 @@ public class InboxConfiguration {
 
 	@Value("${es.search.default.sort.order}")
 	private String defaultSortOrder;
+
+	@Value("${inbox.cross.tenant.excluded.tenantid:pb.testing}")
+	private String crossTenantExcludedTenantId;
 }
 

@@ -264,7 +264,7 @@ const RALApplicationDetails = () => {
         approverComment: filtData?.comment,
       };
     }
-    
+
     // if (!filtData?.assignee && filtData.action == "FORWARD") {
     //   // setShowToast(true);
     //   setShowToast({ key: "error", message: "Assignee is mandatory" });
@@ -495,7 +495,11 @@ const RALApplicationDetails = () => {
             <React.Fragment>
               <CardSubHeader className="ral-card-subheader-24">{t("RAL_ARREAR_DETAILS")}</CardSubHeader>
               <StatusTable>
-                <Row label={t("Arrears")} text={tValue(rawAdditionalDetails?.arrear)} />
+                <Row label={t("Base Arrear")} text={tValue(rawAdditionalDetails?.arrear)} />
+                <Row label={t("Arrear GST")} text={rawAdditionalDetails?.arrearGST ?? "-"} />
+                <Row label={t("Arrear Penalty")} text={rawAdditionalDetails?.arrearPenalty ?? "-"} />
+                <Row label={t("Future Penalty")} text={rawAdditionalDetails?.futurePenalty ?? "-"} />
+
                 <Row
                   label={t("Last Billing Period")}
                   text={rawAdditionalDetails?.lastBillingPeriod ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN") : "-"}

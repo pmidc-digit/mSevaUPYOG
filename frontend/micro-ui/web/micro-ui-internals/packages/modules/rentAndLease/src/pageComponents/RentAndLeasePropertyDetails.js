@@ -125,6 +125,10 @@ const RentAndLeasePropertyDetails = ({
       duration: "",
       gstAmount: "",
       rebateAmount: "",
+      arrearGST: "",
+      arrearPenalty: "",
+      futurePenalty: "",
+
     },
   });
 
@@ -165,8 +169,12 @@ const RentAndLeasePropertyDetails = ({
   useEffect(() => {
     if (!isLegacyApplication || !hasArrears) {
       setValue("arrear", "");
+      setValue("arrearGST", "");
+      setValue("arrearPenalty", "");
+      setValue("futurePenalty", "");
+
       setValue("lastBillingPeriod", "");
-      clearErrors(["arrear", "lastBillingPeriod"]);
+      clearErrors(["arrear", "lastBillingPeriod", "arrearGST", "arrearPenalty", "futurePenalty"]);
     }
 
     if (!isLegacyApplication || hasArrears) {
@@ -229,6 +237,10 @@ const RentAndLeasePropertyDetails = ({
 
     if (applicationType !== "Legacy" || data?.isArrear?.code !== "Yes") {
       delete data["arrear"];
+      data["arrearGST"] = null;
+      data["arrearPenalty"] = null;
+      data["futurePenalty"] = null;
+
       delete data["lastBillingPeriod"];
     }
 
@@ -244,7 +256,7 @@ const RentAndLeasePropertyDetails = ({
     triggerLoader(true);
     // Build one consistent object
     const propertyDetails = Object.keys(data).reduce((acc, key) => {
-      acc[key] = data?.[key] || null; // ✅ optional chaining + null fallback
+      acc[key] = data?.[key] ?? null; // ✅ optional chaining + null fallback
       return acc;
     }, {});
 
@@ -270,11 +282,10 @@ const RentAndLeasePropertyDetails = ({
       const checkBillingPeriod = additionalDetailsRes?.lastBillingPeriod || propertyDetails?.lastBillingPeriod;
       const checklastPaidUpto = additionalDetailsRes?.lastPaidUpto || propertyDetails?.lastPaidUpto;
       const checkRevisedDatePeriod = additionalDetailsRes?.lastRentRevisedDate || propertyDetails?.lastRentRevisedDate;
-      const savedIsArrear = propertyDetails?.isArrear || additionalDetailsRes?.isArrear;
-      const isArrearCode = savedIsArrear?.code || savedIsArrear;
-      const selectedIsArrear = checklastPaidUpto
-        ? arrearTypeOptions.find((option) => option.code === "No")
-        : arrearTypeOptions.find((option) => option.code === isArrearCode) || null;
+      const savedArrear = propertyDetails?.arrear !== undefined ? propertyDetails.arrear : additionalDetailsRes?.arrear;
+      const arrearAmount = Number(savedArrear);
+      const isArrearCode = Number.isFinite(arrearAmount) && arrearAmount !== 0 ? "Yes" : "No";
+      const selectedIsArrear = arrearTypeOptions.find((option) => option.code === isArrearCode);
       const formatDateForInput = (value) => {
         if (!value) return "";
         if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
@@ -293,8 +304,12 @@ const RentAndLeasePropertyDetails = ({
       );
       // const lastBillingPeriod = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails?.lastBillingPeriod;
 
+      setValue("arrearGST", Object.prototype.hasOwnProperty.call(propertyDetails, "arrearGST") ? propertyDetails.arrearGST ?? "" : additionalDetailsRes?.arrearGST ?? "");
+      setValue("arrearPenalty", Object.prototype.hasOwnProperty.call(propertyDetails, "arrearPenalty") ? propertyDetails.arrearPenalty ?? "" : additionalDetailsRes?.arrearPenalty ?? "");
+      setValue("futurePenalty", Object.prototype.hasOwnProperty.call(propertyDetails, "futurePenalty") ? propertyDetails.futurePenalty ?? "" : additionalDetailsRes?.futurePenalty ?? "");
       setValue("area", findBuildingValue);
-      setValue("isArrear", selectedIsArrear);
+      setValue("arrear", savedArrear ?? "");
+      setValue("isArrear", selectedIsArrear, { shouldValidate: true });
       setValue("lastBillingPeriod", formatDateForInput(checkBillingPeriod));
       setValue("lastRentRevisedDate", formatDateForInput(checkRevisedDatePeriod));
       setValue("lastPaidUpto", formatDateForInput(checklastPaidUpto));
@@ -763,7 +778,7 @@ const RentAndLeasePropertyDetails = ({
         <div className={hasArrears ? "ral-arrear-details" : "ral-arrear-details ral-arrear-details-hidden"}>
           <LabelFieldPair>
             <CardLabel>
-              {t("Arrears")} <span className="mandatory-asterisk">*</span>
+              {t("Base Arrear")} <span className="mandatory-asterisk">*</span>
             </CardLabel>
 
             <div className="form-field">
@@ -790,6 +805,90 @@ const RentAndLeasePropertyDetails = ({
             </div>
           </LabelFieldPair>
           {errors.arrear && <CardLabelError className="ral-error-label">{getErrorMessage("arrear")}</CardLabelError>}
+
+          {/* arrearGST */}
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Arrear GST")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="arrearGST"
+                rules={{ required: hasArrears ? t("Arrear GST is required") : false }}
+                render={({ value, onChange, onBlur }) => (
+                  <input
+                    className="employee-card-input undefined focus-visible undefined"
+                    type="number"
+                    value={value ?? ""}
+                    onChange={(e) => onChange(e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
+                    onBlur={(e) => {
+                      onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.arrearGST && <CardLabelError className="ral-error-label">{getErrorMessage("arrearGST")}</CardLabelError>}
+
+          {/* arrearPenalty */}
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Arrear Penalty")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="arrearPenalty"
+                rules={{ required: hasArrears ? t("Arrear Penalty is required") : false }}
+                render={({ value, onChange, onBlur }) => (
+                  <input
+                    className="employee-card-input undefined focus-visible undefined"
+                    type="number"
+                    value={value ?? ""}
+                    onChange={(e) => onChange(e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
+                    onBlur={(e) => {
+                      onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.arrearPenalty && <CardLabelError className="ral-error-label">{getErrorMessage("arrearPenalty")}</CardLabelError>}
+
+          {/* futurePenalty */}
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Future Penalty")} <span className="mandatory-asterisk">*</span>
+            </CardLabel>
+
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="futurePenalty"
+                rules={{ required: hasArrears ? t("Future Penalty is required") : false }}
+                render={({ value, onChange, onBlur }) => (
+                  <input
+                    className="employee-card-input undefined focus-visible undefined"
+                    type="number"
+                    value={value ?? ""}
+                    onChange={(e) => onChange(e.target.value)}
+                    onWheel={(e) => e.currentTarget.blur()}
+                    onBlur={(e) => {
+                      onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors.futurePenalty && <CardLabelError className="ral-error-label">{getErrorMessage("futurePenalty")}</CardLabelError>}
 
           {/* Last Billing Month */}
           <LabelFieldPair>

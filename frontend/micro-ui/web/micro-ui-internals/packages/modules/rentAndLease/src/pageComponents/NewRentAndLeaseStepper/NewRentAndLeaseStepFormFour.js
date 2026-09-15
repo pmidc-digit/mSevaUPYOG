@@ -165,6 +165,19 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
       // additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
 
+      // Keep explicit cleared values; do not restore old arrears on update.
+      const arrearsApplicable = applicationType === "Legacy" &&
+        (updatedPropertyDetails?.isArrear?.code || updatedPropertyDetails?.isArrear) !== "No";
+      additionalDetails.arrearGST = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearGST") ? updatedPropertyDetails.arrearGST : originalAdditionalDetails?.arrearGST) ?? null
+        : null;
+      additionalDetails.arrearPenalty = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearPenalty") ? updatedPropertyDetails.arrearPenalty : originalAdditionalDetails?.arrearPenalty) ?? null
+        : null;
+      additionalDetails.futurePenalty = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "futurePenalty") ? updatedPropertyDetails.futurePenalty : originalAdditionalDetails?.futurePenalty) ?? null
+        : null;
+
       additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount ?? originalAdditionalDetails?.gstAmount;
       additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount ?? originalAdditionalDetails?.rebateAmount;
 
@@ -277,6 +290,19 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           : { ...originalAdditionalDetails };
 
       // additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
+
+      // Keep explicit cleared values; do not restore old arrears on update.
+      const arrearsApplicable = applicationType === "Legacy" &&
+        (updatedPropertyDetails?.isArrear?.code || updatedPropertyDetails?.isArrear) !== "No";
+      additionalDetails.arrearGST = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearGST") ? updatedPropertyDetails.arrearGST : originalAdditionalDetails?.arrearGST) ?? null
+        : null;
+      additionalDetails.arrearPenalty = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearPenalty") ? updatedPropertyDetails.arrearPenalty : originalAdditionalDetails?.arrearPenalty) ?? null
+        : null;
+      additionalDetails.futurePenalty = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "futurePenalty") ? updatedPropertyDetails.futurePenalty : originalAdditionalDetails?.futurePenalty) ?? null
+        : null;
 
       additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount ?? originalAdditionalDetails?.gstAmount;
       additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount ?? originalAdditionalDetails?.rebateAmount;

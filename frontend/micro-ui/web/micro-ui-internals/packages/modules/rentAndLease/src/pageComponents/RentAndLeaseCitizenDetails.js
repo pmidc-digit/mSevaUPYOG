@@ -119,6 +119,10 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       applicationType === "Legacy"
         ? {
             arrear: currentStepData?.propertyDetails?.arrear,
+            arrearGST: currentStepData?.propertyDetails?.arrearGST ?? null,
+            arrearPenalty: currentStepData?.propertyDetails?.arrearPenalty ?? null,
+            futurePenalty: currentStepData?.propertyDetails?.futurePenalty ?? null,
+
             arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
             lastRentRevisedDate: lastRentRevisedDate,
             incrementPeriodMonths: currentStepData?.propertyDetails?.incrementPeriodMonths?.code,

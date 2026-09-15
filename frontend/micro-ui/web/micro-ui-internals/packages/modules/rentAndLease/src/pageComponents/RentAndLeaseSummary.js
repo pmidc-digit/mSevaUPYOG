@@ -133,6 +133,10 @@ function RentAndLeaseSummary({ t }) {
               <h3 className="ral-summary-heading">{t("Additional Details")}</h3>
             </div>
             {renderRow(t("Arrears"), property?.arrear)}
+            {renderRow(t("Arrear GST"), property?.arrearGST ?? "-")}
+            {renderRow(t("Arrear Penalty"), property?.arrearPenalty ?? "-")}
+            {renderRow(t("Future Penalty"), property?.futurePenalty ?? "-")}
+
             {property?.lastBillingPeriod && renderRow(t("Last Billing Period"), property.lastBillingPeriod)}
             {property?.lastPaidUpto && renderRow(t("Last Paid Upto"), property.lastPaidUpto)}
             {property?.lastRentRevisedDate && renderRow(t("Last Rent Revised Date"), property.lastRentRevisedDate)}

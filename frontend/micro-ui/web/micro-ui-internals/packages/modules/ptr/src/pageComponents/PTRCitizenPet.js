@@ -159,6 +159,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     const { address, name, pincode, ...filteredOwnerDetails } = currentStepData.ownerDetails;
     const formData = {
       tenantId,
+      consentDocument: ptrId, 
       owner: {
         ...filteredOwnerDetails,
         name: name,

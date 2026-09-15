@@ -80,7 +80,6 @@ class UserService {
 
   async loginUser(mobileNumber, tenantId) {
     console.log("Into Login User mobileNumber", mobileNumber, "tenant id", tenantId);
-    console.log("Into Login User mobileNumber", config.userService.userServiceHardCodedPassword);
     let data = new URLSearchParams();
     data.append('grant_type', 'password');
     data.append('scope', 'read');

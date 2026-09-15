@@ -1,0 +1,36 @@
+.digit-table-top-horizontal-scrollbar {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 18px;
+  scrollbar-width: auto;
+  scrollbar-color: #2563eb #e2e8f0;
+
+  &::-webkit-scrollbar {
+    height: 14px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #e2e8f0;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #2563eb;
+    border: 3px solid #e2e8f0;
+    border-radius: 8px;
+  }
+}
+
+
+.inbox-table-top-scroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ndc-new-table {
+    min-width: 2200px;
+    margin-bottom: 0;
+  }
+}

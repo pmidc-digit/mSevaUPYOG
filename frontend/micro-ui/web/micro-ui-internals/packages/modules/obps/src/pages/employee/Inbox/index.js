@@ -7,19 +7,6 @@ import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templ
 import useInboxTableConfig from "./useInboxTableConfig";
 import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
 
-const getSearchableText = (value, visited = new WeakSet()) => {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
-  if (typeof value !== "object" || visited.has(value)) return "";
-
-  visited.add(value);
-  return Array.isArray(value)
-    ? value.map((item) => getSearchableText(item, visited)).join(" ")
-    : Object.values(value)
-        .map((item) => getSearchableText(item, visited))
-        .join(" ");
-};
-
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
@@ -214,6 +201,7 @@ const Inbox = ({ parentRoute }) => {
 
   const memoizedFilters = useMemo(() => {
     const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
+    const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
     const normalizedFilterForm = {
       ...(formState?.filterForm || filterFormDefaultValues),
       businessService:
@@ -227,7 +215,11 @@ const Inbox = ({ parentRoute }) => {
     return {
       filterForm: normalizedFilterForm,
       searchForm: formState?.searchForm || searchFormDefaultValues,
-      tableForm,
+      tableForm: {
+        ...tableForm,
+        limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
+        offset: isTopBarSearchActive ? 0 : tableForm.offset,
+      },
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -239,6 +231,8 @@ const Inbox = ({ parentRoute }) => {
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
     selectedTenantIdDefaultValues,
+    topBarSearch,
+    totalCountData,
   ]);
 
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useBPAInbox({
@@ -436,22 +430,16 @@ const Inbox = ({ parentRoute }) => {
     onApiMobileSearch("");
   }, [onApiMobileSearch]);
 
-  const locallyFilteredTableData = useMemo(() => {
-    const query = topBarSearch.trim().toLowerCase();
-    if (!query) return tableData;
-
-    return tableData.filter((row) => getSearchableText(row).toLowerCase().includes(query));
-  }, [tableData, topBarSearch]);
-
   const propsForInboxTable = useInboxTableConfig({
     parentRoute,
     onPageSizeChange,
     formState,
     totalCount: totalCountData,
-    table: locallyFilteredTableData,
+    table: tableData,
     dispatch,
     onSortingByData,
-    globalSearch: false,
+    globalSearch: topBarSearch,
+    cities
   });
 
   const {

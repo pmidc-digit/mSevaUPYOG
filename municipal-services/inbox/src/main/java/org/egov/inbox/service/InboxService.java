@@ -262,9 +262,9 @@ public class InboxService {
         }
         List<String> statusIds = new ArrayList<>(statusIdNameMap.keySet());
 
-        boolean isPunjabCrossTenantLayoutClu = criteria.getTenantId() != null
+        boolean isPunjabCrossTenant = criteria.getTenantId() != null
                 && criteria.getTenantId().equalsIgnoreCase("pb.punjab")
-                && (moduleName.equalsIgnoreCase("layout-service") || moduleName.equalsIgnoreCase("clu-service"));
+                && (moduleName.equalsIgnoreCase("layout-service") || moduleName.equalsIgnoreCase("clu-service") || moduleName.equalsIgnoreCase("bpa-service") || moduleName.equalsIgnoreCase("bpa-services") || moduleName.equalsIgnoreCase("bpa") || moduleName.equalsIgnoreCase(BPA));
 
         // Fetch full status count map for the UI.
         // Citizen inbox uses a searcher-based path (multi-tenant, by applicationNo);
@@ -274,7 +274,7 @@ public class InboxService {
             fullStatusCountMap = getCitizenStatusCount(
                     criteria, allActionableStatuses, requestInfo, businessServiceName, moduleName);
         }
-        else if (isPunjabCrossTenantLayoutClu) {
+        else if (isPunjabCrossTenant) {
             fullStatusCountMap = getCrossTenantEmployeeStatusCount(
                     criteria, allActionableStatuses, businessSrvs, requestInfo, businessServiceName, moduleName);
         }
@@ -290,7 +290,7 @@ public class InboxService {
         // it instead of an extra count-endpoint call. statusIdNameMap is already filtered by the user's
         // status filter, so only the matching statuses are summed.
         int searcherCount;
-        if (isPunjabCrossTenantLayoutClu && !isCitizenInboxCall) {
+        if (isPunjabCrossTenant && !isCitizenInboxCall) {
             // statusIdNameMap is reassigned in the read-only fallback above, so capture a final snapshot
             Map<String, String> filteredStatusIds = statusIdNameMap;
             searcherCount = fullStatusCountMap.stream()
@@ -318,7 +318,7 @@ public class InboxService {
         processCriteria.setIsProcessCountCall(Boolean.FALSE);
 
         ProcessInstanceResponse processInstanceResponse =
-                isPunjabCrossTenantLayoutClu
+                isPunjabCrossTenant
                 ? workflowCrossTenantFetching(processCriteria, requestInfo, crossTenantApplns)
                 : workflowService.getProcessInstance(processCriteria, requestInfo);
 
@@ -652,8 +652,23 @@ public class InboxService {
 
             case BPA:
             case "bpa-service":
-                applicationNumbers = bpaInboxFilterService.fetchApplicationNumbersFromSearcher(
-                        criteria, statusIdNameStringMap, requestInfo);
+            case "bpa":
+                if (criteria.getTenantId() != null && criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
+                    List<Map<String, String>> tenantWiseApplns = bpaInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(
+                            criteria, statusIdNameStringMap, requestInfo);
+                    if (!CollectionUtils.isEmpty(tenantWiseApplns)) {
+                        applicationNumbers = tenantWiseApplns.stream()
+                                .map(m -> m.get("applicationno"))
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList());
+                        crossTenantApplns.addAll(tenantWiseApplns);
+                    }
+                } else {
+                    applicationNumbers = bpaInboxFilterService.fetchApplicationNumbersFromSearcher(
+                            criteria, statusIdNameStringMap, requestInfo);
+                }
+                if (!CollectionUtils.isEmpty(applicationNumbers))
+                    moduleSearchCriteria.put(BPA_APPLICATION_NUMBER_PARAM, applicationNumbers);
                 break;
 
             case "bpareg":
@@ -2582,6 +2597,8 @@ public class InboxService {
             tenantWiseApplns = layoutInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
         } else if ("clu-service".equalsIgnoreCase(moduleName)) {
             tenantWiseApplns = cluInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
+        } else if ("bpa-service".equalsIgnoreCase(moduleName) || "bpa-services".equalsIgnoreCase(moduleName) || "bpa".equalsIgnoreCase(moduleName) || BPA.equalsIgnoreCase(moduleName)) {
+            tenantWiseApplns = bpaInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
         }
 
         if (!CollectionUtils.isEmpty(tenantWiseApplns)) {

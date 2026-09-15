@@ -2428,3 +2428,40 @@ input[type="date"] {
 .hrms-text-transform {
   text-transform: none !important;
 }
+.noc-doc-label {
+  font-weight: bold;
+  font-size: 16px;
+  margin: 0;
+
+  &--with-dropdown {
+    margin-bottom: 8px;
+  }
+}
+
+.noc-doc-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+
+  &--has-dropdown {
+    align-items: flex-start;
+  }
+}
+
+.noc-doc-col {
+  flex: 1;
+  min-width: 250px;
+}
+
+.noc-doc-hint {
+  padding-top: 10px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.noc-doc-description {
+  padding: 0 10px 10px;
+  font-size: 13px;
+  color: #717171;
+}

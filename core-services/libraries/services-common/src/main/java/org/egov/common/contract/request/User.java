@@ -5,6 +5,7 @@ import lombok.*;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,6 +13,7 @@ import java.util.List;
 @Builder
 @ToString
 @EqualsAndHashCode
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
     private Long id;
 

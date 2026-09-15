@@ -29,9 +29,11 @@ import static org.egov.tlcalculator.utils.TLCalculatorConstants.BILLINGSLAB_KEY;
 import static org.egov.tlcalculator.utils.TLCalculatorConstants.MDMS_ROUNDOFF_TAXHEAD;
 import static org.egov.tlcalculator.utils.TLCalculatorConstants.businessService_BPA;
 import static org.egov.tlcalculator.utils.TLCalculatorConstants.businessService_TL;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Service
+@Slf4j
 public class DemandService {
 
     @Autowired
@@ -265,19 +267,39 @@ public class DemandService {
         Object result = serviceRequestRepository.fetchResult(new StringBuilder(uri),RequestInfoWrapper.builder()
                                                       .requestInfo(requestInfo).build());
 
-        DemandResponse response;
+        // Handle null response
+        if (result == null) {
+            return Collections.emptyList();
+        }
+
+        // Handle Demands = []
+        if (result instanceof Map) {
+            Map<?, ?> resultMap = (Map<?, ?>) result;
+
+            Object demandsObject = resultMap.get("Demands");
+
+            if (demandsObject instanceof Collection
+                    && ((Collection<?>) demandsObject).isEmpty()) {
+                return Collections.emptyList();
+            }
+        }
+
         try {
-             response = mapper.convertValue(result,DemandResponse.class);
+            DemandResponse response =
+                    mapper.convertValue(result, DemandResponse.class);
+
+            return response.getDemands() != null
+                    ? response.getDemands()
+                    : Collections.emptyList();
+
+        } catch (IllegalArgumentException e) {
+            log.error("Failed to convert Demand Search response: {}", result, e);
+
+            throw new CustomException(
+                "PARSING ERROR",
+                "Failed to parse response from Demand Search"
+            );
         }
-        catch (IllegalArgumentException e){
-            throw new CustomException("PARSING ERROR","Failed to parse response from Demand Search");
-        }
-
-        if(CollectionUtils.isEmpty(response.getDemands()))
-            return null;
-
-        else return response.getDemands();
-
     }
 
 

@@ -3,6 +3,7 @@ package org.egov.tlcalculator.web.models.tradelicense;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import tools.jackson.databind.JsonNode;
 import io.swagger.annotations.ApiModel;
 import org.egov.tlcalculator.utils.TLCalculatorConstants;
 import org.egov.tlcalculator.web.models.AuditDetails;

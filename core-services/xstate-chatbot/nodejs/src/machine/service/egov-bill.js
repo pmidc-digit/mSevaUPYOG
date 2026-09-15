@@ -19,10 +19,20 @@ class BillService {
   getSupportedServicesAndMessageBundle() {
     let services = this.services;
     let messageBundle = {
-      WS: {
-        en_IN: 'Water and Sewerage',
-        hi_IN: 'पानी और सीवरेज',
-        pa_IN: 'ਪਾਣੀ ਅਤੇ ਸੀਵਰੇਜ'
+      // WS: {
+      //   en_IN: 'Water and Sewerage',
+      //   hi_IN: 'पानी और सीवरेज',
+      //   pa_IN: 'ਪਾਣੀ ਅਤੇ ਸੀਵਰੇਜ'
+      // },
+       WS: {
+        en_IN: 'Water',
+        hi_IN: 'पानी',
+        pa_IN: 'ਪਾਣੀ'
+      },
+      SW: {
+        en_IN: 'Sewerage',
+        hi_IN: 'सीवरेज',
+        pa_IN: 'ਸੀਵਰੇਜ'
       },
       PT: {
         en_IN: 'Property Tax',
@@ -81,7 +91,7 @@ class BillService {
       }
     }
     let searchOptions = [];
-    if(service === 'WS') {
+    if(service === 'WS' || service === 'SW') {
       searchOptions = [ 'connectionNumber'];
     } else if(service === 'PT') {
       searchOptions = [ 'propertyId'];
@@ -124,12 +134,21 @@ class BillService {
     if(searchParamOption === 'connectionNumber'){
       option = {
         en_IN: 'Connection No',
-        hi_IN: 'कनेक्शन नंबर'
+        hi_IN: 'कनेक्शन नंबर',
+        pa_IN: 'ਕਨੈਕਸ਼ਨ ਨੰਬਰ'
       };
-      example = {
-       en_IN: '(Connection Number must be in format\nXXXXXXXXXX OR WS/XXX/XX-XX/XXXXX)',
-       hi_IN: '(कनेक्शन नंबर nXXXXXXXXXX OR WS/XXX/XX-XX/XXXXX प्रारूप में होना चाहिए)'
-      }
+      if(service === 'WS'){
+         example = {
+           en_IN: '(Connection Number must be in format\nXXXXXXXXXX OR WS/XXX/XX-XX/XXXXX)',
+           hi_IN: '(कनेक्शन नंबर XXXXXXXXXX OR WS/XXX/XX-XX/XXXXX प्रारूप में होना चाहिए)', 
+           pa_IN: '(ਕਨੈਕਸ਼ਨ ਨੰਬਰ XXXXXXXXXX ਜਾਂ WS/XXX/XX-XX/XXXXX ਫਾਰਮੈਟ ਵਿੱਚ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ)' }; 
+          } 
+      if(service === 'SW'){ 
+        example = { 
+          en_IN: '(Connection Number must be in format\nXXXXXXXXXX OR SW/XXX/XX-XX/XXXXX)', 
+          hi_IN: '(कनेक्शन नंबर XXXXXXXXXX OR SW/XXX/XX-XX/XXXXX प्रारूप में होना चाहिए)', 
+          pa_IN: '(ਕਨੈਕਸ਼ਨ ਨੰਬਰ XXXXXXXXXX ਜਾਂ SW/XXX/XX-XX/XXXXX ਫਾਰਮੈਟ ਵਿੱਚ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ)' }; 
+        }
     }
 
     if(searchParamOption === 'propertyId'){
@@ -195,7 +214,7 @@ class BillService {
         //   let regexp = new RegExp(state+'-PT-\\d{4}-\\d{2}-\\d{2}-\\d+$');
         //   return regexp.test(paramInput);
         // }
-        if(service === 'WS'){
+        if(service === 'WS' || service === 'SW'){
           //todo
           let regexp = new RegExp('^(WS|SW)/\\d{3}/\\d{4}-\\d{2}/\\d+$');
           return regexp.test(paramInput);
@@ -384,7 +403,9 @@ class BillService {
 
     if(service){
       if(service === 'WS')
-      billSupportedBussinessService = ['WS','SW'];
+        billSupportedBussinessService = ['WS'];
+      if(service === 'SW')
+        billSupportedBussinessService = ['SW'];
       if(service === 'PT')
       billSupportedBussinessService = ['PT'];
       if(service === 'BPA')

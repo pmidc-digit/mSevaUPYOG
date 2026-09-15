@@ -137,7 +137,7 @@ const FireNOCApplicantDetails = (_props) => {
   const isIndividual = applicantType?.code === "INDIVIDUAL" || applicantType?.group === "INDIVIDUAL";
   console.log("isIndividual", isIndividual);
   
-  const isInstitutional = applicantType?.group === "INSTITUTIONAL";
+  const isInstitutional = applicantType?.group === "INSTITUTIONAL" || applicantType?.code?.startsWith("INSTITUTIONAL");
   const isMultipleOwner = applicantSubtype?.code?.includes("MULTIPLEOWNERS");
 
   /* ─── Reset owners when applicant type OR sub‑type changes ─── */

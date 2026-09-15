@@ -75,8 +75,8 @@ public class SewerageFieldValidator implements SewerageActionValidator {
 		if (SWConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(
 		        sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction())) {
 		    
-		    boolean isRegularizedOrLegacy = valueOfConnectionCategory.equalsIgnoreCase("REGULARIZED")|| valueOfConnectionCategory.equalsIgnoreCase("DISCHARGE_CONNECTION")
-		                                     || valueOfConnectionCategory.equalsIgnoreCase("LEGACY");
+		    boolean isRegularizedOrLegacy = "REGULARIZED".equalsIgnoreCase(valueOfConnectionCategory)|| "DISCHARGE_CONNECTION".equalsIgnoreCase(valueOfConnectionCategory)
+		                                     || "LEGACY".equalsIgnoreCase(valueOfConnectionCategory);
 
 		    if (sewerageConnectionRequest.getSewerageConnection().getRoadCuttingInfo() == null && !isRegularizedOrLegacy) {
 		        errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");

@@ -199,81 +199,361 @@ const BillDetails = ({ paymentRules, businessService }) => {
 
   return (
     <React.Fragment>
-      <Header>{t("CS_PAYMENT_BILL_DETAILS")}</Header>
-      <Card>
-        <div>
-          <KeyNote
-            keyValue={t(businessService == "PT.MUTATION" ? "PDF_STATIC_LABEL_MUATATION_NUMBER_LABEL" : label)}
-            note={wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode}
-          />
-          {businessService !== "PT.MUTATION" && businessService !== "FSM.TRIP_CHARGES" && (
-            <KeyNote keyValue={t("CS_PAYMENT_BILLING_PERIOD")} note={getBillingPeriod()} />
-          )}
-          {businessService?.includes("PT") ||
-            (wrkflow === "WNS" && billDetails?.currentBillNo && <KeyNote keyValue={t("CS_BILL_NO")} note={billDetails?.currentBillNo} />)}
-          {businessService?.includes("PT") ||
-            (wrkflow === "WNS" && billDetails?.currentExpiryDate && (
-              <KeyNote keyValue={t("CS_BILL_DUEDATE")} note={new Date(billDetails?.currentExpiryDate).toLocaleDateString()} />
-            ))}
-          {businessService === "FSM.TRIP_CHARGES" ? (
-            <div>
-              <KeyNote keyValue={t("ES_PAYMENT_DETAILS_TOTAL_AMOUNT")} note={application?.pdfData?.totalAmount} />
-              <KeyNote keyValue={t("ES_PAYMENT_DETAILS_ADV_AMOUNT")} note={application?.pdfData?.advanceAmount} />
-              {application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT_CITIZEN" ||
-              application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT" ? (
-                <KeyNote keyValue={t("FSM_DUE_AMOUNT_TO_BE_PAID")} note={application?.pdfData?.totalAmount - application?.pdfData?.advanceAmount} />
-              ) : null}
-            </div>
-          ) : (
-            <BillSumary billAccountDetails={getBillBreakDown()} total={getTotal()} businessService={businessService} arrears={Arrears} />
-          )}
-          <ArrearSummary bill={bill} />
-        </div>
+      <style>{`
+        .bill-details-container {
+          max-width: 100%;
+          min-height: 100vh;
+          margin: 0;
+          padding: 48px 16px;
+          background: #F9FAFB;
+        }
 
-        <div className="bill-payment-amount">
-          <hr className="underline" />
-          <CardSubHeader>{t("CS_COMMON_PAYMENT_AMOUNT")}</CardSubHeader>
-          {businessService === "FSM.TRIP_CHARGES" ? null : (
-            <RadioButtons
-              selectedOption={paymentType}
-              onSelect={setPaymentType}
-              options={
-                paymentRules.partPaymentAllowed &&
-                application?.pdfData?.paymentPreference !== "POST_PAY" &&
-                application?.pdfData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT_CITIZEN"
-                  ? [t("CS_PAYMENT_ADV_COLLECTION")]
-                  : [t("CS_PAYMENT_FULL_AMOUNT")]
-              }
-            />
-          )}
+        .bill-details-wrapper {
+          max-width: 64rem;
+          margin: 0 auto;
+          width: 100%;
+          flex: 1;
+        }
 
-          <div style={{ position: "relative" }}>
-            <span
-              className="payment-amount-front"
-              style={{ border: `1px solid ${paymentType === t("CS_PAYMENT_FULL_AMOUNT") ? "#9a9a9a" : "#9a9a9a"}` }}
-            >
-              ₹
-            </span>
-            {paymentType !== t("CS_PAYMENT_FULL_AMOUNT") ? (
-              businessService === "FSM.TRIP_CHARGES" ? (
-                <TextInput className="text-indent-xl" onChange={() => {}} value={getAdvanceAmount()} disable={true} />
-              ) : (
-                <TextInput className="text-indent-xl" onChange={(e) => onChangeAmount(e.target.value)} value={amount} disable={getTotal() === 0} />
-              )
-            ) : (
-              <TextInput className="text-indent-xl" value={getTotal()} onChange={() => {}} disable={true} />
-            )}
-            {formError === "CS_CANT_PAY_BELOW_MIN_AMOUNT" ? (
-              <span className="card-label-error">
-                {t(formError)}: {"₹" + minAmountPayable}
-              </span>
-            ) : (
-              <span className="card-label-error">{t(formError)}</span>
-            )}
+        .bill-header-section {
+          margin-bottom: 32px;
+        }
+
+        .bill-header-title {
+          font-size: 32px;
+          font-weight: 700;
+          color: #111827;
+          margin-bottom: 24px;
+        }
+
+        .bill-details-card {
+          background: white;
+          border-radius: 12px;
+          padding: 32px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .bill-info-section {
+          margin-bottom: 32px;
+        }
+
+        .bill-info-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 0;
+          border-bottom: 1px solid #E5E7EB;
+        }
+
+        .bill-info-row:last-child {
+          border-bottom: none;
+        }
+
+        .bill-info-label {
+          font-size: 14px;
+          font-weight: 600;
+          color: #6B7280;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .bill-info-value {
+          font-size: 16px;
+          font-weight: 600;
+          color: #111827;
+        }
+
+        .bill-divider {
+          border: none;
+          border-top: 2px solid #E5E7EB;
+          margin: 32px 0;
+        }
+
+        .bill-payment-section-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #111827;
+          margin-bottom: 24px;
+        }
+
+        .bill-amount-display {
+          background: linear-gradient(135deg, #0052CC 0%, #003D99 100%);
+          border-radius: 12px;
+          padding: 32px;
+          margin: 24px 0;
+          color: white;
+          text-align: center;
+        }
+
+        .bill-amount-label {
+          font-size: 14px;
+          font-weight: 600;
+          opacity: 0.9;
+          margin-bottom: 8px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .bill-amount-value {
+          font-size: 48px;
+          font-weight: 700;
+          line-height: 1.1;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .bill-input-group {
+          margin: 24px 0;
+        }
+
+        .bill-input-label {
+          display: block;
+          font-size: 14px;
+          font-weight: 600;
+          color: #111827;
+          margin-bottom: 8px;
+        }
+
+        .bill-amount-input-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .bill-currency-symbol {
+          position: absolute;
+          left: 16px;
+          font-size: 18px;
+          font-weight: 600;
+          color: #6B7280;
+          pointer-events: none;
+        }
+
+        .bill-text-input {
+          width: 100%;
+          padding: 12px 12px 12px 40px;
+          border: 1px solid #E5E7EB;
+          border-radius: 8px;
+          font-size: 16px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          background: white;
+          color: #111827;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .bill-text-input:focus {
+          outline: none;
+          border-color: #0052CC;
+          box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+        }
+
+        .bill-text-input:disabled {
+          background: #F9FAFB;
+          cursor: not-allowed;
+        }
+
+        .bill-error-message {
+          display: block;
+          font-size: 13px;
+          color: #DC2626;
+          margin-top: 8px;
+          font-weight: 500;
+        }
+
+        .bill-submit-btn {
+          width: 100%;
+          padding: 16px 24px;
+          background: #0052CC;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 4px 12px rgba(5, 82, 204, 0.3);
+          margin-top: 24px;
+        }
+
+        .bill-submit-btn:hover:not(:disabled) {
+          background: #003D99;
+          box-shadow: 0 4px 12px rgba(5, 82, 204, 0.4);
+        }
+
+        .bill-submit-btn:active:not(:disabled) {
+          transform: scale(0.98);
+        }
+
+        .bill-submit-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        @media (max-width: 640px) {
+          .bill-details-container {
+            padding: 32px 16px;
+          }
+
+          .bill-header-title {
+            font-size: 24px;
+            margin-bottom: 16px;
+          }
+
+          .bill-details-card {
+            padding: 24px;
+          }
+
+          .bill-amount-value {
+            font-size: 36px;
+          }
+
+          .bill-info-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+        }
+      `}</style>
+
+      <div className="bill-details-container">
+        <div className="bill-details-wrapper">
+          {/* Header Section */}
+          <div className="bill-header-section">
+            <h1 className="bill-header-title">{t("CS_PAYMENT_BILL_DETAILS")}</h1>
           </div>
-          <SubmitBar disabled={!paymentAllowed || getTotal() === 0} onSubmit={onSubmit} label={t("CS_COMMON_PROCEED_TO_PAY")} />
+
+          {/* Details Card */}
+          <div className="bill-details-card">
+            {/* Bill Information Section */}
+            <div className="bill-info-section">
+              <div className="bill-info-row">
+                <span className="bill-info-label">
+                  {t(businessService == "PT.MUTATION" ? "PDF_STATIC_LABEL_MUATATION_NUMBER_LABEL" : label)}
+                </span>
+                <span className="bill-info-value">
+                  {wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode}
+                </span>
+              </div>
+
+              {businessService !== "PT.MUTATION" && businessService !== "FSM.TRIP_CHARGES" && (
+                <div className="bill-info-row">
+                  <span className="bill-info-label">{t("CS_PAYMENT_BILLING_PERIOD")}</span>
+                  <span className="bill-info-value">{getBillingPeriod()}</span>
+                </div>
+              )}
+
+              {(businessService?.includes("PT") || wrkflow === "WNS") && billDetails?.currentBillNo && (
+                <div className="bill-info-row">
+                  <span className="bill-info-label">{t("CS_BILL_NO")}</span>
+                  <span className="bill-info-value">{billDetails?.currentBillNo}</span>
+                </div>
+              )}
+
+              {(businessService?.includes("PT") || wrkflow === "WNS") && billDetails?.currentExpiryDate && (
+                <div className="bill-info-row">
+                  <span className="bill-info-label">{t("CS_BILL_DUEDATE")}</span>
+                  <span className="bill-info-value">{new Date(billDetails?.currentExpiryDate).toLocaleDateString()}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Bill Summary */}
+            {businessService !== "FSM.TRIP_CHARGES" ? (
+              <>
+                <BillSumary billAccountDetails={getBillBreakDown()} total={getTotal()} businessService={businessService} arrears={Arrears} />
+                <ArrearSummary bill={bill} />
+              </>
+            ) : (
+              <div className="bill-info-section">
+                <div className="bill-info-row">
+                  <span className="bill-info-label">{t("ES_PAYMENT_DETAILS_TOTAL_AMOUNT")}</span>
+                  <span className="bill-info-value">₹ {application?.pdfData?.totalAmount}</span>
+                </div>
+                <div className="bill-info-row">
+                  <span className="bill-info-label">{t("ES_PAYMENT_DETAILS_ADV_AMOUNT")}</span>
+                  <span className="bill-info-value">₹ {application?.pdfData?.advanceAmount}</span>
+                </div>
+                {(application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT_CITIZEN" ||
+                  application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT") && (
+                  <div className="bill-info-row">
+                    <span className="bill-info-label">{t("FSM_DUE_AMOUNT_TO_BE_PAID")}</span>
+                    <span className="bill-info-value">
+                      ₹ {application?.pdfData?.totalAmount - application?.pdfData?.advanceAmount}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Payment Divider */}
+            <hr className="bill-divider" />
+
+            {/* Payment Amount Section */}
+            <div className="bill-payment-amount">
+              <h3 className="bill-payment-section-title">{t("CS_COMMON_PAYMENT_AMOUNT")}</h3>
+
+              {/* Payment Type Selection */}
+              {businessService !== "FSM.TRIP_CHARGES" && (
+                <div className="bill-input-group">
+                  <RadioButtons
+                    selectedOption={paymentType}
+                    onSelect={setPaymentType}
+                    options={
+                      paymentRules.partPaymentAllowed &&
+                      application?.pdfData?.paymentPreference !== "POST_PAY" &&
+                      application?.pdfData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT_CITIZEN"
+                        ? [t("CS_PAYMENT_ADV_COLLECTION")]
+                        : [t("CS_PAYMENT_FULL_AMOUNT")]
+                    }
+                  />
+                </div>
+              )}
+
+              {/* Amount Display Card */}
+              <div className="bill-amount-display">
+                <div className="bill-amount-label">{t("CS_COMMON_PAYMENT_AMOUNT")}</div>
+                <div className="bill-amount-value">
+                  ₹ {paymentType !== t("CS_PAYMENT_FULL_AMOUNT")
+                    ? (businessService === "FSM.TRIP_CHARGES" ? getAdvanceAmount() : amount)
+                    : getTotal()}
+                </div>
+              </div>
+
+              {/* Amount Input Field */}
+              {paymentType !== t("CS_PAYMENT_FULL_AMOUNT") && businessService !== "FSM.TRIP_CHARGES" && (
+                <div className="bill-input-group">
+                  <label className="bill-input-label">{t("CS_COMMON_ENTER_AMOUNT")}</label>
+                  <div className="bill-amount-input-wrapper">
+                    <span className="bill-currency-symbol">₹</span>
+                    <TextInput
+                      className="bill-text-input"
+                      onChange={(e) => onChangeAmount(e.target.value)}
+                      value={amount}
+                      disable={getTotal() === 0}
+                      type="number"
+                    />
+                  </div>
+                  {formError && (
+                    <span className="bill-error-message">
+                      {formError === "CS_CANT_PAY_BELOW_MIN_AMOUNT"
+                        ? `${t(formError)}: ₹${minAmountPayable}`
+                        : t(formError)}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                className="bill-submit-btn"
+                disabled={!paymentAllowed || getTotal() === 0}
+                onClick={onSubmit}
+              >
+                {t("CS_COMMON_PROCEED_TO_PAY")}
+              </button>
+            </div>
+          </div>
         </div>
-      </Card>
+      </div>
     </React.Fragment>
   );
 };

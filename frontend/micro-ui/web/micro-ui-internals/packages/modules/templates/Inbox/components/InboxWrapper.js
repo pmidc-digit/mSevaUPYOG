@@ -112,11 +112,70 @@
 
 
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Card, Table } from "@mseva/digit-ui-react-components";
 import InboxExportMenu from "./InboxExportMenu";
+import "./TopTableScrollbar.scss";
 
+const TopTableScrollbar = ({ containerRef, enabled, tableData }) => {
+  const scrollbarRef = useRef(null);
+  const [contentWidth, setContentWidth] = useState(0);
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+
+    const scrollContainer = containerRef.current?.querySelector(".inbox-table-top-scroll");
+    const scrollbar = scrollbarRef.current;
+    if (!scrollContainer || !scrollbar) return undefined;
+
+    const updateWidth = () => {
+      setContentWidth(scrollContainer.scrollWidth > scrollContainer.clientWidth ? scrollContainer.scrollWidth : 0);
+    };
+    const syncFromTable = () => {
+      if (scrollbar.scrollLeft !== scrollContainer.scrollLeft) scrollbar.scrollLeft = scrollContainer.scrollLeft;
+    };
+    const syncToTable = () => {
+      if (scrollContainer.scrollLeft !== scrollbar.scrollLeft) scrollContainer.scrollLeft = scrollbar.scrollLeft;
+    };
+
+    updateWidth();
+    scrollContainer.addEventListener("scroll", syncFromTable);
+    scrollbar.addEventListener("scroll", syncToTable);
+    window.addEventListener("resize", updateWidth);
+    const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateWidth);
+    resizeObserver?.observe(scrollContainer);
+    const table = scrollContainer.querySelector("table");
+    if (table) resizeObserver?.observe(table);
+
+    return () => {
+      scrollContainer.removeEventListener("scroll", syncFromTable);
+      scrollbar.removeEventListener("scroll", syncToTable);
+      window.removeEventListener("resize", updateWidth);
+      resizeObserver?.disconnect();
+    };
+  }, [containerRef, enabled, tableData]);
+
+  useEffect(() => {
+    const scrollContainer = containerRef.current?.querySelector(".inbox-table-top-scroll");
+    if (scrollbarRef.current && scrollContainer) scrollbarRef.current.scrollLeft = scrollContainer.scrollLeft;
+  }, [containerRef, contentWidth]);
+
+  if (!enabled) return null;
+
+  return (
+    <div
+      ref={scrollbarRef}
+      className="digit-table-top-horizontal-scrollbar"
+      style={{ display: contentWidth ? "block" : "none" }}
+      role="region"
+      aria-label="Horizontal table scroll"
+      tabIndex={0}
+    >
+      <div style={{ width: contentWidth, height: 1 }} />
+    </div>
+  );
+};
 
 const InboxWrapper = ({
   title,
@@ -135,6 +194,7 @@ const InboxWrapper = ({
   children,
 }) => {
   const { t } = useTranslation();
+  const tableCardRef = useRef(null);
 
   return (
     <div className="new-inbox-wrapper">
@@ -169,7 +229,7 @@ const InboxWrapper = ({
             {emptyMessage || t("CS_MYAPPLICATIONS_NO_APPLICATION")}
           </Card>
         ) : (
-          <div className="new-inbox-table-card">
+          <div className="new-inbox-table-card" ref={tableCardRef}>
             <div className="new-inbox-table-header cardHeaderWithOptions">
               <span>{t(tableHeader)}</span>
               {showExport && tableData?.length > 0 && (
@@ -183,11 +243,20 @@ const InboxWrapper = ({
                 />
               )}
             </div>
+            <TopTableScrollbar
+              containerRef={tableCardRef}
+              enabled={tableProps.stickyHorizontalScrollbar === true}
+              tableData={tableData}
+            />
             <Table
               isPaginationRequired={false}
               t={t}
               {...tableProps}
+              customTableWrapperClassName={`${tableProps.customTableWrapperClassName || ""} ${
+                tableProps.stickyHorizontalScrollbar === true ? "inbox-table-top-scroll" : ""
+              }`.trim()}
             />
+
           </div>
         )}
 

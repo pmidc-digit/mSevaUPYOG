@@ -164,6 +164,10 @@ const InboxTopBar = ({
   statuses = [],
   activeTab = "ALL",
   onTabClick,
+  apiMobileValue = "",
+  onApiMobileChange,
+  onApiMobileSearch,
+  onApiMobileClear,
   searchValue = "",
   onSearchChange,
   searchPlaceholder = "Search by application number...",
@@ -244,6 +248,34 @@ const InboxTopBar = ({
         )}
       </div>
 
+      <div className="new-inbox-search-actions">
+        {onApiMobileSearch && (
+          <div className="new-inbox-api-search">
+            <input
+              type="tel"
+              inputMode="numeric"
+              className="new-inbox-api-search-input"
+              aria-label={t("Mobile Number")}
+              placeholder={t("Mobile Number")}
+              value={apiMobileValue}
+              onChange={onApiMobileChange}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  onApiMobileSearch(apiMobileValue);
+                }
+              }}
+            />
+            <button type="button" className="new-inbox-api-search-button" onClick={() => onApiMobileSearch(apiMobileValue)}>
+              {t("Search")}
+            </button>
+            {onApiMobileClear && (
+              <button type="button" className="new-inbox-api-clear-button" onClick={onApiMobileClear}>
+                {t("Clear")}
+              </button>
+            )}
+          </div>
+        )}
       <div className="new-inbox-search">
         <span aria-hidden="true" className="new-inbox-search-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -253,6 +285,7 @@ const InboxTopBar = ({
         </span>
 
         <input type="text" className="new-inbox-search-input" value={searchValue} onChange={onSearchChange} placeholder={searchPlaceholder} />
+      </div>
       </div>
     </div>
   );

@@ -4,12 +4,29 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encodeURIComponentCustom } from "../../../utils";
 
-const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId }) => {
+const useInboxTableConfig = ({
+  parentRoute,
+  onPageSizeChange,
+  formState,
+  totalCount,
+  table,
+  dispatch,
+  onSortingByData,
+  tenantId,
+  globalSearch,
+  cities,
+}) => {
   const { t } = useTranslation();
   const location = useLocation();
   const cameFromOBPS = location.state?.fromOBPS;
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
+
+  const filterCityName = (id, cityNames) => {
+    const fiterData = cityNames?.find((item) => item?.code === id);
+    return fiterData?.ulbName;
+  };
+
   const GetStatusCell = (value) =>
     value === "CS_NA" ? (
       t(value)
@@ -98,6 +115,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
       {
+        Header: t("ULB"),
+        accessor: (row) => filterCityName(row?.tenantId, cities),
+        disableSortBy: true,
+      },
+      {
         Header: t("CATEGORY"),
         accessor: (row) => row?.category,
         disableSortBy: true,
@@ -137,7 +159,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       //   accessor: (row) => GetStatusCell(row?.sla),
       // },
     ];
-  });
+  }, [cities]);
 
   return {
     getCellProps: (cellInfo) => {
@@ -168,7 +190,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     onSort: onSortingByData,
     // sortParams: [{id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false}],
     totalRecords: totalCount,
-    onSearch: formState?.searchForm?.message,
+    onSearch: globalSearch,
+    searchAllFields: true,
     onLastPage: () =>
       dispatch({
         action: "mutateTableForm",

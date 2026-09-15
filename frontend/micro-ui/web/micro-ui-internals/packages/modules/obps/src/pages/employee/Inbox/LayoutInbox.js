@@ -194,16 +194,12 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const memoizedFilters = useMemo(() => {
     const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
-    const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
 
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
       searchForm: formState?.searchForm || searchFormDefaultValues,
-      tableForm: {
-        ...tableForm,
-        limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
-        offset: isTopBarSearchActive ? 0 : tableForm.offset,
-      },
+      // Manual text search filters the loaded rows without changing the API query.
+      tableForm,
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -215,8 +211,6 @@ const LayoutInbox = ({ parentRoute }) => {
     filterFormDefaultValues,
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
-    topBarSearch,
-    totalCountData,
   ]);
 
   const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({

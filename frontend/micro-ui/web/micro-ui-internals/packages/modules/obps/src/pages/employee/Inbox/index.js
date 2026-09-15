@@ -201,7 +201,6 @@ const Inbox = ({ parentRoute }) => {
 
   const memoizedFilters = useMemo(() => {
     const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
-    const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
     const normalizedFilterForm = {
       ...(formState?.filterForm || filterFormDefaultValues),
       businessService:
@@ -215,11 +214,8 @@ const Inbox = ({ parentRoute }) => {
     return {
       filterForm: normalizedFilterForm,
       searchForm: formState?.searchForm || searchFormDefaultValues,
-      tableForm: {
-        ...tableForm,
-        limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
-        offset: isTopBarSearchActive ? 0 : tableForm.offset,
-      },
+      // Manual text search filters the loaded rows without changing the API query.
+      tableForm,
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -231,8 +227,6 @@ const Inbox = ({ parentRoute }) => {
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
     selectedTenantIdDefaultValues,
-    topBarSearch,
-    totalCountData,
   ]);
 
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.obps.useBPAInbox({

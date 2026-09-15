@@ -109,6 +109,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             user = encryptionDecryptionUtil.decryptObject(
                     user, "UserListSelf", User.class, requestInfo
             );
+            
+            requestInfo.setUserInfo(org.egov.common.contract.request.User.builder().uuid(user.getUuid()).id(user.getId()).build());
 
         } catch (UserNotFoundException | DuplicateUserNameException e) {
             log.error("Login failed", e);
@@ -253,7 +255,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         User updatedUser = userService.updateWithoutOtpValidation(
                 user.toBuilder()
                         .accountLocked(false)
-                        .password(user.getPassword())
+                        .password(null)
                         .build(),
                 requestInfo
         );

@@ -267,6 +267,39 @@ const PropertyDetails = () => {
         asSectionHeader: true,
        // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
+          <div style={{ display: "flex", textAlign : "center",  gap: "15px", flexWrap: "wrap" }}>
+            <LinkLabel
+              onClick={() => {
+               isCitizen ?
+                history.push( `/digit-ui/citizen/payment/collect/PT/${applicationNumber}?tenantId=${applicationDetails?.tenantId}`)
+                :
+                history.push( `/digit-ui/employee/payment/collect/PT/${applicationNumber}?tenantId=${applicationDetails?.tenantId}`)
+              }}
+              style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '100px', borderRadius: '8px', backgroundColor: '#2947a3', color: 'white', cursor: 'pointer', textDecoration: 'none' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '100px', borderRadius: '8px', backgroundColor: '#2947a3', color: 'white', cursor: 'pointer', textDecoration: 'none' }}
+            >
+              {t("PT_PAY_DUE")}
+            </LinkLabel>
+            <LinkLabel
+              onClick={() => {
+                const element = document.getElementById("payment-history");
+                if (element) {
+                  const header = element.querySelector(".accordion-header");
+                  const body = element.querySelector(".accordion-body");
+                  if (header && !body) {
+                    header.click();
+                  }
+                  setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                } else {
+                  history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`, state: { tenantId: appDetailsToShow?.applicationData?.tenantId } });
+                }
+              }}
+              style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' }}
+            >
+              {t("PT_VIEW_PAYMENT")}
+            </LinkLabel>
+          </div>
           <LinkLabel
             onClick={() => {
               const element = document.getElementById("payment-history");

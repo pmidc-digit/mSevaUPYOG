@@ -151,6 +151,9 @@ const NewLogin = ({ stateCode }) => {
 
       setUser({ info, ...tokens });
     } catch (e) {
+      const errorMessage = e?.response?.data?.error_description || e?.error_description || t("CS_COMMON_ERROR");
+      setError(errorMessage);
+      setIsError(true);
       setCanSubmit(true);
       setIsOtpValid(false);
     }

@@ -105,6 +105,8 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <BillsIcon />;
       case "KibanaDashboard":
         return <BillsIcon />;
+      case "OBPSKibanaDashboard":
+        return <BillsIcon />;
       case "CLU":
         return <OBPSIcon />;
       default:

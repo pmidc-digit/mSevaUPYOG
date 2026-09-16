@@ -62,6 +62,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -353,8 +354,7 @@ public class PaymentValidator {
                     if (!StringUtils.isEmpty(billDetail.getVoucherHeader()))
                         billDetailFromDb.setVoucherHeader(billDetail.getVoucherHeader());
 
-                    billDetailFromDb.setAdditionalDetails(
-                            jsonMerge(billDetailFromDb.getAdditionalDetails(), billDetail.getAdditionalDetails()));
+                    billDetailFromDb.setAdditionalDetails(billDetailFromDb.getAdditionalDetails());
 
 
 

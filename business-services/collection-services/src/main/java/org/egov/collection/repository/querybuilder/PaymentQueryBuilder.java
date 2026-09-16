@@ -273,7 +273,7 @@ public class PaymentQueryBuilder {
 		sqlParameterSource.addValue("amountpaid", billDetail.getAmountPaid());
 		sqlParameterSource.addValue("fromperiod", billDetail.getFromPeriod());
 		sqlParameterSource.addValue("toperiod", billDetail.getToPeriod());
-		sqlParameterSource.addValue("additionaldetails", getJsonb(billDetail.getAdditionalDetails()));
+		sqlParameterSource.addValue("additionaldetails", getJsonb((JsonNode) billDetail.getAdditionalDetails()));
 		sqlParameterSource.addValue("channel", billDetail.getChannel());
 		sqlParameterSource.addValue("voucherheader", billDetail.getVoucherHeader());
 		sqlParameterSource.addValue("boundary", billDetail.getBoundary());
@@ -652,7 +652,7 @@ public class PaymentQueryBuilder {
 
 		MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();
 		sqlParameterSource.addValue("id", billDetail.getId());
-		sqlParameterSource.addValue("additionaldetails", getJsonb(billDetail.getAdditionalDetails()));
+		sqlParameterSource.addValue("additionaldetails", getJsonb((JsonNode) billDetail.getAdditionalDetails()));
 		sqlParameterSource.addValue("voucherheader", billDetail.getVoucherHeader());
 		sqlParameterSource.addValue("manualreceiptnumber", billDetail.getManualReceiptNumber());
 		sqlParameterSource.addValue("manualreceiptdate", billDetail.getManualReceiptDate());

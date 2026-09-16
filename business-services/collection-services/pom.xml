@@ -69,10 +69,6 @@
       <artifactId>json-path</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.datatype</groupId>
-      <artifactId>jackson-datatype-jsr310</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>
@@ -97,7 +93,7 @@
     <repository>
       <id>repo.egovernments.org</id>
       <name>eGov ERP Releases Repository</name>
-      <url>https://nexus-repo.egovernments.org/nexus/content/repositories/releases/</url>
+      <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-releases/</url>
     </repository>
     <repository>
       <id>repo.egovernments.org.snapshots</id>

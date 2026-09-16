@@ -40,7 +40,7 @@
 package org.egov.collection.web.contract;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
+//import tools.jackson.databind.JsonNode;
 import lombok.*;
 import org.egov.collection.model.AuditDetails;
 import org.egov.collection.model.enums.CollectionType;
@@ -107,7 +107,7 @@ public class BillDetail {
 	private Long toPeriod = null;
 
 	@JsonProperty("additionalDetails")
-	private JsonNode additionalDetails = null;
+	private Object additionalDetails = null;
 
 	@SanitizeHtml
 	@JsonProperty("channel")

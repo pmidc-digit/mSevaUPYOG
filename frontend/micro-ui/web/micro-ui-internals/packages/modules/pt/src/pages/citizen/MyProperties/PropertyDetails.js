@@ -282,7 +282,7 @@ const PropertyDetails = () => {
         asSectionHeader: true,
        // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
-          <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", textAlign : "center",  gap: "15px", flexWrap: "wrap" }}>
             <LinkLabel
               onClick={() => {
                isCitizen ?

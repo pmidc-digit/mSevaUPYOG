@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
             target:
               env.REACT_APP_PROXY_URL ||
               env.REACT_APP_PROXY_API ||
-              "https://mseva.lgpunjab.gov.in/",
+              "https://sdc-uat.lgpunjab.gov.in/",
             changeOrigin: true,
             secure: false,
           },

@@ -874,6 +874,26 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
   const [y1, m1, d1] = currentStepData?.createdResponse?.additionalDetails?.nocObject?.approvedOn?.split("-") || [];
   const nocApprovedDate = `${d1}/${m1}/${y1}`;
 
+  const edcrReq = currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest || currentStepData?.createdResponse?.edcrDetails?.planDetail?.edcrRequest || {};
+  const addDetails = currentStepData?.createdResponse?.additionalDetails || {};
+
+
+  const areaType = edcrReq?.areaType || addDetails?.areaType;
+  const formatAreaType = (type) => (type === "SCHEME_AREA" ? "Scheme Area" : type === "NON_SCHEME_AREA" ? "Non-Scheme Area" : type || "NA");
+  const formatYesNo = (val) => (val === true || val === "YES" ? "YES" : val === false || val === "NO" ? "NO" : val ?? "NA");
+
+  const schemeArea = edcrReq?.schemeArea || addDetails?.schemeArea;
+  const schName = edcrReq?.schName || addDetails?.schemeName;
+  const siteReserved = edcrReq?.siteReserved ?? addDetails?.siteReserved;
+  const approvedCS = edcrReq?.approvedCS ?? addDetails?.approvedCS;
+  const cluApprove = edcrReq?.cluApprove ?? addDetails?.cluApprove;
+  const coreArea = edcrReq?.coreArea ?? addDetails?.coreArea;
+  const roadType = addDetails?.roadType?.name || addDetails?.roadType || edcrReq?.roadType;
+
+  const isSchemeArea = areaType === "SCHEME_AREA" || areaType === "Scheme Area";
+  const isNonSchemeArea = areaType === "NON_SCHEME_AREA" || areaType === "Non-Scheme Area";
+  const isSiteReservedYes = formatYesNo(siteReserved) === "YES";
+
 
     if (apiLoading || isFileLoading) return (<Loader />);
 
@@ -1308,6 +1328,62 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 {currentStepData?.createdResponse?.applicationType !== "BUILDING_OC_PLAN_SCRUTINY" && <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
                     <div className="data-table">
+                        {areaType && (
+                            <div className="row border-none">
+                                <h2>{t(`EDCR_SCRUTINY_AREA_TYPE`)}</h2>
+                                <div className="value">{formatAreaType(areaType)}</div>
+                            </div>
+                        )}
+                        {isSchemeArea && (
+                            <React.Fragment>
+                                {schemeArea && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_SCRUTINY_SCHEME_AREA_TYPES`)}</h2>
+                                        <div className="value">{schemeArea}</div>
+                                    </div>
+                                )}
+                                {schName && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_SCHEME_NAME`)}</h2>
+                                        <div className="value">{schName}</div>
+                                    </div>
+                                )}
+                                {siteReserved !== undefined && siteReserved !== null && siteReserved !== "" && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_IS_SITE_RESERVED`)}</h2>
+                                        <div className="value">{formatYesNo(siteReserved)}</div>
+                                    </div>
+                                )}
+                                {isSiteReservedYes && approvedCS !== undefined && approvedCS !== null && approvedCS !== "" && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_IS_APPROVED_CONTROL_SHEET`)}</h2>
+                                        <div className="value">{formatYesNo(approvedCS)}</div>
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        )}
+                        {isNonSchemeArea && (
+                            <React.Fragment>
+                                {cluApprove !== undefined && cluApprove !== null && cluApprove !== "" && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_SCRUTINY_CLU_APPROVED`)}</h2>
+                                        <div className="value">{formatYesNo(cluApprove)}</div>
+                                    </div>
+                                )}
+                                {coreArea !== undefined && coreArea !== null && coreArea !== "" && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_IS_CORE_AREA`)}</h2>
+                                        <div className="value">{formatYesNo(coreArea)}</div>
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        )}
+                        {roadType && (
+                            <div className="row border-none">
+                                <h2>{t(`BPA_ROAD_TYPE`)}</h2>
+                                <div className="value">{roadType}</div>
+                            </div>
+                        )}
                         <div className="row border-none">
                             <h2>{t(`BPA_APPROVED_COLONY_LABEL`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.approvedColony || t("CS_NA")}</div>

@@ -248,10 +248,49 @@ const getMohallaLocale = (value = "", tenantId = "") => {
   };
   
   const getAdditionalDetails = (BPA, edcr, t) => {
+    const edcrReq = edcr?.planDetail?.edcrRequest || edcr?.edcrRequest || {};
+    const addDetails = BPA?.additionalDetails || {};
+
+    const areaType = edcrReq?.areaType || addDetails?.areaType;
+    const formatAreaType = (type) => (type === "SCHEME_AREA" ? "Scheme Area" : type === "NON_SCHEME_AREA" ? "Non-Scheme Area" : type || "-");
+    const formatYesNo = (val) => (val === true || val === "YES" ? "YES" : val === false || val === "NO" ? "NO" : val ?? "-");
+
+    const schemeArea = edcrReq?.schemeArea || addDetails?.schemeArea;
+    const schName = edcrReq?.schName || addDetails?.schemeName;
+    const siteReserved = edcrReq?.siteReserved ?? addDetails?.siteReserved;
+    const approvedCS = edcrReq?.approvedCS ?? addDetails?.approvedCS;
+    const cluApprove = edcrReq?.cluApprove ?? addDetails?.cluApprove;
+    const coreArea = edcrReq?.coreArea ?? addDetails?.coreArea;
+    const roadType = addDetails?.roadType?.name || addDetails?.roadType || edcrReq?.roadType;
+
+    const isSchemeArea = areaType === "SCHEME_AREA" || areaType === "Scheme Area";
+    const isNonSchemeArea = areaType === "NON_SCHEME_AREA" || areaType === "Non-Scheme Area";
+    const isSiteReservedYes = formatYesNo(siteReserved) === "YES";
+
     const values = [
         { title: t("BPA_ULB_NAME"), value: BPA?.additionalDetails?.UlbName || "-", isNotTranslated: true },
         { title: t("BPA_ULB_TYPE"), value: BPA?.additionalDetails?.Ulblisttype || "-", isNotTranslated: true },
         { title: t("BPA_DISTRICT"), value: BPA?.additionalDetails?.District || "-", isNotTranslated: true },
+        ...(areaType ? [{ title: t("EDCR_SCRUTINY_AREA_TYPE"), value: formatAreaType(areaType), isNotTranslated: true }] : []),
+        ...(isSchemeArea ? [
+          ...(schemeArea ? [{ title: t("EDCR_SCRUTINY_SCHEME_AREA_TYPES"), value: schemeArea, isNotTranslated: true }] : []),
+          ...(schName ? [{ title: t("EDCR_SCHEME_NAME"), value: schName, isNotTranslated: true }] : []),
+          ...(siteReserved !== undefined && siteReserved !== null && siteReserved !== ""
+            ? [{ title: t("EDCR_IS_SITE_RESERVED"), value: formatYesNo(siteReserved), isNotTranslated: true }]
+            : []),
+          ...(isSiteReservedYes && approvedCS !== undefined && approvedCS !== null && approvedCS !== ""
+            ? [{ title: t("EDCR_IS_APPROVED_CONTROL_SHEET"), value: formatYesNo(approvedCS), isNotTranslated: true }]
+            : []),
+        ] : []),
+        ...(isNonSchemeArea ? [
+          ...(cluApprove !== undefined && cluApprove !== null && cluApprove !== ""
+            ? [{ title: t("EDCR_SCRUTINY_CLU_APPROVED"), value: formatYesNo(cluApprove), isNotTranslated: true }]
+            : []),
+          ...(coreArea !== undefined && coreArea !== null && coreArea !== ""
+            ? [{ title: t("EDCR_IS_CORE_AREA"), value: formatYesNo(coreArea), isNotTranslated: true }]
+            : []),
+        ] : []),
+        ...(roadType ? [{ title: t("BPA_ROAD_TYPE"), value: roadType, isNotTranslated: true }] : []),
         { title: t("BPA_APPROVED_COLONY"), value: BPA?.additionalDetails?.approvedColony || "-", isNotTranslated: true },
         ...(BPA?.additionalDetails?.approvedColony === "YES"
           ? [{ title: t("BPA_APPROVED_COLONY_NAME"), value: BPA?.additionalDetails?.nameofApprovedcolony || "-", isNotTranslated: true }]

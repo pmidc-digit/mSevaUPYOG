@@ -464,6 +464,37 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         </div>
       </LabelFieldPair>
 
+      {/* remarks */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("Remarks")}`}</CardLabel>
+        <div className="text-input">
+          <Controller
+            control={control}
+            name="remarks"
+            rules={{
+              pattern: {
+                value: /^[A-Za-z0-9\s.,'/-]+$/,
+                message: t("Remarks are invalid"),
+              },
+              maxLength: { value: 500, message: "Maximum 500 characters" },
+              minLength: { value: 5, message: "Minimum 5 characters" },
+            }}
+            render={({ value, onChange, onBlur }) => (
+              <TextArea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={(e) => {
+                  onBlur(e);
+                  trigger("remarks");
+                }}
+                t={t}
+              />
+            )}
+          />
+          {errors?.remarks && <p className="ads-page-components-adscitizen-details-new--style-4">{errors?.remarks?.message}</p>}
+        </div>
+      </LabelFieldPair>
+
       {/* checkbox self declaration */}
       <div className="ads-page-components-adscitizen-details-new--style-6">
         <Controller

@@ -113,7 +113,7 @@ const ApplicationDetails = () => {
         setPdfFiles(data || {});
       })
       .catch((err) => {
-        console.error("Filefetch error:", err);
+
         setPdfFiles({});
       })
       .finally(() => setFilesLoading(false));
@@ -235,7 +235,7 @@ const ApplicationDetails = () => {
       setShowToast({ key: "success", message: t("ADV_ACKNOWLEDGEMENT_DOWNLOADED_SUCCESSFULLY") });
       setError("Acknowledgement Downloaded Successfully");
     } catch (error) {
-      console.error("Acknowledgement download error:", error);
+
       setShowToast({ key: "error", message: `${error.message}` });
       setError("Something Went Wrong");
     }
@@ -272,7 +272,7 @@ const ApplicationDetails = () => {
   }
 
   const submitAction = async (dataPayload, data) => {
-    console.log("data====", data);
+
 
     const payloadSource = applicationDetails?.Applications?.[0] || applicationDetails?.data?.[0] || applicationDetails?.[0] || bookingObj;
 
@@ -320,7 +320,7 @@ const ApplicationDetails = () => {
       return;
     }
 
-    console.log("formData", formData);
+
     // return;
 
     try {
@@ -348,7 +348,7 @@ const ApplicationDetails = () => {
         setError("Failed to update");
       }
     } catch (err) {
-      console.error("submitAction error:", err);
+
       setShowToast({ key: "error", message: "Something went wrong" });
       setError("Something went wrong");
     }
@@ -376,7 +376,7 @@ const ApplicationDetails = () => {
       if (documentLink) window.open(documentLink, "_blank");
       else setShowToast({ key: "error", message: "Unable to open document" });
     } catch (e) {
-      console.error("handleDownload error", e);
+
       setShowToast({ key: "error", message: "Unable to download document" });
     }
   };
@@ -440,7 +440,7 @@ const ApplicationDetails = () => {
   }
 
   const handleCancelBooking = async (data) => {
-    // console.log("data", data);
+
 
     setShowCancelModal(false);
     const payloadAction = {
@@ -451,7 +451,7 @@ const ApplicationDetails = () => {
     return submitAction({ Licenses: [payloadAction] }, data);
   };
 
-  console.log("applicationDetails", applicationDetails?.bookingApplication[0]?.workflow);
+
 
   return (
     <div className={"employee-main-application-details"}>

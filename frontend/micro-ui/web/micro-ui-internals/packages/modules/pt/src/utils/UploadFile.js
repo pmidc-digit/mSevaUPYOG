@@ -183,13 +183,13 @@ const UploadFileDigiLocker = (props) => {
 
    const fetchDigiLockerDocuments  = async (e) => {
     e.preventDefault()
-   
+
           const digiLockerToken = sessionStorage.getItem('DigiLocker.token1')
           let TokenReq = {
             "authToken":digiLockerToken
           }
           const res1 = await Digit.DigiLockerService.issueDoc({TokenReq })
-          console.log("res1res1res1res1res1",res1)
+
           let uri = res1.IssuedDoc.filter((item)=>{
             return item.doctype == "DRVLC"
           })
@@ -197,15 +197,15 @@ const UploadFileDigiLocker = (props) => {
             "authToken":digiLockerToken,
             "id":uri?.[0]?.uri,
           }
-          
-         console.log("url",uri)
+
+
          if(uri?.length>0)
          {
           const res2 = await Digit.DigiLockerService.uri({"TokenReq":TokenReqNew})
 
           let c= new Blob([res2])
           convertToFile(e,c)
-          
+
           // fetch('https://api.digitallocker.gov.in/public/oauth2/1/file/' + uri?.[0]?.uri, {
           //       method: 'GET',
           //       mode: 'cors',
@@ -216,23 +216,23 @@ const UploadFileDigiLocker = (props) => {
 
           //       },
           //     }).then(res => res.blob().then(data =>{
-          //       console.log("resssssssss",res)
+
           //        var reader = new FileReader();
           //        reader.readAsDataURL(data);
           //       reader.onloadend = function () {
           //         var base64data = reader.result;
           //         var blobData = dataURItoBlob(base64data);
           //         let newFile= new File([blobData], `drivingL.pdf`, { type: "application/pdf" })
-          //         console.log("newFile",newFile)
+
           //         props.onUpload(e,newFile)
           //       //  const response1 =  Digit.UploadServices.Filestorage("property-upload", newFile, Digit.ULBService.getStateId());
-          //       //   console.log("fffffffff",response1)
+
           //     }
-          //     }).catch(err =>{console.log("pdffff",err)})
+
           //     )
-            
+
          }
-         // console.log("data",data)
+
           // fetch('https://api.digitallocker.gov.in/public/oauth2/2/files/issued', {
           //   method: 'GET',                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
           //   mode: 'cors',
@@ -244,7 +244,7 @@ const UploadFileDigiLocker = (props) => {
           //   response.json().then(data => ({
           //     data: data,
           //   }))).then(res => {
-          //     console.log("step 2",res)
+
           //     fetch('https://api.digitallocker.gov.in/public/oauth2/1/file/' + res.data.items[0].uri, {
           //       method: 'GET',
           //       mode: 'cors',
@@ -261,15 +261,15 @@ const UploadFileDigiLocker = (props) => {
           //         var base64data = reader.result;
           //         var blobData = dataURItoBlob(base64data);
           //         let newFile= new File([blobData], `drivingL.pdf`, { type: "application/pdf" })
-          //         console.log("newFile",newFile)
+
           //         props.onUpload(e,newFile)
           //       //  const response1 =  Digit.UploadServices.Filestorage("property-upload", newFile, Digit.ULBService.getStateId());
-          //       //   console.log("fffffffff",response1)
+
           //     }
-          //     }).catch(err =>{console.log("pdffff",err)})
+
           //     )
-          //   }).catch(error => console.log('error2', error))
-       
+
+
   }
   const convertToFile = (e,blob) => {
     var reader = new FileReader();
@@ -280,7 +280,7 @@ const UploadFileDigiLocker = (props) => {
       let newFile = new File([blobData], `drivingL.pdf`, { type: "application/pdf" })
       props.onUpload(e, newFile)
       };
-    
+
   };
   const Close = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg">

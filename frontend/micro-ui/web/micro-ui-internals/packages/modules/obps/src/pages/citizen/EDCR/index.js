@@ -133,7 +133,7 @@ const CreateEDCR = ({ parentRoute }) => {
           throw new Error("FileStore ID was not returned for the DXF file");
         }
       } catch (uploadError) {
-        console.log("uploadError", uploadError);
+
 
         alert("EDCR DXF upload failed");
         setIsSubmitBtnDisable(false);

@@ -21,7 +21,7 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
   sessionStorage.removeItem("clickOnBPAApplyAfterEDCR");
 
   const { data: homePageUrlLinks, isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["homePageUrlLinks"]);
-  console.log(docsList, "DOCS");
+
   const goNext = () => {
     if (JSON.parse(sessionStorage.getItem("BPAintermediateValue")) !== null) {
       let formData = JSON.parse(sessionStorage.getItem("BPAintermediateValue"));

@@ -13,6 +13,6 @@ var requestOptions = {
 
 fetch(url, requestOptions)
   .then(response => response.text())
-  .then(result => console.log(result))
-  .catch(error => console.log('error', error));
+  .then(result => void 0)
+  .catch(error => void 0);
 }

@@ -98,7 +98,7 @@ export const CustomImageUploadHandler = (props) => {
     async function getImage(e) {
         setError(null);
         const file = e.target.files[0];
-        console.log("uploadFile", file);
+
         if (!file) return;
 
         setIsFileUploading(true);
@@ -151,10 +151,10 @@ export const CustomImageUploadHandler = (props) => {
     function addImageThumbnails(thumbnailsData) {
         const { data } = thumbnailsData;
 
-        console.log("dataOfthumbnailsData 1",data)
+
         const newuploadedImagesThumbs = uploadedImagesThumbs?.map((val) => val?.key)
         const newImageObject = data?.fileStoreIds?.find((value) => !newuploadedImagesThumbs?.includes(value?.id));
-        console.log("newImageObject", newImageObject)
+
 
         // Append new thumbnails at the end of existing ones
         setUploadedImagesThumbs((prev) => [...prev, {
@@ -166,22 +166,22 @@ export const CustomImageUploadHandler = (props) => {
     const submit = useCallback(async () => {
         if (uploadedImagesIds !== null && uploadedImagesIds.length > 0) {
             const res = await Digit.UploadServices.Filefetch(uploadedImagesIds, props.tenantId);
-            //console.log("Hellores",res)
+
             addImageThumbnails(res);
         }
     }, [uploadedImagesIds]);
 
     // function deleteImage(img) {
     //     setIsDeleting(true);
-    //     console.log("deleteImageKey 0", uploadedImagesThumbs, img)
+
     //     var deleteImageKey = uploadedImagesThumbs.filter((o, index) => o.image === img);
-    //     console.log("deleteImageKey 1", deleteImageKey)
+
     //     var uploadedthumbs = uploadedImagesThumbs;
     //     var newThumbsList = uploadedthumbs.filter((thumbs) => thumbs != deleteImageKey[0]);
-    //     console.log("deleteImageKey 2", newThumbsList)
+
     //     var indexOfImage = uploadedImagesIds.findIndex((key) => key === deleteImageKey[0].key)
     //     var newUploadedImagesIds = uploadedImagesIds.filter((key) => key !== deleteImageKey[0].key);
-    //     console.log("deleteImageKey 3", newUploadedImagesIds, indexOfImage)
+
     //     setUploadedImagesThumbs(newThumbsList);
     //     setUploadedImagesIds(newUploadedImagesIds);
     //     Digit.SessionStorage.set("PGR_CREATE_IMAGES", newUploadedImagesIds);
@@ -192,13 +192,13 @@ export const CustomImageUploadHandler = (props) => {
         var newUploadedImagesIds = uploadedImagesIds?.filter((key, imageIndex) => index !== imageIndex);
         var updatedGeolocations = props?.geoLocations?.filter((key, imageIndex) => index !== imageIndex);
 
-        console.log("deleteImageKey", newThumbsList, newUploadedImagesIds, updatedGeolocations, index)
+
         props.setGeoLocations(updatedGeolocations)
         setUploadedImagesThumbs(newThumbsList);
         setUploadedImagesIds(newUploadedImagesIds);
         Digit.SessionStorage.set("PGR_CREATE_IMAGES", newUploadedImagesIds);
     }
-    //console.log("uploadedImagesThumbs",uploadedImagesThumbs)
+
     return (
         <React.Fragment>
             {error && <Toast error={true} label={error} onClose={() => setError(null)} />}

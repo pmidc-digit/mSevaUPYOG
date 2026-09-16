@@ -29,7 +29,7 @@ const DisconnectionApplication = () => {
     return <Loader />
   }
 
-  console.log("configconfig",config)
+
   return (
     <Switch>
       {config.map((routeObj, index) => {
@@ -41,7 +41,7 @@ const DisconnectionApplication = () => {
           </Route>
         );
       })}
-    
+
       <Route>
         <Redirect to={`${getPath(match.path, match.params)}/${config.indexRoute}`} />
       </Route>

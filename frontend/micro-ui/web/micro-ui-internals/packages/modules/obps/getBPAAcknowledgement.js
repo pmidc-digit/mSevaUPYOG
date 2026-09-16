@@ -246,7 +246,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       values: values,
     };
   };
-  
+
   const getAdditionalDetails = (BPA, edcr, t) => {
     const edcrReq = edcr?.planDetail?.edcrRequest || edcr?.edcrRequest || {};
     const addDetails = BPA?.additionalDetails || {};
@@ -337,7 +337,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       values: values,
     };
   };
-  
+
   const getScrutinyDetails = (BPA, edcr, t) => {
     const values = [
         //   { title: t("BPA_EDCR_DETAILS"), value: " ", isHeader: true },
@@ -388,7 +388,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       }))
     };
   };
-  
+
   const getBuildingExtractionDetails = (BPA, edcr, t) => {
     const values = [
         //   {
@@ -406,7 +406,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       values: values,
     };
   };
-  
+
   const getDemolitionAreaDetails = (BPA, edcr, t) => {
     const values = [
         //   { title: t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL"), value: " ", isHeader: true },
@@ -418,7 +418,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       values: values,
     };
   };
-  
+
   const pdfDownloadLink = (documents = {}, fileStoreId = "") => {
     let downloadLink = documents[fileStoreId] || "";
     let differentFormats = downloadLink?.split(",") || [];
@@ -493,7 +493,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
           const exiflink = `${window.origin}/filestore/v1/files/id?fileStoreId=${docStoreId}&tenantId=${stateCode}`;
 
           const exifData = await getExifDataFromUrl(exiflink);
-          console.log("exifData in sitephotos", exifData);
+
           if ([3, 6, 8].includes(exifData?.Orientation)) {
             exifData.Orientation = 1;
           }
@@ -537,7 +537,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
           const exiflink = `${window.origin}/filestore/v1/files/id?fileStoreId=${img?.filestoreId}&tenantId=${stateCode}`;
 
           const exifData = await getExifDataFromUrl(exiflink);
-          console.log("exifData in siteImages", exifData);
+
           if ([3, 6, 8].includes(exifData?.Orientation)) {
             exifData.Orientation = 1;
           }
@@ -647,7 +647,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
         if (item.amount) detailParts.push(`${t("Amount")}: ₹${item?.amount?.toLocaleString("en-IN")}`);
         if (item.adjustedAmount) detailParts.push(`${t("Adjusted")}: ₹${item?.adjustedAmount.toLocaleString("en-IN")}`);
         if (item.remark) detailParts.push(`${t("Remarks")}: ${item?.remark}`);
-        
+
         sanctionFeeValues.push({
           title: title,
           value: detailParts.length > 0 ? detailParts.join(", ") : "₹ 0"
@@ -699,7 +699,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
     } 
 
 
-    
+
 
     return {
       t: t,

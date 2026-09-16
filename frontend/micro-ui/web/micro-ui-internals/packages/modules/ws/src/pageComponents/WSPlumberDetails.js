@@ -88,7 +88,7 @@ const createPlumberDetails = () => ({
 
 
 const WSPlumberDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
-    console.log("Form Data & State in WSPlumberDetails: ",formData,formState);
+
     const { t } = useTranslation();
     const filters = func.getQueryStringParams(location.search);
     const [plumberDetails, setPlumberDetails] = useState(formData?.plumberDetails ? [formData?.plumberDetails?.[0]] : [createPlumberDetails()]);
@@ -364,7 +364,7 @@ const PlumberDetails = (_props) => {
                                             </WrapUnMaskComponent>
                                            </div>
                                            </div>
-                                            
+
                                         )}
                                     />
                                 </div>

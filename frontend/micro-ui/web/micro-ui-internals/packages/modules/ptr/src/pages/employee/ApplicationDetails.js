@@ -410,13 +410,13 @@ const ApplicationDetails = () => {
   //                       src="${petImageUrl}"
   //                       alt="Pet Photo"
   //                       class="pet-image"
-  //                       onload="console.log('Pet image loaded successfully:', this.src);"
-  //                       onerror="console.log('Pet image failed to load:', this.src); console.log('Trying fallback image...'); this.src='/adorable-golden-retriever.png';"
+
+
   //                     />
   //                     <div class="image-label">Pet Photo</div>
   //                     <script>
-  //                       console.log('Image URL being used:', '${petImageUrl}');
-  //                       console.log('Pet image data:', ${JSON.stringify(petImage)});
+
+
   //                     </script>
   //                   </div>
   //                 </div>
@@ -746,7 +746,7 @@ const ApplicationDetails = () => {
       getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "petcertificatenew" })
     });
   } else {
-    console.log("Certificate not available. Payment status:", reciept_data?.Payments[0]?.paymentStatus);
+
   }
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {

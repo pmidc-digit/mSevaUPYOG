@@ -69,7 +69,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: cluStepperConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-// console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
+
 
 const CLUStepperForm = () => {
   const history = useHistory();
@@ -81,7 +81,7 @@ const CLUStepperForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  // console.log("formStatePTR: ", formState);
+
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_OBPS_STEP(updatedStepNumber));
@@ -95,13 +95,13 @@ const CLUStepperForm = () => {
     window.scrollTo(0, 0);
   }, [step]);
 
-  // console.log("formData",formData);
+
 
   const handleSubmit = (dataGet) => {
 
   };
 
-  // console.log("formState: ",formState);
+
   return (
     <div className="card">
       <CardHeader divider={true}>

@@ -25,7 +25,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
 
-  console.log("formData in SelectOwnerShipDetails 1", formData);
+
   const formValue = watch();
   const { errors } = localFormState;
      useEffect(() => {
@@ -43,7 +43,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           }
         }
       }, [formValue]);
-    
+
       useEffect(() => {
         if (userType !== "employee" && window.location.href.includes("citizen")) {
           const errorsPresent = !!Object.keys(localFormState.errors).length;
@@ -51,7 +51,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           else if (!errorsPresent && formState.errors?.[config.key]) clearErrors(config.key);
         }
       }, [localFormState]);
-      console.log("localFormState",localFormState?.errors)
+
   useEffect(() => {
     if (!isLoading && SubOwnerShipCategoryOb && OwnerShipCategoryOb) {
       const preFilledPropertyType = SubOwnerShipCategoryOb.filter(
@@ -149,7 +149,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   //     const code = formData?.ownershipCategory?.code;
 
   //     const Ownertype = getDropdwonForProperty(ownerShipdropDown)?.find((e) => e.code === code);
-  //     console.log("SetValues Ownertype", Ownertype);
+
   //     setValue("SelectOwnerShipDetails", Ownertype);
   //     // setPropertyPurpose(Majorbuiltdingtype)
   //   }
@@ -159,7 +159,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
     if (formData?.ownershipCategory?.code && getDropdwonForProperty(ownerShipdropDown)?.length) {
       const code = formData?.ownershipCategory?.code;
       const Ownertype = getDropdwonForProperty(ownerShipdropDown)?.find((e) => e.code === code);
-  
+
       // Only update if it has actually changed
       const current = watch("SelectOwnerShipDetails");
       if (!_.isEqual(current, Ownertype)) {
@@ -167,7 +167,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
       }
     }
   }, [formData?.ownershipCategory?.code, ownerShipdropDown]);
-  
+
 
   useEffect(() => {
     if (userType === "employee") {
@@ -177,7 +177,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
     }
   }, [ownershipCategory]);
 
-  console.log("formData in SelectOwnerShipDetails 2", formData);
+
 
   if (userType === "employee" && editScreen && mutateScreen && loader) {
     return <Loader />;

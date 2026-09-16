@@ -23,7 +23,7 @@ const SelectComplaintType = ({ t, config, onSelect, value }) => {
     return priorityLevel? priorityLevel:{};
   })
   const goNext = () => {
-    console.log("complaintType",complaintType)
+
     sessionStorage.setItem("complaintType",JSON.stringify(complaintType))
     onSelect({ subType , priorityLevel});
   };
@@ -66,10 +66,10 @@ const SelectComplaintType = ({ t, config, onSelect, value }) => {
       }
     })();   
   },[]) 
- 
+
   function selectedSubType(value) {
-   
-    console.log("selectedSubType",value)
+
+
     setSubType(value);
   }
   const config1 = [
@@ -90,16 +90,16 @@ const SelectComplaintType = ({ t, config, onSelect, value }) => {
           populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
         },
         {
-          
+
           label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
              isMandatory: true,
              type: "dropdown",
              populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
-           
+
          },
-        
+
       ],
-     
+
     },
   ];
   const tenantId = window.Digit.SessionStorage.get("Digit.Citizen.tenantId");

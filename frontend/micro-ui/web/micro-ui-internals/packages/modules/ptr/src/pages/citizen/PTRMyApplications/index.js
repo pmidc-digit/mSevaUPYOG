@@ -50,7 +50,7 @@ export const PTRMyApplications = () => {
   //   { filters: { serviceSearchArgs }, enabled: combinedApplicationNumber?.length > 0 ? true : false, cacheTime: 0 }
   // );
 
-  // console.log("servicedata", servicedata);
+
 
   function getLabelValue(curservice) {
     // let foundValue = servicedata?.Service?.find((ob) => ob?.referenceId?.includes(curservice?.applicationNumber));

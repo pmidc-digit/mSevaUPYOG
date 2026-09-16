@@ -25,7 +25,7 @@ const CloseBtn = (props) => {
 
 const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationData, businessService, moduleCode }) => {
 
-  console.log("applicationData",applicationData);
+
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
@@ -43,10 +43,10 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [error, setError] = useState(null);
- 
+
   const [disableActionSubmit, setDisableActionSubmit] = useState(false);
 
-  
+
 
   useEffect(() => {
     setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name })));
@@ -77,12 +77,12 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       }
     })();
   }, [file]);
-  
+
 
   function submit(data) {
-    
+
     if (action?.action == "COMMON_APPROVED") {
-      
+
       let workflow = { action: "OPEN", comments: data?.comments, businessService: "ptr", moduleName: "pet-services" };
       applicationData.creationReason = "CREATE";
       submitAction({
@@ -114,7 +114,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
         ],
       });
     //  } 
-   
+
   }
 
   useEffect(() => {
@@ -132,7 +132,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
             businessService,
           })
         );
-      
+
     }
   }, [action, approvers, uploadedFile]);
 
@@ -146,7 +146,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       actionSaveOnSubmit={() => {}}
       formId="modal-action"
     >
-       
+
         <FormComposer
           config={config.form}
           className="BPAemployeeCard bpa-workflow-modal-form"
@@ -157,7 +157,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
           defaultValues={defaultValues}
           formId="modal-action"
         />
-      
+
     </Modal>
   ) : (
     <Loader />

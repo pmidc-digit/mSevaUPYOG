@@ -9,14 +9,14 @@ const BillGeneration = () => {
     const [showToast, setShowToast] = useState(null);
     const [resData, setResData] = useState()
     const onSubmit = (data) => {
-        console.log("Data in BillGeneration: ", data)
+
     };
     const getResData = (data) => {
-        // console.log("Res Data in Bill Generation",data)
+
         setResData(data)
     }
 
-    console.log("setResData", resData)
+
     const formatDate = (timestamp) => {
         if (timestamp != undefined) {
             const date = new Date(timestamp);

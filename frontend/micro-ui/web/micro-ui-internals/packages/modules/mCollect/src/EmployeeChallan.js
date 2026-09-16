@@ -153,7 +153,7 @@ const EmployeeChallan = (props) => {
       setChallanBillDetails(billDetails);
     } catch (error) {
       setLoading(false);
-      console.error("Error fetching bill details", error);
+
     }
   };
 

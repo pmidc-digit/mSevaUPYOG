@@ -26,7 +26,7 @@ export const mdmsData = async (tenantId, t) => {
       return obj;
     }
   } catch (error) {
-    console.error("MDMS data fetch failed:", error);
+
   }
 
   // Fallback when MDMS fails or no data found
@@ -970,7 +970,7 @@ export const updatePayloadOfWSRestoration = async (data, type) => {
     },
   };
   /* use customiseCreateFormData hook to make some chnages to the water object */
- 
+
   return payload;
 };
 
@@ -1729,10 +1729,10 @@ export const downloadPdf = (blob, fileName) => {
 export const downloadAndOpenPdf = async (connectionNo, filters) => {
   try {
     const tenantId = Digit.ULBService.getCurrentTenantId();
-    
+
     // PDF GENERATION API: Call the WS service to generate PDF bill
     const response = await Digit.WSService.generateBillPdf({ tenantId, filters });
-    
+
     // RESPONSE VALIDATION: Check if PDF generation was successful
     const responseStatus = parseInt(response.status, 10);
     if (responseStatus === 201 || responseStatus === 200) {
@@ -1740,15 +1740,15 @@ export const downloadAndOpenPdf = async (connectionNo, filters) => {
         // PDF DOWNLOAD: Create blob and trigger download
         downloadPdf(new Blob([response.data], { type: "application/pdf" }), `BILL-${connectionNo}.pdf`);
       } else {
-        console.error("PDF response is empty");
+
         throw new Error("PDF response is empty");
       }
     } else {
-      console.error("PDF generation failed with status:", responseStatus);
+
       throw new Error(`PDF generation failed with status: ${responseStatus}`);
     }
   } catch (error) {
-    console.error("Error in downloadAndOpenPdf:", error);
+
     throw error; // Re-throw to be handled by calling function
   }
 };

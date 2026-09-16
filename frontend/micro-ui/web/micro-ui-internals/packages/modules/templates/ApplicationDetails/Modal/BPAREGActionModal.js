@@ -36,7 +36,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     { enabled: !action?.isTerminateState }
   );
 
-  console.log(approverData, "DEKHO");
+
 
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -107,8 +107,8 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
           ]
         : null,
     };
-    console.log("action", action);
-    console.log("applicationData", applicationData);
+
+
 
     // (
     //       !filtData?.assignee &&

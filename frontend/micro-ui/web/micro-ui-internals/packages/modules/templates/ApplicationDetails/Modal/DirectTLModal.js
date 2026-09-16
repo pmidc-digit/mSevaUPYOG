@@ -36,7 +36,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
 
 const tradeUnits = applicationData?.tradeLicenseDetail?.tradeUnits
-console.log("tradeUnits", tradeUnits);
+
 
 const years = useMemo(() => {
   if (tradeMdmsLoading || !tradeMdmsData || !tradeUnits.length) return [];
@@ -46,12 +46,12 @@ const years = useMemo(() => {
   const matchedTradeTypes = tradeMdmsData.TradeLicense?.TradeType.filter(type => tradeTypeCodes.has(type.code));
 
     const hasHazardous = matchedTradeTypes.some(unit => unit?.ishazardous);
-    console.log("hasHazardous",hasHazardous);
+
     if(hasHazardous) return ['1'];
     else return ['1','2','3'];
 }, [tradeMdmsLoading, tradeMdmsData, tradeUnits]);
 
-  console.log("years", years);
+
 
   const getFinancialYearForRenewal = () => {
     const now = new Date();
@@ -79,7 +79,7 @@ const years = useMemo(() => {
     const matchedTradeTypes = (tradeMdmsData?.TradeLicense?.TradeType || []).filter(type => tradeTypeCodes.has(type.code));
     const hasHazardous = matchedTradeTypes.some(unit => unit?.ishazardous);
     const selectedYears = selectedApprover.length > 0 ? parseInt(selectedApprover) : 1;
-    
+
     applicationData = {
         ...applicationData,
         financialYear: finalFinancialYear,

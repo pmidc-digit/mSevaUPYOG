@@ -21,7 +21,7 @@ const convertEpochToDate = dateEpoch => {
 //   await Digit.Utils.downloadReceipt(null, businessService, "consolidatedreceipt", undefined, receiptNumber);
 // };
 const printReciept = async (tenantId, payments) => { 
-  console.log("pay",payments)
+
   let response = { filestoreIds: [payments?.fileStoreId] };
   if (!payments?.fileStoreId) {
     let assessmentYear="",assessmentYearForReceipt="";
@@ -30,12 +30,12 @@ const printReciept = async (tenantId, payments) => {
   if(payments.paymentDetails[0].businessService=="PT"){
      let arrearRow={};  let arrearArray=[];
         let taxRow={};  let taxArray=[];
-       
+
 
         let roundoff=0,tax=0,firecess=0,cancercess=0,penalty=0,rebate=0,interest=0,usage_exemption=0,special_category_exemption=0,adhoc_penalty=0,adhoc_rebate=0,total=0;
         let roundoffT=0,taxT=0,firecessT=0,cancercessT=0,penaltyT=0,rebateT=0,interestT=0,usage_exemptionT=0,special_category_exemptionT=0,adhoc_penaltyT=0,adhoc_rebateT=0,totalT=0;
 
-   
+
         payments.paymentDetails[0].bill.billDetails.map(element => {
 
         if(element.amount >0 || element.amountPaid>0)
@@ -44,7 +44,7 @@ const printReciept = async (tenantId, payments) => {
           fromDate=convertEpochToDate(element.fromPeriod).split("/")[2];
           assessmentYear=assessmentYear==""?fromDate+"-"+toDate+"(Rs."+element.amountPaid+")":assessmentYear+","+fromDate+"-"+toDate+"(Rs."+element.amountPaid+")";
           assessmentYearForReceipt=fromDate+"-"+toDate;
-        
+
      element.billAccountDetails.map(ele => {
     if(ele.taxHeadCode == "PT_TAX")
   {tax=ele.adjustedAmount;
@@ -115,8 +115,8 @@ taxRow={
 arrearArray.push(arrearRow);
 taxArray.push(taxRow);
           } 
- 
-  
+
+
         });
 
         if(count==0)
@@ -125,10 +125,10 @@ taxArray.push(taxRow);
           let fromDate=convertEpochToDate( payments.paymentDetails[0].bill.billDetails[0].fromPeriod).split("/")[2];
           assessmentYear=assessmentYear==""?fromDate+"-"+toDate:assessmentYear+","+fromDate+"-"+toDate; 
           assessmentYearForReceipt=fromDate+"-"+toDate;
-       
-        
+
+
           payments.paymentDetails[0].bill.billDetails[0].billAccountDetails.map(ele => {
-       
+
       if(ele.taxHeadCode == "PT_TAX")
       {tax=ele.adjustedAmount;
       taxT=ele.amount}
@@ -162,7 +162,7 @@ taxArray.push(taxRow);
       else if(ele.taxHeadCode == "PT_ADHOC_REBATE")
       {adhoc_rebate=ele.adjustedAmount;
       adhoc_rebateT=ele.amount;}
-    
+
       total=total+ele.adjustedAmount;
       totalT=totalT+ele.amount;
 
@@ -199,9 +199,9 @@ taxArray.push(taxRow);
     };
     arrearArray.push(arrearRow);
     taxArray.push(taxRow);
-    
+
 }  
-     
+
   const details = {
       "assessmentYears": assessmentYear,
       "arrearArray":arrearArray,
@@ -209,7 +209,7 @@ taxArray.push(taxRow);
           }
     payments.paymentDetails[0].additionalDetails=details;   
         }   
-    
+
     response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "property-receipt");
   }
   const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });

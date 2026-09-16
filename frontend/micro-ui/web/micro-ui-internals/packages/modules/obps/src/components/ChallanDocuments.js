@@ -72,7 +72,7 @@ const ChallanDocuments = ({
   }, [documents, checkRequiredFields]);
 
   useEffect(() => {
-    console.log("documents check again", documents);
+
   }, [documents]);
 
   return (
@@ -136,14 +136,14 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           if (setError) {
             setError(t("CS_FILE_FETCH_ERROR"));
           } else {
-            console.error(t("CS_FILE_FETCH_ERROR"));
+
           }
         }
       } else {
         if (setError) {
           setError(t("CS_FILE_FETCH_ERROR"));
         } else {
-          console.error(t("CS_FILE_FETCH_ERROR"));
+
         }
       }
     } catch (e) {
@@ -151,7 +151,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       if (setError) {
         setError(t("CS_FILE_FETCH_ERROR"));
       } else {
-        console.error(t("CS_FILE_FETCH_ERROR"));
+
       }
     }
   };
@@ -225,7 +225,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             if (lat && lon) {
               latitude = convertDMSToDD(lat, latRef);
               longitude = convertDMSToDD(lon, lonRef);
-              console.log("📍 Latitude:", latitude, "Longitude:", longitude);
+
             } else {
               alert("⚠️ No GPS data found in image.");
               return;
@@ -242,7 +242,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     }
     // ✅ Case 2: Handle PDFs or other file types
     else {
-      console.log("📄 Non-image file uploaded, skipping EXIF read");
+
       setFile(file);
       updateDocument(selectedDocument, {}); // no lat/long
     }
@@ -390,7 +390,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   }, [isHidden]);
 
   const onCapture = (file, meta) => {
-    console.log("Captured file:", file, meta);
+
     setFile(file);
     updateDocument(selectedDocument, { latitude: Number(meta.latitude), longitude: Number(meta.longitude) });
     setShowCameraModal(false);

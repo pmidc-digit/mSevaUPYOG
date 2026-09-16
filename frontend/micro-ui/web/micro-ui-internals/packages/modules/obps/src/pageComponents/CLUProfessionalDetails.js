@@ -23,18 +23,18 @@ const CLUProfessionalDetails = (_props) => {
   const [licenseValidity, setLicenseValidity]=useState(null);
 
   const userInfo = Digit.UserService.getUser();
- // console.log("userInfo here", userInfo);
+
 
   const isUserArchitect = userInfo?.info?.roles?.find((item) => item?.code === "BPA_ARCHITECT");
   const { data: professionalData, isLoading: professionalDataLoading } = Digit.Hooks.obps.useBPAREGSearch(isUserArchitect? "pb.punjab" : tenantId, {}, {mobileNumber: userInfo?.info?.mobileNumber}, {cacheTime : 0});
 
-  //console.log("Professional==>", professionalData);
+
 
   useEffect(() => {
-    console.log("currentStepData2", currentStepData);
+
     const formattedData = currentStepData?.applicationDetails;
     if (formattedData) {
-      // console.log("coming here", formattedData);
+
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });
@@ -74,7 +74,7 @@ const CLUProfessionalDetails = (_props) => {
     }
   }, [address,regId, setValue,licenseValidity]);
 
-  //console.log("profData=>>", profData);
+
 
 
 

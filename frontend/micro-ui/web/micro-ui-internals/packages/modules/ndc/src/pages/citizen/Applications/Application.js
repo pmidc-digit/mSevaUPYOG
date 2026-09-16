@@ -23,7 +23,7 @@ const MyApplications = ({ view }) => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentApplications = applicationsList.slice(indexOfFirstItem, indexOfLastItem);
 
-  console.log("currentApplications", currentApplications);
+
 
   return (
     <React.Fragment>

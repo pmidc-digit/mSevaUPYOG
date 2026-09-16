@@ -101,7 +101,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     if (res) {
       history.replace(`/digit-ui/employee/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
     } else {
-      console.error("Submission failed, not moving to next step.");
+
       setError("Submission failed. Please try again.");
       setShowToast(true);
     }

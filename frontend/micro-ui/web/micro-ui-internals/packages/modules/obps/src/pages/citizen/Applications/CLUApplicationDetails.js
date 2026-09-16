@@ -107,7 +107,7 @@ const CLUApplicationDetails = () => {
 
       const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
       const endTime = Date.now();
-      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime);
       setTimeObj(time);
@@ -201,7 +201,7 @@ const CLUApplicationDetails = () => {
 
       Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
-      console.error(err);
+
     } finally {
       setLoading(false);
     }
@@ -296,7 +296,7 @@ const CLUApplicationDetails = () => {
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoading(false);
       Digit.StoreData.getCurrentLanguage = prevGetLang;
@@ -391,7 +391,7 @@ const CLUApplicationDetails = () => {
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoading(false);
       Digit.StoreData.getCurrentLanguage = prevGetLang;
@@ -433,7 +433,7 @@ const CLUApplicationDetails = () => {
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoading(false);
     }

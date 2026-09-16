@@ -6,7 +6,7 @@ import { updateWSNewApplicationForm } from "../../redux/actions/newWSApplication
 
 const ConnectionDetails = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
     onGoNext();
   }
 
@@ -15,7 +15,7 @@ const ConnectionDetails = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in ConnectionDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateWSNewApplicationForm(config.key, data));
     }
@@ -31,7 +31,7 @@ const ConnectionDetails = ({ config, onGoNext, onBackClick, t }) => {
   });
   const dispatch = useDispatch();
 
-  console.log("currentStepData in ConnectionDetails: ", currentStepData);
+
 
   return (
     <React.Fragment>

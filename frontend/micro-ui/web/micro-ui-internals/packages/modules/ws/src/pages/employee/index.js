@@ -255,8 +255,8 @@ const BILLSBreadCrumbs = ({ location }) => {
   );
 };
 const App = ({ path }) => {
-  console.log("ffffff", path);
-  console.log("1)ws employee/index path:", path);
+
+
   const location = useLocation();
 
   const WSDocsRequired = Digit?.ComponentRegistryService?.getComponent("WSDocsRequired");
@@ -308,7 +308,7 @@ const App = ({ path }) => {
   const locationCheckReqDocs =
     window.location.href.includes("/employee/ws/create-application") || window.location.href.includes("/employee/ws/new-disconnection/docsrequired");
 
-  console.log("2)ws employee/index path:", path);
+
   return (
     <Switch>
       <React.Fragment>

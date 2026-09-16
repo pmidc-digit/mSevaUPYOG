@@ -298,12 +298,12 @@ const EngagementModule = ({ stateCode, userType, tenants }) => {
 
   // initEngagementComponents();
 
-  //console.log("path", path);
+
   if (isLoading) {
     return <Loader />;
   }
   Digit.SessionStorage.set("ENGAGEMENT_TENANTS", tenants);
-  //console.log("userType", userType);
+
 
   if (userType === "citizen") {
     return <CitizenApp path={path} url={url} userType={userType} tenants={tenants} />;

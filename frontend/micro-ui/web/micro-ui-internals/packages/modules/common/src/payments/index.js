@@ -220,7 +220,7 @@ export const ChallanData = (tenantId, consumerCode) => {
 
   const codes = officerInstance?.assigner?.userName;
   const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });
-  console.log("employeeData", employeeData);
+
   const officerRaw = employeeData?.data?.Employees?.[0];
   const officerAssignment = officerRaw?.assignments?.[0];
 

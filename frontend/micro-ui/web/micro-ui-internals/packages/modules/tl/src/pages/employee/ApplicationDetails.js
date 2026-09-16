@@ -110,7 +110,7 @@ const ApplicationDetails = () => {
           });
           setBillData(result?.Bill?.[0]);
         } catch (err) {
-          console.error("Error fetching bill", err);
+
         }
       }
     };
@@ -593,7 +593,7 @@ const ApplicationDetails = () => {
         setAdhocLicenseData(license);
       }
     } catch (err) {
-      console.error("Error fetching license for ADHOC:", err);
+
     }
     setShowAdhocPopup(true);
   };
@@ -639,7 +639,7 @@ const ApplicationDetails = () => {
       setShowAdhocPopup(false);
       setShowToast({ key: "success", label: "Adhoc Penalty/Rebate added successfully" });
     } catch (err) {
-      console.error("Error submitting ADHOC update:", err);
+
       setShowToast({ key: "error", error: true, label: err?.message || "Failed to add Adhoc Penalty/Rebate" });
     } finally {
       setIsAdhocUpdating(false);
@@ -730,7 +730,7 @@ const ApplicationDetails = () => {
         finalAmount: (tradeUnitTotal + accessoryTotal) * validityYears,
       });
     } catch (err) {
-      console.error("Error refreshing after ADHOC update:", err);
+
     }
   };
 
@@ -762,7 +762,7 @@ const ApplicationDetails = () => {
         bill = fetchBillRes?.Bill?.[0];
         billAccDetails = bill?.billDetails?.[0]?.billAccountDetails || [];
       } catch (billErr) {
-        console.warn("fetchBill failed (possibly paid), falling back to payment history", billErr);
+
       }
 
       // Fallback: use payment history bill data for paid applications
@@ -836,7 +836,7 @@ const ApplicationDetails = () => {
       });
       setShowBreakupModal(true);
     } catch (error) {
-      console.error("Error fetching breakup data:", error);
+
     } finally {
       setBreakupLoading(false);
     }

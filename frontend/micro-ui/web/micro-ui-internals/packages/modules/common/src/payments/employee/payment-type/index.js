@@ -99,7 +99,7 @@ export const SelectPaymentType = (props) => {
   const { name, mobileNumber } = state;
 
   const billDetails = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
-  console.log(billDetails, "BILL");
+
 
   const userOptions = ["OWNER", "OTHER"];
 
@@ -122,7 +122,7 @@ export const SelectPaymentType = (props) => {
 
     // const baseURL = process.env.REACT_APP_BASE_URL;
     const baseURL = document.location.origin;
-    console.log("BASEURLINPAYMENT", baseURL);
+
 
     const originalCallbackUrl = `${baseURL}/digit-ui/employee/payment/challan/success/${businessService}/${consumerCode}`;
     const paymentGatewayConfig = getPaymentGatewayConfig(menuList, businessService);
@@ -242,7 +242,7 @@ export const SelectPaymentType = (props) => {
         setShowToast({ key: true, label: t("CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER") });
       }
     } catch (error) {
-      console.log("error", error);
+
       let messageToShow = "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER";
       if (error.response?.data?.Errors?.[0]) {
         const { code, message } = error.response?.data?.Errors?.[0];

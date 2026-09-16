@@ -79,7 +79,7 @@ const OBPSAcknowledgement = ({ data, onSuccess }) => {
   const mutation = Digit.Hooks.obps.useObpsAPI(data?.address?.city ? data.address?.city?.code : tenantId, true);
   const mutation1 = Digit.Hooks.obps.useObpsAPI(data?.address?.city ? data.address?.city?.code : tenantId, false);
 
-  console.log(mutation, "Mutation ");
+
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
@@ -148,10 +148,10 @@ export default OBPSAcknowledgement;
 // import { OBPSService } from "../../../../../../libraries/src/services/elements/OBPS";
 
 // const GetActionMessage = (props) => {
-//   console.log(propTypes, "PROPS");
+
 
 //   const bpaData = props?.data?.BPA?.[0];
-//   console.log(bpaData, "bpaData");
+
 //   let bpaBusinessService = props?.data?.BPA?.[0]?.businessService ? props?.data?.BPA?.[0]?.businessService : "BPA";
 //   let bpaStatus = bpaData?.status;
 //   if (bpaBusinessService == "BPA_LOW") bpaBusinessService = "BPA";
@@ -174,8 +174,8 @@ export default OBPSAcknowledgement;
 
 // const getCardText = (t, props) => {
 //   const bpaData = props?.BPA?.[0];
-//   console.log(props, "PROPS 2");
-//   console.log(bpaData, "BPA DATA 2");
+
+
 //   let bpaBusinessService = props?.BPA?.[0]?.businessService ? props?.BPA?.[0]?.businessService : "BPA";
 //   let bpaStatus = bpaData?.status;
 //   if (bpaBusinessService == "BPA_LOW") bpaBusinessService = "BPA";
@@ -237,7 +237,7 @@ export default OBPSAcknowledgement;
 //   const mutation = Digit.Hooks.obps.useObpsAPI(data.tenantId || tenantId, true);
 //   // const mutation1 = Digit.Hooks.obps.useObpsAPI(data.tenantId || tenantId, false);
 
-//   console.log(mutation, mutation1, "MUTATION");
+
 //   const { data: storeData } = Digit.Hooks.useStore.getInitData();
 //   const { tenants } = storeData || {};
 
@@ -277,12 +277,12 @@ export default OBPSAcknowledgement;
 
 //   useEffect(() => {
 //     try {
-//       console.log("Input data:", data);
+
 
 //       // Use the existing tenantId from data, don't try to extract from undefined city
 //       let tenantid = data.tenantId || tenantId;
 
-//       console.log("Using tenantId:", tenantid);
+
 
 //       // Restructure data to match what convertToBPAObject expects
 //       const restructuredData = {
@@ -298,25 +298,25 @@ export default OBPSAcknowledgement;
 //       };
 
 //       let formdata = convertToBPAObject(restructuredData);
-//       console.log("convertToBPAObject result:", formdata);
+
 
 //       if (formdata) {
 //         mutation1.mutate(formdata, {
 //           onSuccess: (response) => {
-//             console.log("Mutation success:", response);
+
 //             onSuccess(response);
 //           },
 //           onError: (error) => {
-//             console.error("Mutation error:", error);
+
 //           },
 //         });
 //       }
 //     } catch (err) {
-//       console.error("Error in useEffect:", err);
+
 //     }
 //   }, [data]);
 
-//   console.log(tenants, "CD");
+
 //   const handleDownloadPdf = async () => {
 //     // const Property = data;
 //     // const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
@@ -350,9 +350,9 @@ export default OBPSAcknowledgement;
 // export default OBPSAcknowledgement;
 
 // const GetActionMessage = (props) => {
-//   console.log(props, "PROPS");
+
 //   const bpaData = props?.data?.BPA?.[0];
-//   console.log(bpaData, "bpaData");
+
 //   let bpaBusinessService = props?.data?.BPA?.[0]?.businessService ? props?.data?.BPA?.[0]?.businessService : "BPA";
 //   const bpaStatus = bpaData?.status;
 //   if (bpaBusinessService == "BPA_LOW") bpaBusinessService = "BPA";
@@ -375,8 +375,8 @@ export default OBPSAcknowledgement;
 
 // const getCardText = (t, props) => {
 //   const bpaData = props?.BPA?.[0];
-//   console.log(props, "PROPS 2");
-//   console.log(bpaData, "BPA DATA 2");
+
+
 //   let bpaBusinessService = props?.BPA?.[0]?.businessService ? props?.BPA?.[0]?.businessService : "BPA";
 //   const bpaStatus = bpaData?.status;
 //   if (bpaBusinessService == "BPA_LOW") bpaBusinessService = "BPA";
@@ -446,7 +446,7 @@ export default OBPSAcknowledgement;
 //   const mutation = window.Digit?.Hooks?.obps?.useObpsAPI(data.tenantId || tenantId, true);
 //   const mutation1 = window.Digit?.Hooks?.obps?.useObpsAPI(resolvedTenantId, false);
 
-//   console.log("MUTATION");
+
 
 //   const hasCalledAPI = useRef(false);
 
@@ -477,12 +477,12 @@ export default OBPSAcknowledgement;
 
 //   useEffect(() => {
 //     try {
-//       console.log("Input data:", data);
+
 
 //       // Use the existing tenantId from data, don't try to extract from undefined city
 //       let tenantid = data.tenantId || tenantId;
 
-//       console.log("Using tenantId:", tenantid);
+
 
 //       // Restructure data to match what convertToBPAObject expects
 //       const restructuredData = {
@@ -498,24 +498,24 @@ export default OBPSAcknowledgement;
 //       };
 
 //       let formdata = convertToBPAObject(restructuredData);
-//       console.log("convertToBPAObject result:", formdata);
+
 
 //       if (formdata) {
 //         mutation1.mutate(formdata, {
 //           onSuccess: (response) => {
-//             console.log("Mutation success:", response);
+
 //             onSuccess(response);
 //           },
 //           onError: (error) => {
-//             console.error("Mutation error:", error);
+
 //           },
 //         });
 //       }
 //     } catch (err) {
-//       console.error("Error in useEffect:", err);
+
 //     }
 //   }, [data]);
-//   console.log(tenants, "CD");
+
 
 //   const handleDownloadPdf = async () => {
 //     const Property = data;

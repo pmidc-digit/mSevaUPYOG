@@ -20,12 +20,12 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
-  console.log("currentStepData===", currentStepData);
-  console.log("checkFormData===", checkFormData);
+
+
 
   function goNext(finalData) {
-    console.log("Current Data", finalData);
-    console.log("data||||?....=====", docData?.CHB?.Documents);
+
+
 
     const missingFields = validation(finalData);
 
@@ -43,8 +43,8 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       const chbDocumentsType = docData?.CHB?.Documents || [];
       const uploadedDocs = formData?.documents?.documents || [];
 
-      console.log("chbDocumentsType", chbDocumentsType);
-      console.log("uploadedDocs", uploadedDocs);
+
+
 
       // Extract required docs
       const requiredDocs = chbDocumentsType?.filter((doc) => doc.required).map((doc) => doc.code);
@@ -68,7 +68,7 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_CHBApplication_FORM(config.key, data));
     }

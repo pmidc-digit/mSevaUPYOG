@@ -237,7 +237,7 @@ const CheckPage = ({ onSubmit, value }) => {
   if (pdfLoading || recieptDataLoading) {
     return <Loader />;
   }
-console.log("object");
+
   return (
     <React.Fragment>
       <Timeline currentStep={4} flow={value?.uiFlow?.flow === "OCBPA" ? "OCBPA" : ""} />

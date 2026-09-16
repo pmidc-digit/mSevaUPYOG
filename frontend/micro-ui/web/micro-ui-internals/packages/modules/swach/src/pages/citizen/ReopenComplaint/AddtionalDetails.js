@@ -68,8 +68,8 @@ const AddtionalDetails = (props) => {
   function reopenComplaint() {
     setShowToast(false);
     let reopenDetails = Digit.SessionStorage.get(`reopen.${id}`);
-    console.log("reopenDetails", reopenDetails);
-    console.log("complaintDetails", complaintDetails);
+
+
     if (complaintDetails && complaintDetails.service) {
       complaintDetails.workflow = getUpdatedWorkflow(
         reopenDetails,
@@ -79,7 +79,7 @@ const AddtionalDetails = (props) => {
       complaintDetails.service.additionalDetail = {
         REOPEN_REASON: reopenDetails.reason,
       };
-      console.log("Dispatching updateComplaints with:", { service: complaintDetails.service, workflow: complaintDetails.workflow });
+
       updateComplaint({ service: complaintDetails.service, workflow: complaintDetails.workflow });
     }
     // return (

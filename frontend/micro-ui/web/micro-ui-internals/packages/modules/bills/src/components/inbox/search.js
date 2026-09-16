@@ -63,9 +63,9 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
 const [ulbValue,setUlbValue]=useState("")
 // const [servValue,setServValue]=useState("")
   const onSubmitInput = (data) => {
-  
+
    let servValue="";
-    console.log("ho",data)
+
 
     searchFields.map((input)=>{
   if(input.name==="ulb"){
@@ -74,12 +74,12 @@ const [ulbValue,setUlbValue]=useState("")
   if(input.name==="serviceCategory"){
    servValue=input?.selected?.businesService
   }
-      console.log("input",input)
+
     }
     )
     generateBills(servValue)
 
-    
+
     // if (!searchParams.businesService) {
     //   setShowToast({ key: true, label: "ABG_SEARCH_SELECT_AT_LEAST_SERVICE_TOAST_MESSAGE" });
     //   return;
@@ -104,7 +104,7 @@ const [ulbValue,setUlbValue]=useState("")
     const resetValues = searchFields.reduce((acc, field) => ({ ...acc, [field?.name]: ""
 
      }), {});
-     console.log("reset",resetValues)
+
     reset(resetValues);
     const _newParams = { ...searchParams };
     _newParams.delete = [];
@@ -154,19 +154,19 @@ const [ulbValue,setUlbValue]=useState("")
 
   // })
   async function generateBills(service) {
-    console.log("in generate bill")
+
 
     const payload = {
       businesService: service,
       url: "egov-searcher/bill-genie/mcollectbills/_get"
     }
-    console.log("tenantId", tenantId)
-    console.log("payload", payload)
+
+
     Digit.MCollectService.search_bill(tenantId, payload)
 
       .then((response) => {
-        console.log("response", response)
-        console.log("response", response?.Bills)
+
+
         if (response?.ResponseInfo?.status === "200 OK" || response?.ResponseInfo?.status === "201 OK" || response?.ResponseInfo?.status === "successful") {
           if ((response.Bills).length===0) {
             alert("No Records found")
@@ -179,7 +179,7 @@ const [ulbValue,setUlbValue]=useState("")
         }
         else {
           // alert(response?.Errors?.message)
-          console.log(response?.Errors?.message)
+
           onSearch({ key: true, label: response?.Errors?.message });
         }
 
@@ -187,7 +187,7 @@ const [ulbValue,setUlbValue]=useState("")
       .catch((err) => {
 
         onSearch({ key: true, label: err });
-        console.log("Error in Digit.HRMSService.ssoAuthenticateUser: ", err.response);
+
 
       });
 

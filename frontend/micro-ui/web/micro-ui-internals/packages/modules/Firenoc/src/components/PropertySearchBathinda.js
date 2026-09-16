@@ -161,7 +161,7 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
         setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
       }
     } catch (err) {
-      console.error("Property search failed", err);
+
       setError(err);
       setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
     } finally {

@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../utils";
 
 const Units = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
-  console.log("formData in unit component", formData);
+
 
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify") || pathname.includes("edit-application");
@@ -34,19 +34,19 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   // );
 
   const [units, setUnits] = useState(() => {
-    console.log("initialUnits", formData?.units);
+
     return formData?.units || [];
   });
 
   useEffect(() => {
-    console.log("isNotFirst and Units", isNotFirst.current, formData.units, formData, units);
+
     // debugger;
     if (!isNotFirst.current) {
       isNotFirst.current = true;
       return;
     }
     if (formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY" && !presentInModifyApplication) {
-      console.log("isNotFirst and Units if Independent property", isNotFirst.current, formData.units, formData, units);
+
       setUnits(() => {
         const numberOfFloors = formData?.noOfFloors || 0;
 
@@ -67,7 +67,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
         }));
       });
     } else if (formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY" && !presentInModifyApplication) {
-      console.log("isNotFirst and Units if Flat/Part", isNotFirst.current, formData.units, formData, units);
+
       setUnits([
         {
           key: Date.now(),
@@ -89,13 +89,13 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   }, [formData.noOfFloors, formData.PropertyType, formData.usageCategoryMajor]);
 
   useEffect(() => {
-    // console.log("isNotFirst and Units Units-Updated", units, formData);
+
     if (formData?.units?.length > 0 && formData?.units[0]?.occupancyType?.length > 0) {
       setUnits(formData?.units);
     }
   }, []);
 
-  console.log("here||||||?");
+
   const stateId = Digit.ULBService.getStateId();
   const [focusIndex, setFocusIndex] = useState({ index: -1 });
   const [loader, setLoader] = useState(true);
@@ -112,7 +112,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       "OwnerShipCategory",
     ]) || {};
 
-  console.log("Menu in Units", Menu);
+
 
   let usagecat = [];
   usagecat = Menu?.PropertyTax?.UsageCategory?.filter((e) => e?.code !== "MIXED") || [];
@@ -270,32 +270,32 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   function findUsageType(unit) {
     const { usageCategory } = unit;
     if ([usageCategory, formData?.usageCategoryMajor?.code].includes("RESIDENTIAL")) {
-      console.log("usageCategory is set to RESIDENTIAL", usageCategory, formData?.usageCategoryMajor?.code);
+
       return usageCategoryMajorMenu(usagecat).filter((e) => e?.code === "RESIDENTIAL")[0];
     }
 
     if (formData?.usageCategoryMajor?.code !== "MIXED" && usageCategory && typeof usageCategory === "string") {
-      console.log("usageCategoryBeforeError", usageCategory);
+
       const codeArr = usageCategory?.split(".");
-      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+
       const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
     } else if (usageCategory && typeof usageCategory === "string") {
-      console.log("usageCategoryBeforeError", usageCategory);
+
       const codeArr = usageCategory?.split(".");
-      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+
       const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
     } else if (formData?.usageCategoryMajor?.code !== "MIXED" && usageCategory?.code) {
-      console.log("usageCategoryBeforeError", usageCategory);
+
       const codeArr = usageCategory?.code?.split(".");
-      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+
       const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
     } else if (usageCategory && usageCategory?.code) {
-      console.log("usageCategoryBeforeError", usageCategory);
+
       const codeArr = usageCategory?.code?.split(".");
-      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+
       const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
     }
@@ -304,7 +304,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   useEffect(() => {
     if (!isLoading && presentInModifyApplication && Menu) {
       // usage subUsage unit Occupancy
-      console.log("formdatain Units useEffect", formData?.units);
+
       let defaultUnits = formData?.units
         ?.filter((e) => e.active)
         ?.map((unit, index) => {
@@ -313,11 +313,11 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           const usageType = findUsageType(unit);
           let subUsageType, usageCategory;
           // let usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === uc)?.[0] || unit?.usageCategory;
-          // console.log("usageTypeusageCategoryValueInUnits", usageType, uc);
+
           // let usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => uc?.startsWith(e?.code))?.[0] || unit?.usageCategory;
-          // console.log("usageCategoryValueInUnits", usageCategoryMajorMenu(usagecat), uc, usageType);
+
           // let subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => e?.code === uc)?.[0] || unit?.subUsageType;
-          // console.log("usageCategoryValueInUnits 1", subUsageType);
+
           if (typeof uc === "string") {
             usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => uc?.startsWith(e?.code))?.[0] || unit?.usageCategory;
             subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => uc?.startsWith(e?.code))?.[0] || unit?.subUsageType;
@@ -328,8 +328,8 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           if (subUsageType) {
             subUsageType = { i18nKey: "PROPERTYTAX_USAGE_" + stringReplaceAll(subUsageType?.code, "-", "_"), code: subUsageType?.code };
           }
-          console.log("usageCategoryValueInUnits 2", subUsageType);
-          console.log("usageCategoryValueInUnits3", unit);
+
+
           floorNo = getfloorlistdata(floorlist)?.filter((e) => e?.code == floorNo)[0] || unit?.floorNoCitizen;
           RentedMonths = rentedmonths?.find((val) => val.code === RentedMonths?.toString()) || unit?.RentedMonths;
           NonRentedMonthsUsage = nonrentedusage?.find((val) => val.code === NonRentedMonthsUsage) || unit?.NonRentedMonthsUsage;
@@ -354,14 +354,14 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
             active: true,
           };
         });
-      console.log("defaultUnits", defaultUnits);
+
       setUnits(defaultUnits || []);
       setLoader(false);
     }
   }, [isLoading]);
 
   // useEffect(()=>{
-  //   console.log("formData", formData);
+
   // },[formData])
 
   const calculateNumberOfFloors = () => {
@@ -438,21 +438,21 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   };
 
   const subUsageCategoryMenu = (category) => {
-    console.log("subUsageCategoryMenu category", category);
+
     const menu = usagecat
       .filter((cat) => cat?.code.includes(category?.code) && cat?.code.split(".").length === 4)
       .map((item) => {
-        console.log("subUsageCategoryMenu item", item);
+
         const codeArr = item?.code.split(".");
         return { i18nKey: `COMMON_PROPSUBUSGTYPE_NONRESIDENTIAL_${codeArr[1]}_${codeArr[3]}`, code: item?.code };
       });
-    console.log("subUsageCategoryMenu menu", menu);
+
     return menu;
   };
 
   function goNext() {
     // debugger;
-    console.log("goNextfunctioncalledwithunits", units);
+
     let unitsData = units?.map((unit) => ({
       ...unit,
       order: unit?.order,
@@ -476,7 +476,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       if (unit.occupancyType === "RENTED") return { ...unit, arv: units[index].arv };
       return unit;
     });
-    console.log("goNextfunctioncalledwithunits unitsData in goNext", unitsData);
+
     onSelect(config.key, unitsData);
   }
 
@@ -515,7 +515,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   }, [formData?.PropertyType]);
 
   useEffect(() => {
-    console.log("units before goNext function", units);
+
     goNext();
     // calculateNumberOfFloors();
   }, [units, formData.PropertyType, formData.landarea]);
@@ -607,12 +607,12 @@ function Unit({
     "OwnerShipCategory",
   ]);
 
-  console.log("Unit: ", unit);
+
 
   let usagecat = [];
   usagecat = usageMenu?.PropertyTax?.UsageCategory?.filter((e) => e?.code !== "MIXED") || [];
 
-  console.log("usagecatdemo", usagecat);
+
 
   const [usageType, setUsageType] = useState(() => {
     const { existingUsageCategory } = unit;
@@ -652,7 +652,7 @@ function Unit({
 
   useEffect(() => {
     if (usageType?.code === "RESIDENTIAL") {
-      console.log("usageCategory is set to RESIDENTIAL", usageType);
+
       setValue("usageCategory", usageType);
     } else {
       if (formValue.usageCategory?.code === "RESIDENTIAL") setValue("usageCategory", null);
@@ -698,7 +698,7 @@ function Unit({
       const arrayWithCode = sortedByName.map((val) => {
         return { i18nKey: "PROPERTYTAX_USAGE_" + stringReplaceAll(val?.code, "-", "_"), code: val?.code };
       });
-      console.log("Filtered SubUsageTypeCode", arrayWithCode);
+
       return arrayWithCode;
     }
     return [];
@@ -709,7 +709,7 @@ function Unit({
     ? { width: "70%", marginLeft: "4%", fontSize: "12px" }
     : { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
-  console.log("localFormState", localFormState.errors);
+
   return (
     <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px", marginBottom: "16px" }}>
       <div className="label-field-pair">
@@ -1139,7 +1139,7 @@ function Unit({
                         type="text"
                         // name="unit-area"
                         onChange={(e) => {
-                          console.log("change arv", e.target.value);
+
                           props.onChange(e.target.value);
                           setFocusIndex({ index, type: "arv" });
                         }}

@@ -21,7 +21,7 @@ const ChallanStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     return state.challan.ChallanApplicationFormReducer.formData || {};
   });
 
-  console.log("currentStepData===", currentStepData);
+
 
   function validateStepData(data) {
     const missingFields = [];
@@ -31,15 +31,15 @@ const ChallanStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const goNext = async (data) => {
-    console.log("data", data);
-    console.log("currentStepData", currentStepData);
+
+
     const actionStatus = data?.action;
 
     // return;
     try {
       const res = await onSubmit(currentStepData, actionStatus); // wait for the API response
       // Check if the API call was successful
-      console.log("res", res);
+
       const id = res?.response?.hallsBookingApplication?.[0]?.bookingNo;
       if (res?.isSuccess) {
         if (isCitizen) {
@@ -48,7 +48,7 @@ const ChallanStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           history.push("/digit-ui/employee/chb/response/" + id);
         }
       } else {
-        console.error("Submission failed, not moving to next step.", res?.response);
+
       }
     } catch (error) {
       alert(`Error: ${error?.message}`);
@@ -89,10 +89,10 @@ const ChallanStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const onSubmit = async (data, actionStatus) => {
     const finalPayload = mapToNDCPayload(data, actionStatus);
 
-    console.log("finalPayload", finalPayload);
+
     // return;
     const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
-    console.log("response", response);
+
     dispatch(RESET_ChallanAPPLICATION_FORM());
     if (response?.responseInfo?.status == "SUCCESSFUL") {
       return { isSuccess: true, response };
@@ -106,7 +106,7 @@ const ChallanStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_ChallanApplication_FORM(config.key, data));
     }

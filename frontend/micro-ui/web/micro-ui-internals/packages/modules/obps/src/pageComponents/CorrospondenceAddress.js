@@ -5,7 +5,7 @@ import { convertDateToEpoch } from "../utils";
 
 const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData }) => {
   let validation = {};
-  console.log(formData, "FORM1");
+
   const onSkip = () => onSelect();
   const [Correspondenceaddress, setCorrespondenceaddress] = useState(
     formData?.Correspondenceaddress || formData?.formData?.Correspondenceaddress || ""
@@ -42,13 +42,13 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
     setCorrespondenceaddress(e.target.value);
   }
 
-  console.log("FORM2");
+
 
   const goNext = () => {
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
       setIsDisableForNext(true);
-      // console.log("dob here in payload", formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth): null);
-      console.log("Correspondenceaddress", formData?.LicneseDetails?.dateOfBirth);
+
+
       let payload = {
         Licenses: [
           {
@@ -105,7 +105,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
         ],
       };
 
-      console.log(payload, "FORM3");
+
 
       Digit.OBPSService.BPAREGCreate(payload, tenantId)
         .then((result, err) => {
@@ -117,7 +117,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
         .catch((e) => {
           setIsDisableForNext(false);
           setShowToast({ key: "error" });
-          console.log("error message here", e?.response?.data?.Errors[0]?.message);
+
           setError(e?.response?.data?.Errors[0]?.message || null);
           //setError("A user account with this mobile number already exists. Please use a different number or log in with the existing account");
         });

@@ -87,7 +87,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
               setError(t("CS_FILE_UPLOAD_ERROR"));
             }
           } catch (err) {
-            console.error("Modal -> err ", err);
+
             setError(t("CS_FILE_UPLOAD_ERROR"));
           }
         }
@@ -98,7 +98,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   function submit(data) {
     if(applicationData?.isBillAmend){
       const comments = data?.comments ? data.comments : null
-    
+
       const additionalDetails = { ...applicationData?.billAmendmentDetails?.additionalDetails, comments } 
      const amendment = {
        ...applicationData?.billAmendmentDetails,
@@ -192,7 +192,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       applicationData.connectionExecutionDate = convertDateToEpochNew(connectionExecutionDate)
     }
     if ((applicationData?.processInstance?.businessService == "DisconnectWSConnection" || applicationData?.processInstance?.businessService == "DisconnectSWConnection") || window.location.href.includes("disconnection")){
-      
+
       applicationData?.serviceType == "WATER" ?
       submitAction({ WaterConnection: applicationData, disconnectRequest: true }) :
       submitAction({ SewerageConnection: applicationData, disconnectRequest: true })

@@ -90,7 +90,7 @@ const SearchReceipt = () => {
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
+
     }
   };
 
@@ -114,7 +114,7 @@ const SearchReceipt = () => {
       }
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
+
     }
   };
 
@@ -127,11 +127,11 @@ const SearchReceipt = () => {
       if (fileUrl) {
         window.open(fileUrl, "_blank");
       } else {
-        console.error("File URL not found in response.");
+
       }
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
+
     }
   };
 

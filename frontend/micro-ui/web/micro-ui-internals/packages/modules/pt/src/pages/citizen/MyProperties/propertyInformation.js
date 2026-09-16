@@ -103,7 +103,7 @@ const state = Digit.ULBService.getStateId();
   property?.documents?.filter(ob => ob.documentType.includes("SPECIALCATEGORYPROOF")).map((doc) => {
       specialCategoryDoc.push(doc);
   })
-  
+
   useEffect(() => {
     if (data) {
       setProperty(data?.Properties[0]);
@@ -178,15 +178,15 @@ const handleClick=()=>{
     return <LinkButton style={style} label={t("PT_OWNER_HISTORY")} className="check-page-link-button" onClick={routeTo} />;
   };
   const UpdatePropertyNumberComponent = Digit?.ComponentRegistryService?.getComponent("UpdateNumber");
- 
+
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
 
       setIsEnableLoader(true);
       if (typeof data?.customFunctionToExecute === "function") {
-        console.log("customFunctionToExecute")
-       
+
+
         data?.customFunctionToExecute({ ...data });
-       
+
       }
       if (nocData !== false && nocMutation) {
         const nocPrmomises = nocData?.map((noc) => {
@@ -236,7 +236,7 @@ const handleClick=()=>{
       //         //RAIN-6981 instead just show a toast here with appropriate message
       //       //show toast here and return 
       //         //history.push("/digit-ui/employee/ws/response-bill-amend", { status: true, state: data?.Amendments?.[0] })
-              
+
       //         if(variables?.AmendmentUpdate?.workflow?.action.includes("SEND_BACK")){
       //           setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_SEND_BACK_UPDATE_SUCCESS")})
       //         } else if (variables?.AmendmentUpdate?.workflow?.action.includes("RE-SUBMIT")){
@@ -255,19 +255,19 @@ const handleClick=()=>{
       //       queryClient.clear();
       //       queryClient.refetchQueries("APPLICATION_SEARCH");
       //       //push false status when reject
-            
+
       //     },
       //   });
       // }
-  
+
       closeModal();
- 
+
   };
   if (isLoading || isEnableLoader) {
     return <Loader />;
   }
   const closeModal = () => {
-    console.log("closeModal")
+
     setshowModal(true)
   };
 
@@ -283,7 +283,7 @@ const handleClick=()=>{
   sessionStorage.setItem("propertyid",data.Properties[0].propertyId)  ;
   history.push(`/digit-ui/citizen/pgr/create-complaint/complaint-type?propertyId=${property.propertyId}`);
   }
-  console.log("data78", data)
+
   return (
     <React.Fragment>
       <Header>{t("PT_PROPERTY_INFORMATION")}</Header>
@@ -456,10 +456,10 @@ const handleClick=()=>{
             )}
             {property?.status === "ACTIVE" && !enableAudit && (
               <div style={{ marginTop: "1em", bottom: "0px", width: "100%", marginBottom: "1.2em" }}>
-               
+
                   {/* <SubmitBar label="Asses Property" onClick={handleClick} /> */}
                   <button className="submit-bar" type="button" onClick={handleClick} style={{fontFamily:"sans-serif", color:"white","fontSize":"19px"}}>{t("PT_SELF_ASSES_PROPERTY")}</button>
-               
+
               </div>
             )}
           </div>
@@ -505,9 +505,9 @@ const handleClick=()=>{
               applicationData={property}
               closeModal={closeModal}
               submitAction={submitAction}
-         
+
               businessService={businessService}
-             
+
               moduleCode={moduleCode}
             />
           ) : null}

@@ -166,7 +166,7 @@ function ApplicationDetailsContent({
     },
   ];
 
-  console.log("TIMELINE", applicationDetails, moduleCode);
+
   // ISSUE 9 FIX: Fetch payment history for WS applications
   useEffect(() => {
     const fetchPaymentHistory = async () => {
@@ -191,7 +191,7 @@ function ApplicationDetailsContent({
             setPayments(paymentData.Payments);
           }
         } catch (error) {
-          console.error("❌ Payment fetch error:", error);
+
         }
       }
     };
@@ -503,7 +503,7 @@ function ApplicationDetailsContent({
         alert("Failed to update property status.");
       }
     } catch (err) {
-      console.error("Error updating property status:", err);
+
       alert(`Something went wrong while making the property ${status}.`);
     }
   };
@@ -633,13 +633,13 @@ const propertyDocuments = propertyDocumentValues.length
       if (!appNo) return;
       Digit.PaymentService.recieptSearch(applicationData?.tenantId || tenantId, "TL", { consumerCodes: appNo })
         .then((response) => {
-          console.log("TL Payment History response:", response);
+
           if (response?.Payments?.length > 0) {
             setPayments(response.Payments);
           }
         })
         .catch((error) => {
-          console.error("TL Payment search error:", error);
+
         });
       return;
     }
@@ -668,7 +668,7 @@ const propertyDocuments = propertyDocumentValues.length
         });
       }
     } catch (error) {
-      console.error("❌ Payment search error for PT/BPREG:", error);
+
     }
   }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber, applicationData?.tenantId]);
   return (

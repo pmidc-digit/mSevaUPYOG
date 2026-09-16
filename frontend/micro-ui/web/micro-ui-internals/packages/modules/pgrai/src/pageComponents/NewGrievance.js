@@ -93,7 +93,7 @@ const NewGrievance = ({ t, config, onSelect, userType, formData }) => {
         setAddressDetails(addressDetails);
         setAddress(formatted);
       } catch (error) {
-        console.error(error.message);
+
         setAddress(t("PGR_ADDRESS_NOT_AVAILABLE"));
       }
       setIsFetchingAddress(false);
@@ -166,7 +166,7 @@ const NewGrievance = ({ t, config, onSelect, userType, formData }) => {
         setApiError(t("PGR_NO_SUGGESTIONS_FOUND"));
       }
     } catch (error) {
-      console.error("API Error:", error);
+
       setApiError(t("PGR_FAILED_TO_FETCH_SUGGESTIONS"));
       setSuggestions([]);
       setShowSuggestions(false);

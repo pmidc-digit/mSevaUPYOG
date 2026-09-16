@@ -158,7 +158,7 @@ const PTSearchFields = {
     //   type: "propertyType",
     //   label: "PT_SEARCHPROPERTY_TABEL_PROPERTY_TYPE",
     //   placeHolder: "PT_SEARCH_DOOR_NO_PLACEHOLDER",
-     
+
     // },
   },
 };
@@ -213,20 +213,20 @@ const Search = () => {
     }
   },[searchBy])
   const onSubmit = useCallback((_data) => {
-    console.log("_data",_data)
+
     const selectedTenantId = _data?.tenantId?.code || tenantId;
 
     if(Object.keys(_data).includes("propertyType"))
     {
       setFormData(_data);
-      console.log("_data2",payload)
+
       setPayload({locality:_data.locality.code, propertyType:_data.propertyType.code})
       setSearchTenantId(selectedTenantId);
-      console.log("_data3",payload)
+
     }
     else {
       setFormData(_data);   
-      console.log("_data5",formData)  
+
 
       const hasOwnerName = typeof _data?.name === "string" ? !!_data.name.trim() : !!_data?.name;
       const hasPropertyId = typeof _data?.propertyIds === "string" ? !!_data.propertyIds.trim() : !!_data?.propertyIds;
@@ -273,14 +273,14 @@ const Search = () => {
                 : _data[key],
           }), {});
 
-        console.log("FINAL PAYLOAD", finalPayload);
+
 
         setPayload(finalPayload);
         setSearchTenantId(selectedTenantId);
         setShowToast(null);
       }
     }
-  
+
   });
   return (
     <React.Fragment>
@@ -295,7 +295,7 @@ const Search = () => {
   onSubmit={onSubmit}
   onReset={onReset}
 />
-      
+
       {Object.keys(payload).includes("propertyType") ?
       <SearchPTIDPropComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
       : Object.keys(payload).length > 0 ? (

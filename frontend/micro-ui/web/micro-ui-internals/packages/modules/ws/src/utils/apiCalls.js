@@ -18,7 +18,7 @@
 //   setWaterAndSewerageBoth,
 //   closeToastOfError
 // ) => {
-//   console.log("Data WS new application onSubmit:\n", data);
+
 //   if (!data?.cpt?.id && !propertyDetails?.Properties?.[0]) {
 //     if (!data?.cpt?.details || !propertyDetails) {
 //       setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });

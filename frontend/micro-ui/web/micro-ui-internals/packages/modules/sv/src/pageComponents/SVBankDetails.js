@@ -15,7 +15,7 @@
 
     4. Controlled Input Fields:
     - Manages all form fields using state to ensure data accuracy and consistency.
-    
+
  * 
  * 
  */
@@ -327,7 +327,7 @@ const SVBankDetails = ({ t, config, onSelect, userType, formData, editdata, prev
         sessionStorage.setItem("Response", JSON.stringify(response));
       })
       .catch((error) => {
-        console.log("Something Went Wrong", error);
+
       });
   };
 

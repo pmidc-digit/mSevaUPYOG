@@ -94,9 +94,9 @@ const CategoryCard = ({ category, checked, readOnly, onDelete, hideQuestionLabel
             let obj = { ...item, selected: false };
             arr.push(obj);
           });
-          
+
          arr.sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
-          console.log("arr",arr)
+
           dispatch(setQuestions(category.id, arr));
           setQuestionsList(arr);
           setShowQuestionTableList(true);
@@ -214,7 +214,7 @@ const CategoryCard = ({ category, checked, readOnly, onDelete, hideQuestionLabel
   const [questionDetailsContent, setQuestionDetailsContent] = useState(false);
 
   function handleDisplayQuesDetails(question) {
-    console.log("question: ", question);
+
     setOpenQuesDetailsDialog(true);
     const content = (
       <div>
@@ -269,7 +269,7 @@ const CategoryCard = ({ category, checked, readOnly, onDelete, hideQuestionLabel
             placeholder={t("Title")} 
             value={category.title}
             onChange={handleFieldChange} 
-       
+
             /> */}
       <h3>Section Weightage</h3>
       <input
@@ -318,7 +318,7 @@ const CategoryCard = ({ category, checked, readOnly, onDelete, hideQuestionLabel
       )}
 
       {/* {readOnly!==true && (
-      
+
        )} */}
 
       {(showQuestionTable || state.goPrev === true) && (
@@ -333,7 +333,7 @@ const CategoryCard = ({ category, checked, readOnly, onDelete, hideQuestionLabel
           {categoryList.length>0? categoryList.map((item,index)=>{
              <option id={index} value={item?.label}>{item?.label}</option>
           }): <option value="">Select Category</option>} 
-          
+
          </select>  */}
           <h3>Select Category</h3>
           <Dropdown

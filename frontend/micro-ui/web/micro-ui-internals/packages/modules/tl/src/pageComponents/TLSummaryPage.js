@@ -14,11 +14,11 @@ import {
 
 const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
   const { t } = useTranslation();
-  
+
   // Get formData directly from Redux to prevent data loss
   const reduxFormData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
   const formData = reduxFormData || propsFormData || {};
-  
+
   const createdResponse = formData?.ResumePayload || formData?.CreatedResponse || formData?.EditPayload || {};
   const { tradeLicenseDetail = {}, calculation = {}, status, applicationType, licenseType, tradeName, commencementDate, subOwnerShipCategory, propertyId} = createdResponse;
   const [isChecked, setIsChecked] = useState(false);
@@ -58,7 +58,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
 
   const logPaymentDebug = (event, payload) => {
     debugSequenceRef.current += 1;
-    console.info(`[TLSummaryPage payment-debug #${debugSequenceRef.current}] ${event}`, payload);
+
   };
 
   const licenseData = tradeLicenseDetail || createdResponse?.tradeLicenseDetail || {};
@@ -162,7 +162,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
             await fetchSlabFallback(billTenantId);
           }
         } catch (e) {
-          console.error("Error fetching bill amounts for summary:", e);
+
           if (retries < 2) {
             setTimeout(() => fetchBill(retries + 1), 2000);
           } else {
@@ -207,7 +207,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
             setBillData(slabFallbackBill);
           }
         } catch (slabErr) {
-          console.error("Error fetching slab fallback for summary:", slabErr);
+
         }
       };
 
@@ -313,7 +313,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
           };
         });
       } catch (calcError) {
-        console.warn("TL calculator API not accessible, showing bill-level breakup only:", calcError);
+
       }
 
       const tradeUnitTotal = tradeUnitBreakup.reduce((sum, item) => sum + item.rate, 0);
@@ -339,7 +339,7 @@ const TLSummaryPage = ({ config, formData: propsFormData, onSelect }) => {
       });
       setShowBreakupModal(true);
     } catch (error) {
-      console.error("Error fetching breakup data:", error);
+
     } finally {
       setBreakupLoading(false);
     }

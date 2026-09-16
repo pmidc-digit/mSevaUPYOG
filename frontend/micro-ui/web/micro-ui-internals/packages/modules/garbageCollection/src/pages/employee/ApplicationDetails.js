@@ -158,7 +158,7 @@ const ChallanApplicationDetails = () => {
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
 
-  console.log("workflowDetails", workflowDetails);
+
 
   let user = Digit.UserService.getUser();
 
@@ -186,7 +186,7 @@ const ChallanApplicationDetails = () => {
         setLoader(false);
       }, 0);
     } catch (error) {
-      console.error("Error generating acknowledgement:", error);
+
       setLoader(false);
     }
   };
@@ -217,7 +217,7 @@ const ChallanApplicationDetails = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("action===", actions);
+
 
   useEffect(() => {
     let WorkflowService = null;
@@ -226,7 +226,7 @@ const ChallanApplicationDetails = () => {
         const service = getChallanData?.processInstance?.businessService;
         setLoader(true);
         WorkflowService = await Digit.WorkflowService.init(tenantId, service);
-        console.log("WorkflowService", WorkflowService);
+
         setLoader(false);
         setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states);
       }
@@ -239,7 +239,7 @@ const ChallanApplicationDetails = () => {
       Licenses: [action],
     };
 
-    console.log("action", action);
+
 
     if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/GC.ONE_TIME_FEE/${id}/${tenantId}?tenantId=${tenantId}`);
@@ -306,10 +306,10 @@ const ChallanApplicationDetails = () => {
     }
   };
 
-  console.log("getChallanData", getChallanData);
+
 
   const handleDiscontinue = async (data) => {
-    console.log("data", data);
+
     // return;
     setLoader(true);
     const payload = {
@@ -324,11 +324,11 @@ const ChallanApplicationDetails = () => {
       },
       disconnectRequest: true,
     };
-    console.log("payload===", payload);
+
 
     try {
       const response = await Digit.GCService.create(payload);
-      console.log("response", response);
+
       setLable("Connection Disconnected Successfully");
       setError(false);
       setShowToast(true);
@@ -346,7 +346,7 @@ const ChallanApplicationDetails = () => {
   };
 
   const updateApplication = async (response) => {
-    console.log("uddated response", response);
+
     // return;
     // setLoader(true);
     const payload = {
@@ -358,10 +358,10 @@ const ChallanApplicationDetails = () => {
         },
       },
     };
-    console.log("payload===", payload);
+
     try {
       const response = await Digit.GCService.update(payload);
-      console.log("response", response);
+
       // setLoader(false);
     } catch (error) {
       setLoader(false);
@@ -370,7 +370,7 @@ const ChallanApplicationDetails = () => {
 
   const hideStatuses = ["INITIATED", "CONNECTION_ACTIVATED", "APPROVED"];
 
-  console.log("getChallanData", getChallanData);
+
 
   return (
     <React.Fragment>

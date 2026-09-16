@@ -50,12 +50,12 @@ const AssetStreets = ({ t, config, onSelect, userType, formData, formState, setE
   const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("tl/renew-application-details");
   let validation = {};
   let inputs;
-  
+
 
   const convertValidationToRules = ({ validation, name, messages }) => {
     if (validation) {
       let { pattern: valPattern, maxlength, minlength, required: valReq } = validation || {};
-     
+
       let pattern = (value) => {
         if (valPattern) {
           if (valPattern instanceof RegExp) return valPattern.test(value) ? true : messages?.pattern || `${name.toUpperCase()}_PATTERN`;
@@ -93,7 +93,7 @@ const setData=(config,data)=>{
     if (!_.isEqual(formValue, part)) {
       onSelect(config.key, { ...formData[config.key], ...formValue });
       for (let key in formValue) {
-      
+
         if (!formValue[key] && !localFormState?.errors[key]) {
           setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
         } else if (formValue[key] && localFormState.errors[key]) {
@@ -114,15 +114,15 @@ const setData=(config,data)=>{
           setLocationFetched(true);
         },
         (error) => {
-          console.error("Error Code = " + error.code + " - " + error.message);
+
         }
       );
     } else {
-      console.error("Geolocation is not supported by this browser.");
+
     }
   };
 
-  
+
 
 
   const handleHideLocationFields = () => {
@@ -131,7 +131,7 @@ const setData=(config,data)=>{
     setLongitude('');
   };
 
-  
+
   const selectStreet = (e) => setStreet(e.target.value);
   const selectDoorNo = (e) => setDoorNo(e.target.value);
   const selectLatitude = (e) => setLatitude(e.target.value);
@@ -139,7 +139,7 @@ const setData=(config,data)=>{
   const selectAddressLine1 = (e) => setAddressLine1(e.target.value);
   const selectAddressLine2 = (e) => setAddressLine2(e.target.value);
   const selectLongitude = (e) => setLongitude(e.target.value);
-  
+
   return (
     <React.Fragment>
     {window.location.href.includes("/employee") ? <Timeline currentStep={3}/> : null}
@@ -175,7 +175,7 @@ const setData=(config,data)=>{
             value={doorNo}
             errorStyle={false}
             autoFocus={focusIndex?.index == 1}
-           
+
           />
           <CardLabel>{`${t("AST_ADDRESS_LINE_1")}`}</CardLabel>
           <TextInput
@@ -202,7 +202,7 @@ const setData=(config,data)=>{
             value={addressLine2}
             errorStyle={false}
             autoFocus={focusIndex?.index == 1}
-           
+
           />
           <CardLabel>{`${t("AST_LANDMARK")}`}</CardLabel>
           <TextInput

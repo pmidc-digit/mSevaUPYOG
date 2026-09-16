@@ -62,7 +62,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         setValue("pincode", user.permanentPinCode || user?.correspondencePinCode || "", { shouldValidate: true });
       }
     } catch (error) {
-      console.error(error);
+
     } finally {
       setIsLoading(false);
     }

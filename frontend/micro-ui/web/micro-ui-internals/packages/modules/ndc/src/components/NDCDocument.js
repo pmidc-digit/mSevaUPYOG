@@ -10,7 +10,7 @@ const PDFSvg = ({ width = 20, height = 20, className }) => (
 );
 
 function NDCDocument({ value = {}, Code, index }) {
-  console.log("value", value);
+
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.ndc.useNDCDocumentSearch(
     {
@@ -18,7 +18,7 @@ function NDCDocument({ value = {}, Code, index }) {
     },
     { value }
   );
-  console.log("dataInNDCDocument", data);
+
 
   let documents = [];
   if (value?.workflowDocs) documents = value?.workflowDocs;
@@ -34,7 +34,7 @@ function NDCDocument({ value = {}, Code, index }) {
           {data?.pdfFiles && (
             <div>
               {documents?.map((document, index) => {
-                console.log("document", document);
+
 
                 let documentLink = pdfDownloadLink(data.pdfFiles, document?.documentAttachment);
                 return (

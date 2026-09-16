@@ -11,7 +11,7 @@ const NOCResponseCitizen = (props) => {
   const { t } = useTranslation();
   const history = useHistory();
   const nocData = state?.data?.Noc?.[0];
-  console.log("nocData here", nocData);
+
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const [loading, setLoading] = useState(false);
 
@@ -46,7 +46,7 @@ const NOCResponseCitizen = (props) => {
     try{
       setLoading(true);
     const Property = nocData;
-    //console.log("tenants in NOC", tenants);
+
     const site = Property?.nocDetails?.additionalDetails?.siteDetails;
     const ulbType = site?.ulbType;
     const ulbName = site?.ulbName?.city?.name || site?.ulbName;
@@ -54,7 +54,7 @@ const NOCResponseCitizen = (props) => {
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, ulbType, ulbName, t, isView);
     Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     }catch(error){
-      console.log("Eroor Occurred !!!", error);
+
     }finally{
       setLoading(false);
     }

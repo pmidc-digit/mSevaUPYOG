@@ -11,14 +11,14 @@ import {
     import { Controller, useForm } from "react-hook-form";
     import { useTranslation } from "react-i18next";
     import { useParams } from "react-router-dom";
-  
+
     const editnewDetails = () => ({
-        
+
         key: Date.now(),
     });
 
     const EditAssetDetails = ({ config, onSelect, formData, setError, clearErrors }) => {
-        console.log('HELLO :- ',formData);
+
     const { t } = useTranslation();
     const [editNewAssetDetails, seteditAssignDetails] = useState(formData?.editNewAssetDetails || [editnewDetails()]);
     const { id:applicationNo } = useParams();
@@ -58,7 +58,7 @@ import {
         config,
         comingDataFromAPI,
         warrantyTime
-        
+
     };
 
     return (
@@ -94,7 +94,7 @@ import {
 
     const convertToObject = (String) => String ? { i18nKey: String, code: String, value: String } : null;
 
-    
+
 
   useEffect(() => {
     if (!_.isEqual(part, formValue)) {
@@ -111,7 +111,7 @@ import {
         clearErrors(config.key);
     }, [errors]);
 
-    
+
 
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 

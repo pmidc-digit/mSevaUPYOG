@@ -206,7 +206,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       setValue(`applicants.${index}.pincode`, user.permanentPinCode || user?.correspondencePinCode || "", { shouldValidate: true });
       setValue(`applicants.${index}.alternateMobileNumber`, user?.alternateMobileNumber || "", { shouldValidate: true });
     } catch (error) {
-      console.error(error);
+
     } finally {
       triggerLoader(false);
     }

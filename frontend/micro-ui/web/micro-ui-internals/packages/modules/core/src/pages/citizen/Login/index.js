@@ -158,7 +158,7 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
       userType: getUserType(),
       ...name,
     };
-    console.log("name", name);
+
     if (selectCommencementDate(name.dob)) {
       setError("Minimum age should be 18 years");
       setTimeout(() => {

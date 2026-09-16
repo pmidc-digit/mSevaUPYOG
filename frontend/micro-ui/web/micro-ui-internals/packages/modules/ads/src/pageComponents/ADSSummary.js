@@ -46,11 +46,11 @@ function ADSSummary({ t }) {
     try {
       const response = await Digit.ADSServices.estimateCreate({ cartDetails: payload, tenantId }, tenantId);
       setIsLoading(false);
-      console.log("response", response);
+
       setDemands(response?.demands?.[0]?.additionalDetails?.slotWiseBreakdown);
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
+
     }
   };
 

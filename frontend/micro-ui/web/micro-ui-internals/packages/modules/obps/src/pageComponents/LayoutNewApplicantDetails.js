@@ -150,7 +150,7 @@ const LayoutNewApplicantDetails = (_props) => {
     dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedDetails));
 
     // Map all owners into applicants array
-    // console.log("selectedOwners",selectedOwners)
+
     // Sort active owners so that primary owner (isPrimaryOwner: true) is placed at top
     const active = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
     const inactive = selectedOwners.filter((o) => o?.status === false || o?.status === "false");

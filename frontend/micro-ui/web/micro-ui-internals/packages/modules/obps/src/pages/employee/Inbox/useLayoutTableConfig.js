@@ -117,7 +117,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         accessor: "approvalDate",
         Cell: ({ row }) => {
           const value = Number(row.original?.approvalDate);
-          console.log("rooo", row.original);
+
 
           return Number.isFinite(value) ? GetCell(format(new Date(value), "dd/MM/yyyy")) : "-";
         },

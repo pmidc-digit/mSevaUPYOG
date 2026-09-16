@@ -200,13 +200,13 @@ const ConnectionDetails = () => {
         else if (paymentDetails?.data?.Bill?.[0]?.totalAmount !== 0) {
           setshowModal(true);
         }
-      
+
     }
-    
+
   };
   const getRestorationButton = () => {
-    console.log("getRestorationButton",data,!data?.checkWorkFlow)
-    console.log("Payment",paymentDetails)
+
+
     if (!data?.checkWorkFlow){
       setshowActionToast({
         key: "error",
@@ -218,7 +218,7 @@ const ConnectionDetails = () => {
     }
     else {
         if (paymentDetails?.data?.Bill?.length === 0 ) {
-          console.log("Payment",paymentDetails)
+
           let pathname = `/digit-ui/citizen/ws/restoration-application`;
           Digit.SessionStorage.set("WS_DISCONNECTION", {...state, serviceType: isSW ? "SEWERAGE" : "WATER"});
           history.push(`${pathname}`);
@@ -237,11 +237,11 @@ const ConnectionDetails = () => {
         history.push(`${pathname}`);
 
         }
-      
+
     }
-    
+
   };
-  
+
   function onActionSelect() {
     getDisconnectionButton();
   }

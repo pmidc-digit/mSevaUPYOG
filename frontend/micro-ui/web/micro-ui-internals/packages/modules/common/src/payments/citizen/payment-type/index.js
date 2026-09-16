@@ -105,7 +105,7 @@ export const SelectPaymentType = (props) => {
   const { name, mobileNumber } = state;
 
   const billDetails = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
-  console.log(billDetails, "BILL");
+
 
   const userOptions = ["OWNER", "OTHER"];
 
@@ -128,7 +128,7 @@ export const SelectPaymentType = (props) => {
 
     // const baseURL = process.env.REACT_APP_BASE_URL;
     const baseURL = document.location.origin;
-    console.log("BASEURLINPAYMENT", baseURL);
+
 
   const originalCallbackUrl =
     paymentAmount === 0 || billDetails.totalAmount === 0
@@ -306,13 +306,13 @@ export const SelectPaymentType = (props) => {
       //     makePayment(gatewayParam.txURL,newForm);
 
       //   } catch (e) {
-      //     console.log("Error in payment redirect ", e);
+
       //     //window.location = redirectionUrl;
       //   }
       // }
       // window.location = redirectUrl;
       const selectedGateway = data?.Transaction?.gateway || paymentConfig.gateway;
-      
+
        if (selectedGateway === gatewayType.RAZORPAY || selectedGateway === gatewayType.OBPASRAZORPAY ||selectedGateway?.toUpperCase()?.includes("RAZORPAY")) {
         displayRazorpay(data);
       }else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {

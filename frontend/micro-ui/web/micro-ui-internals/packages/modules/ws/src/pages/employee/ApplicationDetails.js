@@ -71,8 +71,8 @@ const ApplicationDetails = () => {
       select: (data) => data?.DataSecurity?.SecurityPolicy?.find((elem) => elem?.model == "User") || {},
     }
   );
-  
-  
+
+
 
   let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(t, tenantId, applicationNumber, serviceType, userInfo,{ privacy: Digit.Utils.getPrivacyObject() });
 
@@ -94,7 +94,7 @@ const ApplicationDetails = () => {
       }
     },
   );
-  
+
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -129,7 +129,7 @@ const ApplicationDetails = () => {
     const pairs = Object.entries(o).filter(([k, v]) => currentValue?.[k] !== v);
     return pairs?.length ? Object.fromEntries(pairs) : [];
   });
-  
+
   const {
     isLoading: updatingApplication,
     isError: updateApplicationError,
@@ -167,13 +167,13 @@ const ApplicationDetails = () => {
       const noOfToilets = applicationDetails?.applicationData?.noOfToilets === 0 ? null : applicationDetails?.applicationData?.noOfToilets;
       const plumberDetails = applicationDetails?.applicationData?.additionalDetails?.detailsProvidedBy;
       const roadCuttingInfo = applicationDetails?.applicationData?.roadCuttingInfo;
-  
+
       if( !connectionType || !((noOfTaps && pipeSize && waterSource) || (noOfWaterClosets && noOfToilets)) || !plumberDetails || !roadCuttingInfo){
         return false
       }
       return true;
     }
-   
+
   }
   let dowloadOptions = [],
   appStatus = applicationDetails?.applicationData?.applicationStatus || "";
@@ -306,12 +306,12 @@ const ApplicationDetails = () => {
           state: applicationDetails?.tenantId,
         };
       }
-      
+
     }
   });
 
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
-    console.log("workflowDetails",workflowDetails)
+
     if (action?.action === "PAY") {
       if (workflowDetails?.data?.processInstances?.[0]?.businessService =="WSReconnection")
       {
@@ -339,7 +339,7 @@ const ApplicationDetails = () => {
           state: applicationDetails?.tenantId,
         };
       }
-     
+
     }
   });
 
@@ -348,7 +348,7 @@ const ApplicationDetails = () => {
   const handleDownloadPdf = async () => {
     const tenantInfo = applicationDetails?.applicationData?.tenantId;
     let result = applicationDetails?.applicationData;
-  
+
     if (applicationDetails?.applicationData?.applicationType?.includes("MODIFY_")){
       const PDFdata = getModifyPDFData({ ...result }, { ...applicationDetails?.propertyDetails }, tenantInfo, t, oldApplication)
       PDFdata.then((ress) => Digit.Utils.pdf.generateModifyPdf(ress))
@@ -471,7 +471,7 @@ const ApplicationDetails = () => {
     return a.order - b.order;
   });
 
-  console.log("WS Application Details: \n",applicationDetails);
+
 
   return (
     <Fragment>

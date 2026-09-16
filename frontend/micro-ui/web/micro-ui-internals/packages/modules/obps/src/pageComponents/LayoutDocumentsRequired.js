@@ -30,7 +30,7 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
     }
   }, [formData?.documents?.documents?.documents, currentStepData?.documents?.documents?.documents]);
 
-  console.log("documents in childStep three", documents, formData, currentStepData);
+
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -53,8 +53,8 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
     }
   }, [coordinates]);
 
-  // console.log("coordinates (from redux)", coordinates, data)
-  //console.log("geocoordinates", geocoordinates)
+
+
 
   const layoutOwners = currentStepData?.apiData?.Layout?.[0]?.owners || [];
   const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner) || layoutOwners?.[0];
@@ -164,7 +164,7 @@ const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setE
     return processedDocs;
   }, [isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, data?.LAYOUT?.LayoutDocuments?.length]);
 
-  console.log("filteredDocs and documents", filteredDocuments, documents);
+
 
   const handleSubmit = () => {
     const document = formData.documents;
@@ -289,14 +289,14 @@ function LayoutSelectDocument({
   function selectfile(e) {
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
-    // console.log("selectedFile here", selectedFile, doc, selectedDocument)
+
 
     const fileType = selectedFile?.type?.toLowerCase();
 
     if (selectedFile && (fileType?.includes("image/jpeg") || fileType?.includes("image/jpg") || fileType?.includes("image/png"))) {
       extractGeoLocation(selectedFile).then((location) => {
-        // console.log("Latitude:", location.latitude)
-        // console.log("Longitude:", location.longitude)
+
+
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
           if (location.latitude !== null && location.longitude !== null) {
@@ -348,8 +348,8 @@ function LayoutSelectDocument({
 
     if (selectedFile && (fileType?.includes("image/jpeg") || fileType?.includes("image/jpg") || fileType?.includes("image/png"))) {
       extractGeoLocation(selectedFile).then((location) => {
-        // console.log("Latitude:", location.latitude)
-        // console.log("Longitude:", location.longitude)
+
+
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
           if (location.latitude !== null && location.longitude !== null) {
@@ -397,7 +397,7 @@ function LayoutSelectDocument({
       });
     }
 
-    // console.log("selectedFile here", selectedFile)
+
   }
 
   // const { dropdownData } = doc
@@ -464,7 +464,7 @@ function LayoutSelectDocument({
 
   useEffect(() => {
     if ((documents || []).length > 0) {
-      // console.log("documents here", documents)
+
       handleSubmit();
     }
   }, [documents]);
@@ -557,7 +557,7 @@ function LayoutSelectDocument({
           const latRef = EXIF.getTag(this, "GPSLatitudeRef");
           const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-          console.log("Extracted EXIF GPS tags:", { lat, lon, latRef, lonRef });
+
 
           if (lat && lon && latRef && lonRef) {
             // Convert GPS coordinates to decimal format and apply sign from refs
@@ -568,12 +568,12 @@ function LayoutSelectDocument({
 
             resolve({ latitude: latitude.toFixed(6), longitude: longitude.toFixed(6) });
           } else {
-            console.warn("No GPS EXIF tags (lat/lon/refs) found on file");
+
             resolve({ latitude: null, longitude: null });
           }
         });
       } catch (error) {
-        console.error("EXIF parsing failed:", error);
+
         resolve({ latitude: null, longitude: null });
       }
     });

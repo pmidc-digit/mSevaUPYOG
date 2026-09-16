@@ -104,6 +104,8 @@ const iconSelector = (code) => {
       return <PTRIcon className="fill-path-primary-main" />;
     case "KibanaDashboard":
       return <PTRIcon className="fill-path-primary-main" />;
+    case "OBPSKibanaDashboard":
+      return <PTRIcon className="fill-path-primary-main" />;
     case "CLU":
       return <OBPSIcon className="fill-path-primary-main" />;
     default:
@@ -247,23 +249,9 @@ const EmployeeHome = ({ modules }) => {
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
             {hasOBPSModule && (
               <div className="display-flex-gap-2 items-center">
-                <SubmitBar
-                  label={t("mSeva Mobile App")}
-                  onSubmit={() => window.open(MSEVA_APP_LINK, "_blank")}
-                />
-                <SubmitBar
-                  label={t("mSeva YouTube Channel")}
-                  onSubmit={() => window.open(MSEVA_YOUTUBE_LINK, "_blank")}
-                />
-                <SubmitBar
-                  label={t("User Manual")}
-                  onSubmit={() =>
-                    window.open(
-                      OBPS_EMPLOYEE_USER_MANUAL,
-                      "_blank"
-                    )
-                  }
-                />
+                <SubmitBar label={t("mSeva Mobile App")} onSubmit={() => window.open(MSEVA_APP_LINK, "_blank")} />
+                <SubmitBar label={t("mSeva YouTube Channel")} onSubmit={() => window.open(MSEVA_YOUTUBE_LINK, "_blank")} />
+                <SubmitBar label={t("User Manual")} onSubmit={() => window.open(OBPS_EMPLOYEE_USER_MANUAL, "_blank")} />
               </div>
             )}
           </div>

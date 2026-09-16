@@ -177,7 +177,7 @@ const ADSApplicationDetails = () => {
       });
       setActionError("Acknowledgment downloaded successfully");
     } catch (error) {
-      console.error("Acknowledgement download error:", error);
+
       setShowToast({
         key: "error",
         message: `ADV_ACKNOWLEDGEMENT_DOWNLOAD_ERROR: ${error.message}`,
@@ -296,12 +296,12 @@ const ADSApplicationDetails = () => {
         setSelectedAction(null);
         setShowModal(false);
       } else {
-        console.error("ADS update returned non-successful response:", response);
+
         setShowToast({ key: "error", message: (t && t("SOMETHING_WENT_WRONG")) || "Failed to update" });
         setActionError("Failed to update");
       }
     } catch (err) {
-      console.error("submitAction error:", err);
+
       if (err?.message && err.message.includes("ADSServices.update is not available")) {
         setShowToast({ key: "error", message: "Update function not available. Check Digit.ADSServices" });
         setActionError("Update function not available");

@@ -119,7 +119,7 @@ const OwnerForm = (_props) => {
         alert(t("TL_USER_NOT_FOUND") || "No user found with this mobile number.");
       }
     } catch (err) {
-      console.error("User search error:", err);
+
       alert(t("TL_USER_SEARCH_ERROR") || "Error searching user. Please try again.");
     } finally {
       setIsSearching(false);
@@ -189,7 +189,7 @@ const OwnerForm = (_props) => {
     const isResumeOrSendback = new URLSearchParams(window.location.search).has("resume") ||
       new URLSearchParams(window.location.search).has("sendback");
     if ((!isRenewOrEdit && !isResumeOrSendback) || !owner) return;
-    
+
     if (typeOfOwner === "INSTITUTIONAL") {
       setValue("instituionName", owner?.instituionName);
       setValue("subOwnerShipCategory", owner?.subOwnerShipCategory);
@@ -751,7 +751,7 @@ const OwnerForm = (_props) => {
                   )}
                 />
               </LabelFieldPair>
-              
+
                 <CardLabelError>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
               </div>
               </div>
@@ -1421,29 +1421,29 @@ const TLOwnerDetailsEmployee = ({ config, onSelect, userType, formData, setError
 useEffect(() => {
   const currentOwnershipCode = formData?.ownershipCategory?.code;
   const previousOwnershipCode = sessionStorage.getItem("previousOwnershipCategory");
-  
+
   if (currentOwnershipCode && previousOwnershipCode && currentOwnershipCode !== previousOwnershipCode) {
-    
+
     // Check if there's existing data
     const hasExistingData = owners.some(owner => 
       owner.name || owner.mobileNumber || owner.instituionName
     );
-    
+
     if (hasExistingData) {
       // Optionally show confirmation
       const userConfirmed = window.confirm(
         t("TL_OWNERSHIP_CHANGE_WARNING") || "Changing ownership category will clear existing owner details. Continue?"
       );
-      
+
       if (!userConfirmed) {
         // User cancelled - revert to previous
         return;
       }
     }
-    
+
     // Reset owners based on new type
     const newOwnershipType = currentOwnershipCode.split(".")[0];
-    
+
     if (newOwnershipType === "INSTITUTIONAL" || currentOwnershipCode.includes("INSTITUTIONAL")) {
       setOwners([createOwnerDetails()]);
     } else if (currentOwnershipCode === "INDIVIDUAL.MULTIPLEOWNERS") {
@@ -1452,7 +1452,7 @@ useEffect(() => {
       setOwners([createOwnerDetails()]);
     }
   }
-  
+
   // Store current as previous for next comparison
   if (currentOwnershipCode) {
     sessionStorage.setItem("previousOwnershipCategory", currentOwnershipCode);

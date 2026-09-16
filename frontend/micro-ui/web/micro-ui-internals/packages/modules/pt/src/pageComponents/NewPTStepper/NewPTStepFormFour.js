@@ -13,11 +13,11 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     : window.localStorage.getItem("Employee.tenant-id");
   // Fetch MDMS docs
 
-  console.log("tenantIdforproperty", tenantId);
+
 
   const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "Documents" }]);
 
-  console.log("docData", docData);
+
 
   // const currentStepData = useSelector(function (state) {
   //   return state.pt.PTNewApplicationFormReducer.formData;
@@ -36,8 +36,8 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     };
   });
 
-  console.log("currentStepData", currentStepData);
-  console.log("[NewPTStepFormFour] isSpecialCategoryRequired:", isSpecialCategoryRequired);
+
+
 
   const goNext = async (finalData) => {
     const missingFields = validation(finalData);
@@ -67,7 +67,7 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     // For dropdowns: match if uploadedDoc starts with requiredDoc (prefix check)
     const missingDocs = requiredDocs?.filter((reqDoc) => !uploadedDocCodes.some((uploaded) => uploaded && uploaded.startsWith(reqDoc)));
 
-    console.log("[validation] requiredDocs:", requiredDocs, "| uploadedDocCodes:", uploadedDocCodes, "| missingDocs:", missingDocs);
+
     return missingDocs;
   }
 
@@ -76,7 +76,7 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
 
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTNewApplication_FORM(config.key, data));

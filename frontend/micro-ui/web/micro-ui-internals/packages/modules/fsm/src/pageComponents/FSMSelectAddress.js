@@ -18,7 +18,7 @@ if (property !== "undefined")
 {
   property = JSON.parse(sessionStorage?.getItem("Digit_FSM_PT"))
 }
-console.log("property",property)
+
 let cityDetail={}
 if (property)
 {
@@ -35,7 +35,7 @@ return city.code == property?.propertyDetails?.address?.tenantId
     },
     t
   );
- 
+
   const [localities, setLocalities] = useState();
   const [selectedLocality, setSelectedLocality] = useState(()=>property?.propertyDetails?.address?.locality || formData?.cpt?.details?.address?.locality|| formData?.address?.locality);
 
@@ -51,7 +51,7 @@ return city.code == property?.propertyDetails?.address?.tenantId
     if (selectedCity && fetchedLocalities) {
       let __localityList = fetchedLocalities;
       let filteredLocalityList = [];
-console.log("formData?.address?.locality",formData?.address?.locality,formData?.cpt?.details?.address?.locality,property?.propertyDetails?.address?.locality)
+
       if (formData?.address?.locality) {
         setSelectedLocality(formData.address.locality);
       }
@@ -61,7 +61,7 @@ console.log("formData?.address?.locality",formData?.address?.locality,formData?.
       else if (property?.propertyDetails?.address?.locality) {
         setSelectedLocality(property?.propertyDetails?.address?.locality);
       }
-      
+
 
       if (formData?.address?.pincode) {
         filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == formData.address.pincode));

@@ -239,7 +239,7 @@ const OBPSSearchApplication = ({ tenantId, t, onSubmit, data, error, searchData,
       </div>
     );
 
-    console.log("OBPS Data →", data);
+
 
     const MobileComponentDirectory = ({ currentlyActiveMobileModal, searchFormFieldsComponentProps, ...props }) => {
       const { closeMobilePopupModal } = props;

@@ -37,9 +37,9 @@ const BannerPicker = (props) => {
 const NewResponse = ({ data, onSuccess }) => {
 
 
-  
+
   const { t } = useTranslation();
-  
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const mutation = Digit.Hooks.asset.useAssetCreateAPI(data?.address?.city?.code); 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -49,12 +49,12 @@ const NewResponse = ({ data, onSuccess }) => {
 
   useEffect(() => {
     try {
-      
+
       data.tenantId = data.address?.city?.code;
       let formdata = Assetdata(data)
-      console.log("formdata in acknowejkfdlgi ::: ", formdata);
 
-      
+
+
 
 
       mutation.mutate(formdata, {
@@ -64,14 +64,14 @@ const NewResponse = ({ data, onSuccess }) => {
     }
   }, []);
 
-  
+
 
   const handleDownloadPdf = async () => {
     const { Asset = [] } = mutation.data;
     let AST = (Asset && Asset[0]) || {};
     const tenantInfo = tenants.find((tenant) => tenant.code === AST.tenantId);
     let tenantId = AST.tenantId || tenantId;
-   
+
     const data = await getAssetAcknowledgementData({ ...AST }, tenantInfo, t);
     Digit.Utils.pdf.generate(data);
   };

@@ -39,14 +39,14 @@ const BannerPicker = ({ response }) => {
 const Response = (props) => {
   const { t } = useTranslation();
   const { match } = useRouteMatch();
-  const appState = useSelector((state) => {console.log("Response State", state); return state})["swach"];
+  const appState = useSelector((state) => { return state})["swach"];
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const [enable, setEnable] = useState(false)
   let id= appState?.swach?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
   const tenantId = window.Digit.SessionStorage.get("Employee.tenantId");
   const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId:tenantId, id },{ enabled: enable ? true : false}); // Respnse Page is changed
-  
+
   const handleDownloadPdf = async (e) => {
     const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
     e.preventDefault()

@@ -27,14 +27,14 @@ const MyApplication = () => {
   const userInfo = userInfoData?.value;
   const requestor = userInfo?.info?.mobileNumber;
 
-  //   console.log(requestor, "PPPP");
+
   // const userInfoforLayout = Digit.UserService.getUser()?.info || {};
   //   // layout application here
 
   //   const { data: reminderPeriod, isLoading: isreminderLoading} =  Digit.Hooks.useCustomMDMS(tenantId, "TradeLicense", [{ name: "ReminderPeriods" }]);
   const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 });
 
-  console.log("data", data);
+
 
   const { data: dataPunjab, isLoading: isLoadingPunjab, revalidate: revalidatePunjab } = Digit.Hooks.obps.useBPAREGSearch(
     "pb.punjab",
@@ -43,7 +43,7 @@ const MyApplication = () => {
     { cacheTime: 0 }
   );
 
-  console.log("dataPunjab", dataPunjab);
+
 
   //   const { data: bpaData, isLoading: isBpaSearchLoading, revalidate: bpaRevalidate } = Digit.Hooks.obps.useBPASearch(tenantId, {
   //     requestor,
@@ -61,13 +61,13 @@ const MyApplication = () => {
   //     }
 
   //     const response = await Digit.OBPSService.LayoutSearch(tenantId, searchParams)
-  //     console.log("  Layout search response citizen all application:", response)
+
 
   //     if (response?.Layout) {
   //       setLayoutData(response.Layout)
   //     }
   //   } catch (error) {
-  //     console.error("  Layout search error:", error)
+
   //     setLayoutData([])
   //   } finally {
   //     setIsLayoutLoading(false)
@@ -172,7 +172,7 @@ const MyApplication = () => {
   // };
 
   // const getBPAREGFormDataForUpgrade = (data) => {
-  //   console.log("getBPAREGFormDataForUpgrade", data);
+
   //   let license = data;
   //   const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
   //   const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
@@ -264,7 +264,7 @@ const MyApplication = () => {
   // };
 
   // const getBPAREGFormDataForRenew = (data) => {
-  //   console.log("getBPAREGFormDataForRenew", data);
+
   //   let license = data;
   //   const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
   //   const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
@@ -534,122 +534,7 @@ const MyApplication = () => {
         </div>
       </div>
 
-      {/* {finalData?.map((application, index) => {
-        if (application.type === "BPAREG") {
-          console.log("applicationDataForBPAREG", application)
-          const isRenewButtonVisible = isRenewalEnabled(application?.validTo)
-          return (
-            <CustomCard key={index}>
-              <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNumber} />
-              <KeyNote
-                keyValue={t("BPA_LICENSE_TYPE")}
-                note={t(`TRADELICENSE_TRADETYPE_${application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`)}
-              />
-              {application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT") && (
-                <KeyNote keyValue={t("BPA_COUNCIL_OF_ARCH_NO_LABEL")} note={application?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo} />
-              )}
-              <KeyNote keyValue={t("BPA_APPLICANT_NAME_LABEL")} note={application?.tradeLicenseDetail?.owners?.[0]?.name} />
-              <KeyNote keyValue={t("TL_COMMON_TABLE_COL_STATUS")} note={t(`WF_ARCHITECT_${application?.status}`)} noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }} />
-
-
-              <div style={{display: "flex", flexDirection: "row", gap: "5px"}}>
-
-                {application.status === "CITIZEN_ACTION_REQUIRED" ? (
-                  <SubmitBar
-                    label={t("EDIT")}
-                    onSubmit={() => getBPAREGFormData(application)}
-                  />
-                ) : application.status !== "INITIATED" ? (
-                  <Link
-                    to={{
-                      pathname: `/digit-ui/citizen/obps/stakeholder/${application?.applicationNumber}`,
-                      state: { tenantId: application?.tenantId },
-                    }}
-                  >
-                    <SubmitBar label={t("TL_VIEW_DETAILS")} />
-                  </Link>
-                ) : (
-                  <SubmitBar
-                    label={t("BPA_COMP_WORKFLOW")}
-                    onSubmit={() => getBPAREGFormData(application)}
-                  />
-                )}
-
-                {(application.status === "APPROVED" && !application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.includes("ARCHITECT")) ? (
-                  <React.Fragment>
-
-                    <SubmitBar
-                      label={t("BPA_PROFESSIONAL_UPGRADE")}
-                      onSubmit={() => getBPAREGFormDataForUpgrade(application)}
-                    />
-                  </React.Fragment>
-                ) : null}
-
-                {((application.status === "APPROVED" && isRenewButtonVisible )|| application.status === "EXPIRED") ? (
-                  <React.Fragment>
-
-                    <SubmitBar
-                      label={t("BPA_PROFESSIONAL_RENEW")}
-                      onSubmit={() => getBPAREGFormDataForRenew(application)}
-                    />
-                  </React.Fragment>
-                ) : null}
-
-                {application.status === "PENDINGPAYMENT" ? (
-                  <Link
-                    to={{
-                      pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}/${application?.tenantId}?tenantId=${application?.tenantId}`,
-                    }}
-                  >
-                    <div style={{ marginTop: "10px" }}>
-                      <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
-                    </div>
-                  </Link>
-                ) : null}
-
-              </div>
-
-            </CustomCard>
-          );
-        }
-         else {
-          const encryptedId = encryptId(application?.applicationNo);
-          return (
-            <CustomCard key={index}>
-              <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
-              <KeyNote
-                keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")}
-                note={application?.businessService !== "BPA_OC" ? t(`WF_BPA_BUILDING_PLAN_SCRUTINY`) : t(`WF_BPA_BUILDING_OC_PLAN_SCRUTINY`)}
-              />
-              <KeyNote keyValue={t("BPA_COMMON_SERVICE")} note={t(`BPA_SERVICETYPE_NEW_CONSTRUCTION`)} />
-              <KeyNote
-                keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
-                note={t(`WF_BPA_${application?.state}`)}
-                noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
-              />
-              <KeyNote
-                keyValue={t("BPA_COMMON_SLA")}
-                note={typeof application?.sla == "string" && application?.sla?.includes("NA") ? t(`${`CS_NA`}`) : application?.sla}
-              />
-                <Link to={{ pathname: `/digit-ui/citizen/obps/bpa-app/${encryptedId}`, state: { tenantId: "" } }}>
-                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
-                </Link>
-
-              {application.status === "PENDINGPAYMENT" ? (
-                <Link
-                  to={{
-                    pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNo}/${application?.tenantId}?tenantId=${application?.tenantId}`,
-                  }}
-                >
-                  <div style={{ marginTop: "10px" }}>
-                    <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
-                  </div>
-                </Link>
-              ) : null}
-            </CustomCard>
-          );
-        }
-      })} */}
+      {}
     </Fragment>
   );
 };

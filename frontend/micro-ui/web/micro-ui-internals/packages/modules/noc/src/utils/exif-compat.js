@@ -35,7 +35,7 @@ const EXIF = {
         gps: true,
       });
 
-      console.log("EXIF Data extracted:", exifData);
+
 
       const latitude = exifData?.latitude;
       const longitude = exifData?.longitude;
@@ -57,9 +57,9 @@ const EXIF = {
           longitude != null ? (longitude >= 0 ? "E" : "W") : undefined,
       };
 
-      console.log("EXIF data set on target:", target.exifdata);
+
     } catch (error) {
-      console.error("EXIF parse error:", error);
+
       target.exifdata = {};
     }
 

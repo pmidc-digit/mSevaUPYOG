@@ -105,8 +105,8 @@ const NDCModal = ({
   }, [file]);
 
   function submit(data) {
-    console.log("data", data);
-    console.log("selectedApprover", selectedApprover);
+
+
 
     const payload = {
       action: action?.action,

@@ -32,7 +32,7 @@ const NewApplication = () => {
   }, []);
 
   const onFormValueChange = (setValue, formData, formState) => {
-    console.log("formData, formState",formData, formState)
+
     setSubmitValve(!Object.keys(formState.errors).length);
     let addressError= formData?.address?.street == "" || formData?.address?.doorNo == "" || !formData?.address?.doorNo || !formData?.address?.street || Object.keys(formState.errors).length? setSubmitValve(false): setSubmitValve(true);
     if (Object.keys(formState.errors).length === 1 && (formState.errors?.units?.message.includes("arv")|| formState.errors?.units?.message.includes("RentedMonths") ) ){
@@ -52,7 +52,7 @@ const NewApplication = () => {
   };
 
   const onSubmit = (data) => {
-    console.log("datadata",data)
+
     // let dataNew = data?.units?.map((value)=>{
     //   let additionalDetails ={"structureType" : value.structureType,"ageOfProperty":value.ageOfProperty }
     //   return {...value,additionalDetails}
@@ -111,7 +111,7 @@ const NewApplication = () => {
             gender: owner?.gender.code,
             emailId,
             additionalDetails:{ownerSequence:index, ownerName:owner?.name}
-            
+
           };
         }
 
@@ -148,7 +148,7 @@ const NewApplication = () => {
       documents: data?.documents?.documents,
       applicationStatus: "CREATE",
     };
-    
+
     let tempObject={
       "mobileNumber":formData.owners?.[0].mobileNumber,
       "name":formData.owners?.[0].name,
@@ -156,7 +156,7 @@ const NewApplication = () => {
       "locality": formData.address.locality.code,
       "isRequestForDuplicatePropertyValidation":true
     }
-   
+
     if (!data?.ownershipCategory?.code.includes("INDIVIDUAL")) {
       formData.institution = {
         name: data.owners?.[0].institutionName,
@@ -166,12 +166,12 @@ const NewApplication = () => {
         tenantId: Digit.ULBService.getCurrentTenantId(),
       };
     }
-  console.log("formData Filled by user",formData)
+
   setFormData(formData)
-  console.log("formDataPayload",formData)
+
   setSearchData({ city: Digit.ULBService.getCurrentTenantId(), filters: tempObject });
   };
- 
+
   useEffect(() => {  
     if(propertyDataLoading && propertyData?.Properties.length >0)  
     {  
@@ -900,7 +900,7 @@ let conf =[
       ]
   }
 ]
-console.log("config.currStepNumber")
+
   return (
     <div>   
     <FormComposer
@@ -930,7 +930,7 @@ console.log("config.currStepNumber")
   >  <div style={{ width: "100%" }}>
   <Card>
       <CardHeader>Property Details</CardHeader>
-   
+
           <StatusTable>
               <Row label={t("CR_PROPERTY_NUMBER")} text={propertyData?.Properties?.[0]?.propertyId || "NA"} textStyle={{ whiteSpace: "pre" }} />
               <Row label={t("CR_OWNER_NAME")} text={propertyData?.Properties?.[0]?.owners?.[0].name || "NA"} />

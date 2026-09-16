@@ -37,13 +37,13 @@ export const EmployeeData = async (tenantId, consumerCode , moduleCode = null) =
     role: "EMPLOYEE",
     getTripData: false,
   });
-  console.log("Workflow Data", wfData);
+
 
   const officerInstance = wfData?.processInstances?.find((pi) => pi?.action === "APPROVE" || pi?.action === "REJECT");
 
   const codes = officerInstance?.assigner?.userName;
   const employeeData = await Digit.UserService.employeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });
-  console.log("employeeData", employeeData);
+
   const officerRaw = employeeData?.Employees?.[0];
   const officerAssignment = officerRaw?.assignments?.[0];
 
@@ -166,13 +166,13 @@ export async function getBase64FromUrl(url) {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
       reader.onerror = (err) => {
-        console.error("FileReader error:", err);
+
         reject(err);
       };
       reader.readAsDataURL(blob);
     });
   } catch (error) {
-    console.error("Error in getBase64FromUrl:", error);
+
     return null; // safe fallback
   }
 }
@@ -190,7 +190,7 @@ export async function getBase64Img(fileStoreId, state) {
     }
 
     const baseUrl = window.location.origin;
-    console.log("baseUrl", baseUrl);
+
 
     let finalUrl;
     if (signUrl?.includes("filestore")) {
@@ -200,13 +200,13 @@ export async function getBase64Img(fileStoreId, state) {
       // external URL, just use it directly
       finalUrl = signUrl;
     }
-    console.log("finalUrl", finalUrl);
+
 
     const base64Image = signUrl ? await getBase64FromUrl(finalUrl) : null;
 
     return base64Image;
   } catch (error) {
-    console.error("Error in getBase64Img:", error);
+
     return null; // return a safe fallback
   }
 }
@@ -243,7 +243,7 @@ export const convertToNocObject = (data, datafromflow) => {
 };
 
 export const getBPAFormDataNewEDCR = async (data, edcrNumber, history, t) => {
-  console.log(data, "PPPP");
+
   const edcrResponse = await Digit.OBPSService.scrutinyDetails(data?.tenantId, { edcrNumber: edcrNumber });
   const APIScrutinyDetails = edcrResponse?.edcrDetail[0];
 
@@ -269,7 +269,7 @@ export const getBPAFormDataNewEDCR = async (data, edcrNumber, history, t) => {
 };
 
 export const getBPAFormData = async (data, mdmsData, history, t, path) => {
-  console.log(data, "PPPP");
+
   const edcrResponse = await Digit.OBPSService.scrutinyDetails(data?.tenantId, { edcrNumber: data?.edcrNumber });
   const APIScrutinyDetails = edcrResponse?.edcrDetail[0];
   const getBlockIds = (unit) => {
@@ -371,7 +371,7 @@ export const getBPAFormData = async (data, mdmsData, history, t, path) => {
 //   let document = [];
 //   docs &&
 //   docs.map((ob) => {
-//     console.log("ob",ob);
+
 //     if (ob.id) {
 //       let docObject = {
 //         documentType: ob.documentType,
@@ -423,11 +423,11 @@ export const getDocumentforBPA = (docs, PrevStateDocs) => {
     fileStore: sessionStorage.getItem("ArchitectConsentdocFilestoreid"),
   };
 
-  console.log(architectConsentForm);
+
 
   docs &&
     docs.map((ob) => {
-      console.log("ob", ob);
+
       let docObject;
 
       if (ob.id) {
@@ -746,7 +746,7 @@ export const getapplicationdocstakeholder = (initial) => {
 };
 
 export const convertToStakeholderObject = (data) => {
-  console.log("dataconvertToStakeholderObject", data);
+
   const { action } = useParams();
   let formData = {
     Licenses: [
@@ -819,17 +819,17 @@ export const getUniqueItemsFromArray = (data, identifier) => {
 
 export const convertDateToEpoch = (dateString, dayStartOrEnd = "dayend") => {
   //example input format : "2018-10-02"
-  console.log("dateString", dateString);
+
   try {
     const parts = dateString.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
     const DateObj = new Date(Date.UTC(parts[1], parts[2] - 1, parts[3]));
     DateObj.setMinutes(DateObj.getMinutes() + DateObj.getTimezoneOffset());
-    console.log("DateObj", DateObj);
+
     if (dayStartOrEnd === "dayend") {
       DateObj.setHours(DateObj.getHours() + 24);
       DateObj.setSeconds(DateObj.getSeconds() - 1);
     }
-    console.log("DateObj.getTime()", DateObj.getTime());
+
     return DateObj.getTime();
   } catch (e) {
     return dateString;
@@ -864,7 +864,7 @@ export const getBPAEditDetails = async (data, APIScrutinyDetails, mdmsData, nocd
     return blocks;
   };
 
-  console.log("DATA", data);
+
 
   const getBlocksforFlow = (unit) => {
     let arr = [];
@@ -1021,7 +1021,7 @@ export const convertEpochToDate = (dateEpoch) => {
 // };
 
 export const getBusinessServices = (businessService, status, applicationType) => {
-  console.log("businessServiceIngetBusinessServices", businessService, status);
+
   let billBusinessService = "BPA.NC_APP_FEE";
   if (businessService === "BPA_LOW" && status === "PENDING_SANC_FEE_PAYMENT") {
     billBusinessService = "BPA.NC_SAN_FEE";
@@ -1138,13 +1138,13 @@ export const downloadAndPrintReciept = async (
   mode = "download",
   pdfKey = "bpa-receipt"
 ) => {
-  console.log("license needed", licenseType);
+
   const fee = payments?.[0]?.totalAmountPaid;
 
   const amountinwords = amountToWords(fee);
   const updatedPayments = payments.map((p) => ({ ...p, licenseType, amountinwords, ulbType }));
   let response = null;
-  console.log("payments", payments);
+
   if (payments[0]?.fileStoreId) {
     response = { filestoreIds: [payments[0]?.fileStoreId] };
   } else {
@@ -1247,7 +1247,7 @@ export const getOCEDCRDetails = async (edcrNumber, tenantId) => {
 
 export const ocScrutinyDetailsData = async (edcrNumber, tenantId) => {
   const scrutinyDetails = await getOCEDCRDetails(edcrNumber, tenantId);
-  console.log(scrutinyDetails, "OOOO*****");
+
   if (!scrutinyDetails?.edcrDetail?.[0]?.edcrNumber) {
     return { type: "ERROR", message: scrutinyDetails ? scrutinyDetails : "BPA_NO_RECORD_FOUND" };
   }
@@ -1295,7 +1295,7 @@ export const getOrderDocuments = (appUploadedDocumnets, isNoc = false) => {
       });
     });
   }
-  console.log("DOCUMENTS===", finalDocs);
+
   return finalDocs;
 };
 
@@ -1538,7 +1538,7 @@ export function getApproveRejectComments(workflowDetails) {
     };
 
   } catch (e) {
-    console.error("comments error", e);
+
     return defaultReturn;
   }
 }
@@ -1566,7 +1566,7 @@ export const fetchUrl = async (docUrl, tenantId) => {
         window.open(result.data[id], "_blank");
       }
     } catch (error) {
-      console.error("Error fetching document:", error);
+
     }
   }
 };
@@ -1594,7 +1594,7 @@ export const fetchOnlyUrl = async (docUrl, tenantId) => {
         return result.data[id];
       }
     } catch (error) {
-      console.error("Error fetching document:", error);
+
     }
   }
 };
@@ -1650,7 +1650,7 @@ export const encryptId = (text) => {
   const SECRET_KEY = localStorage.getItem("token");
 
   if (!SECRET_KEY) {
-    console.error("SECRET_KEY (token) not found in localStorage");
+
     return null;
   }
 
@@ -1669,7 +1669,7 @@ export const decryptId = (cipherText) => {
     const SECRET_KEY = localStorage.getItem("token");
 
     if (!SECRET_KEY) {
-      console.error("SECRET_KEY (token) not found in localStorage");
+
       return null;
     }
 
@@ -1681,7 +1681,7 @@ export const decryptId = (cipherText) => {
     const bytes = CryptoJS.AES.decrypt(base64, SECRET_KEY);
     return bytes.toString(CryptoJS.enc.Utf8);
   } catch (e) {
-    console.error("Error decrypting ID:", e);
+
     return null;
   }
 };

@@ -409,10 +409,10 @@ const BpaApplicationDetail = () => {
         setShowOTPInput(true);
       } else {
         // Handle error case if OTP sending fails
-        console.error("Error sending OTP Response is false:", response.error);
+
       }
     } catch (error) {
-      console.error("Error sending OTP:", error);
+
     }
   };
 
@@ -837,7 +837,7 @@ const BpaApplicationDetail = () => {
         tenant = tenantId;
       }
     } catch (error) {
-      console.log("err", error);
+
     } finally {
       Digit.StoreData.getCurrentLanguage = prevGetLang;
     }
@@ -936,7 +936,7 @@ const BpaApplicationDetail = () => {
         return null;
       }
     } catch (err) {
-      console.log("err", err);
+
       return null;
     } finally {
       Digit.StoreData.getCurrentLanguage = prevGetLang;
@@ -1035,7 +1035,7 @@ const BpaApplicationDetail = () => {
       window.open(fileStore[fileStoreId], "_blank");
       //  requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
     } catch (error) {
-      console.log("error", error);
+
     } finally {
       Digit.StoreData.getCurrentLanguage = prevGetLang;
       setIsEnableLoader(false);
@@ -1096,7 +1096,7 @@ const BpaApplicationDetail = () => {
           setFileUrls(urls);
         }
       } catch (error) {
-        console.error("Error fetching file URLs", error);
+
       } finally {
         setIsFileLoading(false);
       }
@@ -1153,7 +1153,7 @@ const BpaApplicationDetail = () => {
           setOwnerFileUrls(urls);
         }
       } catch (error) {
-        console.error("Error fetching owner file URLs", error);
+
       } finally {
         setIsOwnerFileLoading(false);
       }
@@ -1192,7 +1192,7 @@ const BpaApplicationDetail = () => {
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
         {
-          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onSuccess: () => void 0,
           onError: (error) => {
             setShowToast({
               key: "true",
@@ -1223,7 +1223,7 @@ const BpaApplicationDetail = () => {
       eSignCertificate(
         { fileStoreId, tenantId: tenant, callbackUrl, authToken },
         {
-          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onSuccess: () => void 0,
           onError: (error) => {
             setShowToast({
               key: "true",

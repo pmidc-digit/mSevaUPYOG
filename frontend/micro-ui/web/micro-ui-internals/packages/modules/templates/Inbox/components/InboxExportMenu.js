@@ -120,7 +120,7 @@ const InboxExportMenu = ({
           const fullRecords = await fetchAllData();
           if (Array.isArray(fullRecords) && fullRecords.length > 0) records = fullRecords;
         } catch (e) {
-          console.error("fetchAllData error", e);
+
         }
       }
 
@@ -139,7 +139,7 @@ const InboxExportMenu = ({
         window.Digit.Download.TablePDF("Application Details", headers, rows, cleanFileName);
       }
     } catch (err) {
-      console.error("Export failed", err);
+
     } finally {
       setIsExporting(false);
     }

@@ -170,7 +170,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       }
     } catch (error) {
       setLoader(false);
-      console.log("error");
+
     }
   };
 
@@ -213,7 +213,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   // const onFormValueChange = (setValue = true, data) => {
-  //   console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
   //   if (!_.isEqual(data, currentStepData)) {
   //     dispatch(UPDATE_PTRNewApplication_FORM(config.key, data));
   //   }

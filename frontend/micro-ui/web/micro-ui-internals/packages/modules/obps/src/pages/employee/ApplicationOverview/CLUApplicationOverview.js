@@ -240,7 +240,7 @@ const CLUEmployeeApplicationDetails = () => {
 
       Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
-      console.error(err);
+
     } finally {
       setLoader(false);
     }
@@ -280,7 +280,7 @@ const CLUEmployeeApplicationDetails = () => {
       setPdfUrl(downloadUrl);
       setShowPdfModal(true);
     } catch (error) {
-      console.error("Sanction Letter popup error:", error);
+
     } finally {
       setLoader(false);
     }
@@ -352,7 +352,7 @@ const CLUEmployeeApplicationDetails = () => {
       }
       return fileStoreId;
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoader(false);
       if(forcePnLocale){
@@ -392,7 +392,7 @@ const CLUEmployeeApplicationDetails = () => {
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
         {
-          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onSuccess: () => void 0,
           onError: (error) => {
             setShowToast({
               key: "true",
@@ -458,7 +458,7 @@ const CLUEmployeeApplicationDetails = () => {
         setLoader(false);
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
       } catch (e) {
-        console.error(e);
+
       } finally {
         setLoader(false);
       }
@@ -575,7 +575,7 @@ const CLUEmployeeApplicationDetails = () => {
 
       const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
       const endTime = Date.now();
-      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime);
 
@@ -605,21 +605,21 @@ const CLUEmployeeApplicationDetails = () => {
           // if (props?.setError) {
           //   props?.setError(t("CS_FILE_FETCH_ERROR"));
           // } else {
-          console.error(t("CS_FILE_FETCH_ERROR"));
+
           // }
         }
       } else {
         // if (props?.setError) {
         //   props?.setError(t("CS_FILE_FETCH_ERROR"));
         // } else {
-        console.error(t("CS_FILE_FETCH_ERROR"));
+
         // }
       }
     } catch (e) {
       // if (props?.setError) {
       //   props?.setError(t("CS_FILE_FETCH_ERROR"));
       // } else {
-      console.error(t("CS_FILE_FETCH_ERROR"));
+
       // }
     }
   };
@@ -708,7 +708,7 @@ const CLUEmployeeApplicationDetails = () => {
     // Rule 2: Every value must be a non-empty string (trimmed)
     const allFilled = entries.every(([key, value]) => {
       const isFilled = typeof value === "string" && value.trim().length > 0;
-      if (!isFilled) console.log("Remark not filled for key:", key, "value:", value);
+      if (!isFilled) ;
       return isFilled;
     });
 
@@ -989,9 +989,9 @@ const CLUEmployeeApplicationDetails = () => {
             })
           );
           setDistances(results);
-          console.log("Final distances (m):", results);
+
         } catch (err) {
-          console.error("Error fetching distances:", err);
+
         }
       }
     };

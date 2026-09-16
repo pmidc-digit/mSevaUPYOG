@@ -77,7 +77,7 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
   const employeeDataByCode = Digit.Hooks.useEmployeeSearch(tenantId, { codes: approver, isActive: true }, { enabled: !!approver });
   const employeeDataByName = Digit.Hooks.useEmployeeSearch( tenantId, { names: approver, isActive: true }, { enabled: !!approver && !employeeDataByCode?.data?.Employees?.length } );
   const employeeData = employeeDataByCode?.data?.Employees?.length ? employeeDataByCode : employeeDataByName;
-  console.log("employeeData", employeeData);
+
   const officerRaw = employeeData?.data?.Employees?.[0];
   const officerAssignment = officerRaw?.assignments?.[0];
 

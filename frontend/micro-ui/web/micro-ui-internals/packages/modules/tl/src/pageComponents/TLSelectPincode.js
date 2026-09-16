@@ -106,7 +106,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
       setPincodeServicability("CORE_COMMON_PINCODE_INVALID");
       return;
     }
-    
+
     // Check if pincode exists in tenant master data
     const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item == data?.pincode));
     if (foundValue) {
@@ -114,7 +114,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
       onSelect(config.key, { ...formData[config.key], pincode: data.pincode });
     } else {
       // Show warning but still allow to proceed if user confirms
-      console.warn("Pincode not found in master data:", data.pincode);
+
       setPincodeServicability("TL_COMMON_PINCODE_NOT_IN_MASTER");
       // Still allow selection - validation will be done at city level
       onSelect(config.key, { ...formData[config.key], pincode: data.pincode });

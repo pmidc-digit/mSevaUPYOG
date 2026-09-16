@@ -23,7 +23,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   let user = Digit.UserService.getUser();
   let docs = formData?.documents?.documents?.documents;
 
-  console.log("formData", formData);
+
 
   const appId = formData?.apiData?.Applications?.[0]?.uuid || formData?.venueDetails?.applicationNo;
 

@@ -280,7 +280,7 @@ const RALApplicationDetails = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const menuRef = useRef();
   Digit.Hooks.useClickOutside(menuRef, () => setDisplayMenu(false), displayMenu);
-  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt" });
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rl-receipt-employee" });
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -507,7 +507,13 @@ const RALApplicationDetails = () => {
     if (filtData.action === "FORWARD_FOT_SETLEMENT" && filtData?.amountToBeDeducted !== undefined) {
       updatedApplicant.amountToBeDeducted = filtData.amountToBeDeducted;
     }
-
+    if (filtData.action === "APPROVE") {
+      updatedApplicant.additionalDetails = {
+        ...updatedApplicant?.additionalDetails,
+        approverComment: filtData?.comment,
+      };
+    }
+    
     // if (!filtData?.assignee && filtData.action == "FORWARD") {
     //   // setShowToast(true);
     //   setShowToast({ key: "error", message: "Assignee is mandatory" });

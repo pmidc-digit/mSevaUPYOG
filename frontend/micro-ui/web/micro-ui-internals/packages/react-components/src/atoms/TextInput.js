@@ -27,9 +27,9 @@ const TextInput = (props) => {
       return val.replace(props.customDisallowRegex, "");
     }
 
-    // Default text input sanitizer: blocks script/injection characters (< > $ ^ ~ { } [ ] \ % *)
-    // Keeps letters, numbers, spaces, @, (), #, ., ,, -, _, +, /, &, ', :, ;, etc.
-    return val.replace(/[<>$\^~{}\[\]\\%*]/g, "");
+    // Default text input sanitizer: blocks script/injection characters (< > $ ^ ~ { } [ ] \ % * ! ; ' " `)
+    // Keeps letters, numbers, spaces, @, (), #, ., ,, -, _, +, /, &, :, ?, etc.
+    return val.replace(/[<>$\^~{}\[\]\\%*!;'"\`]/g, "");
   };
 
   const handleInputChange = (event) => {

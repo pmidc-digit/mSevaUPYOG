@@ -900,9 +900,9 @@ public class DemandService {
 						.amendmentId(amendment.getAmendmentId()).auditDetails(auditDetails)
 						.amendmentReason(amendment.getAmendmentReason()).effectiveFrom(amendment.getEffectiveFrom())
 						.effectiveTill(amendment.getEffectiveTill()).additionalDetails(amendment.getAdditionalDetails())
-						.reasonDocumentNumber(amendment.getReasonDocumentNumber())
-						.status(AmendmentStatus.CONSUMED).tenantId(latestDemand.getTenantId()).build();
-				
+						.reasonDocumentNumber(amendment.getReasonDocumentNumber()).status(AmendmentStatus.CONSUMED)
+						.tenantId(latestDemand.getTenantId()).build();
+
 				updateListForConsumedAmendments.add(amendmentUpdate);
 			}
 		}

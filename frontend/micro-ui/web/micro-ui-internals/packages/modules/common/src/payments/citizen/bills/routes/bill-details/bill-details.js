@@ -21,10 +21,10 @@ const BillDetails = ({ paymentRules, businessService }) => {
   const { data, isLoading } = state?.bill
     ? { isLoading: false }
     : Digit.Hooks.useFetchPayment({
-        tenantId,
-        businessService,
-        consumerCode: wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode,
-      });
+      tenantId,
+      businessService,
+      consumerCode: wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode,
+    });
 
   let Useruuid = data?.Bill?.[0]?.userId || "";
   let requestCriteria = [
@@ -143,8 +143,8 @@ const BillDetails = ({ paymentRules, businessService }) => {
       paymentType === t("CS_PAYMENT_FULL_AMOUNT")
         ? getTotal()
         : amount || businessService === "FSM.TRIP_CHARGES"
-        ? application?.pdfData?.advanceAmount
-        : amount;
+          ? application?.pdfData?.advanceAmount
+          : amount;
     if (window.location.href.includes("mcollect")) {
       history.push(`/digit-ui/citizen/payment/collect/${businessService}/${consumerCode}?workflow=mcollect`, {
         paymentAmount,
@@ -199,293 +199,49 @@ const BillDetails = ({ paymentRules, businessService }) => {
 
   return (
     <React.Fragment>
-      <style>{`
-        .bill-details-container {
-          max-width: 100%;
-          min-height: 100vh;
-          margin: 0;
-          padding: 48px 16px;
-          background: #F9FAFB;
-        }
-
-        .bill-details-wrapper {
-          max-width: 64rem;
-          margin: 0 auto;
-          width: 100%;
-          flex: 1;
-        }
-
-        .bill-header-section {
-          margin-bottom: 32px;
-        }
-
-        .bill-header-title {
-          font-size: 32px;
-          font-weight: 700;
-          color: #111827;
-          margin-bottom: 24px;
-        }
-
-        .bill-details-card {
-          background: white;
-          border-radius: 12px;
-          padding: 32px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .bill-info-section {
-          margin-bottom: 32px;
-        }
-
-        .bill-info-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 0;
-          border-bottom: 1px solid #E5E7EB;
-        }
-
-        .bill-info-row:last-child {
-          border-bottom: none;
-        }
-
-        .bill-info-label {
-          font-size: 14px;
-          font-weight: 600;
-          color: #6B7280;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .bill-info-value {
-          font-size: 16px;
-          font-weight: 600;
-          color: #111827;
-        }
-
-        .bill-divider {
-          border: none;
-          border-top: 2px solid #E5E7EB;
-          margin: 32px 0;
-        }
-
-        .bill-payment-section-title {
-          font-size: 18px;
-          font-weight: 600;
-          color: #111827;
-          margin-bottom: 24px;
-        }
-
-        .bill-amount-display {
-          background: linear-gradient(135deg, #0052CC 0%, #003D99 100%);
-          border-radius: 12px;
-          padding: 32px;
-          margin: 24px 0;
-          color: white;
-          text-align: center;
-        }
-
-        .bill-amount-label {
-          font-size: 14px;
-          font-weight: 600;
-          opacity: 0.9;
-          margin-bottom: 8px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .bill-amount-value {
-          font-size: 48px;
-          font-weight: 700;
-          line-height: 1.1;
-          font-variant-numeric: tabular-nums;
-        }
-
-        .bill-input-group {
-          margin: 24px 0;
-        }
-
-        .bill-input-label {
-          display: block;
-          font-size: 14px;
-          font-weight: 600;
-          color: #111827;
-          margin-bottom: 8px;
-        }
-
-        .bill-amount-input-wrapper {
-          position: relative;
-          display: flex;
-          align-items: center;
-        }
-
-        .bill-currency-symbol {
-          position: absolute;
-          left: 16px;
-          font-size: 18px;
-          font-weight: 600;
-          color: #6B7280;
-          pointer-events: none;
-        }
-
-        .bill-text-input {
-          width: 100%;
-          padding: 12px 12px 12px 40px;
-          border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          font-size: 16px;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-          background: white;
-          color: #111827;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .bill-text-input:focus {
-          outline: none;
-          border-color: #0052CC;
-          box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
-        }
-
-        .bill-text-input:disabled {
-          background: #F9FAFB;
-          cursor: not-allowed;
-        }
-
-        .bill-error-message {
-          display: block;
-          font-size: 13px;
-          color: #DC2626;
-          margin-top: 8px;
-          font-weight: 500;
-        }
-
-        .bill-submit-btn {
-          width: 100%;
-          padding: 16px 24px;
-          background: #0052CC;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-          box-shadow: 0 4px 12px rgba(5, 82, 204, 0.3);
-          margin-top: 24px;
-        }
-
-        .bill-submit-btn:hover:not(:disabled) {
-          background: #003D99;
-          box-shadow: 0 4px 12px rgba(5, 82, 204, 0.4);
-        }
-
-        .bill-submit-btn:active:not(:disabled) {
-          transform: scale(0.98);
-        }
-
-        .bill-submit-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        @media (max-width: 640px) {
-          .bill-details-container {
-            padding: 32px 16px;
-          }
-
-          .bill-header-title {
-            font-size: 24px;
-            margin-bottom: 16px;
-          }
-
-          .bill-details-card {
-            padding: 24px;
-          }
-
-          .bill-amount-value {
-            font-size: 36px;
-          }
-
-          .bill-info-row {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-          }
-        }
-      `}</style>
-
-      <div className="bill-details-container">
-        <div className="bill-details-wrapper">
-          {/* Header Section */}
-          <div className="bill-header-section">
-            <h1 className="bill-header-title">{t("CS_PAYMENT_BILL_DETAILS")}</h1>
-          </div>
-
-          {/* Details Card */}
-          <div className="bill-details-card">
-            {/* Bill Information Section */}
-            <div className="bill-info-section">
-              <div className="bill-info-row">
-                <span className="bill-info-label">
-                  {t(businessService == "PT.MUTATION" ? "PDF_STATIC_LABEL_MUATATION_NUMBER_LABEL" : label)}
-                </span>
-                <span className="bill-info-value">
-                  {wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode}
-                </span>
-              </div>
-
-              {businessService !== "PT.MUTATION" && businessService !== "FSM.TRIP_CHARGES" && (
-                <div className="bill-info-row">
-                  <span className="bill-info-label">{t("CS_PAYMENT_BILLING_PERIOD")}</span>
-                  <span className="bill-info-value">{getBillingPeriod()}</span>
-                </div>
-              )}
-
-              {(businessService?.includes("PT") || wrkflow === "WNS") && billDetails?.currentBillNo && (
-                <div className="bill-info-row">
-                  <span className="bill-info-label">{t("CS_BILL_NO")}</span>
-                  <span className="bill-info-value">{billDetails?.currentBillNo}</span>
-                </div>
-              )}
-
-              {(businessService?.includes("PT") || wrkflow === "WNS") && billDetails?.currentExpiryDate && (
-                <div className="bill-info-row">
-                  <span className="bill-info-label">{t("CS_BILL_DUEDATE")}</span>
-                  <span className="bill-info-value">{new Date(billDetails?.currentExpiryDate).toLocaleDateString()}</span>
-                </div>
-              )}
+      <Header>{t("CS_PAYMENT_BILL_DETAILS")}</Header>
+      <Card>
+        <div className="bill-details-container">
+          <div className="bill-details-wrapper">
+            {/* Header Section */}
+            <div className="bill-header-section">
+              <h1 className="bill-header-title">{t("CS_PAYMENT_BILL_DETAILS")}</h1>
             </div>
 
-            {/* Bill Summary */}
-            {businessService !== "FSM.TRIP_CHARGES" ? (
-              <>
-                <BillSumary billAccountDetails={getBillBreakDown()} total={getTotal()} businessService={businessService} arrears={Arrears} />
-                <ArrearSummary bill={bill} />
-              </>
-            ) : (
+            {/* Details Card */}
+            <div className="bill-details-card">
+              {/* Bill Information Section */}
               <div className="bill-info-section">
                 <div className="bill-info-row">
-                  <span className="bill-info-label">{t("ES_PAYMENT_DETAILS_TOTAL_AMOUNT")}</span>
-                  <span className="bill-info-value">₹ {application?.pdfData?.totalAmount}</span>
+                  <span className="bill-info-label">
+                    {t(businessService == "PT.MUTATION" ? "PDF_STATIC_LABEL_MUATATION_NUMBER_LABEL" : label)}
+                  </span>
+                  <span className="bill-info-value">
+                    {wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode}
+                  </span>
                 </div>
-                <div className="bill-info-row">
-                  <span className="bill-info-label">{t("ES_PAYMENT_DETAILS_ADV_AMOUNT")}</span>
-                  <span className="bill-info-value">₹ {application?.pdfData?.advanceAmount}</span>
-                </div>
-                {(application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT_CITIZEN" ||
-                  application?.pdfData?.applicationStatus !== "PENDING_APPL_FEE_PAYMENT") && (
+
+                {businessService !== "PT.MUTATION" && businessService !== "FSM.TRIP_CHARGES" && (
                   <div className="bill-info-row">
-                    <span className="bill-info-label">{t("FSM_DUE_AMOUNT_TO_BE_PAID")}</span>
-                    <span className="bill-info-value">
-                      ₹ {application?.pdfData?.totalAmount - application?.pdfData?.advanceAmount}
-                    </span>
+                    <span className="bill-info-label">{t("CS_PAYMENT_BILLING_PERIOD")}</span>
+                    <span className="bill-info-value">{getBillingPeriod()}</span>
+                  </div>
+                )}
+
+                {(businessService?.includes("PT") || wrkflow === "WNS") && billDetails?.currentBillNo && (
+                  <div className="bill-info-row">
+                    <span className="bill-info-label">{t("CS_BILL_NO")}</span>
+                    <span className="bill-info-value">{billDetails?.currentBillNo}</span>
+                  </div>
+                )}
+
+                {(businessService?.includes("PT") || wrkflow === "WNS") && billDetails?.currentExpiryDate && (
+                  <div className="bill-info-row">
+                    <span className="bill-info-label">{t("CS_BILL_DUEDATE")}</span>
+                    <span className="bill-info-value">{new Date(billDetails?.currentExpiryDate).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
-            )}
-
-            {/* Payment Divider */}
-            <hr className="bill-divider" />
 
             {/* Payment Amount Section */}
             <div className="bill-payment-amount">

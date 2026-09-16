@@ -1232,6 +1232,13 @@ const LayoutSiteDetails = (_props) => {
                     value: /^[0-9]{1,15}$/,
                     message: "Vasika number should be numeric only and max 15 digits",
                   },
+                  validate: (value) => {
+                    const trimmed = value ? value.trim() : "";
+                    if (trimmed && /\s/.test(trimmed)) {
+                      return t("NO_SPACES_ALLOWED");
+                    }
+                    return true;
+                  },
                 }}
                 render={(props) => (
                   <TextInput
@@ -1240,6 +1247,10 @@ const LayoutSiteDetails = (_props) => {
                       props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
+                      const trimmed = e.target.value ? e.target.value.trim() : "";
+                      if (trimmed !== props.value) {
+                        props.onChange(trimmed);
+                      }
                       props.onBlur(e);
                     }}
                     disabled={isEditMode}

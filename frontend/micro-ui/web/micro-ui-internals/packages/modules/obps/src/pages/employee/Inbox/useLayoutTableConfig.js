@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
 
-const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
+const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, globalSearch, cities }) => {
   const { t } = useTranslation();
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
@@ -26,6 +26,11 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
     if (value.includes("pending")) return "pending";
     if (value.includes("new")) return "new";
     return "default";
+  };
+
+  const filterCityName = (id, cityNames) => {
+    const fiterData = cityNames?.find((item) => item?.code === id);
+    return fiterData?.ulbName;
   };
 
   const renderStatusIcon = (statusClass) => {
@@ -126,6 +131,11 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         },
       },
       {
+        Header: t("ULB"),
+        accessor: (row) => filterCityName(row?.tenantId, cities),
+        disableSortBy: true,
+      },
+      {
         Header: t("CATEGORY"),
         accessor: (row) => row?.category,
         disableSortBy: true,
@@ -183,7 +193,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
       //   ),
       // },
     ];
-  }, [parentRoute, t]);
+  }, [parentRoute, t, cities]);
 
   return {
     getCellProps: () => ({
@@ -214,7 +224,8 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
     pageSizeLimit: formState.tableForm?.limit,
     onSort: onSortingByData,
     totalRecords: totalCount,
-    onSearch: formState?.searchForm?.message,
+    onSearch: globalSearch,
+    searchAllFields: true,
     onLastPage: () => {
       const limit = parseInt(formState.tableForm?.limit) || 10;
       dispatch({

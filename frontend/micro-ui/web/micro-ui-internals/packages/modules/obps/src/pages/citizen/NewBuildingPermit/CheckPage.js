@@ -268,6 +268,29 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
 
   const Architectvalidations = sessionStorage.getItem("ArchitectConsentdocFilestoreid") ? true : false;
 
+  const edcrReqCheck = datafromAPI?.planDetail?.edcrRequest 
+    || plotDataFromStorage?.planDetail?.edcrRequest 
+    || planInfoProps?.planDetail?.edcrRequest 
+    || value?.data?.edcrDetails?.planDetail?.edcrRequest 
+    || {};
+  const addDetailsCheck = value?.additionalDetails || {};
+
+  const checkAreaType = edcrReqCheck?.areaType || addDetailsCheck?.areaType || owners?.areaType;
+  const formatAreaTypeCheck = (type) => (type === "SCHEME_AREA" ? "Scheme Area" : type === "NON_SCHEME_AREA" ? "Non-Scheme Area" : type || "NA");
+  const formatYesNoCheck = (val) => (val === true || val === "YES" ? "YES" : val === false || val === "NO" ? "NO" : val ?? "NA");
+
+  const checkSchemeArea = edcrReqCheck?.schemeArea || addDetailsCheck?.schemeArea || owners?.schemeArea;
+  const checkSchName = edcrReqCheck?.schName || addDetailsCheck?.schemeName || owners?.schemeName;
+  const checkSiteReserved = edcrReqCheck?.siteReserved ?? addDetailsCheck?.siteReserved ?? owners?.siteReserved;
+  const checkApprovedCS = edcrReqCheck?.approvedCS ?? addDetailsCheck?.approvedCS ?? owners?.approvedCS;
+  const checkCluApprove = edcrReqCheck?.cluApprove ?? addDetailsCheck?.cluApprove ?? owners?.cluApprove;
+  const checkCoreArea = edcrReqCheck?.coreArea ?? addDetailsCheck?.coreArea;
+  const checkRoadType = addDetailsCheck?.roadType?.name || addDetailsCheck?.roadType || edcrReqCheck?.roadType || owners?.roadType?.name || owners?.roadType;
+
+  const isSchemeAreaCheck = checkAreaType === "SCHEME_AREA" || checkAreaType === "Scheme Area";
+  const isNonSchemeAreaCheck = checkAreaType === "NON_SCHEME_AREA" || checkAreaType === "Non-Scheme Area";
+  const isSiteReservedYesCheck = formatYesNoCheck(checkSiteReserved) === "YES";
+
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   // Persist states to sessionStorage whenever they change
@@ -1298,6 +1321,70 @@ const documentsColumns = [
         <StatusTable>
           <CardHeader>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardHeader>
            <hr className="obps-pages-citizen-new-building-permit-check-page--style-50" />
+          {checkAreaType && (
+            <Row
+              className="border-none"
+              label={t(`EDCR_SCRUTINY_AREA_TYPE`)}
+              text={formatAreaTypeCheck(checkAreaType)}
+            />
+          )}
+          {isSchemeAreaCheck && (
+            <React.Fragment>
+              {checkSchemeArea && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_SCRUTINY_SCHEME_AREA_TYPES`)}
+                  text={checkSchemeArea}
+                />
+              )}
+              {checkSchName && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_SCHEME_NAME`)}
+                  text={checkSchName}
+                />
+              )}
+              {checkSiteReserved !== undefined && checkSiteReserved !== null && checkSiteReserved !== "" && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_IS_SITE_RESERVED`)}
+                  text={formatYesNoCheck(checkSiteReserved)}
+                />
+              )}
+              {isSiteReservedYesCheck && checkApprovedCS !== undefined && checkApprovedCS !== null && checkApprovedCS !== "" && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_IS_APPROVED_CONTROL_SHEET`)}
+                  text={formatYesNoCheck(checkApprovedCS)}
+                />
+              )}
+            </React.Fragment>
+          )}
+          {isNonSchemeAreaCheck && (
+            <React.Fragment>
+              {checkCluApprove !== undefined && checkCluApprove !== null && checkCluApprove !== "" && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_SCRUTINY_CLU_APPROVED`)}
+                  text={formatYesNoCheck(checkCluApprove)}
+                />
+              )}
+              {checkCoreArea !== undefined && checkCoreArea !== null && checkCoreArea !== "" && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_IS_CORE_AREA`)}
+                  text={formatYesNoCheck(checkCoreArea)}
+                />
+              )}
+            </React.Fragment>
+          )}
+          {checkRoadType && (
+            <Row
+              className="border-none"
+              label={t(`BPA_ROAD_TYPE`)}
+              text={checkRoadType}
+            />
+          )}
           <Row
             className="border-none"
             label={t(`BPA_APPROVED_COLONY_LABEL`)}
@@ -1322,11 +1409,6 @@ const documentsColumns = [
             className="border-none"
             label={t(`BPA_BUILDING_STATUS_LABEL`)}
             text={owners?.buildingStatus?.code || value?.additionalDetails?.buildingStatus || t("CS_NA")}
-          />
-          <Row
-            className="border-none"
-            label={t(`BPA_CORE_AREA_LABEL`)}
-            text={datafromAPI?.planDetail?.coreArea || value?.additionalDetails?.coreArea || t("CS_NA")}
           />
           <Row
             className="border-none"

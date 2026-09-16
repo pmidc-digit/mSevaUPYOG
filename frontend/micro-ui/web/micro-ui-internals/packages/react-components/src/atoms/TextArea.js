@@ -25,9 +25,9 @@ const TextArea = (props) => {
       return val.replace(props.customDisallowRegex, "");
     }
 
-    // Default textarea sanitizer: blocks dangerous injection chars (< > \ ^ ~ { } [ ])
-    // Preserves letters, numbers, punctuation like ., -, /, #, (), :, ;, ?, &, ', ", %, newline, spaces
-    return val.replace(/[<>\^~{}\[\]\\]/g, "");
+    // Default textarea sanitizer: blocks dangerous injection chars (< > \ ^ ~ { } [ ] ! ; ' " `)
+    // Preserves letters, numbers, punctuation like ., -, /, #, (), :, ?, &, %, newline, spaces
+    return val.replace(/[<>\^~{}\[\]\\!;'"\`]/g, "");
   };
 
   const handleChange = (e) => {

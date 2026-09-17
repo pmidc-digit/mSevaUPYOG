@@ -14,13 +14,16 @@ import {
   PTRIcon,
   Table,
   ArrowRightInbox,
+  SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
+import EmployeeTenantSelection from "./EmployeeTenantSelection";
 import CitizenHomeCardWithExternalLink from "../pages/citizen/CitizenHomeCardWithExternalLink";
 import CitizenHomeCardAccordian from "../pages/citizen/CitizenHomeCardAccordian";
+// import { MSEVA_APP_LINK, MSEVA_YOUTUBE_LINK, OBPS_EMPLOYEE_USER_MANUAL } from "../../../../constants/constants";
 /* 
 Feature :: Citizen All service screen cards
 */
@@ -101,6 +104,8 @@ const iconSelector = (code) => {
     case "GarbageCollection":
       return <PTRIcon className="fill-path-primary-main" />;
     case "KibanaDashboard":
+      return <PTRIcon className="fill-path-primary-main" />;
+    case "OBPSKibanaDashboard":
       return <PTRIcon className="fill-path-primary-main" />;
     case "CLU":
       return <OBPSIcon className="fill-path-primary-main" />;
@@ -199,6 +204,8 @@ const EmployeeHome = ({ modules }) => {
   if (window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM", {});
 
   const userName = Digit.UserService.getUser();
+  const obpsModuleCodes = ["OBPS", "BPAStakeholder", "Layout", "CLU", "NOC"];
+  const hasOBPSModule = modules?.some((moduleData) => obpsModuleCodes.includes(moduleData?.code));
 
   const welcomeCardStyle = {
     background: "linear-gradient(135deg, #4F65D8 0%, #00157A 100%)",
@@ -232,6 +239,7 @@ const EmployeeHome = ({ modules }) => {
 
   return (
     <div className="employee-app-container employee-dashboard-container">
+      {userName?.info?.tenantId === "pb.punjab" && <EmployeeTenantSelection />}
       <div style={welcomeCardStyle}>
         <h1 style={welcomeTitleStyle}>Welcome {userName?.info?.name || "User"}</h1>
         <p style={welcomeSubtitleStyle}>Manage and access employee services with ease and efficiency</p>
@@ -241,6 +249,13 @@ const EmployeeHome = ({ modules }) => {
         <div className="employee-dashboard-quick-services-container">
           <div className="employee-dashboard-quick-services-header">
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
+            {/* {hasOBPSModule && (
+              <div className="display-flex-gap-2 items-center">
+                <SubmitBar label={t("mSeva Mobile App")} onSubmit={() => window.open(MSEVA_APP_LINK, "_blank")} />
+                <SubmitBar label={t("mSeva YouTube Channel")} onSubmit={() => window.open(MSEVA_YOUTUBE_LINK, "_blank")} />
+                <SubmitBar label={t("User Manual")} onSubmit={() => window.open(OBPS_EMPLOYEE_USER_MANUAL, "_blank")} />
+              </div>
+            )} */}
           </div>
           <div className="employee-dashboard-module-card-wrapper">
             {modules.map((moduleData, index) => {

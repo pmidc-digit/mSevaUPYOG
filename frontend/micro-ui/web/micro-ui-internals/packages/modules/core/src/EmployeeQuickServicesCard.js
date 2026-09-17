@@ -26,7 +26,8 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
   const { t } = useTranslation();
   // const userRoles = Digit.UserService.getUser().info.roles
   const [userInfoData, setUserInfoData] = useState(() => JSON.parse(sessionStorage.getItem("userInfoData") || "{}"));
-  const userRoles = userInfoData?.roles || [];
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const userRoles = (userInfoData?.roles || []).filter((role) => tenantId && role?.tenantId === tenantId);
 
   useEffect(() => {
     if (userInfoData?.roles) return; // Already loaded, skip
@@ -105,12 +106,15 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <BillsIcon />;
       case "KibanaDashboard":
         return <BillsIcon />;
+      case "OBPSKibanaDashboard":
+        return <BillsIcon />;
       case "CLU":
         return <OBPSIcon />;
       default:
         return <PTIcon />;
     }
   };
+
   const route = updatedModuleData[0]?.routes;
 
   const handleCardClick = (e) => {
@@ -121,11 +125,14 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
     }
   };
 
-  return userRoles.some((item) => item.code === updatedModuleData[0]?.Access) ? (
+  const requiredRole = updatedModuleData[0]?.Access;
+  const hasCardAccess = Boolean(requiredRole) && userRoles.some((role) => role?.code === requiredRole);
+
+  return hasCardAccess ? (
     <Link
       to={route}
       onClick={handleCardClick}
-      //    to={`${updatedModuleData[0]?.routes}`}
+      // to={`${updatedModuleData[0]?.routes}`}
       className="employee-quick-service-link"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

@@ -1,6 +1,11 @@
 package org.egov.rl.services.service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.log4j.Log4j2;
@@ -110,11 +116,6 @@ public class AllotmentService {
 		userService.createUser(allotmentRequest);
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
-		if (config.getIsWorkflowEnabled()) {
-			wfService.updateWorkflowStatus(allotmentRequest);
-		} else {
-			allotmentRequest.getAllotment().get(0).setStatus(RLConstants.APPROVED);
-		}
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
 		boolean isLegacyApplication = isLegacyApplication(allotmentDetails);
 		String applicationType = resolveApplicationType(allotmentDetails);
@@ -148,6 +149,16 @@ public class AllotmentService {
 			}
 		}
 		
+		// The workflow transition is committed only AFTER the demand exists. It used to run first, so a failed
+		// demand call left the application APPROVED with no bill - and it could not be replayed, because the
+		// transition had already happened. Demand creation is idempotent per (tenant, consumerCode), so if the
+		// transition itself fails, re-approving returns the stored demand instead of duplicating it.
+		if (config.getIsWorkflowEnabled()) {
+			wfService.updateWorkflowStatus(allotmentRequest);
+		} else {
+			allotmentRequest.getAllotment().get(0).setStatus(RLConstants.APPROVED);
+		}
+
 		if(action.equalsIgnoreCase(RLConstants.FORWARD_FOR_SATELMENT_RL_APPLICATION)) {
 			satelmentAllotment(allotmentRequest);
 		}
@@ -227,24 +238,45 @@ public class AllotmentService {
      */
     private String callCalculatorServiceForLegacy(AllotmentRequest allotmentRequest) {
         AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
-        com.fasterxml.jackson.databind.JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+        JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
 
         // Extract arrear details from additionalDetails
         BigDecimal arrearAmount = BigDecimal.ZERO;
+        BigDecimal baseArrear = BigDecimal.ZERO;
+        BigDecimal arrearGST = BigDecimal.ZERO;
+        BigDecimal arrearPenalty = BigDecimal.ZERO;
+        BigDecimal futurePenalty = BigDecimal.ZERO;
+        Long lastPaidUpto = null;
         Long arrearStartDate = null;
         Long arrearEndDate = null;
 
-        if (additionalDetails.has(RLConstants.LEGACY_ARREAR_KEY)) {
-            arrearAmount = new BigDecimal(additionalDetails.get(RLConstants.LEGACY_ARREAR_KEY).asText());
-        }
-        if (additionalDetails.has(RLConstants.LEGACY_ARREAR_START_DATE_KEY)) {
-            arrearStartDate = additionalDetails.get(RLConstants.LEGACY_ARREAR_START_DATE_KEY).asLong();
-        }
-        if (additionalDetails.has(RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY)) {
-            arrearEndDate = additionalDetails.get(RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY).asLong();
+        if (additionalDetails != null) {
+            // `arrear` wins over `arrearAmount` (kept from the original contract); `baseArrear` overrides both.
+            if (additionalDetails.has(RLConstants.LEGACY_ARREAR_KEY)) {
+                arrearAmount = readLegacyAmount(additionalDetails, RLConstants.LEGACY_ARREAR_KEY);
+                baseArrear = arrearAmount;
+            } else if (additionalDetails.has("arrearAmount")) {
+                arrearAmount = readLegacyAmount(additionalDetails, "arrearAmount");
+                baseArrear = arrearAmount;
+            }
+            if (additionalDetails.has("baseArrear")) {
+                baseArrear = readLegacyAmount(additionalDetails, "baseArrear");
+            }
+            arrearGST = readLegacyAmount(additionalDetails, "arrearGST");
+            arrearPenalty = readLegacyAmount(additionalDetails, "arrearPenalty");
+            futurePenalty = readLegacyAmount(additionalDetails, "futurePenalty");
+
+            lastPaidUpto = readLegacyDateMillis(additionalDetails, "lastPaidUpto", "lastPaidOn", "lastPaidDate");
+            arrearStartDate = readLegacyDateMillis(additionalDetails, RLConstants.LEGACY_ARREAR_START_DATE_KEY);
+            arrearEndDate = readLegacyDateMillis(additionalDetails, RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY);
         }
 
-        CalculationReq calculationReq = getCalculationReqForLegacy(allotmentRequest, arrearAmount, arrearStartDate, arrearEndDate);
+        log.info("Legacy arrear input for application {}: arrearAmount={}, baseArrear={}, arrearGST={}, "
+                        + "arrearPenalty={}, futurePenalty={}, lastPaidUpto={}, arrearStartDate={}, arrearEndDate={}",
+                allotmentDetails.getApplicationNumber(), arrearAmount, baseArrear, arrearGST, arrearPenalty,
+                futurePenalty, lastPaidUpto, arrearStartDate, arrearEndDate);
+
+        CalculationReq calculationReq = getCalculationReqForLegacy(allotmentRequest, arrearAmount, baseArrear, arrearGST, arrearPenalty, futurePenalty, lastPaidUpto, arrearStartDate, arrearEndDate);
 
         StringBuilder url = new StringBuilder().append(config.getRlCalculatorHost())
                 .append(config.getRlCalculatorEndpoint());
@@ -258,6 +290,8 @@ public class AllotmentService {
      * Build CalculationReq for legacy applications with arrear details
      */
     private CalculationReq getCalculationReqForLegacy(AllotmentRequest allotmentRequest, BigDecimal arrearAmount,
+                                                      BigDecimal baseArrear, BigDecimal arrearGST, BigDecimal arrearPenalty,
+                                                      BigDecimal futurePenalty, Long lastPaidUpto,
                                                       Long arrearStartDate, Long arrearEndDate) {
         CalculationReq calculationReq = new CalculationReq();
         calculationReq.setRequestInfo(allotmentRequest.getRequestInfo());
@@ -267,6 +301,11 @@ public class AllotmentService {
                 .isSatelment(false)
                 .isLegacyArrear(true)
                 .arrearAmount(arrearAmount)
+                .baseArrear(baseArrear)
+                .arrearGST(arrearGST)
+                .arrearPenalty(arrearPenalty)
+                .futurePenalty(futurePenalty)
+                .lastPaidUpto(lastPaidUpto)
                 .arrearStartDate(arrearStartDate)
                 .lastBillingPeriod(arrearEndDate)
                 .allotmentRequest(allotmentRequest)
@@ -315,6 +354,98 @@ public class AllotmentService {
 			return new ArrayList<>();
 		allotmentEnrichmentService.enrichOwnerDetailsFromUserService(applications, requestInfo);
 		return applications;
+	}
+
+	/**
+	 * Reads a numeric arrear value from additionalDetails. A present but non numeric value fails fast with a
+	 * meaningful error instead of surfacing as a raw NumberFormatException during demand generation.
+	 */
+	private BigDecimal readLegacyAmount(JsonNode details, String key) {
+		if (details == null || key == null || !details.has(key)) {
+			return BigDecimal.ZERO;
+		}
+		JsonNode node = details.get(key);
+		if (node == null || node.isNull()) {
+			return BigDecimal.ZERO;
+		}
+		String raw = node.asText();
+		if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+			return BigDecimal.ZERO;
+		}
+		try {
+			return new BigDecimal(raw.trim());
+		} catch (NumberFormatException e) {
+			throw new CustomException("INVALID_LEGACY_AMOUNT",
+					"Unable to parse '" + key + "' value '" + raw + "'. Expected a numeric amount.");
+		}
+	}
+
+	/**
+	 * Reads an epoch-millis date from the first key that is present, or null when none is provided.
+	 *
+	 * <p>Jackson's {@code asLong()} returns 0 for a non numeric value without throwing, which would turn
+	 * 1970-01-01 into the arrear start date (and generate an absurd penalty), so the value is parsed
+	 * explicitly and a present but unreadable value fails fast.
+	 */
+	private Long readLegacyDateMillis(JsonNode details, String... keys) {
+		if (details == null || keys == null) {
+			return null;
+		}
+		for (String key : keys) {
+			if (key == null || !details.has(key)) {
+				continue;
+			}
+			JsonNode node = details.get(key);
+			if (node == null || node.isNull()) {
+				continue;
+			}
+			String raw = node.asText();
+			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+				continue;
+			}
+			LocalDate date = parseLegacyDate(raw.trim());
+			if (date == null) {
+				throw new CustomException("INVALID_LEGACY_DATE", "Unable to parse '" + key + "' value '" + raw
+						+ "'. Expected epoch millis, yyyy-MM-dd, ISO-8601 date-time or dd/MM/yyyy.");
+			}
+			return date.atStartOfDay(ZoneId.of("Asia/Kolkata")).toInstant().toEpochMilli();
+		}
+		return null;
+	}
+
+	/**
+	 * Lenient date parser for legacy values. Accepts epoch millis (13+ digits), epoch seconds (10 digits),
+	 * yyyy-MM-dd, yyyy/MM/dd, dd/MM/yyyy, dd-MM-yyyy and ISO-8601 date-times. Returns null when the value
+	 * cannot be interpreted. Must stay in sync with rl-calculator's CalculationService#parseLegacyDate.
+	 */
+	private LocalDate parseLegacyDate(String raw) {
+		if (raw == null || raw.isEmpty()) {
+			return null;
+		}
+		if (raw.matches("\\d{9,}")) {
+			try {
+				long epoch = Long.parseLong(raw);
+				if (raw.length() <= 10) {
+					epoch = epoch * 1000L; // epoch seconds
+				}
+				return Instant.ofEpochMilli(epoch).atZone(ZoneId.of("Asia/Kolkata")).toLocalDate();
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+		String[] supportedPatterns = { "yyyy-MM-dd", "yyyy/MM/dd", "dd/MM/yyyy", "dd-MM-yyyy" };
+		for (String pattern : supportedPatterns) {
+			try {
+				return LocalDate.parse(raw, DateTimeFormatter.ofPattern(pattern));
+			} catch (Exception ignored) {
+				// try the next supported pattern
+			}
+		}
+		try {
+			return OffsetDateTime.parse(raw).atZoneSameInstant(ZoneId.of("Asia/Kolkata")).toLocalDate();
+		} catch (Exception ignored) {
+			return null;
+		}
 	}
 
 }

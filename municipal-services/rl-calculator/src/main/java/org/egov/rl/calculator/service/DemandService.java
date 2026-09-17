@@ -89,6 +89,9 @@ public class DemandService {
 
 	private ExecutorService batchExecutor;
 
+	/** Cutoff sentinel meaning "no penalty applies yet" - used when an arrear demand cannot be dated. */
+	private static final long NO_PENALTY_CUTOFF = Long.MAX_VALUE;
+
 	@PostConstruct
 	public void init() {
 		// Bounded thread pool to prevent thread exhaustion under load
@@ -218,14 +221,127 @@ public class DemandService {
 			return DemandResponse.builder().demands(Collections.<Demand>emptyList()).build();
 		}
 
-		log.info("Saving legacy demand(s) to billing service. Count: {}", demands.size());
-		List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
+		// Idempotency guard: a retried _calculate (gateway/UI timeout, ops rerun) must not create a demand for a
+		// period that already has one. Rent demands are matched on their exact billing period; an arrear demand is
+		// matched as "this consumer already has an arrear demand", because its period end is the instant it was
+		// created and can therefore never match on a retry.
+		Map<String, List<Demand>> existingByConsumer = new HashMap<>();
+		List<Demand> demandsToCreate = new ArrayList<>();
+		Map<String, Demand> alreadyCreated = new LinkedHashMap<>();
+
+		for (Demand demand : demands) {
+			String consumerKey = demand.getTenantId() + "|" + demand.getConsumerCode();
+			List<Demand> existing = existingByConsumer.get(consumerKey);
+			if (existing == null) {
+				existing = loadExistingDemands(demand.getTenantId(), demand.getConsumerCode());
+				existingByConsumer.put(consumerKey, existing);
+			}
+			Demand duplicate = findDuplicate(existing, demand);
+			if (duplicate != null) {
+				log.warn("Demand already exists for consumer {} (id {}) covering {} to {} - skipping creation.",
+						demand.getConsumerCode(), duplicate.getId(),
+						formatCutoff(demand.getTaxPeriodFrom()), formatCutoff(demand.getTaxPeriodTo()));
+				alreadyCreated.put(duplicate.getId(), duplicate);
+			} else {
+				demandsToCreate.add(demand);
+				existing.add(demand); // also guards against two identical periods inside one request
+			}
+		}
+
+		if (demandsToCreate.isEmpty()) {
+			log.warn("All {} generated legacy demand(s) already exist - returning the stored ones so the call stays idempotent.",
+					demands.size());
+			return DemandResponse.builder().demands(new ArrayList<>(alreadyCreated.values())).build();
+		}
+
+		log.info("Saving legacy demand(s) to billing service. Count: {} ({} already existed)",
+				demandsToCreate.size(), alreadyCreated.size());
+		List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demandsToCreate);
 		if (!CollectionUtils.isEmpty(savedDemands)) {
 			fetchBillForDemands(savedDemands, requestInfo);
 		}
-		log.info("Legacy demand created successfully. Count: {}", savedDemands.size());
-		return DemandResponse.builder().demands(savedDemands).build();
+		log.info("Legacy demand created successfully. Count: {}", (savedDemands != null ? savedDemands.size() : 0));
+
+		List<Demand> responseDemands = new ArrayList<>();
+		if (savedDemands != null) {
+			responseDemands.addAll(savedDemands);
+		}
+		responseDemands.addAll(alreadyCreated.values());
+		return DemandResponse.builder().demands(responseDemands).build();
     }
+
+	/**
+	 * Existing demands of a consumer code with their tax heads attached, so an already existing arrear demand can
+	 * be recognised. Fails closed: {@link DemandRepository#getExistingDemands} refuses to return an empty list when
+	 * the duplicate check itself cannot run.
+	 */
+	private List<Demand> loadExistingDemands(String tenantId, String consumerCode) {
+		List<Demand> existing = demandRepository.getExistingDemands(tenantId, consumerCode);
+		if (CollectionUtils.isEmpty(existing)) {
+			return existing;
+		}
+		List<String> demandIds = existing.stream().map(Demand::getId).filter(Objects::nonNull).collect(Collectors.toList());
+		Map<String, Set<String>> headsByDemandId = demandRepository.getTaxHeadsByDemandId(demandIds);
+		for (Demand demand : existing) {
+			List<DemandDetail> details = new ArrayList<>();
+			Set<String> heads = headsByDemandId.get(demand.getId());
+			if (heads != null) {
+				for (String head : heads) {
+					details.add(DemandDetail.builder().demandId(demand.getId()).taxHeadMasterCode(head).build());
+				}
+			}
+			demand.setDemandDetails(details);
+		}
+		return existing;
+	}
+
+	/** An existing demand covering the same period, or - for an arrear demand - any existing arrear demand. */
+	private Demand findDuplicate(List<Demand> existingDemands, Demand candidate) {
+		if (CollectionUtils.isEmpty(existingDemands)) {
+			return null;
+		}
+		if (isArrearOnly(candidate)) {
+			for (Demand existing : existingDemands) {
+				if (isArrearOnly(existing)) {
+					return existing;
+				}
+			}
+			return null;
+		}
+		String candidatePeriod = periodKey(candidate.getTaxPeriodFrom(), candidate.getTaxPeriodTo());
+		for (Demand existing : existingDemands) {
+			if (candidatePeriod.equals(periodKey(existing.getTaxPeriodFrom(), existing.getTaxPeriodTo()))) {
+				return existing;
+			}
+		}
+		return null;
+	}
+
+	/** True when a demand carries RL_ARREAR_FEE and no rent head, i.e. it is the migrated arrear demand. */
+	private static boolean isArrearOnly(Demand demand) {
+		if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails())) {
+			return false;
+		}
+		boolean hasArrear = false;
+		for (DemandDetail detail : demand.getDemandDetails()) {
+			String head = (detail != null) ? detail.getTaxHeadMasterCode() : null;
+			if (head == null) {
+				continue;
+			}
+			if (head.equalsIgnoreCase(RLConstants.RENT_LEASE_FEE_RL_APPLICATION)) {
+				return false;
+			}
+			if (head.equalsIgnoreCase(RLConstants.RL_ARREAR_FEE)) {
+				hasArrear = true;
+			}
+		}
+		return hasArrear;
+	}
+
+	/** Exact period key for the duplicate check - the same precision the scheduler dedupe relies on. */
+	private static String periodKey(Long from, Long to) {
+		return from + ":" + to;
+	}
 
 	public DemandResponse createSatelmentDemand(CalculationReq calculationReq) {
 
@@ -355,10 +471,9 @@ public class DemandService {
 
 		List<Demand> demandsToBeUpdated = new LinkedList<>();
 		String tenantId = getBillCriteria.getTenantId();
-		List<TaxPeriod> taxPeriods = masterDataService.getTaxPeriodList(requestInfo, tenantId,
-				RLConstants.RL_SERVICE_NAME);
-		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 		List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
+		// Every demand is judged with the DueDate row of its own billing cycle (due day + rebate percentage)
+		DueDateResolver dueDateResolver = buildDueDateResolver(requestInfo, tenantId, demands);
 
 		for (Demand demand : demands) {
 			BigDecimal totalTax = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
@@ -367,7 +482,7 @@ public class DemandService {
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 			if (totalTax.compareTo(totalCollection) > 0) {
-				applyTimeBasedApplicables(demand, requestInfoWrapper, taxPeriods, billingPeriods, penaltySlabs);
+				applyTimeBasedApplicables(demand, requestInfoWrapper, dueDateResolver.resolve(demand), penaltySlabs);
 			}
 
 			calculationService.addRoundOffTaxHead(demand.getTenantId(), demand.getDemandDetails());
@@ -378,35 +493,55 @@ public class DemandService {
 		return DemandResponse.builder().demands(demandsToBeUpdated).build();
 	}
 
+	/**
+	 * Applies the early payment rebate or the late payment penalty to a single demand.
+	 *
+	 * <p>Both the due day and the rebate percentage come from the DueDate row resolved for the demand's billing
+	 * cycle (see {@link DueDateResolver}) - they are never taken from an arbitrary row of the master.
+	 */
 	private void applyTimeBasedApplicables(Demand demand, RequestInfoWrapper requestInfoWrapper,
-			List<TaxPeriod> taxPeriods, List<BillingPeriod> billingPeriods, List<Penalty> penaltySlabs) {
-		log.info("Applying time based applicables for demand: {}", demand.getId());
-
-		RequestInfo requestInfo = (requestInfoWrapper != null) ? requestInfoWrapper.getRequestInfo() : new RequestInfo();
-		DueDate dueDateConfig = masterDataService.getDueDateConfig(requestInfo, demand.getTenantId(), null);
-		Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
-
-		long dueCutoffEpoch = getDueCutoffEpoch(demand, dueDay);
+			DueDate dueDateConfig, List<Penalty> penaltySlabs) {
+		int dueDay = dueDayOf(dueDateConfig);
+		// Evaluated at the exact current instant: the early payment rebate holds up to the due cutoff
+		// (last millisecond of the due day) and penalty starts the day after. Shifting this "now" by a day
+		// (as was done before) removed the rebate on the due day itself and charged one extra day of interest.
 		long now = System.currentTimeMillis();
 
-		now += TimeUnit.DAYS.toMillis(1);
-
-		BigDecimal principalAmount = demand.getDemandDetails().stream().filter(
+		// Rent principal drives the early payment rebate
+		BigDecimal rentPrincipalAmount = demand.getDemandDetails().stream().filter(
 				detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RENT_LEASE_FEE_RL_APPLICATION))
 				.map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		if (principalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+		// Legacy arrear demands carry RL_ARREAR_FEE instead of RENT_LEASE_FEE, but are still liable to penalty
+		BigDecimal arrearPrincipalAmount = demand.getDemandDetails().stream().filter(
+				detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RL_ARREAR_FEE))
+				.map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		BigDecimal penaltyPrincipalAmount = rentPrincipalAmount.add(arrearPrincipalAmount);
+
+		if (penaltyPrincipalAmount.compareTo(BigDecimal.ZERO) <= 0) {
 			log.info("Principal amount is zero or less for demand: {}. Skipping time-based applicables.", demand.getId());
 			return;
 		}
+
+		long dueCutoffEpoch = penaltyCutoffEpoch(demand, dueDay, rentPrincipalAmount, arrearPrincipalAmount);
+		log.info("Applying time based applicables for demand: {} (cycle={}, dueDay={}, penaltyFrom={})",
+				demand.getId(), (dueDateConfig != null ? dueDateConfig.getBillingCycle() : null), dueDay,
+				formatCutoff(dueCutoffEpoch));
+
+		RequestInfo requestInfo = (requestInfoWrapper != null) ? requestInfoWrapper.getRequestInfo() : new RequestInfo();
+
 		//if today is less than due date apply rebate and else reset rebate 
 		if (now <= dueCutoffEpoch) {
-			// Early payment rebate applies (on or before 10th of the month)
+			// Early payment rebate applies on rent (on or before 10th of the month). Arrear-only demands are
+			// not eligible for a rebate.
 			BigDecimal rebateAmount = BigDecimal.ZERO;
-			if (dueDateConfig != null && dueDateConfig.getRebatePercentage() != null && dueDateConfig.getRebatePercentage() > 0) {
-				rebateAmount = principalAmount.multiply(BigDecimal.valueOf(dueDateConfig.getRebatePercentage()))
+			if (rentPrincipalAmount.compareTo(BigDecimal.ZERO) > 0 && dueDateConfig != null
+					&& dueDateConfig.getRebatePercentage() != null && dueDateConfig.getRebatePercentage() > 0) {
+				rebateAmount = rentPrincipalAmount.multiply(BigDecimal.valueOf(dueDateConfig.getRebatePercentage()))
 						.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-			} else if (dueDateConfig != null && dueDateConfig.getRebateFlatAmount() != null
+			} else if (rentPrincipalAmount.compareTo(BigDecimal.ZERO) > 0 && dueDateConfig != null
+					&& dueDateConfig.getRebateFlatAmount() != null
 					&& dueDateConfig.getRebateFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
 				rebateAmount = dueDateConfig.getRebateFlatAmount();
 			}
@@ -437,18 +572,52 @@ public class DemandService {
 					.filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.RL_TIME_REBATE))
 					.forEach(detail -> detail.setTaxAmount(BigDecimal.ZERO));
 
+			// Penalty clock: calendar days between the due date and today, the same convention the penalty
+			// strategies use. The due day itself is not late (rebate), the first penalty day is the day after.
+			LocalDate dueDate = Instant.ofEpochMilli(dueCutoffEpoch).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate();
+			LocalDate paymentDate = Instant.ofEpochMilli(now).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate();
+			long daysLate = Math.max(0L, ChronoUnit.DAYS.between(dueDate, paymentDate));
+
 			// Apply penalty if penalty slabs are configured
 			if (!CollectionUtils.isEmpty(penaltySlabs)) {
-				List<PenaltyConfig> penaltyConfigs = masterDataService.getPenaltyConfigs(requestInfo, demand.getTenantId());
-				PenaltyConfig penaltyConfig = (!CollectionUtils.isEmpty(penaltyConfigs)) ? penaltyConfigs.get(0) : null;
+				BigDecimal futurePenaltyRate = extractFuturePenaltyRate(demand);
+				boolean arrearOnly = arrearPrincipalAmount.compareTo(BigDecimal.ZERO) > 0
+						&& rentPrincipalAmount.compareTo(BigDecimal.ZERO) <= 0;
+				// Legacy arrears accrue penalty ONLY at the rate the caller supplied (futurePenalty). Without it
+				// nothing is charged on the arrears - falling back to the tenant's generic penalty configuration
+				// would silently apply a rate that has nothing to do with the migrated arrears.
+				boolean arrearRateMissing = arrearOnly
+						&& (futurePenaltyRate == null || futurePenaltyRate.compareTo(BigDecimal.ZERO) <= 0);
+				PenaltyConfig penaltyConfig = null;
+				if (futurePenaltyRate != null && futurePenaltyRate.compareTo(BigDecimal.ZERO) > 0) {
+					// The FORMULA is whatever the tenant configured in MDMS for the ARREAR scope (a Penalty row with
+					// appliesTo = "ARREAR", else the generic row): SIMPLE_INTEREST, MONTHLY_FIXED, COMPOUNDING or FIXED.
+					// Only the RATE is overridden by the demand's futurePenalty - a FIXED row ignores the rate and charges
+					// its own flatAmount. min/max caps and the grace period come from the same configured row.
+					PenaltyConfig arrearConfig = masterDataService.getPenaltyConfig(requestInfo, demand.getTenantId(), "ARREAR");
+					penaltyConfig = PenaltyConfig.builder()
+							.penaltyType(arrearConfig != null ? arrearConfig.resolvedPenaltyType() : "SIMPLE_INTEREST")
+							.annualRate(futurePenaltyRate)
+							.rate(futurePenaltyRate)
+							.flatAmount(arrearConfig != null ? arrearConfig.getFlatAmount() : null)
+							.applicableAfterDays(arrearConfig != null && arrearConfig.getApplicableAfterDays() != null
+									? arrearConfig.getApplicableAfterDays() : 0)
+							.minAmount(arrearConfig != null ? arrearConfig.getMinAmount() : null)
+							.maxAmount(arrearConfig != null ? arrearConfig.getMaxAmount() : null)
+							.build();
+					if ("FIXED".equalsIgnoreCase(penaltyConfig.resolvedPenaltyType())
+							&& penaltyConfig.getFlatAmount() == null) {
+						log.warn("Tenant {} configured the FIXED penalty type for arrears but no flatAmount - no arrear "
+								+ "penalty can be charged on demand {}.", demand.getTenantId(), demand.getId());
+					}
+				} else if (!arrearRateMissing) {
+					penaltyConfig = masterDataService.getPenaltyConfig(requestInfo, demand.getTenantId(), "RENT");
+				}
 
 				BigDecimal penaltyAmount = BigDecimal.ZERO;
 				if (penaltyConfig != null) {
-					LocalDate dueDate = Instant.ofEpochMilli(dueCutoffEpoch).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate();
-					LocalDate paymentDate = Instant.ofEpochMilli(now).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate();
-
 					PenaltyCalculator calculator = penaltyCalculatorFactory.getCalculator(penaltyConfig.resolvedPenaltyType());
-					penaltyAmount = calculator.calculatePenalty(principalAmount, dueDate, paymentDate, penaltyConfig);
+					penaltyAmount = calculator.calculatePenalty(penaltyPrincipalAmount, dueDate, paymentDate, penaltyConfig);
 
 					if (penaltyAmount != null && penaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
 						DemandDetail existingPenaltyDetail = demand.getDemandDetails().stream()
@@ -468,13 +637,15 @@ public class DemandService {
 							log.info("Applied initial penalty of {} using strategy {} for demand: {}", penaltyAmount, calculator.getPenaltyType(), demand.getId());
 						}
 					}
+				} else if (arrearRateMissing) {
+					log.info("Arrear demand {} carries no futurePenalty rate - no penalty is applied to the arrears.",
+							demand.getId());
 				} else {
 					// Fallback if penaltyConfig is null but penaltySlab exists
 					Penalty penaltySlab = penaltySlabs.get(0);
-					long daysPastExpiry = TimeUnit.MILLISECONDS.toDays(now - dueCutoffEpoch);
-					if (penaltySlab.getApplicableAfterDays() == null || daysPastExpiry >= penaltySlab.getApplicableAfterDays()) {
+					if (penaltySlab.getApplicableAfterDays() == null || daysLate >= penaltySlab.getApplicableAfterDays()) {
 						if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0) {
-							penaltyAmount = principalAmount.multiply(penaltySlab.getRate()).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+							penaltyAmount = penaltyPrincipalAmount.multiply(penaltySlab.getRate()).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
 						} else if (penaltySlab.getFlatAmount() != null && penaltySlab.getFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
 							penaltyAmount = penaltySlab.getFlatAmount();
 						}
@@ -510,12 +681,19 @@ public class DemandService {
 	}
 
 	private long getDueCutoffEpoch(Demand demand, Integer dueDay) {
-		int targetDueDay = (dueDay != null && dueDay > 0) ? dueDay : 10;
 		long startEpoch = (demand.getTaxPeriodFrom() != null && demand.getTaxPeriodFrom() > 0)
 				? demand.getTaxPeriodFrom()
 				: ((demand.getAuditDetails() != null && demand.getAuditDetails().getCreatedTime() != null)
 						? demand.getAuditDetails().getCreatedTime()
 						: System.currentTimeMillis());
+		return getDueCutoffEpoch(startEpoch, dueDay);
+	}
+
+	/**
+	 * Due cutoff (last millisecond of the due day, IST) derived from an explicit period start.
+	 */
+	private long getDueCutoffEpoch(long startEpoch, Integer dueDay) {
+		int targetDueDay = (dueDay != null && dueDay > 0) ? dueDay : 10;
 
 		LocalDate startDate = Instant.ofEpochMilli(startEpoch)
 				.atZone(ZoneId.of(RLConstants.TIME_ZONE))
@@ -533,6 +711,56 @@ public class DemandService {
 		}
 
 		return dueCutoff.atZone(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
+	}
+
+	/**
+	 * Cutoff that decides whether a demand earns the early payment rebate or starts incurring penalty.
+	 *
+	 * <p>Rent demands use the due day of their own billing period. A legacy arrear demand is issued for the whole
+	 * outstanding amount, which already includes everything (rent, GST and penalty) up to the issue date, so its
+	 * clock must never be back-dated to the arrears start: penalty starts after the due day of the period in
+	 * which the demand was issued, and never before the issue instant itself.
+	 *
+	 * <p>Returns {@link #NO_PENALTY_CUTOFF} (i.e. no penalty at all) when an arrear demand cannot be dated, so a
+	 * mis-dated arrear can never be penalised retroactively.
+	 */
+	private long penaltyCutoffEpoch(Demand demand, int dueDay, BigDecimal rentPrincipalAmount, BigDecimal arrearPrincipalAmount) {
+		boolean arrearOnly = arrearPrincipalAmount.compareTo(BigDecimal.ZERO) > 0
+				&& rentPrincipalAmount.compareTo(BigDecimal.ZERO) <= 0;
+		if (!arrearOnly) {
+			return getDueCutoffEpoch(demand, dueDay);
+		}
+		Long issuedAt = arrearIssueInstant(demand);
+		if (issuedAt == null) {
+			log.warn("Arrear demand {} has no issue date (taxPeriodTo / createdTime) - penalty is held back until it can be dated.",
+					demand.getId());
+			return NO_PENALTY_CUTOFF;
+		}
+		long issueMonthDueCutoff = getDueCutoffEpoch(issuedAt, dueDay);
+		return Math.max(issueMonthDueCutoff, issuedAt);
+	}
+
+	/**
+	 * Instant at which a legacy arrear demand was issued. The demand generator sets {@code taxPeriodTo} to the
+	 * creation instant (for new and pre-existing arrear demands alike); the audit created time is the fallback.
+	 */
+	private Long arrearIssueInstant(Demand demand) {
+		if (demand.getTaxPeriodTo() != null && demand.getTaxPeriodTo() > 0) {
+			return demand.getTaxPeriodTo();
+		}
+		if (demand.getAuditDetails() != null && demand.getAuditDetails().getCreatedTime() != null
+				&& demand.getAuditDetails().getCreatedTime() > 0) {
+			return demand.getAuditDetails().getCreatedTime();
+		}
+		return null;
+	}
+
+	/** Human readable form of a cutoff for logging; {@link #NO_PENALTY_CUTOFF} prints as "never". */
+	private static String formatCutoff(long cutoffEpoch) {
+		if (cutoffEpoch == NO_PENALTY_CUTOFF) {
+			return "never";
+		}
+		return Instant.ofEpochMilli(cutoffEpoch).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate().toString();
 	}
 
 	private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo,
@@ -677,12 +905,14 @@ public class DemandService {
 			return;
 		}
 
-		DueDate dueDateConfig = masterDataService.getDueDateConfig(requestInfo, tenantId, null);
-		Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
+		// Filter and penalise using the DueDate row of each demand's own billing cycle
+		DueDateResolver dueDateResolver = buildDueDateResolver(requestInfo, tenantId, rawUnpaidDemands);
 
-		// Dynamically filter demands that are past their due date cutoff (e.g. 10th of billing month 23:59:59 IST)
+		// Overdue pre-filter. It deliberately uses the period-based cutoff, which for an arrear demand is
+		// back-dated to its arrears start: that keeps the filter inclusive for arrears, while the exact
+		// "penalty only after the issue period's due day" rule is applied by applyTimeBasedApplicables.
 		List<Demand> expiredDemands = rawUnpaidDemands.stream()
-				.filter(d -> now > getDueCutoffEpoch(d, dueDay))
+				.filter(d -> now > getDueCutoffEpoch(d, dueDayOf(dueDateResolver.resolve(d))))
 				.collect(Collectors.toList());
 
 		if (CollectionUtils.isEmpty(expiredDemands)) {
@@ -691,8 +921,6 @@ public class DemandService {
 		}
 
 		List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
-		List<TaxPeriod> taxPeriods = masterDataService.getTaxPeriodList(requestInfo, tenantId, RLConstants.RL_SERVICE_NAME);
-		List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
 
 		// Populate demand details for expired demands
 		expiredDemands.forEach(d -> {
@@ -711,7 +939,7 @@ public class DemandService {
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 			if (totalTax.compareTo(totalCollection) > 0) {
-				applyTimeBasedApplicables(demand, wrapper, taxPeriods, billingPeriods, penaltySlabs);
+				applyTimeBasedApplicables(demand, wrapper, dueDateResolver.resolve(demand), penaltySlabs);
 				demandsToUpdate.add(demand);
 			}
 		}
@@ -736,12 +964,19 @@ public class DemandService {
 	/**
 	 * Fetches bills from billing service for saved demands.
 	 * Called after demand generation to materialize bills.
+	 * Billing aggregates every demand of a consumer code into a single bill, so the fetch is done once per
+	 * (tenantId, consumerCode) instead of once per demand - a legacy approval can create dozens of demands.
 	 * Failures are logged but do not block other bills — a summary is emitted at the end.
 	 */
 	public void fetchBillForDemands(List<Demand> demands, RequestInfo requestInfo) {
+		Set<String> fetchedFor = new HashSet<>();
 		int successCount = 0;
 		int failCount = 0;
 		for (Demand demand : demands) {
+			String fetchKey = demand.getTenantId() + ":" + demand.getConsumerCode();
+			if (!fetchedFor.add(fetchKey)) {
+				continue;
+			}
 			try {
 				StringBuilder fetchBillURL = utill.getFetchBillURL(demand.getTenantId(), demand.getConsumerCode());
 				Object result = serviceRequestRepository.fetchResult(fetchBillURL,
@@ -760,7 +995,8 @@ public class DemandService {
 			}
 		}
 		if (failCount > 0) {
-			log.warn("fetchBillForDemands completed: {} succeeded, {} failed out of {} total demands", successCount, failCount, demands.size());
+			log.warn("fetchBillForDemands completed: {} succeeded, {} failed out of {} consumer codes",
+					successCount, failCount, fetchedFor.size());
 		}
 	}
 
@@ -796,5 +1032,164 @@ public class DemandService {
 				.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 		demands.add(demand);
 		return demand;
+	}
+
+	/** Due day from a resolved DueDate row, defaulting to 10 when the master does not define one. */
+	private static int dueDayOf(DueDate dueDateConfig) {
+		return (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
+	}
+
+	/**
+	 * Builds the DueDate resolver for a batch of demands: the tenant's DueDate rows plus - only when the tenant
+	 * configures more than one cycle and some demand cannot identify its cycle from its own period - the
+	 * feesPeriodCycle of the affected allotments (a single batched read).
+	 */
+	private DueDateResolver buildDueDateResolver(RequestInfo requestInfo, String tenantId, List<Demand> demands) {
+		List<DueDate> dueDates = masterDataService.getDueDateConfigs(requestInfo, tenantId);
+
+		Map<String, String> cycleFromAllotment = Collections.emptyMap();
+		if (dueDates.size() > 1 && !CollectionUtils.isEmpty(demands)) {
+			Set<String> unresolved = new HashSet<>();
+			for (Demand demand : demands) {
+				if (demand.getConsumerCode() != null && inferCycleFromPeriod(demand) == null) {
+					unresolved.add(demand.getConsumerCode());
+				}
+			}
+			if (!unresolved.isEmpty()) {
+				cycleFromAllotment = demandRepository.getBillingCyclesByApplicationNumbers(new ArrayList<>(unresolved));
+			}
+		}
+
+		DueDateResolver resolver = new DueDateResolver(dueDates, cycleFromAllotment);
+		resolver.primeFrom(demands);
+		return resolver;
+	}
+
+	/**
+	 * Infers the billing cycle from a demand's own billing period: 1 / 3 / 6 / 12 whole months map to
+	 * MONTHLY / QUATERLY / BIANNUAL / ANNUAL. Demands generated by the legacy arrear flow always carry clean
+	 * periods; an arrear demand (period spans the whole arrears window) matches nothing and returns null.
+	 */
+	private static String inferCycleFromPeriod(Demand demand) {
+		if (demand == null) {
+			return null;
+		}
+		Long from = demand.getTaxPeriodFrom();
+		Long to = demand.getTaxPeriodTo();
+		if (from == null || to == null || from <= 0 || to <= from) {
+			return null;
+		}
+		LocalDate periodStart = Instant.ofEpochMilli(from).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate().withDayOfMonth(1);
+		LocalDate periodEnd = Instant.ofEpochMilli(to).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toLocalDate().withDayOfMonth(1);
+		long months = ChronoUnit.MONTHS.between(periodStart, periodEnd) + 1;
+		if (months == 1) {
+			return RLConstants.RL_MONTHLY_CYCLE;
+		}
+		if (months == 3) {
+			return RLConstants.RL_QUATERLY_CYCLE;
+		}
+		if (months == 6) {
+			return RLConstants.RL_BIAANNUALY_CYCLE;
+		}
+		if (months == 12) {
+			return RLConstants.RL_YEARLY_CYCLE;
+		}
+		return null;
+	}
+
+	/**
+	 * Resolves the tenant DueDate row (due day + rebate percentage) that applies to a demand.
+	 *
+	 * <p>MDMS keeps one DueDate row per billing cycle, but a demand does not store its cycle, so it is inferred:
+	 * <ol>
+	 *   <li>from the demand's own billing period (1/3/6/12 months),</li>
+	 *   <li>from another demand of the same consumer code in the same batch - an arrear demand's period spans
+	 *       the whole arrears window and cannot identify a cycle, while its rent siblings can,</li>
+	 *   <li>from the allotment's stored feesPeriodCycle (loaded once per batch),</li>
+	 *   <li>otherwise the tenant's first row, exactly as before, with a warning.</li>
+	 * </ol>
+	 * A tenant with a single DueDate row always gets that row - no inference and no extra work.
+	 */
+	private static final class DueDateResolver {
+
+		private final DueDate singleRow;
+		private final Map<String, DueDate> byCycle = new HashMap<>();
+		private final DueDate fallback;
+		private final Map<String, String> cycleFromAllotment;
+		private final Map<String, String> cycleByConsumerCode = new HashMap<>();
+		private final Set<String> warnedConsumers = new HashSet<>();
+
+		private DueDateResolver(List<DueDate> dueDates, Map<String, String> cycleFromAllotment) {
+			List<DueDate> rows = (dueDates != null) ? dueDates : Collections.<DueDate>emptyList();
+			for (DueDate row : rows) {
+				if (row != null && row.getBillingCycle() != null && !row.getBillingCycle().trim().isEmpty()) {
+					byCycle.put(row.getBillingCycle().trim().toUpperCase(), row);
+				}
+			}
+			this.singleRow = (rows.size() == 1) ? rows.get(0) : null;
+			this.fallback = rows.isEmpty() ? null : rows.get(0);
+			this.cycleFromAllotment = (cycleFromAllotment != null) ? cycleFromAllotment : Collections.<String, String>emptyMap();
+		}
+
+		/**
+		 * Pre-resolves the cycle of every consumer code in the batch, so the processing order of its demands
+		 * (arrear demand before or after its rent siblings) does not matter.
+		 */
+		private void primeFrom(List<Demand> demands) {
+			if (singleRow != null || CollectionUtils.isEmpty(demands)) {
+				return;
+			}
+			for (Demand demand : demands) {
+				String consumerCode = demand.getConsumerCode();
+				if (consumerCode == null || cycleByConsumerCode.containsKey(consumerCode)) {
+					continue;
+				}
+				String cycle = inferCycleFromPeriod(demand);
+				if (cycle == null) {
+					cycle = cycleFromAllotment.get(consumerCode);
+				}
+				if (cycle != null && byCycle.containsKey(cycle.trim().toUpperCase())) {
+					cycleByConsumerCode.put(consumerCode, cycle.trim());
+				}
+			}
+		}
+
+		private DueDate resolve(Demand demand) {
+			if (singleRow != null) {
+				return singleRow;
+			}
+			if (demand != null && demand.getConsumerCode() != null) {
+				String cycle = cycleByConsumerCode.get(demand.getConsumerCode());
+				if (cycle != null) {
+					return byCycle.get(cycle.toUpperCase());
+				}
+				if (warnedConsumers.add(demand.getConsumerCode())) {
+					log.warn("Could not determine the billing cycle for {} (no usable billing period and no "
+									+ "feesPeriodCycle in the allotment). Using the DueDate row of cycle '{}'.",
+							demand.getConsumerCode(), (fallback != null ? fallback.getBillingCycle() : null));
+				}
+			}
+			return fallback;
+		}
+	}
+
+	/**
+	 * Reads {@code futurePenalty} (an <b>annual</b> percentage) from the demand additionalDetails, if present.
+	 * Returns null when the demand carries no rate, so the caller falls back to the tenant MDMS penalty config.
+	 */
+	private BigDecimal extractFuturePenaltyRate(Demand demand) {
+		if (demand == null || demand.getAdditionalDetails() == null) return null;
+		try {
+			JsonNode details = mapper.convertValue(demand.getAdditionalDetails(), JsonNode.class);
+			if (details != null && details.hasNonNull("futurePenalty")) {
+				String raw = details.path("futurePenalty").asText();
+				if (raw != null && !raw.trim().isEmpty()) {
+					return new BigDecimal(raw.trim());
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Ignoring unreadable futurePenalty on demand {}: {}", demand.getId(), e.getMessage());
+		}
+		return null;
 	}
 }

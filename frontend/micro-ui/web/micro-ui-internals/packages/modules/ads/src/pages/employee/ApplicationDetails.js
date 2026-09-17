@@ -113,7 +113,6 @@ const ApplicationDetails = () => {
         setPdfFiles(data || {});
       })
       .catch((err) => {
-
         setPdfFiles({});
       })
       .finally(() => setFilesLoading(false));
@@ -196,6 +195,7 @@ const ApplicationDetails = () => {
         mobile: bookingObj?.applicantDetail?.applicantMobileNo,
         address: bookingObj?.address?.addressLine1,
         pincode: bookingObj?.address?.pincode,
+        remarks: bookingObj?.additionalDetails?.remarks,
         bookingStatus: bookingObj?.bookingStatus,
         paymentDate: bookingObj?.paymentDate ? new Date(bookingObj.paymentDate).toLocaleDateString() : "",
         receiptNo: bookingObj?.receiptNo,
@@ -235,7 +235,6 @@ const ApplicationDetails = () => {
       setShowToast({ key: "success", message: t("ADV_ACKNOWLEDGEMENT_DOWNLOADED_SUCCESSFULLY") });
       setError("Acknowledgement Downloaded Successfully");
     } catch (error) {
-
       setShowToast({ key: "error", message: `${error.message}` });
       setError("Something Went Wrong");
     }
@@ -272,8 +271,6 @@ const ApplicationDetails = () => {
   }
 
   const submitAction = async (dataPayload, data) => {
-
-
     const payloadSource = applicationDetails?.Applications?.[0] || applicationDetails?.data?.[0] || applicationDetails?.[0] || bookingObj;
 
     if (!payloadSource) {
@@ -320,7 +317,6 @@ const ApplicationDetails = () => {
       return;
     }
 
-
     // return;
 
     try {
@@ -348,7 +344,6 @@ const ApplicationDetails = () => {
         setError("Failed to update");
       }
     } catch (err) {
-
       setShowToast({ key: "error", message: "Something went wrong" });
       setError("Something went wrong");
     }
@@ -376,7 +371,6 @@ const ApplicationDetails = () => {
       if (documentLink) window.open(documentLink, "_blank");
       else setShowToast({ key: "error", message: "Unable to open document" });
     } catch (e) {
-
       setShowToast({ key: "error", message: "Unable to download document" });
     }
   };
@@ -440,8 +434,6 @@ const ApplicationDetails = () => {
   }
 
   const handleCancelBooking = async (data) => {
-
-
     setShowCancelModal(false);
     const payloadAction = {
       action: "CANCEL",
@@ -450,8 +442,6 @@ const ApplicationDetails = () => {
     };
     return submitAction({ Licenses: [payloadAction] }, data);
   };
-
-
 
   return (
     <div className={"employee-main-application-details"}>

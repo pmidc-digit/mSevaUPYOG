@@ -484,7 +484,7 @@ public class PlanReportServiceV2 {
             Map<String, String> details = new HashMap<>();
             details.put("Total Plot Area",
                     plan.getVirtualBuilding().getTotalFloorArea() != null
-                            ? plan.getVirtualBuilding().getTotalFloorArea().setScale(2, RoundingMode.HALF_UP).toString()
+                            ? plan.getPlot().getArea().setScale(2, RoundingMode.HALF_UP).toString()
                             : "0");
             details.put("Ground Coverage",
                     plan.getVirtualBuilding().getTotalCoverageArea() != null

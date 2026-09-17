@@ -312,6 +312,26 @@ public class BookingUtil {
 		return auditdetails;
 	}
 
+	/**
+	 * Reads a jsonb column and turns it into a plain java object (Map/List/
+	 * primitive) so callers can put any key in it.
+	 *
+	 * @param rs         resultset positioned on a row
+	 * @param columnName name of the jsonb column
+	 * @return parsed value, or null when the column is null/blank
+	 */
+	public static Object getAdditionalDetails(ResultSet rs, String columnName) throws SQLException {
+		String value = rs.getString(columnName);
+		if (StringUtils.isBlank(value)) {
+			return null;
+		}
+		try {
+			return new ObjectMapper().readValue(value, Object.class);
+		} catch (JsonProcessingException e) {
+			throw new SQLException("Unable to parse jsonb column : " + columnName, e);
+		}
+	}
+
 	public static String beuatifyJson(Object result) {
 		ObjectMapper mapper = new ObjectMapper();
 		String data = null;

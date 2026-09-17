@@ -861,7 +861,8 @@ private class FrontYardResult {
 //			    BigDecimal providedValue = isMiniplex
 //			            ? frontYard.getMinimumDistance()
 //			            : frontYard.getWidth();
-			    BigDecimal compareValue = isMiniplex
+			   
+			    BigDecimal compareValue = isMiniplex || Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())
 			            ? frontYard.getMinimumDistance()
 			            : frontYard.getArea();
 			    
@@ -872,7 +873,7 @@ private class FrontYardResult {
 			    
 			    valid = compareValue != null && compareValue.compareTo(minVal) >= 0;
 	    	
-			if(isMiniplex) {
+			if(isMiniplex || Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())) {
 		    	compareFrontYardResult(blockName, min, frontYard.getMinimumDistance(), mostRestrictiveOccupancy,
 		    			frontYardResult, valid, subRule, rule, minVal, meanVal, level);
 			}else {
@@ -1318,24 +1319,37 @@ private class FrontYardResult {
 	    		        
 	    		
 	    	}else {
-				if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
-
-					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-							pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH,
-							BigDecimal.class);
-
-					if (scOpt.isPresent()) {
-						BigDecimal setbackPercentage = scOpt.get();
-						LOG.info("Front Setback Percentage from MDMS : {}%", setbackPercentage);
-						frontYardResult.setBackPercentage = setbackPercentage.stripTrailingZeros().toPlainString();
-
-						// Calculate actual setback value = Plot Area × Percentage / 100
-						minVal = plotArea.multiply(setbackPercentage).divide(BigDecimal.valueOf(100), 2,
-								RoundingMode.HALF_UP);
-
-						LOG.info("Plot Area: {}, Required Front Setback Value: {}", plotArea, minVal);
+	    		if(Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())) {
+	    			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+						Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+								pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH,
+								BigDecimal.class);
+						if (scOpt.isPresent()) {
+							BigDecimal setbackPercentage = scOpt.get();
+							LOG.info("Front Setback from MDMS : {} m ", setbackPercentage);
+							frontYardResult.setBackPercentage = setbackPercentage.toPlainString().concat("m");
+							minVal = setbackPercentage;
+							LOG.info("Plot Area: {}, Required Front Setback Value: {}", plotArea, minVal);
+						}
 					}
-				}
+	    		}else {
+	    			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+						Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+								pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH,
+								BigDecimal.class);
+						if (scOpt.isPresent()) {
+							BigDecimal setbackPercentage = scOpt.get();
+							LOG.info("Front Setback Percentage from MDMS : {}%", setbackPercentage);
+							frontYardResult.setBackPercentage = setbackPercentage.stripTrailingZeros().toPlainString();
+							// Calculate actual setback value = Plot Area × Percentage / 100
+							minVal = plotArea.multiply(setbackPercentage).divide(BigDecimal.valueOf(100), 2,
+									RoundingMode.HALF_UP);
+
+							LOG.info("Plot Area: {}, Required Front Setback Value: {}", plotArea, minVal);
+						}
+					}
+	    		}
+				
 			}
 		    
 		    

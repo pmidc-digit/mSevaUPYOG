@@ -77,12 +77,16 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			DXFLWPolyline plotBndryPolyLine = plotBoundaries.get(0);
 			((PlotDetail) pl.getPlot()).setPolyLine(plotBndryPolyLine);
 			// pl.getPlot().setPlotBndryArea(Util.getPolyLineArea(plotBndryPolyLine));
+			MeasurementDetail footPrint = new MeasurementDetail(plotBndryPolyLine, true);
+			//PolylineMetrics.getMinDistance(plotBoundary, buildFoorPrint, yardPolyline);
 			BigDecimal area = Util.getPolyLineArea(plotBndryPolyLine);
 			if (area == null) {
 				pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
 			} else {
 				pl.getPlot().setPlotBndryArea(area.setScale(2, RoundingMode.HALF_UP));
 				pl.getPlot().setArea(area.setScale(2, RoundingMode.HALF_UP));
+				pl.getPlot().setLength(footPrint.getHeight().setScale(2, RoundingMode.HALF_UP));
+				pl.getPlot().setWidth(footPrint.getWidth().setScale(2, RoundingMode.HALF_UP));
 			}
 		} else {
 			pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));

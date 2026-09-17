@@ -333,11 +333,24 @@ public class RearYardService extends GeneralRule {
 //							    permissableValueWithPercentage = rearYardResult.setBackPercentage 
 //							            + "% of the plot area (" 
 //							            + rearYardResult.expectedminimumDistance.toPlainString() + ")";
-							    permissableValueWithPercentage = rearYardResult.setBackPercentage;
-								//permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toPlainString();
-							    providedValue = rearYardResult.actualMinDistance.toString();
-							    details.put("OccCode", rearYardResult.occupancyCode);
-							    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
+//							    permissableValueWithPercentage = rearYardResult.setBackPercentage;
+//								//permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toPlainString();
+//							    providedValue = rearYardResult.actualMinDistance.toString();
+//							    details.put("OccCode", rearYardResult.occupancyCode);
+//							    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
+							    
+							    if(Far.isPetrolOrCngOccupancy(rearYardResult.occupancyCode)) {
+								    permissableValueWithPercentage = "-";
+								    providedValue = rearYardResult.actualMeanDistance.toString();
+								    details.put("OccCode", rearYardResult.occupancyCode);
+								    details.put("isSetbackCombine", String.valueOf(false));
+							    }else {
+								    permissableValueWithPercentage = rearYardResult.setBackPercentage;
+									//permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toPlainString();
+								    providedValue = rearYardResult.actualMinDistance.toString();
+								    details.put("OccCode", rearYardResult.occupancyCode);
+								    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
+							    }
 							}
 							
 							if (rearYardResult.expectedmeanDistance != null
@@ -1246,11 +1259,15 @@ public class RearYardService extends GeneralRule {
 				&& F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
 			minVal = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, rearYardResult, mostRestrictiveOccupancy);
 			subRule = "4.7.4";
-			valid = validateMinimumAndMeanValue(min, setback.getRearYard().getWidth(), minVal, meanVal);
-//	    	if (setback.getRearYard().getWidth().compareTo(minVal) >= 0) {		    
-//			}else {
-//				valid=false;
-//			}	    	
+			//valid = validateMinimumAndMeanValue(min, setback.getRearYard().getWidth(), minVal, meanVal);			
+			BigDecimal compareValue = Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())
+		            ? BigDecimal.ZERO
+		            : setback.getRearYard().getWidth();			
+			valid = compareValue != null && compareValue.compareTo(minVal) >= 0;
+			if(Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())) {
+				valid = true;
+			}
+			
 		}
 
 		compareRearYardResult(block.getName(), min, mean, mostRestrictiveOccupancy, rearYardResult, valid, subRule,

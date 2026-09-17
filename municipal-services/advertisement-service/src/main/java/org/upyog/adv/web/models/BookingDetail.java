@@ -73,6 +73,14 @@ public class BookingDetail {
 	@JsonFormat(pattern = BookingUtil.DATE_FORMAT)
 	private LocalDate bookingEndDate;
 
+	/**
+	 * Free-form JSON bag to capture any extra key that is not accommodated by
+	 * the model. Persisted as the jsonb column {@code additionaldetails} on
+	 * eg_adv_booking_detail, so new keys can be stored without a schema change.
+	 */
+	@JsonProperty("additionalDetails")
+	private Object additionalDetails;
+
 
 
 	@NotNull

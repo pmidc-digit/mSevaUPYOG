@@ -456,7 +456,7 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
 
   const bookingData = [
     {
-      ...apps,
+      appdata: apps,
       count: totalCount,
       currentTime: getCurrentEpoch(),
       bookingApplication: transformedApps,

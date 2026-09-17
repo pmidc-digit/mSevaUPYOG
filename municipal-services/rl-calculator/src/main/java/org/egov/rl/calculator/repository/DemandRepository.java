@@ -1,5 +1,6 @@
 package org.egov.rl.calculator.repository;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
@@ -17,8 +18,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -249,5 +254,124 @@ public class DemandRepository {
 			log.error("Error while fetching unpaid demands for tenant: {} and consumerCode: {}", tenantId, consumerCode, e);
 			throw new CustomException("DEMAND_FETCH_ERROR", "Failed to fetch unpaid demands");
 		}
+	}
+
+	/**
+	 * Billing cycle ("feesPeriodCycle") per application number, read from the rl-services allotment table that
+	 * lives in the same database.
+	 *
+	 * <p>Only used as a fallback when a demand's own billing period cannot identify its cycle - i.e. an arrear
+	 * demand whose period spans the whole arrears window (see {@code DemandService.DueDateResolver}).
+	 * Never throws: on any failure (missing table/column, unreadable JSON) an empty map is returned so callers
+	 * keep their previous behaviour.
+	 */
+	public Map<String, String> getBillingCyclesByApplicationNumbers(List<String> applicationNumbers) {
+		if (applicationNumbers == null || applicationNumbers.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		Map<String, String> cycleByApplication = new HashMap<>();
+		try {
+			String placeholders = applicationNumbers.stream().map(id -> "?").collect(Collectors.joining(", "));
+			String sql = "SELECT application_number, additional_details::text AS details FROM eg_rl_allotment "
+					+ "WHERE application_number IN (" + placeholders + ")";
+			jdbcTemplate.query(sql, applicationNumbers.toArray(), rs -> {
+				String cycle = extractFeesPeriodCycle(rs.getString("details"));
+				if (cycle != null && !cycle.trim().isEmpty()) {
+					cycleByApplication.put(rs.getString("application_number"), cycle.trim());
+				}
+			});
+			log.debug("Read feesPeriodCycle for {}/{} application(s)", cycleByApplication.size(), applicationNumbers.size());
+		} catch (Exception e) {
+			log.warn("Could not read feesPeriodCycle from eg_rl_allotment for {} application(s): {}",
+					applicationNumbers.size(), e.getMessage());
+			return Collections.emptyMap();
+		}
+		return cycleByApplication;
+	}
+
+	/**
+	 * Extracts {@code propertyDetails[0].feesPeriodCycle} from the allotment additional_details JSON.
+	 * The column keeps the payload either directly or wrapped as {"value": &lt;object|json string&gt;} (see the
+	 * rl-services AllotmentRowMapper), and older records store the property details as a plain array - all
+	 * shapes are handled, anything else yields null.
+	 */
+	private String extractFeesPeriodCycle(String rawJson) {
+		if (rawJson == null || rawJson.trim().isEmpty()) {
+			return null;
+		}
+		try {
+			JsonNode root = mapper.readTree(rawJson);
+			JsonNode value = (root != null && root.has("value")) ? root.get("value") : root;
+			if (value != null && value.isTextual()) {
+				value = mapper.readTree(value.asText());
+			}
+			if (value == null || value.isNull()) {
+				return null;
+			}
+			// New format: object with "propertyDetails"; old format: the property details array itself
+			JsonNode propertyDetails = value.isArray() ? value : value.get("propertyDetails");
+			if (propertyDetails != null && propertyDetails.isArray() && propertyDetails.size() > 0) {
+				JsonNode first = propertyDetails.get(0);
+				if (first != null && first.hasNonNull("feesPeriodCycle")) {
+					return first.path("feesPeriodCycle").asText();
+				}
+			}
+		} catch (Exception e) {
+			log.debug("Could not parse feesPeriodCycle from allotment additional_details: {}", e.getMessage());
+		}
+		return null;
+	}
+
+	/**
+	 * Existing, non-cancelled rl-services demands of a consumer code.
+	 *
+	 * <p>Used to keep demand generation idempotent: a retried {@code _calculate} (gateway/UI timeout, ops rerun)
+	 * must never create a second demand for a period that already has one.
+	 *
+	 * <p>Fails closed - if the check itself cannot be executed the caller must not create demands, otherwise
+	 * duplicates (and therefore duplicate bills) become possible.
+	 */
+	public List<Demand> getExistingDemands(String tenantId, String consumerCode) {
+		if (consumerCode == null) {
+			return Collections.emptyList();
+		}
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE businessservice = 'rl-services' AND status <> 'CANCELLED' "
+				+ "AND tenantid = ? AND consumercode = ?";
+		try {
+			return jdbcTemplate.query(sql, new Object[] { tenantId, consumerCode }, demandRowMapper);
+		} catch (Exception e) {
+			log.error("Duplicate check failed for consumer {}: {}", consumerCode, e.getMessage(), e);
+			throw new CustomException("DEMAND_DUPLICATE_CHECK_FAILED",
+					"Could not verify existing demands for " + consumerCode
+							+ ". Refusing to create demands to avoid duplicates.");
+		}
+	}
+
+	/**
+	 * Tax head codes per demand id. Needed to recognise an already existing arrear demand, whose period cannot be
+	 * matched exactly (its period end is the instant it was created).
+	 *
+	 * <p>Returns an empty map when the lookup fails; the caller keeps the period based duplicate check as its
+	 * primary safeguard.
+	 */
+	public Map<String, Set<String>> getTaxHeadsByDemandId(List<String> demandIds) {
+		Map<String, Set<String>> headsByDemandId = new HashMap<>();
+		if (demandIds == null || demandIds.isEmpty()) {
+			return headsByDemandId;
+		}
+		try {
+			String placeholders = demandIds.stream().map(id -> "?").collect(Collectors.joining(", "));
+			String sql = "SELECT demandid, taxheadcode FROM egbs_demanddetail_v1 WHERE demandid IN (" + placeholders + ")";
+			jdbcTemplate.query(sql, demandIds.toArray(), rs -> {
+				String demandId = rs.getString("demandid");
+				if (demandId != null) {
+					headsByDemandId.computeIfAbsent(demandId, key -> new HashSet<>()).add(rs.getString("taxheadcode"));
+				}
+			});
+		} catch (Exception e) {
+			log.warn("Could not read tax heads of {} existing demand(s): {} - an existing arrear demand cannot be detected.",
+					demandIds.size(), e.getMessage());
+		}
+		return headsByDemandId;
 	}
 }

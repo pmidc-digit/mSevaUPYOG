@@ -10,6 +10,7 @@ const EmployeeTenantSelection = () => {
   const selectionConfirmed = useRef(false);
   const [selectedTenant, setSelectedTenant] = useState("");
   const [error, setError] = useState("");
+  const [completed, setCompleted] = useState(false);
   const user = Digit.SessionStorage.get("citizen.userRequestObject") || Digit.UserService.getUser();
   const roles = user?.info?.roles || [];
   const tenants = getEmployeeTenantOptions(roles);
@@ -17,6 +18,7 @@ const EmployeeTenantSelection = () => {
   const options = tenants.map((code) => ({ code, name: `TENANT_TENANTS_${code.replace(/\./g, "_").toUpperCase()}` }));
 
   useEffect(() => {
+    if (completed) return;
     const dialog = dialogRef.current;
     const previousOverflow = document.body.style.overflow;
     const blockEscape = (event) => {
@@ -46,7 +48,7 @@ const EmployeeTenantSelection = () => {
       dialog.close();
       document.body.style.overflow = previousOverflow;
     };
-  }, []);
+  }, [completed]);
 
   const submit = (event) => {
     event.preventDefault();
@@ -55,8 +57,14 @@ const EmployeeTenantSelection = () => {
       return;
     }
     selectionConfirmed.current = true;
-    window.location.reload();
+    if (selectedTenant === user?.info?.tenantId) {
+      setCompleted(true);
+    } else {
+      window.location.reload();
+    }
   };
+
+  if (completed) return null;
 
   return (
     <dialog

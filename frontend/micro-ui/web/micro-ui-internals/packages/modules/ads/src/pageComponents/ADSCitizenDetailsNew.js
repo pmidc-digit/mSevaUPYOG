@@ -73,6 +73,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   useEffect(() => {
     if ((currentStepData?.ownerDetails?.applicantDetail && currentStepData?.ownerDetails?.address) || currentStepData?.CreatedResponse) {
       const created = currentStepData?.ownerDetails?.applicantDetail ? currentStepData?.ownerDetails : currentStepData?.CreatedResponse;
+      console.log("currentStepData", currentStepData);
 
       // If address info is stored in CreatedResponse
       if (created?.address) {
@@ -83,6 +84,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       // If applicant details also need to be prefilled
       if (created?.applicantDetail) {
         setValue("name", currentStepData?.ownerDetails?.applicantDetail?.applicantName || created.applicantDetail.applicantName || "");
+        setValue("remarks", currentStepData?.ownerDetails?.additionalDetails?.remarks || created.additionalDetails.remarks || "");
         setValue("emailId", currentStepData?.ownerDetails?.applicantDetail?.applicantEmailId || created.applicantDetail.applicantEmailId || "");
         setValue(
           "mobileNumber",
@@ -131,6 +133,9 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       address: {
         pincode: data?.pincode || "",
         addressLine1: data?.address || "",
+      },
+      additionalDetails: {
+        remarks: data?.remarks,
       },
       applicantDetail: {
         applicantName: data?.name || "",

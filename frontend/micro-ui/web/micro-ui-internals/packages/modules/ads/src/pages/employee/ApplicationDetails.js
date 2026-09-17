@@ -196,6 +196,7 @@ const ApplicationDetails = () => {
         mobile: bookingObj?.applicantDetail?.applicantMobileNo,
         address: bookingObj?.address?.addressLine1,
         pincode: bookingObj?.address?.pincode,
+        remarks: bookingObj?.additionalDetails?.remarks,
         bookingStatus: bookingObj?.bookingStatus,
         paymentDate: bookingObj?.paymentDate ? new Date(bookingObj.paymentDate).toLocaleDateString() : "",
         receiptNo: bookingObj?.receiptNo,

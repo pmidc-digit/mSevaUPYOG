@@ -11,9 +11,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
-import org.upyog.adv.enums.BookingStatusEnum;
 import org.upyog.adv.service.PaymentService;
-import org.upyog.adv.util.BookingUtil;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jayway.jsonpath.DocumentContext;
@@ -50,22 +48,8 @@ public class PaymentUpdateConsumer {
 	public void paymentUpdate(final HashMap<String, Object> record,
 			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
-		log.info("ADV Appplication payment status update for  : " + topic + " and record : " + record);
-		//TODO: need to remove after testing
-		log.info("Strigifed json : " + BookingUtil.beuatifyJson(record));
+		log.info("ADV Application payment status update for topic: {}", topic);
 		paymentService.processTransaction(record, topic, null);
-
-	}
-	
-	
-	@KafkaListener(topics = { "${kafka.topics.save.pg.txns}" }, concurrency = "${kafka.consumer.config.concurrency.count}")
-	public void paymentStarted(final HashMap<String, Object> record,
-			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-
-		log.info("ADV Appplication payment started for topic  : " + topic + " and record : " + record);
-		//TODO: need to remove after testing
-		log.info("Strigifed json : " + BookingUtil.beuatifyJson(record));
-		paymentService.processTransaction(record, topic, BookingStatusEnum.PENDING_FOR_PAYMENT);
 
 	}
 	

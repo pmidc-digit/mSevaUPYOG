@@ -58,6 +58,11 @@ public class AdvertisementBookingQueryBuilder {
 
 	public static final String PAYMENT_TIMER_QUERY = "INSERT INTO eg_adv_payment_timer(booking_id, createdby, createdtime, status, booking_no, lastmodifiedby, lastmodifiedtime, add_type, location, face_area, night_light,advertisementId, booking_start_date, booking_end_date, booking_date) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?::DATE, ?::DATE, ?::DATE);\n";
 
+	// Insert that silently skips when another ACTIVE timer already holds the same slot+date.
+	// Backed by unique partial index uq_adv_timer_active_slot.
+	public static final String PAYMENT_TIMER_QUERY_ON_CONFLICT = "INSERT INTO eg_adv_payment_timer(booking_id, createdby, createdtime, status, booking_no, lastmodifiedby, lastmodifiedtime, add_type, location, face_area, night_light,advertisementId, booking_start_date, booking_end_date, booking_date) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?::DATE, ?::DATE, ?::DATE) "
+			+ "ON CONFLICT (advertisementId, booking_date, add_type, location, face_area, night_light) WHERE status = 'ACTIVE' DO NOTHING;\n";
+
 	public static final String DRAFT_QUERY = "INSERT INTO eg_adv_draft_detail(draft_id, tenant_id, user_uuid, draft_application_data, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?,CAST(? AS jsonb), ?, ?, ?, ?);\n";
 
 	private static final String PAYMENT_TIMER_DELETE_QUERY = "DELETE FROM eg_adv_payment_timer WHERE booking_id = ?";

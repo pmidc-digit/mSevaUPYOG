@@ -20,6 +20,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
+import EmployeeTenantSelection from "./EmployeeTenantSelection";
 import CitizenHomeCardWithExternalLink from "../pages/citizen/CitizenHomeCardWithExternalLink";
 import CitizenHomeCardAccordian from "../pages/citizen/CitizenHomeCardAccordian";
 import { MSEVA_APP_LINK, MSEVA_YOUTUBE_LINK, OBPS_EMPLOYEE_USER_MANUAL } from "../../../../constants/constants";
@@ -238,6 +239,7 @@ const EmployeeHome = ({ modules }) => {
 
   return (
     <div className="employee-app-container employee-dashboard-container">
+      {userName?.info?.tenantId === "pb.punjab" && <EmployeeTenantSelection />}
       <div style={welcomeCardStyle}>
         <h1 style={welcomeTitleStyle}>Welcome {userName?.info?.name || "User"}</h1>
         <p style={welcomeSubtitleStyle}>Manage and access employee services with ease and efficiency</p>

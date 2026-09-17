@@ -44,9 +44,9 @@ public class CalculationReq   {
 		@NotNull
         private Boolean isconnectionCalculation;
         
-        private long taxPeriodFrom;
+        private Long taxPeriodFrom;
     	
-    	private long taxPeriodTo;
+    	private Long taxPeriodTo;
     	
     	@Builder.Default
         @JsonProperty("isDisconnectionRequest")

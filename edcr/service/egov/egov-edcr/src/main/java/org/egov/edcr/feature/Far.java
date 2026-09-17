@@ -632,7 +632,7 @@ public class Far extends FeatureProcess {
 
 		pl.setOccupancies(occupanciesForPlan);
 		pl.getVirtualBuilding().setTotalFloorArea(totalFloorArea); //pl.getPlot().getArea()
-		pl.getVirtualBuilding().setTotalFloorArea(pl.getPlot().getArea());
+		//pl.getVirtualBuilding().setTotalFloorArea(pl.getPlot().getArea());
 		pl.getVirtualBuilding().setTotalCarpetArea(totalCarpetArea);
 		pl.getVirtualBuilding().setTotalExistingBuiltUpArea(totalExistingBuiltUpArea);
 		pl.getVirtualBuilding().setTotalExistingFloorArea(totalExistingFloorArea);

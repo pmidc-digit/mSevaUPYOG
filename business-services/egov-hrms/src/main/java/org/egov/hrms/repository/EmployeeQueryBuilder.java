@@ -51,7 +51,7 @@ public class EmployeeQueryBuilder {
 	        builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
 	    }
 
-	    addWhereClause(criteria, builder, preparedStmtList);
+	    addWhereClause(criteria, builder, preparedStmtList, hasCatSubZone);
 	    return paginationClause(criteria, builder);
 	}
 
@@ -143,13 +143,30 @@ public class EmployeeQueryBuilder {
 	 * @param builder
 	 * @param preparedStmtList
 	 */
+	/**
+	 * Backwards compatible overload. Defaults to the plain employee query (no OBPAS join).
+	 *
+	 * @param criteria         the search criteria
+	 * @param builder          the query builder being assembled
+	 * @param preparedStmtList the prepared statement values
+	 */
 	public void addWhereClause(EmployeeSearchCriteria criteria, StringBuilder builder, List<Object> preparedStmtList) {
+		addWhereClause(criteria, builder, preparedStmtList, false);
+	}
+
+	public void addWhereClause(EmployeeSearchCriteria criteria, StringBuilder builder, List<Object> preparedStmtList, boolean obpasQuery) {
+		// When the OBPAS join is in play, the tenant of interest is the ULB the zone mapping
+		// belongs to (obpas.tenantid) and NOT the home tenant of the employee
+		// (employee.tenantid). State level employees belong to e.g. pb.punjab while their
+		// mapping lives in pb.ferozepur, so filtering on employee.tenantid returned no rows
+		// and silently skipped OBPAS validations for such employees.
+		String tenantColumn = obpasQuery ? "obpas.tenantid" : "employee.tenantid";
 		if(!StringUtils.isEmpty(criteria.getTenantId())) {
-			builder.append(" employee.tenantid = ?");
+			builder.append(" " + tenantColumn + " = ?");
 			preparedStmtList.add(criteria.getTenantId());
 		}
 			else
-			builder.append(" employee.tenantid NOTNULL");
+			builder.append(" " + tenantColumn + " NOTNULL");
 		
 		if(!CollectionUtils.isEmpty(criteria.getCodes())){
 			List<String> codes = criteria.getCodes().stream().map(String::toLowerCase).collect(Collectors.toList());

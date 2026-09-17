@@ -138,20 +138,7 @@ public class EmployeeService {
 	    RequestInfo requestInfo = employeeRequest.getRequestInfo();
 
 	    for (ObpasEmployee employee : employeeRequest.getEmployees()) {
-
-	        // 1️⃣ Check if user exists in HRMS using UUID
-	        Map<String, Object> userSearchCriteria = new HashMap<>();
-	        userSearchCriteria.put("tenantId", employee.getTenantId());
-	        userSearchCriteria.put("uuid", Collections.singletonList(employee.getUserUUID())); // ✅ wrap in list
-
-	        UserResponse userResponse = userService.getUser(requestInfo, userSearchCriteria);
-
-	        if (CollectionUtils.isEmpty(userResponse.getUser())) {
-	            throw new RuntimeException(
-	                "User with UUID " + employee.getUserUUID() +
-	                " does not exist in tenant " + employee.getTenantId()
-	            );
-	        }
+	        validateEmployeeExists(employee, requestInfo);
 	        enrichObpasCreateRequest(employee, requestInfo);
 	    }
 
@@ -161,6 +148,64 @@ public class EmployeeService {
 
 	    // 5️⃣ Generate response
 	    return generateObpassResponse(employeeRequest);
+	}
+
+	/**
+	 * Validates that the employee (user) referenced by {@code userUUID} exists.
+	 *
+	 * <p>The lookup is deliberately <b>not</b> scoped to {@code employee.getTenantId()}. For this
+	 * API, {@code tenantId} is the ULB for which zone access is being granted (e.g.
+	 * {@code pb.ferozepur}), which is not necessarily the tenant the employee belongs to. An
+	 * employee can be created under a state level tenant (e.g. {@code pb.punjab}) or under a
+	 * different ULB and still be granted zone access in another ULB. Scoping the user search by the
+	 * mapped tenant filtered such employees out and produced a false "employee does not exist"
+	 * error.</p>
+	 *
+	 * <p>{@code uuid} is globally unique in the user store, hence it alone is authoritative for
+	 * existence. A light state level guard prevents cross-state mapping.</p>
+	 *
+	 * @param employee    the OBPAS mapping being created
+	 * @param requestInfo the incoming request info
+	 */
+	private void validateEmployeeExists(ObpasEmployee employee, RequestInfo requestInfo) {
+	    Map<String, Object> userSearchCriteria = new HashMap<>();
+	    userSearchCriteria.put("uuid", Collections.singletonList(employee.getUserUUID()));
+
+	    UserResponse userResponse = userService.getUser(requestInfo, userSearchCriteria);
+
+	    if (CollectionUtils.isEmpty(userResponse.getUser())) {
+	        throw new CustomException(
+	                ErrorConstants.OBPAS_EMPLOYEE_NOT_FOUND_CODE,
+	                "Employee with UUID " + employee.getUserUUID() + " does not exist."
+	        );
+	    }
+
+	    // A user whose tenant is unknown is still accepted; otherwise it must belong to the same
+	    // state instance as the tenant being mapped.
+	    String stateTenantId = getStateLevelTenant(employee.getTenantId());
+	    boolean belongsToSameState = userResponse.getUser().stream().anyMatch(user ->
+	            StringUtils.isEmpty(user.getTenantId()) || user.getTenantId().startsWith(stateTenantId));
+
+	    if (!belongsToSameState) {
+	        throw new CustomException(
+	                ErrorConstants.OBPAS_EMPLOYEE_NOT_FOUND_CODE,
+	                "Employee with UUID " + employee.getUserUUID()
+	                        + " does not belong to the state of tenant " + employee.getTenantId() + "."
+	        );
+	    }
+	}
+
+	/**
+	 * Derives the state level tenant id from a tenant id (e.g. {@code pb.ferozepur} -&gt; {@code pb}).
+	 *
+	 * @param tenantId the tenant id to resolve
+	 * @return the state level tenant id
+	 */
+	private String getStateLevelTenant(String tenantId) {
+	    if (StringUtils.isEmpty(tenantId))
+	        return propertiesManager.getStateLevelTenantId();
+	    int separatorIndex = tenantId.indexOf('.');
+	    return separatorIndex > 0 ? tenantId.substring(0, separatorIndex) : tenantId;
 	}
 
 	public ObpassEmployeeResponse delete(ObpasEmployeeRequest deleteRequest) {

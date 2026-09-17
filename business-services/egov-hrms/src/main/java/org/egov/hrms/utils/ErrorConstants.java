@@ -20,6 +20,9 @@ public class ErrorConstants {
 	public static final String OBPAS_ZONE_ACCESS_ALREADY_EXISTS_CODE = "OBPAS_ZONE_ACCESS_ALREADY_EXISTS";
 	public static final String OBPAS_ZONE_ACCESS_ALREADY_EXISTS_MSG  = "Zone access is already given to another employee.";
 
+	public static final String OBPAS_EMPLOYEE_NOT_FOUND_CODE = "OBPAS_EMPLOYEE_NOT_FOUND";
+	public static final String OBPAS_EMPLOYEE_NOT_FOUND_MSG  = "Employee does not exist.";
+
 	
 	
 	public static final String HRMS_MISSING_ROLES_CODE = "ERR_HRMS_MISSING_ROLES";

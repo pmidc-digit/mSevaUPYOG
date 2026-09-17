@@ -123,9 +123,13 @@ public class EmployeeValidator {
 	 * @param requestInfo the request info from the incoming request
 	 */
 	private void validateZoneAccessUniqueness(ObpasEmployee emp, RequestInfo requestInfo, Map<String, String> errorMap) {
-	    // 1. Fetch current employee's roles
+	    // 1. Fetch current employee's roles.
+	    //    Lookup is done by uuid only (tenant agnostic): the employee may belong to a
+	    //    state level tenant (e.g. pb.punjab) or a different ULB than the one the zone
+	    //    mapping is being created for (emp.getTenantId() == pb.ferozepur). Scoping this
+	    //    lookup by the mapped tenant silently skipped the uniqueness validation for such
+	    //    employees.
 	    EmployeeSearchCriteria empCriteria = new EmployeeSearchCriteria();
-	    empCriteria.setTenantId(emp.getTenantId());
 	    empCriteria.setUuids(Collections.singletonList(emp.getUserUUID()));
 	    EmployeeResponse empResponse = employeeService.search(empCriteria, requestInfo);
 	    

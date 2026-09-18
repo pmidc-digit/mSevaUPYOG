@@ -133,11 +133,107 @@ const getCitizenStyles = (value) => {
   return citizenStyles;
 };
 
+const DEFAULT_ALLOWED_EXTENSIONS = ".pdf,.png,.jpeg,.jpg,.webp,.doc,.docx,.xls,.xlsx,.csv,.dxf,.dwg";
+const BLOCKED_EXTENSIONS = [
+  "js", "mjs", "cjs", "jsx", "ts", "tsx", "html", "htm", "exe", "bat", "cmd",
+  "sh", "vbs", "ps1", "jar", "php", "py", "jsp", "asp", "aspx", "cgi", "msi", "dll", "com", "scr"
+];
+
+const validateFile = (file, accept, t) => {
+  if (!file) return { valid: false, error: t("CS_FILE_NOT_FOUND") || "No file selected" };
+
+  // Check corrupt / empty file (0 bytes)
+  if (file.size === 0) {
+    return {
+      valid: false,
+      error: t("CS_FILE_EMPTY_OR_CORRUPT") || "File is empty or corrupted (0 bytes)."
+    };
+  }
+
+  const fileName = (file.name || "").toLowerCase();
+
+  // Check for double extension like .pdf.pdf, .doc.pdf, etc.
+  const dotCount = (fileName.match(/\./g) || []).length;
+  if (dotCount > 1) {
+    return {
+      valid: false,
+      error: t("CS_DOUBLE_EXTENSION_NOT_ALLOWED") || "Files with double extension (e.g. .pdf.pdf) are not allowed."
+    };
+  }
+
+  const lastDotIndex = fileName.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return {
+      valid: false,
+      error: t("CS_FILE_WITHOUT_EXTENSION") || "File must have a valid extension."
+    };
+  }
+
+  const extension = fileName.substring(lastDotIndex + 1);
+
+  // Block scripts and executables like .js
+  if (BLOCKED_EXTENSIONS.includes(extension)) {
+    return {
+      valid: false,
+      error: t("CS_FILE_TYPE_NOT_ALLOWED") || `Files of type .${extension} are not allowed.`
+    };
+  }
+
+  // Check allowed generic formats or caller accept
+  const effectiveAccept = (accept && accept.trim().length > 0)
+    ? accept
+    : `${DEFAULT_ALLOWED_EXTENSIONS},image/*`;
+
+  const acceptTokens = effectiveAccept
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+
+  const fileType = (file.type || "").toLowerCase();
+
+  let isAllowed = false;
+  for (const token of acceptTokens) {
+    if (token.startsWith(".")) {
+      if (fileName.endsWith(token)) {
+        isAllowed = true;
+        break;
+      }
+    } else if (token.includes("/")) {
+      if (token.endsWith("/*")) {
+        const prefix = token.split("/")[0];
+        if (fileType.startsWith(prefix + "/")) {
+          isAllowed = true;
+          break;
+        }
+      } else if (fileType === token) {
+        isAllowed = true;
+        break;
+      }
+    } else {
+      if (extension === token) {
+        isAllowed = true;
+        break;
+      }
+    }
+  }
+
+  if (!isAllowed) {
+    const readableAllowed = effectiveAccept.replace(/,/g, ", ");
+    return {
+      valid: false,
+      error: t("NOT_SUPPORTED_FILE_TYPE") || `Invalid file type. Allowed: ${readableAllowed}`
+    };
+  }
+
+  return { valid: true };
+};
+
 const UploadFile = (props) => {
   const { t } = useTranslation();
   const inpRef = useRef();
   const [hasFile, setHasFile] = useState(false);
   const [prevSate, setprevSate] = useState(null);
+  const [fileError, setFileError] = useState(null);
   const user_type = Digit.SessionStorage.get("userType");
   let extraStyles = {};
   const handleChange = () => {
@@ -170,6 +266,7 @@ const UploadFile = (props) => {
 
   const handleDelete = () => {
     inpRef.current.value = "";
+    setFileError(null);
     props.onDelete();
   };
 
@@ -188,6 +285,28 @@ const UploadFile = (props) => {
   useEffect(() => handleEmpty(), [inpRef?.current?.files])
 
   useEffect(() => handleChange(), [props.message]);
+
+  const handleFileChange = (e) => {
+    setFileError(null);
+    const files = e?.target?.files;
+    if (!files || files.length === 0) {
+      props.onUpload && props.onUpload(e);
+      return;
+    }
+
+    for (let file of files) {
+      const validation = validateFile(file, props.accept, t);
+      if (!validation.valid) {
+        setFileError(validation.error);
+        if (inpRef.current) inpRef.current.value = "";
+        setHasFile(false);
+        return;
+      }
+    }
+
+    handleChange();
+    props.onUpload && props.onUpload(e);
+  };
 
   const showHint = props?.showHint || false;
 
@@ -232,16 +351,16 @@ const UploadFile = (props) => {
           id={props.id || `document-${getRandomId()}`}
           name="file"
           multiple={props.multiple}
-          accept={props.accept}
+          accept={props.accept || `${DEFAULT_ALLOWED_EXTENSIONS},image/*`}
           disabled={props.disabled}
-          onChange={(e) => props.onUpload(e)}
+          onChange={handleFileChange}
           onClick ={ event => {
             const { target = {} } = event || {};
             target.value = "";
           }}
         />
       </div>
-      {props.iserror && <p style={{color: "red"}}>{props.iserror}</p>}
+      {(fileError || props.iserror) && <p style={{color: "red"}}>{fileError || props.iserror}</p>}
       {props?.showHintBelow && <p className="cell-text">{t(props?.hintText)}</p>}
     </Fragment>
   );

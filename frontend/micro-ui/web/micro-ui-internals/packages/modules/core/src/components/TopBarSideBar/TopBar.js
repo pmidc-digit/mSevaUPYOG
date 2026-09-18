@@ -1,5 +1,6 @@
 import { Dropdown, Hamburger, NotificationBell, TopBar as TopBarComponent } from "@mseva/digit-ui-react-components";
 import React from "react";
+import "./EmployeeProfileMenu.scss";
 import { useHistory, useLocation } from "react-router-dom";
 import ChangeCity from "../ChangeCity";
 import ChangeLanguage from "../ChangeLanguage";
@@ -288,13 +289,14 @@ const TopBar = ({
             {userDetails?.access_token && (
               <div className="left">
                 <Dropdown
+                  className="employee-profile-menu"
                   option={userOptions}
                   optionKey={"name"}
                   select={handleUserDropdownSelection}
                   showArrow={true}
                   freeze={true}
                   style={mobileView ? { right: 0 } : {}}
-                  optionCardStyles={{ overflow: "revert", left: "-56px" }}
+                  optionCardStyles={{ left: "auto", right: 0 }}
                   customSelector={
                     profilePic == null ? (
                       <TextToImg name={userDetails?.info?.name || userDetails?.info?.userInfo?.name || "Employee"} />

@@ -571,18 +571,33 @@ class BillService {
   }
 
   async getPaymentLink(consumerCode, tenantId, businessService, locale, user) {
+  if (businessService === 'WS') {
+        return 'https://billpay.setu.co/1272707270496486911/biller-form/PMC000000PUN01';
+    }
+
+    if (businessService === 'SW') {
+        return 'https://billpay.setu.co/1272707270496486911/biller-form/PUNJ00000PUNYS';
+    }
+
+    // Keep existing payment-link logic for other services
     var UIHost = config.egovServices.externalHost;
     var paymentPath = config.egovServices.msgpaylink;
+
     paymentPath = paymentPath.replace(/\$consumercode/g, consumerCode);
     paymentPath = paymentPath.replace(/\$tenantId/g, tenantId);
     paymentPath = paymentPath.replace(/\$businessservice/g, businessService);
-    paymentPath = paymentPath.replace(/\$redirectNumber/g, "+" + config.whatsAppBusinessNumber);
+    paymentPath = paymentPath.replace(
+        /\$redirectNumber/g,
+        "+" + config.whatsAppBusinessNumber
+    );
     paymentPath = paymentPath.replace(/\$locale/g, locale);
     paymentPath = paymentPath.replace(/\$name/g, user.name);
     paymentPath = paymentPath.replace(/\$mobileNumber/g, user.mobileNumber);
 
     var finalPath = UIHost + paymentPath;
+
     var link = await this.getShortenedURL(finalPath);
+
     return link;
   }
 

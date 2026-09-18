@@ -18,7 +18,14 @@ const EmployeeTenantSelection = () => {
   const options = tenants.map((code) => ({ code, name: `TENANT_TENANTS_${code.replace(/\./g, "_").toUpperCase()}` }));
 
   useEffect(() => {
-    if (completed) return;
+    if (completed || selectionConfirmed.current) return;
+    // Only the Punjab landing flow automatically chooses a sole assigned ULB.
+    if (Digit.UserService.getUser()?.info?.tenantId === "pb.punjab" && tenants.length === 1 && switchEmployeeTenant(tenants[0])) {
+      selectionConfirmed.current = true;
+      // Reload even for Punjab so cards pick up the scoped roles and tenant caches.
+      window.location.reload();
+      return;
+    }
     const dialog = dialogRef.current;
     const previousOverflow = document.body.style.overflow;
     const blockEscape = (event) => {

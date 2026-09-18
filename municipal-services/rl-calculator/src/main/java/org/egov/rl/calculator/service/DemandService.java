@@ -92,6 +92,17 @@ public class DemandService {
 	/** Cutoff sentinel meaning "no penalty applies yet" - used when an arrear demand cannot be dated. */
 	private static final long NO_PENALTY_CUTOFF = Long.MAX_VALUE;
 
+	/**
+	 * The tax heads that make up an arrear breakdown. These - and only these - may disappear from an arrear demand
+	 * when a correction removes them from the request; the penalty head is excluded because the engine accrues on
+	 * the same head as the migrated penalty.
+	 */
+	private static final Set<String> ARREAR_BREAKDOWN_HEADS = new HashSet<>(Arrays.asList(
+			RLConstants.RL_ARREAR_FEE.toUpperCase(),
+			RLConstants.CGST_FEE_RL_APPLICATION.toUpperCase(),
+			RLConstants.SGST_FEE_RL_APPLICATION.toUpperCase(),
+			RLConstants.ROUND_OFF_RL_APPLICATION.toUpperCase()));
+
 	@PostConstruct
 	public void init() {
 		// Bounded thread pool to prevent thread exhaustion under load
@@ -228,6 +239,7 @@ public class DemandService {
 		Map<String, List<Demand>> existingByConsumer = new HashMap<>();
 		List<Demand> demandsToCreate = new ArrayList<>();
 		Map<String, Demand> alreadyCreated = new LinkedHashMap<>();
+		Map<String, Demand> arrearUpdates = new LinkedHashMap<>();
 
 		for (Demand demand : demands) {
 			String consumerKey = demand.getTenantId() + "|" + demand.getConsumerCode();
@@ -237,33 +249,60 @@ public class DemandService {
 				existingByConsumer.put(consumerKey, existing);
 			}
 			Demand duplicate = findDuplicate(existing, demand);
-			if (duplicate != null) {
+			if (duplicate == null) {
+				demandsToCreate.add(demand);
+				existing.add(demand); // also guards against two identical periods inside one request
+				continue;
+			}
+			if (isArrearOnly(demand)) {
+				// The application can still be edited (draft, or a replayed approval) after its arrear demand was
+				// raised, so the migrated arrears may have changed. Reconcile instead of blindly skipping.
+				Demand updated = reconcileArrearDemand(duplicate, demand, requestInfo);
+				Demand effective = (updated != null) ? updated : duplicate;
+				alreadyCreated.put(effective.getId(), effective);
+				if (updated != null) {
+					arrearUpdates.put(updated.getId(), updated);
+				}
+			} else {
 				log.warn("Demand already exists for consumer {} (id {}) covering {} to {} - skipping creation.",
 						demand.getConsumerCode(), duplicate.getId(),
 						formatCutoff(demand.getTaxPeriodFrom()), formatCutoff(demand.getTaxPeriodTo()));
 				alreadyCreated.put(duplicate.getId(), duplicate);
-			} else {
-				demandsToCreate.add(demand);
-				existing.add(demand); // also guards against two identical periods inside one request
 			}
 		}
 
-		if (demandsToCreate.isEmpty()) {
-			log.warn("All {} generated legacy demand(s) already exist - returning the stored ones so the call stays idempotent.",
-					demands.size());
-			return DemandResponse.builder().demands(new ArrayList<>(alreadyCreated.values())).build();
+		List<Demand> savedDemands = null;
+		if (!demandsToCreate.isEmpty()) {
+			log.info("Saving legacy demand(s) to billing service. Count: {} ({} already existed)",
+					demandsToCreate.size(), alreadyCreated.size());
+			savedDemands = demandRepository.saveDemand(requestInfo, demandsToCreate);
+		} else {
+			log.info("All {} generated legacy demand(s) already exist - nothing to create.", demands.size());
 		}
 
-		log.info("Saving legacy demand(s) to billing service. Count: {} ({} already existed)",
-				demandsToCreate.size(), alreadyCreated.size());
-		List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demandsToCreate);
-		if (!CollectionUtils.isEmpty(savedDemands)) {
-			fetchBillForDemands(savedDemands, requestInfo);
+		// One _update call for every arrear demand whose values changed, then a single bill refresh for everything
+		// this call touched (creating and updating share the same consumer code).
+		List<Demand> updatedDemands = Collections.emptyList();
+		if (!arrearUpdates.isEmpty()) {
+			log.info("Arrear values changed for {} demand(s) - updating them in place.", arrearUpdates.size());
+			updatedDemands = demandRepository.updateDemand(requestInfo, new ArrayList<>(arrearUpdates.values()));
+			if (updatedDemands == null) {
+				updatedDemands = Collections.emptyList();
+			}
+			log.info("Arrear demand(s) updated successfully. Count: {}", updatedDemands.size());
 		}
-		log.info("Legacy demand created successfully. Count: {}", (savedDemands != null ? savedDemands.size() : 0));
+
+		List<Demand> touched = new ArrayList<>();
+		if (!CollectionUtils.isEmpty(savedDemands)) {
+			touched.addAll(savedDemands);
+		}
+		touched.addAll(updatedDemands);
+		if (!touched.isEmpty()) {
+			fetchBillForDemands(touched, requestInfo);
+		}
 
 		List<Demand> responseDemands = new ArrayList<>();
-		if (savedDemands != null) {
+		if (!CollectionUtils.isEmpty(savedDemands)) {
 			responseDemands.addAll(savedDemands);
 		}
 		responseDemands.addAll(alreadyCreated.values());
@@ -281,16 +320,10 @@ public class DemandService {
 			return existing;
 		}
 		List<String> demandIds = existing.stream().map(Demand::getId).filter(Objects::nonNull).collect(Collectors.toList());
-		Map<String, Set<String>> headsByDemandId = demandRepository.getTaxHeadsByDemandId(demandIds);
+		Map<String, List<DemandDetail>> detailsByDemandId = demandRepository.getDemandDetailsByDemandIds(demandIds);
 		for (Demand demand : existing) {
-			List<DemandDetail> details = new ArrayList<>();
-			Set<String> heads = headsByDemandId.get(demand.getId());
-			if (heads != null) {
-				for (String head : heads) {
-					details.add(DemandDetail.builder().demandId(demand.getId()).taxHeadMasterCode(head).build());
-				}
-			}
-			demand.setDemandDetails(details);
+			List<DemandDetail> details = detailsByDemandId.get(demand.getId());
+			demand.setDemandDetails((details != null) ? details : new ArrayList<>());
 		}
 		return existing;
 	}
@@ -341,6 +374,184 @@ public class DemandService {
 	/** Exact period key for the duplicate check - the same precision the scheduler dedupe relies on. */
 	private static String periodKey(Long from, Long to) {
 		return from + ":" + to;
+	}
+
+	/**
+	 * Brings an existing arrear demand in line with the arrears in the request.
+	 *
+	 * <p>A legacy application stays editable after its arrear demand was raised (draft save, corrected migration
+	 * data, replayed approval), so the migrated arrears can change. The demand is rewritten in place: it keeps its
+	 * id, its payer and - crucially - its issue instant ({@code taxPeriodTo}), because that instant is what the
+	 * arrear penalty clock is derived from; moving it would restart the accrual.
+	 *
+	 * <p>Nothing is sent to billing unless something really changed, so a replayed approval costs one local
+	 * duplicate check and no round trip.
+	 *
+	 * @return the demand to update, or null when the stored arrear already matches the request
+	 */
+	private Demand reconcileArrearDemand(Demand storedArrear, Demand candidate, RequestInfo requestInfo) {
+		if (!arrearChanged(storedArrear, candidate)) {
+			log.info("Arrear values of consumer {} are unchanged - demand {} left untouched.",
+					candidate.getConsumerCode(), storedArrear.getId());
+			return null;
+		}
+
+		// Re-read the demand from billing so the update carries the complete object (full payer, ids of the tax
+		// head rows) instead of a partial row.
+		Demand stored = fetchDemandsFromBilling(candidate.getTenantId(), candidate.getConsumerCode(), requestInfo).stream()
+				.filter(d -> d.getId() != null && d.getId().equalsIgnoreCase(storedArrear.getId()))
+				.findFirst().orElse(null);
+		if (stored == null) {
+			log.warn("Arrear demand {} of consumer {} could not be re-read from billing - the changed arrears were "
+					+ "not applied.", storedArrear.getId(), candidate.getConsumerCode());
+			return null;
+		}
+
+		List<DemandDetail> merged = mergeArrearDetails(stored, candidate);
+		stored.setDemandDetails(merged);
+		stored.setMinimumAmountPayable(merged.stream().map(DemandDetail::getTaxAmount)
+				.reduce(BigDecimal.ZERO, BigDecimal::add));
+		stored.setAdditionalDetails(candidate.getAdditionalDetails());
+		// The arrear start is only a label and may be corrected; the issue instant is never moved.
+		stored.setTaxPeriodFrom(candidate.getTaxPeriodFrom());
+		log.info("Arrear demand {} of consumer {} reconciled: {} tax head(s) carried over.",
+				stored.getId(), candidate.getConsumerCode(), merged.size());
+		return stored;
+	}
+
+	/**
+	 * True when the stored arrear demand no longer matches the arrear values in the request. Only the tax heads the
+	 * request actually declares are compared - a penalty the engine has accrued on the demand in the meantime must
+	 * not be mistaken for a change of the migrated arrears.
+	 */
+	private boolean arrearChanged(Demand existing, Demand candidate) {
+		if (existing == null || candidate == null) {
+			return true;
+		}
+		if (!Objects.equals(existing.getTaxPeriodFrom(), candidate.getTaxPeriodFrom())) {
+			return true;
+		}
+		if (!sameAmount(extractFuturePenaltyRate(existing), extractFuturePenaltyRate(candidate))) {
+			return true;
+		}
+		Map<String, BigDecimal> storedAmounts = amountsByTaxHead(existing);
+		Map<String, BigDecimal> candidateAmounts = amountsByTaxHead(candidate);
+		// A breakdown component that disappeared from the request is a change as well (stale GST must not survive).
+		for (String head : ARREAR_BREAKDOWN_HEADS) {
+			if (!candidateAmounts.containsKey(head) && storedAmounts.containsKey(head)) {
+				return true;
+			}
+		}
+		for (Map.Entry<String, BigDecimal> entry : candidateAmounts.entrySet()) {
+			BigDecimal oldAmount = storedAmounts.get(entry.getKey());
+			BigDecimal newAmount = entry.getValue();
+			if (RLConstants.PENALTY_TAXHEAD_CODE.equalsIgnoreCase(entry.getKey()) && oldAmount != null
+					&& oldAmount.compareTo(newAmount) > 0) {
+				// The migrated penalty shares its tax head with the penalty accrued by the engine - never lower it.
+				continue;
+			}
+			if (oldAmount == null || oldAmount.compareTo(newAmount) != 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Tax head (upper case) to summed tax amount, for the demand details of a demand read over JDBC. */
+	private static Map<String, BigDecimal> amountsByTaxHead(Demand demand) {
+		Map<String, BigDecimal> amounts = new LinkedHashMap<>();
+		if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails())) {
+			return amounts;
+		}
+		for (DemandDetail detail : demand.getDemandDetails()) {
+			String head = (detail != null) ? detail.getTaxHeadMasterCode() : null;
+			if (head == null || head.trim().isEmpty()) {
+				continue;
+			}
+			BigDecimal amount = (detail.getTaxAmount() != null) ? detail.getTaxAmount() : BigDecimal.ZERO;
+			amounts.merge(head.trim().toUpperCase(), amount, BigDecimal::add);
+		}
+		return amounts;
+	}
+
+	/** Null safe equality for money, ignoring the scale ({@code 18} equals {@code 18.00}). */
+	private static boolean sameAmount(BigDecimal first, BigDecimal second) {
+		if (first == null || second == null) {
+			return first == second;
+		}
+		return first.compareTo(second) == 0;
+	}
+
+	/**
+	 * Merges the arrear amounts of a freshly generated demand into the demand stored in billing, tax head by tax
+	 * head. Stored rows keep their id and their collectionAmount, so an amount already collected against the
+	 * arrear is never lost, and heads the request does not mention are left as they are.
+	 */
+	private List<DemandDetail> mergeArrearDetails(Demand stored, Demand candidate) {
+		List<DemandDetail> merged = CollectionUtils.isEmpty(stored.getDemandDetails())
+				? new ArrayList<>()
+				: new ArrayList<>(stored.getDemandDetails());
+		Map<String, DemandDetail> byTaxHead = new HashMap<>();
+		Set<String> requestedHeads = new HashSet<>();
+		for (DemandDetail detail : merged) {
+			String head = (detail != null) ? detail.getTaxHeadMasterCode() : null;
+			if (head != null && !head.trim().isEmpty()) {
+				byTaxHead.put(head.trim().toUpperCase(), detail);
+			}
+		}
+
+		for (DemandDetail incoming : candidate.getDemandDetails()) {
+			String head = (incoming != null) ? incoming.getTaxHeadMasterCode() : null;
+			if (head == null || head.trim().isEmpty()) {
+				continue;
+			}
+			head = head.trim().toUpperCase();
+			requestedHeads.add(head);
+			BigDecimal newAmount = (incoming.getTaxAmount() != null) ? incoming.getTaxAmount() : BigDecimal.ZERO;
+			DemandDetail target = byTaxHead.get(head);
+			if (target == null) {
+				DemandDetail added = DemandDetail.builder().taxAmount(newAmount).taxHeadMasterCode(head)
+						.tenantId(stored.getTenantId()).collectionAmount(BigDecimal.ZERO)
+						.demandId(stored.getId()).build();
+				merged.add(added);
+				byTaxHead.put(head, added);
+				continue;
+			}
+			BigDecimal existingAmount = (target.getTaxAmount() != null) ? target.getTaxAmount() : BigDecimal.ZERO;
+			if (RLConstants.PENALTY_TAXHEAD_CODE.equalsIgnoreCase(head) && existingAmount.compareTo(newAmount) > 0) {
+				log.info("Keeping the higher penalty {} on arrear demand {} instead of the supplied {}.",
+						existingAmount, stored.getId(), newAmount);
+				continue;
+			}
+			target.setTaxAmount(newAmount);
+		}
+
+		// A component removed from the request disappears from the demand, otherwise a corrected breakdown would
+		// keep charging the old one. Only breakdown heads can go, and never one that already carries a collection.
+		merged.removeIf(detail -> {
+			String head = (detail.getTaxHeadMasterCode() != null)
+					? detail.getTaxHeadMasterCode().trim().toUpperCase() : "";
+			boolean collected = detail.getCollectionAmount() != null
+					&& detail.getCollectionAmount().compareTo(BigDecimal.ZERO) > 0;
+			return ARREAR_BREAKDOWN_HEADS.contains(head) && !requestedHeads.contains(head) && !collected;
+		});
+		return merged;
+	}
+
+	/** Full demands of a consumer code as billing knows them - payer, audit details and the ids of the details. */
+	private List<Demand> fetchDemandsFromBilling(String tenantId, String consumerCode, RequestInfo requestInfo) {
+		try {
+			GetBillCriteria criteria = GetBillCriteria.builder().tenantId(tenantId)
+					.consumerCodes(Collections.singletonList(consumerCode)).build();
+			Object result = serviceRequestRepository.fetchResult(utill.getDemandSearchUrl(criteria),
+					RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+			DemandResponse response = mapper.convertValue(result, DemandResponse.class);
+			return (response != null && response.getDemands() != null) ? response.getDemands() : Collections.emptyList();
+		} catch (Exception e) {
+			log.error("Could not read the existing demands of consumer {} from billing: {}",
+					consumerCode, e.getMessage(), e);
+			return Collections.emptyList();
+		}
 	}
 
 	public DemandResponse createSatelmentDemand(CalculationReq calculationReq) {

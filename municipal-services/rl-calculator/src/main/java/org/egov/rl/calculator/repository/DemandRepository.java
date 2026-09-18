@@ -348,30 +348,19 @@ public class DemandRepository {
 	}
 
 	/**
-	 * Tax head codes per demand id. Needed to recognise an already existing arrear demand, whose period cannot be
-	 * matched exactly (its period end is the instant it was created).
+	 * Demand details - tax head, tax amount and collected amount - per demand id. Needed to recognise an already
+	 * existing arrear demand (its period cannot be matched exactly, its period end is the instant it was created)
+	 * and to compare the stored arrears with the values in a later request without a second round trip.
 	 *
-	 * <p>Returns an empty map when the lookup fails; the caller keeps the period based duplicate check as its
-	 * primary safeguard.
+	 * <p>Returns an empty map when the lookup fails; the period based duplicate check keeps working without it.
 	 */
-	public Map<String, Set<String>> getTaxHeadsByDemandId(List<String> demandIds) {
-		Map<String, Set<String>> headsByDemandId = new HashMap<>();
-		if (demandIds == null || demandIds.isEmpty()) {
-			return headsByDemandId;
+	public Map<String, List<DemandDetail>> getDemandDetailsByDemandIds(List<String> demandIds) {
+		Map<String, List<DemandDetail>> detailsByDemandId = new HashMap<>();
+		for (DemandDetail detail : getDemandsDetailsByDemandId(demandIds)) {
+			if (detail.getDemandId() != null) {
+				detailsByDemandId.computeIfAbsent(detail.getDemandId(), key -> new ArrayList<>()).add(detail);
+			}
 		}
-		try {
-			String placeholders = demandIds.stream().map(id -> "?").collect(Collectors.joining(", "));
-			String sql = "SELECT demandid, taxheadcode FROM egbs_demanddetail_v1 WHERE demandid IN (" + placeholders + ")";
-			jdbcTemplate.query(sql, demandIds.toArray(), rs -> {
-				String demandId = rs.getString("demandid");
-				if (demandId != null) {
-					headsByDemandId.computeIfAbsent(demandId, key -> new HashSet<>()).add(rs.getString("taxheadcode"));
-				}
-			});
-		} catch (Exception e) {
-			log.warn("Could not read tax heads of {} existing demand(s): {} - an existing arrear demand cannot be detected.",
-					demandIds.size(), e.getMessage());
-		}
-		return headsByDemandId;
+		return detailsByDemandId;
 	}
 }

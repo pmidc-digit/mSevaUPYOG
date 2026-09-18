@@ -72,6 +72,13 @@ public class AllotmentService {
 	AllotmentRepository allotmentRepository;
 
 	/**
+	 * States in which the application already has a demand - the only states in which a draft save may touch it.
+	 * Before approval nothing was raised, so a draft must only persist the edits.
+	 */
+	private static final Set<String> DEMAND_RAISED_STATUSES = new HashSet<>(Arrays.asList(
+			RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION, RLConstants.APPROVED));
+
+	/**
 	 * Enriches the Request and pushes to the Queue
 	 *
 	 * @param request PropertyRequest containing list of properties to be created
@@ -117,6 +124,12 @@ public class AllotmentService {
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
+		// A draft keeps the application in its current state, so its edits are carried by the enrichment alone
+		// (the arrears live in additionalDetails). The demand is only touched when it already exists, i.e. while
+		// the application is waiting for payment: before that nothing was raised, so there is nothing to update
+		// and a draft must never create a demand.
+		boolean isDraft = action != null && RLConstants.DRAFT_RL_APPLICATION.equalsIgnoreCase(action.trim());
+		boolean isDraftWithDemand = isDraft && hasRaisedDemand(allotmentDetails);
 		boolean isLegacyApplication = isLegacyApplication(allotmentDetails);
 		String applicationType = resolveApplicationType(allotmentDetails);
 		if (isLegacyApplication) {
@@ -126,14 +139,16 @@ public class AllotmentService {
 		log.info("Processing update for application: {}, action: {}, isApprove: {}, isLegacy: {}, applicationType: {}", 
 				allotmentDetails.getApplicationNumber(), action, isApprove, isLegacyApplication, applicationType);
 
-		if (isApprove && isLegacyApplication) {
-			// For legacy applications use the same flow as new applications but exclude security deposit and include arrear details if present
-			log.info("Processing legacy application as NEW flow (security deposit excluded) for application: {}", allotmentDetails.getApplicationNumber());
+		if (isLegacyApplication && (isApprove || isDraftWithDemand)) {
+			// Legacy demands are generated once and then reconciled: a demand that already exists is left alone,
+			// except an arrear demand whose values changed, which is updated in place (same id, same issue instant).
+			log.info("Syncing legacy demands for application: {} (approve: {}, draft: {})",
+					allotmentDetails.getApplicationNumber(), isApprove, isDraft);
 			try {
 				// isSatelment=false, isSecurityDeposite=false (exclude security deposit)
 				callCalculatorServiceForLegacy(allotmentRequest);
 			} catch (Exception e) {
-				log.error("Error creating demand for legacy application: {}", allotmentDetails.getApplicationNumber(), e);
+				log.error("Error syncing demand for legacy application: {}", allotmentDetails.getApplicationNumber(), e);
 				throw new CustomException("CREATE_DEMAND_ERROR",
 						"Error occurred while generating demand for legacy application.");
 			}
@@ -197,6 +212,18 @@ public class AllotmentService {
 		DemandResponse demandResponse = mapper.convertValue(response, DemandResponse.class);
 		String demandId =demandResponse.getDemands().get(0).getId();
 		return demandId;
+	}
+
+    /**
+	 * True when the application is in a state that already has a demand, i.e. the only states in which a draft
+	 * save may change anything on the demand.
+	 */
+	private boolean hasRaisedDemand(AllotmentDetails allotmentDetails) {
+		if (allotmentDetails == null || allotmentDetails.getStatus() == null) {
+			return false;
+		}
+		String status = allotmentDetails.getStatus().trim();
+		return DEMAND_RAISED_STATUSES.stream().anyMatch(state -> state.equalsIgnoreCase(status));
 	}
 
     /**
@@ -403,7 +430,13 @@ public class AllotmentService {
 			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
 				continue;
 			}
-			LocalDate date = parseLegacyDate(raw.trim());
+			String trimmed = raw.trim();
+			// The frontend sends 0 for "no value" - typically lastPaidUpto when the arrears come as a breakdown.
+			// A non positive plain number is an absent date, never an unparseable one.
+			if (isNotProvidedNumber(trimmed)) {
+				continue;
+			}
+			LocalDate date = parseLegacyDate(trimmed);
 			if (date == null) {
 				throw new CustomException("INVALID_LEGACY_DATE", "Unable to parse '" + key + "' value '" + raw
 						+ "'. Expected epoch millis, yyyy-MM-dd, ISO-8601 date-time or dd/MM/yyyy.");
@@ -411,6 +444,14 @@ public class AllotmentService {
 			return date.atStartOfDay(ZoneId.of("Asia/Kolkata")).toInstant().toEpochMilli();
 		}
 		return null;
+	}
+
+	/** True when the value is a plain number that is zero or negative, i.e. the frontend's "not provided". */
+	private static boolean isNotProvidedNumber(String value) {
+		if (!value.matches("-?\\d+(\\.\\d+)?")) {
+			return false;
+		}
+		return new BigDecimal(value).compareTo(BigDecimal.ZERO) <= 0;
 	}
 
 	/**

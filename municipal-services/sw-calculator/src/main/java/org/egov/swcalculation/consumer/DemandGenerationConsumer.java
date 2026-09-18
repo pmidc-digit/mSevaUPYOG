@@ -76,7 +76,7 @@ public class DemandGenerationConsumer {
 	 *            would be calculation criteria.
 	 */
 	@KafkaListener(
-		    topics = {"${egov.seweragecalculatorservice.createsingledemand.topic}"},
+		    topics = {"${egov.seweragecalculatorservice.createdemand.topic}","${egov.seweragecalculatorservice.createsingledemand.topic}"},
 		    containerFactory = "kafkaListenerContainerFactoryBatch",
 		    concurrency = "${egov.sw.calculator.concurrency.count}"
 		)

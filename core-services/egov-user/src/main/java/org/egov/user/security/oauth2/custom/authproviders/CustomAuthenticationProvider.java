@@ -199,13 +199,13 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             );
         }
 
-        userService.handleFailedLogin(
+        long attempLeftCount = userService.handleFailedLogin(
                 user,
                 request.getHeader(IP_HEADER_NAME),
                 requestInfo
         );
 
-        throw new OAuth2Exception("Invalid login credentials");
+        throw new OAuth2Exception("Invalid login credentials. You have " + attempLeftCount + " login attempts left.");
     }
 
     private boolean isPasswordMatch(Boolean isOtpBased,

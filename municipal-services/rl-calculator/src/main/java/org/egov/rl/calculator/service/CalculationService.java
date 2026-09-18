@@ -810,7 +810,13 @@ public class CalculationService {
 			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
 				continue;
 			}
-			LocalDate date = parseLegacyDate(raw.trim());
+			String trimmed = raw.trim();
+			// The frontend sends 0 for "no value" - typically lastPaidUpto when the arrears come as a breakdown.
+			// A non positive plain number is an absent date, never an unparseable one.
+			if (isNotProvidedNumber(trimmed)) {
+				continue;
+			}
+			LocalDate date = parseLegacyDate(trimmed);
 			if (date == null) {
 				throw new CustomException("INVALID_LEGACY_DATE", "Unable to parse '" + key + "' value '" + raw
 						+ "'. Expected epoch millis, yyyy-MM-dd, ISO-8601 date-time or dd/MM/yyyy.");
@@ -818,6 +824,14 @@ public class CalculationService {
 			return date.atStartOfDay(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
 		}
 		return null;
+	}
+
+	/** True when the value is a plain number that is zero or negative, i.e. the frontend's "not provided". */
+	private static boolean isNotProvidedNumber(String value) {
+		if (!value.matches("-?\\d+(\\.\\d+)?")) {
+			return false;
+		}
+		return new BigDecimal(value).compareTo(BigDecimal.ZERO) <= 0;
 	}
 
 	/**

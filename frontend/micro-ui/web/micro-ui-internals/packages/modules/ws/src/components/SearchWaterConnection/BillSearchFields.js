@@ -14,18 +14,18 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
   const [generatedBill, setGeneratedBill] = useState("")
   const [enableLocality,setEnableLocality]=useState(false)
 
-  console.log("res data 3", OnresData)
-  console.log("handle Res data 2",handleResSubmit)
+
+
 
   function selectLocality(value) {
-    console.log("register, control", register, tenant)
+
     setValue('locality', value);
     setValue('tenantId', tenant);
     setLocality(value);
   }
-  console.log(locality)
+
   function selectConnectionType(value) {
-    console.log("register, control", register, tenant)
+
     setValue('locality', value);
     setValue('tenantId', tenant);
     setConnectionValue(value);
@@ -40,10 +40,10 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
   function selectConnectionType(value) {
     setConnectionValue(value)
   }
-  console.log("connection value", connectionValue)
-  console.log("Locality value", locality)
+
+
   async function generateBill() {
-    console.log("in generate bill")
+
     const payload = {
       BillScheduler: {
 
@@ -59,8 +59,8 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
     }
     Digit.WSService.wsGenerateBill(payload)
       .then((response) => {
-        console.log("response", response)
-        console.log("response", response?.billScheduler)
+
+
         if (response?.ResponseInfo?.status === "200 OK"|| response?.ResponseInfo?.status === "201 OK"||response?.ResponseInfo?.status === "successful") {
           if(response.billScheduler.length===0){
             alert("Water Bill not generated")
@@ -73,7 +73,7 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
         }
         else{
          // alert(response?.Errors?.message)
-          console.log(response?.Errors?.message)
+
           onSearch({ key: true, label:response?.Errors?.message});
         }
 
@@ -102,15 +102,15 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
       //     handleResSubmit(OnresData)
      // alert(err)
       onSearch({ key: true, label:err});
-        console.log("Error in Digit.HRMSService.ssoAuthenticateUser: ", err.response);
+
 
       });
 
   }
-  console.log("set genertared bill", generatedBill)
+
   async function batchType() {
     // const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId;
-    // console.log("tenant id",tenantId)
+
     const payload = {
       // hierarchyTypeCode:"REVENUE",
       // boundaryType:"Block",
@@ -118,7 +118,7 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
     }
     Digit.LocationService.getRevenueBlocks(payload)
       .then((response) => {
-        console.log("response", response)
+
         if (response?.ResponseInfo.status === "200 OK") {
           setBatch(response.TenantBoundary[0]?.boundary)
         }
@@ -130,8 +130,8 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
       })
       .catch((err) => {
         // setIsLoading(false);
-      
-        console.log("Error in Digit.HRMSService.ssoAuthenticateUser: ", err.response);
+
+
         // setShowToast(err?.response?.data?.Errors?.[0]?.message || "Something went wrong");
         // setTimeout(closeToast, 5000);
       });
@@ -141,7 +141,7 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
   // useEffect(() => {
   //   batchType()
   // }, [])
-  console.log("Batch List", batch)
+
 
   const connectionTypeList = [
     { name: 'Sewerage', code: 'SW' },
@@ -162,9 +162,9 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
     setEnableLocality(false)
     setLocality("")
     batchType()
-   
+
     setTenantLocalities([])
-    
+
    }
    else if(batchLocalityValue.code==='l'){
     setEnableLocality(true)
@@ -173,11 +173,11 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
    }
   }, [batchLocalityValue])
  // let { tenantlocalties}=  Digit.Hooks.useBoundaryLocalities(tenantId, "revenue", { enabled: enabled}, t);
- 
+
     // if (isLoading && !false) {
     //   return <Loader />;
     // }
- 
+
   return (
     <>
       <SearchField>
@@ -293,7 +293,7 @@ const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, Onr
 
       </SearchField>
       {/* <SearchField >
-    
+
         {/* <SubmitBar label={t("WS_SEARCH_CONNECTION_SEARCH_BUTTON")} submit /> */}
       {/*        
       </SearchField>  */}

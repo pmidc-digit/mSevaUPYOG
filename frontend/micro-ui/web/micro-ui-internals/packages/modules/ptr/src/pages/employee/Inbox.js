@@ -21,10 +21,10 @@ const Inbox = ({
   EmptyResultInboxComp,
 }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  console.log("EmptyResultInboxComp", EmptyResultInboxComp);
-  console.log("useNewInboxAPI", useNewInboxAPI);
-  console.log("here", moduleCode, tenantId);
-  console.log("initialStates", initialStates);
+
+
+
+
 
   const { t } = useTranslation();
   const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
@@ -95,7 +95,7 @@ const Inbox = ({
     setPageSize(Number(e.target.value));
   };
 
-  console.log("parentRoute", parentRoute);
+
 
   if (rest?.data?.length !== null) {
     if (isMobile) {

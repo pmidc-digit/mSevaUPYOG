@@ -203,17 +203,17 @@ const NewApplicationStepForm = () => {
         data = { ...data, ...formData[configItem.key] };
       }
     });
-    console.log("Data WS new application onSubmit:\n", data,"\n",propertyDetails);
+
     if (!data?.cpt?.id && !propertyDetails?.Properties?.[0]) {
       if (!data?.cpt?.details || !propertyDetails) {
         setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
         return;
       }
     }
-  
+
     const errors = sessionStorage.getItem("FORMSTATE_ERRORS");
     const formStateErros = typeof errors == "string" ? JSON.parse(errors) : {};
-  
+
     if (
       Object.keys(formStateErros).length > 0 &&
       !(
@@ -242,14 +242,14 @@ const NewApplicationStepForm = () => {
       if (!payload?.water && payload?.sewerage) sewerageLoader = true;
       let waterConnection = { WaterConnection: payload, disconnectRequest: false, reconnectRequest: false };
       let sewerageConnection = { SewerageConnection: payload, disconnectRequest: false, reconnectRequest: false };
-  
+
       if (waterAndSewerageLoader) {
         setWaterAndSewerageBoth(true);
         sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(true));
       } else {
         sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(false));
       }
-  
+
       if (payload?.water && payload?.sewerage) {
         if (waterMutation && sewerageMutation) {
           setIsEnableLoader(true);
@@ -379,7 +379,7 @@ const NewApplicationStepForm = () => {
     }
   };
 
-  console.log("formState: ", formState);
+
   return (
     <div className="card">
       <CardHeader divider={true}>{t("WS_APPLICATION_NEW_CONNECTION_HEADER")}</CardHeader>

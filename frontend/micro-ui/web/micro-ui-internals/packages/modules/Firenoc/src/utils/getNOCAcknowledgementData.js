@@ -211,7 +211,7 @@ export const getNOCAcknowledgementData = async (
   payment = null     
 ) => {
   const d = fireNOC?.fireNOCDetails || {};
-  console.log('fireNOC, ulbType', fireNOC, ulbType)
+
   const tenantId = tenantInfo?.code || fireNOC?.tenantId;
   const applicationNumber = d.applicationNumber || fireNOC?.applicationNo || "NA";
   const applicationDate = formatEpochDate(d.applicationDate);

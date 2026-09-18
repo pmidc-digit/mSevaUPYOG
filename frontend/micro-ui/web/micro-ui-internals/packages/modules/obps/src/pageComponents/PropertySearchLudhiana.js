@@ -14,7 +14,7 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
   let { pathname, state } = useLocation();
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
   const apiDataCheck = useSelector((state) => state?.obps?.OBPSFormReducer?.formData?.createdResponse);
-  console.log("StateInPropertySearch", formData, key);
+
   const isEditScreen = pathname.includes("/modify-application/");
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
   const search = useLocation().search;
@@ -71,7 +71,7 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
     // }
   );
 
-  console.log("propertyDetailsFetch", propertyDetailsFetch)
+
 
 //   useEffect(() => {
 //     if (ptFromApi) {
@@ -145,10 +145,10 @@ useEffect(() => {
   useEffect(() => {
     const oldPropertyId = formData?.cpt?.id;
     dispatch(UPDATE_OBPS_FORM(key, { ...formData[key], details: propertyDetails, id: propertyId }));
-    // console.log("PropertyDetailsInUseEffect", propertyDetails, propertyId, oldPropertyId, formData);
+
     // if (formData?.createdResponse?.applicationNo && !propertyDetails?.Properties && oldPropertyId !== propertyId) {
       // confirmPropertyChange(option);
-      // console.log("ConfirmPropertyChangeCalled");
+
     // }
   }, [propertyDetails, pathname]);
 

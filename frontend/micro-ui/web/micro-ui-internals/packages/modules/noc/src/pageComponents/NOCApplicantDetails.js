@@ -226,7 +226,7 @@ const NOCApplicantDetails = (_props) => {
   const mobileAtIndex = (idx) => watch(`owners[${idx}].mobileNumber`) || "";
 
   useEffect(() => {
-    console.log("currentStepData1", currentStepData);
+
     const formattedData = currentStepData?.applicationDetails;
 
     if (!formattedData) return;
@@ -264,7 +264,7 @@ const NOCApplicantDetails = (_props) => {
 
   // Clear property-related fields when propertyId is deleted
   // useEffect(() => {
-  //    console.log("useffect 12");
+
   //   const propertyId = watch(`owners[0].propertyId`);
   //   if (!propertyId) {
   //     setValue(`owners[0].PropertyOwnerName`, "", { shouldValidate: true, shouldDirty: true });
@@ -278,7 +278,7 @@ const NOCApplicantDetails = (_props) => {
 
   useEffect(() => {
     if (typeof isPropertyAvailable === "boolean") {
-      console.log("useffect 13");
+
       const plan = [
         { code: "YES", i18nKey: "YES", value: true },
         { code: "NO", i18nKey: "NO", value: false },
@@ -296,7 +296,7 @@ const NOCApplicantDetails = (_props) => {
 
       if (plan) {
         setIsPropertyAvailable(plan);
-        // console.log('plan and ispropertyavailable', plan, isPropertyAvailable)
+
         // setValue("isPropertyAvailable", plan, { shouldValidate: true, shouldDirty: true });
       }
 
@@ -350,8 +350,8 @@ const NOCApplicantDetails = (_props) => {
     // }
 
     if (isPropertyAvailable?.value === true && nocCpt?.details?.owners?.[0]) {
-      console.log("useffect 14");
-      console.log("nocCpt", nocCpt);
+
+
 
       // Get current owner data
 
@@ -361,7 +361,7 @@ const NOCApplicantDetails = (_props) => {
       // setValue('owners[0].address', nocCpt.details?.address?.doorNo || nocCpt.details?.address?.street || "", { shouldValidate: true, shouldDirty: true });
       setValue("owners[0].fatherOrHusbandName", nocCpt.details.owners[0]?.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
       setValue("owners[0].propertyId", nocCpt.details?.propertyId || "", { shouldValidate: true, shouldDirty: true });
-      // console.log(getValues(), "values ludhiana")
+
     }
   }, [nocCpt, isPropertyAvailable?.value]);
 
@@ -419,7 +419,7 @@ const NOCApplicantDetails = (_props) => {
   };
 
   const handlePropertySelect = (property) => {
-    console.log("property", property);
+
 
     // 🚨 Guard: do nothing if property is not available
     if (isPropertyAvailable?.value === false) {

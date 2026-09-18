@@ -20,7 +20,7 @@ const CreateNewSurvey = ({ t, initialFormValues, onSubmit, isFormDisabled = fals
   } = useForm({
     defaultValues: initialFormValues,
   });
-  console.log("surveyformValue",getSurveyFormValues, controlSurveyForm, surveyFormState)
+
   useEffect(() => {
     registerRef("questions");
   }, []);

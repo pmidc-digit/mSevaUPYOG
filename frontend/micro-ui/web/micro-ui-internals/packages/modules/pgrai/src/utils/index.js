@@ -39,13 +39,13 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
 
   export const setDocumentDetails = (data) => {
     let { documents } = data;
-  
+
     let doc = {
       ...documents,
-       
-      
+
+
     };
-  
+
     data.documents = doc;
     return data;
   };
@@ -73,7 +73,7 @@ export const fetchGrievanceCategories = async (prompt, t) => {
     }
     return [];
   } catch (error) {
-    console.error("API Error:", error);
+
     throw error;
   }
 };
@@ -81,7 +81,7 @@ export const fetchGrievanceCategories = async (prompt, t) => {
   export const APPLICATION_PATH = "/digit-ui";
 
 export const DataConvert = (data,user) => {
-   
+
  const formdata = {
   service: {
     tenantId: data.tenantId,
@@ -109,7 +109,7 @@ export const DataConvert = (data,user) => {
         verificationDocuments: data.newGrievance?.verificationDocuments
       }
     };
-  
+
     if (user.type === "EMPLOYEE") {
       formdata.service.citizen = {
           type: "CITIZEN",

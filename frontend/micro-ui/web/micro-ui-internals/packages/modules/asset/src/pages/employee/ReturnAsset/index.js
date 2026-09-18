@@ -13,7 +13,7 @@ const ReturnAsset = () => {
   const history = useHistory();
   const { id: applicationNo } = useParams();
   const { data: applicationDetails } = Digit.Hooks.asset.useAssetApplicationDetail(t, tenantId, applicationNo);
-  console.log('Data is application from Hook:- ', applicationDetails);
+
    const [_formData, setFormData,_clear] = Digit.Hooks.useSessionStorage("store-data",null);
    const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", { });
@@ -24,22 +24,22 @@ const ReturnAsset = () => {
     return new Date(year, month - 1, day).getTime();
   };
 
- 
+
 
   useEffect(() => {
     setMutationHappened(false);
     clearSuccessData();
   }, []);
 
-  
+
 
   const onFormValueChange = (setValue, formData, formState) => {
-    
+
     setSubmitValve(!Object.keys(formState.errors).length); 
   };
 
   const onSubmit = (data) => {
-    console.log('Return Asset is comming complier!  :-  ', data);
+
     const returnDateEpoch = convertToEpoch(data?.returndetails?.[0]?.returnDate);
     const formData = {
       id: applicationDetails?.applicationData?.applicationData?.id,
@@ -65,25 +65,25 @@ const ReturnAsset = () => {
     };
 
     history.replace("/digit-ui/employee/asset/assetservice/return-response", { Asset: formData }); 
-    
+
 
   };
-    
 
-   
-  
 
-  
+
+
+
+
   const configs = returnConfig;    
 
-  
+
   return (
     <FormComposer
       heading={t("AST_RETURN_ASSET")}
       isDisabled={!canSubmit}
       label={t("ES_COMMON_APPLICATION_SUBMIT")}
       config={configs.map((config) => {
-       
+
         return {
           ...config,
           body: config.body.filter((a) => !a.hideInEmployee),
@@ -94,7 +94,7 @@ const ReturnAsset = () => {
       onSubmit={onSubmit}
       defaultValues={defaultValues}
       onFormValueChange={onFormValueChange}
-     
+
     />
   );
 };

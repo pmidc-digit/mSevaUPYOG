@@ -50,7 +50,7 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
         setCategoryOptions(categoryOptions);
       })
       .catch((error) => {
-        console.error("Failed to fetch categories:", error);
+
       });
   }
 

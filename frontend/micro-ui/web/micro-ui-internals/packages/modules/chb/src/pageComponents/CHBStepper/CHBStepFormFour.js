@@ -45,7 +45,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           history.push("/digit-ui/employee/chb/response/" + id);
         }
       } else {
-        console.error("Submission failed, not moving to next step.", res?.response);
+
       }
     } catch (error) {
       alert(`Error: ${error?.message}`);
@@ -57,7 +57,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     // Pick the source of truth for the application
     const baseApplication = inputData?.venueDetails?.[0] || {};
     const hallInfo = currentStepData?.ownerDetails?.hallsBookingApplication || {};
-    console.log("inputData===", inputData);
+
 
     const owners = [
       {
@@ -100,7 +100,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       hallsBookingApplication: updatedApplication,
     };
 
-    console.log("payload====", payload);
+
 
     // return;
 
@@ -133,7 +133,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_CHBApplication_FORM(config.key, data));
     }

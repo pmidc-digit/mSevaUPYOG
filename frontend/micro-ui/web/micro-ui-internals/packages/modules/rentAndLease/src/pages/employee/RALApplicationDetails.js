@@ -264,7 +264,7 @@ const RALApplicationDetails = () => {
         approverComment: filtData?.comment,
       };
     }
-    
+
     // if (!filtData?.assignee && filtData.action == "FORWARD") {
     //   // setShowToast(true);
     //   setShowToast({ key: "error", message: "Assignee is mandatory" });
@@ -304,7 +304,8 @@ const RALApplicationDetails = () => {
         const WorkflowService = await Digit.WorkflowService.init(tenantId, "RENT_N_LEASE_NEW");
         setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states || []);
       } catch (error) {
-        console.error("Error fetching workflow service:", error);
+        setWorkflowService([]);
+        setShowToast({ key: true, label: "Something went wrong" });
       } finally {
         setLoader(false);
       }

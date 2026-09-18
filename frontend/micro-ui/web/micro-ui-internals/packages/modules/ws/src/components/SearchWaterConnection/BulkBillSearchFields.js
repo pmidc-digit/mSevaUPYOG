@@ -7,7 +7,7 @@ const BulkBillSearchFields = ({ register, control, reset, tenantId, t, setValue 
   const tenant = Digit.ULBService.getCurrentTenantId();
 
   function selectLocality(value) {
-    console.log("register, control", register, tenant)
+
     setValue('locality', value);
     setValue('tenantId', tenant);
     setLocality(value);

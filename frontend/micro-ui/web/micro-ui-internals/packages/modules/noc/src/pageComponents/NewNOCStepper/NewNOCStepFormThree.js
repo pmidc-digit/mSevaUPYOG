@@ -22,7 +22,7 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
   });
 
-  console.log("coordinates from redux", coordinates);
+
 
   React.useEffect(() => {
     window.scrollTo({
@@ -61,7 +61,7 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   function validation(documents) {
     if (!isLoading) {
       const isVacant = completeData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
-      //console.log("isVacant Here==>", isVacant);
+
 
       let nocDocumentsType = isVacant ? data?.NOC?.Documents.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
 
@@ -94,7 +94,7 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    //console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     }

@@ -15,7 +15,7 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState("");
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", ["Documents"]);
   function goNext(finaldata) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, finaldata);
+
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
       setError(`${t("NDC_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
@@ -45,7 +45,7 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
       // Step 2: Extract uploaded documentTypes
       const uploadedDocs = documentsData.map((doc) => doc.documentType);
 
-      console.log("DocumentsObject", requiredDocs);
+
 
       // Step 3: Identify missing required document codes
       const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocs.includes(reqDoc));
@@ -59,13 +59,13 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    // console.log("onFormValueChange data in document detilas in step 4  ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateNDCForm(config.key, data));
     }
   };
 
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
+
 
   return (
     <React.Fragment>

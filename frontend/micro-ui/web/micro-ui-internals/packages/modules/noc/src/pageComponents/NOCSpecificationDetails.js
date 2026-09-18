@@ -137,7 +137,7 @@ const NOCSpecificationDetails = (_props) => {
   const { data: buildingCategory, isLoading: isLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
   const { data: nocType, isLoading: isNocTypeLoading,  } = Digit.Hooks.noc.useNocType(stateId);
 
- // console.log("nocType here", nocType);
+
 
   const options = [
     {
@@ -271,7 +271,7 @@ const NOCSpecificationDetails = (_props) => {
         updateValidatedNocNumber("");
       }
     } catch (err) {
-      console.error("Error retrieving NOC: ", err);
+
       if (currentStepData?.siteDetails?.existingNocNumber === numToSearch && currentStepData?.siteDetails?.existingNocDocument) {
         updateValidatedNocNumber(numToSearch);
         updateNocValidated(true);
@@ -287,10 +287,10 @@ const NOCSpecificationDetails = (_props) => {
   };
 
   useEffect(() => {
-    console.log("currentStepData4", currentStepData);
+
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
-      //console.log("coming here", formattedData);
+
       Object.entries(formattedData).forEach(([key, value]) => {
         if (key === "existingNocDocument" && typeof value === "object" && value !== null) {
           setValue(key, value.fileStoreId || value.filestoreId || value);

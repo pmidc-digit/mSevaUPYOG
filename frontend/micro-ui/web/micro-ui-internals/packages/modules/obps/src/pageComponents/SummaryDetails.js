@@ -72,20 +72,20 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       });
     const [userSelected, setUser] = useState(null);
     const [showToast, setShowToast] = useState(null)
-    
-    
+
+
       const [otherCharges, setOtherCharges] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "0";
       });
-    
+
       const [lessAdjusment, setLessAdjusment] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT || "0";
       });
-    
+
       const [otherChargesDisc, setOtherChargesDisc] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.otherFeesDiscription || "";
       });
-    
+
       const [uploadedFile, setUploadedFile] = useState();
       const [uploadedFileLess, setUploadedFileLess] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.lessAdjustmentFeeFiles || [];
@@ -127,7 +127,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
           Digit.UserService.setUser(userSelected);
           setCitizenDetail(userSelected?.info, userSelected?.access_token, state);
       }, [userSelected]);
-    
+
       const setCitizenDetail = (userObject, token, tenantId) => {
         let locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage;
         localStorage.setItem("Citizen.tenant-id", tenantId);
@@ -145,16 +145,16 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       if (currentStepData?.createdResponse?.additionalDetails) {
         const selfCert = currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges || {};
         const otherDetails = currentStepData?.createdResponse?.additionalDetails || {};
-    
+
         setLabourCess(selfCert.BPA_LABOUR_CESS || "0");
         setGaushalaFees(selfCert.BPA_GAUSHALA_CHARGES_CESS || "0");
         setMalbafees(selfCert.BPA_MALBA_CHARGES || "0");
         setWaterCharges(selfCert.BPA_WATER_CHARGES || "0");
-    
+
         setDevelopment(selfCert.BPA_DEVELOPMENT_CHARGES || "0");
         setOtherCharges(selfCert.BPA_OTHER_CHARGES || "0");
         setLessAdjusment(selfCert.BPA_LESS_ADJUSMENT_PLOT || "0");
-    
+
         setOtherChargesDisc(otherDetails.otherFeesDiscription || "");
         setUploadedFileLess(otherDetails.lessAdjustmentFeeFiles || []);
       }
@@ -168,8 +168,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     useEffect(()=>{
         if(!uploadedFile && uploadedFileLess?.length >0){
-            console.log("ApplicationFeesAndSanctionFee 1", uploadedFileLess);
-            
+
+
             setUploadedFile(uploadedFileLess[0]?.fileStoreId)
         }
     },[uploadedFileLess])
@@ -201,7 +201,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
               ? mdmsDataFees?.BPA?.MalbaCharges?.[1].rate
               : mdmsDataFees?.BPA?.MalbaCharges[2].rate || 500
         );
-        console.log("Charges ", typeof LabourCess, GaushalaFees, Malbafees)
+
         setGaushalaFees(GaushalaFees?.toString() || "");
         setLabourCess(LabourCess?.toString() || "");
         setMalbafees(Malbafees?.toString() || "");
@@ -283,7 +283,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     function getBlockSubOccupancy(index) {
         let subOccupancyString = "";
         let returnValueArray = [];
-        console.log("currentStepData",currentStepData);
+
         currentStepData?.ScrutinyDetails?.subOccupancy &&
             currentStepData?.ScrutinyDetails?.subOccupancy[`Block_${index + 1}`] &&
             currentStepData?.ScrutinyDetails?.subOccupancy[`Block_${index + 1}`].map((ob) => {
@@ -378,12 +378,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     // }, [fileUrls, t]);
 
     // useEffect(() => {
-    //     console.log("ecbcDocumentsData", ecbcDocumentsData, fileUrls)
+
     // },[ecbcDocumentsData])
       const ecbcDocumentsData = useMemo(() => {
       const docs = getDocsFromFileUrls(fileUrls) || [];
-          
-    
+
+
       return docs.map((doc, index) => ({
         id: index,
         index: index,
@@ -399,9 +399,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     const setdeclarationhandler = (e) => {
         // e.preventDefault(); // Prevent form submission
-        
+
         if (!otpVerifiedTimestamp || otpVerifiedTimestamp === "") {
-            console.log("setdeclarationhandler", e, isOTPVerified);
+
             setShowTermsPopup(true);
             setAgree(true);
         }else{
@@ -427,9 +427,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       const ownerDocumentsData = useMemo(() => {
       // ownerFileUrls: { 0: { documentFile: 'url', ownerPhoto: 'url' }, 1: { ... } }
       if (!ownerFileUrls || typeof ownerFileUrls !== "object") return [];
-    
+
       const ownersCount = Object.keys(ownerFileUrls).length;
-    
+
       // Flatten into { "0_documentFile": "url", "1_ownerPhoto": "url", ... }
       const flatFileUrls = Object.entries(ownerFileUrls).reduce((acc, [ownerIdx, files]) => {
         if (files && typeof files === "object") {
@@ -441,18 +441,18 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         }
         return acc;
       }, {});
-    
+
       const docs = getDocsFromFileUrls(flatFileUrls) || [];
-    
+
       return docs.map((doc, index) => {
         // doc.id will be like "0_documentFile"
         const [ownerIdx, ...propParts] = String(doc.id).split("_");
         const prop = propParts.join("_"); // "documentFile" or "ownerPhoto"
         const baseTitle = (prop ? prop.toUpperCase() : (doc.title || "").toUpperCase());
-    
+
         // Append index if more than 1 owner (ownerIdx is 0-based so +1)
         const title = ownersCount > 1 ? `${t(baseTitle)} ${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
-    
+
         return {
           id: index,
           index: index,
@@ -531,12 +531,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 setGetOtpLoading(false);
                 setShowOTPInput(true);
             } else {
-                console.error("Error sending OTP Response is false:", response.error);
+
                 alert("Something Went Wrong");
                 setGetOtpLoading(false);
             }
         } catch (error) {
-            console.error("Error sending OTP:", error);
+
             alert("Something went wrong");
             setGetOtpLoading(false);
         }
@@ -551,7 +551,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     const handleVerifyOTPClick = async (e) => {
         e.preventDefault(); // Prevent form submission
-        console.log("OTP++++++++>");
+
         try {
             setSetOtpLoading(true)
             // const response = await Digit.UserService.authenticate(requestData);
@@ -571,7 +571,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 setSetOtpLoading(false)
             }
         } catch (error) {
-            console.error("Error verifying OTP:", error);
+
             alert("OTP Verification Error ");
             setIsOTPVerified(false);
             setOTPError(t("OTP Verification Error"));
@@ -663,9 +663,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 alert(t("BPA_CREATE_APPLICATION_FAILED"));
                 setApiLoading(false);
             }
-            console.log("APIResponse", result);
+
         } catch (e) {
-            console.log("error", e);
+
             alert(t("BPA_CREATE_APPLICATION_FAILED"));
             setApiLoading(false);
         }
@@ -675,7 +675,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         // onSubmitCheck(action);
         // setShowModal(true);
         // setSelectedAction(action);
-        console.log("Selected Action", action?.action, otpVerifiedTimestamp, isArchitectDeclared, agree);
+
         if(action?.action !== "SAVE_AS_DRAFT" && currentStepData?.createdResponse?.businessService === "BPA_LOW" && (!agree || otpVerifiedTimestamp === "" || isArchitectDeclared === "" || !isFeesDeclared)){
             if(!agree){
                 setShowToast({ key: "true", error: true, message: t("Professinal Undertaking is not Agreed") })
@@ -697,7 +697,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         try {
             await onSubmitCheck(action?.action);
         } catch (error) {
-            console.error("Submission error:", error);
+
             alert("Submission failed. Please try again.");
         } finally {
             setIsSubmitting(false);
@@ -707,9 +707,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     useEffect(() => {
         const fetchFileUrls = async () => {
           if (!currentStepData?.createdResponse?.additionalDetails) return;
-    
+
           const fileKeys = ["ecbcCertificateFile", "greenuploadedFile", "uploadedFile", "lessAdjustmentFeeFiles"];
-    
+
           // Collect valid fileStoreIds
           const validFileStoreIds = fileKeys
             .map((key) => {
@@ -719,12 +719,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             .filter(
               (id) => id && id !== "NA" && id !== "" && id !== null && id !== undefined
             );
-    
+
           if (validFileStoreIds.length === 0) return;
-    
+
           try {
             setIsFileLoading(true);
-    
+
             // Call Digit service
             const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
             if (result?.data?.fileStoreIds) {
@@ -735,7 +735,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                   urls[key] = result.data?.[fileId];
                 }
               });
-    
+
               // Store URLs in state (example: object with keys)
               setFileUrls(urls);
             }
@@ -748,12 +748,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 }));
             }
           } catch (error) {
-            console.error("Error fetching file URLs", error);
+
           } finally {
             setIsFileLoading(false);
           }
         };
-    
+
         fetchFileUrls();
       }, [currentStepData?.createdResponse?.additionalDetails]);
 
@@ -761,15 +761,15 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       const fetchOwnerFileUrls = async () => {
         const owners = currentStepData?.createdResponse?.landInfo?.owners || [];
         if (owners.length === 0) return;
-    
+
         // Collect valid fileStoreIds from each owner
         const fileIdsMap = []; // keeps mapping of ownerIndex + propertyName to fileStoreId
         const validFileStoreIds = [];
-    
+
         owners.forEach((owner, index) => {
           const docFile = owner?.additionalDetails?.documentFile;
           const photoFile = owner?.additionalDetails?.ownerPhoto;
-    
+
           if (docFile && docFile !== "NA") {
             validFileStoreIds.push(docFile);
             fileIdsMap.push({ index, key: "documentFile", fileId: docFile });
@@ -779,24 +779,24 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             fileIdsMap.push({ index, key: "ownerPhoto", fileId: photoFile });
           }
         });
-    
+
         if (validFileStoreIds.length === 0) return;
-    
+
         try {
           setIsOwnerFileLoading(true);
-    
+
           // Fetch URLs
           const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
           if (result?.data) {
             const urls = {};
-    
+
             fileIdsMap.forEach(({ index, key, fileId }) => {
               if (result.data[fileId]) {
                 if (!urls[index]) urls[index] = {};
                 urls[index][key] = result.data[fileId];
               }
             });
-    
+
             // Example final structure:
             // {
             //   0: { documentFile: "url1", ownerPhoto: "url2" },
@@ -805,17 +805,17 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             setOwnerFileUrls(urls);
           }
         } catch (error) {
-          console.error("Error fetching owner file URLs", error);
+
         } finally {
           setIsOwnerFileLoading(false);
         }
       };
-    
+
       fetchOwnerFileUrls();
     }, [currentStepData?.createdResponse?.landInfo?.owners]);
 
     useEffect(() => {
-        console.log("ECBCDocs", fileUrls);
+
     }, [fileUrls])
 
     const closeToast = () => {
@@ -953,7 +953,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 </div>
                             </div>
                         ))}
-                    
+
                     <CardSubHeader className="bpa-section-header" style={{marginTop: "20px"}}>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
                     <div className="bpa-table-container">
                         {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
@@ -1279,7 +1279,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.map((block, index) => (
                         <div className={currentStepData?.createdResponse?.landInfo?.owners.length > 1 ? "owner-details-card" : ""}
                             key={index}
-                          
+
                         >
                             <CardSubHeader className="bpa-block-header" style={{marginTop: "8px"}}>
                                 {t("BPA_BLOCK_SUBHEADER")} {index + 1}
@@ -1324,7 +1324,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                     </div>
                 </div>
-                            
+
                 {currentStepData?.createdResponse?.applicationType !== "BUILDING_OC_PLAN_SCRUTINY" && <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
                     <div className="data-table">
@@ -1676,24 +1676,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 <ActionBar>
                     <SubmitBar className="back-submit-button"
                         label="Back"
-                      
+
                         onSubmit={onGoBack}
                     />
-                    {/* <SubmitBar
-                        label={isSubmitting ? t("SUBMITTING...") : t("BPA_SEND_TO_CITIZEN_LABEL")}
-                        onSubmit={async () => {
-                            setIsSubmitting(true);
-                            try {
-                                await onSubmitCheck();
-                            } catch (error) {
-                                console.error("Submission error:", error);
-                                alert("Submission failed. Please try again.");
-                            } finally {
-                                setIsSubmitting(false);
-                            }
-                        }}
-                        disabled={!agree || !isOTPVerified || isSubmitting}
-                    /> */}
+                    {}
                     {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
                         <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
                     ) : null}

@@ -67,7 +67,7 @@ const geoLocations = useMemo(() => {
     formData.address = {};
   }
 
-  console.log("formData in location page", geoLocationFromImg, geoLocationFromImgTwo, geoLocations);
+
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -84,7 +84,7 @@ const geoLocations = useMemo(() => {
         const city = allCities.find((item) => item.code === selectedCity);
         if(city) setSelectedCity(city);
       }else{
-        console.log("selectedCity", )
+
         const city = allCities.find((item) => item?.name?.toUpperCase() === selectedCity?.toUpperCase());
         if(city) setSelectedCity(city);
       }
@@ -106,7 +106,7 @@ const geoLocations = useMemo(() => {
     }
   }, [selectedCity, localities, selectedLocality])
 
-  console.log("selectedLocality", selectedLocality)
+
 
 
   useEffect(() => {
@@ -139,7 +139,7 @@ const geoLocations = useMemo(() => {
   //   if(uploadedFile){
   //     setIsFileLoading(true);
   //     const result = await Digit.UploadServices.Filefetch([uploadedFile], state)
-  //     console.log("uploadedFile",result);
+
   //     if(result?.data?.fileStoreIds?.length>0){
   //       setViewSiteImageURL(result?.data?.fileStoreIds?.[0]?.url);
   //       setIsFileLoading(false);
@@ -153,7 +153,7 @@ const geoLocations = useMemo(() => {
   //   if(uploadedFileTwo){
   //     setIsFileLoadingTwo(true);
   //     const result = await Digit.UploadServices.Filefetch([uploadedFileTwo], state)
-  //     console.log("uploadedFile",result);
+
   //     if(result?.data?.fileStoreIds?.length>0){
   //       setViewSiteImageURLTwo(result?.data?.fileStoreIds?.[0]?.url);
   //       setIsFileLoadingTwo(false);
@@ -207,7 +207,7 @@ useEffect(() => {
       if (selectedCity && fetchedLocalities) {
         let __localityList = fetchedLocalities;
         let filteredLocalityList = [];
-        console.log("fetchedLocalities", fetchedLocalities);
+
         if (formData?.address?.locality && formData?.address?.locality?.code === selectedLocality?.code) {
           setSelectedLocality(formData.address.locality);
         }
@@ -221,7 +221,7 @@ useEffect(() => {
           (filteredLocalityList.length > 0 && localities.length !== filteredLocalityList.length) ||
           (filteredLocalityList.length <= 0 && localities && localities.length !== __localityList.length)
         ) {
-          console.log("filteredLocalityList", filteredLocalityList);
+
           setLocalities(() => (filteredLocalityList.length > 0 ? filteredLocalityList : __localityList));
         }
         if (
@@ -270,7 +270,7 @@ useEffect(() => {
   //     additionalDetails: {}
   //   })
 
-  //   console.log("LocationAPI", address, documents);
+
 
   //   // onSelect(config.key, address);
   // };
@@ -348,7 +348,7 @@ useEffect(() => {
       (item) => item.documentType === "SITEPHOTOGRAPH_TWO"
     );
 
-    console.log("DocumentsData", siteDocument, siteDocumentTwo)
+
 
     documents.push({
       documentType: "SITEPHOTOGRAPH_ONE",
@@ -372,7 +372,7 @@ useEffect(() => {
       order: 19
     });
 
-    console.log("LocationAPI", address, documents);
+
 
     try{
         setApiLoading(true);
@@ -397,9 +397,9 @@ useEffect(() => {
           alert(t("BPA_CREATE_APPLICATION_FAILED"));
           setApiLoading(false);
         }
-        console.log("APIResponse", result);
+
       }catch(e){
-        console.log("error", e);
+
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
@@ -429,7 +429,7 @@ useEffect(() => {
 
 
   function selectLocality(locality) {
-    console.log("Locality", locality)
+
     setSelectedLocality(locality);
     formData.address["locality"] = locality;
     sessionStorage.setItem("currLocality", JSON.stringify(locality));
@@ -474,7 +474,7 @@ function extractGeoLocation(file) {
 
   async function selectfiles(e) {
     const file = e.target.files[0];
-    console.log("uploadFile", file);
+
     if (!file) return;
 
 
@@ -503,7 +503,7 @@ function extractGeoLocation(file) {
       if (response?.data?.files?.length > 0) {
         const fileStoreId = response.data.files[0].fileStoreId;
         setUploadedFile(fileStoreId);
-        console.log("Uploaded FileStoreId:", fileStoreId);
+
 
 
         // 🔥 Update formData
@@ -524,7 +524,7 @@ function extractGeoLocation(file) {
   }
   async function selectfilesTwo(e) {
     const file = e.target.files[0];
-    console.log("uploadFile", file);
+
     if (!file) return;
 
 
@@ -553,7 +553,7 @@ function extractGeoLocation(file) {
       if (response?.data?.files?.length > 0) {
         const fileStoreId = response.data.files[0].fileStoreId;
         setUploadedFileTwo(fileStoreId);
-        console.log("Uploaded FileStoreId:", fileStoreId);
+
 
 
         // 🔥 Update formData

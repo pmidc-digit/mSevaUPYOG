@@ -31,7 +31,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   const [getUser, setUser] = useState(null);
   const [getShowOtp, setShowOtp] = useState(false);
   const isFirstRender = useRef(true);
-  
+
 
 
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
@@ -265,7 +265,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         }
       } catch (error) {
         setLoader(false);
-        console.log("error", error);
+
       }
     } else {
       // No existing application -> create (unchanged)
@@ -279,14 +279,14 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
         }
       } catch (error) {
         setLoader(false);
-        console.log("error", error);
+
       }
     }
   };
 
   useEffect(() => {
     if (apiDataCheck?.[0]?.petDetails) {
-      console.log("apiDataCheck?.[0]?.petDetails", apiDataCheck?.[0]);
+
       const createdTime = apiDataCheck?.[0]?.auditDetails?.createdTime;
 
       // Convert to Date object
@@ -352,7 +352,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
   // const selectedVaccineDate = watch("lastVaccineDate");
   // useEffect(() => {
   //   // re-trigger petAge validation whenever vaccine date changes
-  //   // console.log("watch lastVaccineDate ->", selectedVaccineDate, "type:", typeof selectedVaccineDate, "asJSON:", JSON.stringify(selectedVaccineDate));
+
 
   //   if (selectedVaccineDate) {
   //     trigger("petAge");

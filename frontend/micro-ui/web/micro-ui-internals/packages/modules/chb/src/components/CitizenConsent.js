@@ -45,7 +45,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
   const selfdeclarationform = `
     <div style="font-family:'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.8;">
-      
+
       <h1 style="text-align:center; font-weight:bold; font-size:22px; margin-bottom:40px; letter-spacing:0.5px; color:#1a1a1a;">
         SELF-DECLARATION FOR VENUE BOOKING
       </h1>
@@ -122,11 +122,11 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
             <td style="vertical-align:top;"></td>
             <td style="vertical-align:top; padding-left:40px; float:right;">
               <div style="line-height:2.2;">
-                
+
                 <p style="margin:0 0 28px 0; font-weight:bold; font-size:17px; color:#000;">${getModalData?.name || ownername}</p>
-                
-               
-               
+
+
+
               </div>
             </td>
           </tr>
@@ -182,7 +182,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         return "";
       }
     } catch (error) {
-      console.log("error===", error);
+
       setOTPError(t("Error verifying OTP"));
       setSetOtpLoading(false);
       return "";
@@ -268,7 +268,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     if (!userSelected) {
       return;
     }
-    console.log("userSelected===", userSelected);
+
     Digit.SessionStorage.set("citizen.userRequestObject", userSelected);
     Digit.UserService.setUser(userSelected);
     setCitizenDetail(userSelected?.info, userSelected?.access_token, stateCode);

@@ -54,7 +54,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: config.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-// console.log("updatedCreateEmployeeconfig", updatedCreateEmployeeconfig);
+
 
 export const NewNDCStepForm = () => {
   const history = useHistory();

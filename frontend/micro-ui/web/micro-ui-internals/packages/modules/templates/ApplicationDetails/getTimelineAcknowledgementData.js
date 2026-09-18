@@ -4,13 +4,13 @@
  */
 
 const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, Statusprefix=null, tenantInfo, pdfFiles = {}, deptMap = {}, t}) => {
-  console.log('pdfFiles', pdfFiles)
+
   const timeline = workflowDetails?.data?.timeline || workflowDetails?.timeline || [];
   const processInstances = workflowDetails?.data?.processInstances || workflowDetails?.processInstances || [];
   const businessId = processInstances?.[0]?.businessId || "N/A";
   const businessService = processInstances?.[0]?.businessService || "N/A";
   const moduleName = processInstances?.[0]?.moduleName || "N/A";
-  
+
   const pdfDownloadLink = (documents, fileStoreId) => {
     const downloadLink = documents?.[fileStoreId] || "";
     const formats = downloadLink?.split(",")?.filter(Boolean) || [];
@@ -49,7 +49,7 @@ const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, Statuspre
     const documents = item?.wfDocuments || [];
     const sla = item?.sla || "N/A";
     const assignedTo = Array.isArray(item?.assignes) ? item.assignes.map(a => a?.name).filter(Boolean).join(", ") : "";
-    
+
     return {
       sNo: index + 1,
       action: t ? t(action) : action,

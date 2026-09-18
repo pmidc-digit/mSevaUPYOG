@@ -22,7 +22,7 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
       if (res?.isSuccess) {
         history.push("/digit-ui/employee/ndc/response/" + res?.response?.Applications?.[0]?.applicationNo);
       } else {
-        console.error("Submission failed, not moving to next step.", res?.response);
+
       }
     } catch (error) {
       alert(`Error: ${error?.message}`);

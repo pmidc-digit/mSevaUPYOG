@@ -96,8 +96,8 @@ const CreateEmployeeStepForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { state } = useLocation();
-  // console.log("Form data", formData)
-  // console.log("formState: ",formState);
+
+
 
   useEffect(() => {
     dispatch(RESET_PT_NEW_APPLICATION_FORM());

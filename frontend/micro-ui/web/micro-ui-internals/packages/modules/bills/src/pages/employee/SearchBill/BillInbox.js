@@ -95,9 +95,9 @@ const [serviceValue,setServiceValue]=useState([])
   // const getUlbLists = generateServiceType?.tenant?.tenants?.filter((element) => element.code === tenantId);
   const getUlbLists = generateServiceType?.tenant?.tenants;
  const defaultULB= getUlbLists?.filter((item)=>item.code===tenantId)
- console.log("defaultULB",defaultULB)
-   console.log("genServ",generateServiceType)
-   console.log("get Ulbs",getUlbLists)
+
+
+
   let serviceTypeList = [];
   if (filterServiceType) {
     serviceTypeList = filterServiceType.map((element) => {
@@ -109,14 +109,14 @@ const [serviceValue,setServiceValue]=useState([])
       };
     });
   }
-console.log("service list",serviceTypeList)
+
   useEffect(() => {
       if (getUlbLists) {
         setulbLists(getUlbLists);
       }
 
     }, []);
-   console.log("ulbList",ulbLists)
+
       const userUlbs = [];
 
   const getSearchFields = () => {
@@ -148,7 +148,7 @@ console.log("service list",serviceTypeList)
         label: t("ABG_BILL_NUMBER_LABEL"),
         name: "billNo",
       },
-  
+
       {
         label: t("ABG_MOBILE_NO_LABEL"),
         name: "mobileNumber",
@@ -163,11 +163,11 @@ console.log("service list",serviceTypeList)
       },
     ];
   };
-console.log("isInbox",isInbox)
+
 
 const getBills=(data)=>{
   setBillsData(data)
-  console.log("onSearchData",data)
+
 }
 const data2=[];
 
@@ -177,9 +177,9 @@ const data2=[];
         Header: t("ABG_COMMON_TABLE_COL_BILL_NO"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          //console.log("row",row)
+
           return (
-            
+
             <div>
               <span className="link">
                 {GetCell(getBillNumber(row.original?.businessService, row.original?.consumerCode, row.original?.billNumber))}
@@ -199,7 +199,7 @@ const data2=[];
         Header: "Bill Date",
         disableSortBy: true,
         Cell: ({ row }) => {
-          
+
           return GetCell(`${row.original?.billDate}`);
         },
       },
@@ -207,7 +207,7 @@ const data2=[];
         Header: "Bill Amount",
         disableSortBy: true,
         Cell: ({ row }) => {
-          
+
           return GetCell(`${row.original?.totalAmount}`);
         },
       },
@@ -215,7 +215,7 @@ const data2=[];
         Header: "Status",
         disableSortBy: true,
         Cell: ({ row }) => {
-          
+
           return GetCell(`${row.original?.status}`);
         },
       },
@@ -223,12 +223,12 @@ const data2=[];
         Header: "Action",
         disableSortBy: true,
         Cell: ({ row }) => {
-          
+
           return GetCell("-");
         },
       },
-     
-     
+
+
     ];
  })
   //DONOT DELETE NEEDS IMPOVEMENT

@@ -60,7 +60,7 @@ const Response = (props) => {
     e.preventDefault();
     setEnable(true);
     // const data = await getPGRcknowledgementData({complaintDetails, tenantInfo, t})
-    // console.log("data",data)
+
     // Digit.Utils.pdf.generate(data);
   };
   return (

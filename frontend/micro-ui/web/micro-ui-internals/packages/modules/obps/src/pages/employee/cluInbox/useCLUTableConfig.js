@@ -38,7 +38,7 @@ const useCLUTableConfig = ({
         accessor: "applicationId",
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log("row-route", row);
+
           const encryptID = encryptId(row.original["applicationId"]);
           return (
             <div>

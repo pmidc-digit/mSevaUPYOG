@@ -192,7 +192,7 @@ const Inbox = ({ parentRoute }) => {
     hasCapturedAssigneeCounts.current = true;
   }, [assignedToAllInboxData, assignedToMeInboxData]);
 
-  console.log("isInboxLoading", isInboxLoading, "table", table, "statuses", statuses, "totalCount", totalCount);
+
 
   const onNextPage = () => {
     dispatch({

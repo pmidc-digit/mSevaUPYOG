@@ -17,11 +17,11 @@ const SearchChallan = ({ config: propsConfig, formData }) => {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
-  console.log("tenantId", tenantId);
+
 
   const [mobileNumber, setMobileNumber] = useState(formData?.mobileNumber || "");
   const [challanNo, setchallanNumber] = useState(formData?.challanNo || "");
-  console.log("challanNo", challanNo);
+
   const [Servicecateogry, setServicecateogry] = useState(formData?.Servicecateogry || "");
   const [city, setcity] = useState(formData?.city || "");
   const allCities = Digit.Hooks.mcollect.usemcollectTenants()?.sort((a, b) => a?.i18nKey?.localeCompare?.(b?.i18nKey));

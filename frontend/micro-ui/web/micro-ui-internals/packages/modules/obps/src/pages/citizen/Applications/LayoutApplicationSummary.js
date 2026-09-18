@@ -65,7 +65,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
             }
           }
         } catch (e) {
-          console.error("Error searching CLU for document:", e);
+
         }
       }
 
@@ -82,7 +82,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
             setUrl(typeof fetchedUrl === "string" ? fetchedUrl.split(",")?.[0] : fetchedUrl);
           }
         } catch (error) {
-          console.error("Error fetching document:", error);
+
         }
       }
       setLoading(false);
@@ -216,14 +216,14 @@ const LayoutApplicationOverview = () => {
     return null;
   };
 
-  //console.log("=== LayoutApplicationSummary Debug ===")
-  //console.log("Raw data from hook:", data)
-  //console.log("applicationDetails (data?.resData):", applicationDetails)
-  //console.log("Layout array:", applicationDetails?.Layout)
-  //console.log("First Layout object:", applicationDetails?.Layout?.[0])
-  //console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
-  //console.log("Owners count:", applicationDetails?.Layout?.[0]?.owners?.length)
-  //console.log("=== End Debug ===")
+
+
+
+
+
+
+
+
   const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
@@ -248,7 +248,7 @@ const LayoutApplicationOverview = () => {
       const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t, combinedPayments);
       await Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     } catch (err) {
-      console.error(err);
+
     } finally {
       setLoading(false);
     }
@@ -264,9 +264,9 @@ const LayoutApplicationOverview = () => {
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0]
 
-    //console.log("=== useEffect for displayData ===")
-    //console.log("layoutObject:", layoutObject)
-    //console.log("layoutObject?.documents:", layoutObject?.documents)
+
+
+
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
@@ -274,8 +274,8 @@ const LayoutApplicationOverview = () => {
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
       const Documents = layoutObject?.documents || []
 
-      //console.log("Documents array:", Documents)
-      //console.log("Documents length:", Documents.length)
+
+
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
@@ -284,7 +284,7 @@ const LayoutApplicationOverview = () => {
         Documents: Documents.length > 0 ? Documents : [],
       }
 
-      //console.log("finalDisplayData:", finalDisplayData)
+
       setDisplayData(finalDisplayData)
 
       const submittedOn = layoutObject?.layoutDetails?.additionalDetails?.SubmittedOn;
@@ -333,7 +333,7 @@ const LayoutApplicationOverview = () => {
       //we will add sanctionLetter also
       //await getNOCSanctionLetter(application, t, amountPaid);
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     }
   };
 
@@ -411,7 +411,7 @@ const LayoutApplicationOverview = () => {
   const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
   const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
   const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
-  
+
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -437,7 +437,7 @@ const LayoutApplicationOverview = () => {
       data.revalidate()
     }
   }, [])
-  
+
 const hasCMCApproval =
   workflowDetails?.data?.actionState?.timeline?.some(
     (item) =>
@@ -584,7 +584,7 @@ const hasCMCApproval =
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Layout?.[0] || {}
-    //console.log("payload data======> ",payloadData);
+
 
 
 
@@ -641,7 +641,7 @@ const hasCMCApproval =
   //     setLoading(true);
   //     let response = null;
   //     const fee = payments?.totalAmountPaid;
-  //     //console.log("fee here here", fee);
+
   //     const amountinwords = amountToWords(fee);
   //     if (payments?.fileStoreId) {
   //       response = { filestoreIds: [payments?.fileStoreId] };
@@ -651,7 +651,7 @@ const hasCMCApproval =
   //     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
   //     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   //   } catch (error) {
-  //     console.error("Sanction Letter download error:", error);
+
   //   } finally {
   //     setLoading(false);
   //   }
@@ -776,7 +776,7 @@ const hasCMCApproval =
     }
     window.open(fileStore[filestoreId], "_blank");
   } catch (error) {
-    console.error("receipt download error:", error);
+
   } finally {
     setLoading(false);
   }
@@ -842,13 +842,13 @@ const hasCMCApproval =
      if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
        return null;
      }
- 
+
      // Extract value from object if it has 'name' property
      let displayValue = value;
      if (typeof value === "object" && value !== null) {
        displayValue = value?.name || value?.code || JSON.stringify(value);
      }
- 
+
      return <Row label={label} text={displayValue} />;
    };
 
@@ -861,7 +861,7 @@ const hasCMCApproval =
     return <LoaderNew page={true} />;
   }
 
-  //console.log("dowloadOptions",dowloadOptions)
+
 
   return (
     <div className={"employee-main-application-details"}>
@@ -923,7 +923,7 @@ const hasCMCApproval =
                 <RenderRow label={t("BPA_PROFESSIONAL_REGISTRATION_ID_VALIDITY_LABEL")} value={formatDate(detail?.professionalRegistrationValidity)} />
 
               </StatusTable>
-            
+
           </Card>
         ))}
 
@@ -958,13 +958,13 @@ const hasCMCApproval =
       )}
 
 
-      
+
 
       {/* -------------------- SITE DETAILS -------------------- */}
       <Card>
         <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-          
+
             <StatusTable key={index}>
               {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
               {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
@@ -1016,11 +1016,11 @@ const hasCMCApproval =
               {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
-              
-              
-              
+
+
+
               {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
-              
+
               {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
 
 
@@ -1063,7 +1063,7 @@ const hasCMCApproval =
               {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
 
-          
+
         ))}
       </Card>
 
@@ -1076,9 +1076,9 @@ const hasCMCApproval =
                   </StatusTable>
                         ))}
             </Card>
-  
 
-      
+
+
 
       {/* 1️⃣ SITE COORDINATES CARD */}
       {displayData?.coordinates && displayData.coordinates.length > 0 && (
@@ -1118,7 +1118,7 @@ const hasCMCApproval =
       )}
 
        {/* 3️⃣ FEE DETAILS CARD */}
-    
+
         <Card>
           <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
   {applicationDetails?.Layout?.[0]?.layoutDetails && (
@@ -1146,7 +1146,7 @@ const hasCMCApproval =
                   <OBPSPaymentHistory payments={combinedPayments} />
                 </div>
               )}
-        
+
 
        {hasCMCApproval && (
                 <>
@@ -1166,10 +1166,10 @@ const hasCMCApproval =
                     />
                   )}
                   </>
-               
+
               )}
                </Card>
-      
+
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
       {/* <Card>

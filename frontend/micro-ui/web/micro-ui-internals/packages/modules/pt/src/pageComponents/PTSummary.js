@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import CHBDocument from "../components/ChallanDocument";
 
 const PTSummary = ({ formData, t }) => {
-  console.log("form data in summary component", formData);
+
   const { pathname: url } = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ const PTSummary = ({ formData, t }) => {
     return state.pt.PTNewApplicationFormReducer.formData;
   });
 
-  console.log("SummaryData", SummaryData);
+
 
   let docs = formData?.documents?.documents?.documents || SummaryData?.documents?.documents?.documents;
   const ownerDetails = SummaryData?.ownerDetails || {};
@@ -209,7 +209,7 @@ const PTSummary = ({ formData, t }) => {
             <CardLabel>{t("Plot Size (sq. yards)")}</CardLabel>
             <div style={styles.value}>{propertyDetails?.plotSize || "NA"}</div>
           </LabelFieldPair>
-         
+
           <LabelFieldPair style={styles.labelFieldPair}>
             <CardLabel>{t("No. of Floors")}</CardLabel>
             <div style={styles.value}>{SummaryData?.propertyDetails?.noOfFloors?.code || "NA"}</div>
@@ -283,7 +283,7 @@ const PTSummary = ({ formData, t }) => {
           </LabelFieldPair>
 
           <LabelFieldPair style={styles.labelFieldPair}>
-            
+
             <CardLabel>{t("Pincode")}</CardLabel>
             <div style={styles.value}>{propertyAddress?.pincode || "NA"}</div>
           </LabelFieldPair>

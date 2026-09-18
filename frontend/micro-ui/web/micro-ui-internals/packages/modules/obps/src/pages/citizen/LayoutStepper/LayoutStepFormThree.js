@@ -119,14 +119,14 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const { isLoading: isDocLoading, data: docData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "LAYOUT", ["LayoutDocuments"])
 
   const filteredDocuments = useMemo(() => {
-      //console.log("🔄 useMemo CALLED - isCluApproved:", isCluApproved, "isNationalHighway:", isNationalHighway, "isInstitution:", isInstitution)
+
       let docs = docData?.LAYOUT?.LayoutDocuments || []
 
-      //console.log("=== FILTER DEBUG ===")
-      //console.log("Initial docs count:", docs.length, docs)
-      //console.log("isCluApproved:", isCluApproved)
-      //console.log("isNationalHighway:", isNationalHighway)
-      //console.log("isInstitution:", isInstitution)
+
+
+
+
+
 
       // Filter and process documents
       const processedDocs = docs
@@ -174,9 +174,9 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         }).filter(doc => !(doc?.cluRequired && !isCluApproved))
         .filter(doc => doc !== null)
 
-      //console.log("Final docs count:", processedDocs.length)
-      //console.log("Mandatory docs:", processedDocs.filter(d => d.required).map(d => ({ code: d.code, required: d.required, cluRequired: d.cluRequired })))
-      //console.log("=== END DEBUG ===")
+
+
+
 
       return processedDocs
     }, [ isCluApproved, isNationalHighway, isInstitution, isIndustrial, applicantType, docData?.LAYOUT?.LayoutDocuments?.length])
@@ -186,7 +186,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const coordinates = useSelector((state) => state?.obps?.LayoutNewApplicationFormReducer?.coordinates || {})
 
 
-  //console.log("coordinates from redux", coordinates);
+
 
   function goNext(finaldata) {
     const missingFields = validation(finaldata);
@@ -250,7 +250,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   //  function validation(documents) {
   //   if (!isLoading && !isDocLoading) {
 
-  //     console.log("filteredDocuments and Documents", filteredDocuments, documents)
+
 
   //     const isVacant = completeData?.siteDetails?.buildingStatus?.code === "VACANT" || false
 
@@ -292,7 +292,7 @@ const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     code => !uploadedDocTypes.includes(code)
   );
 
-  // console.log("filtered",requiredDocCodes, uploadedDocs, uploadedDocTypes, missingDocs)
+
 
   return missingDocs;
 }

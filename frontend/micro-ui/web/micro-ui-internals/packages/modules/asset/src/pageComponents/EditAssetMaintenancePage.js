@@ -45,7 +45,7 @@ const EditAssetMaintenancePage = ({ config, onSelect, formData, formState, clear
     const { t } = useTranslation();
     const location = useLocation();
     const assetData = location.state?.data;
-    console.log('Edit maintainance data is comming :- ', assetData);
+
     const [editMaintenanceDetails, setEditMaintenanceDetails] = useState(formData?.editMaintenanceDetails || [createAssetcommonforAll()]);
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
 
@@ -53,8 +53,8 @@ const EditAssetMaintenancePage = ({ config, onSelect, formData, formState, clear
         onSelect(config?.key, editMaintenanceDetails);
 
     }, [editMaintenanceDetails]);
-  
-    
+
+
     const commonProps = {
         focusIndex,
         allAssets: editMaintenanceDetails,
@@ -191,7 +191,7 @@ const OwnerForm = (_props) => {
     },[])
 
     const handleSelect = (value) => {
-       
+
         switch (value.code) {
 
             case 'IN_WARRANTY':
@@ -222,7 +222,7 @@ const OwnerForm = (_props) => {
         return
     };
 
-   
+
     // Common function to handle file upload
     const handleFileUpload = (e, setFileStoreId) => {
         const file = e.target.files[0];
@@ -394,7 +394,7 @@ const OwnerForm = (_props) => {
                             />
                         </div>
                     </LabelFieldPair>
-                   
+
                     <LabelFieldPair>
                         <CardLabel className="card-label-smaller">{t("AST_NAME")}</CardLabel>
                         <div className="field">
@@ -437,7 +437,7 @@ const OwnerForm = (_props) => {
                             />
                         </div>
                     </LabelFieldPair>
-                   
+
                     <LabelFieldPair>
                         <CardLabel className="card-label-smaller">{t("AST_LIFE")}</CardLabel>
                         <div className="field">

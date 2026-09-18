@@ -42,7 +42,7 @@ const CLUDocumentTableView = ({ documents }) => {
     };
   }, [documents]);
 
-  console.log("documentsOBJ",documents, documentObj)
+
 
   const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj, {
     enabled: documents?.length > 0 ? true : false,
@@ -68,7 +68,7 @@ const CLUDocumentTableView = ({ documents }) => {
     }));
   }, [mappedDocuments]);
 
-  console.log("documents", documents, urlsList)
+
 
   if(urlsListLoading) return <Loader />
 

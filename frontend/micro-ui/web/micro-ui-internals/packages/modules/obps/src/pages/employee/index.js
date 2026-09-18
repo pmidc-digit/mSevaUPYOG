@@ -81,7 +81,7 @@ const OBPSBreadCrumbs = ({ location }) => {
 }
 
 const EmployeeApp = ({ path }) => {
-  console.log(path, "PATHHH");
+
   const location = useLocation()
   const { t } = useTranslation();
   const Inbox = Digit.ComponentRegistryService.getComponent("BPAInbox");

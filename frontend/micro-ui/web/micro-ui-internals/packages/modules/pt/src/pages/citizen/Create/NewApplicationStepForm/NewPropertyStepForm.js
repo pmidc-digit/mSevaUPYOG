@@ -100,7 +100,7 @@ const CreateEmployeeStepForm = () => {
   const step = location?.state?.edit === true ? location?.state?.currentStepNumber : formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  console.log("checkState", checkState);
+
 
   useEffect(() => {
     if (location?.state?.edit === true) {
@@ -112,7 +112,7 @@ const CreateEmployeeStepForm = () => {
   }, []);
 
   useEffect(() => {
-    console.log("checking data in everystep===", formData);
+
   }, [formData]);
 
   const setStep = (updatedStepNumber) => {

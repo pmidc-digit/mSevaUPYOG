@@ -115,14 +115,14 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           if (setError) {
             setError(t("CS_FILE_FETCH_ERROR"));
           } else {
-            console.error(t("CS_FILE_FETCH_ERROR"));
+
           }
         }
       } else {
         if (setError) {
           setError(t("CS_FILE_FETCH_ERROR"));
         } else {
-          console.error(t("CS_FILE_FETCH_ERROR"));
+
         }
       }
     } catch (e) {
@@ -130,7 +130,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       if (setError) {
         setError(t("CS_FILE_FETCH_ERROR"));
       } else {
-        console.error(t("CS_FILE_FETCH_ERROR"));
+
       }
     }
   };

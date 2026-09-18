@@ -14,7 +14,7 @@ const DownloadCertificateButton = ({ applicationNumber }) => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails("pb.punjab", { applicationNumber, tenantId:"pb.punjab" }, {});
-  console.log("applicationDetails",applicationDetails)
+
 
   const handleDownloadPdf = async () => {
     try {
@@ -31,7 +31,7 @@ const DownloadCertificateButton = ({ applicationNumber }) => {
       const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
       Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
-      console.error("Error generating acknowledgement PDF", err);
+
     }
   };
 
@@ -55,7 +55,7 @@ const ApplicationDetails = () => {
   // const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
   // let License = LicenseData?.Licenses?.[0];
   const { data: mdmsRes } = Digit.Hooks.obps.useMDMS(stateCode, "StakeholderRegistraition", "TradeTypetoRoleMapping");
-  
+
   const { data: LicenseDataDynamic, isLoading: isLoadingDynamic } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
 const { data: LicenseDataPunjab, isLoading: isLoadingPunjab } = Digit.Hooks.obps.useBPAREGSearch("pb.punjab", {}, params);
 
@@ -82,7 +82,7 @@ let License = LicenseData?.Licenses?.[0];
     }
   );
 
-  console.log('reciept_data', reciept_data)
+
   const handleDownloadPdf = async () => {
     try {
       const Property = applicationDetail;
@@ -98,13 +98,13 @@ let License = LicenseData?.Licenses?.[0];
       const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
       Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
-      console.error("Error generating acknowledgement PDF", err);
+
     }
   };
 
   const ulbType = tenants?.find((tenant) => tenant.code === tenantId)?.city?.ulbType;
-  console.log('ulbType', ulbType)
-  console.log(reciept_data, "TOTAL AMOUNT");
+
+
     // Call useBPAREGSearch twice - once for dynamic tenant, once for pb.punjab
 
 
@@ -114,7 +114,7 @@ const { data: applicationDetailPunjab, isLoading: applicationDetailLoadingPunjab
 const applicationDetail = applicationDetailDynamic || applicationDetailPunjab;
 const applicationDetailLoading = applicationDetailLoadingDynamic || applicationDetailLoadingPunjab;
 
-console.log("applicationDetails 2",LicenseData);
+
 
 //  Update loading state to check both
 const isLoading = isLoadingDynamic || isLoadingPunjab;
@@ -122,7 +122,7 @@ const isLoading = isLoadingDynamic || isLoadingPunjab;
   const [viewTimeline, setViewTimeline] = useState(false);
   const menuRef = useRef();
   const applicationDetails= LicenseData
-  console.log(applicationDetails, "UUU");
+
  const history=useHistory();
   let user = Digit.UserService.getUser();
 
@@ -137,11 +137,11 @@ const isLoading = isLoadingDynamic || isLoadingPunjab;
 const qualificationType =
   LicenseData?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType
 
-  console.log("LicenseData",License);
+
 
 const isArchitect = qualificationType === "B-Arch";
 
-  
+
 // useBPAREGApplicationActions
   useEffect(() => {
     if (License?.tradeLicenseDetail?.applicationDocuments?.length) {
@@ -452,7 +452,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
     <Fragment>
       <div style={pageStyle}>
         {/* Header */}
-     
+
 
 
         <div
@@ -589,7 +589,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
 
         {/* Documents */}
 
- 
+
         {License?.tradeLicenseDetail?.applicationDocuments?.length > 0 && (
           <div style={sectionStyle}>
             <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>

@@ -177,7 +177,6 @@ const ADSApplicationDetails = () => {
       });
       setActionError("Acknowledgment downloaded successfully");
     } catch (error) {
-      console.error("Acknowledgement download error:", error);
       setShowToast({
         key: "error",
         message: `ADV_ACKNOWLEDGEMENT_DOWNLOAD_ERROR: ${error.message}`,
@@ -296,12 +295,10 @@ const ADSApplicationDetails = () => {
         setSelectedAction(null);
         setShowModal(false);
       } else {
-        console.error("ADS update returned non-successful response:", response);
         setShowToast({ key: "error", message: (t && t("SOMETHING_WENT_WRONG")) || "Failed to update" });
         setActionError("Failed to update");
       }
     } catch (err) {
-      console.error("submitAction error:", err);
       if (err?.message && err.message.includes("ADSServices.update is not available")) {
         setShowToast({ key: "error", message: "Update function not available. Check Digit.ADSServices" });
         setActionError("Update function not available");
@@ -341,7 +338,7 @@ const ADSApplicationDetails = () => {
   return (
     <React.Fragment>
       <div>
-        <div className="cardHeaderWithOptions ads-pages-citizen-adsapplication-details--style-1" >
+        <div className="cardHeaderWithOptions ads-pages-citizen-adsapplication-details--style-1">
           <Header styles={{ fontSize: "32px" }}>{t("ADS_BOOKING_DETAILS")}</Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
@@ -361,6 +358,8 @@ const ADSApplicationDetails = () => {
             <Row className="border-none" label={t("ADS_EMAIL_ID")} text={ads_details?.applicantDetail?.applicantEmailId || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_ADDRESS")} text={ads_details?.address?.addressLine1 || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
+            <Row className="border-none" label={t("Remarks")} text={t(ads_details?.additionalDetails?.remarks)} />
+
             <Row className="border-none" label={t("ADS_BOOKING_NO")} text={ads_details?.bookingNo} />
             <Row className="border-none" label={t("BOOKING_STATUS")} text={t(ads_details?.bookingStatus)} />
             {ads_details?.receiptNo && (

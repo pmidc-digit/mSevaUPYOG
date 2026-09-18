@@ -214,7 +214,7 @@ const CreateProperty = ({ parentRoute }) => {
   const PTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("PTAcknowledgement");
 
   const onEdit = (step) => {
-    console.log("on edit step", step);
+
   };
 
   return (

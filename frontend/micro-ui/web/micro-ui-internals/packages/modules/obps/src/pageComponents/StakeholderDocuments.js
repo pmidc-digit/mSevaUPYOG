@@ -28,7 +28,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
   const [documents, setDocuments] = useState(
     formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments ||formData?.documents?.documents ||  []
   );
-  console.log("check formData", formData, documents);
+
   const [error, setError] = useState(null);
   const [loader, setLoader] = useState(false);
   const [bpaTaxDocuments, setBpaTaxDocuments] = useState([]);
@@ -45,7 +45,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
     };
 
   const { data, isLoading } = Digit.Hooks.obps.useMDMS(selectedTenantId, "StakeholderRegistraition", "TradeTypetoRoleMapping");
-  console.log("data in StakeholderDocsRequired", documents);
+
 
   useEffect(() => {
     let filtredBpaDocs = [];
@@ -59,7 +59,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
     filtredBpaDocs?.[0]?.docTypes?.forEach((doc) => {
       documentsList.push(doc);
     });
-    console.log("documentsList here", documentsList, filtredBpaDocs);
+
     setBpaTaxDocuments(documentsList);
   }, [!isLoading]);
 
@@ -83,9 +83,9 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
         if (docobject) regularDocs.push(docobject);
       });
     documentStep = { ...document, documents: regularDocs };
-    console.log("coming here");
-    console.log("documentStep", documentStep);
-    console.log("formData", formData);
+
+
+
 
     const licenseData = formData?.result?.Licenses[0];
 
@@ -103,7 +103,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
         },
       ],
     };
-    console.log("payload", payload);
+
     setLoader(true);
     try {
       const response = await Digit.OBPSService.BPAREGupdate(payload, tenantId);
@@ -119,9 +119,9 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
 
       sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(data));
       setLoader(false);
-      console.log("UPDATE response:", response);
+
     } catch (error) {
-      console.log("error", error);
+
       setLoader(false);
     }
 
@@ -212,7 +212,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
   const { pathname } = useLocation();
   let currentPath = pathname.split("/").pop();
-  console.log("currentPath", formData);
+
   let isEditable = !formData?.editableFields || formData?.editableFields?.[currentPath];
   // let isEditable = true;
 
@@ -247,7 +247,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
   useEffect(() => {
     // GET existing doc entry (if any)
     const existing = documents?.find((d) => d.documentType === doc.code);
-    console.log("existing doc", existing, documents);
+
     if (!uploadedFile) {
       // DELETE CASE
       setDocuments((prev) => prev.filter((item) => item.documentType !== doc.code));

@@ -7,7 +7,7 @@ import { newConfig as fullConfig } from "../../config/wsCreateConfig";
 
 const Summary = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
     onGoNext();
   }
 
@@ -16,7 +16,7 @@ const Summary = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in Summary: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateWSNewApplicationForm(config.key, data));
     }
@@ -32,7 +32,7 @@ const Summary = ({ config, onGoNext, onBackClick, t }) => {
   });
   const dispatch = useDispatch();
 
-  console.log("currentStepData in Summary: ", currentStepData);
+
 
   const updatedFullConfig = fullConfig.find((conf) => conf.hideInCitizen && conf.isCreate)?.body;
 

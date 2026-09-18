@@ -78,7 +78,7 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
       }
     } catch (err) {
       setShowToast({ key: "true", error: true, message: "PT_FILE_UPLOAD_ERROR" });
-      //console.log('err in file upload', err)
+
     } finally {
       setTimeout(() => {
         setShowToast(null);
@@ -198,7 +198,7 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
       const adjustedAmount = feeAdjustments[index]?.adjustedAmount || tax.estimateAmount;
       const remarkValue = feeAdjustments[index]?.remark || tax.remarks || "";
 
-      //console.log(`Row ${index}: taxHead=${tax.taxHeadCode}, estimate=${tax.estimateAmount}, adjusted=${adjustedAmount}, remark=${remarkValue}`);
+
       return {
         index,
         id: `tax-${index}`,
@@ -211,12 +211,12 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
         filestoreId: feeAdjustments[index]?.filestoreId || null,
       };
     });
-    // console.log("[applicationFeeDataWithTotal] built rows:", rows);
+
 
     const totalAmount = rows.reduce((acc, item) => acc + (item.adjustedAmount || 0), 0);
-    //console.log("[applicationFeeDataWithTotal] grand total:", totalAmount);
 
-    //console.log("Final rows with total:", rows);
+
+
     return [
       ...rows,
       {
@@ -231,11 +231,11 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
   }, [data, t, feeAdjustments]);
 
   // const lastUpdatedBy = formData?.calculations?.filter((calc) => calc?.isLatest === true)?.updatedBy || "";
-  //console.log("lastUpdatedBy==>", lastUpdatedBy);
+
 
   if (cluCalculatorLoading) return <Loader />;
 
-  //console.log("applicationStatus ===========>", applicationStatus);
+
 
   if (applicationStatus === "FIELDINSPECTION_INPROGRESS") {
     return <div>{t("BPA_NO_FEE_TABLE_AVAILABLE_LABEL")}</div>;

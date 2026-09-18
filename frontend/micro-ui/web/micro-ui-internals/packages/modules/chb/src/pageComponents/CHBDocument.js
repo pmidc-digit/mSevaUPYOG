@@ -14,12 +14,12 @@ function CHBDocument({ value = {}, Code, index, showFileName = false }) {
   const { t } = useTranslation();
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
-  console.log("value==", value);
-  console.log("Code==", Code);
+
+
   const { isLoading, isError, error, data } = Digit.Hooks.chb.useChbDocumentSearch({ value }, { value }, Code, index);
   // const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
 
-  // console.log("check data===", data?.CHB?.Documents);
+
 
   const documents = value?.documents
     ? value.documents.documents
@@ -30,8 +30,8 @@ function CHBDocument({ value = {}, Code, index, showFileName = false }) {
     return <Loader />;
   }
 
-  console.log("data====", data);
-  console.log("documents====", documents);
+
+
 
   return (
     <div className="document-container">

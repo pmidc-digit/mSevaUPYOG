@@ -12,7 +12,7 @@ const SearchApp = ({path, parentRoute}) => {
     const [showToast, setShowToast] = useState(null);
 
     function onSubmit (_data) {
-      // console.log('Coming data after submit:- ', _data);
+
         var fromDate = new Date(_data?.fromDate)
         fromDate?.setSeconds(fromDate?.getSeconds() - 19800 )
         var toDate = new Date(_data?.toDate)
@@ -37,7 +37,7 @@ const SearchApp = ({path, parentRoute}) => {
         //   {}
         // );
 
-        
+
 
         if(Object.entries(payload).length>0 && !payload.applicationNo && !payload.creationReason && !payload.fromDate && !payload.mobileNumber && !payload.applicationNo && !payload.status && !payload.toDate)
         setShowToast({ warning: true, label: "ERR_VALID_FIELDS" });

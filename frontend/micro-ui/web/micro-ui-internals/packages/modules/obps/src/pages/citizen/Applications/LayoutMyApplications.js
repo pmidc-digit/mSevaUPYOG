@@ -9,7 +9,7 @@ const LayoutMyApplications = ({ view }) => {
   const history = useHistory();
   const userInfo = Digit.UserService.getUser()?.info || {};
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
-  //console.log("userInfo========", userInfo);
+
 
   const searchListDefaultValues = {
     sortBy: "createdTime",
@@ -39,7 +39,7 @@ const LayoutMyApplications = ({ view }) => {
     refetchOnMount: "always",
   });
 
-  //console.log("data herein CLU==>", data);
+
 
   const labels = ["CS_CF_VIEW", "CS_CF_TRACK", "TL_VIEW_DETAILS"];
 

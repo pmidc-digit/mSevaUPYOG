@@ -40,7 +40,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.noc.NOCNewApplicationFormReducer.formData;
   });
 
-  console.log("currentStepData at step 2", currentStepData);
+
 
   const ownerIds = useSelector(function (state) {
     return state.noc.NOCNewApplicationFormReducer.ownerIds;
@@ -72,7 +72,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     tenantId = window.localStorage.getItem("Employee.tenant-id");
   }
 
-  // console.log("tenantId here==>", tenantId);
+
   const toNum2 = (val) => {
     if (val === null || val === undefined) return NaN;
     // Strip commas / spaces; keep only digits and decimal point
@@ -94,7 +94,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   function checkValidation(data) {
     //Validation for Jamabandi Area Must Be Equal To Total plot Area in sq mt (A)
 
-    console.log(data, "data in onsubmit sitedetails");
+
     const isEqual = isEqualArea(data?.netTotalArea, data?.specificationPlotArea);
     // Pick whichever is valid: propertyPlotAreaNum or landArea
 
@@ -140,7 +140,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }
 
   const onSubmit = async (data) => {
-    console.log("data in onsubmit", data);
+
     trigger();
     if (!checkValidation(data)) return;
 
@@ -177,7 +177,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   };
 
   const callCreateAPI = async (formData) => {
-    console.log("formData", formData);
+
 
     // Prepare nocFormData
     const nocFormData = {
@@ -208,7 +208,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList : [],
     };
 
-    // console.log("nocFormData ==>", nocFormData)
+
 
     const ownerData = (nocFormData?.applicationDetails?.owners || [])?.map((item, index) => {
       return {
@@ -246,21 +246,21 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       },
     };
 
-    console.log("final Payload here==>", payload);
+
 
     try {
       const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
 
       if (response?.ResponseInfo?.status === "successful") {
-        console.log("success :create api executed successfully !!!");
+
         dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
         onGoNext();
       } else {
-        console.error("error  : create api not executed properly !!!");
+
         setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
     } catch (error) {
-      console.log("errors here in goNext - catch block", error);
+
       setShowToast({ key: "true", error: true, message: error });
     }
 
@@ -268,7 +268,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   };
 
   function goNext(data) {
-    console.log(data, "data is gonext step 2");
+
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     onGoNext();
   }

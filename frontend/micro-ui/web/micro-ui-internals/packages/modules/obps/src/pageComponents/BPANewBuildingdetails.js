@@ -29,19 +29,19 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
         return parsed.value || {}
       }
     } catch (error) {
-      console.error("Error reading session storage:", error)
+
     }
     return {}
   }
 
   const sessionData = getSessionData()
-  console.log(sessionData, "SESSION DATA")
-  const cityData = sessionData.city || {}
-  console.log(cityData, "CITY DATA")
-  const dataObj = sessionData.data || {}
-  console.log(formData, "FORMDATA")
 
-  // console.log("formDataInNBDPage", currentStepData);
+  const cityData = sessionData.city || {}
+
+  const dataObj = sessionData.data || {}
+
+
+
 
   const [UlbName, setUlbName] = useState(() => {
     const cityName = currentStepData?.LocationDetails?.selectedCity?.city?.name
@@ -127,7 +127,7 @@ useEffect(async () => {
         });
       }
   }catch(err){
-    console.error("Error fetching NOC details:", err);
+
   }
   }
 }, [NocNumber])
@@ -251,7 +251,7 @@ if (anyYes && !ecbcCertificateFile) {
       }
     } catch (err) {
       setLoader(false)
-      console.error("File upload failed", err);
+
     }
   }
 };
@@ -444,7 +444,7 @@ if (anyYes && !ecbcCertificateFile) {
 
     //providedFAR
     useEffect(() => {
-      console.log("ProvidedFAR", providedFAR, currentStepData);
+
       if(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedPurchasableFar){
         setProvidedFAR(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.farDetails?.providedPurchasableFar)
       }else{
@@ -703,7 +703,7 @@ if (anyYes && !ecbcCertificateFile) {
       }
     }, [rating, currentStepData?.createdResponse?.additionalDetails?.rating, commonrating]);
 
-console.log("appDate", nocApprovedOn);
+
 
   const selectmasterDrop = []
 
@@ -770,35 +770,35 @@ console.log("appDate", nocApprovedOn);
   }
 
   function setEcbcElectricalLoadHandler(option) {
-    console.log("  ECBC Electrical Load selected:", option)
-    console.log("  Option code:", option?.code)
+
+
     setEcbcElectricalLoad(option)
     setErrors((prev) => ({ ...prev, ecbcElectricalLoad: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("  State after update:", option)
+
     }, 100)
   }
 
   function setEcbcDemandLoadHandler(option) {
-    console.log("  ECBC Demand Load selected:", option)
-    console.log("  Option code:", option?.code)
+
+
     setEcbcDemandLoad(option)
     setErrors((prev) => ({ ...prev, ecbcDemandLoad: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("  State after update:", option)
+
     }, 100)
   }
 
   function setEcbcAirConditionedHandler(option) {
-    console.log("  ECBC Air Conditioned selected:", option)
-    console.log("  Option code:", option?.code)
+
+
     setEcbcAirConditioned(option)
     setErrors((prev) => ({ ...prev, ecbcAirConditioned: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("  State after update:", option)
+
     }, 100)
   }
 
@@ -834,13 +834,13 @@ console.log("appDate", nocApprovedOn);
   }
 
   // function handleApproveDateChange(date) {
-  //   console.log("Selected date:", date);
+
   //   setNocApprovedOn(date);
   //   setErrors((prev) => ({ ...prev, nocApprovedOn: "" }))
   // }
 
   function handleApproveDateChange(date) {
-    console.log("Selected date:", date);
+
 
     if (!date) return;
 
@@ -887,7 +887,7 @@ console.log("appDate", nocApprovedOn);
     // window.open(fileStore[response?.filestoreIds[0]], "_blank");
     } catch (error) {
       setLoader(false);
-      console.error("Sanction Letter download error:", error);
+
     }
 
   }
@@ -919,7 +919,7 @@ console.log("appDate", nocApprovedOn);
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           jsDate1.setHours(0, 0, 0, 0);
-          console.log("FetchedDate",nocObject?.nocDetails?.additionalDetails?.approvedOn, jsDate1);
+
           if (jsDate1 <= today) {
             setNocApprovedOn(`${y1}-${m1}-${d1}`)
           }
@@ -936,7 +936,7 @@ console.log("appDate", nocApprovedOn);
           setUploadedFile(nocObject?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId)
         }
         // let EmpData = await EmployeeData(tenantId, NocNumber);
-        // console.log("Employee Data", EmpData);
+
         // const reciept_data = await Digit.PaymentService.recieptSearch(tenantId,"obpas_noc",{consumerCodes: NocNumber,isEmployee: false,})
         // if(reciept_data?.Payments?.length > 0){
         //   getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0],pdfkey: "noc-sanctionletter", EmpData, applicationDetails: response })
@@ -1098,14 +1098,14 @@ console.log("appDate", nocApprovedOn);
           alert(t("BPA_CREATE_APPLICATION_FAILED"));
           setApiLoading(false);
         }
-        console.log("APIResponse", result);
+
       }catch(e){
-        console.log("error", e);
+
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
 
-    console.log("formDataInNBDPage", additionalDetails, currentStepData?.createdResponse?.additionalDetails)
+
 
     // onSelect("")
   }

@@ -24,13 +24,13 @@ const CloseBtn = (props) => {
 };
 
 const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationDetails, applicationData, businessService, moduleCode,workflowDetails,blockReason, draftComment }) => {
-  console.log("applicationData_BPAACTIONMODAL",applicationData) 
+
   const uniqueRoles = [...new Set(
   workflowDetails?.data?.initialActionState?.nextActions
     ?.find(ele => ele?.action === action?.action)
     ?.actions?.flatMap(e => e.roles || [])
 )];
-  console.log("workflowDetails_BPAACTIONMODAL",workflowDetails, uniqueRoles, action)
+
   //workflowDetails?.data?.initialActionState?.nextActions?.find(ele=>ele?.action===action?.action)?.actions
   const mutation1 = Digit.Hooks.obps.useObpsAPI(
       applicationData?.landInfo?.address?.city ? applicationData?.landInfo?.address?.city : tenantId,
@@ -131,14 +131,14 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
 
   const getfeildInspection = (data) => {
     let formdata = [], inspectionOb = [];
-    
+
     if (data?.additionalDetails?.fieldinspection_pending?.length > 0) {
       inspectionOb = data?.additionalDetails?.fieldinspection_pending
     }
     inspectionOb = inspectionOb.filter(obj => {
       // Check if the object has the date field
       if (!obj.date) return false;
-  
+
       // Get today's date
       const today = new Date();
       // Extract date from the object and convert it to a Date object
@@ -147,7 +147,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       return objDate <= today;
   });
 
-  
+
     if(data.status == "FIELDINSPECTION_INPROGRESS") {
       formdata = JSON.parse(sessionStorage.getItem("INSPECTION_DATA"));
       formdata?.length > 0 && formdata.map((ob,ind) => {
@@ -158,13 +158,13 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
           time: ob?.InspectionTime,
         })
       })
-      console.log("FIELDINSPECTION_INPROGRESS",inspectionOb)
+
       inspectionOb = inspectionOb.filter((ob) => ob.date && ob.time);
-      console.log("inspectionObinspectionOb",inspectionOb)
+
     } else {
       sessionStorage.removeItem("INSPECTION_DATA")
     }
-  
+
     let fieldinspection_pending = [ ...inspectionOb];
     return fieldinspection_pending;
   }

@@ -14,7 +14,7 @@ import {
 const PreviewQuestions = (props) => {
   const prevProps = props.location.state;
   const data = prevProps.data;
-  console.log("questions data", data);
+
 
   const [selectedOption, setSelectedOption] = useState("");
 
@@ -24,7 +24,7 @@ const PreviewQuestions = (props) => {
   };
 
   const displayAnswerField = (answerType, question, section) => {
-    console.log("answer type", answerType, question);
+
 
     switch (answerType) {
       case "SHORT_ANSWER_TYPE":

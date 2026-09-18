@@ -21,14 +21,14 @@ const PropertyStructureDetails = ({ t, config, onSelect, userType, formData }) =
   let currentFloor = Number(path[path.length - 1]);
   let isFloor = window.location.pathname.includes("new-application/units") || window.location.pathname.includes("/edit-application/units");
   const [fields, setFields] = useState(window.location.pathname.includes("/pt/modify-application/")? formData.propertyStructureDetails: {"usageCategory":"","structureType":"","ageOfProperty":""})
-   
-  
-console.log("formaDataPropertyStructureDetails",formData)
+
+
+
 
   const getheader = () => {
-   
+
       return `PROPERTYTAX_STRUCTURE_DETAILS`;
-    
+
   };
 
   const { data: mdmsData, isLoading } = Digit.Hooks.useCommonMDMS(
@@ -188,8 +188,8 @@ console.log("formaDataPropertyStructureDetails",formData)
   }
 
   function isAllowedNext (){
-  
-console.log("fields",fields)
+
+
     return true;
   }
   if (userType === "employee") {
@@ -244,7 +244,7 @@ console.log("fields",fields)
       t={t}
       isDisabled={!fields.structureType || !fields.ageOfProperty}
     >
-        
+
           <div key={`unique`}>
             <div
               style={{
@@ -301,8 +301,8 @@ console.log("fields",fields)
               </div>
             </div>
           </div>
-        
-      
+
+
     </FormStep>
     </React.Fragment>
   );

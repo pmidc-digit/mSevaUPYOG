@@ -25,7 +25,7 @@ const CLUResponse = (props) => {
 
   const cluCode = pathname.split("/").pop(); // ✅ Extracts the last segment
 
-  console.log("cluData here", cluData);
+
 
   const onSubmit = () => {
     if(window.location.pathname.includes("citizen")){
@@ -56,7 +56,7 @@ const CLUResponse = (props) => {
     try{
       setDownloading(true);
       const Property = cluData;
-    // console.log("tenants in NOC", tenants);
+
     const site = Property?.cluDetails?.additionalDetails?.siteDetails;
     const ulbType = site?.ulbType;
     const ulbName = site?.ulbName?.city?.name;
@@ -65,7 +65,7 @@ const CLUResponse = (props) => {
     Digit.Utils.pdf.generateFormatted(acknowledgementData);
 
     } catch(err){
-      console.log('err', err)
+
     } finally{
       setDownloading(false);
     }

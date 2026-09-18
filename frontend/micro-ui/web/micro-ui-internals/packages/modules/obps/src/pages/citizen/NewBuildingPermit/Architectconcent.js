@@ -34,7 +34,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   const [isUploading, setIsUploading] = useState(false);
   const [isFileUploaded, setIsFileUploaded] = useState(false);
   const [userSelected, setUser] = useState(null);
-  console.log("currentStepData", currentStepData);
+
   // Map fields safely from params (these may be undefined)
   const architectid = currentStepData?.createdResponse?.additionalDetails?.architectid || "";
   const ownername = currentStepData?.createdResponse?.landInfo?.owners?.[0]?.name || "";
@@ -90,10 +90,10 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
 
   // const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
 
-  console.log(currentStepData, isArchitectDeclared, TimeStamp, "PARAM");
+
 
   useEffect(() => {
-    console.log("currentStepDataInArchitectConsent", currentStepData);
+
     if (currentStepData?.Timestamp?.TimeStamp) {
       setOTPVerifiedTimestamp(currentStepData?.Timestamp?.TimeStamp);
     }
@@ -115,7 +115,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
         }));
       } catch (e) {
         // defensive: if setParams isn't a function for some environment, just warn
-        console.warn("Failed to set session BUILDING_PERMIT TimeStamp", e);
+
       }
     }
   }, [params, setParams, TimeStamp]);
@@ -423,7 +423,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
           ...currentStepData?.BasicDetails?.edcrDetails,
         },
       };
-      console.log("paramsWithTimestamp", paramsWithTimestamp);
+
       const result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [paramsWithTimestamp] }, "architectconsent");
 
       if (result?.filestoreIds?.[0]) {
@@ -438,7 +438,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
         alert("File Upload Failed");
       }
     } catch (error) {
-      console.error("Error uploading PDF:", error);
+
       alert("Error Uploading PDF: " + (error?.message || error));
     } finally {
       setIsUploading(false);
@@ -462,12 +462,12 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
         setGetOtpLoading(false);
         setShowOTPInput(true);
       } else {
-        console.error("Error sending OTP Response is false:", response.error);
+
         alert("Something Went Wrong");
         setGetOtpLoading(false);
       }
     } catch (error) {
-      console.error("Error sending OTP:", error);
+
       alert("Something went wrong");
       setGetOtpLoading(false);
     }
@@ -475,7 +475,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
 
   const handleVerifyOTPClick = async (e) => {
     e.preventDefault(); // Prevent form submission
-    console.log("OTP++++++++>");
+
     const requestData = {
       username: architectmobileNumber || "",
       password: otp,
@@ -521,7 +521,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
         return "";
       }
     } catch (error) {
-      console.error("Error verifying OTP:", error);
+
       alert("OTP Verification Error ");
       // setIsOTPVerified(false);
       setOTPError(t("OTP Verification Error"));

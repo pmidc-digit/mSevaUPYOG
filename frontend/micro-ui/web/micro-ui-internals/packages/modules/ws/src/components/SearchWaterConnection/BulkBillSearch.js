@@ -58,7 +58,7 @@ const BulkBillSearch = ({ tenantId, onSubmit, data, count, resultOk, businessSer
         })
         const rejectedReading =
           meterReadingListFilter.filter((element) => !meterReadingList.includes(element));
-        console.log("reading list", meterReadingList, rejectedReading)
+
         setRejectedReading(rejectedReading)
         resolve(meterReadingList, rejectedReading);
       };
@@ -94,7 +94,7 @@ const BulkBillSearch = ({ tenantId, onSubmit, data, count, resultOk, businessSer
         },
         onSuccess: async (data, variables) => {
           setIsLoadingBulkMeterReading(false)
-          console.log("data",data)
+
           setShowModalResult(true)
           setBulkReadingStatus(data.meterReadings)
           setShowToast({ key: "success", label: "WS_METER_READING_ADDED_SUCCESFULLY" });
@@ -436,7 +436,7 @@ const BulkBillSearch = ({ tenantId, onSubmit, data, count, resultOk, businessSer
 
         </div>
       ) : null}
-        
+
       <div>
         {showModal && <Modal
           headerBarMain={<Heading label={t("WS_BULK_READING_REJECT")} />}
@@ -475,7 +475,7 @@ const BulkBillSearch = ({ tenantId, onSubmit, data, count, resultOk, businessSer
                 disableSort={true}
                 sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
               />
-              
+
 
             </Card>
           </div>
@@ -517,7 +517,7 @@ const BulkBillSearch = ({ tenantId, onSubmit, data, count, resultOk, businessSer
                 disableSort={true}
                 sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
               />
-              
+
 
             </Card>
           </div>

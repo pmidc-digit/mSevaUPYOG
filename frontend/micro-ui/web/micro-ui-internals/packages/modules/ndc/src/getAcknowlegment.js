@@ -89,10 +89,10 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const ownerNames = (application?.propertyOwnerNames || []).join(", ") || "NA";
   const ownerMobiles = (application?.propertyOwnerMobiles || []).join(", ") || "NA";
 
-  console.log(appData, "APPDATA");
+
 
   const readableCity = getReadableCity(appData?.tenantId);
-  console.log(tenantInfo, "TENANT INFO IN ACKNOWLEDGEMENT");
+
 
   // Build single certificate body by concatenating translated fragments and dynamic values
   const certificateBody = [

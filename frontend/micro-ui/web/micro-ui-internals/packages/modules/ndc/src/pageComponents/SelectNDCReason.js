@@ -113,8 +113,8 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
                 <TextInput
                   value={props.value}
                   onChange={(e) => {
-                    console.log("config.key", config.key);
-                    console.log("formData", formData);
+
+
                     // onSelect("NDCValue", { checkReason: "tese" });
 
                     onSelect("NDCReason", { ...formData?.NDCReason, reason: e.target.value }, config);

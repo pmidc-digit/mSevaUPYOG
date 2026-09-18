@@ -58,7 +58,7 @@ const CLUSitePhotographs = ({ documents, coordinates={} }) => {
   //       const dateTimeOriginal = EXIF.getTag(this, "DateTimeOriginal");
   //       if (dateTimeOriginal) {
   //         //setDateTaken(dateTimeOriginal);
-  //         console.log("fileUrl==>", fileUrl);
+
   //         return dateTimeOriginal;
   //       }
   //     });

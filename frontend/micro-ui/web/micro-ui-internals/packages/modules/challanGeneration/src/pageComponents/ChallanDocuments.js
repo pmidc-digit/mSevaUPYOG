@@ -145,9 +145,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             if (lat && lon) {
               latitude = convertDMSToDD(lat, latRef);
               longitude = convertDMSToDD(lon, lonRef);
-              console.log("📍 Latitude:", latitude, "Longitude:", longitude);
+
             } else {
-              console.warn("⚠️ No GPS data found in image.");
+
             }
 
             // ✅ Save file + coordinates
@@ -273,7 +273,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   useEffect(() => {
     if (isHidden) setUploadedFile(null);
   }, [isHidden]);
-  console.log("doc===", doc);
+
   return (
     <div className="challan-documents">
       <LabelFieldPair className="challan-label-field">
@@ -294,7 +294,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             buttonType="button"
             error={!uploadedFile} />
 
-          {console.log("documents", documents)}
+
           {doc?.code == "CHALLAN.EVIDENCE_IMAGE" &&
           <span className="challan-note-green">
               <span className="challan-note-red">Note:</span>

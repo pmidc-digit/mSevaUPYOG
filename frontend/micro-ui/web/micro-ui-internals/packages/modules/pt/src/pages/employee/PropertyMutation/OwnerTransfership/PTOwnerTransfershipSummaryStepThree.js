@@ -14,9 +14,9 @@ const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t 
     }
   }, []);
   const summaryFormData = { ...storedTransferData, ...formData };
-  console.log("form data in summary", summaryFormData);
+
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
     onGoNext();
   }
 
@@ -25,15 +25,15 @@ const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t 
   }
 
   // const onFormValueChange = (setValue = true, data) => {
-  //   console.log("onFormValueChange data in Property details step three: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
   //   if (!_.isEqual(data, currentStepData)) {
   //     dispatch(UPDATE_PtNewApplication(config.key, data));
-  //     console.log("Dispatching UPDATE_PtNewApplication with key:", config.key, "and data:", data);
+
   //   }
   // };
 
   // const currentStepData = useSelector(function (state) {
-  //   console.log("state in step three ", state);
+
   //   return state.pt.PTNewApplicationFormReducer.formData && state.pt.PTNewApplicationFormReducer.formData[config.key]
   //     ? state.pt.PTNewApplicationFormReducer.formData[config.key]
   //     : {};

@@ -33,7 +33,7 @@ const NewSelfCertificationStepFormFive = ({ config, onGoNext, onBackClick }) => 
             dispatch(UPDATE_OBPS_FORM("createdResponse", response?.BPA?.[0]));
             setIsLoading(false);
         }catch(e){
-            console.log("ERR", e.message);
+
             alert(t("SOMETHING_WENT_WRONG"))
             setIsLoading(false);
         }
@@ -58,7 +58,7 @@ const NewSelfCertificationStepFormFive = ({ config, onGoNext, onBackClick }) => 
     setError("");
   };
 
-  console.log("me rendering instead", JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")));
+
 
   if(isLoading) (<Loader />)
 

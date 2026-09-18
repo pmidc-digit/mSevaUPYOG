@@ -75,7 +75,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: layoutStepperConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-// console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
+
 const useQueryParam = (key) => {
   const { search } = useLocation();
   return new URLSearchParams(search).get(key);
@@ -98,12 +98,12 @@ const LayoutStepperForm = () => {
   const stateId = Digit.ULBService.getStateId();
   const applicationNo = useQueryParam("applicationNo");
 
-  //console.log("applicationNo:", applicationNo);
+
 
   // const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutCitizenSearchApplication({ applicationNo }, tenantId, { enabled: !!applicationNo });
   const { isLoading, data } = Digit?.Hooks?.obps?.useLayoutSearchApplication({ applicationNo}, tenantId,{ enabled: !!applicationNo });
 
-  //console.log("API data fetched for applicationNo:", applicationNo, data);
+
 
   const applicationAppliedUnderOptions = [
     { code: "PAPRA", name: "PAPRA", i18nKey: "PAPRA" },
@@ -244,7 +244,7 @@ const LayoutStepperForm = () => {
       // if (!isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
       if (!isBuildingTypeLoading && !isBuildingCategoryLoading && !isRoadTypeLoading && !isLayoutTypeLoading && !isMdmsLoading && !isLoading && layoutObject?.layoutDetails && !isUlbListLoading && !isGenderLoading && menu.length > 0 && !isDataInitialized.current) {
         isDataInitialized.current = true;
-        //console.log("[EditLayoutApplication] Initializing form data with menu:", menu);
+
 
 
         const formattedDocuments = {
@@ -345,7 +345,7 @@ const LayoutStepperForm = () => {
           // specificationRestrictedArea: options.find((obj) => (obj.code === siteDetails?.specificationRestrictedArea?.code || obj.code === siteDetails?.specificationRestrictedArea || {})),
           // specificationIsSiteUnderMasterPlan: options.find((obj) => (obj.code === siteDetails?.specificationIsSiteUnderMasterPlan?.code || obj.code === siteDetails?.specificationIsSiteUnderMasterPlan || {})),
         };
-        //console.log("Mapped site details for form:",siteDetails, updatedSiteDetails, buildingCategoryData);
+
 
         dispatch(UPDATE_LayoutNewApplication_FORM("applicationDetails", updatedApplicantDetails));
         dispatch(UPDATE_LayoutNewApplication_FORM("siteDetails", updatedSiteDetails));
@@ -360,7 +360,7 @@ const LayoutStepperForm = () => {
         // Index 0 = primary owner (used by form but not displayed in UI)
         // Index 1+ = additional owners (displayed in UI)
         const ownersFromApi = layoutObject?.owners || [];
-        //console.log("[EditLayoutApplication] ownersFromApi:", ownersFromApi);
+
 
         // Helper function to format DOB
         const formatDobToDate = (dob) => {
@@ -373,7 +373,7 @@ const LayoutStepperForm = () => {
             const day = String(dobDate.getDate()).padStart(2, "0");
             return `${year}-${month}-${day}`;
           } catch (e) {
-            console.error("[EditLayoutApplication] Error formatting DOB:", dob, e);
+
             return "";
           }
         };
@@ -407,14 +407,14 @@ const LayoutStepperForm = () => {
 
         const applicantsForForm = allApplicants.length > 0 ? allApplicants : [];
 
-        //console.log("[EditLayoutApplication] applicantsForForm mapped:", applicantsForForm);
+
         dispatch(UPDATE_LayoutNewApplication_FORM("applicants", applicantsForForm));
 
         // dispatch(UPDATE_LayoutNewApplication_FORM("apiData", {...applicationDetails, apiData: editApi?.Layout?.[0] || editApi})); // Store full response like CLU
       }
     }, [isLoading, isUlbListLoading, isGenderLoading, layoutObject, menu.length, isBuildingTypeLoading, isBuildingCategoryLoading, isRoadTypeLoading, isLayoutTypeLoading, isMdmsLoading]);
 
-  // console.log("formStatePTR: ", formState);
+
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_LayoutNewApplication_STEP(updatedStepNumber));
@@ -424,7 +424,7 @@ const LayoutStepperForm = () => {
     dispatch(RESET_LayoutNewApplication_FORM());
   }, []);
 
-  // console.log("formData",formData);
+
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -434,7 +434,7 @@ const LayoutStepperForm = () => {
 
 
   const handleSubmit = (dataGet) => {
-    //console.log("dataGet===", dataGet);
+
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
     // let data = {};
     // createEmployeeConfig.forEach((config) => {
@@ -446,8 +446,8 @@ const LayoutStepperForm = () => {
   };
 
 
-  //console.log("  LayoutStepperForm - formData:", formData);
-//console.log("  LayoutStepperForm - step:", step);
+
+
   return (
     <div className="card">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>

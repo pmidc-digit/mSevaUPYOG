@@ -14,7 +14,7 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
   let { pathname, state } = useLocation();
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
   const apiDataCheck = useSelector((state) => state?.obps?.OBPSFormReducer?.formData?.createdResponse);
-  // console.log("StateInPropertySearch", formData, key);
+
   const isEditScreen = pathname.includes("/modify-application/");
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
   const search = useLocation().search;
@@ -75,7 +75,7 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
   // );
 
 
-  // console.log("propertyDetailsFetch", propertyDetailsFetch)
+
 
 //   useEffect(() => {
 //     if (ptFromApi) {
@@ -94,7 +94,7 @@ useEffect(() => {
   if (menuList && formData?.cpt?.details?.address?.locality
     //  && !formData?.createdResponse?.additionalDetails
     ) {
-      console.log("useffect 1")
+
     const boundary = menuList?.["egov-location"]?.TenantBoundary?.find(item => item?.hierarchyType?.code === "REVENUE")?.boundary;
     let ward = {}
     const zone = boundary?.children?.find(item => item?.children?.some((children) => {
@@ -111,7 +111,7 @@ useEffect(() => {
 
   // useEffect(() => {
   //   if (!isLoading && propertyDetailsFetch?.IsSuccess && propertyDetailsFetch?.Record) {
-  //     console.log("useffect 2");
+
   //     const { OwnerName, MobileNo, Zone, Block, ColonyName, PropertyNo, PropertyArea } = propertyDetailsFetch?.Record;
   //     const owners = [{
   //       mobileNumber: MobileNo,
@@ -143,7 +143,7 @@ useEffect(() => {
   // // useEffect(() => {
 
   //   if (propertyId && (window.location.href.includes("/renew-application-details/") || window.location.href.includes("/edit-application-details/")))
-  //     console.log("useffect 3");
+
   //     setSearchPropertyId(propertyId);
   // }, [propertyId]);
 
@@ -151,7 +151,7 @@ useEffect(() => {
   //   {
 
   //   if (isLoading == false && error && error == true && propertyDetails?.Properties?.length == 0) {
-  //      console.log("useffect 4");
+
   //     setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
   //   }
   // }, [error, propertyDetails]);
@@ -159,7 +159,7 @@ useEffect(() => {
  useEffect(() => {
 
   if (propertyDetails?.propertyId) {
-    console.log("useffect 5");
+
     dispatch(
       UPDATE_NOCNewApplication_FORM(key, {
         ...formData[key],
@@ -214,7 +214,7 @@ useEffect(() => {
       setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
     }
   } catch (err) {
-    console.error("Property search failed", err);
+
     setError(err);
     setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
   } finally {
@@ -257,7 +257,7 @@ useEffect(() => {
   useEffect(() => {
 
     if (showToast) {
-      console.log("useffect 6");
+
       const timer = setTimeout(() => {
         setShowToast(null);
       }, 3000); // auto close after 3 sec
@@ -267,7 +267,7 @@ useEffect(() => {
   }, [showToast]);
 
   // useEffect(() => {
-  //    console.log("useffect 7");
+
   //   setApiLoading(isLoading);
   // },[isLoading])
 

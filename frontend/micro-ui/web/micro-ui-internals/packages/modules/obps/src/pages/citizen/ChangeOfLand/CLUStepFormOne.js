@@ -42,7 +42,7 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
   }, [ownerIds, ownerPhotos]);
 
   const userInfo = Digit.UserService.getUser();
-  //console.log("userInfo type here", userInfo?.info?.type);
+
 
   const errorStyle = { color: "red", marginTop: "4px", marginBottom: "0" };
 

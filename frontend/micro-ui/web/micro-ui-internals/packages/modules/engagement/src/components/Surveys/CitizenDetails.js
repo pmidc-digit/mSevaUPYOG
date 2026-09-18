@@ -131,12 +131,12 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
       Digit.Surveys.userSearch(data, filters)
         .then((response) => {
           setUser(response?.user?.[0]);
-          console.log("response=====", response?.user?.[0]);
-          console.log("response", response.user[0]?.emailId);
+
+
 
           if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
             // setCitizenFound(true)
-            console.log("coming here na");
+
             // const formattedDate = format(parseISO(response.user[0]?.dob), "dd/MM/yyyy");
             setFormData((prevData) => ({
               ...prevData,
@@ -150,7 +150,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
               user: response.user[0],
             }));
           } else {
-            console.log("not here");
+
             setFormData((prevData) => ({
               ...prevData,
               citizenFound: false,
@@ -160,13 +160,13 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
           }
         })
         .catch((error) => {
-          console.log(error);
+
         });
     }
   };
 
   useEffect(() => {
-    console.log("UPDATED formData", formData);
+
   }, [formData]);
 
   return (
@@ -309,7 +309,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
       {/* <h3>Date of Birth</h3>
       <TextInput name="dob" value={formData.dob} type="date" onChange={handleFieldChange} style={{ height: "100" }} />
       {errors.dob && <span className="error">{errors.dob}</span>}
-     
+
 
       <h3>Father/Husband Name</h3>
       <input
@@ -318,13 +318,13 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
         value={formData.relationName}
         onChange={handleFieldChange}
         placeholder="Father/Husband Name"
-       
+
       />
       {errors.relationName && <span className="error">{errors.relationName}</span>}
       <h3>Relation</h3>
       <Dropdown
         required={true}
-      
+
         id="relation"
         name="relation"
         option={relationList}
@@ -341,7 +341,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
         value={formData.address}
         onChange={handleFieldChange}
         placeholder="Address"
-       
+
       />
       {errors.address && <span className="error">{errors.address}</span>}
       <h3>Email</h3>
@@ -351,7 +351,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
         value={formData.email}
         onChange={handleFieldChange}
         placeholder="Email"
-       
+
       />
       {errors.email && <span className="error">{errors.email}</span>} */}
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn="true" />}

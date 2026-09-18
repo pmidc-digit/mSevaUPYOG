@@ -81,11 +81,11 @@ export const CreateComplaint = ({ parentUrl }) => {
           val: "",
           place: "",
         };
-        // console.log("newGeoLocation", newGeoLocation);
+
         setGeoLocation(newGeoLocation);
       },
       (error) => {
-        console.error("Error getting location:", error.message);
+
       }
     );
   }, []);
@@ -160,7 +160,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   }, []);
   // async function selectedType(value) {
   //   if (value.key !== complaintType.key) {
-  //     console.log("selectedType",value)
+
   //     // if (value.key === "Others") {
   //     //   setSubType({ name: "" });
   //     //   setComplaintType(value);
@@ -537,7 +537,7 @@ export const CreateComplaint = ({ parentUrl }) => {
       });
       setSelectedLocality(b?.[0]);
       setDescription(data?.propertyId);
-      // console.log("swachProperty", localities, data?.propertyId, data);
+
     }
   }, [propertyId]);
   return (

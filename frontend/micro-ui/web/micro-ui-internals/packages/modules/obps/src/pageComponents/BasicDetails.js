@@ -36,9 +36,7 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
     basicData?.planDetail?.blocks
   );
   const [isLoading, setIsLoading] = useState(false);
-  console.log("riskType", riskType, mdmsData?.BPA?.RiskTypeComputation,
-    basicData?.planDetail?.plot?.area,
-    basicData?.planDetail?.blocks);
+
 
   useEffect(() => {
     sessionStorage.removeItem("ArchitectConsentdocFilestoreid");
@@ -68,7 +66,7 @@ const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
       setScrutinyNumber({edcrNumber: currentStepData?.createdResponse?.edcrNumber});
     }
   },[currentStepData])
-  console.log("basicData", currentStepData, formData, scrutinyNumber, basicData);
+
 
   const closeToast = () => {
     setShowToast(null);

@@ -9,15 +9,15 @@ import { CardHeader } from "@mseva/digit-ui-react-components";
 const SurveyFormPage = ({ config, onGoNext, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);
   function goNext(data) {
-    //console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
     onGoNext();
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("Form Data: ", data);
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateSurveyForm(config.key, data));
-     
+
     }
   };
 
@@ -31,7 +31,7 @@ const SurveyFormPage = ({ config, onGoNext, t }) => {
 });
 
   const dispatch = useDispatch();
-  console.log("currentStepData in EmployeeDetails: ", currentStepData);
+
 
 
   const [showToast, setShowToast] = useState(null);

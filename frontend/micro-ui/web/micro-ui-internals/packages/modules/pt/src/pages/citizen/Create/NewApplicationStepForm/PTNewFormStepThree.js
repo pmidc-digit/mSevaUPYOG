@@ -8,7 +8,7 @@ const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
 
   function goNext(data) {
-    console.log(`Data== in step 3 next is=======`, data);
+
 
     const missingFields = validateStepThreeFields(data);
     if (missingFields.length > 0) {
@@ -90,7 +90,7 @@ const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   function onGoBack(data) {
-    console.log(`Data== in step 3 back is=======`, data);
+
     onBackClick(config.key, data);
   }
 
@@ -101,7 +101,7 @@ const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   });
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("data step 4 ==========", data);
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     }

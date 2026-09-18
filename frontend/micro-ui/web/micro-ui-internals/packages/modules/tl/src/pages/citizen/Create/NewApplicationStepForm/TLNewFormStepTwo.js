@@ -48,7 +48,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState(null);
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig, isLoading } = Digit.Hooks.tl.useMDMS.getFormConfig(stateId, {});
- 
+
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
     { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId ? true : false }
@@ -202,19 +202,19 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (res === true) {
       onGoNext();
     } else {
-      console.error("Submission failed, not moving to next step.");
+
     }
   };
 
   const onSubmit = async (data) => {
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
-   
+
 
     const { TraidDetails, OwnerDetails } = data;
 
     if (TraidDetails?.cpt?.id) {
       if (!TraidDetails?.cpt?.details || !propertyDetails) {
-   
+
         setShowToast({ key: "error" });
         setError(t("ERR_INVALID_PROPERTY_ID"));
         return;
@@ -240,7 +240,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       // Optional: Check if pincode exists in tenant master data (soft validation)
       const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails.address.pincode));
       if (!foundValue) {
-        console.warn(`Pincode ${TraidDetails.address.pincode} not found in master data, but proceeding with valid city-locality combination`);
+
         // Don't block submission - just log warning
       }
     }
@@ -425,7 +425,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
       if (response?.ResponseInfo?.status === "successful") {
         dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-       
+
       }
       setLoader(false);
       return response?.ResponseInfo?.status === "successful";

@@ -30,7 +30,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
 
   const { errors } = localFormState;
   const { data: Menu = {}, isLoading: menuLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "UsageCategory") || {};
-  console.log("EmployeeSideEditProperty", formData, Menu?.PropertyTax?.UsageCategory);
+
   let usagecat = [];
   usagecat = Menu?.PropertyTax?.UsageCategory || [];
   let i;
@@ -89,7 +89,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
     if (!menuLoading && presentInModifyApplication) {
       const original = formData?.usageCategoryMajor?.code;
       const selectedOption = usageCategoryMajorMenu(usagecat).filter((e) => e.code === original)[0];
-      console.log("EmployeeSideEditProperty orignal", formData?.usageCategoryMajor)
+
       setPropertyPurpose(selectedOption);
     }
   }, [Menu]);
@@ -122,30 +122,30 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
   // }, [formData, usageCategoryMajor]);
   // useEffect(() => {
 
-  //   console.log("code is coming innn ")
+
   //   if (formData?.PropertyDetails?.usageCategoryMajor?.code || usageCategoryMajorMenu(usagecat)?.length) {
   //     const code = formData?.PropertyDetails?.usageCategoryMajor?.code;
-  //     console.log("here is code -in if's",code)
+
   //     const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
-  //     console.log("code in Majorbuiltdingtype",Majorbuiltdingtype)
+
   //     setValue("MajorPropertyType", Majorbuiltdingtype);
   //     // setPropertyPurpose(Majorbuiltdingtype)
   //   }
-  //   console.log("code is out ")
+
   // }, [formData, usageCategoryMajor  ]);
 
   // useEffect(() => {
 
-  //   console.log("code is coming innn ")
+
   //   if (formData?.usageCategoryMajor?.code || usageCategoryMajorMenu(usagecat)?.length) {
   //     const code = formData?.usageCategoryMajor?.code;
-  //     console.log("here is code -in if's",code)
+
   //     const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
-  //     console.log("code in Majorbuiltdingtype",Majorbuiltdingtype)
+
   //     setValue("PropertyUsageType", Majorbuiltdingtype);
   //     // setPropertyPurpose(Majorbuiltdingtype)
   //   }
-  //   console.log("code is out ")
+
   // }, [formData]);
 
   const onSkip = () => onSelect();
@@ -188,8 +188,8 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
       goNext();
     }
   }, [usageCategoryMajor]);
-  console.log("form state", formState);
-  console.log("localFormState", localFormState?.errors);
+
+
   if (window.location.href.includes("employee")) {
     return (
       <React.Fragment>

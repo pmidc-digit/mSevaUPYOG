@@ -42,7 +42,7 @@ const convertToLocale = (value = "", key = "") => {
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 const getAcknowledgementData = async (application, tenantInfo, t) => {
-  console.log("application in getAcknowledgement", application);
+
  const licenseNumber = application?.applicationData?.licenseNumber;
   const details = [];
 
@@ -95,7 +95,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
       ],
     });
   }
-  
+
 
   const getFormattedULBName = (ulbCode = "") => {
     if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
@@ -178,7 +178,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   });
 
   const imageURL = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values?.find(doc => doc?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.url || null;
-  // console.log("imageURL", imageURL);
+
   return {
     t: t,
     tenantId: tenantInfo?.code,

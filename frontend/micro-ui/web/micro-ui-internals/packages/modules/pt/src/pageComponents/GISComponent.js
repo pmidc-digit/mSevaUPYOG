@@ -8,7 +8,7 @@ export const GISComponent = () => {
   const { t } = useTranslation();
   const userType = window.location.href.includes("citizen") ? "citizen" : "employee";
   const onGISMapClickScenarioTwo = () => {
-    // console.log("onGISMapClick called with formData: ", formData);
+
     if (surveyId) {
       const url = `https://onemap.punjab.gov.in/map.aspx?surveyid=${surveyId}&usertype=${userType}`;
       window.location.href = url;

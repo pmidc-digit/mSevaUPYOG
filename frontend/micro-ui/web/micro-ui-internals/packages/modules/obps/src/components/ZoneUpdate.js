@@ -16,7 +16,7 @@ const ZoneUpdate = ({ onSelect, onClose, defaultZoneCode, tenantId: propTenantId
   const [selectedZone, setSelectedZone] = useState(null);
   const [comments, setComments] = useState("");
   const [error, setError] = useState(null);
-//console.log('defaultZoneCode', defaultZoneCode)
+
   const queryTenantId = new URLSearchParams(window.location.search).get("tenantId");
   let tenantId;
   if (window.location.pathname.includes("employee")) {
@@ -31,7 +31,7 @@ const ZoneUpdate = ({ onSelect, onClose, defaultZoneCode, tenantId: propTenantId
     { name: "zoneMaster", filter: `$.[?(@.tanentId == '${tenantId}')]` },
   ]);
 
-  //console.log('zoneList', zoneList);
+
 
 
 
@@ -44,7 +44,7 @@ const zoneOptions = useMemo(
    () => zoneList?.tenant?.zoneMaster?.[0]?.zones || [],
   [zoneList]
  );
-//console.log('zoneOptions', zoneOptions)
+
  useEffect(() => {
   if (!selectedZone && defaultZoneCode && zoneOptions?.length) {
     // Accept both object ({code, name}) and string ("Zone1")

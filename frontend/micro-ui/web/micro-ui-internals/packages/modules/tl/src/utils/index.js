@@ -1151,7 +1151,7 @@ export const getReceiptUrl = async (fileStoreId, tenantId, stateId) => {
     });
     url = res?.[fileStoreId];
   } catch (e) {
-    console.log("Tenant fetch failed");
+
   }
 
   if (!url) {
@@ -1161,7 +1161,7 @@ export const getReceiptUrl = async (fileStoreId, tenantId, stateId) => {
       });
       url = res?.[fileStoreId];
     } catch (e) {
-      console.log("State fetch failed");
+
     }
   }
 

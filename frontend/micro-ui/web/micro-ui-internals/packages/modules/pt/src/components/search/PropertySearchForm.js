@@ -33,7 +33,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
   let usagecat = [];
   //usagecat = usageMenu?.PropertyTax?.UsageCategory?.filter((e) => e?.code !== "MIXED") || [];
   const usageCategoryMajorMenu = () => {
-    console.log("usageCategoryMajorMenu")
+
     const catMenu= [
       {
           "code": "RESIDENTIAL",
@@ -73,7 +73,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
     //     if (arr.length == 2) return { i18nKey: "PROPERTYTAX_BILLING_SLAB_" + arr[1], code: item?.code };
     //     else return { i18nKey: "PROPERTYTAX_BILLING_SLAB_" + item?.code, code: item?.code };
     //   });
-    console.log("usageCategoryMajorMenu",catMenu)
+
     return catMenu;
   };
   const [usageType, setUsageType] = useState();
@@ -81,10 +81,10 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
   const fields = PTSearchFields?.[searchBy] || {};
   const allCities = Digit.Hooks.pt.useTenants()?.sort((a, b) => a?.i18nKey?.localeCompare?.(b?.i18nKey));
   sessionStorage.removeItem("revalidateddone");
-  console.log(allCities)
-  console.log("payload",payload,formValue)
+
+
  const setProptype =(e)=>{
-  console.log("e",e.code)
+
   setUsageType
   formValue.propertyType= "bbb"
  }
@@ -175,7 +175,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
             value: getValues(key),
             shouldUnregister: true,
           })}
-          
+
           optionKey="i18nKey"
           t={t}
         />

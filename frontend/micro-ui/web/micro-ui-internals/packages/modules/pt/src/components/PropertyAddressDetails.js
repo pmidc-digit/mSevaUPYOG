@@ -38,7 +38,7 @@ const PropertyAddressDetails = ({ goNext }) => {
 
   const { data: CreationYearData = [], isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "egf-master", [{ name: "FinancialYear" }]);
 
-  console.log("location1", location?.state);
+
 
   const {
     control,
@@ -101,7 +101,7 @@ const PropertyAddressDetails = ({ goNext }) => {
   };
 
   useEffect(() => {
-    console.log("stateDataCheck", stateDataCheck);
+
     if (location?.state || stateDataCheck) {
       const value = location?.state;
       const checkSurveyId = value?.surveyId || stateDataCheck?.surveyId;
@@ -109,8 +109,8 @@ const PropertyAddressDetails = ({ goNext }) => {
       const checkBuildingName = value?.buildingName || stateDataCheck?.buildingName;
       const checkLocality = getLocality?.find((item) => item?.code == stateDataCheck?.locality?.code);
       const checkExistingPropertyId = stateDataCheck?.existingPropertyId || stateDataCheck?.oldPropertyId || "";
-      console.log("checkjjjj", stateDataCheck);
-      console.log("getLocality", getLocality);
+
+
       const checkYearOfCreation = getYearCreation?.find((item) => item?.code == stateDataCheck?.yearOfCreation?.code);
       const checkCity = tenants?.find((item) => item?.name === stateDataCheck?.city?.name)
         || tenants?.find((item) => item?.code === stateDataCheck?.city?.code) ||tenants?.find((item) => item?.code === tenantId);

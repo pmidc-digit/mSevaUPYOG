@@ -49,7 +49,6 @@ const inferScheduleType = (startDate, endDate) => {
 export const transformBookingResponseToBookingData = (apiResponse = {}) => {
   const resp = apiResponse || {};
   const apps = Array.isArray(resp.bookingApplication) ? resp.bookingApplication : [];
-
   const transformedApps = apps.map((app) => {
     const out = {};
 
@@ -138,10 +137,10 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
       let amountForDaysChosen = undefined;
       if (hasAmounts) {
         const total = amounts.reduce((acc, v) => acc + v, 0);
-        amountForDaysChosen = total;
-        amount = sorted.length ? Math.round((total / sorted.length) * 100) / 100 : 0;
+        amountForDaysChosen = (total).toFixed(2);
+        amount = sorted.length ? (Math.round((total / sorted.length) * 100) / 100).toFixed(2) : 0;
       } else if (typeof first.amount === "number") {
-        amount = first.amount;
+        amount = (first.amount).toFixed(2);
       }
 
       return {
@@ -175,6 +174,7 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
 
   const bookingData = [
     {
+      appdata: apps,
       count: totalCount,
       currentTime: getCurrentEpoch(),
       bookingApplication: transformedApps,
@@ -220,7 +220,7 @@ export const ChallanData = (tenantId, consumerCode) => {
 
   const codes = officerInstance?.assigner?.userName;
   const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });
-  console.log("employeeData", employeeData);
+
   const officerRaw = employeeData?.data?.Employees?.[0];
   const officerAssignment = officerRaw?.assignments?.[0];
 

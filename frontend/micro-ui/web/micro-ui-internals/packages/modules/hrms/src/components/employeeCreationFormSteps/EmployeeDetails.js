@@ -14,13 +14,13 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    
-    
+
+
     // Update Redux if data changed
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateEmployeeForm(config.key, data));
     }
-    
+
     // Always run validation regardless of equality check
     checkConditions(data);
   };
@@ -64,7 +64,7 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
             }
           })
           .catch((e) => {
-            console.error("HRMS phone search error:", e);
+
             setPhonecheck(false);
           });
       }, 400);
@@ -99,7 +99,7 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
           }
         })
         .catch((e) => {
-          console.error("HRMS ID search error:", e);
+
           setIdUnique(false);
         });
     }, 400);
@@ -118,7 +118,7 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
   }, [currentStepData, phonecheck, idUnique]);
 
   const checkConditions = (formData) => {
-    
+
     // Update mobile number if changed
     const newMobile = formData?.SelectEmployeePhoneNumber?.mobileNumber || null;
     if (newMobile !== mobileNumber) {

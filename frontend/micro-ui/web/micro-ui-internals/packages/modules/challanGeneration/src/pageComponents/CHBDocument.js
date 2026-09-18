@@ -16,7 +16,7 @@ function CHBDocument({ value = {}, Code, index, showFileName = false }) {
     return <Loader />;
   }
 
-  console.log("Code", Code);
+
 
   return (
     <div className="document-container">

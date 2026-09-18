@@ -21,7 +21,7 @@ const AllotmentDetails = ({ t, config, onSelect, userType, formData, formState, 
   const checkLocation = window.location.href.includes("pt/new-application") || window.location.href.includes("pt/renew-application-details");
   const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("pt/renew-application-details");
   let validation = {};
- 
+
   let inputs = [
     {
       label: "PT_PROPERTY_ADDRESS_ALLOTMENT_NO",
@@ -45,13 +45,13 @@ const AllotmentDetails = ({ t, config, onSelect, userType, formData, formState, 
       //   title: t("CORE_COMMON_STREET_INVALID"),
       // },
     },
-    
+
   ];
 
   const convertValidationToRules = ({ validation, name, messages }) => {
     if (validation) {
       let { pattern: valPattern, maxlength, minlength, required: valReq } = validation || {};
-     
+
       let pattern = (value) => {
         if (valPattern) {
           if (valPattern instanceof RegExp) return valPattern.test(value) ? true : messages?.pattern || `${name.toUpperCase()}_PATTERN`;
@@ -100,11 +100,11 @@ const setData=(config,data)=>{
   //   const keys = Object.keys(formValue);
   //   const part = {};
   //   keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
-  //   console.log("key",formValue)
+
   //   if (!_.isEqual(formValue, part)) {
   //     onSelect(config.key, { ...formData[config.key], ...formValue });
   //     for (let key in formValue) {
-      
+
   //       if (!formValue[key] && !localFormState?.errors[key]) {
   //         setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
   //       } else if (formValue[key] && localFormState.errors[key]) {
@@ -113,7 +113,7 @@ const setData=(config,data)=>{
   //     }
   //     trigger();
   //   } 
-  //   console.log("formValue",formValue,formData)
+
   // }, [formValue]);
 
   function selectAllotmentNo(e) {
@@ -129,7 +129,7 @@ const setData=(config,data)=>{
     onSelect(config.key, {...formData[config.key], allotmentNo: value },// vasikaDetails: { ...(formData.PropertyDetails?.vasikaDetails || {}), vasikaNo: value },
     );
   };
-  
+
   const handleAllotmentDateChange = (value) => {
     setAllotmentDate(value);
     onSelect(config.key, {...formData[config.key], allotmentDate: value },// vasikaDetails: { ...(formData.PropertyDetails?.vasikaDetails || {}), vasikaDate: value },
@@ -154,7 +154,7 @@ const setData=(config,data)=>{
               // rules={{ validate: convertValidationToRules(inputs[0]) }}
               type={"text"}
               render={(_props) => (
-                
+
                 <TextInput
                   id={"AllotmentNo"}
                   // key={inputs[0].name}
@@ -172,7 +172,7 @@ const setData=(config,data)=>{
                 />
               )}
             />
-           
+
           </div>
         </LabelFieldPair>
         {formState.touched[config.key] ? (
@@ -207,7 +207,7 @@ const setData=(config,data)=>{
               />                   
               )}
             />
-           
+
           </div>
         </LabelFieldPair>
         {formState.touched[config.key] ? (
@@ -268,7 +268,7 @@ const setData=(config,data)=>{
             value={doorNo}
             errorStyle={false}
             autoFocus={focusIndex?.index == 1}
-           
+
           />
       </FormStep> */}
     </React.Fragment>

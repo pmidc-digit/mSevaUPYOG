@@ -13,7 +13,7 @@ const BulkBillGeneration = ({ path }) => {
   const checkPathName = getUrlPathName.includes("water/search-connection");
   const businessServ = checkPathName ? "WS" : "SW";
   const [showToast, setShowToast] = useState(null);
- 
+
   const onSubmit = ((data) => {
       setPayload({"locality":data?.locality?.code});   
   });
@@ -23,15 +23,15 @@ const BulkBillGeneration = ({ path }) => {
   };
 
   let result = Digit.Hooks.ws.useBulkSearchWS({ tenantId,filters: payload, config});
- 
+
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   if (result?.isLoading && isMobile) {
     return <Loader />
   }
- 
+
   const getData = () => {
-    console.log("result",result)
+
     if (result?.meterReadings.length == 0 ) {
       return { display: "ES_COMMON_NO_DATA" }
     } else if (result?.meterReadings.length > 0) {

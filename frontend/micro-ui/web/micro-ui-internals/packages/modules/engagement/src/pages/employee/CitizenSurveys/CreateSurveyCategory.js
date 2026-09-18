@@ -54,7 +54,7 @@ const CreateSurveyCategory = () => {
         setShowToast({ isError: true, label: response?.Errors?.[0]?.message || ERR_MESSAGE });
       }
     } catch (error) {
-      console.log("Error in Digit.Surveys.createCategory:", error?.response);
+
       setIsLoading(false);
       setShowToast({ isError: true, label: error?.response?.data?.Errors?.[0]?.message || ERR_MESSAGE });
     }

@@ -77,11 +77,10 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   };
 
   React.useEffect(() => {
-    window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
-    return () => {
-      window.removeEventListener("resize", () => setWindowWidth(window.innerWidth));
-    };
-  });
+    const onResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "DistrictMaster" }]);
   const uniqueDistricts = useMemo(() => {

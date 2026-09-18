@@ -67,7 +67,7 @@ const SelectMobileNumber = ({ t, onSelect, showRegisterLink, mobileNumber, onMob
     const data = await Digit.DigiLockerService.register({ module: "REGISTER" });
     e.preventDefault()
     const redirectUrl = data.redirectURL.replace("https://upyog-test.niua.org", "http://localhost:3001")
-    console.log("data", data)
+
     sessionStorage.setItem("code_verfier_register", data?.codeverifier)
     window.location.href = redirectUrl
   }

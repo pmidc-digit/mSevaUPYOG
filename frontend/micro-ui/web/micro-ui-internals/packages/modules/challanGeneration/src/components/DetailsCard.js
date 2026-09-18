@@ -32,7 +32,7 @@ const DetailsCard = ({
     return (
       <div>
         {data?.map((object, itemIndex) => {
-          console.log("object==", object);
+
           return (
             <Link key={itemIndex} to={`${linkPrefix}${object?.["Challan No"]?.props?.children}/${tenantId}`}>
               <div className="details-container">

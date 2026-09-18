@@ -101,7 +101,13 @@ export const FormComposer = (props) => {
       case "textarea":
         // if (populators.defaultValue) setTimeout(setValue(populators?.name, populators.defaultValue));
         return (
-          <TextArea className="form-field" name={populators?.name || ""} {...populators} inputRef={register(populators.validation)} disable={disable} />
+          <TextArea
+            className="form-field"
+            name={populators?.name || ""}
+            {...populators}
+            inputRef={register(populators.validation)}
+            disable={disable}
+          />
         );
       case "mobileNumber":
         return (
@@ -300,7 +306,13 @@ export const FormComposer = (props) => {
                     </div>
                   </LabelFieldPair>
                   {field?.populators?.name && errors && errors[field?.populators?.name] && Object.keys(errors[field?.populators?.name]).length ? (
-                    <CardLabelError style={window.location.href.includes("/citizen") ? { width: "100%", fontSize: "12px", margin: "4px 0px 8px 0px" } : { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+                    <CardLabelError
+                      style={
+                        window.location.href.includes("/citizen")
+                          ? { width: "100%", fontSize: "12px", margin: "4px 0px 8px 0px" }
+                          : { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }
+                      }
+                    >
                       {t(field?.populators?.error)}
                     </CardLabelError>
                   ) : null}
@@ -327,7 +339,6 @@ export const FormComposer = (props) => {
       e.preventDefault();
     }
   };
-  console.log(props);
 
   const buttonStyle = {
     next: {
@@ -361,7 +372,12 @@ export const FormComposer = (props) => {
             {props.heading}{" "}
           </CardSubHeader>
         )}
-        {props.description && <CardLabelDesc style={{fontSize:"16px"}} className="descStyle"> {props.description} </CardLabelDesc>}
+        {props.description && (
+          <CardLabelDesc style={{ fontSize: "16px" }} className="descStyle">
+            {" "}
+            {props.description}{" "}
+          </CardLabelDesc>
+        )}
         {props.text && <CardText className="labelStyle">{props.text}</CardText>}
         {formFields}
         {props.childrenAtTheBottom && props.children}

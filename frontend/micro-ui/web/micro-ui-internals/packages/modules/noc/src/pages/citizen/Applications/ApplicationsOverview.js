@@ -51,7 +51,7 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
             setUrl(result.data.fileStoreIds[0].url);
           }
         } catch (error) {
-          console.error("Error fetching document:", error);
+
         }
       }
     };
@@ -256,7 +256,7 @@ const CitizenApplicationOverview = () => {
         Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
       }, 0);
     } catch (error) {
-      // console.error("Error generating acknowledgement:", error);
+
     } finally {
       setLoading(false);
     }
@@ -281,7 +281,7 @@ const CitizenApplicationOverview = () => {
       const receiptUrl = fileStore[response.filestoreIds[0]];
       await downloadPdfFromURL(receiptUrl);
     } catch (error) {
-      // console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoading(false);
     }
@@ -295,7 +295,7 @@ const CitizenApplicationOverview = () => {
       let application = applicationDetails?.Noc?.[0];
 
       let fileStoreId = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId;
-      // console.log("fileStoreId before create", fileStoreId);
+
 
       if (!fileStoreId) {
         const nocSanctionData = await getNOCSanctionLetter(applicationDetails?.Noc?.[0], t, EmpData, finalComment);
@@ -330,7 +330,7 @@ const CitizenApplicationOverview = () => {
       const receiptUrl = fileStore[fileStoreId];
       await downloadPdfFromURL(receiptUrl);
     } catch (error) {
-      // console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoading(false);
       Digit.StoreData.getCurrentLanguage = prevGetLang;
@@ -352,7 +352,7 @@ const CitizenApplicationOverview = () => {
       const receiptUrl = fileStore[fileStoreId];
       await downloadPdfFromURL(receiptUrl);
     } catch (error) {
-      console.error("rejection Letter download error:", error);
+
     } finally {
       setLoading(false);
       Digit.StoreData.getCurrentLanguage = prevGetLang;
@@ -361,7 +361,7 @@ const CitizenApplicationOverview = () => {
 
   const dowloadOptions = [];
   let EmpData = EmployeeData(tenantId, id);
-  // console.log('EmpData', EmpData)
+
   dowloadOptions.push({
     label: t("Application Form"),
     onClick: handleDownloadPdf,
@@ -425,7 +425,7 @@ const CitizenApplicationOverview = () => {
     }
   }
 
-  //console.log("acknowledgementData", acknowledgementData);
+
   //Digit.Utils.pdf.generate(acknowledgementData);
 
   const getFloorLabel = (index) => {
@@ -497,7 +497,7 @@ const CitizenApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  // console.log("actions here", actions);
+
 
   //   useEffect(() => {
   //   if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
@@ -548,7 +548,7 @@ const CitizenApplicationOverview = () => {
   }, [workflowDetails]);
 
   function onActionSelect(action) {
-    // console.log("selected action", action);
+
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
 
     const payload = {
@@ -585,9 +585,9 @@ const CitizenApplicationOverview = () => {
       vasikaDate, // add vasikaDate
       workflow: {},
     };
-    // console.log("updatedApplicant", updatedApplicant);
+
     const filtData = data?.Licenses?.[0];
-    //console.log("filtData", filtData);
+
 
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -610,7 +610,7 @@ const CitizenApplicationOverview = () => {
           setSelectedAction(null);
         } else {
           //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
-          // console.log("We are calling citizen response page");
+
           history.replace({
             pathname: `/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
@@ -645,7 +645,7 @@ const CitizenApplicationOverview = () => {
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  // console.log("displayData=>", displayData);
+
   const order = {
     "OWNER.SITEPHOTOGRAPHONE": 1,
     "OWNER.SITEPHOTOGRAPHTWO": 2,
@@ -657,7 +657,7 @@ const CitizenApplicationOverview = () => {
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   )?.filter((doc) => !!doc?.documentAttachment);
-  // console.log("remainingDocs", remainingDocs);
+
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
@@ -669,7 +669,7 @@ const CitizenApplicationOverview = () => {
     .filter((v, i, arr) => v && arr.indexOf(v) === i)
     .join(", ");
 
-  // console.log("combinerOwnersName", combinedOwnersName);
+
 
   return (
     <div className={"employee-main-application-details"}>

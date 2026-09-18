@@ -108,7 +108,7 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
 
   const onSubmit = async (data) => {
     setLoader(true);
-    console.log("data==", data);
+
     const updatedFields = {};
 
     if (data?.gender?.code) {
@@ -134,7 +134,7 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
     // 🔥 Ensure DOB is always epoch
     // userData.dob = new Date(`${userData.dob}T00:00:00`).getTime();
 
-    console.log("userData", userData);
+
     // return;
     try {
       const response = await Digit.UserService.updateUser(userData, user?.info?.tenantId);
@@ -146,14 +146,14 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
       }, 2000);
     } catch (error) {
       setLoader(false);
-      console.log("erroe", error);
+
     }
   };
 
   const onGoBack = () => closeModal();
   const startDate = watch("startDate");
 
-  console.log("user", user?.info);
+
 
   const getUserInfo = async () => {
     const uuid = user?.info?.uuid;
@@ -166,7 +166,7 @@ const UpdateProfile = ({ showTermsPopupOwner, setShowTermsPopupOwner, getData })
     }
   };
 
-  console.log("getUserDetails", getUserDetails);
+
 
   useEffect(() => {
     getUserInfo();

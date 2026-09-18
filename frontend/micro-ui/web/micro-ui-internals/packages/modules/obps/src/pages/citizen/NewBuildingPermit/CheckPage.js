@@ -40,7 +40,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
     return stored || value?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "";
   });
 
-  console.log(value, "VAL");
+
 
   const [otherCharges, setOtherCharges] = useState(() => {
     const stored = sessionStorage.getItem("otherCharges");
@@ -75,7 +75,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         const owners = parsedData?.value?.data?.owners || parsedData?.owners || [];
         if (owners.length > 0) return owners;
       } catch (error) {
-        console.error("Error parsing building permit data:", error);
+
       }
     }
 
@@ -86,7 +86,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         const owners = parsedData?.owners || [];
         if (owners.length > 0) return owners;
       } catch (error) {
-        console.error("Error parsing owner data:", error);
+
       }
     }
 
@@ -96,7 +96,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         const parsedFields = JSON.parse(storedOwnerFields);
         if (Array.isArray(parsedFields) && parsedFields.length > 0) return parsedFields;
       } catch (error) {
-        console.error("Error parsing owner fields:", error);
+
       }
     }
 
@@ -112,7 +112,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         return parsedData?.value?.data?.edcrDetails || null;
       }
     } catch (error) {
-      console.error("Error parsing sessionStorage data:", error);
+
     }
     return null;
   };
@@ -122,18 +122,18 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
       const storedValue = sessionStorage.getItem("Digit.BUILDING_PERMIT");
       if (storedValue) {
         const parsedData = JSON.parse(storedValue);
-        console.log(parsedData?.value?.data?.edcrDetails, "))))))))");
+
         return parsedData?.value?.data?.edcrDetails || null;
       }
     } catch (error) {
-      console.error("Error parsing planInfoProperties:", error);
+
     }
     return null;
   };
 
   // Replace/add this section after the existing building extract section:
   const planInfoProps = getPlanInfoProperties();
-  console.log(planInfoProps, "PLAN");
+
 
   const plotDataFromStorage = getPlotDataFromStorage();
 
@@ -184,7 +184,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
 
   const isEditApplication = window.location.href.includes("editApplication");
 
-  console.log(value, "DEKHO");
+
 
   // Initialize agreement states with sessionStorage persistence
   const [agree, setAgree] = useState(() => {
@@ -401,11 +401,11 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
       if (response.isSuccessful) {
         setShowOTPInput(true);
       } else {
-        console.error("Error sending OTP Response is false:", response.error);
+
         alert("Something Went Wrong");
       }
     } catch (error) {
-      console.error("Error sending OTP:", error);
+
       alert("Something went wrong");
     }
   };
@@ -423,7 +423,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
 
   const handleVerifyOTPClick = async (e) => {
     e.preventDefault(); // Prevent form submission
-    console.log("OTP++++++++>");
+
     try {
       const response = await Digit.UserService.authenticate(requestData);
       if (response.ResponseInfo.status === "Access Token generated successfully") {
@@ -437,7 +437,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         setOTPError(t("WRONG OTP"));
       }
     } catch (error) {
-      console.error("Error verifying OTP:", error);
+
       alert("OTP Verification Error ");
       setIsOTPVerified(false);
       setOTPError(t("OTP Verification Error"));
@@ -446,7 +446,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
 
   const setdeclarationhandler = (e) => {
     // e.preventDefault(); // Prevent form submission
-    console.log("setdeclarationhandler", e);
+
     if (!isOTPVerified) {
       setShowMobileInput(true);
     } else {
@@ -460,7 +460,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
     e.stopPropagation();
     if (isOwnerOTPVerified) {
       setShowTermsPopupOwner(true);
-      console.log("OPEN");
+
     } else {
       alert("Please verify owner first");
     }
@@ -503,11 +503,11 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
       if (response.isSuccessful) {
         setShowOwnerOTPInput(true);
       } else {
-        console.error("Error sending Owner OTP Response is false:", response.error);
+
         alert("Something Went Wrong");
       }
     } catch (error) {
-      console.error("Error sending Owner OTP:", error);
+
       alert("Something went wrong");
     }
   };
@@ -524,7 +524,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
   };
   const handleOwnerVerifyOTPClick = async (e) => {
     e.preventDefault(); // Prevent form submission
-    console.log("Owner OTP++++++++>");
+
     try {
       const response = await Digit.UserService.authenticate(ownerRequestData);
       if (response.ResponseInfo.status === "Access Token generated successfully") {
@@ -536,7 +536,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         setOwnerOtpError(t("WRONG OTP")); // Changed from setOwnerOTPError to setOwnerOtpError
       }
     } catch (error) {
-      console.error("Error verifying Owner OTP:", error);
+
       alert("Owner OTP Verification Error ");
       setIsOwnerOTPVerified(false);
       setOwnerOtpError(t("OTP Verification Error")); // Changed from setOwnerOTPError to setOwnerOtpError
@@ -824,7 +824,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
   }
 
 
-  console.log(getOrderDocuments(applicationDocs), "DOC DOC DOC");
+
 // const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
 //   id: index,
 //   // localize the title here
@@ -1006,7 +1006,7 @@ const documentsColumns = [
             label={t(`BPA_KHATHA_NUMBER_LABEL`)}
             text={plotDataFromStorage?.planDetail?.planInfoProperties?.KHATA_NO || t("CS_NA")}
           />
-          {console.log(plotDataFromStorage, "P+++++")}
+
           <Row
             className="border-none"
             label={t(`BPA_BOUNDARY_LAND_REG_DETAIL_LABEL`)}
@@ -1113,7 +1113,7 @@ const documentsColumns = [
               // text=`{${planInfoProps?.planDetail?.plotArea?.area ? t("BPA_SQ_MTRS_LABEL") : ""}`
             text={planInfoProps?.planDetail?.plot?.area || t("CS_NA")}
             />
-            {console.log(planInfoProps, "PLAN")}
+
             {/* <Row
               className="border-none"
               label={t("BPA_PLOT_NUMBER")}
@@ -1670,7 +1670,7 @@ const documentsColumns = [
             try {
               await onSubmitCheck();
             } catch (error) {
-              console.error("Submission error:", error);
+
               alert("Submission failed. Please try again.");
             } finally {
               setIsSubmitting(false);

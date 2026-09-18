@@ -121,8 +121,8 @@ const ServiceDetails = ({ config, onSelect, userType, formData, setError, formSt
     fetchedLocalities,
     consumerDetails,
   };
-  console.log("consumerDetails", consumerDetails);
-  console.log("formData===?", formData);
+
+
   return (
     <React.Fragment>
       {consumerDetails?.map((consumerdetail, index) => (
@@ -196,11 +196,8 @@ const OwnerForm1 = (_props) => {
   };
 
   useEffect(() => {
-  console.log("Selected Category:", selectedCategory);
-  console.log(
-    "Selected Available Service Types:",
-    sortDropdownNames(categoiresType, "code", t)
-  );
+
+
 }, [selectedCategory, categoiresType]);
 
  const modalMsg = t("MCOLLECT_CATEGORY_POPUP_MESSAGE")
@@ -222,7 +219,7 @@ useEffect(() => {
   }
 }, [selectedCategory, categoiresType]);
 
-  console.log("tax Master Fields", TaxHeadMasterFields);
+
   useEffect(() => {
     if (!isEdit) setValue("categoryType", "");
   }, [selectedCategory]);
@@ -261,7 +258,7 @@ useEffect(() => {
    useEffect(() => {
      if (isEdit && TaxHeadMasterFields && !formValue[`${formValue?.categoryType?.code?.split(".")[0]}`]) { 
       let cdTax = JSON.parse(sessionStorage.getItem("InitialTaxFeilds"));
-       console.log("cdTax", cdTax);
+
        TaxHeadMasterFields &&
          TaxHeadMasterFields.length > 0 &&
          TaxHeadMasterFields?.map((ob) => {

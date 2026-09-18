@@ -26,9 +26,9 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
   const onSubmit = async (data) => {
     goNext(data);
     // setLoader(true);
-    // console.log("data", data);
-    // console.log("user", user);
-    // console.log("currentStepData", currentStepData);
+
+
+
     // if (currentStepData?.venueDetails?.[0]?.bookingNo) {
     //   goNext(currentStepData?.venueDetails);
     // } else {
@@ -68,13 +68,13 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
     //     },
     //   };
 
-    //   console.log("final payload", payload);
+
     //   // return;
     //   // goNext(payload);
     //   // return;\
     //   try {
     //     const response = await Digit.CHBServices.create(payload);
-    //     console.log("response", response);
+
     //     setLoader(false);
     //     goNext(response?.hallsBookingApplication);
     //   } catch (error) {
@@ -84,7 +84,7 @@ const OffenderDetails = ({ t, goNext, currentStepData, onGoBack }) => {
   };
 
   useEffect(() => {
-    console.log("currentStepData", currentStepData);
+
     // if (formattedData) {
     //   setValue("address", formattedData?.address?.addressLine1);
     // }

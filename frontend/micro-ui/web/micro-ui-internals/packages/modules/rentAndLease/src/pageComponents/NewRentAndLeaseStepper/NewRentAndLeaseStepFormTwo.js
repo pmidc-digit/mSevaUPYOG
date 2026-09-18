@@ -36,7 +36,7 @@ const NewRentAndLeaseStepFormTwo = ({ config, onGoNext, onBackClick }) => {
     if (onGoNext && typeof onGoNext === "function") {
       onGoNext();
     } else {
-      console.error("NewRentAndLeaseStepFormOne - onGoNext is not a function!", onGoNext);
+
     }
   }
 

@@ -53,7 +53,7 @@ const SelectPTUnits = React.memo(({ t, config, onSelect, userType, formData }) =
   const [fields, setFields] = useState(
     formatUnits(isFloor ? formData?.units?.filter((ee) => ee.floorNo == currentFloor) : formData?.units, currentFloor, isFloor)
   );
-console.log("form data in select ptunits",formData)
+
   useEffect(() => {
     setFields(() => formatUnits(isFloor ? formData?.units?.filter((ee) => ee.floorNo == currentFloor) : formData?.units, currentFloor, isFloor));
     return () => {
@@ -491,7 +491,7 @@ console.log("form data in select ptunits",formData)
                       title: t("CORE_COMMON_REQUIRED_ERRMSG"),
                     }}
                   />
-                
+
               <CardLabel>{`${t("PT_FORM2_RENTED_MONTHS")}*`}</CardLabel>
               <div className={"form-pt-dropdown-only"}>
                 <Dropdown

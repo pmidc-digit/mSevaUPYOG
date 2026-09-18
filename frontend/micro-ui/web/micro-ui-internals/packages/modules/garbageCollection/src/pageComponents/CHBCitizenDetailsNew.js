@@ -21,7 +21,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const pathname = history?.location?.pathname || "";
   const applicationNumber = pathname?.split("/").pop(); // ✅ Extracts the last segment
 
-  console.log("applicationNumber", applicationNumber);
+
   const {
     control,
     handleSubmit,
@@ -42,20 +42,20 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     setLoader(true);
     try {
       const responseData = await Digit.GCService.search({ tenantId, filters });
-      console.log("search ", responseData);
+
       dispatch(UPDATE_GarbageApplication_FORM("apiResponseData", responseData?.GarbageConnection?.[0]));
       // setChallanData(responseData?.GarbageConnection?.[0]);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
+
       setLoader(false);
     }
   };
 
   useEffect(() => {
-    console.log("tes===", applicationNumber);
+
     if (applicationNumber) {
-      console.log("here");
+
       const filters = {};
       filters.applicationNumber = applicationNumber;
       fetchChallans(filters);
@@ -63,12 +63,12 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   }, [applicationNumber]);
 
   const onSubmit = async (data) => {
-    console.log("data===", data);
+
     goNext(data);
   };
 
   useEffect(() => {
-    console.log("currentStepData", currentStepData);
+
     const formattedData = currentStepData?.ownerDetails;
     const apiRes = currentStepData?.apiResponseData;
     if (formattedData) {
@@ -89,7 +89,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     setLoader(true);
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
-      console.log("userData", userData);
+
       if (userData?.user?.[0]) {
         setValue("name", userData.user[0].name);
         setValue("emailId", userData.user[0].emailId);

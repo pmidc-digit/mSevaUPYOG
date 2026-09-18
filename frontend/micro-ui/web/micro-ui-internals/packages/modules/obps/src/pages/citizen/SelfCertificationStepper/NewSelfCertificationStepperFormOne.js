@@ -63,7 +63,7 @@ const NewSelfCertificationStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setError("");
   };
 
-  console.log("me rendering instead", JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")));
+
 
   if(isLoading) return (<Loader />)
 

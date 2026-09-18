@@ -47,8 +47,8 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     });
   }, [])
 
-  // console.log("ownerIds(redux)", ownerIds);
-  // console.log("ownerPhotos (redux)", ownerPhotos);
+
+
 
   const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch };
 
@@ -102,17 +102,17 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         },
       });
 
-      console.log("searchResponse in CLUStepFormTwo==>", searchResponse);
+
 
       const applications = searchResponse?.Clu || [];
-      //console.log("applications==>", applications);
+
 
       const currentAppNo = currentStepData?.apiData?.Clu?.[0]?.applicationNo;
-      //console.log("currentAppNo==>", currentAppNo);
+
       const activeApp = applications.find(
         (app) => app?.applicationNo && app?.applicationStatus !== "REJECTED" && app?.applicationNo !== currentAppNo
       );
-      //console.log("activeApp==>", activeApp);
+
 
       if (activeApp) {
         setShowToast({ key: "true", error: true, message: "BPA_VASIKA_NUMBER_EXISTS_LABEL" });
@@ -147,7 +147,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       ownerPhotos: Array.isArray(ownerPhotos?.ownerPhotoList) ? ownerPhotos.ownerPhotoList : [],
       ownerIds: Array.isArray(ownerIds?.ownerIdList) ? ownerIds.ownerIdList : [],
     };
-    //  console.log("cluFormData ==>", cluFormData)
+
 
     const ownerData = (cluFormData?.applicationDetails?.owners || [])?.map((item, index) => {
       return {
@@ -166,7 +166,7 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       };
     });
 
-    console.log("ownerData==>", ownerData);
+
 
     // Final payload
     const payload = {
@@ -187,21 +187,21 @@ const CLUStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       },
     };
 
-    console.log("final Payload here==>", payload);
+
 
     try {
       const response = await Digit.OBPSService.CLUCreate({ tenantId, details: payload });
 
       if (response?.ResponseInfo?.status === "successful") {
-        console.log("success :create api executed successfully !!!");
+
         dispatch(UPDATE_OBPS_FORM("apiData", response));
         onGoNext();
       } else {
-        console.error("error  : create api not executed properly !!!");
+
         setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
     } catch (error) {
-      console.log("errors here in goNext - catch block", error);
+
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     } finally {
       setTimeout(() => {

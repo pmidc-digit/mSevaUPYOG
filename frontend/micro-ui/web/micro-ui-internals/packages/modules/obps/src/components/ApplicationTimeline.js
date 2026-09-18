@@ -17,7 +17,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
   if (isLoading) {
     return <Loader />;
   }
-  console.log("workflowDetails", data)
+
 
   function OpenImage(imageSource, index,thumbnailsToShow){
     window.open(thumbnailsToShow?.fullImage?.[0],"_blank");

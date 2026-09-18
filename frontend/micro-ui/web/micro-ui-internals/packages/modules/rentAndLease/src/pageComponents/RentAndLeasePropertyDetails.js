@@ -128,7 +128,6 @@ const RentAndLeasePropertyDetails = ({
       arrearGST: "",
       arrearPenalty: "",
       futurePenalty: "",
-
     },
   });
 
@@ -304,15 +303,34 @@ const RentAndLeasePropertyDetails = ({
       );
       // const lastBillingPeriod = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails?.lastBillingPeriod;
 
-      setValue("arrearGST", Object.prototype.hasOwnProperty.call(propertyDetails, "arrearGST") ? propertyDetails.arrearGST ?? "" : additionalDetailsRes?.arrearGST ?? "");
-      setValue("arrearPenalty", Object.prototype.hasOwnProperty.call(propertyDetails, "arrearPenalty") ? propertyDetails.arrearPenalty ?? "" : additionalDetailsRes?.arrearPenalty ?? "");
-      setValue("futurePenalty", Object.prototype.hasOwnProperty.call(propertyDetails, "futurePenalty") ? propertyDetails.futurePenalty ?? "" : additionalDetailsRes?.futurePenalty ?? "");
+      setValue(
+        "arrearGST",
+        Object.prototype.hasOwnProperty.call(propertyDetails, "arrearGST") ? propertyDetails.arrearGST ?? "" : additionalDetailsRes?.arrearGST ?? ""
+      );
+      setValue(
+        "arrearPenalty",
+        Object.prototype.hasOwnProperty.call(propertyDetails, "arrearPenalty")
+          ? propertyDetails.arrearPenalty ?? ""
+          : additionalDetailsRes?.arrearPenalty ?? ""
+      );
+      setValue(
+        "futurePenalty",
+        Object.prototype.hasOwnProperty.call(propertyDetails, "futurePenalty")
+          ? propertyDetails.futurePenalty ?? ""
+          : additionalDetailsRes?.futurePenalty ?? ""
+      );
       setValue("area", findBuildingValue);
       setValue("arrear", savedArrear ?? "");
       setValue("isArrear", selectedIsArrear, { shouldValidate: true });
       setValue("lastBillingPeriod", formatDateForInput(checkBillingPeriod));
       setValue("lastRentRevisedDate", formatDateForInput(checkRevisedDatePeriod));
       setValue("lastPaidUpto", formatDateForInput(checklastPaidUpto));
+
+      // Normalize API strings, saved options, and older nested form values.
+      let reasonCode = propertyDetails.arrearReason ?? additionalDetailsRes?.arrearReason;
+      while (reasonCode && typeof reasonCode === "object") reasonCode = reasonCode.code;
+      const selectedReason = arrearReasonOptions.find((option) => option.code === reasonCode) || null;
+      setValue("arrearReason", selectedReason, { shouldValidate: true });
 
       // Restore documentsData for persistence
       if (propertyDetails.arrearDoc) {
@@ -865,7 +883,7 @@ const RentAndLeasePropertyDetails = ({
           {/* futurePenalty */}
           <LabelFieldPair>
             <CardLabel>
-              {t("Future Penalty")} <span className="mandatory-asterisk">*</span>
+              {t("Anual future penalty (%)")} <span className="mandatory-asterisk">*</span>
             </CardLabel>
 
             <div className="form-field">
@@ -1027,6 +1045,8 @@ const RentAndLeasePropertyDetails = ({
               />
             )}
           />
+
+          {/* arrearReasonOptions/ */}
         </LabelFieldPair>
         {errors.arrearReason && <CardLabelError className="ral-error-label">{getErrorMessage("arrearReason")}</CardLabelError>}
 

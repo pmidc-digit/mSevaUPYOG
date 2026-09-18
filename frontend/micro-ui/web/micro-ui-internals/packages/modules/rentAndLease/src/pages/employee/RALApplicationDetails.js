@@ -196,6 +196,7 @@ const RALApplicationDetails = () => {
     const payload = {
       action: [action],
     };
+    console.log("action", action);
 
     // history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
 
@@ -217,6 +218,8 @@ const RALApplicationDetails = () => {
         setShowModal(true);
         setSelectedAction(action);
       }
+    } else if (action?.action == "DRAFT") {
+      history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
     } else {
       setShowModal(true);
       setSelectedAction(action);
@@ -557,7 +560,13 @@ const RALApplicationDetails = () => {
           <ActionBar>
             <div ref={menuRef}>
               {displayMenu ? (
-                <Menu localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+                <Menu
+                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
+                  options={actions?.map((action) => (action.action === "DRAFT" ? { ...action, forcedName: "COMMON_EDIT" } : action))}
+                  optionKey={"action"}
+                  t={t}
+                  onSelect={onActionSelect}
+                />
               ) : null}
               <div className="ral-style-a527bac1ee">
                 <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

@@ -390,10 +390,10 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return e.action !== "CYCLE_Bill_GENERATED" && (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles);
     }) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return e.action !== "CYCLE_Bill_GENERATED" && (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles);
     });
 
   function onActionSelect(action) {

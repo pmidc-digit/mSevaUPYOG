@@ -323,11 +323,12 @@ public class PlanService {
             }        
            
             // Check Measured and Declared plot area match
-            BigDecimal declaredPlotArea = plan.getPlanInformation().getPlotArea().setScale(0, RoundingMode.DOWN);
-            BigDecimal measuredPlotArea = plan.getPlot().getArea().setScale(0, RoundingMode.DOWN);
-            
-            if(!declaredPlotArea.equals(measuredPlotArea))
+            BigDecimal declaredPlotArea = plan.getPlanInformation().getPlotArea();
+            BigDecimal measuredPlotArea = plan.getPlot().getArea();
+
+            if (declaredPlotArea.compareTo(measuredPlotArea) != 0) {
             	plan.getErrors().put("Invalid Plot Area", "Declared plot area and Measured plot area must be the same.");
+            }
             
             String ulbType = "";
             String districtName = "";

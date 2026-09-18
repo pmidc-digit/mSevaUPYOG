@@ -122,16 +122,43 @@ public class PaymentUpdateService {
 						throw new CustomException("INVALID RECEIPT",
 								"No tradeLicense found for the comsumerCode " + searchCriteria.getApplicationNumber());
 
-					licenses.forEach(license -> license.setAction(ACTION_PAY));
+				// ── Fix #3: Idempotency guard ────────────────────────────────────────────────
+				// If the license is already in a terminal/post-payment state, the workflow
+				// service will reject the PAY action with "INVALID ACTION". Skip such licenses
+				// to prevent CustomException and Kafka consumer retry loops.
+				List<TradeLicense> eligibleLicenses = new java.util.ArrayList<>();
+				for (TradeLicense license : licenses) {
+					String currentStatus = license.getStatus();
+					if (STATUS_APPROVED.equalsIgnoreCase(currentStatus)
+							|| STATUS_PAID.equalsIgnoreCase(currentStatus)
+							|| STATUS_REJECTED.equalsIgnoreCase(currentStatus)
+							|| STATUS_CANCELLED.equalsIgnoreCase(currentStatus)
+							|| STATUS_EXPIRED.equalsIgnoreCase(currentStatus)
+							|| STATUS_MANUALLYEXPIRED.equalsIgnoreCase(currentStatus)) {
+						log.warn("PaymentUpdateService: Skipping PAY action for application {} – already in terminal state '{}'",
+								license.getApplicationNumber(), currentStatus);
+					} else {
+						eligibleLicenses.add(license);
+					}
+				}
+
+				if (eligibleLicenses.isEmpty()) {
+					log.info("PaymentUpdateService: All licenses for consumerCode {} are already in terminal states. No workflow update needed.",
+							searchCriteria.getApplicationNumber());
+					continue;
+				}
+				// ── end idempotency guard ─────────────────────────────────────────────────────
+
+					eligibleLicenses.forEach(license -> license.setAction(ACTION_PAY));
 
 					// FIXME check if the update call to repository can be avoided
 					// FIXME check why aniket is not using request info from consumer
 					// REMOVE SYSTEM HARDCODING AFTER ALTERING THE CONFIG IN WF FOR TL
 
-					Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(licenses.get(0).getTenantId()).build();
+					Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(eligibleLicenses.get(0).getTenantId()).build();
 					requestInfo.getUserInfo().getRoles().add(role);
 					TradeLicenseRequest updateRequest = TradeLicenseRequest.builder().requestInfo(requestInfo)
-							.licenses(licenses).build();
+							.licenses(eligibleLicenses).build();
 
 					/*
 					 * calling workflow to update status
@@ -155,7 +182,7 @@ public class PaymentUpdateService {
 					updateRequest.getLicenses()
 					.forEach(obj -> log.info("Request Object" + obj));
 					
-					Map<String,Boolean> idToIsStateUpdatableMap = util.getIdToIsStateUpdatableMap(businessServiceMap,licenses);
+					Map<String,Boolean> idToIsStateUpdatableMap = util.getIdToIsStateUpdatableMap(businessServiceMap,eligibleLicenses);
 					repository.update(updateRequest,idToIsStateUpdatableMap);
 			}
 		 }

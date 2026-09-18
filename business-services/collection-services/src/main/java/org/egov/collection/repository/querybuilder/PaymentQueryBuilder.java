@@ -273,7 +273,7 @@ public class PaymentQueryBuilder {
 		sqlParameterSource.addValue("amountpaid", billDetail.getAmountPaid());
 		sqlParameterSource.addValue("fromperiod", billDetail.getFromPeriod());
 		sqlParameterSource.addValue("toperiod", billDetail.getToPeriod());
-		sqlParameterSource.addValue("additionaldetails", getJsonb((JsonNode) billDetail.getAdditionalDetails()));
+		sqlParameterSource.addValue("additionaldetails", getJsonb(billDetail.getAdditionalDetails()));
 		sqlParameterSource.addValue("channel", billDetail.getChannel());
 		sqlParameterSource.addValue("voucherheader", billDetail.getVoucherHeader());
 		sqlParameterSource.addValue("boundary", billDetail.getBoundary());
@@ -680,6 +680,17 @@ public class PaymentQueryBuilder {
 		}
 
 	}
+	
+	private static PGobject getJsonb(Object value) {
+	    if (Objects.isNull(value))
+	        return null;
+
+	    ObjectMapper objectMapper = new ObjectMapper();
+	    JsonNode node = objectMapper.valueToTree(value);
+
+	    return getJsonb(node);
+	}
+
 
 	private static void addWhereClauseForPlainSearch(StringBuilder selectQuery,
 			Map<String, Object> preparedStatementValues, PaymentSearchCriteria searchCriteria) {

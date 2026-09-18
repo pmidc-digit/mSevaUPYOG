@@ -48,6 +48,7 @@ import {
   fetchUrl,
   fetchOnlyFileStore,
   fetchOnlyUrl,
+  EmployeeData
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview";
@@ -103,7 +104,7 @@ const BpaApplicationDetail = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [showPdfModal, setShowPdfModal] = useState(false);
   const stateId = Digit.ULBService.getStateId();
-
+  const [EmpData, setEmpData] = useState(null);
   const user = Digit.UserService.getUser();
 
   const citizenmobilenumber = user?.info?.mobileNumber;
@@ -324,7 +325,7 @@ const BpaApplicationDetail = () => {
 
   const comments = useMemo(() => {
     if (workflowDetails?.data && !workflowDetails?.isLoading && (data?.applicationStatus === "APPROVED" || data?.applicationStatus === "REJECTED")) {
-      return getApproveRejectComments(workflowDetails);
+      return getApproveRejectComments(workflowDetails , true);
     }
     return null;
   }, [workflowDetails?.data, workflowDetails?.isLoading, data?.applicationStatus]);
@@ -846,7 +847,7 @@ const BpaApplicationDetail = () => {
     requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
   }
 
-  async function getRejectionLetter({ tenantId }, order, mode = "download") {
+  async function getRejectionLetter({ tenantId }, order, mode = "download" , EmpData) {
     let tenant = data?.tenantId || tenantId;
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     let fileStoreId;
@@ -863,6 +864,7 @@ const BpaApplicationDetail = () => {
           nowIST,
           designation,
           approverComment: comments,
+          EmpData,
         };
         if (requestData?.landInfo?.owners) {
           requestData.landInfo = {
@@ -1988,7 +1990,10 @@ const BpaApplicationDetail = () => {
     dowloadOptions.push({
       order: 5,
       label: t("BPA_REJECTION_LETTER"),
-      onClick: () => getRejectionLetter({ tenantId: data?.applicationData?.tenantId }, "bpa-rejection-letter"),
+      onClick: async () => {
+        const empRes = await EmployeeData(tenantId, id, "OBPS");
+        getRejectionLetter({ tenantId: data?.applicationData?.tenantId }, "bpa-rejection-letter", "download", empRes);
+      },
     });
   }
 

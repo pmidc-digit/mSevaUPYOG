@@ -1494,7 +1494,7 @@ export function formatDuration(totalTimeMs) {
   return { days, hours, minutes, seconds };
 }
 
-export function getApproveRejectComments(workflowDetails) {
+export function getApproveRejectComments(workflowDetails , getDate = false) {
   const defaultReturn = {
     approverCommentLine: " ",
     approverComment: " ",
@@ -1517,7 +1517,7 @@ export function getApproveRejectComments(workflowDetails) {
 
     // ✅ Normalize comment safely
     const rawComment = decisionInstance?.comment || "";
-
+    const processDate = decisionInstance?.auditDetails?.lastModifiedTime || "";
     let actualComment = " ";
 
     if (rawComment?.includes(delimiter)) {
@@ -1532,6 +1532,7 @@ export function getApproveRejectComments(workflowDetails) {
       : " ";
 
     return {
+      ...(getDate && {approveRejectDate :  processDate}),
       approverCommentLine: commentLine, // full sentence
       approverComment: actualComment, // only the extracted comment
     };

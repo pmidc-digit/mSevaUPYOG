@@ -9,6 +9,12 @@ public class RLConstants {
 	public static final String RENEWAL_RL_APPLICATION = "RENEWAL";
 	
     public static final String APPROVED_RL_APPLICATION = "APPROVE";
+
+    /**
+     * Workflow action that saves the edits without changing the state of the application (self transition).
+     * Must match the action name configured in the workflow business service.
+     */
+    public static final String DRAFT_RL_APPLICATION = "DRAFT";
     
     public static final String APPROVED = "APPROVED";  
     

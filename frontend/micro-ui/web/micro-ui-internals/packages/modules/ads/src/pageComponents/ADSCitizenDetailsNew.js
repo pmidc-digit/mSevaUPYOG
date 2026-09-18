@@ -82,7 +82,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       // If applicant details also need to be prefilled
       if (created?.applicantDetail) {
         setValue("name", currentStepData?.ownerDetails?.applicantDetail?.applicantName || created.applicantDetail.applicantName || "");
-        setValue("remarks", currentStepData?.ownerDetails?.additionalDetails?.remarks || created.additionalDetails.remarks || "");
+        setValue("remarks", currentStepData?.ownerDetails?.additionalDetails?.remarks || created?.additionalDetails?.remarks || "");
         setValue("emailId", currentStepData?.ownerDetails?.applicantDetail?.applicantEmailId || created.applicantDetail.applicantEmailId || "");
         setValue(
           "mobileNumber",

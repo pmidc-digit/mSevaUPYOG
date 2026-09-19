@@ -312,6 +312,9 @@ public class PlanReportServiceV2 {
         model.put("plot",               plan.getPlot());
         model.put("plotBndryArea",
                 plan.getPlot() != null ? plan.getPlot().getPlotBndryArea(): BigDecimal.ZERO);
+        
+        model.put("totalExistingBuiltUpArea",
+                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalExistingBuiltUpArea() : BigDecimal.valueOf(0));
 
         Map<String, String> serviceTypeList = new ConcurrentHashMap<>();
         serviceTypeList.put("NEW_CONSTRUCTION", "New Construction");
@@ -881,8 +884,8 @@ public class PlanReportServiceV2 {
 
             if (existingBlockDetail.getDcrReportFloorDetails() != null) {
                 for (DcrReportFloorDetail floor : existingBlockDetail.getDcrReportFloorDetails()) {
-                    totalBuiltUpArea = totalBuiltUpArea.add(floor.getBuiltUpArea());
-                    totalFloorArea   = totalFloorArea.add(floor.getFloorArea());
+                    totalBuiltUpArea = totalBuiltUpArea.add(floor.getBuiltUpArea()).setScale(2, RoundingMode.HALF_UP);
+                    totalFloorArea   = totalFloorArea.add(floor.getFloorArea()).setScale(2, RoundingMode.HALF_UP);
 
                     Map<String, String> details = new HashMap<>();
                     details.put("Floor", floor.getFloorNo());
@@ -902,8 +905,8 @@ public class PlanReportServiceV2 {
 
             sections.get("Existing Block Wise Summary").put(heading, scrutinyDetail);
 
-            grandTotalBuiltUpArea = grandTotalBuiltUpArea.add(totalBuiltUpArea);
-            grandTotalFloorArea   = grandTotalFloorArea.add(totalFloorArea);
+            grandTotalBuiltUpArea = grandTotalBuiltUpArea.add(totalBuiltUpArea).setScale(2, RoundingMode.HALF_UP);
+            grandTotalFloorArea   = grandTotalFloorArea.add(totalFloorArea).setScale(2, RoundingMode.HALF_UP);
         }
 
         ScrutinyDetail totalExisting = new ScrutinyDetail();

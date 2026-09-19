@@ -442,9 +442,9 @@ public class DxfToPdfConverterv2 {
             
             // Build SVG text element - NO transforms, simple and clean
             StringBuilder svg = new StringBuilder();
-            svg.append(String.format(
-                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" " +
-                    "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"%s\">",
+            svg.append(String.format(Locale.US,
+                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" stroke=\"none\" stroke-width=\"0\" " +
+                    "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"%s\" xml:space=\"preserve\">",
                     px, py, svgHeight, color, fontFamily, anchor, dominantBaseline));
             
             // Apply rotation if needed (use transform attribute)
@@ -487,7 +487,7 @@ public class DxfToPdfConverterv2 {
             }
 
             String fontFamily = resolveFontFamily(doc, styleName);
-            List<MTextSegment> segments = parseMText(text, doc, styleName, fontSize);
+            List<MTextSegment> segments = parseMText(text, doc, styleName, fontSize, height);
 
             // Map attachment point to SVG text-anchor.
             // Attachment grid: 1=TL  2=TC  3=TR
@@ -510,7 +510,7 @@ public class DxfToPdfConverterv2 {
                 if (seg.isNewline) {
                     lines.add(currentLine);
                     currentLine = new ArrayList<>();
-                } else if (!seg.text.isEmpty()) {
+                } else if (!seg.text.isEmpty() || seg.isFraction) {
                     currentLine.add(seg);
                 }
             }
@@ -518,13 +518,15 @@ public class DxfToPdfConverterv2 {
             if (lines.isEmpty()) lines.add(new ArrayList<>());
 
             double effectiveLineSpacing = Math.max(1.0, lineSpacing > 0 ? lineSpacing : 1.0);
+            double lineSpacingFactor = 1.35 * effectiveLineSpacing;
             List<Double> lineFontSizes = new ArrayList<>();
             for (List<MTextSegment> line : lines) {
                 lineFontSizes.add(maxMTextLineFontSize(line, fontSize));
             }
             double totalHeight = 0.0;
-            for (double lineFontSize : lineFontSizes) {
-                totalHeight += lineFontSize * effectiveLineSpacing;
+            for (int i = 0; i < lineFontSizes.size(); i++) {
+                if (i == 0) totalHeight += lineFontSizes.get(0);
+                else totalHeight += lineFontSizes.get(i - 1) * lineSpacingFactor;
             }
 
             // Keep the DXF insertion point as the exact local origin. Attachment
@@ -551,15 +553,15 @@ public class DxfToPdfConverterv2 {
             // Single line - simple output
             if (lines.size() == 1) {
                 sb.append(String.format(
-                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" " +
+                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" stroke=\"none\" stroke-width=\"0\" " +
                     "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"alphabetic\" xml:space=\"preserve\">%s</text>",
                     0.0, localBaselineY, fontSize,
                     resolveColor(doc, this),
-                    fontFamily, anchor, renderMTextRuns(lines.get(0), resolveColor(doc, this), fontSize)));
+                    fontFamily, anchor, renderMTextRuns(lines.get(0), resolveColor(doc, this), fontSize, fontFamily)));
             } else {
                 // Multiple lines with tspan
                 sb.append(String.format(
-                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" " +
+                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" stroke=\"none\" stroke-width=\"0\" " +
                     "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"alphabetic\" xml:space=\"preserve\">",
                     0.0, localBaselineY, fontSize,
                     resolveColor(doc, this),
@@ -568,11 +570,11 @@ public class DxfToPdfConverterv2 {
                 for (int i = 0; i < lines.size(); i++) {
                     if (i == 0) {
                         sb.append(String.format("<tspan x=\"%.6f\" dy=\"0\">%s</tspan>",
-                                0.0, renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize)));
+                                0.0, renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize, fontFamily)));
                     } else {
                         sb.append(String.format("<tspan x=\"%.6f\" dy=\"%.6f\">%s</tspan>",
-                                0.0, lineFontSizes.get(i - 1) * effectiveLineSpacing,
-                                renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize)));
+                                0.0, lineFontSizes.get(i - 1) * lineSpacingFactor,
+                                renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize, fontFamily)));
                     }
                 }
                 sb.append("</text>");
@@ -585,9 +587,59 @@ public class DxfToPdfConverterv2 {
 
     }
 
-    static String renderMTextRuns(List<MTextSegment> runs, String baseColor, double baseFontSize) {
+    static String renderMTextRuns(List<MTextSegment> runs, String baseColor, double baseFontSize, String baseFontFamily) {
         StringBuilder out = new StringBuilder();
         for (MTextSegment run : runs) {
+            if (run.isFraction) {
+                double effBase = run.fontSize > 0 ? run.fontSize : baseFontSize;
+                double fracFontSize = effBase < baseFontSize * 0.85 ? effBase : (effBase * 0.70);
+                String num = escapeXml(cleanMTextVisibleText(run.fractionNum));
+                String denom = escapeXml(cleanMTextVisibleText(run.fractionDenom));
+                String colorAttr = (run.color != null && !run.color.equalsIgnoreCase(baseColor))
+                        ? String.format(" fill=\"%s\"", run.color) : "";
+                double numLen = Math.max(1, num.length());
+                double denomLen = Math.max(1, denom.length());
+                double rewindEm = -(numLen * 0.55);
+                double advanceEm = 0.10;
+                if (numLen > denomLen) {
+                    advanceEm = Math.max(0.05, (numLen - denomLen) * 0.55 - 0.20);
+                }
+
+                if (run.fractionType == '/') {
+                    double maxLen = Math.max(num.length(), denom.length());
+                    String bar = maxLen > 1 ? "\u2014" : "\u2013";
+                    double barRewind = maxLen > 1 ? -0.95 : -0.55;
+                    double denomRewind = maxLen > 1 ? -0.90 : -0.50;
+                    double advance = maxLen > 1 ? 0.25 : 0.20;
+                    out.append(String.format(Locale.US,
+                        "<tspan font-size=\"%.4f\" baseline-shift=\"40%%\"%s>%s</tspan>" +
+                        "<tspan font-size=\"%.4f\" baseline-shift=\"8%%\" dx=\"%.2fem\"%s>%s</tspan>" +
+                        "<tspan font-size=\"%.4f\" baseline-shift=\"-35%%\" dx=\"%.2fem\"%s>%s</tspan>" +
+                        "<tspan font-size=\"%.4f\" baseline-shift=\"0\" dx=\"%.2fem\"> </tspan>",
+                        fracFontSize, colorAttr, num,
+                        fracFontSize, barRewind, colorAttr, bar,
+                        fracFontSize, denomRewind, colorAttr, denom,
+                        run.fontSize > 0 ? run.fontSize : baseFontSize, advance));
+                } else if (run.fractionType == '#') {
+                    out.append(String.format(Locale.US,
+                        "<tspan font-size=\"%.4f\" baseline-shift=\"30%%\"%s>%s</tspan>" +
+                        "<tspan%s>/</tspan>" +
+                        "<tspan font-size=\"%.4f\" baseline-shift=\"-25%%\"%s>%s</tspan>",
+                        fracFontSize, colorAttr, num,
+                        colorAttr,
+                        fracFontSize, colorAttr, denom));
+                } else {
+                    out.append(String.format(Locale.US,
+                        "<tspan font-size=\"%.4f\" baseline-shift=\"35%%\"%s>%s</tspan>" +
+                        "<tspan font-size=\"%.4f\" baseline-shift=\"-30%%\" dx=\"%.2fem\"%s>%s</tspan>" +
+                        "<tspan font-size=\"%.4f\" baseline-shift=\"0\" dx=\"%.2fem\"> </tspan>",
+                        fracFontSize, colorAttr, num,
+                        fracFontSize, rewindEm, colorAttr, denom,
+                        run.fontSize > 0 ? run.fontSize : baseFontSize, advanceEm));
+                }
+                continue;
+            }
+
             String text = cleanMTextVisibleText(run.text);
             if (text.isEmpty() || isDimensionPlaceholderText(text)) continue;
             StringBuilder attrs = new StringBuilder();
@@ -596,6 +648,9 @@ public class DxfToPdfConverterv2 {
             }
             if (run.fontSize > 0 && Math.abs(run.fontSize - baseFontSize) > 0.01) {
                 attrs.append(String.format(Locale.US, " font-size=\"%.6f\"", run.fontSize));
+            }
+            if (run.fontName != null && !run.fontName.isEmpty() && !run.fontName.equalsIgnoreCase(baseFontFamily)) {
+                attrs.append(String.format(" font-family=\"%s\"", run.fontName));
             }
             if (run.bold) attrs.append(" font-weight=\"bold\"");
             if (run.italic) attrs.append(" font-style=\"italic\"");
@@ -624,6 +679,7 @@ public class DxfToPdfConverterv2 {
     static String cleanMTextVisibleText(String text) {
         if (text == null || text.isEmpty()) return "";
         return text
+                .replace("%%%", "%")
                 .replace("^I", "    ")
                 .replace("%%U", "").replace("%%u", "")
                 .replaceAll("(?<![\\w])([a-zA-Z]{1,3}[+-]?[0-9]*\\.?[0-9]+(?:,[a-zA-Z]{1,3}[+-]?[0-9]*\\.?[0-9]+)*);", "")
@@ -640,6 +696,10 @@ public class DxfToPdfConverterv2 {
         boolean underline = false;
         boolean isNewline = false;
         String fontName = "";
+        boolean isFraction = false;
+        String fractionNum = "";
+        String fractionDenom = "";
+        char fractionType = '/';
     }
 
     // ── INSERT ENTITY ─────────────────────────────────────────────────────────
@@ -701,11 +761,13 @@ public class DxfToPdfConverterv2 {
         @Override
         String toSvg(DxfDocument doc, double[] t) {
             StringBuilder sb = new StringBuilder();
+            boolean blockRendered = false;
 
             if (!dimensionBlockName.isEmpty()) {
                 String key = dimensionBlockName.toUpperCase();
                 Block block = doc.blocks.get(key);
-                if (block != null) {
+                if (block != null && !block.entities.isEmpty()) {
+                    blockRendered = true;
                     String dimColor = resolveColor(doc, this);
                     sb.append(String.format("<g fill=\"%s\" stroke=\"%s\" color=\"%s\">", dimColor, dimColor, dimColor));
                     for (Entity e : block.entities) {
@@ -726,7 +788,7 @@ public class DxfToPdfConverterv2 {
                 }
             }
 
-            if (text != null && !text.isEmpty() && !isDimensionPlaceholderText(text)) {
+            if (!blockRendered && text != null && !text.isEmpty() && !isDimensionPlaceholderText(text)) {
                 String cleanText = processTextCodes(stripNonStandardCodes(text));
                 if (!cleanText.isEmpty()) {
                     String color = resolveColor(doc, this);
@@ -748,7 +810,18 @@ public class DxfToPdfConverterv2 {
     // ── LEADER ENTITY ─────────────────────────────────────────────────────────
     static String normalizeDimensionTextStyle(String svg) {
         if (svg == null || svg.isEmpty() || !svg.contains("<text")) return svg;
-        return svg.replace("<text ", "<text stroke=\"none\" stroke-width=\"0\" fill-opacity=\"0.85\" font-weight=\"400\" ");
+        StringBuilder attrs = new StringBuilder();
+        if (!svg.contains("stroke=")) {
+            attrs.append("stroke=\"none\" stroke-width=\"0\" ");
+        }
+        if (!svg.contains("fill-opacity=")) {
+            attrs.append("fill-opacity=\"0.85\" ");
+        }
+        if (!svg.contains("font-weight=")) {
+            attrs.append("font-weight=\"400\" ");
+        }
+        if (attrs.length() == 0) return svg;
+        return svg.replace("<text ", "<text " + attrs.toString());
     }
 
     static class LeaderEntity extends Entity {
@@ -965,20 +1038,32 @@ public class DxfToPdfConverterv2 {
     }
 
     static String mapDxfFontToWeb(String dxfFont) {
-        String f = dxfFont.toLowerCase().replaceAll("\\.[a-z]+$", "");
+        if (dxfFont == null || dxfFont.trim().isEmpty()) {
+            return "Arial, sans-serif";
+        }
+        String cleanFont = dxfFont.replaceAll("(?i)\\.[a-z0-9]+$", "").trim();
+        String f = cleanFont.toLowerCase();
         switch (f) {
             case "txt": case "simplex": return "Arial, sans-serif";
-            case "romans": case "roman": return "Times New Roman, serif";
-            case "romand": return "Times New Roman, serif";
-            case "romanc": return "Times New Roman, serif";
+            case "romans": case "roman": return "Arial, sans-serif";
+            case "romand": return "Arial, sans-serif";
+            case "romanc": return "Arial, sans-serif";
             case "italicc": case "italict": return "Arial, sans-serif";
             case "gothice": case "gothicg": case "gothici": return "Georgia, serif";
             case "arial": return "Arial, sans-serif";
-            case "times": return "Times New Roman, serif";
-            case "courier": return "Courier New, monospace";
+            case "times": case "times new roman": return "Times New Roman, serif";
+            case "courier": case "courier new": return "Courier New, monospace";
+            case "consolas": return "Consolas, monospace";
             case "verdana": return "Verdana, sans-serif";
             case "calibri": return "Calibri, Arial, sans-serif";
-            default: return "Arial, sans-serif";
+            case "tahoma": return "Tahoma, sans-serif";
+            case "trebuchet ms": return "Trebuchet MS, sans-serif";
+            case "georgia": return "Georgia, serif";
+            default:
+                if (!dxfFont.toLowerCase().endsWith(".shx")) {
+                    return cleanFont + ", Arial, sans-serif";
+                }
+                return "Arial, sans-serif";
         }
     }
 
@@ -1013,6 +1098,10 @@ public class DxfToPdfConverterv2 {
      *        { } = group (save/restore)
      */
     static List<MTextSegment> parseMText(String raw, DxfDocument doc, String baseStyle, double baseHeight) {
+        return parseMText(raw, doc, baseStyle, baseHeight, 0);
+    }
+
+    static List<MTextSegment> parseMText(String raw, DxfDocument doc, String baseStyle, double baseHeight, double baseDxfHeight) {
         List<MTextSegment> result = new ArrayList<>();
         if (raw == null || raw.isEmpty()) return result;
 
@@ -1064,8 +1153,8 @@ public class DxfToPdfConverterv2 {
                 } else if (next == 'p') {
                     // Paragraph formatting properties, e.g. \pi-0.8,l1.1,t1.1;
                     i += 2;
-                    while (i < raw.length() && raw.charAt(i) != ';') i++;
-                    if (i < raw.length()) i++;
+                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') i++;
+                    if (i < raw.length() && raw.charAt(i) == ';') i++;
                 } else if (next == 'n') {
                     if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     MTextSegment nl = new MTextSegment(); nl.isNewline = true; result.add(nl);
@@ -1073,46 +1162,62 @@ public class DxfToPdfConverterv2 {
                 } else if (next == '~') {
                     buf.append('\u00A0'); i += 2;
                 } else if (next == 'L') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.underline = true; i += 2;
                 } else if (next == 'l') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.underline = false; i += 2;
                 } else if (next == 'O') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.overline = true; i += 2;
                 } else if (next == 'o') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.overline = false; i += 2;
                 } else if (next == 'K') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.strikethrough = true; i += 2;
                 } else if (next == 'k') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.strikethrough = false; i += 2;
                 } else if (next == 'B') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.bold = true; i += 2;
                 } else if (next == 'b') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.bold = false; i += 2;
                 } else if (next == 'I') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.italic = true; i += 2;
                 } else if (next == 'i') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     state.italic = false; i += 2;
                 } else if (next == 'H' || next == 'h') {
                     // \Hvalue; or \Hvaluex;  (x = relative)
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     i += 2;
                     StringBuilder val = new StringBuilder();
                     boolean relative = false;
-                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != ' ') {
+                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != ' ' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') {
                         if (raw.charAt(i) == 'x' || raw.charAt(i) == 'X') relative = true;
                         else val.append(raw.charAt(i));
                         i++;
                     }
                     if (i < raw.length() && raw.charAt(i) == ';') i++;
                     try {
-                        double h = Double.parseDouble(val.toString());
-                        state.fontSize = relative ? state.fontSize * h : h;
+                        double h = Double.parseDouble(val.toString().trim());
+                        if (relative) {
+                            state.fontSize = state.fontSize * h;
+                        } else {
+                            state.fontSize = (baseDxfHeight > 0 && baseHeight > 0) ? (h * (baseHeight / baseDxfHeight)) : (h > 0 ? h : state.fontSize);
+                        }
                     } catch (NumberFormatException ignored) {}
                 } else if (next == 'C' || next == 'c') {
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     if (next == 'C') {
                         // ACI color
                         i += 2;
                         StringBuilder val = new StringBuilder();
-                        while (i < raw.length() && raw.charAt(i) != ';') { val.append(raw.charAt(i)); i++; }
+                        while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
                         if (i < raw.length()) i++; // skip ;
                         try {
                             int aci = Integer.parseInt(val.toString().trim());
@@ -1123,7 +1228,7 @@ public class DxfToPdfConverterv2 {
                         // 24-bit color \cRRGGBB; (BGR in DXF)
                         i += 2;
                         StringBuilder val = new StringBuilder();
-                        while (i < raw.length() && raw.charAt(i) != ';') { val.append(raw.charAt(i)); i++; }
+                        while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
                         if (i < raw.length()) i++;
                         try {
                             long bgr = Long.parseLong(val.toString().trim());
@@ -1135,9 +1240,10 @@ public class DxfToPdfConverterv2 {
                     }
                 } else if (next == 'F' || next == 'f') {
                     // Font: \Ffontname; or \ffontname|b0|i0|c0|p0;
+                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
                     i += 2;
                     StringBuilder val = new StringBuilder();
-                    while (i < raw.length() && raw.charAt(i) != ';') { val.append(raw.charAt(i)); i++; }
+                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
                     if (i < raw.length()) i++;
                     String[] parts2 = val.toString().split("\\|");
                     if (parts2.length > 0) {
@@ -1148,24 +1254,54 @@ public class DxfToPdfConverterv2 {
                 } else if (next == 'T' || next == 'Q' || next == 'W' || next == 'A') {
                     // Tracking, oblique, width, alignment - skip value
                     i += 2;
-                    while (i < raw.length() && raw.charAt(i) != ';') i++;
-                    if (i < raw.length()) i++;
+                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') i++;
+                    if (i < raw.length() && raw.charAt(i) == ';') i++;
                 } else if (next == 'S') {
                     // Stacking: \Snum/denom; or \Snum#denom; or \Snum^denom;
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf = new StringBuilder();
+                    }
                     i += 2;
                     StringBuilder val = new StringBuilder();
-                    while (i < raw.length() && raw.charAt(i) != ';') { val.append(raw.charAt(i)); i++; }
-                    if (i < raw.length()) i++;
+                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') {
+                        val.append(raw.charAt(i));
+                        i++;
+                    }
+                    if (i < raw.length() && raw.charAt(i) == ';') i++;
                     String sv = val.toString();
-                    // Just output numerator/denominator separated by /
-                    String[] parts3 = sv.split("[/#^]");
-                    if (parts3.length >= 2) buf.append(parts3[0]).append("/").append(parts3[1]);
-                    else buf.append(sv);
+                    char fracType = '/';
+                    int delimIdx = -1;
+                    for (int di = 0; di < sv.length(); di++) {
+                        char ch = sv.charAt(di);
+                        if (ch == '/' || ch == '#' || ch == '^') {
+                            fracType = ch;
+                            delimIdx = di;
+                            break;
+                        }
+                    }
+                    if (delimIdx >= 0) {
+                        String num = sv.substring(0, delimIdx);
+                        String denom = sv.substring(delimIdx + 1);
+                        MTextSegment fSeg = new MTextSegment();
+                        fSeg.isFraction = true;
+                        fSeg.fractionType = fracType;
+                        fSeg.fractionNum = num;
+                        fSeg.fractionDenom = denom;
+                        fSeg.fontSize = state.fontSize;
+                        fSeg.color = state.color;
+                        fSeg.fontName = state.fontFamily;
+                        fSeg.bold = state.bold;
+                        fSeg.italic = state.italic;
+                        result.add(fSeg);
+                    } else {
+                        buf.append(sv);
+                    }
                 } else if (next == 'U' || next == 'u') {
                     // Unicode character \Unnnn;
                     i += 2;
                     StringBuilder val = new StringBuilder();
-                    while (i < raw.length() && raw.charAt(i) != ';') { val.append(raw.charAt(i)); i++; }
+                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
                     if (i < raw.length()) i++;
                     try {
                         int codePoint = Integer.parseInt(val.toString().trim(), 16);
@@ -1176,14 +1312,21 @@ public class DxfToPdfConverterv2 {
                     i += 2;
                 }
             } else if (c == '%' && i + 2 < raw.length() && raw.charAt(i+1) == '%') {
-                // AutoCAD special: %%d=°  %%p=±  %%c=⌀  %%o=overline  %%u=underline
+                // AutoCAD special: %%d=°  %%p=±  %%c=⌀  %%o=overline  %%u=underline  %%%=%
                 char special = raw.charAt(i + 2);
                 switch (special) {
-                    case 'd': case 'D': buf.append('°'); break;
-                    case 'p': case 'P': buf.append('±'); break;
+                    case '%': buf.append('%'); break;
+                    case 'd': case 'D': buf.append('\u00B0'); break;
+                    case 'p': case 'P': buf.append('\u00B1'); break;
                     case 'c': case 'C': buf.append('\u2300'); break; // diameter
-                    case 'o': case 'O': state.overline = !state.overline; break;
-                    case 'u': case 'U': state.underline = !state.underline; break;
+                    case 'o': case 'O':
+                        if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+                        state.overline = !state.overline;
+                        break;
+                    case 'u': case 'U':
+                        if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+                        state.underline = !state.underline;
+                        break;
                     default: buf.append('%').append('%').append(special);
                 }
                 i += 3;
@@ -1234,14 +1377,14 @@ public class DxfToPdfConverterv2 {
     // Process simple TEXT codes (%%d %%p %%c)
     static String processTextCodes(String text) {
         if (text == null) return "";
-        return stripNonStandardCodes(
-                text
-                        .replace("%%d", "°").replace("%%D", "°")
-                        .replace("%%p", "±").replace("%%P", "±")
-                        .replace("%%c", "\u2300").replace("%%C", "\u2300")
-                        .replace("%%U", "").replace("%%u", "") // underline toggle - strip
-                        .replace("\\P", "\n").replace("\\p", "\n")
-        );
+        return text
+                .replace("%%%", "%")
+                .replace("%%d", "\u00B0").replace("%%D", "\u00B0")
+                .replace("%%p", "\u00B1").replace("%%P", "\u00B1")
+                .replace("%%c", "\u2300").replace("%%C", "\u2300")
+                .replace("%%U", "").replace("%%u", "") // underline toggle - strip
+                .replace("%%O", "").replace("%%o", "") // overline toggle - strip
+                .replace("\\P", "\n").replace("\\p", "\n");
     }
     // ── DXF PARSER ────────────────────────────────────────────────────────────
 
@@ -1293,10 +1436,14 @@ public class DxfToPdfConverterv2 {
             }
         }
 
-        // Compute extents if not set from header
-//        if (!doc.extentsSet) {
-//            computeExtents(doc);
-//        }
+        splitSpacedTableText(doc.entities);
+        for (Block b : doc.blocks.values()) {
+            splitSpacedTableText(b.entities);
+        }
+        mergeAdjacentCollinearText(doc.entities);
+        for (Block b : doc.blocks.values()) {
+            mergeAdjacentCollinearText(b.entities);
+        }
         computeExtents(doc);
         detectApprovalPlanTitles(doc);
 
@@ -1788,7 +1935,7 @@ public class DxfToPdfConverterv2 {
                 else if (c == 11) e.secondX = Double.parseDouble(tok[1].trim());
                 else if (c == 21) e.secondY = Double.parseDouble(tok[1].trim());
                 else if (c == 40) e.height = Double.parseDouble(tok[1].trim());
-                else if (c == 1) e.text = stripNonStandardCodes(tok[1]);
+                else if (c == 1) e.text = tok[1];
                 else if (c == 50) e.rotation = Double.parseDouble(tok[1].trim());
                 else if (c == 41) e.widthFactor = Double.parseDouble(tok[1].trim());
                 else if (c == 51) e.obliqueAngle = Double.parseDouble(tok[1].trim());
@@ -1871,7 +2018,7 @@ public class DxfToPdfConverterv2 {
                 else if (c == 74) e.textDirection = Integer.parseInt(tok[1].trim()); // Text direction: 0=LTR, 1=RTL, 3=vertical
                 else if (c == 1 || c == 3) {
                     // Group 3 is continuation of text (when > 250 chars)
-                    textBuf.append(tok[1].replaceAll("^[a-zA-Z][a-zA-Z0-9,-]*;", "")); // strip leading codes
+                    textBuf.append(tok[1]);
                 }
             } catch (NumberFormatException ignored) {}
             idx++;
@@ -2635,16 +2782,14 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                 .replace("<>", "")
                 .replace("{", "")
                 .replace("}", "")
+                .replace("%%%", "%")
                 // %%U/%%u = underline toggle — strip
                 .replace("%%U", "").replace("%%u", "")
                 // Strip CAD-specific italic/indent codes: i-12.64; i0.6218; i-3.462; etc.
                 // Must NOT strip things like "1IN12" — only codes ending in ;
                 .replaceAll("(?<![\\w])([a-zA-Z]{1,3}[+-]?[0-9]*\\.?[0-9]+(?:,[a-zA-Z]{1,3}[+-]?[0-9]*\\.?[0-9]+)*);", "")
                 // Strip reset codes like i0,l0,tz;
-                .replaceAll("(?<![\\w=])[a-zA-Z]{1,2}[0-9]?(?:,[a-zA-Z]{1,2}[0-9]?)+;", "")
-                // Collapse multiple spaces
-                .replaceAll("  +", " ")
-                .trim();
+                .replaceAll("(?<![\\w=])[a-zA-Z]{1,2}[0-9]?(?:,[a-zA-Z]{1,2}[0-9]?)+;", "");
     }
 
     static boolean isDimensionPlaceholderText(String text) {
@@ -2660,6 +2805,189 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                 .replace("}", "")
                 .trim();
         return cleaned.isEmpty();
+    }
+
+    static void splitSpacedTableText(List<Entity> entityList) {
+        if (entityList == null || entityList.isEmpty()) return;
+        List<Entity> toAdd = new ArrayList<>();
+        java.util.regex.Pattern multiSpacePat = java.util.regex.Pattern.compile(" {4,}");
+        for (Entity e : entityList) {
+            if (e instanceof TextEntity) {
+                TextEntity te = (TextEntity) e;
+                if (te.hJustify == 0 && te.text != null && te.text.matches(".*\\S {4,}\\S.*")) {
+                    double rad = Math.toRadians(te.rotation);
+                    double cos = Math.cos(rad);
+                    double sin = Math.sin(rad);
+                    double pitch = 0.55 * te.height * te.widthFactor;
+
+                    String original = te.text;
+                    java.util.regex.Matcher m = multiSpacePat.matcher(original);
+                    int lastEnd = 0;
+                    boolean first = true;
+                    while (m.find()) {
+                        String seg = original.substring(lastEnd, m.start());
+                        if (!seg.trim().isEmpty()) {
+                            if (first) {
+                                te.text = seg.trim();
+                                first = false;
+                            } else {
+                                TextEntity next = cloneTextEntity(te);
+                                next.x = te.x + lastEnd * pitch * cos;
+                                next.y = te.y + lastEnd * pitch * sin;
+                                next.text = seg.trim();
+                                toAdd.add(next);
+                            }
+                        }
+                        lastEnd = m.end();
+                    }
+                    if (lastEnd < original.length()) {
+                        String seg = original.substring(lastEnd);
+                        if (!seg.trim().isEmpty()) {
+                            if (first) {
+                                te.text = seg.trim();
+                            } else {
+                                TextEntity next = cloneTextEntity(te);
+                                next.x = te.x + lastEnd * pitch * cos;
+                                next.y = te.y + lastEnd * pitch * sin;
+                                next.text = seg.trim();
+                                toAdd.add(next);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        entityList.addAll(toAdd);
+    }
+
+    private static TextEntity cloneTextEntity(TextEntity te) {
+        TextEntity next = new TextEntity();
+        next.layer = te.layer;
+        next.colorIndex = te.colorIndex;
+        next.trueColor = te.trueColor;
+        next.lineType = te.lineType;
+        next.lineWeight = te.lineWeight;
+        next.visible = te.visible;
+        next.styleName = te.styleName;
+        next.height = te.height;
+        next.rotation = te.rotation;
+        next.widthFactor = te.widthFactor;
+        next.obliqueAngle = te.obliqueAngle;
+        next.hJustify = te.hJustify;
+        next.vJustify = te.vJustify;
+        next.textFlags = te.textFlags;
+        return next;
+    }
+
+    static void mergeAdjacentCollinearText(List<Entity> entityList) {
+        if (entityList == null || entityList.size() <= 1) return;
+
+        List<TextEntity> textEntities = new ArrayList<>();
+        for (Entity e : entityList) {
+            if (e instanceof TextEntity) {
+                TextEntity te = (TextEntity) e;
+                if (te.text != null && !te.text.trim().isEmpty()) {
+                    textEntities.add(te);
+                }
+            }
+        }
+
+        if (textEntities.size() <= 1) return;
+
+        Map<String, List<TextEntity>> groups = new LinkedHashMap<>();
+        for (TextEntity t : textEntities) {
+            double rad = Math.toRadians(t.rotation);
+            double cos = Math.cos(rad);
+            double sin = Math.sin(rad);
+            double perp = -t.x * sin + t.y * cos;
+            double perpBucket = Math.round(perp / (0.05 * t.height)) * (0.05 * t.height);
+            String key = String.format(Locale.US, "%s|%s|%.4f|%.1f|%.3f|%d|%d",
+                    t.layer.toUpperCase(Locale.ROOT),
+                    t.styleName.toUpperCase(Locale.ROOT),
+                    t.height,
+                    Math.round(t.rotation * 10.0) / 10.0,
+                    perpBucket,
+                    t.hJustify,
+                    t.vJustify);
+            groups.computeIfAbsent(key, k -> new ArrayList<>()).add(t);
+        }
+
+        Set<Entity> toRemove = new HashSet<>();
+
+        for (List<TextEntity> group : groups.values()) {
+            if (group.size() <= 1) continue;
+
+            double rad = Math.toRadians(group.get(0).rotation);
+            double cos = Math.cos(rad);
+            double sin = Math.sin(rad);
+
+            group.sort((a, b) -> {
+                double posA = a.x * cos + a.y * sin;
+                double posB = b.x * cos + b.y * sin;
+                return Double.compare(posA, posB);
+            });
+
+            TextEntity cur = group.get(0);
+
+            for (int i = 1; i < group.size(); i++) {
+                TextEntity next = group.get(i);
+
+                double curPos = cur.x * cos + cur.y * sin;
+                double nextPos = next.x * cos + next.y * sin;
+
+                double charAdvance = 0.7769 * cur.height * cur.widthFactor;
+                String curRaw = cur.text;
+                String nextRaw = next.text;
+
+                double curEnd = curPos + curRaw.trim().length() * charAdvance;
+                double gap = nextPos - curEnd;
+                double gapChars = gap / charAdvance;
+
+                double perpCur = -cur.x * sin + cur.y * cos;
+                double perpNext = -next.x * sin + next.y * cos;
+                boolean sameBaseline = Math.abs(perpCur - perpNext) < 0.08 * cur.height;
+
+                if (sameBaseline && gapChars >= -0.85 && gapChars <= 1.35) {
+                    StringBuilder sb = new StringBuilder(curRaw.trim());
+                    String nextTrimmed = nextRaw.trim();
+
+                    if (!nextTrimmed.isEmpty()) {
+                        char lastChar = sb.charAt(sb.length() - 1);
+                        char firstChar = nextTrimmed.charAt(0);
+
+                        boolean isNumberGlued = (Character.isDigit(lastChar) || lastChar == '.')
+                                && (Character.isDigit(firstChar) || firstChar == '.');
+                        boolean isPunctuationGlued = firstChar == '.' || firstChar == '\'' || firstChar == '\"'
+                                || firstChar == '%' || firstChar == ')' || firstChar == ','
+                                || lastChar == '(' || lastChar == '/';
+
+                        boolean isDigitToLetter = Character.isDigit(lastChar) && Character.isLetter(firstChar);
+                        boolean hadExplicitSpace = curRaw.endsWith(" ") || nextRaw.startsWith(" ");
+
+                        if ((hadExplicitSpace || isDigitToLetter || gapChars > 0.25)
+                                && !isNumberGlued && !isPunctuationGlued) {
+                            sb.append(' ');
+                        }
+                        sb.append(nextTrimmed);
+                        cur.text = sb.toString();
+                        toRemove.add(next);
+                    }
+                } else {
+                    cur = next;
+                }
+            }
+        }
+
+        for (Entity e : entityList) {
+            if (e instanceof TextEntity) {
+                TextEntity te = (TextEntity) e;
+                if (te.text == null || te.text.trim().isEmpty()) {
+                    toRemove.add(te);
+                }
+            }
+        }
+
+        entityList.removeAll(toRemove);
     }
 
     /**

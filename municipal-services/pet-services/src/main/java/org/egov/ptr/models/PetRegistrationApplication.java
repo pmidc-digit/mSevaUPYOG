@@ -78,6 +78,9 @@ public class PetRegistrationApplication {
 	@JsonProperty("propertyId")
 	private String propertyId;
 
+	@JsonProperty("consentDocument")
+	private String consentDocument;
+
 	@Valid
 	@JsonProperty("documents")
 	private List<Document> documents;

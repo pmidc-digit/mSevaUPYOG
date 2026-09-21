@@ -62,6 +62,16 @@ public class UserService {
 	 */
 	public UserResponse getUser(NocSearchCriteria criteria, RequestInfo requestInfo) {
 		UserSearchRequest userSearchRequest = getUserSearchRequest(criteria, requestInfo);
+		// Fix P1: Guard against empty search criteria to prevent HTTP 400 from egov-user.
+		// The service requires at least one of: uuid/ownerIds or mobileNumber.
+		// Sending only tenantId causes InvalidUserSearchCriteriaException.
+		boolean hasUuids = !CollectionUtils.isEmpty(userSearchRequest.getUuid());
+		boolean hasMobile = !org.apache.commons.lang3.StringUtils.isBlank(userSearchRequest.getMobileNumber());
+		if (!hasUuids && !hasMobile) {
+			log.warn("getUser: No valid user identifiers (uuid/ownerIds/mobileNumber) found in search criteria for tenantId={}. Skipping user search call.",
+					userSearchRequest.getTenantId());
+			return new UserResponse();
+		}
 		StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
 		UserResponse userDetailResponse = userCall(userSearchRequest, uri);
 		return userDetailResponse;

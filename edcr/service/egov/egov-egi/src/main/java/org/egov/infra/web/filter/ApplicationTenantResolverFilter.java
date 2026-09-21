@@ -194,6 +194,7 @@ public class ApplicationTenantResolverFilter implements Filter {
 			LOG.info("Tenant from request param: {}", localFullTenant);
 
 			if (StringUtils.isNotBlank(localFullTenant)) {
+				localFullTenant = localFullTenant.toLowerCase();
 
 				// Keep the complete tenant for FileStore and full tenant context.
 				ApplicationThreadLocals.setFullTenantID(localFullTenant);

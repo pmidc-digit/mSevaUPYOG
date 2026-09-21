@@ -1,3 +1,4 @@
+import { mergeRentalOwners } from "../../utils/mergeRentalOwners";
 import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui-react-components";
@@ -23,7 +24,11 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   const applicationNumber = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.applicationNumber;
 
-  const updatedApplicantDetails = currentStepData?.applicantDetails || {};
+  const updatedApplicantDetails = Array.isArray(currentStepData?.applicants)
+    ? currentStepData.applicants
+    : Array.isArray(currentStepData?.applicantDetails)
+    ? currentStepData.applicantDetails
+    : currentStepData?.applicantDetails?.applicants || [];
   const updatedPropertyDetails = currentStepData?.propertyDetails || {};
   const updatedDocuments = currentStepData?.documents?.documents?.documents || [];
 
@@ -105,28 +110,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const originalOwners = CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
       const updatedApplicants = updatedApplicantDetails || [];
 
-      const mergedOwnerInfo = updatedApplicants?.map((applicant, index) => {
-        const originalOwner = originalOwners[index] || {};
-        return {
-          ...originalOwner,
-          name: applicant?.name,
-          mobileNo: applicant?.mobileNumber,
-          emailId: applicant?.emailId,
-          correspondenceAddress: {
-            ...originalOwner?.correspondenceAddress,
-            pincode: applicant?.pincode,
-            addressId: applicant?.address,
-            address: applicant?.address,
-          },
-          panCard: applicant?.panNumber,
-          permanentAddress: {
-            ...originalOwner?.permanentAddress,
-            pincode: applicant?.pincode,
-            addressId: applicant?.address,
-            address: applicant?.address,
-          },
-        };
-      });
+      const mergedOwnerInfo = mergeRentalOwners(updatedApplicants, originalOwners);
 
       const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
@@ -231,28 +215,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const originalOwners = CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
       const updatedApplicants = updatedApplicantDetails || [];
 
-      const mergedOwnerInfo = updatedApplicants.map((applicant, index) => {
-        const originalOwner = originalOwners[index] || {};
-        return {
-          ...originalOwner,
-          name: applicant?.name,
-          mobileNo: applicant?.mobileNumber,
-          emailId: applicant?.emailId,
-          correspondenceAddress: {
-            ...originalOwner?.correspondenceAddress,
-            pincode: applicant?.pincode,
-            addressId: applicant?.address,
-            address: applicant?.address,
-          },
-          panCard: applicant?.panNumber,
-          permanentAddress: {
-            ...originalOwner?.permanentAddress,
-            pincode: applicant?.pincode,
-            addressId: applicant?.address,
-            address: applicant?.address,
-          },
-        };
-      });
+      const mergedOwnerInfo = mergeRentalOwners(updatedApplicants, originalOwners);
 
       const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;

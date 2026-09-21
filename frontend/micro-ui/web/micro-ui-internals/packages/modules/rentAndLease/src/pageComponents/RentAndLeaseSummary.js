@@ -5,11 +5,12 @@ import RALDocuments from "../components/RALDocument";
 
 function RentAndLeaseSummary({ t }) {
   const formData = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {});
-  const applicantDetails = Array.isArray(formData?.applicantDetails)
+  const savedApplicants = Array.isArray(formData?.applicants)
+    ? formData.applicants
+    : Array.isArray(formData?.applicantDetails)
     ? formData.applicantDetails
-    : formData?.applicantDetails
-    ? [formData.applicantDetails]
-    : [];
+    : formData?.applicantDetails?.applicants || [];
+  const applicantDetails = savedApplicants.filter((owner) => owner?.status !== false && owner?.status !== "false");
 
   const property = formData?.propertyDetails || {};
   const standardDocs = formData?.documents?.documents?.documents || [];

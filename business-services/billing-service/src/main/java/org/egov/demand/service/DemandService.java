@@ -901,7 +901,8 @@ public class DemandService {
 						.amendmentReason(amendment.getAmendmentReason()).effectiveFrom(amendment.getEffectiveFrom())
 						.effectiveTill(amendment.getEffectiveTill()).additionalDetails(amendment.getAdditionalDetails())
 						.reasonDocumentNumber(amendment.getReasonDocumentNumber()).status(AmendmentStatus.CONSUMED)
-						.tenantId(firstDemand.getTenantId()).build();
+						.additionalDetails(amendment.getAdditionalDetails()).tenantId(firstDemand.getTenantId())
+						.build();
 
 				updateListForConsumedAmendments.add(amendmentUpdate);
 			}

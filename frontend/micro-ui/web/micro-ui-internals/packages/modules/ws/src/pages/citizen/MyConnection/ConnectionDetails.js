@@ -574,7 +574,7 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
                 <SubmitBar style={{ width: "100%" }} label={t("WS_DISCONNECTION_BUTTON")} onSubmit={onActionSelect} />
               </div>
             </ActionBar>
-          ) : state?.applicationStatus =="DISCONNECTION_EXECUTED" && state?.status == "Inactive" && state?.isDisconnectionTemporary && <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px", marginTop: "15px" }}>
+          ) : state?.applicationStatus =="DISCONNECTION_EXECUTED" && (state?.status == "Inactive" || state?.status == "Disconnect" || state?.status == "DISCONNECT") && state?.isDisconnectionTemporary && <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px", marginTop: "15px" }}>
           <div style={{ width: "100%" }}>
             <SubmitBar style={{ width: "100%" }} label={t("WS_RECONNECTION_BUTTON")} onSubmit={onActionSelectRestoration} />
           </div>

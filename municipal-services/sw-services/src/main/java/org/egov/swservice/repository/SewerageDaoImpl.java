@@ -139,7 +139,7 @@ public class SewerageDaoImpl implements SewerageDao {
 		String reqAction = sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction();
 		if (isStateUpdatable) {
 			if (SWConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction)) {
-				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.INACTIVE);
+				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.DISCONNECT);
 			}
 			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.ACTIVE);
@@ -150,7 +150,7 @@ public class SewerageDaoImpl implements SewerageDao {
 		        .equalsIgnoreCase(SWConstants.DISCONNECT_SEWERAGE_CONNECTION)) {
 
 		    if (SWConstants.APPROVE_CONNECTION.equalsIgnoreCase(reqAction)) {
-				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.INACTIVE);
+				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.DISCONNECT);
 			}
 			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.ACTIVE);

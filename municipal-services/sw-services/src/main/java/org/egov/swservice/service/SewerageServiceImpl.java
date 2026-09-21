@@ -523,7 +523,7 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 							   || previousConnectionsListObj.getApplicationStatus().equals(SWConstants.APPROVED)){
 						   sewerageDaoImpl.updateSewerageApplicationStatus(previousConnectionsListObj.getId(),
 								   SWConstants.ACTIVE_STATUS); 
-						   sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.INACTIVE);
+						   sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECT);
 						   break;
 					   }
 				  }
@@ -842,7 +842,7 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 				.collect(Collectors.toList());
 		validateDisconnectSewerageConnection(waterConnectionList, connectionNo, requestInfo, tenantId,
 				activeWaterConnections);
-		sewerageDaoImpl.updateSewerageApplicationStatus(activeWaterConnections.get(0).getId(), SWConstants.INACTIVE_STATUS);
+		sewerageDaoImpl.updateSewerageApplicationStatus(activeWaterConnections.get(0).getId(), SWConstants.DISCONNECT_STATUS);
 		
 
 	}

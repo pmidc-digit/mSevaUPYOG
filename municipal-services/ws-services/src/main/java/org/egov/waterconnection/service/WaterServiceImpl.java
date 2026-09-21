@@ -576,7 +576,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 				  	}
 			  	} 
 			  }
-		  waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.INACTIVE);
+		  waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
 		}
 		  
 		  if(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction() != null 
@@ -589,7 +589,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 							   || previousConnectionsListObj.getApplicationStatus().equals(WCConstants.APPROVED)){
 						   waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
 									  WCConstants.ACTIVE_STATUS); 
-						   waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.INACTIVE);
+						   waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
 						   break;
 					   }
 				  }
@@ -894,7 +894,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 				.collect(Collectors.toList());
 		validateDisconnectWaterConnection(waterConnectionList, connectionNo, requestInfo, tenantId,
 				activeWaterConnections);
-		waterDaoImpl.updateWaterApplicationStatus(activeWaterConnections.get(0).getId(), WCConstants.INACTIVE_STATUS);
+		waterDaoImpl.updateWaterApplicationStatus(activeWaterConnections.get(0).getId(), WCConstants.DISCONNECT_STATUS);
 
 	}
 

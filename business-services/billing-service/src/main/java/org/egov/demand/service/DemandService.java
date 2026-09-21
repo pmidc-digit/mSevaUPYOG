@@ -887,9 +887,9 @@ public class DemandService {
 				continue;
 
 			Demand firstDemand = consumerDemands.stream()
-					.max(Comparator
-							.comparing(Demand::getTaxPeriodFrom, Comparator.nullsFirst(Comparator.reverseOrder()))
-							.thenComparing(Demand::getTaxPeriodTo, Comparator.nullsFirst(Comparator.reverseOrder())))
+					.min(Comparator
+							.comparing(Demand::getTaxPeriodFrom, Comparator.nullsFirst(Comparator.naturalOrder()))
+							.thenComparing(Demand::getTaxPeriodTo, Comparator.nullsFirst(Comparator.naturalOrder())))
 					.orElse(consumerDemands.get(0));
 
 			for (Amendment amendment : amendments) {

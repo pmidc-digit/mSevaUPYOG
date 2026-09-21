@@ -886,22 +886,22 @@ public class DemandService {
 			if (CollectionUtils.isEmpty(amendments) || CollectionUtils.isEmpty(consumerDemands))
 				continue;
 
-			Demand latestDemand = consumerDemands.stream()
+			Demand firstDemand = consumerDemands.stream()
 					.max(Comparator
 							.comparing(Demand::getTaxPeriodFrom, Comparator.nullsFirst(Comparator.reverseOrder()))
 							.thenComparing(Demand::getTaxPeriodTo, Comparator.nullsFirst(Comparator.reverseOrder())))
 					.orElse(consumerDemands.get(0));
 
 			for (Amendment amendment : amendments) {
-				latestDemand.getDemandDetails().addAll(amendment.getDemandDetails());
+				firstDemand.getDemandDetails().addAll(amendment.getDemandDetails());
 
 				AmendmentUpdate amendmentUpdate = AmendmentUpdate.builder()
-						.additionalDetails(amendment.getAdditionalDetails()).amendedDemandId(latestDemand.getId())
+						.additionalDetails(amendment.getAdditionalDetails()).amendedDemandId(firstDemand.getId())
 						.amendmentId(amendment.getAmendmentId()).auditDetails(auditDetails)
 						.amendmentReason(amendment.getAmendmentReason()).effectiveFrom(amendment.getEffectiveFrom())
 						.effectiveTill(amendment.getEffectiveTill()).additionalDetails(amendment.getAdditionalDetails())
 						.reasonDocumentNumber(amendment.getReasonDocumentNumber()).status(AmendmentStatus.CONSUMED)
-						.tenantId(latestDemand.getTenantId()).build();
+						.tenantId(firstDemand.getTenantId()).build();
 
 				updateListForConsumedAmendments.add(amendmentUpdate);
 			}

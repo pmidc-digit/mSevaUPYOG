@@ -181,7 +181,7 @@ public class TransactionService {
        	        .auditDetails(newTxn.getAuditDetails());
 
        	if (newTxn.getResponseJson() != null) {
-       	    dumpBuilder.txnResponse(newTxn.getResponseJson());
+       	    dumpBuilder.txnResponse(newTxn.getResponseJson().toString());
        	}else
        		dumpBuilder.txnResponse(requestParams);
 

@@ -18,6 +18,7 @@ import org.egov.rl.calculator.web.models.property.RequestInfoWrapper;
 import org.egov.rl.calculator.penalty.PenaltyCalculator;
 import org.egov.rl.calculator.penalty.PenaltyCalculatorFactory;
 import org.egov.rl.calculator.penalty.PenaltyConfig;
+import org.egov.rl.calculator.util.CalculatorConstants;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -103,6 +104,14 @@ public class DemandService {
 			RLConstants.SGST_FEE_RL_APPLICATION.toUpperCase(),
 			RLConstants.ROUND_OFF_RL_APPLICATION.toUpperCase()));
 
+	/**
+	 * The heads of the standalone adhoc demand. They are owned by the employee, not by the engine, so they are set
+	 * exactly as the request says (raised, changed or removed) instead of only ever being raised.
+	 */
+	private static final Set<String> ADHOC_HEADS = new HashSet<>(Arrays.asList(
+			CalculatorConstants.RL_ADHOC_PENALTY.toUpperCase(),
+			CalculatorConstants.RL_ADHOC_REBATE.toUpperCase()));
+
 	@PostConstruct
 	public void init() {
 		// Bounded thread pool to prevent thread exhaustion under load
@@ -136,6 +145,8 @@ public class DemandService {
 
 			boolean isSecurityDeposite = firstCriteria.isSecurityDeposite();
 			List<Demand> demands = new ArrayList<>();
+			Map<String, Demand> adhocUpdates = new LinkedHashMap<>();
+			Map<String, Demand> alreadyCreated = new LinkedHashMap<>();
 			RequestInfo requestInfo = calculationReq.getRequestInfo();
 			String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)
 					.getTenantId();
@@ -192,12 +203,26 @@ public class DemandService {
 							.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 					demands.add(demand);
 				}
+
+				// The adhoc penalty / exemption is attached to the current period's demand, so it can be added,
+				// changed or removed at any time - including long after this period's demand exists.
+				syncAdhocCharges(allotmentDetails, null, requestInfo, demands, adhocUpdates, alreadyCreated);
 			}
 
 			List<Demand> demands1 = demandRepository.saveDemand(
 					calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
+			List<Demand> touched = new ArrayList<>();
 			if (!CollectionUtils.isEmpty(demands1)) {
-				fetchBillForDemands(demands1, requestInfo);
+				touched.addAll(demands1);
+			}
+			if (!adhocUpdates.isEmpty()) {
+				List<Demand> updated = demandRepository.updateDemand(requestInfo, new ArrayList<>(adhocUpdates.values()));
+				if (!CollectionUtils.isEmpty(updated)) {
+					touched.addAll(updated);
+				}
+			}
+			if (!touched.isEmpty()) {
+				fetchBillForDemands(touched, requestInfo);
 			}
 			return DemandResponse.builder().demands(demands1).build();
 		}
@@ -228,8 +253,9 @@ public class DemandService {
 		}
 
 		if (CollectionUtils.isEmpty(demands)) {
+			// Nothing to raise for this request, but an adhoc charge may still have to be synced onto the current
+			// period's demand below - an application that is paid up to date and has no arrears still has one.
 			log.warn("No legacy demand could be built for the request");
-			return DemandResponse.builder().demands(Collections.<Demand>emptyList()).build();
 		}
 
 		// Idempotency guard: a retried _calculate (gateway/UI timeout, ops rerun) must not create a demand for a
@@ -239,7 +265,7 @@ public class DemandService {
 		Map<String, List<Demand>> existingByConsumer = new HashMap<>();
 		List<Demand> demandsToCreate = new ArrayList<>();
 		Map<String, Demand> alreadyCreated = new LinkedHashMap<>();
-		Map<String, Demand> arrearUpdates = new LinkedHashMap<>();
+		Map<String, Demand> demandUpdates = new LinkedHashMap<>();
 
 		for (Demand demand : demands) {
 			String consumerKey = demand.getTenantId() + "|" + demand.getConsumerCode();
@@ -257,11 +283,11 @@ public class DemandService {
 			if (isArrearOnly(demand)) {
 				// The application can still be edited (draft, or a replayed approval) after its arrear demand was
 				// raised, so the migrated arrears may have changed. Reconcile instead of blindly skipping.
-				Demand updated = reconcileArrearDemand(duplicate, demand, requestInfo);
+				Demand updated = reconcileDemand(duplicate, demand, requestInfo, ARREAR_BREAKDOWN_HEADS, true, "arrear");
 				Demand effective = (updated != null) ? updated : duplicate;
 				alreadyCreated.put(effective.getId(), effective);
 				if (updated != null) {
-					arrearUpdates.put(updated.getId(), updated);
+					demandUpdates.put(updated.getId(), updated);
 				}
 			} else {
 				log.warn("Demand already exists for consumer {} (id {}) covering {} to {} - skipping creation.",
@@ -269,6 +295,19 @@ public class DemandService {
 						formatCutoff(demand.getTaxPeriodFrom()), formatCutoff(demand.getTaxPeriodTo()));
 				alreadyCreated.put(duplicate.getId(), duplicate);
 			}
+		}
+
+		// The adhoc penalty / exemption is attached to the current period's demand, so adding, editing or removing
+		// it never rewrites the demand of another period and never creates a second demand for the same one.
+		for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
+			AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
+			if (allotmentRequest == null || CollectionUtils.isEmpty(allotmentRequest.getAllotment())) {
+				continue;
+			}
+			AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+			syncAdhocCharges(allotmentDetails,
+					existingByConsumer.get(allotmentDetails.getTenantId() + "|" + allotmentDetails.getApplicationNumber()),
+					requestInfo, demandsToCreate, demandUpdates, alreadyCreated);
 		}
 
 		List<Demand> savedDemands = null;
@@ -280,16 +319,15 @@ public class DemandService {
 			log.info("All {} generated legacy demand(s) already exist - nothing to create.", demands.size());
 		}
 
-		// One _update call for every arrear demand whose values changed, then a single bill refresh for everything
-		// this call touched (creating and updating share the same consumer code).
+		// One _update call for every demand whose values changed (arrear and/or adhoc), then a single bill refresh
+		// for everything this call touched - creating and updating share the same consumer code.
 		List<Demand> updatedDemands = Collections.emptyList();
-		if (!arrearUpdates.isEmpty()) {
-			log.info("Arrear values changed for {} demand(s) - updating them in place.", arrearUpdates.size());
-			updatedDemands = demandRepository.updateDemand(requestInfo, new ArrayList<>(arrearUpdates.values()));
+		if (!demandUpdates.isEmpty()) {
+			log.info("{} demand(s) changed - updating them in place.", demandUpdates.size());
+			updatedDemands = demandRepository.updateDemand(requestInfo, new ArrayList<>(demandUpdates.values()));
 			if (updatedDemands == null) {
 				updatedDemands = Collections.emptyList();
 			}
-			log.info("Arrear demand(s) updated successfully. Count: {}", updatedDemands.size());
 		}
 
 		List<Demand> touched = new ArrayList<>();
@@ -377,58 +415,71 @@ public class DemandService {
 	}
 
 	/**
-	 * Brings an existing arrear demand in line with the arrears in the request.
+	 * Brings an existing demand in line with what the request asks for.
 	 *
-	 * <p>A legacy application stays editable after its arrear demand was raised (draft save, corrected migration
-	 * data, replayed approval), so the migrated arrears can change. The demand is rewritten in place: it keeps its
-	 * id, its payer and - crucially - its issue instant ({@code taxPeriodTo}), because that instant is what the
-	 * arrear penalty clock is derived from; moving it would restart the accrual.
+	 * <p>Used by the arrear demand (a legacy application stays editable after its arrear demand was raised) and by
+	 * the standalone adhoc demand (an adhoc charge can be added, changed or removed at any time). The demand is
+	 * rewritten in place: it keeps its id, its payer and - for the arrear - its issue instant ({@code taxPeriodTo}),
+	 * because that instant is what the arrear penalty clock is derived from; moving it would restart the accrual.
 	 *
-	 * <p>Nothing is sent to billing unless something really changed, so a replayed approval costs one local
-	 * duplicate check and no round trip.
+	 * <p>Nothing is sent to billing unless something really changed, so a replayed approval costs one local check
+	 * and no round trip.
 	 *
-	 * @return the demand to update, or null when the stored arrear already matches the request
+	 * @param removableHeads heads the caller owns and which therefore disappear when the request stops declaring
+	 *                       them
+	 * @param syncPeriod     whether the start of the period belongs to the caller (arrear start) or to the demand
+	 *                       itself (the adhoc demand keeps the period it was raised with)
+	 * @param label          name of the charge, for the logs
+	 * @return the demand to update, or null when the stored demand already matches the request
 	 */
-	private Demand reconcileArrearDemand(Demand storedArrear, Demand candidate, RequestInfo requestInfo) {
-		if (!arrearChanged(storedArrear, candidate)) {
-			log.info("Arrear values of consumer {} are unchanged - demand {} left untouched.",
-					candidate.getConsumerCode(), storedArrear.getId());
+	private Demand reconcileDemand(Demand storedDemand, Demand candidate, RequestInfo requestInfo,
+			Set<String> removableHeads, boolean syncPeriod, String label) {
+		if (!demandChanged(storedDemand, candidate, removableHeads, syncPeriod)) {
+			log.info("{} values of consumer {} are unchanged - demand {} left untouched.", label,
+					candidate.getConsumerCode(), storedDemand.getId());
 			return null;
 		}
 
 		// Re-read the demand from billing so the update carries the complete object (full payer, ids of the tax
 		// head rows) instead of a partial row.
 		Demand stored = fetchDemandsFromBilling(candidate.getTenantId(), candidate.getConsumerCode(), requestInfo).stream()
-				.filter(d -> d.getId() != null && d.getId().equalsIgnoreCase(storedArrear.getId()))
+				.filter(d -> d.getId() != null && d.getId().equalsIgnoreCase(storedDemand.getId()))
 				.findFirst().orElse(null);
 		if (stored == null) {
-			log.warn("Arrear demand {} of consumer {} could not be re-read from billing - the changed arrears were "
-					+ "not applied.", storedArrear.getId(), candidate.getConsumerCode());
+			log.warn("{} demand {} of consumer {} could not be re-read from billing - the change was not applied.",
+					label, storedDemand.getId(), candidate.getConsumerCode());
 			return null;
 		}
 
-		List<DemandDetail> merged = mergeArrearDetails(stored, candidate);
+		List<DemandDetail> merged = mergeDemandDetails(stored, candidate, removableHeads);
 		stored.setDemandDetails(merged);
+		// The in place edit can change the rupee total, so the round off head (and the payable amount) is
+		// recomputed on the merged details.
+		calculationService.addRoundOffTaxHead(stored.getTenantId(), merged);
 		stored.setMinimumAmountPayable(merged.stream().map(DemandDetail::getTaxAmount)
 				.reduce(BigDecimal.ZERO, BigDecimal::add));
-		stored.setAdditionalDetails(candidate.getAdditionalDetails());
-		// The arrear start is only a label and may be corrected; the issue instant is never moved.
-		stored.setTaxPeriodFrom(candidate.getTaxPeriodFrom());
-		log.info("Arrear demand {} of consumer {} reconciled: {} tax head(s) carried over.",
-				stored.getId(), candidate.getConsumerCode(), merged.size());
+		if (candidate.getAdditionalDetails() != null) {
+			stored.setAdditionalDetails(candidate.getAdditionalDetails());
+		}
+		if (syncPeriod) {
+			// The arrear start is only a label and may be corrected; the issue instant is never moved.
+			stored.setTaxPeriodFrom(candidate.getTaxPeriodFrom());
+		}
+		log.info("{} demand {} of consumer {} reconciled: {} tax head(s) applied.", label, stored.getId(),
+				candidate.getConsumerCode(), merged.size());
 		return stored;
 	}
 
 	/**
-	 * True when the stored arrear demand no longer matches the arrear values in the request. Only the tax heads the
-	 * request actually declares are compared - a penalty the engine has accrued on the demand in the meantime must
-	 * not be mistaken for a change of the migrated arrears.
+	 * True when the stored demand no longer matches what the request asks for. Only the tax heads the request
+	 * actually declares are compared - a penalty the engine has accrued on the demand in the meantime must not be
+	 * mistaken for a change of the migrated values.
 	 */
-	private boolean arrearChanged(Demand existing, Demand candidate) {
+	private boolean demandChanged(Demand existing, Demand candidate, Set<String> removableHeads, boolean syncPeriod) {
 		if (existing == null || candidate == null) {
 			return true;
 		}
-		if (!Objects.equals(existing.getTaxPeriodFrom(), candidate.getTaxPeriodFrom())) {
+		if (syncPeriod && !Objects.equals(existing.getTaxPeriodFrom(), candidate.getTaxPeriodFrom())) {
 			return true;
 		}
 		if (!sameAmount(extractFuturePenaltyRate(existing), extractFuturePenaltyRate(candidate))) {
@@ -436,8 +487,8 @@ public class DemandService {
 		}
 		Map<String, BigDecimal> storedAmounts = amountsByTaxHead(existing);
 		Map<String, BigDecimal> candidateAmounts = amountsByTaxHead(candidate);
-		// A breakdown component that disappeared from the request is a change as well (stale GST must not survive).
-		for (String head : ARREAR_BREAKDOWN_HEADS) {
+		// A component that disappeared from the request is a change as well (stale GST must not survive).
+		for (String head : removableHeads) {
 			if (!candidateAmounts.containsKey(head) && storedAmounts.containsKey(head)) {
 				return true;
 			}
@@ -483,11 +534,11 @@ public class DemandService {
 	}
 
 	/**
-	 * Merges the arrear amounts of a freshly generated demand into the demand stored in billing, tax head by tax
-	 * head. Stored rows keep their id and their collectionAmount, so an amount already collected against the
-	 * arrear is never lost, and heads the request does not mention are left as they are.
+	 * Merges the amounts of a freshly generated demand into the demand stored in billing, tax head by tax head.
+	 * Stored rows keep their id and their collectionAmount, so an amount already collected is never lost, and heads
+	 * the request does not mention are left as they are.
 	 */
-	private List<DemandDetail> mergeArrearDetails(Demand stored, Demand candidate) {
+	private List<DemandDetail> mergeDemandDetails(Demand stored, Demand candidate, Set<String> removableHeads) {
 		List<DemandDetail> merged = CollectionUtils.isEmpty(stored.getDemandDetails())
 				? new ArrayList<>()
 				: new ArrayList<>(stored.getDemandDetails());
@@ -519,23 +570,175 @@ public class DemandService {
 			}
 			BigDecimal existingAmount = (target.getTaxAmount() != null) ? target.getTaxAmount() : BigDecimal.ZERO;
 			if (RLConstants.PENALTY_TAXHEAD_CODE.equalsIgnoreCase(head) && existingAmount.compareTo(newAmount) > 0) {
-				log.info("Keeping the higher penalty {} on arrear demand {} instead of the supplied {}.",
+				log.info("Keeping the higher penalty {} on demand {} instead of the supplied {}.",
 						existingAmount, stored.getId(), newAmount);
+				continue;
+			}
+			BigDecimal collected = (target.getCollectionAmount() != null) ? target.getCollectionAmount()
+					: BigDecimal.ZERO;
+			if (collected.compareTo(newAmount) > 0) {
+				// Money is already with the ULB: lowering the head would leave the demand over collected (a credit).
+				log.warn("{} was already collected against {} of demand {} - the head is kept at {} instead of being "
+						+ "reduced to {}; adjust the collection instead.", collected, head, stored.getId(),
+						existingAmount, newAmount);
 				continue;
 			}
 			target.setTaxAmount(newAmount);
 		}
 
 		// A component removed from the request disappears from the demand, otherwise a corrected breakdown would
-		// keep charging the old one. Only breakdown heads can go, and never one that already carries a collection.
-		merged.removeIf(detail -> {
+		// keep charging the old one. Only heads the caller owns can go, and never one that already collects money.
+		Iterator<DemandDetail> remaining = merged.iterator();
+		while (remaining.hasNext()) {
+			DemandDetail detail = remaining.next();
 			String head = (detail.getTaxHeadMasterCode() != null)
 					? detail.getTaxHeadMasterCode().trim().toUpperCase() : "";
-			boolean collected = detail.getCollectionAmount() != null
-					&& detail.getCollectionAmount().compareTo(BigDecimal.ZERO) > 0;
-			return ARREAR_BREAKDOWN_HEADS.contains(head) && !requestedHeads.contains(head) && !collected;
-		});
+			if (!removableHeads.contains(head) || requestedHeads.contains(head)) {
+				continue;
+			}
+			BigDecimal collected = (detail.getCollectionAmount() != null) ? detail.getCollectionAmount()
+					: BigDecimal.ZERO;
+			if (collected.compareTo(BigDecimal.ZERO) > 0) {
+				log.warn("{} was already collected against {} of demand {} - the head is kept; adjust the collection "
+						+ "instead.", collected, head, stored.getId());
+				continue;
+			}
+			remaining.remove();
+		}
 		return merged;
+	}
+
+	/**
+	 * Applies the adhoc penalty / exemption of an application at any time, without ever creating a second demand.
+	 *
+	 * <p>Billing allows exactly one demand per (consumer code, period, business service) - enforced by a unique
+	 * constraint - so the adhoc charge is attached to the CURRENT period's demand and nowhere else. A charge
+	 * recorded on an earlier period is closed history: it is never edited or removed retroactively, and it is never
+	 * repeated on a later period. The caller clears the value ({@code adhocPenalty: 0}) when the charge no longer
+	 * applies. Removing the adhoc values drops the two heads from the current period's demand; money already
+	 * collected against them is never touched.
+	 * @param existingDemands the consumer's demands with their details; loaded here when the caller passes null
+	 * @param toCreate        demands to post to billing (the current period's candidate may be in here)
+	 * @param toUpdate        demands to update in place, keyed by id
+	 * @param kept            demands to return to the caller, keyed by id
+	 */
+	private void syncAdhocCharges(AllotmentDetails allotmentDetails, List<Demand> existingDemands,
+			RequestInfo requestInfo, List<Demand> toCreate, Map<String, Demand> toUpdate, Map<String, Demand> kept) {
+		if (allotmentDetails == null) {
+			return;
+		}
+		if (existingDemands == null) {
+			existingDemands = loadExistingDemands(allotmentDetails.getTenantId(),
+					allotmentDetails.getApplicationNumber());
+		}
+		long entryDate = (allotmentDetails.getCreatedTime() > 0) ? allotmentDetails.getCreatedTime()
+				: System.currentTimeMillis();
+		List<DemandDetail> desired = calculationService.buildAdhocDetails(allotmentDetails);
+
+		Demand candidate = null;
+		for (Demand possible : toCreate) {
+			if (isCurrentPeriodDemand(possible, entryDate)) {
+				candidate = possible;
+				break;
+			}
+		}
+		if (candidate != null) {
+			if (desired.isEmpty()) {
+				// Nothing to add, and a demand that is not posted yet has nothing to remove either.
+				return;
+			}
+			// About to be posted: fold the heads in so the round off and the payable amount cover them.
+			guardAdhocExemption(candidate.getDemandDetails(), desired, allotmentDetails.getApplicationNumber());
+			candidate.getDemandDetails().addAll(desired);
+			calculationService.addRoundOffTaxHead(candidate.getTenantId(), candidate.getDemandDetails());
+			candidate.setMinimumAmountPayable(candidate.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add));
+			log.info("Adhoc charge applied to the current period demand of application {}.",
+					allotmentDetails.getApplicationNumber());
+			return;
+		}
+
+		Demand currentPeriod = findCurrentPeriodDemand(existingDemands, entryDate);
+		if (currentPeriod == null) {
+			if (!desired.isEmpty()) {
+				log.warn("No current period demand found to carry the adhoc charge of application {} - it was not "
+						+ "applied.", allotmentDetails.getApplicationNumber());
+			}
+			return;
+		}
+		guardAdhocExemption(currentPeriod.getDemandDetails(), desired, allotmentDetails.getApplicationNumber());
+		Demand updated = reconcileDemand(currentPeriod, asDesiredState(currentPeriod, desired), requestInfo,
+				ADHOC_HEADS, false, "adhoc");
+		kept.put(currentPeriod.getId(), (updated != null) ? updated : currentPeriod);
+		if (updated != null) {
+			toUpdate.put(updated.getId(), updated);
+		}
+	}
+
+	/**
+	 * Refuses an adhoc exemption larger than the tax it is deducted from, otherwise the demand would end up negative.
+	 * The adhoc heads themselves never count towards that tax - a charge must not finance its own exemption, and an
+	 * exemption already applied must not mask a bigger one.
+	 */
+	private void guardAdhocExemption(List<DemandDetail> existingDetails, List<DemandDetail> desired,
+			String consumerCode) {
+		BigDecimal exemption = BigDecimal.ZERO;
+		for (DemandDetail detail : desired) {
+			if (detail.getTaxAmount() != null && detail.getTaxAmount().compareTo(BigDecimal.ZERO) < 0) {
+				exemption = exemption.add(detail.getTaxAmount().negate());
+			}
+		}
+		if (exemption.compareTo(BigDecimal.ZERO) <= 0) {
+			return;
+		}
+		BigDecimal taxable = BigDecimal.ZERO;
+		for (DemandDetail detail : existingDetails) {
+			String head = (detail.getTaxHeadMasterCode() != null)
+					? detail.getTaxHeadMasterCode().trim().toUpperCase() : "";
+			if (ADHOC_HEADS.contains(head)) {
+				continue;
+			}
+			taxable = taxable.add((detail.getTaxAmount() != null) ? detail.getTaxAmount() : BigDecimal.ZERO);
+		}
+		if (exemption.compareTo(taxable) > 0) {
+			throw new CustomException("RL_ADHOC_REBATE_INVALID_AMOUNT",
+					"The adhoc exemption " + exemption + " is greater than the " + taxable
+							+ " charged on the demand of application " + consumerCode
+							+ ". Enter an amount up to the demand amount.");
+		}
+	}
+
+	/** The demand of the period the entry instant falls in - the only demand an adhoc charge may land on. */
+	private static Demand findCurrentPeriodDemand(List<Demand> demands, long entryDate) {
+		if (CollectionUtils.isEmpty(demands)) {
+			return null;
+		}
+		for (Demand demand : demands) {
+			if (isCurrentPeriodDemand(demand, entryDate)) {
+				return demand;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * True for a demand whose period contains the given instant and which is not the arrear demand (whose period end
+	 * is the instant the arrear demand was raised, not a billing period). The adhoc charge already carried by that
+	 * demand does not disqualify it - it is what makes re-editing the current period idempotent.
+	 */
+	private static boolean isCurrentPeriodDemand(Demand demand, long entryDate) {
+		if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails()) || isArrearOnly(demand)) {
+			return false;
+		}
+		Long from = demand.getTaxPeriodFrom();
+		Long to = demand.getTaxPeriodTo();
+		return from != null && to != null && from <= entryDate && entryDate <= to;
+	}
+
+	/** Minimal stand-in for "the demand as the request wants it", used to drive the in-place reconcile. */
+	private static Demand asDesiredState(Demand stored, List<DemandDetail> desiredDetails) {
+		return Demand.builder().id(stored.getId()).tenantId(stored.getTenantId())
+				.consumerCode(stored.getConsumerCode()).demandDetails(desiredDetails).build();
 	}
 
 	/** Full demands of a consumer code as billing knows them - payer, audit details and the ids of the details. */

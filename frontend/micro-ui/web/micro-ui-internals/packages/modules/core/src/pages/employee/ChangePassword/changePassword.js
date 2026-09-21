@@ -1,6 +1,4 @@
-import {
-  BackButton, CardSubHeader, CardText, FormComposer, Toast
-} from "@mseva/digit-ui-react-components";
+import { BackButton, CardSubHeader, CardText, FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import PropTypes from "prop-types";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -19,7 +17,7 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
   const getUserType = () => Digit.UserService.getType();
   let sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
   const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf";
-  
+
   useEffect(() => {
     if (!user) {
       Digit.UserService.setType("employee");
@@ -116,9 +114,11 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
         <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/employee")}>
           <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
         </button>
-        <div className="mseva-entry-civic-title" aria-label="mSeva">mSeva</div>
+        <div className="mseva-entry-civic-title" aria-label="mSeva"></div>
         <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">
-          <button type="button" className="is-active" onClick={() => history.push("/digit-ui/citizen/select-language")}>Home</button>
+          <button type="button" className="is-active" onClick={() => history.push("/digit-ui/citizen/select-language")}>
+            Home
+          </button>
         </nav>
       </header>
       <div className="employeeBackbuttonAlign">
@@ -157,23 +157,53 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
           </div>
         </div> */}
       </FormComposer>
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
+      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true} />}
 
-      <div style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"white",textAlign:"center" }}>
-        <div style={{ display: 'flex', justifyContent: 'center', color:"black" }}>
-          <span style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('https://www.digit.org/', '_blank').focus();}} >Powered by DIGIT</span>
-          <span style={{ margin: "0 10px" ,fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px"}}>|</span>
-          <a style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
+      <div style={{ width: "100%", position: "fixed", bottom: 0, backgroundColor: "white", textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", color: "black" }}>
+          <span
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "12px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("https://www.digit.org/", "_blank").focus();
+            }}
+          >
+            Powered by DIGIT
+          </span>
+          <span style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "12px" }}>|</span>
+          <a
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "12px", fontWeight: "400" }}
+            href="#"
+            target="_blank"
+          >
+            UPYOG License
+          </a>
 
-          <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize:"12px" }} >|</span>
-          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
-          
+          <span className="upyog-copyright-footer" style={{ margin: "0 10px", fontSize: "12px" }}>
+            |
+          </span>
+          <span
+            className="upyog-copyright-footer"
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "12px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("", "_blank").focus();
+            }}
+          >
+            Copyright © {new Date().getFullYear()}
+          </span>
+
           {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
-
         </div>
         <div className="upyog-copyright-footer-web">
-          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"14px":"16px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
-          </div>
+          <span
+            className=""
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "14px" : "16px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("", "_blank").focus();
+            }}
+          >
+            Copyright © {new Date().getFullYear()}
+          </span>
+        </div>
       </div>
     </Background>
   );

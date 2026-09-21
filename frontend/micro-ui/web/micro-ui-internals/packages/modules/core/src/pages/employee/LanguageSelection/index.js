@@ -29,7 +29,7 @@ const LanguageSelection = () => {
           <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/employee")}>
             <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
           </button>
-          <div className="mseva-entry-civic-title" aria-label="mSeva">mSeva</div>
+          <div className="mseva-entry-civic-title" aria-label="mSeva"></div>
           <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">
             <span className="is-active">Home</span>
           </nav>
@@ -38,7 +38,9 @@ const LanguageSelection = () => {
         <main className="mseva-employee-entry__content">
           <section className="mseva-employee-entry__hero">
             <p className="mseva-entry-eyebrow">Punjab Local Government</p>
-            <h1>Welcome to <span>mSeva</span></h1>
+            <h1>
+              Welcome to <span>mSeva</span>
+            </h1>
             <p>Manage municipal services and citizen applications through one secure, accessible platform.</p>
             <div className="mseva-employee-entry__features">
               <span>Secure access</span>
@@ -56,11 +58,7 @@ const LanguageSelection = () => {
             <div className="language-selector">
               {languages.map((language, index) => (
                 <div className="language-button-container" key={index}>
-                  <CustomButton
-                    selected={language.value === selected}
-                    text={language.label}
-                    onClick={() => handleChangeLanguage(language)}
-                  />
+                  <CustomButton selected={language.value === selected} text={language.label} onClick={() => handleChangeLanguage(language)} />
                 </div>
               ))}
             </div>
@@ -69,27 +67,56 @@ const LanguageSelection = () => {
         </main>
       </div>
 
-      <div style={{ display:"none",width: '100%', position: 'fixed', bottom: 0,backgroundColor:"#152265",textAlign:"center" }}>
-      <div style={{backgroundColor:'#F5FBFF', width:'100%',minHeight:'100px'}}></div>
-      <div style={{backgroundColor:'#294A97', width:'100%',minHeight:'200px'}}>
-   </div>
-        <div style={{ display: 'flex', justifyContent: 'center', color:"white" }}>
-          <span style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('https://www.digit.org/', '_blank').focus();}} >Powered by DIGIT</span>
-          <span style={{ margin: "0 10px" ,fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px"}}>|</span>
-          <a style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
+      <div style={{ display: "none", width: "100%", position: "fixed", bottom: 0, backgroundColor: "#152265", textAlign: "center" }}>
+        <div style={{ backgroundColor: "#F5FBFF", width: "100%", minHeight: "100px" }}></div>
+        <div style={{ backgroundColor: "#294A97", width: "100%", minHeight: "200px" }}></div>
+        <div style={{ display: "flex", justifyContent: "center", color: "white" }}>
+          <span
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("https://www.digit.org/", "_blank").focus();
+            }}
+          >
+            Powered by DIGIT
+          </span>
+          <span style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px" }}>|</span>
+          <a
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+            href="#"
+            target="_blank"
+          >
+            UPYOG License
+          </a>
 
-          <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px" }} >|</span>
-          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
-          
+          <span className="upyog-copyright-footer" style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px" }}>
+            |
+          </span>
+          <span
+            className="upyog-copyright-footer"
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("", "_blank").focus();
+            }}
+          >
+            Copyright © {new Date().getFullYear()}
+          </span>
+
           {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
         </div>
         <div className="upyog-copyright-footer-web">
-          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
-          </div>
-       
+          <span
+            className=""
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("", "_blank").focus();
+            }}
+          >
+            Copyright © {new Date().getFullYear()}
+          </span>
+        </div>
       </div>
 
-{/* 
+      {/* 
       <div style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"white",textAlign:"center" }}>
         <div style={{ display: 'flex', justifyContent: 'center', color:"black" }}>
           <span style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('https://www.digit.org/', '_blank').focus();}} >Powered by DIGIT</span>
@@ -101,7 +128,7 @@ const LanguageSelection = () => {
           
           {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
 
-        {/* </div>
+      {/* </div>
         <div className="upyog-copyright-footer-web">
           <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"14px":"16px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
           </div>

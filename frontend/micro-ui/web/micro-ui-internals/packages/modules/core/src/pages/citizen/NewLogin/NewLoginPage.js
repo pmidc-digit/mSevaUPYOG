@@ -290,9 +290,7 @@ const NewLogin = ({ stateCode }) => {
           <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/citizen")}>
             <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
           </button>
-          <div className="mseva-entry-civic-title" aria-label="mSeva">
-            mSeva
-          </div>
+          <div className="mseva-entry-civic-title" aria-label="mSeva"></div>
           <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">
             <button type="button" className="is-active" onClick={() => history.push("/digit-ui/citizen")}>
               Home

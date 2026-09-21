@@ -1,6 +1,7 @@
 package org.egov.rl.calculator.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.egov.rl.calculator.util.CalculatorConstants;
 import org.egov.rl.calculator.util.Configurations;
 import org.egov.rl.calculator.util.PropertyUtil;
 import org.egov.rl.calculator.util.RLConstants;
@@ -668,6 +669,54 @@ public class CalculationService {
         }
 
         return generatedDemands;
+	}
+
+	/**
+	 * The adhoc penalty / exemption an employee entered for this application, as demand details: the penalty is a
+	 * positive detail, the exemption a negative one. Empty when the application carries none.
+	 *
+	 * <p>Both are one-off amounts read from the allotment {@code additionalDetails}, exactly like PT does with
+	 * {@code PT_ADHOC_PENALTY} / {@code PT_ADHOC_REBATE}. They are attached to the CURRENT period's demand (billing
+	 * allows a single demand per consumer, period and business service) and only by an employee-initiated
+	 * calculation, so the recurring scheduler can never repeat them on a later period.
+	 */
+	public List<DemandDetail> buildAdhocDetails(AllotmentDetails allotmentDetails) {
+		List<DemandDetail> adhocDetails = new ArrayList<>();
+		if (allotmentDetails == null) {
+			return adhocDetails;
+		}
+		String tenantId = allotmentDetails.getTenantId();
+		JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+		BigDecimal adhocPenalty = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_PENALTY_KEY);
+		BigDecimal adhocRebate = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_REBATE_KEY);
+
+		if (adhocPenalty != null) {
+			adhocDetails.add(DemandDetail.builder().taxAmount(adhocPenalty)
+					.taxHeadMasterCode(CalculatorConstants.RL_ADHOC_PENALTY).tenantId(tenantId)
+					.collectionAmount(BigDecimal.ZERO).build());
+			log.info("Adhoc penalty {} for application {} (reason: {}).", adhocPenalty,
+					allotmentDetails.getApplicationNumber(),
+					readAdhocText(additionalDetails, CalculatorConstants.ADHOC_PENALTY_REASON_KEY));
+		}
+
+		if (adhocRebate != null) {
+			adhocDetails.add(DemandDetail.builder().taxAmount(adhocRebate.negate())
+					.taxHeadMasterCode(CalculatorConstants.RL_ADHOC_REBATE).tenantId(tenantId)
+					.collectionAmount(BigDecimal.ZERO).build());
+			log.info("Adhoc exemption {} for application {} (reason: {}).", adhocRebate,
+					allotmentDetails.getApplicationNumber(),
+					readAdhocText(additionalDetails, CalculatorConstants.ADHOC_REBATE_REASON_KEY));
+		}
+		return adhocDetails;
+	}
+
+	/** Free text of an adhoc reason, for logging only. */
+	private static String readAdhocText(JsonNode details, String key) {
+		if (details == null || key == null || !details.hasNonNull(key)) {
+			return null;
+		}
+		String raw = details.get(key).asText();
+		return (raw != null && !raw.trim().isEmpty()) ? raw.trim() : null;
 	}
 
 	/**

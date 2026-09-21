@@ -129,7 +129,12 @@ public class AllotmentService {
 		// the application is waiting for payment: before that nothing was raised, so there is nothing to update
 		// and a draft must never create a demand.
 		boolean isDraft = action != null && RLConstants.DRAFT_RL_APPLICATION.equalsIgnoreCase(action.trim());
-		boolean isDraftWithDemand = isDraft && hasRaisedDemand(allotmentDetails);
+		// A dedicated "levy adhoc penalty" action changes nothing but the adhoc charge. Like a draft it may only
+		// touch a demand that already exists - before approval nothing was raised and the charge simply waits in
+		// additionalDetails until the approval call picks it up.
+		boolean isAdhocAction = action != null
+				&& RLConstants.ADHOC_PENALTY_RL_APPLICATION.equalsIgnoreCase(action.trim());
+		boolean isDemandSync = isApprove || ((isDraft || isAdhocAction) && hasRaisedDemand(allotmentDetails));
 		boolean isLegacyApplication = isLegacyApplication(allotmentDetails);
 		String applicationType = resolveApplicationType(allotmentDetails);
 		if (isLegacyApplication) {
@@ -139,11 +144,12 @@ public class AllotmentService {
 		log.info("Processing update for application: {}, action: {}, isApprove: {}, isLegacy: {}, applicationType: {}", 
 				allotmentDetails.getApplicationNumber(), action, isApprove, isLegacyApplication, applicationType);
 
-		if (isLegacyApplication && (isApprove || isDraftWithDemand)) {
+		if (isLegacyApplication && isDemandSync) {
 			// Legacy demands are generated once and then reconciled: a demand that already exists is left alone,
-			// except an arrear demand whose values changed, which is updated in place (same id, same issue instant).
-			log.info("Syncing legacy demands for application: {} (approve: {}, draft: {})",
-					allotmentDetails.getApplicationNumber(), isApprove, isDraft);
+			// except an arrear demand whose values changed and the standalone adhoc demand, which are updated in
+			// place (same id, same issue instant).
+			log.info("Syncing legacy demands for application: {} (approve: {}, draft: {}, adhoc: {})",
+					allotmentDetails.getApplicationNumber(), isApprove, isDraft, isAdhocAction);
 			try {
 				// isSatelment=false, isSecurityDeposite=false (exclude security deposit)
 				callCalculatorServiceForLegacy(allotmentRequest);

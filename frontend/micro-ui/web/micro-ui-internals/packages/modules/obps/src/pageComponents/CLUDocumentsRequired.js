@@ -376,7 +376,7 @@ function CLUSelectDocument({
           const latRef = EXIF.getTag(this, "GPSLatitudeRef");
           const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-          console.log("Extracted EXIF GPS tags:", { lat, lon, latRef, lonRef });
+
 
           if (lat && lon && latRef && lonRef) {
             // Convert GPS coordinates to decimal format and apply sign from refs
@@ -387,12 +387,12 @@ function CLUSelectDocument({
 
             resolve({ latitude: latitude.toFixed(6), longitude: longitude.toFixed(6) });
           } else {
-            console.warn("No GPS EXIF tags (lat/lon/refs) found on file");
+
             resolve({ latitude: null, longitude: null });
           }
         });
       } catch (error) {
-        console.error("EXIF parsing failed:", error);
+
         resolve({ latitude: null, longitude: null });
       }
     });

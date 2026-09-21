@@ -25,7 +25,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef, useMemo } from "react";
 import { composeInitialProps, useTranslation } from "react-i18next";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 import CLUDocumentTableView from "../../../pageComponents/CLUDocumentTableView";
 import CLUFeeEstimationDetails from "../../../pageComponents/CLUFeeEstimationDetails";
 import CLUDocumentView from "../../../pageComponents/CLUDocumentView";
@@ -108,11 +108,14 @@ const CloseBtn = (props) => {
 };
 
 const CLUEmployeeApplicationDetails = () => {
-  const { cluid, tenant } = useParams();
+  const { cluid } = useParams();
   const id = decryptId(cluid);
   const { t } = useTranslation();
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("Employee.tenant-id") === "pb.punjab"? tenant : window.localStorage.getItem("Employee.tenant-id");
+  const location = useLocation();
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+  const fallbackTenantId = window.localStorage.getItem("Employee.tenant-id");
+  const tenantId = queryTenantId || fallbackTenantId;
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
@@ -237,7 +240,7 @@ const CLUEmployeeApplicationDetails = () => {
 
       Digit.Utils.pdf.generateFormatted(acknowledgementData);
     } catch (err) {
-      console.error(err);
+
     } finally {
       setLoader(false);
     }
@@ -277,7 +280,7 @@ const CLUEmployeeApplicationDetails = () => {
       setPdfUrl(downloadUrl);
       setShowPdfModal(true);
     } catch (error) {
-      console.error("Sanction Letter popup error:", error);
+
     } finally {
       setLoader(false);
     }
@@ -349,7 +352,7 @@ const CLUEmployeeApplicationDetails = () => {
       }
       return fileStoreId;
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoader(false);
       if(forcePnLocale){
@@ -383,13 +386,13 @@ const CLUEmployeeApplicationDetails = () => {
       // await mutation.mutateAsync({ Noc: updatedApplication });
       // refetch();
 
-      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${id}`;
+      const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${encodeURIComponent(id)}`;
       const authToken = localStorage.getItem('token');
       // Trigger eSign
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
         {
-          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onSuccess: () => void 0,
           onError: (error) => {
             setShowToast({
               key: "true",
@@ -455,7 +458,7 @@ const CLUEmployeeApplicationDetails = () => {
         setLoader(false);
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
       } catch (e) {
-        console.error(e);
+
       } finally {
         setLoader(false);
       }
@@ -572,7 +575,7 @@ const CLUEmployeeApplicationDetails = () => {
 
       const submittedOn = cluObject?.cluDetails?.additionalDetails?.SubmittedOn;
       const endTime = Date.now();
-      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime);
 
@@ -602,21 +605,21 @@ const CLUEmployeeApplicationDetails = () => {
           // if (props?.setError) {
           //   props?.setError(t("CS_FILE_FETCH_ERROR"));
           // } else {
-          console.error(t("CS_FILE_FETCH_ERROR"));
+
           // }
         }
       } else {
         // if (props?.setError) {
         //   props?.setError(t("CS_FILE_FETCH_ERROR"));
         // } else {
-        console.error(t("CS_FILE_FETCH_ERROR"));
+
         // }
       }
     } catch (e) {
       // if (props?.setError) {
       //   props?.setError(t("CS_FILE_FETCH_ERROR"));
       // } else {
-      console.error(t("CS_FILE_FETCH_ERROR"));
+
       // }
     }
   };
@@ -705,7 +708,7 @@ const CLUEmployeeApplicationDetails = () => {
     // Rule 2: Every value must be a non-empty string (trimmed)
     const allFilled = entries.every(([key, value]) => {
       const isFilled = typeof value === "string" && value.trim().length > 0;
-      if (!isFilled) console.log("Remark not filled for key:", key, "value:", value);
+      if (!isFilled) ;
       return isFilled;
     });
 
@@ -880,7 +883,7 @@ const CLUEmployeeApplicationDetails = () => {
         } else {
           await Digit.OBPSService.CLUCheckListCreate({
             details: checklistPayload,
-            filters: {},
+            filters: { tenantId },
           });
         }
       }
@@ -986,9 +989,9 @@ const CLUEmployeeApplicationDetails = () => {
             })
           );
           setDistances(results);
-          console.log("Final distances (m):", results);
+
         } catch (err) {
-          console.error("Error fetching distances:", err);
+
         }
       }
     };
@@ -1403,7 +1406,7 @@ const CLUEmployeeApplicationDetails = () => {
         </Modal>
       )}
 
-      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} />}
+      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} tenantId={tenantId} />}
 
       {showPdfModal && (
         <PdfPreviewModal

@@ -96,7 +96,7 @@ const WSConnectionDetails = (props) => {
     subUsageType?.forEach((data) => (data.i18nKey = data?.code?.toUpperCase()));
     const parentUsageType = propertyDetails?.usageCategory;
     const subUsageTypeList = subUsageType.filter((item) => item.parentUsageType === parentUsageType);
-    console.log("subUsageTypeList", subUsageType, parentUsageType, propertyDetails);
+
     setSubUsageTypeList(subUsageTypeList);
 
     const groups = mdmsData?.["ws-services-masters"]?.groups || [];
@@ -214,7 +214,7 @@ const WSConnectionDetails = (props) => {
 
   // const applyingFor;
 
-  console.log("In WSConnectionDetailsSingleInstance: \n formData: ", formData, "\n formState: ", formState);
+
 
   var allStepsData = useSelector(function (state) {
     return state.ws &&
@@ -227,9 +227,9 @@ const WSConnectionDetails = (props) => {
   useEffect(() => {
     const applyingFor = allStepsData.connectionDetails.ApplyingFor;
     const currApplyingFor = { water: connectionDetails.water, sewerage: connectionDetails.sewerage };
-    console.log("1)allStepsData: ", allStepsData, applyingFor, currApplyingFor);
+
     if (!_.isEqual(applyingFor, currApplyingFor)) {
-      console.log("2)allStepsData: ", allStepsData, applyingFor, currApplyingFor);
+
       setConnectionDetails({
         ...connectionDetails,
         water: applyingFor.water,

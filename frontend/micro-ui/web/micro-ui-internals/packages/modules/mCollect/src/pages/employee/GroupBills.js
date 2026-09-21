@@ -45,7 +45,7 @@ const GroupBills = () => {
   } = methods;
 
   const onSubmit = async (data) => {
-    console.log("data is here==========", data);
+
   };
 
   const closeToast = () => {

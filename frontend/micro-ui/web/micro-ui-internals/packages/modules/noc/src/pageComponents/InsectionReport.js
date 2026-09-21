@@ -16,7 +16,7 @@ const createUnitDetails = () => ({
 
 const InspectionReport = ({ config, onSelect, userType, formData, setError, formState, clearErrors, props, fiReport, applicationStatus, InspectionReportVerifier }) => {
     const { t } = useTranslation();
-    console.log('InspectionReportVerifier here', InspectionReportVerifier)
+
     const { pathname } = useLocation();
     const fieldInspectionFieldReports = fiReport ? fiReport : JSON.parse(sessionStorage.getItem("Field_Inspection_FieldReports"));
     const [FieldReports, setFieldReports] = useState(fieldInspectionFieldReports?.length > 0 ? fieldInspectionFieldReports : [createUnitDetails()]);
@@ -114,7 +114,7 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         InspectionReportVerifier
     };
 
-    console.log("FieldReports", FieldReports)
+
 
     if(bpaDocsLoading){
         return <Loader />
@@ -190,7 +190,7 @@ const InspectionReportForm = (_props) => {
     }))
     const today = new Date().toISOString().split("T")[0];
 
-    console.log("formDataprops", siteImages,  documentData, questionList)
+
 
     function routeTo(filestoreId) {
         getUrlForDocumentView(filestoreId)
@@ -208,21 +208,21 @@ const InspectionReportForm = (_props) => {
                     if(props?.setError){
                         props?.setError(t("CS_FILE_FETCH_ERROR"));
                     }else{
-                        console.error(t("CS_FILE_FETCH_ERROR"))
+
                     }
                 }
             } else {
                 if (props?.setError) {
                     props?.setError(t("CS_FILE_FETCH_ERROR"));
                 } else {
-                    console.error(t("CS_FILE_FETCH_ERROR"))
+
                 }
             }
         } catch (e) {
             if (props?.setError) {
                 props?.setError(t("CS_FILE_FETCH_ERROR"));
             } else {
-                console.error(t("CS_FILE_FETCH_ERROR"))
+
             }
         }
     }
@@ -273,7 +273,7 @@ const InspectionReportForm = (_props) => {
 
 
     useEffect(() => {
-                console.log("useffect 3INSPECTION_REPORT_PENDING");
+
 
         const keys = Object.keys(formValue);
         const part = {};
@@ -301,7 +301,7 @@ const InspectionReportForm = (_props) => {
         // else if (!Object.keys(errors)?.length && formState?.errors?.[config?.key] && isErrors) {
         //     clearErrors(config?.key);
         // }
-        console.error("errors in inspection report" ,{errors})
+
     }, [errors]);
 
     let ckeckingLocation = window.location.href.includes("renew-application-details");

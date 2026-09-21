@@ -25,7 +25,7 @@ import {
   Modal,
 } from "@mseva/digit-ui-react-components";
 import React, { useState, Fragment, useEffect, useMemo, useRef } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 // import { FormComposer, Header, Card, CardSectionHeader, PDFSvg, Loader, StatusTable, Row, ActionBar, SubmitBar, MultiLink, LinkButton, CardSubHeader, CardLabel, TextInput, TextArea, BreakLine } from "@mseva/digit-ui-react-components";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
@@ -95,16 +95,18 @@ const RenderRow = ({ label, text, ...rest }) => {
 };
 
 const BpaApplicationDetail = () => {
-  const { bpaid, tenant, filestore } = useParams();
-  const id = decryptId(bpaid)
+  const { bpaid, filestore } = useParams();
+  const id = decryptId(bpaid);
   const { t } = useTranslation();
-  // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = localStorage.getItem("tenant-id") === "pb.punjab" ? tenant : localStorage.getItem("tenant-id");
+  const history = useHistory();
+  const location = useLocation();
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+  const fallbackTenantId = localStorage.getItem("Employee.tenant-id") || localStorage.getItem("tenant-id");
+  const tenantId = queryTenantId || fallbackTenantId;
   const [showToast, setShowToast] = useState(null);
   const [canSubmit, setSubmitValve] = useState({});
   const defaultValues = {};
-  const history = useHistory();
-  const stateCode = Digit.ULBService.getStateId()
+  const stateCode = Digit.ULBService.getStateId();
   // delete
   const [_formData, setFormData, _clear] = Digit.Hooks.useSessionStorage("store-data", null);
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
@@ -120,7 +122,7 @@ const BpaApplicationDetail = () => {
   const [fileUrls, setFileUrls] = useState({});
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
-  
+
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
@@ -308,7 +310,7 @@ const BpaApplicationDetail = () => {
     }
   }, [isLoading, data]);
 
-  
+
 
   useEffect(() => {
     if (!bpaDocsLoading && !isLoading) {
@@ -388,7 +390,7 @@ const BpaApplicationDetail = () => {
           }));
         }
       } catch (error) {
-        console.error("Error fetching file URLs", error);
+
       } finally {
         setIsFileLoading(false);
       }
@@ -445,7 +447,7 @@ const BpaApplicationDetail = () => {
           setOwnerFileUrls(urls);
         }
       } catch (error) {
-        console.error("Error fetching owner file URLs", error);
+
       } finally {
         setIsOwnerFileLoading(false);
       }
@@ -460,41 +462,41 @@ const BpaApplicationDetail = () => {
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
       let response = null
-      console.log('payments here here', payments)
+
       const fee = payments?.totalAmountPaid;
-      
-  
+
+
       const adjustedAmounts = data?.applicationData?.additionalDetails?.adjustedAmounts;
       const totalAdjustedAmount = adjustedAmounts?.reduce((sum, item) => sum + (item?.adjustedAmount || 0), 0);
       const totalULBAmount = adjustedAmounts?.reduce((s,i)=>(s +(i?.amount || 0)),0)
 
-  
+
       data.additionalDetails = {
         ...data?.applicationData?.additionalDetails,
         adjustedAmounts,
         totalAdjustedAmount,
         totalULBAmount
       };
-  
-  
+
+
     const amountinwords = amountToWords(fee)
-    console.log('amountinwords', amountinwords)
+
       if (payments?.fileStoreId) {
         response = { filestoreIds: [payments?.fileStoreId] }
       } else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_SAN_FEE") {
         const fileNo = fileno
         response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords,fileNo, BPA: [data]  }] }, "bpa-receiptsecond")
-        console.log("Final Payments array:", [{ ...payments, usage }]);
+
       }
       else if(payments?.paymentDetails?.[0]?.businessService === "BPA.NC_APP_FEE") {
         response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords, BPA: [data]}] }, "bpa-obps-receipt")
-        console.log("Final Payments array:", [{ ...payments, usage }]);
+
       }
       else{
           response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{ ...payments,usage,amountinwords , BPA: [data]  }] }, "bpa-receipt") //to do: bpa-obps-receipt
-          console.log("Final Payments array:", [{ ...payments, usage }]);
+
       }
-  
+
       const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] })
       window.open(fileStore[response?.filestoreIds[0]], "_blank")
     }
@@ -575,7 +577,7 @@ const BpaApplicationDetail = () => {
          fileStoreId = response?.filestoreIds?.[0];
        }
      } catch (error) {
-       console.log("error", error);
+
      } finally {
        Digit.StoreData.getCurrentLanguage = prevGetLang;
      }
@@ -872,7 +874,7 @@ const BpaApplicationDetail = () => {
 
   async function getDrawingDownload({ tenantId }, fileStoreId) {
     if (!fileStoreId) {
-      console.error("No fileStoreId provided for drawing download");
+
       return;
     }
     else {
@@ -920,7 +922,7 @@ const BpaApplicationDetail = () => {
         onClick: () => handleDownloadPdf(),
       });
     }
-  
+
     if (data?.collectionBillDetails?.length > 0) {
       const bpaPayments = cloneDeep(data?.collectionBillDetails)
       bpaPayments.forEach((pay) => {
@@ -936,7 +938,7 @@ const BpaApplicationDetail = () => {
               }),
           })
         }
-  
+
         if (pay?.paymentDetails[0]?.businessService === "BPA.NC_OC_SAN_FEE") {
           dowloadOptions.push({
             order: 2,
@@ -949,7 +951,7 @@ const BpaApplicationDetail = () => {
               }),
           })
         }
-  
+
         if (pay?.paymentDetails[0]?.businessService === "BPA.LOW_RISK_PERMIT_FEE") {
           dowloadOptions.push({
             order: 1,
@@ -962,7 +964,7 @@ const BpaApplicationDetail = () => {
               }),
           })
         }
-  
+
         if (pay?.paymentDetails[0]?.businessService === "BPA.NC_APP_FEE") {
           dowloadOptions.push({
             order: 1,
@@ -975,7 +977,7 @@ const BpaApplicationDetail = () => {
               }),
           })
         }
-  
+
         if (pay?.paymentDetails[0]?.businessService === "BPA.NC_SAN_FEE") {
           dowloadOptions.push({
             order: 2,
@@ -990,7 +992,7 @@ const BpaApplicationDetail = () => {
         }
       })
     }
-  
+
     if (
       data &&
       data?.applicationData?.businessService === "BPA_LOW" &&
@@ -1034,7 +1036,7 @@ const BpaApplicationDetail = () => {
         });
       }
     }
-  
+
     if (data?.comparisionReport) {
       dowloadOptions.push({
         order: 4,
@@ -1042,7 +1044,7 @@ const BpaApplicationDetail = () => {
         onClick: () => window.open(data?.comparisionReport?.comparisonReport, "_blank"),
       })
     }
-  
+
     dowloadOptions.sort((a, b) => a.order - b.order)
 
   if (workflowDetails?.data?.nextActions?.length > 0) {
@@ -1295,7 +1297,7 @@ const BpaApplicationDetail = () => {
 
        return response.filestoreIds[0];
      } catch (error) {
-       console.log("error", error);
+
      } finally {
        Digit.StoreData.getCurrentLanguage = prevGetLang;
      }
@@ -1390,7 +1392,7 @@ const BpaApplicationDetail = () => {
        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
        window.open(fileStore[fileStoreId], "_blank");
      } catch (error) {
-       console.log("error", error);
+
      } finally {
         Digit.StoreData.getCurrentLanguage = prevGetLang;
        setIsEnableLoader(false);
@@ -1413,7 +1415,7 @@ const BpaApplicationDetail = () => {
       setPdfUrl(downloadUrl);
       setShowPdfModal(true);
     } catch (error) {
-      console.error("Sanction Letter popup error:", error);
+
       setShowToast({
         key: "true",
         error: true,
@@ -1427,13 +1429,13 @@ const BpaApplicationDetail = () => {
     async function openDrawingPopup() {
       try {
         setLoader(true);
-        console.log("Drawing download URL:", data?.edcrDetails?.updatedDxfFile);
+
         const downloadUrl = await fetchOnlyUrl(data?.edcrDetails?.updatedDxfFile, tenantId);
-  
+
         setPdfUrl(downloadUrl);
         setShowPdfModal(true);
       } catch (error) {
-        console.error("Drawing popup error:", error);
+
         setShowToast({
           key: "true",
           error: true,
@@ -1512,14 +1514,14 @@ const BpaApplicationDetail = () => {
           if (props?.setError) {
             props?.setError(t("CS_FILE_FETCH_ERROR"));
           } else {
-            console.error(t("CS_FILE_FETCH_ERROR"));
+
           }
         }
       } else {
         if (props?.setError) {
           props?.setError(t("CS_FILE_FETCH_ERROR"));
         } else {
-          console.error(t("CS_FILE_FETCH_ERROR"));
+
         }
       }
     } catch (e) {
@@ -1527,7 +1529,7 @@ const BpaApplicationDetail = () => {
       if (props?.setError) {
         props?.setError(t("CS_FILE_FETCH_ERROR"));
       } else {
-        console.error(t("CS_FILE_FETCH_ERROR"));
+
       }
     }
   };
@@ -1571,7 +1573,7 @@ const BpaApplicationDetail = () => {
     // Rule 2: Every value must be a non-empty string (trimmed)
     const allFilled = entries.every(([key, value]) => {
       const isFilled = typeof value === "string" && value.trim().length > 0;
-      if (!isFilled) console.log("Remark not filled for key:", key, "value:", value);
+      if (!isFilled) ;
       return isFilled;
     });
 
@@ -1818,7 +1820,7 @@ const BpaApplicationDetail = () => {
 
   const printCertificateWithESign = async () => {
     try {
-      // console.log("🎯 Starting certificate eSign process...");
+
 
       const fileStoreId = await getPermitOccupancyOrderSearchFilestore({tenantId}, "buildingpermit-normal");
 
@@ -1830,9 +1832,9 @@ const BpaApplicationDetail = () => {
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
         {
-          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onSuccess: () => void 0,
           onError: (error) => {
-            console.error("❌ eSign failed:", error);
+
             setShowToast({
               key: "true",
               error: true,
@@ -1842,7 +1844,7 @@ const BpaApplicationDetail = () => {
         }
       );
     } catch (error) {
-      console.error("❌ Certificate preparation failed:", error);
+
       setShowToast({
         key: "true",
         error: true,
@@ -1853,23 +1855,23 @@ const BpaApplicationDetail = () => {
 
   const printDrawingWithESign = async () => {
       try {
-        // console.log("🎯 Starting certificate eSign process...");
-  
+
+
         const { id: fileStoreId, fullTenantId: tenant } = fetchOnlyFileStore(data?.edcrDetails?.updatedDxfFile);
-  
+
         // const callbackUrl = `${window.location.origin}/digit-ui/citizen/obps/bpa/esign/complete/${id}/${fileStoreId}`;
         const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/filestore/${id}`;
         const authToken = localStorage.getItem("token");      
-  
-        console.log("📁 FileStore ID In Drawing:", fileStoreId, tenant, callbackUrl, authToken);
-  
+
+
+
         // Trigger eSign
         eSignCertificate(
           { fileStoreId, tenantId: tenant, callbackUrl, authToken },
           {
-            onSuccess: () => console.log("✅ eSign initiated successfully"),
+            onSuccess: () => void 0,
             onError: (error) => {
-              console.error("❌ eSign failed:", error);
+
               setShowToast({
                 key: "true",
                 error: true,
@@ -1879,7 +1881,7 @@ const BpaApplicationDetail = () => {
           }
         );
       } catch (error) {
-        console.error("❌ Certificate preparation failed:", error);
+
         setShowToast({
           key: "true",
           error: true,
@@ -1926,7 +1928,7 @@ const BpaApplicationDetail = () => {
   //   })
   // }
 
-  console.log("actionsforlogs",actions)
+
 
   const employeeDraftSave = async (data, nocData = false, isOBPS = {}) => {
     // if(appData?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !canSubmit){
@@ -2067,7 +2069,7 @@ const BpaApplicationDetail = () => {
 
     //   const oldCalculations = (data?.BPA?.additionalDetails?.calculations || [])?.map((c) => ({ ...c, isLatest: false }));;
 
-      console.log("draftComment", draftComment)
+
       let payload = {
         ...data,
         BPA: {
@@ -2328,7 +2330,7 @@ const BpaApplicationDetail = () => {
                           {/* to get Scrutiny values */}
                           {detail?.isScrutinyDetails && detail?.additionalDetails?.scruntinyDetails?.length > 0 ? (
                             // detail?.additionalDetails?.scruntinyDetails.map((scrutiny) => {
-                            //   console.log("scrutinyForReportPlans", scrutiny)
+
                             //   return (
                             //   <Fragment key={scrutiny?.title}>
                             //     {/* <Row className="border-none" label={t(scrutiny?.title)} />
@@ -3148,29 +3150,7 @@ const BpaApplicationDetail = () => {
           </Modal>
         )}
 
-        {/* {data?.applicationData?.status === "INSPECTION_REPORT_PENDING" && (userInfo?.info?.roles.filter(role => role.code === "BPA_FIELD_REPORT_INSPECTOR")).length > 0 && !isLoading &&
-        <FormComposer
-          heading={t("")}
-          isDisabled={!canSubmit}
-          config={configs.map((config) => {
-            return {
-              ...config,
-              body: config.body.filter((a) => {
-                return !a.hideInEmployee;
-              }),
-              head: checkHead(config.head),
-            };
-          })}
-          fieldStyle={{ marginRight: 0 }}
-          submitInForm={false}
-          defaultValues={defaultValues}
-          onFormValueChange={onFormValueChange}
-          breaklineStyle={{ border: "0px" }}
-          className={"employeeCard-override"}
-          cardClassName={"employeeCard-override"}
-          onSubmit={() => {console.log("")}}
-        />
-        } */}
+        {}
       </div>
 
       {getLoading && <LoaderNew />}

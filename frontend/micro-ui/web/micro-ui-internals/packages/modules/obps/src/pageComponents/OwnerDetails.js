@@ -50,7 +50,7 @@ const ErrorMessage = ({ message }) => {
 };
 
 const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData, onGoBack }) => {
-  console.log("formdatatstd", currentStepData)
+
 
   let validation = {}
   sessionStorage.removeItem("currentPincode")
@@ -59,7 +59,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const isrenewtrade = window.location.href.includes("renew-trade")
 
   const tenantId = Digit.ULBService.getCurrentTenantId()
-  console.log(tenantId, "OWNER TENET ID")
+
   const stateId = Digit.ULBService.getStateId()
 
   const [canmovenext, setCanmovenext] = useState(isedittrade || isrenewtrade ? false : true)
@@ -76,9 +76,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const [activeOtpIndex, setActiveOtpIndex] = useState(null)
 
   const setDocumentFile = (index, file) => {
-    console.log("OwnerDoc DocumentFile FileUploader", index, file)
+
     let updatedFields = [...fields]
-    console.log("OwnerDoc DocumentFile FileUploader 2", updatedFields)
+
     updatedFields[index] = {
       ...updatedFields[index],
       additionalDetails: {
@@ -95,7 +95,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       setShowToast({ key: "true", error: true, message: "File size should be less than 5MB" })
       return
     }
-    console.log("OwnerDoc DocumentFile", file)
+
     try {
         setLoader(true);
         const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
@@ -122,7 +122,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       setShowToast({ key: "true", error: true, message: "File size should be less than 5MB" })
       return
     }
-    console.log("OwnerDoc OwnerPhoto", file)
+
     try {
         setLoader(true);
         const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
@@ -155,7 +155,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   }
 
   const setOwnerPhoto = (index, file) => {
-    console.log("OwnerDoc OwnerPhoto PhotoUploader", index, file);
+
     const updatedFields = [...fields]
     // updatedFields[index].additionalDetails.ownerPhoto = file
     updatedFields[index] = {
@@ -247,7 +247,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   })
 
   const [fields, setFeilds] = useState(() => {
-    console.log("DateofBirth", currentStepData?.createdResponse?.landInfo?.owners)
+
     let owners = [];
     if (currentStepData?.createdResponse?.landInfo?.owners?.length > 0) {
       owners = currentStepData?.createdResponse?.landInfo?.owners?.map((item) => {
@@ -281,7 +281,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   })
 
   const user = Digit.UserService.getUser()
-  console.log("userrrr", user, fields)
+
 
   useEffect(() => {
     if(typeof ownershipCategory === "string"){
@@ -310,7 +310,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
             }
           }
         });
-        console.log("GenderUpdatedFields", updatedFields);
+
         setFeilds(updatedFields);
       }
     }
@@ -473,7 +473,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   }
   function setMobileNo(i, val) {
     const units = [...fields]
-    console.log("OwnerDataOnNumberChange",units[i]);
+
     units[i] = {
       mobileNumber: val,
       name: units[i].name,
@@ -550,7 +550,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     if (e && e.preventDefault) e.preventDefault();
     const ownersCopy = cloneDeep(fields)
     const ownerNo = ownersCopy?.[indexValue]?.mobileNumber || ""
-    console.log("ownerNo to verify:", ownerNo, indexValue)
+
     setShowToast(null)
 
     if (!ownerNo || !ownerNo.match(getPattern("MobileNo"))) {
@@ -655,7 +655,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         else setCanmovenext(false)
       }
     } catch (err) {
-      console.error("Error verifying OTP and searching user:", err)
+
       setShowToast({ key: "true", error: true, message: "ERR_USER_SEARCH_FAILED" })
     } finally {
       setApiLoading(false);
@@ -707,12 +707,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     return userresponse
   }
 
-  console.log(formData, "FormDATA")
+
 
   const validateOwners = (owners, ownershipCategory, setErrors) => {
     let isValid = true;
     let newErrors = {};
-    console.log("ownersss", owners)
+
 
     // Ownership category mandatory
     if (!ownershipCategory?.code) {
@@ -756,7 +756,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       }
       if(owner?.emailId){
         if(!Digit.Utils.getPattern("Email").test(owner?.emailId)){
-          console.log("EmailValidation",owner?.emailId,Digit.Utils.getPattern("Email").test(owner?.emailId))
+
           newErrors[`email_${index}`] = t("EmailId is incorrect");
           isValid = false;
         }
@@ -832,13 +832,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     //   setApiLoading(false);
     //   return
     // }
-    console.log("userresponse", userresponse);
+
 
     let newFields = [...fields];
     if (userresponse?.length > 0) {
       newFields = newFields?.map((item, index) => {
           if (userresponse?.[index]?.responseInfo?.status === "200") {
-            console.log("userIndexedValue", userresponse?.[index]?.user?.[0], item)
+
             const userData = userresponse?.[index]?.user?.[0];
             return {
               ...item,
@@ -881,7 +881,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
       setIsDisable(true)
 
-      console.log("ownersData 1", newFields)
+
 
       const conversionOwners = []
       newFields?.map((owner) => {
@@ -907,7 +907,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         })
       })
 
-      console.log("ownersData", conversionOwners, ownershipCategory)
+
 
       const userInfo = Digit.UserService.getUser()
       const accountId = userInfo?.info?.uuid
@@ -936,9 +936,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
-      console.log("APIResponse", result);
+
     } catch (e) {
-      console.log("error", e);
+
       setShowToast({ key: "true", error: true, message: t("BPA_CREATE_APPLICATION_FAILED") });
       setApiLoading(false);
     }
@@ -950,7 +950,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   //     return <Loader />
   // }
 
-  console.log(formData, "DATA++++++")
+
   function getCanMoveNextMultiple() {
     let flag = 0
     fields &&

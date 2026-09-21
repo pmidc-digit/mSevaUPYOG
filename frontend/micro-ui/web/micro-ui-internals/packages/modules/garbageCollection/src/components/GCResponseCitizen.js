@@ -40,11 +40,11 @@ const GCResponseCitizen = (props) => {
     setLoader(true);
     try {
       const responseData = await Digit.GCService.search({ tenantId, filters });
-      console.log("search ", responseData);
+
       setChallanData(responseData?.GarbageConnection?.[0]);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
+
       setLoader(false);
     }
   };
@@ -52,7 +52,7 @@ const GCResponseCitizen = (props) => {
     try{
       setLoader(true);
       const applications = getChallanData;
-      console.log('applications for garbage', applications)
+
       const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
       const acknowldgementDataAPI = await getAcknowledgementData({ ...applications }, tenantInfo, t);
       setTimeout(() => {
@@ -60,12 +60,12 @@ const GCResponseCitizen = (props) => {
       setLoader(false);
     }, 0);
     }catch (error) {
-    console.error("Error generating acknowledgement:", error);
+
     setLoader(false);
   }
-      
+
   };
-  
+
 
   const closeToast = () => {
     setShowToast(null);
@@ -84,7 +84,7 @@ const GCResponseCitizen = (props) => {
     else history.push(`/digit-ui/employee`);
   };
 
-  
+
 
   const handlePayment = () => {
     // return;

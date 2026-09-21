@@ -32,6 +32,7 @@ const LayoutInbox = ({ parentRoute }) => {
   const { data: cities } = Digit.Hooks.useTenants();
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
+  const [apiMobileSearch, setApiMobileSearch] = useState("");
   const prefix = "WF_EMPLOYEE_LAYOUT_STATUS";
 
   const searchFormDefaultValues = useMemo(
@@ -177,7 +178,8 @@ const LayoutInbox = ({ parentRoute }) => {
     ];
   }, []);
 
-  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  // const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
 
   useEffect(() => {
     if (tenantId !== "pb.punjab") return;
@@ -191,10 +193,13 @@ const LayoutInbox = ({ parentRoute }) => {
   }, [cities, formState?.selectedTenantId, tenantId]);
 
   const memoizedFilters = useMemo(() => {
+    const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
+
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
       searchForm: formState?.searchForm || searchFormDefaultValues,
-      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+      // Manual text search filters the loaded rows without changing the API query.
+      tableForm,
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -217,17 +222,16 @@ const LayoutInbox = ({ parentRoute }) => {
     },
   });
 
-  console.log('inboxData', inboxData)
-
   const assigneeCountBaseFilters = useMemo(() => {
     const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
     delete countFilterForm.applicationStatus;
 
     return {
       ...memoizedFilters,
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
-  }, [memoizedFilters]);
+  }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
 
   const assignedToMeFilters = useMemo(
     () => ({
@@ -354,6 +358,19 @@ const LayoutInbox = ({ parentRoute }) => {
     dispatch({ action: "mutateFilterForm", data });
   };
 
+  const onApiMobileSearch = useCallback(
+    (mobileNumber) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({ action: "mutateSearchForm", data: { mobileNumber: mobileNumber?.trim() || "", applicationNumber: "" } });
+    },
+    [formState.searchForm, formState.tableForm]
+  );
+
+  const onApiMobileClear = useCallback(() => {
+    setApiMobileSearch("");
+    onApiMobileSearch("");
+  }, [onApiMobileSearch]);
+
   const propsForInboxTable = useLayoutTableConfig({
     parentRoute,
     onPageSizeChange,
@@ -362,6 +379,8 @@ const LayoutInbox = ({ parentRoute }) => {
     table: tableData,
     dispatch,
     onSortingByData,
+    globalSearch: topBarSearch,
+    cities,
   });
 
   // Setup form with react-hook-form
@@ -404,7 +423,6 @@ const LayoutInbox = ({ parentRoute }) => {
     [formState?.filterForm, getResolvedStatusIds, setFilterFormValue, defaultAssignee]
   );
 
-  const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
 
   const onNextPage = () =>
@@ -437,19 +455,6 @@ const LayoutInbox = ({ parentRoute }) => {
     setFilterFormValue,
     defaultAssignee,
   ]);
-
-  // Search debounce
-  useEffect(() => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    searchDebounceRef.current = setTimeout(() => {
-      const value = String(topBarSearch || "").trim();
-      const nextSearchForm = value ? { applicationNumber: value } : {};
-      // Only reset offset when searching, preserve the current limit
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({ action: "mutateSearchForm", data: nextSearchForm });
-    }, 400);
-    return () => clearTimeout(searchDebounceRef.current);
-  }, [topBarSearch]);
 
   // Initialize filter form
   useEffect(() => {
@@ -497,9 +502,7 @@ const LayoutInbox = ({ parentRoute }) => {
       tenantSelector={
         tenantId === "pb.punjab" && cities?.length ? (
           <div className="new-inbox-tenant-selector">
-            <div className="filter-label sub-filter-label obps-pages-employee-inbox-layout-inbox--style-1" >
-              {t("BPA_CITIES_DROPDOWN_LABEL")}
-            </div>
+            <div className="filter-label sub-filter-label obps-pages-employee-inbox-layout-inbox--style-1">{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
             <div className="new-inbox-tenant-dropdown">
               <Dropdown
                 option={cities}
@@ -523,7 +526,7 @@ const LayoutInbox = ({ parentRoute }) => {
           isInboxLoading={isInboxLoading}
           assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}
-          prefix= {prefix}
+          prefix={prefix}
           rawStatuses={inboxData?.statuses || []}
         />
       }
@@ -534,7 +537,11 @@ const LayoutInbox = ({ parentRoute }) => {
           onTabClick={onStatusTabClick}
           searchValue={topBarSearch}
           onSearchChange={(e) => setTopBarSearch(e.target.value)}
-          searchPlaceholder="Search by application number..."
+          searchPlaceholder="Search applications, names, mobile numbers, or status..."
+          apiMobileValue={apiMobileSearch}
+          onApiMobileChange={(e) => setApiMobileSearch(e.target.value)}
+          onApiMobileSearch={onApiMobileSearch}
+          onApiMobileClear={onApiMobileClear}
           totalCount={totalCountData}
           showClearTab={false}
           showAll={false}
@@ -545,17 +552,19 @@ const LayoutInbox = ({ parentRoute }) => {
       }
       isLoading={isInboxLoading}
       tableData={tableData}
-      tableProps={propsForInboxTable}
+      tableProps={{ ...propsForInboxTable, stickyHorizontalScrollbar: true }}
       tableHeader="ES_INBOX_INBOX"
       pagination={
-        <InboxPagination
-          offset={formState.tableForm?.offset || 0}
-          limit={formState.tableForm?.limit || 10}
-          totalCount={totalCountData}
-          onPageSizeChange={onPageSizeChange}
-          onNextPage={onNextPage}
-          onPrevPage={onPrevPage}
-        />
+        !String(topBarSearch || "").trim() && (
+          <InboxPagination
+            offset={formState.tableForm?.offset || 0}
+            limit={formState.tableForm?.limit || 10}
+            totalCount={totalCountData}
+            onPageSizeChange={onPageSizeChange}
+            onNextPage={onNextPage}
+            onPrevPage={onPrevPage}
+          />
+        )
       }
     />
   );

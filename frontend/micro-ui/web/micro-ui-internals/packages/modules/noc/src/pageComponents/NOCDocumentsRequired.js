@@ -23,7 +23,7 @@ import NOCCustomUploadFile from "./NOCCustomUploadFile";
 const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(formData?.documents?.documents);
-  console.log("documents in childStep three", documents);
+
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -33,8 +33,8 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   const dispatch = useDispatch();
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
-  console.log("data for documents here", data);
-  console.log("formData here =====", formData);
+
+
 
   const coordinates = useSelector(function (state) {
     return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
@@ -46,9 +46,9 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
     }
   }, [coordinates]);
 
-  console.log("coordinates (from redux)", coordinates);
 
-  console.log("geocoordinates", geocoordinates);
+
+
 
   const currentStepData = useSelector((state) => state?.noc?.NOCNewApplicationFormReducer?.formData) || {};
 
@@ -58,7 +58,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
     return String(code).toLowerCase() === "firm";
   });
   const isVacant = currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
-  //console.log("isVacant", isVacant);
+
 
   let filteredDocuments = isVacant ? data?.NOC?.Documents?.filter((doc) => doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
   if (isFirm) {
@@ -66,7 +66,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   }
   filteredDocuments = filteredDocuments?.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  console.log("filteredDocuments", filteredDocuments);
+
 
   // useEffect(() => {
   //   setDocuments((prev) => {
@@ -86,7 +86,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
     let document = formData.documents;
     let documentStep;
     documentStep = { ...document, documents: documents };
-    //console.log("documentStep", documentStep);
+
     onSelect(config.key, documentStep);
   };
   const onSkip = () => onSelect();
@@ -99,7 +99,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
 
       let isRequired = false;
 
-      console.log("documents in pet", documents);
+
       documents?.map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
       });
@@ -193,7 +193,7 @@ function PTRSelectDocument({
   previewLink,
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  // console.log("filetetetetet",filteredDocument, documents, doc);
+
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
@@ -210,11 +210,11 @@ function PTRSelectDocument({
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
-    //console.log("e here==>", e);
-    //console.log("e.target.files[0] here==>", e.target.files[0]);
+
+
 
     const selectedFile = e.target.files[0];
-    console.log("selectedFile here", selectedFile);
+
 
     if (!selectedFile) return;
 
@@ -230,7 +230,7 @@ function PTRSelectDocument({
       // Use the File object directly for EXIF parsing
       extractGeoLocation(selectedFile)
         .then((location) => {
-          console.log("Extracted GPS - Latitude:", location.latitude, "Longitude:", location.longitude);
+
 
           if (location.latitude !== null && location.longitude !== null) {
             // Set file and update coordinates
@@ -267,7 +267,7 @@ function PTRSelectDocument({
           }
         })
         .catch((err) => {
-          console.error("Error extracting GPS data:", err);
+
           alert("⚠️ Error reading image. Please try again.");
         });
     } else {
@@ -307,7 +307,7 @@ function PTRSelectDocument({
           ];
         });
         }else if(uploadedFile === ""){
-          console.log("uploadedFile is empty string, removing document from state", uploadedFile);
+
           const selectedDoc = documents?.find((item) => item?.documentType === doc?.code);
           if(!selectedDoc?.uuid){
             setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
@@ -335,7 +335,7 @@ function PTRSelectDocument({
 
   useEffect(() => {
     if (documents?.length > 0) {
-      console.log("documents here", documents);
+
       handleSubmit();
     }
   }, [documents]);
@@ -428,7 +428,7 @@ function PTRSelectDocument({
           const latRef = EXIF.getTag(this, "GPSLatitudeRef");
           const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-          console.log("Extracted EXIF GPS tags:", { lat, lon, latRef, lonRef });
+
 
           if (lat && lon && latRef && lonRef) {
             const latDecimal = convertToDecimal(lat);
@@ -442,7 +442,7 @@ function PTRSelectDocument({
           }
         });
       } catch (error) {
-        console.log("EXIF parsing failed:", error);
+
         resolve({ latitude: null, longitude: null });
       }
     });

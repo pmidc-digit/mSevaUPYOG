@@ -85,8 +85,8 @@ const RenewPTRStepForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [defaultValues, setDefaultValues] = useState(null);
-  console.log("defaultValues", defaultValues);
-  console.log("formStatePTR: ", formState);
+
+
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PTRNewApplication_STEP(updatedStepNumber));
@@ -110,7 +110,7 @@ const RenewPTRStepForm = () => {
   const { applicationNumber } = useParams();
   // const userInfo = Digit.UserService.getUser();
   // const args = {};
-  console.log("Application Number:", applicationNumber);
+
   const { data, isLoading, error, isSuccess } = Digit.Hooks.ptr.usePtrApplicationDetail(
     t,
     tenantId,
@@ -123,14 +123,14 @@ const RenewPTRStepForm = () => {
     // args
   );
 
-  console.log("Data", data);
+
   const applicationData = data?.applicationData?.applicationData;
-  console.log("applicationData", applicationData);
+
 
   useEffect(() => {
     if (applicationData) {
       const mappedValues = mapPTRApplicationDataToDefaultValues(applicationData, t);
-      console.log(mappedValues, "mappedValues");
+
       setDefaultValues(mappedValues);
     }
   }, [applicationData]);

@@ -33,7 +33,7 @@ const ReasonModal = ({ closeModal, t, cancelModal }) => {
   } = useForm();
 
   const onSubmit = (data) => {
-    console.log("data===", data);
+
     cancelModal(data);
   };
 

@@ -57,7 +57,7 @@ const Response = (props) => {
   );
   const complaintDetails = appState;
   const handleDownloadPdf = async (e) => {
-    console.log("appState===", appState);
+
     // return;
     const tenantInfo = tenants.find((tenant) => tenant.code === localStorage.getItem("CITIZEN.CITY"));
     e.preventDefault();

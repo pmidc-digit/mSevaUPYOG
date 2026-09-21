@@ -83,7 +83,7 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
         if (!homePageUrlLinksLoading && homePageUrlLinks?.BPA?.homePageUrlLinks?.length > 0) {
             let uniqueLinks = [];
             homePageUrlLinks?.BPA?.homePageUrlLinks?.map((linkData) => {
-                console.log("edcrData------", linkData?.applicationType, edcrData?.appliactionType?.toUpperCase().split(" ").join("_"));
+
                 // if (linkData?.applicationType === edcrData?.appliactionType?.toUpperCase().split(" ").join("_") && linkData?.serviceType === edcrData?.applicationSubType) {
                 if (linkData?.applicationType === edcrData?.appliactionType && linkData?.serviceType === edcrData?.applicationSubType) {
                     setBpaLinks({
@@ -125,7 +125,7 @@ export const BPASearchModal = ({ closeModal, edcrData }) => {
             Cell: ({ value }) =>                                    
             <SubmitBar label={t("Select")} onSubmit={() => {
                 const selectedData = searchedData?.find((val) => val?.id === value);
-                console.log("Selected Application", selectedData)
+
                 getBPAFormDataNewEDCR(selectedData, edcrData?.edcrNumber,history, t)                
             }}/>
         },

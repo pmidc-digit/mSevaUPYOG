@@ -35,7 +35,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   const id  = result?.Licenses?.[0]?.applicationNumber;
 
 
-console.log("FormData in CheckPage", result, formData, safeValue, value, isArchitect);
+
   const status = value?.result?.Licenses?.[0]?.status;  
   const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
 
@@ -66,7 +66,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
 
     formattedData?.forEach((item) => {
       if (item?.isActive === "true") {
-        console.log("item=====", item);
+
         const mainType = item?.tradeType?.split(".")[0];
         const i18nKey = `TRADELICENSE_TRADETYPE_${mainType}`;
 
@@ -87,9 +87,9 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
   }
 
   function mapQualificationToLicense(qualification) {
-    
+
     let qualificationCode = EmployeeStatusData?.BPA?.QualificationType?.find((type) => type.name?.includes(qualification?.trim()))?.role;
-    console.log("qualification", qualification,EmployeeStatusData, qualificationCode, getLicenseType());
+
     let license = getLicenseType().find((type) => type.i18nKey.includes(qualificationCode));
 
     if (license) {
@@ -98,7 +98,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
   }
 
   useEffect(() => {
-    console.log("EmployeeStatusData", EmployeeStatusData);
+
     mapQualificationToLicense(result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.qualificationType);
   }, [EmployeeStatusData, mdmsLoading])
 
@@ -115,7 +115,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
       sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(updatedFinalData));
     }
   },[bparegData, isBPAREGLoading])
-  
+
 
   const checkTenant = isArchitect ? "pb.punjab" : tenantId;
 
@@ -340,10 +340,10 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
     (() => {
       const validTo = result?.Licenses?.[0]?.validTo;
       if (!validTo) return "";
-      
+
       // Check if it's a number (epoch timestamp) or a numeric string
       const isEpoch = !isNaN(Number(validTo)) && Number(validTo) > 1000000000;
-      
+
       // If it's epoch, format it; otherwise, return as-is
       return isEpoch ? formatDate(validTo) : validTo;
     })())}
@@ -378,7 +378,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
         {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode)}
       </div>
 
-  
+
 
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_DOC_DETAILS_SUMMARY")}</h2>
@@ -501,14 +501,14 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
       </div>
 
 
- 
+
       {result?.Licenses?.[0]?.applicationType != "UPGRADE" && <div style={sectionStyle}>
 
         <h2 style={headingStyle}>{t("BPA_SUMMARY_FEE_DETAILS")}</h2>
 
           {mainType === "ARCHITECT" ? (
             <div>
-              
+
               {paymentDetails?.billResponse?.Bill[0]?.billDetails[0]?.billAccountDetails.map((bill, index) =>
                 renderLabel(t(bill.taxHeadCode), `₹ ${bill?.amount}`)
               )}
@@ -521,7 +521,7 @@ console.log("FormData in CheckPage", result, formData, safeValue, value, isArchi
               )}
             </div>
           ) : (
-           
+
   <div>
     {recieptDataLoading ? (
       <Loader message={"Loading Fee..."} />

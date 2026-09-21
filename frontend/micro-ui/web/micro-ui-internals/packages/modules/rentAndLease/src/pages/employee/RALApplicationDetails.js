@@ -10,6 +10,7 @@ import {
   Menu,
   SubmitBar,
   MultiLink,
+  PaymentHistory,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,7 +42,7 @@ const RALApplicationDetails = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const menuRef = useRef();
   Digit.Hooks.useClickOutside(menuRef, () => setDisplayMenu(false), displayMenu);
-  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt" });
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rl-receipt-employee" });
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -257,6 +258,12 @@ const RALApplicationDetails = () => {
     if (filtData.action === "FORWARD_FOT_SETLEMENT" && filtData?.amountToBeDeducted !== undefined) {
       updatedApplicant.amountToBeDeducted = filtData.amountToBeDeducted;
     }
+    if (filtData.action === "APPROVE") {
+      updatedApplicant.additionalDetails = {
+        ...updatedApplicant?.additionalDetails,
+        approverComment: filtData?.comment,
+      };
+    }
 
     // if (!filtData?.assignee && filtData.action == "FORWARD") {
     //   // setShowToast(true);
@@ -297,7 +304,8 @@ const RALApplicationDetails = () => {
         const WorkflowService = await Digit.WorkflowService.init(tenantId, "RENT_N_LEASE_NEW");
         setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states || []);
       } catch (error) {
-        console.error("Error fetching workflow service:", error);
+        setWorkflowService([]);
+        setShowToast({ key: true, label: "Something went wrong" });
       } finally {
         setLoader(false);
       }
@@ -534,6 +542,12 @@ const RALApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
+        <PaymentHistory
+          consumerCode={applicationData?.consumerCode || applicationData?.applicationNumber || acknowledgementIds}
+          service="rl-services"
+          tenantId={tenantId}
+          title="RL Payment History"
+        />
         {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
         {applicationData?.status != "INITIATED" && actions?.length > 0 && !applicationData?.expireFlag && (

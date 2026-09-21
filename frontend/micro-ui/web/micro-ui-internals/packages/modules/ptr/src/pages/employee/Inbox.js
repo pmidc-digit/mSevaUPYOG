@@ -102,9 +102,7 @@ const Inbox = ({ parentRoute, initialStates = {}, moduleCode = "PTR" }) => {
   const handleStatusChange = useCallback(
     (selectedStatusCodes) => {
       const applicationStatus = selectedStatusCodes.map((statusCode) => {
-        const matchingStatus = rawStatuses.find(
-          (status) => (status?.applicationstatus || status?.applicationStatus || status?.state) === statusCode
-        );
+        const matchingStatus = rawStatuses.find((status) => (status?.applicationstatus || status?.applicationStatus || status?.state) === statusCode);
 
         return {
           ...matchingStatus,

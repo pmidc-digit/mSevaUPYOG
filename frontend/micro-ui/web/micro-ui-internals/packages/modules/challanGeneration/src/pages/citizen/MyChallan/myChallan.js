@@ -34,22 +34,22 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   }, [filter, tenantId]);
 
   const fetchChallans = async () => {
-    console.log("filters", filters);
+
     setLoader(true);
     try {
       const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
-      console.log("result", responseData);
+
       setChallanData(responseData);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
+
       setLoader(false);
     }
   };
 
   useEffect(() => {
     // const filters = {};
-    console.log("filters", filters);
+
     if (filters) fetchChallans();
     // filters.mobileNumber = userInfo?.info?.mobileNumber;
   }, [filters]);

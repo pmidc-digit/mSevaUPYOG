@@ -31,7 +31,7 @@ const FilterFormFieldsComponent = ({
     type.i18nKey = t(`WF_BPA_${type.code}`);
   });
 
-  console.log("status heres===>", statuses);
+
   return (
     <>
       {(window.location.href.includes("/employee") && tenantId === "pb.punjab") ? <FilterFormField>
@@ -71,7 +71,7 @@ const FilterFormFieldsComponent = ({
           defaultValue={[]}
           render={(props) => {
             const toggleStatus = (statusCode) => {
-              //console.log(statusCode, "statusCode");
+
               if (props.value.includes(statusCode)) {
                 props.onChange(props.value.filter((code) => code !== statusCode));
               } else {

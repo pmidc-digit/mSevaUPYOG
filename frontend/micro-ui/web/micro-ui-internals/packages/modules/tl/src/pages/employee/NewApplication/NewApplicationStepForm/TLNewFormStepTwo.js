@@ -169,12 +169,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     const res = await onSubmit(formData);
-    
+
 
     if (res === true) {
       onGoNext();
     } else {
-      console.error("Submission failed, not moving to next step.");
+
     }
   };
 
@@ -200,18 +200,18 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         setError(t("CORE_COMMON_PINCODE_INVALID"));
         return;
       }
-      
+
       // Check if the selected city is valid
       if (!TraidDetails?.address?.city) {
         setShowToast({ key: "error" });
         setError(t("TL_CITY_REQUIRED"));
         return;
       }
-      
+
       // Optional: Check if pincode exists in tenant master data (soft validation)
       const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails.address.pincode));
       if (!foundValue) {
-        console.warn(`Pincode ${TraidDetails.address.pincode} not found in master data, but proceeding with valid city-locality combination`);
+
         // Don't block submission - just log warning
       }
     }
@@ -383,7 +383,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       setLoader(false);
       if (response?.ResponseInfo?.status === "successful") {
         dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-       
+
       }
       return response?.ResponseInfo?.status === "successful";
     } catch (error) {

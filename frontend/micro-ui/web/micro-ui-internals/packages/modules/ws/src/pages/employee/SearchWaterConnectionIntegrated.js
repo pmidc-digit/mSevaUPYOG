@@ -11,7 +11,7 @@ const SearchWaterConnectionIntegrated = ({ tenantId, onSubmit, data, count, resu
     str = str.replace(/_/g, " ");
     return str;
   };
-console.log("dafff",data)
+
   const convertEpochToDate = (dateEpoch) => {
     if (dateEpoch == null || dateEpoch == undefined || dateEpoch == "") {
       return "NA";
@@ -65,27 +65,27 @@ console.log("dafff",data)
     handleSubmit(onSubmit)();
   }
   const downloadIntegratedBill =async() => {
-    //console.log("rsult 2",tenantId,_data.propertyId)
- console.log("integrated",data)
+
+
     if(data?.length >0)
    {
-   
+
     try {
     let propertyId =data[0].propertyId
       let response = await Digit.WSService.wnsGroupBill({ propertyId,tenantId })
-      
+
        downloadPdf(new Blob([response.data], { type: "application/pdf" }), `IntegratedBill.pdf`);
     }
     catch(e){
-console.log("errorrrrrr",e)
+
     }
    }
    else {
    alert("NO Pdf")
-    
+
    }
-     
-     
+
+
  }
  const downloadPdf = (blob, fileName) => {
   if (window.mSewaApp && window.mSewaApp.isMsewaApp() && window.mSewaApp.downloadBase64File) {

@@ -75,13 +75,13 @@ const Chart = ({ data, moduleLevel, overview = false }) => {
   if (isLoading) {
     return <Loader />;
   }
-  
+
   if(response?.responseData?.data?.[0]?.headerName === "DSS_STATE_GDP_REVENUE_COLLECTION" )
   {
-    
+
     response.responseData.data[0].headerValue = response.responseData.data[0].headerValue * 100
   }
-  
+
 
   const insight = response?.responseData?.data?.[0]?.insight?.value?.replace(/[+-]/g, "")?.split("%");
   return (
@@ -149,10 +149,10 @@ const HorBarChart = ({ data, setselectState = "" }) => {
 
   const constructChartData = (data) => {
     const currencyFormatter = new Intl.NumberFormat("en-IN", { currency: "INR" });
-    // console.log("data: ",data)
+
     // let index = data?.findIndex(x => x.headerName == "liveUlbsCount");
 
-    // console.log(index)
+
     // data?.splice(index, 1)
     var date = new Date();
     var months = [],
@@ -161,7 +161,7 @@ const HorBarChart = ({ data, setselectState = "" }) => {
         months.push(monthNames[date.getMonth()] + '-' + date.getFullYear());
         date.setMonth(date.getMonth() - 1);
     }    
-    console.log("months",months,data);
+
     if(data?.[0])
     {
       let plotsss =  data[0].plots.map((data,index)=>
@@ -183,7 +183,7 @@ const HorBarChart = ({ data, setselectState = "" }) => {
         const plot = row.plots[j];
         if(months.includes(plot?.name))
         {
-         
+
           if(plot?.value >10000)
           {
             result[plot.name] = { ...result[plot.name], [t(row.headerName)]:currencyFormatter.format((plot?.value / 10000000).toFixed(2) || 0), name: t(plot.name) };      
@@ -208,7 +208,7 @@ const renderLegend = (value) => {
       {
         value == "TotalCollection"?
           <span style={{ fontSize: "14px", color: "#505A5F" }}>{t(`DSS_${Digit.Utils.locale.getTransformedLocale(value)}`)}(Cr)</span>:<span style={{ fontSize: "14px", color: "#505A5F" }}>{t(`DSS_${Digit.Utils.locale.getTransformedLocale(value)}`)}</span>
-        
+
       }
     </li>
   )
@@ -415,7 +415,7 @@ const Home = ({ stateCode }) => {
           </div>
         ) : null}
         {dashboardConfig?.[0]?.visualizations.map((row, key) => {
-          console.log("visualizations",row,key)
+
           return (
             <div className="dss-card" key={key}>
               {row.vizArray.map((item, index) => {

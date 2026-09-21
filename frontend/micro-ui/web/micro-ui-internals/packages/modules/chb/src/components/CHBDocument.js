@@ -12,7 +12,7 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 function CHBDocument({ value = {}, Code, index }) {
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
-  console.log("dataInNDCDocument", data);
+
 
   const documents = value?.documents
     ? value.documents.documents

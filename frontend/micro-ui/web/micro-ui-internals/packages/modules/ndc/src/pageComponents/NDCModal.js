@@ -61,11 +61,11 @@ const NDCModal = ({
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
-  console.log("getEmployees", getEmployees);
 
-  console.log("allRoles", allRoles);
 
-  console.log("allRolesNew", allRolesNew);
+
+
+
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,

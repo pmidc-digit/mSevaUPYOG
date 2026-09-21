@@ -33,13 +33,13 @@ const Home = () => {
   const UserType = citizenInfo?.type === "CITIZEN";
   const UserRole = Array.isArray(citizenInfo?.roles) && citizenInfo?.roles.some((item) => item.code === "PESCO");
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
-  console.log("IS THIS PAGE REACH HERE IN CONSOLE...");
+
   //const SurveyModal = Digit?.ComponentRegistryService?.getComponent("SurveyModal");
 
   const { data: { stateInfo, uiHomePage } = {}, isLoading } = Digit.Hooks.useStore.getInitData();
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  console.log(uiHomePage, "LOOK");
+
 
   if (window.Digit.SessionStorage.get("TL_CREATE_TRADE")) window.Digit.SessionStorage.set("TL_CREATE_TRADE", {});
 
@@ -73,7 +73,7 @@ const Home = () => {
   const citizenToken = getFromStorage("Citizen.token");
   const citizenInfoMain = getFromStorage("Citizen.user-info");
   const langSelect = getFromStorage("locale");
-  console.log("citizenInfoMain", citizenInfoMain, "langSelect", langSelect);
+
 
   const getUserDetails = (access_token, info) => ({ token: access_token, access_token, info });
   const userDetails = getUserDetails(citizenToken, citizenInfoMain);
@@ -129,7 +129,7 @@ const Home = () => {
       return;
     }
 
-    console.log("citizenServicesObj", citizenServicesObj);
+
 
     const allServices =
       UserType && UserRole
@@ -170,7 +170,7 @@ const Home = () => {
   }, [UserType]);
 
   const toDigitUrl = (url) => {
-    console.log("url", url);
+
 
     if (!url) return url;
 

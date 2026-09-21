@@ -81,7 +81,7 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
   // Fix for next action  assignee dropdown issue
   // const stateArray = workflowDetails?.data?.initialActionState?.nextActions?.filter( ele => ele?.action == selectedAction );
   const stateArray = workflowDetails?.data?.processInstances[0]?.nextActions?.filter((ele) => ele?.action == selectedAction);
-  // console.log("Asignee Role", workflowDetails?.data?.processInstances[0]?.nextActions?.filter( ele => ele?.action == selectedAction ));
+
   const useEmployeeData = Digit.Hooks.swach.useEmployeeFilter(
     ulb,
     stateArray?.[0]?.roles?.length > 0 ? stateArray?.[0]?.roles?.join(",") : "",
@@ -95,7 +95,7 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
   //     })
   //   : null;
 
-  // console.log("employeeData||||||||||||?", employeeData);
+
 
   const [selectedEmployee, setSelectedEmployee] = useState();
   const [comments, setComments] = useState("");
@@ -179,7 +179,7 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
       }
       actionSaveOnSubmit={() => {
         //debugger;
-        //console.log("uploadedFile", uploadedFile)
+
         if (!comments) {
           setError(t("CS_MANDATORY_COMMENTS"));
           return;
@@ -257,7 +257,7 @@ export const ComplaintDetails = (props) => {
   const [toastMessage, setToastMessage] = useState("");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // const tenantIdPB = localStorage.getItem("punjab-tenantId");
-  // console.log("tenantIdPB", tenantIdPB);
+
   const { isLoading, complaintDetails, revalidate: revalidateComplaintDetails } = Digit.Hooks.swach.useComplaintDetails({ tenantId: ulb, id });
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: ulb, id, moduleCode: "SWACH", role: "EMPLOYEE" });
@@ -521,7 +521,7 @@ export const ComplaintDetails = (props) => {
       </>
     );
   };
-  //console.log("complaintDetails", complaintDetails);
+
   const localityCode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.locality?.code;
   const localityObj = localities?.find((loc) => loc?.code == localityCode);
   const localityName = localityObj?.name || "";

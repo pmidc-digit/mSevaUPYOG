@@ -72,8 +72,11 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     // let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
 
-    const { TraidDetails, OwnerDetails, Documents, applicationData } = data;
-    const Traid = TraidDetails || data.TraidDetailsRenew; // fallback in case you use different keys
+    const applicationData = data?.applicationData || formData?.applicationData;
+    const TraidDetails = data?.TraidDetails || formData?.TraidDetails;
+    const OwnerDetails = data?.OwnerDetails || formData?.OwnerDetails;
+    const Documents = data?.Documents || formData?.Documents;
+    const Traid = TraidDetails || data?.TraidDetailsRenew || formData?.TraidDetailsRenew; // fallback in case you use different keys
     let tenantId = applicationData?.tenantId || Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
 
     // Prepare accessories
@@ -82,6 +85,9 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       Traid.accessories.map((item) => {
         if (item?.accessoryCategory?.code) {
           accessories.push({
+            id: item?.id || undefined,
+            tenantId: item?.tenantId || tenantId,
+            active: true,
             accessoryCategory: item.accessoryCategory.code || null,
             uom: item.accessoryCategory.uom || null,
             count: item.count ? Number(item.count) : null,
@@ -90,6 +96,15 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         }
       });
     }
+    const origAccessoriesCitizen = applicationData?.tradeLicenseDetail?.accessories || [];
+    origAccessoriesCitizen.forEach((origAcc) => {
+      if (origAcc?.id && !accessories.some((acc) => acc.id === origAcc.id)) {
+        accessories.push({
+          ...origAcc,
+          active: false,
+        });
+      }
+    });
 
     // Prepare tradeUnits
     let tradeUnits = [];
@@ -224,7 +239,7 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         operationalArea: Traid?.tradedetils?.[0]?.operationalArea ? Number(Traid.tradedetils[0].operationalArea) : null,
         noOfEmployees: Traid?.tradedetils?.[0]?.noOfEmployees ? Number(Traid.tradedetils[0].noOfEmployees) : null,
         tradeUnits: tradeUnits,
-        accessories: accessories,
+        accessories: accessories.length > 0 ? accessories : null,
         applicationDocuments: applicationDocuments,
         // verificationDocuments: applicationData?.tradeLicenseDetail?.verificationDocuments || null,
         verificationDocuments: null,

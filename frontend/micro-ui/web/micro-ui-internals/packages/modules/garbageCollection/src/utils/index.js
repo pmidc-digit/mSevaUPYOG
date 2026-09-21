@@ -26,7 +26,7 @@ export const ChallanData = (tenantId, consumerCode) => {
 
   const codes = officerInstance?.assigner?.userName;
   const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });
-  console.log("employeeData", employeeData);
+
   const officerRaw = employeeData?.data?.Employees?.[0];
   const officerAssignment = officerRaw?.assignments?.[0];
 
@@ -197,7 +197,7 @@ const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 
 export const getAcknowledgementData = async (application, tenantInfo, t) => {
-  console.log("application in getAcknowledgement", application);
+
 
   const details = [];
 

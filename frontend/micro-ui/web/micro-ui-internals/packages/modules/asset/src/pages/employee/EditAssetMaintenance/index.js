@@ -15,7 +15,7 @@ const EditAssetMaintenance = () => {
   const { id: applicationNo } = useParams();
   const location = useLocation();
   const assetMaintainanceData = location.state?.data;
-  console.log('comming Data from Edit Data:- ', assetMaintainanceData);
+
   const { data: applicationDetails } = Digit.Hooks.asset.useAssetApplicationDetail(t, tenantId, applicationNo);
 
   const [_formData, setFormData, _clear] = Digit.Hooks.useSessionStorage("store-data", null);
@@ -36,14 +36,14 @@ const EditAssetMaintenance = () => {
 
 
   const onFormValueChange = (setValue, formData, formState) => {
-    console.log('here ....', !Object.keys(formState.errors).length)
-    console.log('formData ....', formData)
-    console.log('formState ....', formState)
+
+
+
     setCanSubmit(!Object.keys(formState.errors).length); 
   };
 
   const onSubmit = (data) => {
-    console.log("onClick data without submit: ", data)
+
     const formData = {
         maintenanceId: assetMaintainanceData?.maintenanceId,
         assetId: assetMaintainanceData?.assetId,
@@ -91,7 +91,7 @@ const EditAssetMaintenance = () => {
           lastModifiedTime: ""
       }
     };
-    
+
     history.replace("/digit-ui/employee/asset/assetservice/edit-maintenance", { AssetMaintenance: formData,  applicationNo});
 
   };

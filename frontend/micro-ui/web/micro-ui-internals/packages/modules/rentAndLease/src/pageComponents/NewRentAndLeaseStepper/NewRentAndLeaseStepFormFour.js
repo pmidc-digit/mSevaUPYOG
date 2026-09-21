@@ -103,9 +103,9 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     if (id) {
       // EDIT FLOW: Merge updated form data
       const originalOwners = CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
-      const updatedApplicants = updatedApplicantDetails?.applicants || [];
+      const updatedApplicants = updatedApplicantDetails || [];
 
-      const mergedOwnerInfo = updatedApplicants.map((applicant, index) => {
+      const mergedOwnerInfo = updatedApplicants?.map((applicant, index) => {
         const originalOwner = originalOwners[index] || {};
         return {
           ...originalOwner,
@@ -118,6 +118,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
             addressId: applicant?.address,
             address: applicant?.address,
           },
+          panCard: applicant?.panNumber,
           permanentAddress: {
             ...originalOwner?.permanentAddress,
             pincode: applicant?.pincode,
@@ -160,12 +161,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
               incrementPeriodMonths: updatedPropertyDetails?.incrementPeriodMonths?.code,
               incrementPercentage: updatedPropertyDetails?.incrementPercentage,
             }
-          : null;
+          : { ...originalAdditionalDetails };
 
-      additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
+      // additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
 
-      additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount;
-      additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount;
+      additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount ?? originalAdditionalDetails?.gstAmount;
+      additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount ?? originalAdditionalDetails?.rebateAmount;
 
       // Get the allotmentId from CreatedResponse for new documents
 
@@ -215,7 +216,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
     } else {
       // NORMAL FLOW: Use original logic
       const originalOwners = CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
-      const updatedApplicants = updatedApplicantDetails?.applicants || [];
+      const updatedApplicants = updatedApplicantDetails || [];
 
       const mergedOwnerInfo = updatedApplicants.map((applicant, index) => {
         const originalOwner = originalOwners[index] || {};
@@ -230,6 +231,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
             addressId: applicant?.address,
             address: applicant?.address,
           },
+          panCard: applicant?.panNumber,
           permanentAddress: {
             ...originalOwner?.permanentAddress,
             pincode: applicant?.pincode,
@@ -272,12 +274,12 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
               incrementPeriodMonths: updatedPropertyDetails?.incrementPeriodMonths?.code,
               incrementPercentage: updatedPropertyDetails?.incrementPercentage,
             }
-          : {};
+          : { ...originalAdditionalDetails };
 
-      additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
+      // additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
 
-      additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount;
-      additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount;
+      additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount ?? originalAdditionalDetails?.gstAmount;
+      additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount ?? originalAdditionalDetails?.rebateAmount;
 
       formData = {
         ...CreatedResponse?.AllotmentDetails?.[0],

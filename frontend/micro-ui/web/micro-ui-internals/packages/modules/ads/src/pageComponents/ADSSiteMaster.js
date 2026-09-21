@@ -231,12 +231,12 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
         reset({ ...initialFormDefaults });
         goNext(response);
       } else {
-        console.error("ADS create failed:", response);
+
         dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", { draft: true, bookingApplication: formData }));
         goNext({ ...fallbackData, draft: true });
       }
     } catch (err) {
-      console.error("ADS create error:", err);
+
       dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", { draft: true, bookingApplication: formData }));
 
       goNext({ ...fallbackData, draft: true });

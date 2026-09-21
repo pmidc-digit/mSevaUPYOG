@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils/index";
 
-const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
+const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, globalSearch, cities }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value, isSelfCertification) =>
     value === "CS_NA" ? (
@@ -21,14 +21,24 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const isOther = window.location.href.includes("/citizen-others");
   const isCitizenStakeholder = window.location.href.includes("/citizen-stakeholder-inbox");
 
+  const filterCityName = (id, cityNames) => {
+    const fiterData = cityNames?.find((item) => item?.code === id);
+    return fiterData?.ulbName;
+  };
+
   const tableColumnConfig = useMemo(() => {
     const columns = [
+      {
+        Header: t("Sr No."),
+        accessor: "serialNumber",
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        disableSortBy: true,
+      },
       {
         Header: t("BPA_APPLICATION_NUMBER_LABEL"),
         accessor: "applicationNo",
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log("row", row);
           const encryptedId = encryptId(row.original["applicationId"]);
           const currentUrl = window.location.href;
           let link;
@@ -36,8 +46,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             link = `/digit-ui/citizen/obps/stakeholder/${row.original.applicationId}`;
           } else if (currentUrl.includes("/citizen")) {
             link = `${parentRoute}/bpa-app/${encryptedId}`;
-          } else if (tenantId === "pb.punjab") {
-            link = `${parentRoute}/inbox/bpa/${encryptedId}/${row.original["tenantId"]}`;
+          } else if (row.original?.tenantId) {
+            link = `${parentRoute}/inbox/bpa/${encryptedId}?tenantId=${row.original.tenantId}`;
           } else {
             link = `${parentRoute}/inbox/bpa/${encryptedId}`;
           }
@@ -98,6 +108,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: (row) => t(row?.owner),
         disableSortBy: true,
       },
+      {
+        Header: t("ULB"),
+        accessor: (row) => filterCityName(row?.tenantId, cities),
+        disableSortBy: true,
+      },
       isCitizenOthers && {
         Header: t("Applicant Name"),
         accessor: (row) => t(row?.professionalOwner),
@@ -144,13 +159,13 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
       {
-        Header: t("TIME_TAKEN"),
+        Header: t("Time Taken in Days"),
         accessor: (row) => GetStatusCell(row?.sla, row?.selfCertification),
         disableSortBy: true,
       },
     ];
     return columns.filter(Boolean);
-  }, [t, tenantId, parentRoute]);
+  }, [t, tenantId, parentRoute, formState?.tableForm?.offset, cities]);
 
   return {
     getCellProps: (cellInfo) => {
@@ -163,6 +178,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     },
     tableStyle: { overflowX: "auto" },
     className: "table cancel-table",
+    customTableWrapperClassName: "obps-inbox-table-scroll",
+    stickyHorizontalScrollbar: true,
     disableSort: false,
     autoSort: false,
     manualPagination: true,
@@ -183,7 +200,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     onSort: onSortingByData,
     // sortParams: [{id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false}],
     totalRecords: totalCount,
-    onSearch: formState?.searchForm?.message,
+    onSearch: globalSearch,
+    searchAllFields: true,
     onLastPage: () =>
       dispatch({
         action: "mutateTableForm",

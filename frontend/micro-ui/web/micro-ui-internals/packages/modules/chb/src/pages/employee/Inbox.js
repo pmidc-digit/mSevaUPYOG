@@ -53,9 +53,7 @@ const Inbox = ({ parentRoute }) => {
       filterForm: {
         ...filterFormDefaultValues,
         ...(storedInboxState?.filterForm || {}),
-        applicationStatus: Array.isArray(storedInboxState?.filterForm?.applicationStatus)
-          ? storedInboxState.filterForm.applicationStatus
-          : [],
+        applicationStatus: Array.isArray(storedInboxState?.filterForm?.applicationStatus) ? storedInboxState.filterForm.applicationStatus : [],
       },
       searchForm: {
         ...searchFormDefaultValues,

@@ -82,8 +82,8 @@ const FireNOCApplicationOverview = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [loading, setLoading] = useState(false);
   const cities = Digit.Hooks.useTenants();
-  
-  
+
+
   const menuRef = React.useRef();
 
   const isEmployee = window.location.href.includes("/employee/");
@@ -108,8 +108,8 @@ const FireNOCApplicationOverview = () => {
     wfdata?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
-    
-    console.log("actions",actions)
+
+
 
   useEffect(() => {
     if (!tenantId) return;
@@ -122,7 +122,7 @@ const FireNOCApplicationOverview = () => {
   }, [tenantId]);
 
   const onActionSelect = (action) => {
-    console.log("Action selected:", action?.action);
+
 
     if (action?.action === "EDIT") {
       const basePath = isEmployee ? "/digit-ui/employee/firenoc" : "/digit-ui/citizen/firenoc";
@@ -137,7 +137,7 @@ const FireNOCApplicationOverview = () => {
       return;
     }
     if (action?.action === "APPLY" || action?.action === "APPROVE") {
-      console.log(`${action.action} action selected - submitting directly without modal`);
+
       const payload = {
         FireNOCs: [{
           ...fireNOC,
@@ -253,7 +253,7 @@ const FireNOCApplicationOverview = () => {
     appStatus === "INITIATED"  ||
     wfdata?.nextActions?.some(action => action.action === "EDIT" || action.action === "RESUBMIT") ||
     wfdata?.actionState?.nextActions?.some(action => action.action === "EDIT" || action.action === "RESUBMIT");
-  
+
     const isResumable = appStatus === "INITIATED";
 
 
@@ -285,17 +285,17 @@ const FireNOCApplicationOverview = () => {
   const getSanctionLetter = async ({ tenantId, payments, pdfkey, EmpData, ...params }) => {
     try {
       setLoading(true);
-      
+
 
       const tenantCode = address?.city; 
-      
+
       const matchedCity = cities?.status === "success" && cities?.data?.find((city) => city?.code === tenantCode);
-      console.log(matchedCity, "matchedCity");
-      
+
+
       const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData , matchedCity : matchedCity});
 
       const prevGetLang = Digit.StoreData.getCurrentLanguage;
-      console.log("prevGetLang", prevGetLang);
+
       Digit.StoreData.getCurrentLanguage = () => "pn_IN";
 
       let response = null;

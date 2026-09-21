@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardText, Toast } from "@mseva/digit-ui-react-components";
 import { Link, useHistory } from "react-router-dom";
+import { MSEVA_APP_LINK } from "../../../../../../constants/constants";
 
 const CustomLandingPage = () => {
   const history = useHistory()
@@ -13,7 +14,7 @@ const CustomLandingPage = () => {
     const sidebar = document.querySelector('.SideBarStatic');
     const mainContainer = document.querySelector('.main.center-container');
     const citizenContainer = document.querySelector('.citizen-home-container');
-    
+
     if (sidebar) sidebar.style.display = 'none';
     if (mainContainer) {
       mainContainer.style.padding = '0';
@@ -25,7 +26,7 @@ const CustomLandingPage = () => {
     }
 
     setIsArchitect(validateArchitectRole())
-    
+
     return () => {
       if (sidebar) sidebar.style.display = '';
       if (mainContainer) {
@@ -58,7 +59,7 @@ const CustomLandingPage = () => {
 
       return userInfo.roles.some((role) => role.code === "BPA_ARCHITECT")
     } catch (error) {
-      console.error("Error validating architect role:", error)
+
       return false
     }
   }
@@ -79,7 +80,7 @@ const CustomLandingPage = () => {
     });
   }
   }
-  
+
   const links = [
     { title: "Professional Login", url: "/digit-ui/citizen/obps/home", external: false, },
     { title: "Professional Dashboard", url: "/digit-ui/citizen/obps/home", external: true, requiresArchitect: true, },
@@ -90,6 +91,7 @@ const CustomLandingPage = () => {
       showForNonArchitect: true, 
     },
     { title: "User Manual", url: "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2Fproperty-upload%2FOctober%2F8%2F1759931687672rlOgUaoaId.pdf", external: true },
+    { title: "mSeva App", url: MSEVA_APP_LINK, external: true },
     { title: "Assistance", external: true },
     { title: "Feedback", url: "https://docs.google.com/forms/d/e/1FAIpQLScfZlGldfyIs_3KZAX9lRpx43OjCrKnw33SbzvN6I3Gi2Uj_A/viewform?usp=header", external: true },
     { title: "View applications by Citizen", url: "/digit-ui/citizen/obps/my-applications", external: false },
@@ -185,10 +187,10 @@ const CustomLandingPage = () => {
         alt="Building Plan Approval"
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }}
       />
-      
+
       {/* Dark Overlay */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.4)', zIndex: 2 }} />
-      
+
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 3, width: '100%', minHeight: '100vh', padding: '0' }}>
         <h1 style={{ color: 'white', fontSize: '3rem', fontWeight: 'bold', textShadow: '2px 2px 8px rgba(0,0,0,0.8)', margin: '0', padding: '80px 20px 0 20px', textAlign: 'center' }}>

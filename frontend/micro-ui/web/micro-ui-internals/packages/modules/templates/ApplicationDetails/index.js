@@ -64,8 +64,8 @@ const ApplicationDetails = (props) => {
   }, [showToast]);
 
   function onActionSelect(action) {
-    console.log("action====", action);
-    console.log("applicationDetails===>",applicationDetails)
+
+
     const isTLService =
     businessService?.toUpperCase()?.includes("TL") ||
     applicationDetails?.applicationData?.businessService?.toUpperCase()?.includes("TL");
@@ -104,7 +104,7 @@ const ApplicationDetails = (props) => {
         history.push(`/digit-ui/employee/payment/collect/${applicationDetails.applicationData.businessService}/${applicationDetails.applicationData.applicationNumber}`)
       }
       if(action?.isToast){
-        console.log("➡️ isToast triggered — blocking action:", action?.action, "message:", action?.toastMessage);
+
         setShowToast({ key: "error", error: { message: action?.toastMessage } });
         setTimeout(closeToast, 5000);
         return;
@@ -179,7 +179,7 @@ const ApplicationDetails = (props) => {
     setWarningPopUp(false);
   };
 
-  console.log("ActionsInPayment2", workflowDetails);
+
 
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
     if (
@@ -304,7 +304,7 @@ const ApplicationDetails = (props) => {
     return <Loader />;
   }
   const onSubmit = async (data) => {
-    console.log("JJJJJJ", data);
+
     const bpaApplicationDetails = await Digit.OBPSService.BPASearch(tenantId, { applicationNo: applicationData?.applicationNo });
     const riskType = Digit.Utils.obps.calculateRiskType(
       mdmsData?.BPA?.RiskTypeComputation,

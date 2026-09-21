@@ -81,18 +81,21 @@ const CLUEditApplication = () => {
   const formData = formState.formData;
   const step = formState.step;
 
+  const location = useLocation();
+  const queryTenantId = new URLSearchParams(location?.search).get("tenantId");
+
   //Makesure to pass tenantId correctly
   let tenantId;
   if(window.location.pathname.includes("employee")){
-   tenantId = window.localStorage.getItem("Employee.tenant-id");
+   tenantId = queryTenantId || window.localStorage.getItem("Employee.tenant-id");
   }else{
    tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }
-  console.log("tenantId here", tenantId);
+
 
   const { isLoading, data} = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails= data?.resData;
-  console.log("applicationDetails here==>", applicationDetails);
+
 
   const cluObject = applicationDetails?.Clu?.[0] || {};
   const applicantDetails = cluObject?.cluDetails?.additionalDetails?.applicationDetails || {};

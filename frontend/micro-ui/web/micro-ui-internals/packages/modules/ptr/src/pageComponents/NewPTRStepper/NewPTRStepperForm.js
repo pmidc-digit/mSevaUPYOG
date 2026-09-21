@@ -113,12 +113,12 @@ const NewPTRStepperForm = () => {
 
   // id = id ? decodeURIComponent(id) : null;
 
-  console.log("id:", id);
+
 
   // const id = pathParts.find((part) => part.startsWith("PB-PTR-"));
 
   const shouldEnableSearch = Boolean(id);
-  console.log("shouldEnableSearch", shouldEnableSearch);
+
 
   // const isEdit = !!id;
 
@@ -129,7 +129,7 @@ const NewPTRStepperForm = () => {
   });
 
   useEffect(() => {
-    console.log("applicationData for hereee:>> ", applicationData);
+
 
     if (id && applicationData?.PetRegistrationApplications?.length) {
       dispatch(UPDATE_PTRNewApplication_FORM("responseData", applicationData.PetRegistrationApplications));

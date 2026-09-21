@@ -14,7 +14,7 @@ const WSRoadCuttingAddlDetails = ({ config, onSelect, userType, formData, setErr
   const [roadCuttingAddlDetails, setRoadCuttingAddlDetails] = useState(
     formData?.roadCuttingAddlDetails || createRoadCuttingAddlDetails()
   );
-  console.log("roadCuttingAddlDetails: ", roadCuttingAddlDetails);
+
   const { control, getValues } = useForm();
   useEffect(() => {
     onSelect(config?.key, roadCuttingAddlDetails);

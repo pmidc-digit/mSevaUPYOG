@@ -262,7 +262,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    // console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateNDCForm(config.key, data));
     }

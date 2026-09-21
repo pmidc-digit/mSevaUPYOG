@@ -26,8 +26,8 @@ const ADSCartDetails = ({ cartDetails, t, demands }) => {
     },
   ];
 
-  console.log("cartDetails", cartDetails);
-  console.log("demands", demands);
+
+
 
   return (
     <div className="ads-cart-details">

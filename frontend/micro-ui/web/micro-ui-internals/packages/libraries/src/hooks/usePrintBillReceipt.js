@@ -5,26 +5,33 @@ import { useCallback } from "react";
    ========================= */
 
 const cleanBillAccountDetails = (billAccountDetails = []) => {
-  const hasArrears = billAccountDetails?.some((item) => item?.taxHeadCode === "RL_ARREAR_FEE" && Number(item?.amount) > 0);
-
- return billAccountDetails
+  const hasArrears = billAccountDetails?.some((item) => item?.taxHeadCode === "RL_ARREAR_FEE" && Number(item?.adjustedAmount) > 0);
+  const advanceItem = billAccountDetails?.find((item) => item?.taxHeadCode?.toUpperCase().includes("ADVANCE"));
+  const advanceRawAmount = advanceItem ? (Number(advanceItem?.adjustedAmount) || Number(advanceItem?.amount) || 0) : 0;
+  const cleaned = billAccountDetails
     ?.map((item) => ({
       ...item,
-      amount:
-        item?.taxHeadCode?.toUpperCase().includes("ADVANCE")
-          ? Math.abs(Number(item?.amount))
-          : item?.amount,
     }))
     ?.filter((item) => {
       // remove roundoff always
       const normalizedCode = item?.taxHeadCode?.replace(/[^a-zA-Z0-9]/g, "")?.toUpperCase();
       if (normalizedCode?.includes("ROUNDOFF")) return false;
-
+      if (normalizedCode?.includes("ADVANCE")) return false; 
       // remove security deposit ONLY if arrears exist
       if (hasArrears && normalizedCode?.includes("SECURITYDEPOSIT")) return false;
 
       return true;
     });
+
+  const totalAdjustedAmount = Math.round(cleaned?.reduce((sum, item) => sum + Number(item?.adjustedAmount || 0), 0));
+  const totalpreAdjustedAmount = Math.round(cleaned?.reduce((sum, item) => sum + Number(item?.amount || 0), 0));
+    return {
+      billAccountDetails: cleaned,
+      advanceLabel: advanceItem ? "Advance Amount Paid" : " ",
+      advanceAmount: advanceItem ? Math.abs(advanceRawAmount) : " ",
+      totalAdjustedAmount,
+      totalpreAdjustedAmount
+    };
 };
 
 const normalizeBills = (data) => {
@@ -135,7 +142,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
     };
 
     billDetails?.forEach((detail) => {
-      const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
+      const { billAccountDetails: cleanedAccountDetails, advanceLabel, advanceAmount, totalAdjustedAmount, totalpreAdjustedAmount } = cleanBillAccountDetails(detail?.billAccountDetails);
       const hasArrears = detail?.billAccountDetails?.some((item) => item?.taxHeadCode?.includes("ARREAR") && Number(item?.amount) > 0);
       mergedBillDetails?.push({
         billRootData: {
@@ -157,6 +164,10 @@ const transformBillsForPdf = (Bills, meta = {}) => {
         },
         ...detail,
         billAccountDetails: cleanedAccountDetails,
+        advanceLabel,
+        advanceAmount,
+        totalAdjustedAmount,
+        totalpreAdjustedAmount,
         periodMappingEntries: getPeriodMappingEntries({ businessService, hasArrears, searchData }),
       });
     });
@@ -194,21 +205,45 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
       const bill = pd?.bill;
       if (!bill) return;
 
+      const rlAmountPaid = Number(payment?.totalAmountPaid || 0);
+      const rlAmountLeft = Math.max(
+        Number(payment?.totalDue || 0) - rlAmountPaid,
+        0
+      );
+
+      const hasRlAmountPaid =
+        businessService === "rl-services" && rlAmountPaid > 0;
+
+      const rlReceiptFields = {
+        rlAmountPaidLabel: hasRlAmountPaid ? t("PDF_STATIC_LABEL_CONSOLIDATED_RECEIPT_PAID_AMOUNT") : " ",
+        rlAmountPaid: hasRlAmountPaid ? rlAmountPaid : " ",
+        rlAmountLeftLabel: hasRlAmountPaid ? t("NDC_DUE_AMOUNT") : " ",
+        rlAmountLeft: hasRlAmountPaid ? rlAmountLeft : " ",
+      };
       // IMMUTABLE split
       const { billDetails = [], consumerCode, applicationNumber, billNumber, ...billLevelData } = bill;
 
       const identifier = consumerCode || applicationNumber;
       const searchData = searchDataMap[identifier] || null;
+      const filteredBillDetails =
+      businessService === "rl-services"
+        ? billDetails?.filter(({ amountPaid }) => amountPaid != null && amountPaid > 0)
+        : billDetails;
 
-      billDetails?.forEach((detail) => {
-        const cleanedAccountDetails = cleanBillAccountDetails(detail?.billAccountDetails);
+      filteredBillDetails?.forEach((detail) => {
+        const { billAccountDetails: cleanedAccountDetails, advanceLabel, advanceAmount, totalAdjustedAmount, totalpreAdjustedAmount } = cleanBillAccountDetails(detail?.billAccountDetails);
         const hasArrears = detail?.billAccountDetails?.some((item) => item?.taxHeadCode?.includes("ARREAR") && Number(item?.amount) > 0);
         extractedBillDetails?.push({
           ...detail,
           billAccountDetails: cleanedAccountDetails,
+          advanceLabel,
+          advanceAmount,
+          totalAdjustedAmount,
+          totalpreAdjustedAmount,
           billRootData: {
             // CLEAN bill (no billDetails)
             ...billLevelData,
+            ...rlReceiptFields,
             consumerCode,
             applicationNumber,
             billNumber,
@@ -374,7 +409,7 @@ export const usePrintBillReceipt = ({ tenantId, setLoader, setShowToast = null, 
         setLoader?.(false);
       }
     },
-    [setLoader, pdfkey]
+    [tenantId, setLoader, setShowToast, t, pdfkey]
   );
 
   return { printReceipt };

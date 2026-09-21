@@ -13,7 +13,7 @@ function ChallanDocument({ value = {}, Code, index }) {
   const isMobile = window.Digit.Utils.browser.isMobile();
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
-  console.log("dataInNDCDocument", data);
+
 
   const documents = value?.documents
     ? value.documents.documents

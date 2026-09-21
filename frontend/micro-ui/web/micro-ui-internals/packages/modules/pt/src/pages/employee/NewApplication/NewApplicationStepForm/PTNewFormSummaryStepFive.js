@@ -12,28 +12,28 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
 
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
-  // console.log("state.pt.PTNewApplicationForm Form data in Summary Step: ", useSelector((state) => state.pt.PTNewApplicationForm.formData));
+
   // Function to handle the "Next" button click
   const goNext = async (data) => {
-    console.log("Full form data submitted: ", formData);
+
     // onSubmit(formData); // Call the onSubmit function with the form data
     try {
       const res = await onSubmit(formData); // wait for the API response
-      console.log("API response: ", res);
+
 
       // Check if the API call was successful
       if (res.isSuccess) {
-        console.log("Submission successful, moving to next step.", res.response);
+
         const applicationNumber = res?.response?.Properties?.[0]?.acknowldgementNumber;
         dispatch(RESET_PT_NEW_APPLICATION_FORM());
         history.replace(`/digit-ui/employee/pt/property/response/${applicationNumber}`);
         // onGoNext();
       } else {
-        console.error("Submission failed, not moving to next step.", res.response);
+
       }
     } catch (error) {
       alert(`Error: ${error.message}`);
-      console.error("Submission failed, not moving to next step.", error);
+
     }
   };
 
@@ -44,12 +44,12 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
 
   // Function to handle form value changes
   // const onFormValueChange = (setValue = true, data) => {
-  //   console.log("onFormValueChange data summary in step 5: ", data);
+
   //   dispatch(UPDATE_PtNewApplication(config.key, data));
   // };
 
   const onSubmit = async (data) => {
-    console.log("FormData received:", data);
+
 
     const tenantId = data?.LocationDetails?.address?.city?.code;
     const allDocuments = data?.DocummentDetails?.documents?.documents || [];
@@ -198,15 +198,15 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       isRequestForDuplicatePropertyValidation: true,
     };
 
-    console.log("Final Payload:", formData);
-    console.log("Search Data:", searchData);
+
+
 
     const response = await Digit.PTService.create({ Property: formData }, tenantId);
     return { isSuccess: response?.ResponseInfo?.status === "successful", response: response };
   };
 
   //   const onSubmit = async (data) => {
-  //     console.log("FormData received:", data);
+
 
   //     // Map the `units` array to include additional details
   //     const updatedUnits = data?.PropertyDetails?.units?.map((unit) => {
@@ -341,8 +341,8 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   //       isRequestForDuplicatePropertyValidation: true,
   //     };
 
-  //     console.log("Final Payload:", formData);
-  //     console.log("Search Data:", searchData);
+
+
 
   //     // Set the form data and search data
   //     // setFormData(formData);
@@ -351,7 +351,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   //     const response = await Digit.PTService.create({ Property: { ...formData } }, tenantId);
   //     // if(response?.ResponseInfo?.status === "successful"){
   //     //   dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-  //     //   console.log("response in step 2: ", response.Licenses[0]);
+
   //     // }
   //     return response?.ResponseInfo?.status === "successful";
   //   };

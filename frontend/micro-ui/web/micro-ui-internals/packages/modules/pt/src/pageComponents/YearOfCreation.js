@@ -29,7 +29,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
     trigger,
     getValues,
   } = useForm();
-  console.log("formdata in yoc",formData)
+
   const [selectedValue, setSelectedValue] = useState(()=>{
     if(window.location.href.includes("employee")){
       return formData?.yearOfCreation || ""
@@ -41,7 +41,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
       return formData?.yearOfCreation?.yearOfCreation || ""
     }
   });
-  console.log("Our menu---", Menu);
+
   const formValue = watch();
   const { errors } = localFormState;
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
@@ -49,7 +49,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   proptype = Menu?.PropertyTax?.PropertyType;
   let i;
   let menu = [];
-  console.log("menu : ", Menu);
+
 
   useEffect(() => {
     onSelect(config.key, selectedValue);
@@ -78,7 +78,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
       }
     })
   FinancialYearOptions.sort((a, b) => parseInt(a.value) - parseInt(b.value));
-  console.log("FinancialYearOptions", FinancialYearOptions);
+
   // FinancialYearData.map((item) => {
   //   FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
   // });
@@ -101,7 +101,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   }
 
 
-  console.log("menu : ", menu);
+
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
 
@@ -147,7 +147,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
         }
       }
     }, [formValue]);
-  
+
     useEffect(() => {
       if (window.location.href.includes("citizen")) {
         const errorsPresent = !!Object.keys(localFormState.errors).lengtha;
@@ -155,7 +155,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
         else if (!errorsPresent && formState.errors?.[config.key]) clearErrors(config.key);
       }
     }, [localFormState]);
-  
+
 
   const inputs = [
     {
@@ -169,7 +169,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   if (isLoading) {
     return <Loader />;
   }
-  console.log("localFormState",localFormState?.errors)
+
   if ( window.location.href.includes("employee")) {
     return inputs?.map((input, index) => {
       return (

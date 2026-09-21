@@ -23,7 +23,7 @@ const StakeholderRegistration = () => {
     state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
   );
 
-  console.log("params in StakeholderRegistration", params, state);
+
 
   const stepperConfig = [
     {
@@ -76,20 +76,20 @@ const StakeholderRegistration = () => {
   const onSuccess = (data) => {
     clearParams();
     queryClient.invalidateQueries("PT_CREATE_PROPERTY");
-    console.log("Mutationdata 1", data);
+
     sessionStorage.setItem("isStakeholderRegistered", true);
     sessionStorage.setItem("stakeholder.mutationData", JSON.stringify(data));
   };
 
   const createApplication = async (selectedAction) => {
-    console.log("createApplication called with action:", selectedAction);
+
 
     // If no action provided (initial submission), just navigate to acknowledgement
     // if (!selectedAction) {
     //   history.push(`${path}/acknowledgement`);
     //   return;
     // }
-    console.log("selectedAction", selectedAction);
+
     // if (!selectedAction) {
     //   history.push(`${path}/acknowledgement?action=APPLY`);
     //   return;
@@ -102,30 +102,57 @@ const StakeholderRegistration = () => {
     const getDocsFin = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
     const finalDocVal = getDocsFin?.value?.result?.Licenses?.[0];
 
-    let setselectedAction;
+    const cleanDocs = (docs) => {
+      if (!Array.isArray(docs)) return docs;
+      const seen = new Set();
+      const cleaned = [];
+      for (let i = docs.length - 1; i >= 0; i--) {
+        const doc = docs[i];
+        if (doc?.documentType && !seen.has(doc.documentType)) {
+          seen.add(doc.documentType);
+          cleaned.unshift(doc);
+        }
+      }
+      return cleaned;
+    };
 
-    console.log("setselectedAction", setselectedAction);
+    const rawDocs = getDocsFin?.value?.documents?.documents || getDocsFin?.documents?.documents || [];
+    const formattedDocs = Array.isArray(rawDocs)
+      ? rawDocs.map((doc) => ({
+          documentType: doc?.documentType,
+          fileStoreId: typeof doc?.fileStoreId === "object" ? doc?.fileStoreId?.fileStoreId : doc?.fileStoreId,
+          documentUid: doc?.documentUid || null,
+          active: true,
+          tenantId: doc?.tenantId || tenantId,
+          id: doc?.id || null,
+        }))
+      : [];
 
-    if (!selectedAction) setselectedAction = "APPLY";
-    else setselectedAction = selectedAction.action;
+    const applicationDocuments = cleanDocs(
+      formattedDocs?.length > 0 ? formattedDocs : finalDocVal?.tradeLicenseDetail?.applicationDocuments
+    );
 
-    console.log("setselectedAction", setselectedAction);
+    let setselectedAction = !selectedAction ? "APPLY" : typeof selectedAction === "object" ? selectedAction.action : selectedAction;
 
     const finalPayload = {
       Licenses: [
         {
           ...finalDocVal,
           action: setselectedAction,
+          tradeLicenseDetail: {
+            ...finalDocVal?.tradeLicenseDetail,
+            applicationDocuments: applicationDocuments,
+          },
         },
       ],
     };
 
-    console.log("final payload", finalPayload);
+
     setLoader(true);
     // return;
     try {
       const response = await Digit.OBPSService.BPAREGupdate(finalPayload, tenantId);
-      console.log("UPDATE response:", response);
+
       setLoader(false);
 
       sessionStorage.setItem("FinalDataDocAfterStep", JSON.stringify(response));
@@ -135,7 +162,7 @@ const StakeholderRegistration = () => {
       });
     } catch (error) {
       setLoader(false);
-      console.error("UPDATE API Error:", error?.response?.data?.Errors);
+
       // Still navigate to acknowledgement even on error (or show error toast)
       // history.push(`${path}/acknowledgement`);
     }
@@ -145,14 +172,14 @@ const StakeholderRegistration = () => {
     // Extract action string from action object or use directly if it's a string
     let actionString = typeof selectedAction === "object" ? selectedAction.action : selectedAction;
 
-    console.log("Action string extracted:", actionString);
+
 
     // Build the UPDATE payload with the workflow action
     const formData = params?.formData || params;
     const result = params?.result;
 
     if (!result?.Licenses?.[0]?.id) {
-      console.error("No license ID found for update");
+
       history.push(`${path}/acknowledgement`);
       return;
     }
@@ -161,7 +188,7 @@ const StakeholderRegistration = () => {
 
     const currentState = licenseData?.status || selectedAction?.state?.state;
     if (currentState === "CITIZEN_ACTION_REQUIRED") {
-      console.log("State is CITIZEN_ACTION_REQUIRED, forcing action to RESUBMIT");
+
       actionString = "RESUBMIT";
     }
 
@@ -169,7 +196,7 @@ const StakeholderRegistration = () => {
 
     const finalDoc = getDocs?.result?.Licenses?.[0]?.tradeLicenseDetail;
 
-    console.log("params", getDocs?.result?.Licenses?.[0]?.tradeLicenseDetail);
+
 
     const payload = {
       Licenses: [
@@ -185,11 +212,11 @@ const StakeholderRegistration = () => {
         },
       ],
     };
-    console.log("final payload", payload);
+
     setLoader(true);
     try {
       const response = await Digit.OBPSService.BPAREGupdate(payload, tenantId);
-      console.log("UPDATE response:", response);
+
       setLoader(false);
 
       sessionStorage.setItem("workflowActionCompleted", "true");
@@ -212,14 +239,14 @@ const StakeholderRegistration = () => {
       });
     } catch (error) {
       setLoader(false);
-      console.error("UPDATE API Error:", error?.response?.data?.Errors);
+
       // Still navigate to acknowledgement even on error (or show error toast)
       history.push(`${path}/acknowledgement`);
     }
   };
 
   // const createApplication = async (selectedAction) => {
-  //   console.log("  createApplication called with action:", selectedAction)
+
 
   //   // Extract only serializable properties from workflow action
   //   let workflowAction = null
@@ -236,7 +263,7 @@ const StakeholderRegistration = () => {
   //     }
   //   }
 
-  //   console.log("  Passing workflow action to acknowledgement:", workflowAction)
+
 
   //   // Pass the workflow action to acknowledgement page via history state
   //   history.push({
@@ -248,8 +275,8 @@ const StakeholderRegistration = () => {
   // }
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
-    console.log("key===", key);
-    console.log("data===", data);
+
+
     if (isFromCreateApi) setParams(data);
     else if (key === "") setParams({ ...data });
     else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
@@ -278,8 +305,8 @@ const StakeholderRegistration = () => {
   const StakeholderAcknowledgement = Digit?.ComponentRegistryService?.getComponent("StakeholderAcknowledgement");
   const newParams = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))?.value || {};
 
-  console.log("formData in StakeholderRegistration", params);
-  console.log("config in StakeholderRegistration", config);
+
+
   return (
     <div style={{ display: "flex", flexDirection: "row" }}>
       {!(window.location.href.includes("stakeholder-docs-required") || window.location.href.includes("acknowledgement")) && !isMobile && (

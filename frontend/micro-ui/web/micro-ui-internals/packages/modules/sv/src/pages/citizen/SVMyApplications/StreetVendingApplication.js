@@ -42,7 +42,7 @@ const StreetVendingApplication = ({ application, buttonLabel, previousDraftId, o
         onDiscard(application);
       }
     } catch (error) {
-      console.error("Error discarding application:", error);
+
       setShowToast({ error: true, label: t("SV_DISCARD_ERROR") });
     }
   };

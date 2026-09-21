@@ -10,7 +10,7 @@ import { Link,useHistory } from "react-router-dom";
 
 const BannerPicker = (props) => {
   const { t } = useTranslation();
-  console.log("props",props)
+
   return (
     <Banner
       // message={props.mutation.isSuccess ? t(`SURVEY_FORM_CREATED`) : t("SURVEY_FORM_FAILURE")}
@@ -29,7 +29,7 @@ const Acknowledgement = (props) => {
   //const mutation = Digit.Hooks.survey.useCreate();
   const { state } = props.location;
   const history = useHistory();
-  //console.log("mutation",mutation)
+
   const [isActionClicked,setIsActionClicked] = useState(false) 
   useEffect(() => {
     // const onSuccess = () => {
@@ -77,12 +77,12 @@ const Acknowledgement = (props) => {
               surveyName: props?.title,
               fromDate: Digit.DateUtils.ConvertTimestampToDate(props?.startDate),
               toDate: Digit.DateUtils.ConvertTimestampToDate(props?.endDate),
-              
+
              }
              )
             }
       </CardText>
-      
+
        {/* <ActionBar>
         <Link to={"/digit-ui/employee"}>
           <SubmitBar label="Action" />
@@ -96,7 +96,7 @@ const Acknowledgement = (props) => {
           {isActionClicked && <Menu options={[t("GO_BACK_TO_HOME"),t("CREATE_ANOTHER_SURVEY")]} onSelect={actionClickHandler}></Menu>}
         </button>
       </ActionBar>
-      
+
 
     </Card>
   );

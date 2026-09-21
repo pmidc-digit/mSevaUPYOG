@@ -46,7 +46,7 @@ const LayoutSiteDetails = (_props) => {
     currentStepData?.apiData?.applicationNo ||
     currentStepData?.apiData?.Layout?.[0]?.applicationNo ||
     watch("applicationNo");
-  //console.log(applicationNo, getValues("vasikaDate"), "applicationNo in layout site details");
+
   const isEditMode = !!applicationNo || window.location.pathname.includes("edit");
   const [netArea, setNetArea] = useState("0.00");
   const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening"); // A = Total Plot Area
@@ -172,7 +172,7 @@ const LayoutSiteDetails = (_props) => {
           }
         }
       } catch (err) {
-        console.error("Error fetching CLU document URL:", err);
+
       }
     }
 
@@ -180,7 +180,7 @@ const LayoutSiteDetails = (_props) => {
       const finalUrl = typeof fileUrl === "string" ? fileUrl.split(",")?.[0] : fileUrl;
       window.open(finalUrl, "_blank");
     } else {
-      console.error("No URL found for CLU document", doc);
+
     }
   };
 
@@ -267,7 +267,7 @@ const LayoutSiteDetails = (_props) => {
               };
             });
           } catch (err) {
-            console.error("Error fetching fileStoreIds during validation:", err);
+
             mappedDocs = fileStoreIds.map((fid) => ({
               fileStoreId: fid,
             }));
@@ -296,7 +296,7 @@ const LayoutSiteDetails = (_props) => {
         setRetrievedCluDocs([]);
       }
     } catch (error) {
-      console.error("CLU Validation Error:", error);
+
       if (currentStepData?.siteDetails?.cluNumber === numToSearch && currentStepData?.siteDetails?.cluDocumentUpload) {
         updateValidatedCluNumber(numToSearch);
         updateCluValidated(true);
@@ -342,13 +342,13 @@ const LayoutSiteDetails = (_props) => {
   // Sync cluDocumentUpload form field with cluDocumentUploadedFile state
   useEffect(() => {
     if (cluDocumentUploadedFile?.fileStoreId) {
-      //console.log("Syncing cluDocumentUpload field with fileStoreId:", cluDocumentUploadedFile.fileStoreId);
+
       setValue("cluDocumentUpload", cluDocumentUploadedFile.fileStoreId, { shouldValidate: true });
     }
   }, [cluDocumentUploadedFile, setValue]);
 
-  //console.log("STEPERDFATA", currentStepData);
-  //console.log(isEditMode, "LOOK EDIT");
+
+
 
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("0.00");
@@ -361,7 +361,7 @@ const LayoutSiteDetails = (_props) => {
 
   const floorAreaValues = watch("floorArea");
   const basementAreaValues = watch("basementArea");
-  //console.log(currentStepData, "DTATA TO BE MAPPED", getValues("isCluRequired"), isCluRequired);
+
 
   // Watch percentage fields to display calculated values
   const watchedEWSPct = watch("areaUnderEWSInPct");
@@ -424,7 +424,7 @@ const LayoutSiteDetails = (_props) => {
 
   const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.obps.useLayoutBuildingType(stateId);
   const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.obps.useLayoutRoadType(stateId);
-  //console.log(roadType, buildingType, "RRRRRRR");
+
 
   const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
 
@@ -529,7 +529,7 @@ const LayoutSiteDetails = (_props) => {
     // Second priority: auto-select based on tenantId
     if (tenantId && allCities?.length > 0) {
       const defaultCity = allCities.find((city) => city.code === tenantId);
-      //console.log(defaultCity, "DDDDD");
+
       if (defaultCity) {
         setSelectedCity(defaultCity);
         // Use trigger to validate and update the field
@@ -961,19 +961,19 @@ const LayoutSiteDetails = (_props) => {
 
                             if (response?.data?.files?.length > 0) {
                               const fileStoreId = response.data.files[0].fileStoreId;
-                              //console.log("✅ CLU Document uploaded successfully:", fileStoreId);
+
                               setCluDocumentUploadedFile({
                                 fileStoreId: fileStoreId,
                                 fileName: file.name,
                               });
-                              //console.log("✅ State updated - cluDocumentUploadedFile set to:", { fileStoreId, fileName: file.name });
+
                             } else {
-                              console.error("❌ File upload failed - no fileStoreId in response");
+
                               setCluDocumentError("File upload failed");
                             }
                           } catch (err) {
                             setCluDocumentLoader(false);
-                            console.error("CLU upload error:", err);
+
                             setCluDocumentError("File upload failed: " + (err?.message || "Unknown error"));
                           }
                         }}
@@ -1535,6 +1535,13 @@ const LayoutSiteDetails = (_props) => {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
+                  validate: (value) => {
+                    const trimmed = value ? value.trim() : "";
+                    if (trimmed && /\s/.test(trimmed)) {
+                      return t("NO_SPACES_ALLOWED");
+                    }
+                    return true;
+                  },
                 }}
                 render={(props) => (
                   <TextInput
@@ -1543,6 +1550,10 @@ const LayoutSiteDetails = (_props) => {
                       props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
+                      const trimmed = e.target.value ? e.target.value.trim() : "";
+                      if (trimmed !== props.value) {
+                        props.onChange(trimmed);
+                      }
                       props.onBlur(e);
                     }}
                     disabled={isEditMode}

@@ -14,7 +14,7 @@ import {
   UploadFile,
 } from "@mseva/digit-ui-react-components";
 import NOCCustomUploadFile from "./NOCCustomUploadFile";
-import { getCode } from "../utils";
+import { getCode, formatDateForInput } from "../utils";
 
 const NOCSpecificationDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, watch, trigger, clearErrors } = _props;
@@ -112,32 +112,32 @@ const NOCSpecificationDetails = (_props) => {
 
   // Restore NOC validation status in edit mode on initial load
   useEffect(() => {
-    if (isEditMode && existingNocNumber && !isInitialized.current) {
+    if (isEditMode && isFinalNoc && isOnline && existingNocNumber && !isInitialized.current) {
       updateValidatedNocNumber(existingNocNumber);
       updateNocValidated(true);
       isInitialized.current = true;
     }
-  }, [isEditMode, existingNocNumber]);
+  }, [isEditMode, isFinalNoc, isOnline, existingNocNumber]);
 
   useEffect(() => {
-    if (isNocValidated && validatedNocNumberRef.current && existingNocNumber && existingNocNumber !== validatedNocNumberRef.current) {
+    if (isFinalNoc && isOnline && isNocValidated && validatedNocNumberRef.current && existingNocNumber && existingNocNumber !== validatedNocNumberRef.current) {
       updateNocValidated(false);
       setRetrievedNocDocs([]);
       setRetrievedNoc(null);
       setRetrievedNocError("");
     }
-  }, [existingNocNumber, isNocValidated]);
+  }, [isFinalNoc, isOnline, existingNocNumber, isNocValidated]);
 
   useEffect(() => {
-    if (isNocValidated && existingNocNumber && retrievedNocDocs.length === 0 && !isRetrieving) {
+    if (isFinalNoc && isOnline && isNocValidated && existingNocNumber && retrievedNocDocs.length === 0 && !isRetrieving) {
       handleRetrieveNoc(existingNocNumber);
     }
-  }, [isNocValidated, existingNocNumber, retrievedNocDocs.length]);
+  }, [isFinalNoc, isOnline, isNocValidated, existingNocNumber, retrievedNocDocs.length]);
 
   const { data: buildingCategory, isLoading: isLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
   const { data: nocType, isLoading: isNocTypeLoading,  } = Digit.Hooks.noc.useNocType(stateId);
 
- // console.log("nocType here", nocType);
+
 
   const options = [
     {
@@ -157,12 +157,14 @@ const NOCSpecificationDetails = (_props) => {
       return;
     }
 
-    const nocRegex = /^PB-NOC-SAS-[A-Za-z]+-\d+$/i;
+    const nocRegex = /^(PB-NOC-.*-\d+|PB\/NOC\/.*\/[0-9A-Za-z]+)$/i;
     if (!nocRegex.test(numToSearch)) {
       setRetrievedNocError("");
       setRetrievedNoc(null);
       setRetrievedNocDocs([]);
-      setValue("existingNocDocument", null);
+      if (isFinalNoc && isOnline) {
+        setValue("existingNocDocument", null);
+      }
       updateNocValidated(false);
       updateValidatedNocNumber("");
       if (trigger) trigger("existingNocNumber");
@@ -173,7 +175,7 @@ const NOCSpecificationDetails = (_props) => {
     setRetrievedNocError("");
     try {
       let searchTenantId = tenantId;
-      const parts = numToSearch.split("-");
+      const parts = numToSearch.split(/[-/]/);
       if (parts.length >= 4 && parts[3]) {
         searchTenantId = `pb.${parts[3].toLowerCase()}`;
       }
@@ -226,7 +228,11 @@ const NOCSpecificationDetails = (_props) => {
       }
 
       if (fileStoreIds.length > 0) {
-        const fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, searchTenantId || tenantId);
+        const fileTenant = nocData?.tenantId || nocData?.nocDetails?.tenantId || tenantId;
+        let fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, fileTenant);
+        if (!fileFetchResponse?.data?.fileStoreIds?.length) {
+          fileFetchResponse = await Digit.UploadServices.Filefetch(fileStoreIds, stateId);
+        }
         const pdfFiles = fileFetchResponse?.data || {};
 
         const mappedDocs = fileStoreIds.map((fid) => {
@@ -265,7 +271,7 @@ const NOCSpecificationDetails = (_props) => {
         updateValidatedNocNumber("");
       }
     } catch (err) {
-      console.error("Error retrieving NOC: ", err);
+
       if (currentStepData?.siteDetails?.existingNocNumber === numToSearch && currentStepData?.siteDetails?.existingNocDocument) {
         updateValidatedNocNumber(numToSearch);
         updateNocValidated(true);
@@ -281,12 +287,16 @@ const NOCSpecificationDetails = (_props) => {
   };
 
   useEffect(() => {
-    console.log("currentStepData4", currentStepData);
+
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
-      //console.log("coming here", formattedData);
+
       Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value);
+        if (key === "existingNocDocument" && typeof value === "object" && value !== null) {
+          setValue(key, value.fileStoreId || value.filestoreId || value);
+        } else {
+          setValue(key, value);
+        }
       });
     }
   }, [currentStepData, setValue]);
@@ -311,10 +321,13 @@ const NOCSpecificationDetails = (_props) => {
         setValue("existingNocNumber", currentStepData.siteDetails.existingNocNumber);
       }
       if (currentStepData?.siteDetails?.existingNocDate) {
-        setValue("existingNocDate", currentStepData.siteDetails.existingNocDate);
+        setValue("existingNocDate", formatDateForInput(currentStepData.siteDetails.existingNocDate));
       }
       if (currentStepData?.siteDetails?.existingNocDocument) {
-        setValue("existingNocDocument", currentStepData.siteDetails.existingNocDocument);
+        const docVal = typeof currentStepData.siteDetails.existingNocDocument === "object"
+          ? (currentStepData.siteDetails.existingNocDocument.fileStoreId || currentStepData.siteDetails.existingNocDocument.filestoreId)
+          : currentStepData.siteDetails.existingNocDocument;
+        setValue("existingNocDocument", docVal);
       }
     }
     if (isFinalNoc && isOnline) {
@@ -416,15 +429,12 @@ const NOCSpecificationDetails = (_props) => {
           <React.Fragment>
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {`${t("NOC_EXISTING_NOC_TYPE_LABEL")}`} <span className="requiredField">*</span>
+                {`${t("NOC_EXISTING_NOC_TYPE_LABEL")}`}
               </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
                   name={"existingNocType"}
-                  rules={{
-                    required: isFinalNoc ? t("REQUIRED_FIELD") : false,
-                  }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
@@ -591,7 +601,7 @@ const NOCSpecificationDetails = (_props) => {
                         validate: (value) => {
                           if (isFinalNoc && isOnline) {
                             if (!value) return t("REQUIRED_FIELD");
-                            const nocRegex = /^PB-NOC-.*-\d+$/i;
+                            const nocRegex = /^(PB-NOC-.*-\d+|PB\/NOC\/.*\/[0-9A-Za-z]+)$/i;
                             if (!nocRegex.test(value.trim())) {
                               return "Invalid NOC Number format.";
                             }

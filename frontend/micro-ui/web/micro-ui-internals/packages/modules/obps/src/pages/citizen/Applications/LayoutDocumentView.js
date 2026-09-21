@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 const LayoutDocumentView = ({documents}) => {
   const { t } = useTranslation();
 
-  console.log("=== LayoutDocumentView Debug ===")
-  console.log("documents prop:", documents)
+
+
 
   function routeTo(jumpTo) {
     window.open(jumpTo, "_blank");
@@ -45,7 +45,7 @@ const LayoutDocumentView = ({documents}) => {
    }
   };
 
-  console.log("documentObj for hook:", documentObj)
+
 
  const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.obps.useLayoutDocumentSearch(
     documentObj,
@@ -54,7 +54,7 @@ const LayoutDocumentView = ({documents}) => {
     }
   );
 
-  console.log("urlsList from hook:", urlsList)
+
 
   const mappedDocuments = documents?.map(doc => {
    // Use uuid or documentUid as the key
@@ -68,7 +68,7 @@ const LayoutDocumentView = ({documents}) => {
   };
   });
 
-  console.log("mappedDocuments:", mappedDocuments)
+
 
   const documentsData = useMemo(() => {
      return (mappedDocuments)?.map((doc, index) => ({
@@ -78,7 +78,7 @@ const LayoutDocumentView = ({documents}) => {
      }));
     }, [mappedDocuments]);
 
-  console.log("documentsData for table:", documentsData)
+
 
   return (
     <div>

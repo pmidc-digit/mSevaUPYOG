@@ -56,7 +56,7 @@ const AssessmentDetails = () => {
 
   const { data: ChargeSlabsMenu, isLoading: isChargeSlabsLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "ChargeSlabs");
   const fetchBillParams = { consumerCode: propertyId };
-  console.log("ChargeableSlabsMenu", ChargeSlabsMenu, ptCalculationEstimateData)
+
 
   useEffect(() => {
     try {
@@ -67,7 +67,7 @@ const AssessmentDetails = () => {
         }
         Digit.PTService.billingSlabSearch(tenantId, filters)
           .then((response) => {
-            console.log("res", response)
+
             setUnitsCharge(response.billingSlab)
           })
       }
@@ -146,7 +146,7 @@ const AssessmentDetails = () => {
             let userType = JSON.parse(user)
             setShowToast({ key: "success", action: { action: "ASSESSMENT" } });
             setTimeout(closeToast, 5000);
-            console.log("useType.value.info.type", userType, typeof (userType))
+
             // queryClient.clear();
             // queryClient.setQueryData(["PT_ASSESSMENT", propertyId, location?.state?.Assessment?.financialYear], true);
             if (userType?.value?.info?.type == "CITIZEN") {
@@ -229,7 +229,7 @@ const AssessmentDetails = () => {
           AssessmentData.additionalDetails.adhocPenalty = additionalPenality;
           AssessmentData.additionalDetails.adhocPenaltyReason = selectedPenalityReason.value;
           ptCalculationEstimateData.Calculation[0].totalAmount = ptCalculationEstimateData?.Calculation[0]?.taxAmount + first;
-          console.log("ptCalculationEstimateData", ptCalculationEstimateData,)
+
         }
         else {
           alert("Penality cannot exceed total amount");

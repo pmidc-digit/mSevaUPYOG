@@ -119,10 +119,10 @@ const CLUSiteDetails = (_props) => {
    useEffect(() => {
     if (tenantId && allCities?.length > 0) {
       const defaultCity = allCities.find((city) => city.code === tenantId)?.city?.districtName;
-      //console.log("defaultCity==>", defaultCity);
+
 
       const defaultULB = allCities.find((city) => city.code === tenantId);
-     // console.log("defaultULB==>", defaultULB);
+
 
       if (defaultCity && defaultULB) {
         setSelectedCity(defaultCity);
@@ -135,10 +135,10 @@ const CLUSiteDetails = (_props) => {
   }, [tenantId, allCities]);
 
   useEffect(() => {
-    //console.log("currentStepData3", currentStepData);
+
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
-      // console.log("coming here", formattedData);
+
       Object.entries(formattedData).forEach(([key, value]) => {
         if (key !== "floorArea") setValue(key, value);
       });
@@ -425,6 +425,13 @@ const CLUSiteDetails = (_props) => {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
                   },
+                  validate: (value) => {
+                    const trimmed = value ? value.trim() : "";
+                    if (trimmed && /\s/.test(trimmed)) {
+                      return t("NO_SPACES_ALLOWED");
+                    }
+                    return true;
+                  },
                 }}
                 render={(props) => (
                   <TextInput
@@ -433,6 +440,10 @@ const CLUSiteDetails = (_props) => {
                       props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
+                      const trimmed = e.target.value ? e.target.value.trim() : "";
+                      if (trimmed !== props.value) {
+                        props.onChange(trimmed);
+                      }
                       props.onBlur(e);
                     }}
                   />

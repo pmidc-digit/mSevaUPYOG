@@ -8,7 +8,7 @@ const ChevronDown = () => (
 );
 
 const OBPSPaymentHistory = ({ payments }) => {
-  console.log("payments",payments)
+
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -34,7 +34,7 @@ const OBPSPaymentHistory = ({ payments }) => {
     return `${day}/${month}/${year}`;
   };
 
- 
+
 
   return (
     <div id="obps-payment-history" className="obps-payment-history-container">

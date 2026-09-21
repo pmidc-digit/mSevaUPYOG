@@ -4,19 +4,41 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
 
-const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId }) => {
+const useCLUTableConfig = ({
+  parentRoute,
+  onPageSizeChange,
+  formState,
+  totalCount,
+  table,
+  dispatch,
+  onSortingByData,
+  tenantId,
+  globalSearch,
+  cities,
+}) => {
   const { t } = useTranslation();
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
+  const filterCityName = (id, cityNames) => {
+    const fiterData = cityNames?.find((item) => item?.code === id);
+    return fiterData?.ulbName;
+  };
+
   const tableColumnConfig = useMemo(() => {
     return [
+      {
+        Header: t("Sr No."),
+        accessor: "serialNumber",
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        disableSortBy: true,
+      },
       {
         Header: t("BPA_APPLICATION_NUMBER_LABEL"),
         accessor: "applicationId",
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log("row-route", row);
+
           const encryptID = encryptId(row.original["applicationId"]);
           return (
             <div>
@@ -30,8 +52,8 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
                 to={
                   window.location.href.includes("/citizen")
                     ? `${parentRoute}/clu/application-overview/${encryptID}`
-                    : tenantId === "pb.punjab"
-                    ? `${parentRoute}/clu/application-overview/${encryptID}/${row?.original?.tenantId}`
+                    : row?.original?.tenantId
+                    ? `${parentRoute}/clu/application-overview/${encryptID}?tenantId=${row?.original?.tenantId}`
                     : `${parentRoute}/clu/application-overview/${encryptID}`
                 }
               >
@@ -72,6 +94,11 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         disableSortBy: true,
       },
       {
+        Header: t("ULB"),
+        accessor: (row) => filterCityName(row?.tenantId, cities),
+        disableSortBy: true,
+      },
+      {
         Header: t("CATEGORY"),
         accessor: (row) => row?.category,
         disableSortBy: true,
@@ -98,12 +125,12 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         disableSortBy: true,
       },
       {
-        Header: t("TIME_TAKEN"),
+        Header: t("Time Taken in Days"),
         accessor: (row) => row?.sla,
         disableSortBy: true,
       },
     ];
-  }, []);
+  }, [cities]);
 
   return {
     getCellProps: (cellInfo) => {
@@ -139,7 +166,8 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
     pageSizeLimit: formState.tableForm?.limit,
     onSort: onSortingByData,
     totalRecords: totalCount,
-    onSearch: formState?.searchForm?.message,
+    onSearch: globalSearch,
+    searchAllFields: true,
     onLastPage: () =>
       dispatch({
         action: "mutateTableForm",

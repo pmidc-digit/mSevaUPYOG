@@ -22,7 +22,7 @@ const Profile = ({ info, stateName, t }) => {
       const uuid = info?.uuid;
       if (uuid) {
         const usersResponse = await Digit.UserService.userSearch(tenantId, { uuid: [uuid] }, {});
-        console.log("coming here 1");
+
         if (usersResponse?.user?.length) {
           const userDetails = usersResponse.user[0];
           sessionStorage.setItem("userInfoData", JSON.stringify(userDetails));

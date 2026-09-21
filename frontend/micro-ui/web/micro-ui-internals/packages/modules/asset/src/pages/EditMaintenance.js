@@ -34,7 +34,7 @@ const BannerPicker = (props) => {
 };
 
 const EditMaintenance = (props) => {
-  console.log('For coming data from props in response:- ', props)
+
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const history = useHistory();
@@ -53,7 +53,7 @@ const EditMaintenance = (props) => {
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { state } = props.location;
-  // console.log('State value :- ', state?.AssetMaintenance, state?.applicationNo);
+
 
   const mutation = Digit.Hooks.asset.useMaintenanceAPI(tenantId, false);
 

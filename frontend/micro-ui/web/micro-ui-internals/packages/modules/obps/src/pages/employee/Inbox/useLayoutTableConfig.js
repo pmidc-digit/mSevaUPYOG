@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
 
-const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
+const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, globalSearch, cities }) => {
   const { t } = useTranslation();
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
@@ -26,6 +26,11 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
     if (value.includes("pending")) return "pending";
     if (value.includes("new")) return "new";
     return "default";
+  };
+
+  const filterCityName = (id, cityNames) => {
+    const fiterData = cityNames?.find((item) => item?.code === id);
+    return fiterData?.ulbName;
   };
 
   const renderStatusIcon = (statusClass) => {
@@ -57,6 +62,12 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
 
   const tableColumnConfig = useMemo(() => {
     return [
+      {
+        Header: t("Sr No."),
+        accessor: "serialNumber",
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        disableSortBy: true,
+      },
       {
         Header: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
         accessor: "applicationId",
@@ -106,7 +117,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         accessor: "approvalDate",
         Cell: ({ row }) => {
           const value = Number(row.original?.approvalDate);
-          console.log("rooo", row.original);
+
 
           return Number.isFinite(value) ? GetCell(format(new Date(value), "dd/MM/yyyy")) : "-";
         },
@@ -118,6 +129,11 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         Cell: ({ row }) => {
           return row.original?.owner || "-";
         },
+      },
+      {
+        Header: t("ULB"),
+        accessor: (row) => filterCityName(row?.tenantId, cities),
+        disableSortBy: true,
       },
       {
         Header: t("CATEGORY"),
@@ -152,7 +168,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
         disableSortBy: true,
       },
       {
-        Header: t("TIME_TAKEN"),
+        Header: t("Time Taken in Days"),
         accessor: (row) => row?.sla,
         disableSortBy: true,
       },
@@ -177,7 +193,7 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
       //   ),
       // },
     ];
-  }, [parentRoute, t]);
+  }, [parentRoute, t, cities]);
 
   return {
     getCellProps: () => ({
@@ -208,7 +224,8 @@ const useLayoutTableConfig = ({ parentRoute, onPageSizeChange, formState, totalC
     pageSizeLimit: formState.tableForm?.limit,
     onSort: onSortingByData,
     totalRecords: totalCount,
-    onSearch: formState?.searchForm?.message,
+    onSearch: globalSearch,
+    searchAllFields: true,
     onLastPage: () => {
       const limit = parseInt(formState.tableForm?.limit) || 10;
       dispatch({

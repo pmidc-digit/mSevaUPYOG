@@ -29,7 +29,7 @@ const SurveyModal = ({ isOpen, onClose }) => {
 
   const tenantId = localStorage.getItem("CITIZEN.CITY");
 
-  console.log(tenantId, "TENANTTTTTT");
+
   useEffect(() => {
     const cachedData = sessionStorage.getItem("survey_modal_data");
     if (cachedData) {
@@ -39,7 +39,7 @@ const SurveyModal = ({ isOpen, onClose }) => {
         setHasFetched(true);
         setLoading(false);
       } catch (e) {
-        console.error("Failed to parse cached survey data", e);
+
       }
     }
   }, []);
@@ -66,7 +66,7 @@ const SurveyModal = ({ isOpen, onClose }) => {
       .catch((error) => {
         setHasFetched(true);
         setLoading(false);
-        console.error("Failed to fetch surveys", error);
+
       });
   }
 

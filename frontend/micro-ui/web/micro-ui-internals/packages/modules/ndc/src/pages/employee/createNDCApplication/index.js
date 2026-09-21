@@ -59,7 +59,7 @@ const CreateNDCApplicationStep = () => {
 
   const handleSubmit = (data) => {
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
-    console.log("data=====", data);
+
     // onSubmit(data, tenantId, setShowToast, history);
   };
 

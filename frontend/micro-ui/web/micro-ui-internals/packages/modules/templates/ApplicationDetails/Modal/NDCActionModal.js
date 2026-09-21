@@ -24,7 +24,7 @@ const CloseBtn = (props) => {
 };
 
 const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationData, businessService, moduleCode }) => {
-  console.log("ActionModalActions: ", action);
+
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
@@ -71,7 +71,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
         approverData?.Employees?.map((employee) => {
           const deptCode = employee?.assignments?.[0]?.department;
           const matchedDept = departments?.find((d) => d?.code === deptCode);
-          console.log("matchedDept===", matchedDept);
+
           return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` };
         })
       );

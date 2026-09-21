@@ -8,7 +8,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [inactiveJurisdictions, setInactiveJurisdictions] = useState([]);
   const { data: data = {}, isLoading } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "HRMSRolesandDesignation") || {};
-  console.log("tenantIdHRMS",tenantId)
+
 
   const [jurisdictions, setjurisdictions] = useState(
     formData?.Jurisdictions && formData?.Jurisdictions?.length > 0
@@ -128,7 +128,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
       return { code: role.code, name: role?.name ? role?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + role.code };
     });
   }
-  
+
   // Helper function to get hierarchy value for dropdown
   const getHierarchyValue = (jurisdiction, hierarchyData) => {
     if (!jurisdiction.hierarchy) return null;
@@ -136,7 +136,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
     // If it's a string code, find the matching object from MDMS
     return hierarchyData?.find(h => h.code === jurisdiction.hierarchy) || null;
   };
-  
+
   // Helper function to get boundaryType value for dropdown
   const getBoundaryTypeValue = (jurisdiction, boundaryTypeData) => {
     if (!jurisdiction.boundaryType) return null;
@@ -144,7 +144,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
     // If it's a string label, find matching object
     return boundaryTypeData?.find(bt => bt.label === jurisdiction.boundaryType) || null;
   };
-  
+
   // Helper function to get boundary value for dropdown
   const getBoundaryValue = (jurisdiction, boundaryData) => {
     if (!jurisdiction.boundary) return null;
@@ -254,8 +254,8 @@ function Jurisdiction({
   getBoundaryValue,
 }) {
 
-  // console.log("MDMSResponseForHRMS", data?.MdmsRes)
-  
+
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [BoundaryType, selectBoundaryType] = useState([]);
@@ -263,7 +263,7 @@ function Jurisdiction({
   const [getRoles, setRoles] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const jurisdictionKeyRef = React.useRef(jurisdiction.key);
-  
+
   // Initialize Boundary dropdown immediately if data is available
   useEffect(() => {
     if (data?.MdmsRes?.tenant?.tenants) {
@@ -275,13 +275,13 @@ function Jurisdiction({
       selectboundary(allCities);
     }
   }, [data?.MdmsRes]);
-  
+
   useEffect(() => {
     // Get hierarchy code - handle both string and object formats
     const hierarchyCode = typeof jurisdiction?.hierarchy === 'string' 
       ? jurisdiction?.hierarchy 
       : jurisdiction?.hierarchy?.code;
-    
+
     if (hierarchyCode && data?.MdmsRes?.["egov-location"]["TenantBoundary"]) {
       const boundaryTypes = data?.MdmsRes?.["egov-location"]["TenantBoundary"]
         .filter((ele) => {
@@ -302,21 +302,21 @@ function Jurisdiction({
 
   // Initialize boundary object only once on mount if needed
   useEffect(() => {
-    
+
     // Only run if this is the correct component instance for this jurisdiction key
     if (jurisdictionKeyRef.current !== jurisdiction.key) {
       // Jurisdiction data has changed, reset initialization
       setIsInitialized(false);
       jurisdictionKeyRef.current = jurisdiction.key;
     }
-    
+
     // Only run if not already initialized and boundary exists
     if (!isInitialized && Boundary?.length > 0 && jurisdiction?.boundary) {
       const boundaryCode = typeof jurisdiction?.boundary === 'string' 
         ? jurisdiction?.boundary 
         : jurisdiction?.boundary?.code;
-      
-      
+
+
       // Only convert string to object, don't update if already an object
       if (boundaryCode && typeof jurisdiction?.boundary === 'string') {
         const boundaryObj = Boundary?.find((ele) => ele.code === boundaryCode);
@@ -330,7 +330,7 @@ function Jurisdiction({
       }
     }
   }, [Boundary, isInitialized, jurisdiction?.boundary, jurisdiction.key]);
-  
+
   // Restore roles when jurisdiction already has a service selected (e.g., when navigating back)
   useEffect(() => {
     if (jurisdiction?.service && data?.MdmsRes?.["ACCESSCONTROL-ROLES"]?.roles) {
@@ -389,7 +389,7 @@ function Jurisdiction({
 
 
     const filterData = rolesData?.filter((item) => item?.groupId == groupId);
-    
+
 
     const mapRoles = filterData?.map((roles) => {
       return { code: roles.code, name: roles?.name ? roles?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + roles.code, description: value?.groupName || roles?.description || "" };
@@ -397,7 +397,7 @@ function Jurisdiction({
 
 
     setRoles(mapRoles);
-    
+
     // Store the selected service in jurisdiction state
     const currentKey = jurisdiction.key;
     setjurisdictions((pre) => pre.map((item) => {
@@ -598,7 +598,7 @@ function JurisdictionOBPAS({
   getBoundaryTypeValue,
   getBoundaryValue,
 }) {
-  
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [Boundary, selectboundary] = useState([]);
@@ -684,21 +684,21 @@ function JurisdictionOBPAS({
 
   // Initialize boundary object only once on mount if needed
   useEffect(() => {
-    
+
     // Only run if this is the correct component instance for this jurisdiction key
     if (jurisdictionKeyRef.current !== jurisdiction.key) {
       // Jurisdiction data has changed, reset initialization
       setIsInitialized(false);
       jurisdictionKeyRef.current = jurisdiction.key;
     }
-    
+
     // Only run if not already initialized and boundary exists
     if (!isInitialized && Boundary?.length > 0 && jurisdiction?.boundary) {
       const boundaryCode = typeof jurisdiction?.boundary === 'string' 
         ? jurisdiction?.boundary 
         : jurisdiction?.boundary?.code;
-      
-      
+
+
       // Only convert string to object, don't update if already an object
       if (boundaryCode && typeof jurisdiction?.boundary === 'string') {
         const boundaryObj = Boundary?.find((ele) => ele.code === boundaryCode);
@@ -712,7 +712,7 @@ function JurisdictionOBPAS({
       }
     }
   }, [Boundary, isInitialized, jurisdiction?.boundary, jurisdiction.key]);
-  
+
   // Restore roles when jurisdiction already has a service selected (e.g., when navigating back)
   useEffect(() => {
     if (jurisdiction?.service && data?.MdmsRes?.["ACCESSCONTROL-ROLES"]?.roles) {
@@ -776,7 +776,7 @@ function JurisdictionOBPAS({
 
 
     const filterData = rolesData?.filter((item) => item?.groupId == groupId);
-    
+
 
     const mapRoles = filterData?.map((roles) => {
       return { code: roles.code, name: roles?.name ? roles?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + roles.code, description: value?.groupName || roles?.description || "" };
@@ -784,7 +784,7 @@ function JurisdictionOBPAS({
 
 
     setRoles(mapRoles);
-    
+
     // Store the selected service in jurisdiction state
     const currentKey = jurisdiction.key;
     setjurisdictions((pre) => pre.map((item) => {

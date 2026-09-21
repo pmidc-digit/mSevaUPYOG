@@ -37,7 +37,7 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
   const applicationData = Digit.SessionStorage.get("WS_DISCONNECTION");
   const history = useHistory();
   const match = useRouteMatch();
-  
+
   const [disconnectionData, setDisconnectionData] = useState({
       type: applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.type : "",
       date: applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.date : "",
@@ -106,14 +106,14 @@ const getDisconnectionTitle = () => {
     oldData['documents'] = documents;
     setDisconnectionData(oldData);
   }, [documents]);
-  
+
 
   useEffect(() => {
     const disconnectionTypes = mdmsData?.["ws-services-masters"]?.disconnectionType || []; 
     disconnectionTypes?.forEach(data => data.i18nKey = `WS_DISCONNECTIONTYPE_${stringReplaceAll(data?.code?.toUpperCase(), " ", "_")}`);
 
     setDisconnectionTypeList(disconnectionTypes);
-    
+
     // Auto-set Permanent type for employee view if not already set
     if (userType === 'employee' && disconnectionTypes.length > 0 && !disconnectionData?.type?.value) {
       const permanentType = disconnectionTypes.find(type => type.code === "Permanent");
@@ -160,7 +160,7 @@ const getDisconnectionTitle = () => {
       }, 3000);
       return;
     }
-    
+
     const proposedDate = format(addDays(appDate, slaDays), 'yyyy-MM-dd').toString();
 
     // Add safety checks for date validation
@@ -175,7 +175,7 @@ const getDisconnectionTitle = () => {
     // Convert dates safely
     const disconnectionDateEpoch = convertDateToEpoch(data?.date);
     const proposedDateEpoch = convertDateToEpoch(proposedDate);
-    
+
     // Updated logic: Disconnection date should be greater than the calculated SLA date
     // This means user cannot schedule disconnection before the minimum SLA period
     if (disconnectionDateEpoch < proposedDateEpoch) {
@@ -195,7 +195,7 @@ const getDisconnectionTitle = () => {
         }, 3000);
         return;
       }
-      
+
       const endDateEpoch = convertDateToEpoch(data?.endDate);
       if (endDateEpoch <= disconnectionDateEpoch) {
         setError({key: "error", message: "PROPOSED_DISCONNECTION_INVALID_END_DATE"});
@@ -218,7 +218,7 @@ const getDisconnectionTitle = () => {
     // Proceed with API calls
     try {
       const payload = await createPayloadOfWSDisconnection(data, applicationData, applicationData?.applicationData?.serviceType);
-      
+
       if (payload?.WaterConnection?.water) {
         if (waterMutation) {
           setIsEnableLoader(true);
@@ -281,7 +281,7 @@ const getDisconnectionTitle = () => {
       setError({ key: "error", message: "DISCONNECTION_SUBMISSION_FAILED" });
       setTimeout(closeToastOfError, 5000);
     }
-    
+
   } ;
 
   if (isMdmsLoading || wsDocsLoading || isEnableLoader || slaLoading || loading) return <Loader />
@@ -297,13 +297,13 @@ if(userType === 'citizen') {
           onSkip={onSkip}
           t={t}       
         >
-          
+
           <div className="DS-citizen-form-container">
           <CardHeader>{ isReSubmit ? t("RESUBMIT_DISCONNECTION_FORM") : t("WS_APPLICATION_FORM")}</CardHeader>
           <StatusTable>
             <Row key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")} label={`${t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}`} text={applicationData?.connectionNo} className="border-none" />
           </StatusTable> 
-          
+
           <CardLabel className="card-label-smaller">{t("WS_DISCONNECTION_TYPE")} <span>*</span></CardLabel>
           <RadioButtons
                 t={t}
@@ -372,7 +372,7 @@ if(userType === 'citizen') {
               onSubmit={() => {
                 const appDate= new Date();
                 const proposedDate= format(addDays(appDate, slaData?.slaDays), 'yyyy-MM-dd').toString();
-console.log("disconnectionData",disconnectionData)
+
                 if( convertDateToEpoch(disconnectionData?.date)  <= convertDateToEpoch(proposedDate)){
                   setError({key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE"});
                   setTimeout(() => {
@@ -381,7 +381,7 @@ console.log("disconnectionData",disconnectionData)
                 }
                 else if (disconnectionData?.type?.value?.code =="Temporary"&& parseInt(convertDateToEpoch(disconnectionData.endDate))  <= parseInt(convertDateToEpoch(disconnectionData?.date)))
                 {
-                  console.log("Temporary connection")
+
                   setError({key: "error", message: "PROPOSED_DISCONNECTION_INVALID_END_DATE"});
                   setTimeout(() => {
                     setError(false);
@@ -390,7 +390,7 @@ console.log("disconnectionData",disconnectionData)
                 else{
                   history.push(match.path.replace("application-form", "documents-upload"));
                 }
-                
+
               }}
               disabled={
                 disconnectionData?.reason?.value === "" || disconnectionData?.reason === "" || disconnectionData?.date === "" || disconnectionData?.type === "" 
@@ -427,13 +427,13 @@ console.log("disconnectionData",disconnectionData)
       <div className="DS-disconnectionFormUI">
         {/* Application Details Section */}
         <h2>{t("CS_TITLE_APPLICATION_DETAILS")}</h2>
-        
+
         {/* Consumer Number - Inline */}
         <div className="DS-consumer-number-row">
           <label>{t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}</label>
           <p>{applicationData?.applicationData?.connectionNo}</p>
         </div>
-        
+
         {/* Disconnection Type - Inline */}
         <div className="DS-disconnection-type-row">
           <div className="DS-label-wrapper">
@@ -455,7 +455,7 @@ console.log("disconnectionData",disconnectionData)
             {t("WS_DISCONNECTIONTYPE_PERMANENT")}
           </p>
         </div>
-          
+
         {/* Proposed Disconnection Date */}
         <div className="DS-date-field">
           <div className="DS-label-row">
@@ -481,7 +481,7 @@ console.log("disconnectionData",disconnectionData)
             />
           </div>
         </div>
-        
+
         {/* Temporary Disconnection End Date */}
         {disconnectionData.type?.value?.code === "Temporary" && (
           <div className="DS-date-field">
@@ -509,7 +509,7 @@ console.log("disconnectionData",disconnectionData)
             </div>
           </div>
         )}
-        
+
         {/* Reason for Disconnection */}
         <div className="DS-reason-field">
           <label>
@@ -529,12 +529,12 @@ console.log("disconnectionData",disconnectionData)
             />
           </div>
         </div>
-        
+
         {/* Disconnection Documents Section */}
         <h2>
           {t("WS_DISCONNECTION_DOCUMENTS")}<span> *</span>
         </h2>
-        
+
         {wsDocs?.DisconnectionDocuments?.map((document, index) => { 
                   return (
                     <SelectDocument
@@ -562,7 +562,7 @@ console.log("disconnectionData",disconnectionData)
       >
         {t("CS_COMMON_BACK")}
       </button>
-      
+
       {/* Right side - Cancel and Submit buttons */}
       <div className="DS-action-buttons">
         <button
@@ -664,7 +664,7 @@ function SelectDocument({
       <label>
         {t(doc?.i18nKey)}<span> *</span>
       </label>
-      
+
       <div className="DS-dropdown-wrapper">
         <Dropdown
           t={t}

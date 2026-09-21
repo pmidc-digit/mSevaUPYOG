@@ -246,12 +246,51 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       values: values,
     };
   };
-  
+
   const getAdditionalDetails = (BPA, edcr, t) => {
+    const edcrReq = edcr?.planDetail?.edcrRequest || edcr?.edcrRequest || {};
+    const addDetails = BPA?.additionalDetails || {};
+
+    const areaType = edcrReq?.areaType || addDetails?.areaType;
+    const formatAreaType = (type) => (type === "SCHEME_AREA" ? "Scheme Area" : type === "NON_SCHEME_AREA" ? "Non-Scheme Area" : type || "-");
+    const formatYesNo = (val) => (val === true || val === "YES" ? "YES" : val === false || val === "NO" ? "NO" : val ?? "-");
+
+    const schemeArea = edcrReq?.schemeArea || addDetails?.schemeArea;
+    const schName = edcrReq?.schName || addDetails?.schemeName;
+    const siteReserved = edcrReq?.siteReserved ?? addDetails?.siteReserved;
+    const approvedCS = edcrReq?.approvedCS ?? addDetails?.approvedCS;
+    const cluApprove = edcrReq?.cluApprove ?? addDetails?.cluApprove;
+    const coreArea = edcrReq?.coreArea ?? addDetails?.coreArea;
+    const roadType = addDetails?.roadType?.name || addDetails?.roadType || edcrReq?.roadType;
+
+    const isSchemeArea = areaType === "SCHEME_AREA" || areaType === "Scheme Area";
+    const isNonSchemeArea = areaType === "NON_SCHEME_AREA" || areaType === "Non-Scheme Area";
+    const isSiteReservedYes = formatYesNo(siteReserved) === "YES";
+
     const values = [
         { title: t("BPA_ULB_NAME"), value: BPA?.additionalDetails?.UlbName || "-", isNotTranslated: true },
         { title: t("BPA_ULB_TYPE"), value: BPA?.additionalDetails?.Ulblisttype || "-", isNotTranslated: true },
         { title: t("BPA_DISTRICT"), value: BPA?.additionalDetails?.District || "-", isNotTranslated: true },
+        ...(areaType ? [{ title: t("EDCR_SCRUTINY_AREA_TYPE"), value: formatAreaType(areaType), isNotTranslated: true }] : []),
+        ...(isSchemeArea ? [
+          ...(schemeArea ? [{ title: t("EDCR_SCRUTINY_SCHEME_AREA_TYPES"), value: schemeArea, isNotTranslated: true }] : []),
+          ...(schName ? [{ title: t("EDCR_SCHEME_NAME"), value: schName, isNotTranslated: true }] : []),
+          ...(siteReserved !== undefined && siteReserved !== null && siteReserved !== ""
+            ? [{ title: t("EDCR_IS_SITE_RESERVED"), value: formatYesNo(siteReserved), isNotTranslated: true }]
+            : []),
+          ...(isSiteReservedYes && approvedCS !== undefined && approvedCS !== null && approvedCS !== ""
+            ? [{ title: t("EDCR_IS_APPROVED_CONTROL_SHEET"), value: formatYesNo(approvedCS), isNotTranslated: true }]
+            : []),
+        ] : []),
+        ...(isNonSchemeArea ? [
+          ...(cluApprove !== undefined && cluApprove !== null && cluApprove !== ""
+            ? [{ title: t("EDCR_SCRUTINY_CLU_APPROVED"), value: formatYesNo(cluApprove), isNotTranslated: true }]
+            : []),
+          ...(coreArea !== undefined && coreArea !== null && coreArea !== ""
+            ? [{ title: t("EDCR_IS_CORE_AREA"), value: formatYesNo(coreArea), isNotTranslated: true }]
+            : []),
+        ] : []),
+        ...(roadType ? [{ title: t("BPA_ROAD_TYPE"), value: roadType, isNotTranslated: true }] : []),
         { title: t("BPA_APPROVED_COLONY"), value: BPA?.additionalDetails?.approvedColony || "-", isNotTranslated: true },
         ...(BPA?.additionalDetails?.approvedColony === "YES"
           ? [{ title: t("BPA_APPROVED_COLONY_NAME"), value: BPA?.additionalDetails?.nameofApprovedcolony || "-", isNotTranslated: true }]
@@ -298,7 +337,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       values: values,
     };
   };
-  
+
   const getScrutinyDetails = (BPA, edcr, t) => {
     const values = [
         //   { title: t("BPA_EDCR_DETAILS"), value: " ", isHeader: true },
@@ -349,7 +388,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       }))
     };
   };
-  
+
   const getBuildingExtractionDetails = (BPA, edcr, t) => {
     const values = [
         //   {
@@ -367,7 +406,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       values: values,
     };
   };
-  
+
   const getDemolitionAreaDetails = (BPA, edcr, t) => {
     const values = [
         //   { title: t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL"), value: " ", isHeader: true },
@@ -379,7 +418,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
       values: values,
     };
   };
-  
+
   const pdfDownloadLink = (documents = {}, fileStoreId = "") => {
     let downloadLink = documents[fileStoreId] || "";
     let differentFormats = downloadLink?.split(",") || [];
@@ -454,7 +493,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
           const exiflink = `${window.origin}/filestore/v1/files/id?fileStoreId=${docStoreId}&tenantId=${stateCode}`;
 
           const exifData = await getExifDataFromUrl(exiflink);
-          console.log("exifData in sitephotos", exifData);
+
           if ([3, 6, 8].includes(exifData?.Orientation)) {
             exifData.Orientation = 1;
           }
@@ -498,7 +537,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
           const exiflink = `${window.origin}/filestore/v1/files/id?fileStoreId=${img?.filestoreId}&tenantId=${stateCode}`;
 
           const exifData = await getExifDataFromUrl(exiflink);
-          console.log("exifData in siteImages", exifData);
+
           if ([3, 6, 8].includes(exifData?.Orientation)) {
             exifData.Orientation = 1;
           }
@@ -608,7 +647,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
         if (item.amount) detailParts.push(`${t("Amount")}: ₹${item?.amount?.toLocaleString("en-IN")}`);
         if (item.adjustedAmount) detailParts.push(`${t("Adjusted")}: ₹${item?.adjustedAmount.toLocaleString("en-IN")}`);
         if (item.remark) detailParts.push(`${t("Remarks")}: ${item?.remark}`);
-        
+
         sanctionFeeValues.push({
           title: title,
           value: detailParts.length > 0 ? detailParts.join(", ") : "₹ 0"
@@ -660,7 +699,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
     } 
 
 
-    
+
 
     return {
       t: t,

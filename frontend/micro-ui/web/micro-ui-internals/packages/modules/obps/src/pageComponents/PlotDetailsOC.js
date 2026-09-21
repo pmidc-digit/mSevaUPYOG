@@ -93,9 +93,9 @@ const PlotDetailsOC = ({ formData, onSelect, config, currentStepData, onGoBack})
   const data = currentStepData?.BasicDetails?.edcrDetails;
   const { occupancyTypes, subOccupancyTypes, value: heightLimit} = buildingHeightData?.BPA?.BuildingHeight?.find(val => val.name === "SELF_CERTIFICATION") || {};
   const isSelfCertificationCondition = (occupancyTypes?.includes(data?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code)) && (subOccupancyTypes?.includes(data?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code)) && (data?.planDetail?.blocks?.[0]?.building?.buildingHeight < heightLimit);
-  console.log("menuList2",currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding) //buildingHeightData?.BPA?.BuildingHeight?.[0]?.value
+   //buildingHeightData?.BPA?.BuildingHeight?.[0]?.value
 
-console.log("sessionStorageData",currentStepData, userDetails);
+
 
   const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) =>  (
 
@@ -134,7 +134,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
                     propertyIds: propertyId
                 }
             })
-            console.log("fetchedData", fetchedData, propertyId);
+
             if (fetchedData?.Properties?.length > 0) {
                 setPtLoading(false)
                 dispatch(UPDATE_OBPS_FORM("cpt", {  details: fetchedData?.Properties?.[0], id: fetchedData?.Properties?.[0]?.propertyId }))
@@ -144,7 +144,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
             }
         } catch (err) {
             setPtLoading(false)
-            console.error("Error fetching property details:", err);
+
             return;
         }
   }
@@ -153,12 +153,12 @@ console.log("sessionStorageData",currentStepData, userDetails);
 
   // async function addInPreviousEDCR(oldEdcrNumber){
   //   const isEDCRPresent = oldEDCR?.find((val) => val?.edcrNumber === oldEdcrNumber);
-  //   console.log("oldEDCR", oldEDCR, isEDCRPresent)
+
   //   if(isEDCRPresent?.edcrNumber){
-  //     console.log("oldEDCR 1", oldEDCR, isEDCRPresent)
+
   //     return;
   //   }else{
-  //     console.log("oldEDCR 2", oldEDCR, isEDCRPresent)
+
   //     try{
   //     setedcrLoading(true);
   //     const details = await oldscrutinyDetailsData(oldEdcrNumber, state);
@@ -166,7 +166,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
   //       setedcrLoading(false);
   //     }
   //     if (details?.edcrNumber) {
-  //       console.log("PREVIOUS_EDCR_DATA",details)
+
   //       const newEDCRObject = {
   //         appliactionType: details?.appliactionType,
   //         applicationDate: details?.applicationDate,
@@ -178,13 +178,13 @@ console.log("sessionStorageData",currentStepData, userDetails);
   //       setedcrLoading(false);
   //     }
   //   }catch(e){
-  //     console.error(e);
+
   //     setedcrLoading(false);
   //   }
   //   }
   // }
 
-  console.log("oldEDCR", oldEDCR)
+
 
   async function addInPreviousEDCR(oldEdcrNumber) {
 
@@ -231,7 +231,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
       }
 
     } catch (e) {
-      console.error(e);
+
     } finally {
       setedcrLoading(false);
       // Remove lock after completion
@@ -325,7 +325,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
   //         setArchitectId(userInfo.id);
   //       }
   //     } catch (err) {
-  //       console.error("Error parsing user-info from local storage", err);
+
   //     }
   //   }
   // }, []);
@@ -392,7 +392,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
 // useEffect(() => {
 //   if (menuList && currentStepData?.cpt?.details?.address?.locality && !currentStepData?.createdResponse?.additionalDetails) {
 //     const boundary = menuList?.["egov-location"]?.TenantBoundary?.find(item => item?.hierarchyType?.code === "REVENUE")?.boundary;
-//     console.log("menuList", boundary);
+
 //     let ward = {}
 //     const zone = boundary?.children?.find(item => item?.children?.some((children) => {
 //       if(children?.children?.some(child => child?.code === currentStepData?.cpt?.details?.address?.locality?.code)){
@@ -402,7 +402,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
 //         return false
 //       }
 //     }));
-//     console.log("menuList zone", zone, ward)
+
 //   }
 // }, [menuList, currentStepData?.cpt?.details?.address?.locality]);
 
@@ -690,24 +690,10 @@ useEffect(() => {
     const accountId = userInfo?.info?.uuid
     const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
 
-    console.log("Submitting form:", {BPA: {
-      edcrNumber,
-      riskType,
-      applicationType,
-      serviceType,
-      tenantId,
-      accountId,
-      documents: [],
-      additionalDetails,
-      landInfo: null,
-      workflow: {
-        action: workflowAction,
-        assignes: [accountId],
-      }
-    }});
+
 
     if(formData?.data?.applicationNo){
-      console.log("UpdateAPIFlow") // Change to the update flow
+       // Change to the update flow
       try{
         setApiLoading(true);
         const result = await Digit.OBPSService.update({ BPA: {
@@ -730,12 +716,12 @@ useEffect(() => {
           setApiLoading(false);
         }
       }catch(e){
-        console.log("error", e);
+
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
     }else{
-      console.log("CreateFlow")
+
       try{
         setApiLoading(true);
         const result = await Digit.OBPSService.create({BPA: {
@@ -772,7 +758,7 @@ useEffect(() => {
         setApiLoading(false);
       }
     }catch(e){
-        console.log("error", e);
+
         if(e.response?.data?.Errors?.[0]?.code === "DUPLICATE EDCR"){
           alert(e.response?.data?.Errors?.[0]?.message);
           setApiLoading(false);
@@ -811,7 +797,7 @@ useEffect(() => {
     setShowModal(false)
   }
 
-  console.log("currentStepData in plot details", currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code);
+
 
 
 

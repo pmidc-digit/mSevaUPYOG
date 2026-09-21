@@ -36,7 +36,7 @@ const WSRestorationForm = ({ t, config, onSelect, userType }) => {
   const applicationData = Digit.SessionStorage.get("WS_DISCONNECTION");
   const history = useHistory();
   const match = useRouteMatch();
-  
+
   const [disconnectionData, setDisconnectionData] = useState({
       type: applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.type : "",
       date: applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.date : "",
@@ -94,12 +94,12 @@ const WSRestorationForm = ({ t, config, onSelect, userType }) => {
     oldData['documents'] = documents;
     setDisconnectionData(oldData);
   }, [documents]);
-  
+
 
   useEffect(() => {
     const disconnectionTypes = mdmsData?.["ws-services-masters"]?.disconnectionType || []; 
     disconnectionTypes?.forEach(data => data.i18nKey = `WS_DISCONNECTIONTYPE_${stringReplaceAll(data?.code?.toUpperCase(), " ", "_")}`);
-console.log("disconnectionTypes",disconnectionTypes)
+
     setDisconnectionTypeList(disconnectionTypes);
   }, [mdmsData]);
 
@@ -160,7 +160,7 @@ console.log("disconnectionTypes",disconnectionTypes)
               let response = await updatePayloadOfWSRestoration(data?.WaterConnection?.[0], "WATER");
               let waterConnectionUpdate = { WaterConnection: response };
               waterConnectionUpdate = {...waterConnectionUpdate, disconnectRequest: false,reconnectRequest:true}
-              console.log("response")
+
               await waterUpdateMutation(waterConnectionUpdate, {
                 onError: (error, variables) => {
                   setIsEnableLoader(false);
@@ -212,7 +212,7 @@ console.log("disconnectionTypes",disconnectionTypes)
         }
       }
     }
-  
+
   } ;
 
   if (isMdmsLoading || wsDocsLoading || isEnableLoader || slaLoading) return <Loader />
@@ -228,13 +228,13 @@ if(userType === 'citizen') {
           onSkip={onSkip}
           t={t}       
         >
-          
+
           <div style={{padding:"0px 10px 10px 10px"}}>
           <CardHeader>{ isReSubmit ? t("RESUBMIT_RESTORATION_FORM") : t("WS_APPLICATION_FORM")}</CardHeader>
           <StatusTable>
             <Row key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")} label={`${t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}`} text={applicationData?.connectionNo} className="border-none" />
           </StatusTable> 
-     
+
             <CardLabel className="card-label-smaller" style={{display: "inline"}}>
             {t("WS_RESTORATION_PROPOSED_DATE") + "*"}
           </CardLabel>
@@ -264,7 +264,7 @@ if(userType === 'citizen') {
                 const appDate= new Date();
                 const proposedDate= format(addDays(appDate, slaData?.slaDays), 'yyyy-MM-dd').toString();
                 history.push(match.path.replace("restoration-application", "check"));
-                
+
               }}
               disabled={
                 disconnectionData?.reason?.value === "" || disconnectionData?.reason === "" || disconnectionData?.date === ""
@@ -278,7 +278,7 @@ if(userType === 'citizen') {
       </div>
     );
   }
-console.log("applicationData",applicationData)
+
   return (
     <div style={{ margin: "16px" }}>
     <Header styles={{fontSize: "32px", marginLeft: "18px"}}>{t("WS_WATER_AND_SEWERAGE_RESTORATION")}</Header>
@@ -295,8 +295,8 @@ console.log("applicationData",applicationData)
         <Row key={t("PDF_STATIC_LABEL_TYPE_OF_SERVICE_LABEL")} label={`${t("PDF_STATIC_LABEL_TYPE_OF_SERVICE_LABEL")}`} text={applicationData?.applicationData?.serviceType} className="border-none" />
         <Row key={t("PDF_STATIC_LABEL_PROPERTY_ID_LABEL")} label={`${t("PDF_STATIC_LABEL_PROPERTY_ID_LABEL")}`} text={applicationData?.applicationData?.propertyId} className="border-none" />
       </StatusTable>        
-     
-          
+
+
           <LabelFieldPair>
           <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display: "inline" }} className="card-label-smaller">
             {t("WS_RESTORATION_PROPOSED_DATE")+ "*"} 
@@ -318,7 +318,7 @@ console.log("applicationData",applicationData)
             }}
           ></DatePicker>
           </div>
-          
+
           </LabelFieldPair>
           <LabelFieldPair>
               <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display: "inline" }} className="card-label-smaller">{t("WS_RESTORATION_REASON") + "*"}</CardLabel>              

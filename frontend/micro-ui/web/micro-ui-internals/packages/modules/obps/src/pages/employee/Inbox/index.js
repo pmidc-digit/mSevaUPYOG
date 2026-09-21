@@ -30,8 +30,9 @@ const Inbox = ({ parentRoute }) => {
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
   const [topBarSearch, setTopBarSearch] = useState("");
+  const [apiMobileSearch, setApiMobileSearch] = useState("");
 
-  const searchFormDefaultValues = useMemo(() => ({}), []);
+  const searchFormDefaultValues = useMemo(() => ({ mobileNumber: "" }), []);
 
   const filterFormDefaultValues = useMemo(
     () => ({
@@ -41,6 +42,7 @@ const Inbox = ({ parentRoute }) => {
       locality: [],
       assignee: defaultAssignee,
       applicationType: [],
+      isMigrated: false,
     }),
     [defaultAssignee]
   );
@@ -93,6 +95,7 @@ const Inbox = ({ parentRoute }) => {
       setFilterFormValue("locality", []);
       setFilterFormValue("assignee", defaultAssignee);
       setFilterFormValue("applicationType", []);
+      setFilterFormValue("isMigrated", false);
       dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
     },
     [defaultAssignee, filterFormDefaultValues]
@@ -116,6 +119,7 @@ const Inbox = ({ parentRoute }) => {
           ...filterFormDefaultValues,
           ...sessionFilterForm,
           assignee: isEmployee ? sessionFilterForm?.assignee || defaultAssignee : defaultAssignee,
+          isMigrated: sessionFilterForm?.isMigrated ?? false,
         },
         searchForm: inboxObjectInSessionStorage.searchForm || searchFormDefaultValues,
         tableForm: {
@@ -179,8 +183,10 @@ const Inbox = ({ parentRoute }) => {
     ];
   }, []);
 
-  const effectiveTenantId =
-    isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  // const effectiveTenantId =
+  //   isEmployee && tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+
+  const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
 
   useEffect(() => {
     if (!(isEmployee && tenantId === "pb.punjab")) return;
@@ -194,6 +200,7 @@ const Inbox = ({ parentRoute }) => {
   }, [cities, formState?.selectedTenantId, isEmployee, tenantId]);
 
   const memoizedFilters = useMemo(() => {
+    const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
     const normalizedFilterForm = {
       ...(formState?.filterForm || filterFormDefaultValues),
       businessService:
@@ -207,7 +214,8 @@ const Inbox = ({ parentRoute }) => {
     return {
       filterForm: normalizedFilterForm,
       searchForm: formState?.searchForm || searchFormDefaultValues,
-      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+      // Manual text search filters the loaded rows without changing the API query.
+      tableForm,
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -233,9 +241,10 @@ const Inbox = ({ parentRoute }) => {
 
     return {
       ...memoizedFilters,
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
-  }, [memoizedFilters]);
+  }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
 
   const assignedToMeFilters = useMemo(
     () => ({
@@ -402,6 +411,19 @@ const Inbox = ({ parentRoute }) => {
     [formState.tableForm, formState.filterForm]
   );
 
+  const onApiMobileSearch = useCallback(
+    (mobileNumber) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({ action: "mutateSearchForm", data: { mobileNumber: mobileNumber?.trim() || "" } });
+    },
+    [formState.searchForm, formState.tableForm]
+  );
+
+  const onApiMobileClear = useCallback(() => {
+    setApiMobileSearch("");
+    onApiMobileSearch("");
+  }, [onApiMobileSearch]);
+
   const propsForInboxTable = useInboxTableConfig({
     parentRoute,
     onPageSizeChange,
@@ -410,6 +432,8 @@ const Inbox = ({ parentRoute }) => {
     table: tableData,
     dispatch,
     onSortingByData,
+    globalSearch: topBarSearch,
+    cities
   });
 
   const {
@@ -468,7 +492,6 @@ const Inbox = ({ parentRoute }) => {
     });
   }, [formState?.filterForm?.applicationStatus, topBarStatusData]);
 
-  const searchDebounceRef = useRef(null);
   const hasInitializedFilterForm = useRef(false);
 
   const onNextPage = () =>
@@ -491,6 +514,7 @@ const Inbox = ({ parentRoute }) => {
       setFilterFormValue("businessService", formState.filterForm.businessService || null);
       setFilterFormValue("applicationType", formState.filterForm.applicationType || []);
       setFilterFormValue("locality", formState.filterForm.locality || []);
+      setFilterFormValue("isMigrated", formState.filterForm.isMigrated === true);
     }
   }, [
     formState?.filterForm?.moduleName,
@@ -499,20 +523,10 @@ const Inbox = ({ parentRoute }) => {
     formState?.filterForm?.businessService,
     formState?.filterForm?.applicationType,
     formState?.filterForm?.locality,
+    formState?.filterForm?.isMigrated,
     defaultAssignee,
     setFilterFormValue,
   ]);
-
-  useEffect(() => {
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    searchDebounceRef.current = setTimeout(() => {
-      const value = String(topBarSearch || "").trim();
-      const nextSearchForm = value ? { applicationNo: value } : {};
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({ action: "mutateSearchForm", data: nextSearchForm });
-    }, 400);
-    return () => clearTimeout(searchDebounceRef.current);
-  }, [topBarSearch]);
 
   useEffect(() => {
     if (hasInitializedFilterForm.current) return;
@@ -555,6 +569,17 @@ const Inbox = ({ parentRoute }) => {
     [formState.filterForm, formState.tableForm, setFilterFormValue]
   );
 
+  const onMigrationChange = useCallback(
+    (isMigrated) => {
+      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+      dispatch({
+        action: "mutateFilterForm",
+        data: { ...formState.filterForm, isMigrated },
+      });
+    },
+    [formState.filterForm, formState.tableForm]
+  );
+
   useEffect(() => {
     if (isError) {
       setError({
@@ -567,7 +592,7 @@ const Inbox = ({ parentRoute }) => {
     }
   }, [isError, t]);
 
-  console.log("yes coming here");
+
 
   return (
     <>
@@ -578,9 +603,7 @@ const Inbox = ({ parentRoute }) => {
           tenantSelector={
             isEmployee && tenantId === "pb.punjab" && cities?.length ? (
               <div className="new-inbox-tenant-selector">
-                <div className="filter-label sub-filter-label obps-pages-employee-inbox-index--style-1" >
-                  {t("BPA_CITIES_DROPDOWN_LABEL")}
-                </div>
+                <div className="filter-label sub-filter-label obps-pages-employee-inbox-index--style-1">{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
                 <div className="new-inbox-tenant-dropdown">
                   <Dropdown
                     option={cities}
@@ -613,15 +636,22 @@ const Inbox = ({ parentRoute }) => {
               onTabClick={onStatusTabClick}
               searchValue={topBarSearch}
               onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search by application number..."
+              searchPlaceholder="Search applications, names, mobile numbers, or status..."
+              apiMobileValue={apiMobileSearch}
+              onApiMobileChange={(e) => setApiMobileSearch(e.target.value)}
+              onApiMobileSearch={onApiMobileSearch}
+              onApiMobileClear={onApiMobileClear}
               totalCount={totalCountData}
+              showMigrationTabs={isEmployee}
+              isMigrated={formState?.filterForm?.isMigrated === true}
+              onMigrationChange={onMigrationChange}
             />
           }
           isLoading={isInboxLoading}
           tableData={tableData}
           tableProps={propsForInboxTable}
           tableHeader="ES_INBOX_INBOX"
-          pagination={
+          pagination={!String(topBarSearch || "").trim() && (
             <InboxPagination
               offset={formState.tableForm?.offset || 0}
               limit={formState.tableForm?.limit || 10}
@@ -630,7 +660,7 @@ const Inbox = ({ parentRoute }) => {
               onNextPage={onNextPage}
               onPrevPage={onPrevPage}
             />
-          }
+          )}
         />
       )}
       {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}

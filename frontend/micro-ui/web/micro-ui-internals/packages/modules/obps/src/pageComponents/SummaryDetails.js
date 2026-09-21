@@ -72,20 +72,20 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       });
     const [userSelected, setUser] = useState(null);
     const [showToast, setShowToast] = useState(null)
-    
-    
+
+
       const [otherCharges, setOtherCharges] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "0";
       });
-    
+
       const [lessAdjusment, setLessAdjusment] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT || "0";
       });
-    
+
       const [otherChargesDisc, setOtherChargesDisc] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.otherFeesDiscription || "";
       });
-    
+
       const [uploadedFile, setUploadedFile] = useState();
       const [uploadedFileLess, setUploadedFileLess] = useState(() => {
         return currentStepData?.createdResponse?.additionalDetails?.lessAdjustmentFeeFiles || [];
@@ -127,7 +127,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
           Digit.UserService.setUser(userSelected);
           setCitizenDetail(userSelected?.info, userSelected?.access_token, state);
       }, [userSelected]);
-    
+
       const setCitizenDetail = (userObject, token, tenantId) => {
         let locale = JSON.parse(sessionStorage.getItem("Digit.initData"))?.value?.selectedLanguage;
         localStorage.setItem("Citizen.tenant-id", tenantId);
@@ -145,16 +145,16 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       if (currentStepData?.createdResponse?.additionalDetails) {
         const selfCert = currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges || {};
         const otherDetails = currentStepData?.createdResponse?.additionalDetails || {};
-    
+
         setLabourCess(selfCert.BPA_LABOUR_CESS || "0");
         setGaushalaFees(selfCert.BPA_GAUSHALA_CHARGES_CESS || "0");
         setMalbafees(selfCert.BPA_MALBA_CHARGES || "0");
         setWaterCharges(selfCert.BPA_WATER_CHARGES || "0");
-    
+
         setDevelopment(selfCert.BPA_DEVELOPMENT_CHARGES || "0");
         setOtherCharges(selfCert.BPA_OTHER_CHARGES || "0");
         setLessAdjusment(selfCert.BPA_LESS_ADJUSMENT_PLOT || "0");
-    
+
         setOtherChargesDisc(otherDetails.otherFeesDiscription || "");
         setUploadedFileLess(otherDetails.lessAdjustmentFeeFiles || []);
       }
@@ -168,8 +168,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     useEffect(()=>{
         if(!uploadedFile && uploadedFileLess?.length >0){
-            console.log("ApplicationFeesAndSanctionFee 1", uploadedFileLess);
-            
+
+
             setUploadedFile(uploadedFileLess[0]?.fileStoreId)
         }
     },[uploadedFileLess])
@@ -201,7 +201,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
               ? mdmsDataFees?.BPA?.MalbaCharges?.[1].rate
               : mdmsDataFees?.BPA?.MalbaCharges[2].rate || 500
         );
-        console.log("Charges ", typeof LabourCess, GaushalaFees, Malbafees)
+
         setGaushalaFees(GaushalaFees?.toString() || "");
         setLabourCess(LabourCess?.toString() || "");
         setMalbafees(Malbafees?.toString() || "");
@@ -283,7 +283,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     function getBlockSubOccupancy(index) {
         let subOccupancyString = "";
         let returnValueArray = [];
-        console.log("currentStepData",currentStepData);
+
         currentStepData?.ScrutinyDetails?.subOccupancy &&
             currentStepData?.ScrutinyDetails?.subOccupancy[`Block_${index + 1}`] &&
             currentStepData?.ScrutinyDetails?.subOccupancy[`Block_${index + 1}`].map((ob) => {
@@ -300,9 +300,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         let totalDeduction = 0
 
         block?.building?.floors?.forEach((ob) => {
-            const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0
-            const floor = Number(ob.occupancies?.[0]?.floorArea) || 0
-            const deduction = Number(ob.occupancies?.[0]?.deduction) || 0
+            const builtUp = Number(Number(ob.occupancies?.[0]?.builtUpArea || 0).toFixed(2))
+            const floor = Number(Number(ob.occupancies?.[0]?.floorArea || 0).toFixed(2))
+            const deduction = Number(Number(ob.occupancies?.[0]?.deduction || 0).toFixed(2))
 
             totalBuiltUpArea += builtUp
             totalFloorArea += floor
@@ -313,9 +313,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 Level: ob.number,
                 Occupancy: t(`${ob.occupancies?.[0]?.type}`),
 
-                BuildupArea: Number(builtUp).toFixed(2),
-                Deduction: Number(deduction).toFixed(2),
-                FloorArea: Number(floor).toFixed(2),
+                BuildupArea: builtUp.toFixed(2),
+                Deduction: deduction.toFixed(2),
+                FloorArea: floor.toFixed(2),
             })
         })
 
@@ -378,12 +378,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     // }, [fileUrls, t]);
 
     // useEffect(() => {
-    //     console.log("ecbcDocumentsData", ecbcDocumentsData, fileUrls)
+
     // },[ecbcDocumentsData])
       const ecbcDocumentsData = useMemo(() => {
       const docs = getDocsFromFileUrls(fileUrls) || [];
-          
-    
+
+
       return docs.map((doc, index) => ({
         id: index,
         index: index,
@@ -399,9 +399,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     const setdeclarationhandler = (e) => {
         // e.preventDefault(); // Prevent form submission
-        
+
         if (!otpVerifiedTimestamp || otpVerifiedTimestamp === "") {
-            console.log("setdeclarationhandler", e, isOTPVerified);
+
             setShowTermsPopup(true);
             setAgree(true);
         }else{
@@ -427,9 +427,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       const ownerDocumentsData = useMemo(() => {
       // ownerFileUrls: { 0: { documentFile: 'url', ownerPhoto: 'url' }, 1: { ... } }
       if (!ownerFileUrls || typeof ownerFileUrls !== "object") return [];
-    
+
       const ownersCount = Object.keys(ownerFileUrls).length;
-    
+
       // Flatten into { "0_documentFile": "url", "1_ownerPhoto": "url", ... }
       const flatFileUrls = Object.entries(ownerFileUrls).reduce((acc, [ownerIdx, files]) => {
         if (files && typeof files === "object") {
@@ -441,18 +441,18 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         }
         return acc;
       }, {});
-    
+
       const docs = getDocsFromFileUrls(flatFileUrls) || [];
-    
+
       return docs.map((doc, index) => {
         // doc.id will be like "0_documentFile"
         const [ownerIdx, ...propParts] = String(doc.id).split("_");
         const prop = propParts.join("_"); // "documentFile" or "ownerPhoto"
         const baseTitle = (prop ? prop.toUpperCase() : (doc.title || "").toUpperCase());
-    
+
         // Append index if more than 1 owner (ownerIdx is 0-based so +1)
         const title = ownersCount > 1 ? `${t(baseTitle)} ${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
-    
+
         return {
           id: index,
           index: index,
@@ -531,12 +531,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 setGetOtpLoading(false);
                 setShowOTPInput(true);
             } else {
-                console.error("Error sending OTP Response is false:", response.error);
+
                 alert("Something Went Wrong");
                 setGetOtpLoading(false);
             }
         } catch (error) {
-            console.error("Error sending OTP:", error);
+
             alert("Something went wrong");
             setGetOtpLoading(false);
         }
@@ -551,7 +551,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     const handleVerifyOTPClick = async (e) => {
         e.preventDefault(); // Prevent form submission
-        console.log("OTP++++++++>");
+
         try {
             setSetOtpLoading(true)
             // const response = await Digit.UserService.authenticate(requestData);
@@ -571,7 +571,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 setSetOtpLoading(false)
             }
         } catch (error) {
-            console.error("Error verifying OTP:", error);
+
             alert("OTP Verification Error ");
             setIsOTPVerified(false);
             setOTPError(t("OTP Verification Error"));
@@ -663,9 +663,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 alert(t("BPA_CREATE_APPLICATION_FAILED"));
                 setApiLoading(false);
             }
-            console.log("APIResponse", result);
+
         } catch (e) {
-            console.log("error", e);
+
             alert(t("BPA_CREATE_APPLICATION_FAILED"));
             setApiLoading(false);
         }
@@ -675,7 +675,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         // onSubmitCheck(action);
         // setShowModal(true);
         // setSelectedAction(action);
-        console.log("Selected Action", action?.action, otpVerifiedTimestamp, isArchitectDeclared, agree);
+
         if(action?.action !== "SAVE_AS_DRAFT" && currentStepData?.createdResponse?.businessService === "BPA_LOW" && (!agree || otpVerifiedTimestamp === "" || isArchitectDeclared === "" || !isFeesDeclared)){
             if(!agree){
                 setShowToast({ key: "true", error: true, message: t("Professinal Undertaking is not Agreed") })
@@ -697,7 +697,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         try {
             await onSubmitCheck(action?.action);
         } catch (error) {
-            console.error("Submission error:", error);
+
             alert("Submission failed. Please try again.");
         } finally {
             setIsSubmitting(false);
@@ -707,9 +707,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     useEffect(() => {
         const fetchFileUrls = async () => {
           if (!currentStepData?.createdResponse?.additionalDetails) return;
-    
+
           const fileKeys = ["ecbcCertificateFile", "greenuploadedFile", "uploadedFile", "lessAdjustmentFeeFiles"];
-    
+
           // Collect valid fileStoreIds
           const validFileStoreIds = fileKeys
             .map((key) => {
@@ -719,12 +719,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             .filter(
               (id) => id && id !== "NA" && id !== "" && id !== null && id !== undefined
             );
-    
+
           if (validFileStoreIds.length === 0) return;
-    
+
           try {
             setIsFileLoading(true);
-    
+
             // Call Digit service
             const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
             if (result?.data?.fileStoreIds) {
@@ -735,7 +735,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                   urls[key] = result.data?.[fileId];
                 }
               });
-    
+
               // Store URLs in state (example: object with keys)
               setFileUrls(urls);
             }
@@ -748,12 +748,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 }));
             }
           } catch (error) {
-            console.error("Error fetching file URLs", error);
+
           } finally {
             setIsFileLoading(false);
           }
         };
-    
+
         fetchFileUrls();
       }, [currentStepData?.createdResponse?.additionalDetails]);
 
@@ -761,15 +761,15 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       const fetchOwnerFileUrls = async () => {
         const owners = currentStepData?.createdResponse?.landInfo?.owners || [];
         if (owners.length === 0) return;
-    
+
         // Collect valid fileStoreIds from each owner
         const fileIdsMap = []; // keeps mapping of ownerIndex + propertyName to fileStoreId
         const validFileStoreIds = [];
-    
+
         owners.forEach((owner, index) => {
           const docFile = owner?.additionalDetails?.documentFile;
           const photoFile = owner?.additionalDetails?.ownerPhoto;
-    
+
           if (docFile && docFile !== "NA") {
             validFileStoreIds.push(docFile);
             fileIdsMap.push({ index, key: "documentFile", fileId: docFile });
@@ -779,24 +779,24 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             fileIdsMap.push({ index, key: "ownerPhoto", fileId: photoFile });
           }
         });
-    
+
         if (validFileStoreIds.length === 0) return;
-    
+
         try {
           setIsOwnerFileLoading(true);
-    
+
           // Fetch URLs
           const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
           if (result?.data) {
             const urls = {};
-    
+
             fileIdsMap.forEach(({ index, key, fileId }) => {
               if (result.data[fileId]) {
                 if (!urls[index]) urls[index] = {};
                 urls[index][key] = result.data[fileId];
               }
             });
-    
+
             // Example final structure:
             // {
             //   0: { documentFile: "url1", ownerPhoto: "url2" },
@@ -805,17 +805,17 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             setOwnerFileUrls(urls);
           }
         } catch (error) {
-          console.error("Error fetching owner file URLs", error);
+
         } finally {
           setIsOwnerFileLoading(false);
         }
       };
-    
+
       fetchOwnerFileUrls();
     }, [currentStepData?.createdResponse?.landInfo?.owners]);
 
     useEffect(() => {
-        console.log("ECBCDocs", fileUrls);
+
     }, [fileUrls])
 
     const closeToast = () => {
@@ -873,6 +873,26 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
   const [y1, m1, d1] = currentStepData?.createdResponse?.additionalDetails?.nocObject?.approvedOn?.split("-") || [];
   const nocApprovedDate = `${d1}/${m1}/${y1}`;
+
+  const edcrReq = currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest || currentStepData?.createdResponse?.edcrDetails?.planDetail?.edcrRequest || {};
+  const addDetails = currentStepData?.createdResponse?.additionalDetails || {};
+
+
+  const areaType = edcrReq?.areaType || addDetails?.areaType;
+  const formatAreaType = (type) => (type === "SCHEME_AREA" ? "Scheme Area" : type === "NON_SCHEME_AREA" ? "Non-Scheme Area" : type || "NA");
+  const formatYesNo = (val) => (val === true || val === "YES" ? "YES" : val === false || val === "NO" ? "NO" : val ?? "NA");
+
+  const schemeArea = edcrReq?.schemeArea || addDetails?.schemeArea;
+  const schName = edcrReq?.schName || addDetails?.schemeName;
+  const siteReserved = edcrReq?.siteReserved ?? addDetails?.siteReserved;
+  const approvedCS = edcrReq?.approvedCS ?? addDetails?.approvedCS;
+  const cluApprove = edcrReq?.cluApprove ?? addDetails?.cluApprove;
+  const coreArea = edcrReq?.coreArea ?? addDetails?.coreArea;
+  const roadType = addDetails?.roadType?.name || addDetails?.roadType || edcrReq?.roadType;
+
+  const isSchemeArea = areaType === "SCHEME_AREA" || areaType === "Scheme Area";
+  const isNonSchemeArea = areaType === "NON_SCHEME_AREA" || areaType === "Non-Scheme Area";
+  const isSiteReservedYes = formatYesNo(siteReserved) === "YES";
 
 
     if (apiLoading || isFileLoading) return (<Loader />);
@@ -933,7 +953,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 </div>
                             </div>
                         ))}
-                    
+
                     <CardSubHeader className="bpa-section-header" style={{marginTop: "20px"}}>{t("BPA_OWNER_DETAILS_LABEL")}</CardSubHeader>
                     <div className="bpa-table-container">
                         {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
@@ -1259,7 +1279,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     {currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.map((block, index) => (
                         <div className={currentStepData?.createdResponse?.landInfo?.owners.length > 1 ? "owner-details-card" : ""}
                             key={index}
-                          
+
                         >
                             <CardSubHeader className="bpa-block-header" style={{marginTop: "8px"}}>
                                 {t("BPA_BLOCK_SUBHEADER")} {index + 1}
@@ -1304,10 +1324,66 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         </div>
                     </div>
                 </div>
-                            
+
                 {currentStepData?.createdResponse?.applicationType !== "BUILDING_OC_PLAN_SCRUTINY" && <div className="bpa-stepper-form-section">
                     <CardSubHeader className="bpa-section-header">{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardSubHeader>
                     <div className="data-table">
+                        {areaType && (
+                            <div className="row border-none">
+                                <h2>{t(`EDCR_SCRUTINY_AREA_TYPE`)}</h2>
+                                <div className="value">{formatAreaType(areaType)}</div>
+                            </div>
+                        )}
+                        {isSchemeArea && (
+                            <React.Fragment>
+                                {schemeArea && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_SCRUTINY_SCHEME_AREA_TYPES`)}</h2>
+                                        <div className="value">{schemeArea}</div>
+                                    </div>
+                                )}
+                                {schName && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_SCHEME_NAME`)}</h2>
+                                        <div className="value">{schName}</div>
+                                    </div>
+                                )}
+                                {siteReserved !== undefined && siteReserved !== null && siteReserved !== "" && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_IS_SITE_RESERVED`)}</h2>
+                                        <div className="value">{formatYesNo(siteReserved)}</div>
+                                    </div>
+                                )}
+                                {isSiteReservedYes && approvedCS !== undefined && approvedCS !== null && approvedCS !== "" && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_IS_APPROVED_CONTROL_SHEET`)}</h2>
+                                        <div className="value">{formatYesNo(approvedCS)}</div>
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        )}
+                        {isNonSchemeArea && (
+                            <React.Fragment>
+                                {cluApprove !== undefined && cluApprove !== null && cluApprove !== "" && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_SCRUTINY_CLU_APPROVED`)}</h2>
+                                        <div className="value">{formatYesNo(cluApprove)}</div>
+                                    </div>
+                                )}
+                                {coreArea !== undefined && coreArea !== null && coreArea !== "" && (
+                                    <div className="row border-none">
+                                        <h2>{t(`EDCR_IS_CORE_AREA`)}</h2>
+                                        <div className="value">{formatYesNo(coreArea)}</div>
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        )}
+                        {roadType && (
+                            <div className="row border-none">
+                                <h2>{t(`BPA_ROAD_TYPE`)}</h2>
+                                <div className="value">{roadType}</div>
+                            </div>
+                        )}
                         <div className="row border-none">
                             <h2>{t(`BPA_APPROVED_COLONY_LABEL`)}</h2>
                             <div className="value">{currentStepData?.createdResponse?.additionalDetails?.approvedColony || t("CS_NA")}</div>
@@ -1600,24 +1676,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                 <ActionBar>
                     <SubmitBar className="back-submit-button"
                         label="Back"
-                      
+
                         onSubmit={onGoBack}
                     />
-                    {/* <SubmitBar
-                        label={isSubmitting ? t("SUBMITTING...") : t("BPA_SEND_TO_CITIZEN_LABEL")}
-                        onSubmit={async () => {
-                            setIsSubmitting(true);
-                            try {
-                                await onSubmitCheck();
-                            } catch (error) {
-                                console.error("Submission error:", error);
-                                alert("Submission failed. Please try again.");
-                            } finally {
-                                setIsSubmitting(false);
-                            }
-                        }}
-                        disabled={!agree || !isOTPVerified || isSubmitting}
-                    /> */}
+                    {}
                     {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
                         <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
                     ) : null}

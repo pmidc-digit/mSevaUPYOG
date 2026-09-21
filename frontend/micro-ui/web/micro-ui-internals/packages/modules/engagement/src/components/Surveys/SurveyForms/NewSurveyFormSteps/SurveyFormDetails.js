@@ -13,7 +13,7 @@ const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
   const surveyDetails = useSelector((state) => state.engagement.surveyForm.surveyDetails);
 
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
     let f = 0;
     let alertMsg = "";
     surveyDetails.map((item) => {
@@ -71,8 +71,8 @@ const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("d", data);
-    console.log("onFormValueChange data in SurveyFormDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateSurveyForm(config.key, data));
     }
@@ -92,7 +92,7 @@ const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
     marginLeft: "-10px",
   };
 
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
+
 
   return (
     <React.Fragment>

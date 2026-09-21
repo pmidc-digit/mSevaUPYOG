@@ -111,23 +111,16 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
 
       
         {doc.hasDropdown && (
-          <CardLabel style={{ fontWeight: "bold", fontSize: "16px", marginBottom: "8px" }}>
+          <CardLabel className="noc-doc-label noc-doc-label--with-dropdown">
             {t(doc.code.replaceAll(".", "_"))}
             {doc.required && <span className="requiredField">*</span>}
           </CardLabel>
         )}
 
-        <div 
-        style={{ 
-          display: "flex", 
-          gap: "24px", 
-          flexWrap: "wrap", 
-          alignItems: doc.hasDropdown ? "flex-start" : "center" 
-        }}
-      >
+        <div className={`noc-doc-row${doc.hasDropdown ? " noc-doc-row--has-dropdown" : ""}`}>
         
         {/* 3. Left Column: Either Dropdown OR the Label (if no dropdown) */}
-        <div style={{ flex: 1, minWidth: "250px" }}>
+        <div className="noc-doc-col">
           {doc.hasDropdown ? (
             <Dropdown
               className="form-field"
@@ -139,14 +132,14 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
               placeholder={t("Select Document Type")}
             />
           ) : (
-            <CardLabel style={{ fontWeight: "bold", fontSize: "16px", margin: 0 }}>
+            <CardLabel className="noc-doc-label">
               {t(doc.code.replaceAll(".", "_"))}
               {doc.required && <span className="requiredField">*</span>}
             </CardLabel>
           )}
         </div>
         {/* 4. Right Column: File Upload */}
-        <div style={{ flex: 1, minWidth: "250px" }}>
+        <div className="noc-doc-col">
           <NOCCustomUploadFile
             id={`firenoc-doc-${doc.code}`}
             onUpload={handleFileSelect}
@@ -163,7 +156,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
           />
-          <p style={{ paddingTop: "10px", fontSize: "14px", margin: 0 }}>
+          <p className="noc-doc-hint">
             {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
           </p>
         </div>
@@ -172,7 +165,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
          
 
       {doc.description && (
-        <p style={{ padding: "0 10px 10px", fontSize: "13px", color: "#717171" }}>
+        <p className="noc-doc-description">
           {/* {t(doc.description.replaceAll(".", "_"))} */}
         </p>
       )}

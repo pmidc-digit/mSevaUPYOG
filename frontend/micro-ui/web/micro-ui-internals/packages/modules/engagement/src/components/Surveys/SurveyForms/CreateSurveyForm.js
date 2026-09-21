@@ -18,7 +18,7 @@ const CreateSurveyForm = ({ disableInputs, isPartiallyEnabled, formDisabled}) =>
   } = useForm({
     defaultValues: {
       sections:[]
-       
+
       }
   });
   const stylesForForm = {
@@ -46,10 +46,10 @@ const CreateSurveyForm = ({ disableInputs, isPartiallyEnabled, formDisabled}) =>
 }
 ]
 };
-console.log("setSurveyConfig",setSurveyFormValue)
-console.log("disable Inputs",disableInputs)
-console.log("partially enabled",isPartiallyEnabled)
-console.log("forms disable",formDisabled)
+
+
+
+
 const initialSurveyFormState = [defaultFormsConfig];
 
 // const surveyFormReducer = (state, { type, payload }) => {
@@ -72,7 +72,7 @@ const initialSurveyFormState = [defaultFormsConfig];
 //   }
 // };
   const surveyFormReducer = (state, { type, payload }) => {
-    console.log("type im reducer",type)
+
     switch (type) {
       case "ADD_SECTION":
        const temp={...state,sections:[ state.sections,  
@@ -86,7 +86,7 @@ const initialSurveyFormState = [defaultFormsConfig];
                   type: '',
                   answer: ''
                 }
-    
+
               ]
             }], weightage: 0 
           }]}
@@ -109,7 +109,7 @@ const initialSurveyFormState = [defaultFormsConfig];
     // };
 
      return temp;
-      
+
         //  ...state,
         //   sections: [...state.sections, { id: 2, categories: [{
         //     id: 1,
@@ -123,8 +123,8 @@ const initialSurveyFormState = [defaultFormsConfig];
 
         //     ]
         //   }], weightage: 0 }]
-       
-        
+
+
       case "ADD_CATEGORY":
         return {
           ...state,
@@ -139,7 +139,7 @@ const initialSurveyFormState = [defaultFormsConfig];
                     type: '',
                     answer: ''
                   }
-      
+
                 ]
               }] }
               : section
@@ -189,16 +189,16 @@ const initialSurveyFormState = [defaultFormsConfig];
   const [surveyState, dispatch] = useReducer(surveyFormReducer, defaultFormsConfig);
 
   const passingSurveyConfigInDispatch = ({ type, payload }) => {
-   console.log("type",type)
+
     dispatch({ type, payload: { ...payload, setSurveyFormValue } });
   };
 
   const renderPreviewForms = () => {
-    console.log("render",surveyState)
+
     return surveyState.sections.length
       ? surveyState.sections.map((section,index) => {
-        console.log("section",section)
-        console.log("index",index)
+
+
         return(
         // <NewSurveyForm key={index}
         // {...(config.formConfig ? config?.formConfig : config)}

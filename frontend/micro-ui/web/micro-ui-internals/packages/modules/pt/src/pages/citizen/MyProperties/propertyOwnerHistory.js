@@ -28,7 +28,7 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
   };
   const transformData = (property) => {
     const { owners, institution, ownershipCategory } = property;
-    console.log('owners :>> ', owners);
+
     let itemKey = [];
     owners.map((item) => {
       let owner = {};
@@ -60,26 +60,26 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
       }
       itemKey.push(owner);
     });
-    console.log("itemkey",itemKey)
+
     return itemKey;
   };
 
   if (properties && Array.isArray(properties) && properties.length > 0) {
     let ownerProperty = properties[0];
-    console.log("in if properties")
+
     properties = properties.filter((data) => data.status == "ACTIVE");
     if (properties.length === 0) {
       properties.push(ownerProperty);
     }
     properties = getUniqueList(properties);
-    console.log("properties",properties)
+
     properties &&
       properties.length > 0 &&
       properties.map((indProperty) => {
         let lastModifiedDate = indProperty.auditDetails.lastModifiedTime;
         // indProperty.owners = indProperty.owners.filter((owner) => owner.status == "ACTIVE");
           indProperty.owners = indProperty.owners.filter((owner) => owner.active === true);
-      console.log("indProperty",indProperty)
+
         if (!ownershipInfo[lastModifiedDate]) {
           ownershipInfo[lastModifiedDate] = [];
         }
@@ -90,7 +90,7 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
   if (isLoading) {
     return <Loader />;
   }
-console.log("propertyFromProp",propertyIdFromProp, ownershipInfo,data)
+
   if (propertyIdFromProp) {
     return (
       <React.Fragment>
@@ -98,7 +98,7 @@ console.log("propertyFromProp",propertyIdFromProp, ownershipInfo,data)
           <div>
             {Object.keys(ownershipInfo).map((key, index, arr) => {
               const date = convertEpochToDate(Number(key));
-              console.log("date",date,key,Object.keys(ownershipInfo).length,index)
+
               return (
                 <div className="historyContent">
                   <div style={{ display: "flex" }}>

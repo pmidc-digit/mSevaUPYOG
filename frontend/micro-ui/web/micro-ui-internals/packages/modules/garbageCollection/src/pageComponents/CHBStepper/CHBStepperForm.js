@@ -72,7 +72,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-// console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
+
 
 const NewADSStepperForm = () => {
   const history = useHistory();
@@ -84,7 +84,7 @@ const NewADSStepperForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  // console.log("formStatePTR: ", formState);
+
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_GarbageApplication_STEP(updatedStepNumber));
@@ -94,10 +94,10 @@ const NewADSStepperForm = () => {
     dispatch(RESET_GarbageAPPLICATION_FORM());
   }, []);
 
-  // console.log("formData",formData);
+
 
   const handleSubmit = (dataGet) => {
-    console.log("dataGet===", dataGet);
+
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
     // let data = {};
     // createEmployeeConfig.forEach((config) => {
@@ -108,7 +108,7 @@ const NewADSStepperForm = () => {
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
-  // console.log("formState: ",formState);
+
   return (
     <React.Fragment>
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>

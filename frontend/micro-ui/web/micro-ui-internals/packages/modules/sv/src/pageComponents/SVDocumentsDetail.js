@@ -259,7 +259,7 @@ const SVDocumentsDetail = ({ t, config, onSelect, formData, editdata, previousDa
         sessionStorage.setItem("Response", JSON.stringify(response));
       })
       .catch((error) => {
-        console.log("Something Went Wrong", error);
+
       });
   };
 

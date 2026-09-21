@@ -6,6 +6,7 @@ import { useHistory } from "react-router-dom";
 import Background from "../../../components/Background";
 import Header from "../../../components/Header";
 import OtpInput from "../NewSelectOtp";
+import { formatEmployeeAuthUsername } from "../EmployeeAuth";
 
 /* set employee details to enable backward compatiable */
 const setEmployeeDetail = (userObject, token) => {
@@ -44,6 +45,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     if (!user) {
       return;
     }
+    Digit.SessionStorage.del("Employee.confirmedTenant");
     Digit.SessionStorage.set("citizen.userRequestObject", user);
     const filteredRoles = user?.info?.roles?.filter((role) => role.tenantId === Digit.SessionStorage.get("Employee.tenantId"));
     if (user?.info?.roles?.length > 0) user.info.roles = filteredRoles;
@@ -80,6 +82,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     };
     requestData.tenantId = data.city.code;
     delete requestData.city;
+    requestData.username = formatEmployeeAuthUsername(requestData.username);
     try {
       const { user: users, ...tokens } = await Digit.UserService.authenticateV1(requestData);
       const info = users[0];
@@ -304,7 +307,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
           </div>
 
           <div className="employee-login-branding">
-            <h1 className="employee-upyog-title">UPYOG</h1>
+            <h1 className="employee-upyog-title">mSeva</h1>
             <p className="employee-upyog-subtitle">Urban Governance Platform</p>
           </div>
 

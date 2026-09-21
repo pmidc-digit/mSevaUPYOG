@@ -8,7 +8,7 @@ const PTRSelectPincode = ({ t, config, onSelect, formData = {}, userType, regist
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
 
-  console.log("formData in oincode ", formData);
+
 
   const [pincode, setPincode] = useState(() => {
     if (presentInModifyApplication && userType === "employee") return formData?.originalData?.address?.pincode || "";

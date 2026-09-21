@@ -11,7 +11,7 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("checkFormData", checkFormData);
+
     if (checkFormData?.venueDetails?.documents?.length && documents.length === 0) {
       // Map API response into the structure your UploadFile expects
       const apiDocs = checkFormData?.venueDetails?.documents?.map((doc) => ({
@@ -29,8 +29,8 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const ndcDocuments = data?.["gc-services-masters"]?.Documents;
 
   const goNext = () => {
-    console.log("here stop");
-    console.log("formData", formData);
+
+
     // return
     onSelect(config.key, { documents, ndcDocumentsLength: ndcDocuments?.length });
   };
@@ -88,7 +88,7 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
   }, [filteredDocument]);
 
   useEffect(() => {
-    console.log("here come", documents);
+
     if (uploadedFile) {
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);

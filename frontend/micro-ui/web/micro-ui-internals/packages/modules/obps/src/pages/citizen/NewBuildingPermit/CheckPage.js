@@ -40,7 +40,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
     return stored || value?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "";
   });
 
-  console.log(value, "VAL");
+
 
   const [otherCharges, setOtherCharges] = useState(() => {
     const stored = sessionStorage.getItem("otherCharges");
@@ -75,7 +75,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         const owners = parsedData?.value?.data?.owners || parsedData?.owners || [];
         if (owners.length > 0) return owners;
       } catch (error) {
-        console.error("Error parsing building permit data:", error);
+
       }
     }
 
@@ -86,7 +86,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         const owners = parsedData?.owners || [];
         if (owners.length > 0) return owners;
       } catch (error) {
-        console.error("Error parsing owner data:", error);
+
       }
     }
 
@@ -96,7 +96,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         const parsedFields = JSON.parse(storedOwnerFields);
         if (Array.isArray(parsedFields) && parsedFields.length > 0) return parsedFields;
       } catch (error) {
-        console.error("Error parsing owner fields:", error);
+
       }
     }
 
@@ -112,7 +112,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         return parsedData?.value?.data?.edcrDetails || null;
       }
     } catch (error) {
-      console.error("Error parsing sessionStorage data:", error);
+
     }
     return null;
   };
@@ -122,18 +122,18 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
       const storedValue = sessionStorage.getItem("Digit.BUILDING_PERMIT");
       if (storedValue) {
         const parsedData = JSON.parse(storedValue);
-        console.log(parsedData?.value?.data?.edcrDetails, "))))))))");
+
         return parsedData?.value?.data?.edcrDetails || null;
       }
     } catch (error) {
-      console.error("Error parsing planInfoProperties:", error);
+
     }
     return null;
   };
 
   // Replace/add this section after the existing building extract section:
   const planInfoProps = getPlanInfoProperties();
-  console.log(planInfoProps, "PLAN");
+
 
   const plotDataFromStorage = getPlotDataFromStorage();
 
@@ -184,7 +184,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
 
   const isEditApplication = window.location.href.includes("editApplication");
 
-  console.log(value, "DEKHO");
+
 
   // Initialize agreement states with sessionStorage persistence
   const [agree, setAgree] = useState(() => {
@@ -267,6 +267,29 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
   const [ownerOtpError, setOwnerOtpError] = useState("");
 
   const Architectvalidations = sessionStorage.getItem("ArchitectConsentdocFilestoreid") ? true : false;
+
+  const edcrReqCheck = datafromAPI?.planDetail?.edcrRequest 
+    || plotDataFromStorage?.planDetail?.edcrRequest 
+    || planInfoProps?.planDetail?.edcrRequest 
+    || value?.data?.edcrDetails?.planDetail?.edcrRequest 
+    || {};
+  const addDetailsCheck = value?.additionalDetails || {};
+
+  const checkAreaType = edcrReqCheck?.areaType || addDetailsCheck?.areaType || owners?.areaType;
+  const formatAreaTypeCheck = (type) => (type === "SCHEME_AREA" ? "Scheme Area" : type === "NON_SCHEME_AREA" ? "Non-Scheme Area" : type || "NA");
+  const formatYesNoCheck = (val) => (val === true || val === "YES" ? "YES" : val === false || val === "NO" ? "NO" : val ?? "NA");
+
+  const checkSchemeArea = edcrReqCheck?.schemeArea || addDetailsCheck?.schemeArea || owners?.schemeArea;
+  const checkSchName = edcrReqCheck?.schName || addDetailsCheck?.schemeName || owners?.schemeName;
+  const checkSiteReserved = edcrReqCheck?.siteReserved ?? addDetailsCheck?.siteReserved ?? owners?.siteReserved;
+  const checkApprovedCS = edcrReqCheck?.approvedCS ?? addDetailsCheck?.approvedCS ?? owners?.approvedCS;
+  const checkCluApprove = edcrReqCheck?.cluApprove ?? addDetailsCheck?.cluApprove ?? owners?.cluApprove;
+  const checkCoreArea = edcrReqCheck?.coreArea ?? addDetailsCheck?.coreArea;
+  const checkRoadType = addDetailsCheck?.roadType?.name || addDetailsCheck?.roadType || edcrReqCheck?.roadType || owners?.roadType?.name || owners?.roadType;
+
+  const isSchemeAreaCheck = checkAreaType === "SCHEME_AREA" || checkAreaType === "Scheme Area";
+  const isNonSchemeAreaCheck = checkAreaType === "NON_SCHEME_AREA" || checkAreaType === "Non-Scheme Area";
+  const isSiteReservedYesCheck = formatYesNoCheck(checkSiteReserved) === "YES";
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -378,11 +401,11 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
       if (response.isSuccessful) {
         setShowOTPInput(true);
       } else {
-        console.error("Error sending OTP Response is false:", response.error);
+
         alert("Something Went Wrong");
       }
     } catch (error) {
-      console.error("Error sending OTP:", error);
+
       alert("Something went wrong");
     }
   };
@@ -400,7 +423,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
 
   const handleVerifyOTPClick = async (e) => {
     e.preventDefault(); // Prevent form submission
-    console.log("OTP++++++++>");
+
     try {
       const response = await Digit.UserService.authenticate(requestData);
       if (response.ResponseInfo.status === "Access Token generated successfully") {
@@ -414,7 +437,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         setOTPError(t("WRONG OTP"));
       }
     } catch (error) {
-      console.error("Error verifying OTP:", error);
+
       alert("OTP Verification Error ");
       setIsOTPVerified(false);
       setOTPError(t("OTP Verification Error"));
@@ -423,7 +446,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
 
   const setdeclarationhandler = (e) => {
     // e.preventDefault(); // Prevent form submission
-    console.log("setdeclarationhandler", e);
+
     if (!isOTPVerified) {
       setShowMobileInput(true);
     } else {
@@ -437,7 +460,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
     e.stopPropagation();
     if (isOwnerOTPVerified) {
       setShowTermsPopupOwner(true);
-      console.log("OPEN");
+
     } else {
       alert("Please verify owner first");
     }
@@ -480,11 +503,11 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
       if (response.isSuccessful) {
         setShowOwnerOTPInput(true);
       } else {
-        console.error("Error sending Owner OTP Response is false:", response.error);
+
         alert("Something Went Wrong");
       }
     } catch (error) {
-      console.error("Error sending Owner OTP:", error);
+
       alert("Something went wrong");
     }
   };
@@ -501,7 +524,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
   };
   const handleOwnerVerifyOTPClick = async (e) => {
     e.preventDefault(); // Prevent form submission
-    console.log("Owner OTP++++++++>");
+
     try {
       const response = await Digit.UserService.authenticate(ownerRequestData);
       if (response.ResponseInfo.status === "Access Token generated successfully") {
@@ -513,7 +536,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
         setOwnerOtpError(t("WRONG OTP")); // Changed from setOwnerOTPError to setOwnerOtpError
       }
     } catch (error) {
-      console.error("Error verifying Owner OTP:", error);
+
       alert("Owner OTP Verification Error ");
       setIsOwnerOTPVerified(false);
       setOwnerOtpError(t("OTP Verification Error")); // Changed from setOwnerOTPError to setOwnerOtpError
@@ -801,7 +824,7 @@ const CheckPage = ({ onSubmit, value, onGoBack }) => {
   }
 
 
-  console.log(getOrderDocuments(applicationDocs), "DOC DOC DOC");
+
 // const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
 //   id: index,
 //   // localize the title here
@@ -983,7 +1006,7 @@ const documentsColumns = [
             label={t(`BPA_KHATHA_NUMBER_LABEL`)}
             text={plotDataFromStorage?.planDetail?.planInfoProperties?.KHATA_NO || t("CS_NA")}
           />
-          {console.log(plotDataFromStorage, "P+++++")}
+
           <Row
             className="border-none"
             label={t(`BPA_BOUNDARY_LAND_REG_DETAIL_LABEL`)}
@@ -1090,7 +1113,7 @@ const documentsColumns = [
               // text=`{${planInfoProps?.planDetail?.plotArea?.area ? t("BPA_SQ_MTRS_LABEL") : ""}`
             text={planInfoProps?.planDetail?.plot?.area || t("CS_NA")}
             />
-            {console.log(planInfoProps, "PLAN")}
+
             {/* <Row
               className="border-none"
               label={t("BPA_PLOT_NUMBER")}
@@ -1298,6 +1321,70 @@ const documentsColumns = [
         <StatusTable>
           <CardHeader>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardHeader>
            <hr className="obps-pages-citizen-new-building-permit-check-page--style-50" />
+          {checkAreaType && (
+            <Row
+              className="border-none"
+              label={t(`EDCR_SCRUTINY_AREA_TYPE`)}
+              text={formatAreaTypeCheck(checkAreaType)}
+            />
+          )}
+          {isSchemeAreaCheck && (
+            <React.Fragment>
+              {checkSchemeArea && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_SCRUTINY_SCHEME_AREA_TYPES`)}
+                  text={checkSchemeArea}
+                />
+              )}
+              {checkSchName && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_SCHEME_NAME`)}
+                  text={checkSchName}
+                />
+              )}
+              {checkSiteReserved !== undefined && checkSiteReserved !== null && checkSiteReserved !== "" && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_IS_SITE_RESERVED`)}
+                  text={formatYesNoCheck(checkSiteReserved)}
+                />
+              )}
+              {isSiteReservedYesCheck && checkApprovedCS !== undefined && checkApprovedCS !== null && checkApprovedCS !== "" && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_IS_APPROVED_CONTROL_SHEET`)}
+                  text={formatYesNoCheck(checkApprovedCS)}
+                />
+              )}
+            </React.Fragment>
+          )}
+          {isNonSchemeAreaCheck && (
+            <React.Fragment>
+              {checkCluApprove !== undefined && checkCluApprove !== null && checkCluApprove !== "" && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_SCRUTINY_CLU_APPROVED`)}
+                  text={formatYesNoCheck(checkCluApprove)}
+                />
+              )}
+              {checkCoreArea !== undefined && checkCoreArea !== null && checkCoreArea !== "" && (
+                <Row
+                  className="border-none"
+                  label={t(`EDCR_IS_CORE_AREA`)}
+                  text={formatYesNoCheck(checkCoreArea)}
+                />
+              )}
+            </React.Fragment>
+          )}
+          {checkRoadType && (
+            <Row
+              className="border-none"
+              label={t(`BPA_ROAD_TYPE`)}
+              text={checkRoadType}
+            />
+          )}
           <Row
             className="border-none"
             label={t(`BPA_APPROVED_COLONY_LABEL`)}
@@ -1322,11 +1409,6 @@ const documentsColumns = [
             className="border-none"
             label={t(`BPA_BUILDING_STATUS_LABEL`)}
             text={owners?.buildingStatus?.code || value?.additionalDetails?.buildingStatus || t("CS_NA")}
-          />
-          <Row
-            className="border-none"
-            label={t(`BPA_CORE_AREA_LABEL`)}
-            text={datafromAPI?.planDetail?.coreArea || value?.additionalDetails?.coreArea || t("CS_NA")}
           />
           <Row
             className="border-none"
@@ -1588,7 +1670,7 @@ const documentsColumns = [
             try {
               await onSubmitCheck();
             } catch (error) {
-              console.error("Submission error:", error);
+
               alert("Submission failed. Please try again.");
             } finally {
               setIsSubmitting(false);

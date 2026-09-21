@@ -24,7 +24,7 @@ const AssessmentDetails = () => {
   const location = useLocation();
   const AssessmentData = location?.state?.Assessment;
   const submitLabel = location?.state?.submitLabel;
-  console.log("location",location?.state)
+
   const [showToast, setShowToast] = useState(null);
   const queryClient = useQueryClient();
   const history = useHistory();
@@ -147,21 +147,21 @@ const AssessmentDetails = () => {
     }
     return chosenDateObj;
   };
-  console.log("penality", penalityImportantDates, rebateImportantDates)
+
   useEffect(() => {
     if (penalityImportantDates?.PropertyTax?.Interest?.length > 0 && penalityObj === null) {
 
       // let rebateDateObj=rebateImportantDates.filter((item)=>item.fromFY===AssessmentData.financialYear)
       let penalityObjj = findCorrectDateObjPenaltyIntrest(AssessmentData.financialYear, penalityImportantDates?.PropertyTax?.Interest)
       setPenalityObj(penalityObjj)
-      console.log("penalityObj", penalityObj)
+
 
     }
     if (rebateImportantDates?.PropertyTax?.Rebate?.length > 0 && rebateObj === null) {
 
       let rebateObjj = findCorrectDateObj(AssessmentData.financialYear, rebateImportantDates?.PropertyTax?.Rebate)
       setRebateObj(rebateObjj)
-      console.log("rebateObj", rebateObj)
+
 
     }
     if (interestImportantDates?.PropertyTax?.Interest?.length > 0 && interestObj === null) {
@@ -169,13 +169,13 @@ const AssessmentDetails = () => {
       // let rebateDateObj=rebateImportantDates.filter((item)=>item.fromFY===AssessmentData.financialYear)
       let interestObjj = findCorrectDateObjPenaltyIntrest(AssessmentData.financialYear, interestImportantDates?.PropertyTax?.Interest)
       setInterestObj(interestObjj)
-      console.log("interestObj", interestObj)
+
 
     }
   }, [penalityImportantDates?.PropertyTax?.Interest || rebateImportantDates?.PropertyTax?.Interest || interestImportantDates?.PropertyTax?.Interest])
-  console.log("imp dates", penalityObj, interestObj, rebateObj)
+
   const fetchBillParams = { consumerCode: AssessmentData?.propertyId };
-  console.log("ChargeableSlabsMenu", ChargeSlabsMenu, ptCalculationEstimateData)
+
 
   useEffect(() => {
     try {
@@ -186,7 +186,7 @@ const AssessmentDetails = () => {
         }
         Digit.PTService.billingSlabSearch(tenantId, filters)
           .then((response) => {
-            console.log("res", response)
+
             setUnitsCharge(response.billingSlab)
           })
       }
@@ -251,19 +251,19 @@ const AssessmentDetails = () => {
   };
   const handleUpdateAssessment = (assessment) =>{
     try{
-      
+
     Digit.PTService.assessmentUpdate({Assessment:assessment,tenantId:tenantId})
     .then
     (response =>
     {
       if(response?.Assessments?.length>0){
           history.push("/digit-ui/citizen/pt/property/pt-acknowledgement",{message:"PT_PROPERTY_RE_ASSESSMENT_SUCCESS_MSG",response:response?.Assessments[0]?.assessmentNumber,isSuccess:true,labelName:"PT_ASSESSMENT_NUMBER",responseData:response?.Assessments[0],previouspath:location,headerName:t("PT_REASSESS_PROPERTY")})
-        console.log("update Assessment success")
+
       }
     })
     }
     catch(error){
-    console.log(error)
+
     }
   }
   const handleReAssessment = ()=>{
@@ -271,9 +271,9 @@ const AssessmentDetails = () => {
       handleUpdateAssessment(AssessmentData);
       return;
     }
-    
+
      let filters={assessmentNumbers:applicationNo}
-    
+
 
     try{
     Digit.PTService.assessmentSearch({tenantId:tenantId,filters:filters})
@@ -281,20 +281,20 @@ const AssessmentDetails = () => {
     (response =>
     {
     if(response?.Assessments?.length>0){
-      
+
        handleUpdateAssessment(response.Assessments[0]) 
     }
     })
     }
     catch(error){
-console.log(error)
+
     }
   }
   const handleAssessment = () => {
     if(isCheck){
       if(location?.state?.reAssess===true){
         handleReAssessment()
- 
+
       }
       else{
     if (!queryClient.getQueryData(["PT_ASSESSMENT", AssessmentData?.propertyId, location?.state?.Assessment?.financialYear])) {
@@ -311,7 +311,7 @@ console.log(error)
             let userType = JSON.parse(user)
             setShowToast({ key: "success", action: { action: "ASSESSMENT" } });
             setTimeout(closeToast, 5000);
-            console.log("useType.value.info.type", userType, typeof (userType))
+
             // queryClient.clear();
             // queryClient.setQueryData(["PT_ASSESSMENT", propertyId, location?.state?.Assessment?.financialYear], true);
             if (userType?.value?.info?.type == "CITIZEN") {
@@ -396,7 +396,7 @@ console.log(error)
           AssessmentData.additionalDetails.adhocPenalty = additionalPenality;
           AssessmentData.additionalDetails.adhocPenaltyReason = selectedPenalityReason.value;
           ptCalculationEstimateData.Calculation[0].totalAmount = ptCalculationEstimateData?.Calculation[0]?.taxAmount + first;
-          console.log("ptCalculationEstimateData", ptCalculationEstimateData,)
+
         }
         else {
           alert("Penality cannot exceed total amount");
@@ -619,7 +619,7 @@ console.log(error)
     }
     return `${key}_${convertedValue}`;
   };
-  console.log("manasa", applicationDetails)
+
   const getCityLocale = (value = "") => {
     let convertedValue = convertDotValues(value);
     if (convertedValue == "NA" || !checkForNotNull(value)) {
@@ -701,8 +701,8 @@ console.log(error)
                     ?.sort?.((a, b) => a.floorNo - b.floorNo)
                     ?.map((unit, index) => {
                       let floorName = `PROPERTYTAX_FLOOR_${unit.floorNo}`;
-                      console.log('unit in assess page:', unit);
-                      
+
+
                       const values = [
                         {
                           title: `${t("ES_APPLICATION_DETAILS_UNIT")} ${index + 1}`,

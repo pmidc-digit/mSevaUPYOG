@@ -95,20 +95,20 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
     if (isLoading || !districtList?.["common-masters"]?.DistrictMaster?.length) return [];
 
     return districtList?.["common-masters"]?.DistrictMaster?.filter((district) => district.state_code === selectedState?.state_code);
-      
+
   }, [isLoading, districtList, selectedState]);
-  
+
   const uniqueDistrictsCor = useMemo(() => {
     if (isLoading || !districtList["common-masters"]?.DistrictMaster?.length) return [];
 
-    console.log("districtList", districtList["common-masters"]?.DistrictMaster, selectedCorrespondentState);
+
     return districtList["common-masters"]?.DistrictMaster?.filter((district) => district.state_code === selectedCorrespondentState?.state_code);
   }, [isLoading, districtList, selectedCorrespondentState]);
 
   // const [ulbTypes, setUlbTypes] = useState(["Abohar", "Adampur", "Ahmedgarh", "Ajnala", "Alawalpur", "Amargarh", "Amloh"]);
   const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) => tenant.name);
 
-  console.log("HelloData",  uniqueDistrictsCor, selectedCorrespondentState);
+
 
   // useEffect(() => {
   //   const role = formData?.LicneseType?.LicenseType?.role;
@@ -146,7 +146,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   useEffect(() => {
     if (typeof selectedDistrict === "string" &&  uniqueDistricts.length > 0) {
       const district = uniqueDistricts.find((district) => district.district_name_english === selectedDistrict);
-      console.log("selectedDistrict_1", district, uniqueDistricts, selectedDistrict);
+
       setSelectedDistrict(district);
     }
   }, [selectedDistrict, isLoading, uniqueDistricts]);
@@ -159,7 +159,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
   useEffect(() => {
     if (!isUserLoading && userDetails?.user?.length > 0) {
-      console.log("userDetails", userDetails?.user[0]);
+
       if(!PermanentAddress || PermanentAddress === ""){
         setPermanentAddress(userDetails?.user[0]?.permanentAddress || "");
       }
@@ -168,12 +168,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       }
       if(!selectedState || !selectedState?.state_code){
         const state = stateOptions.find((state) => state.state_name === userDetails?.user[0]?.permanentState);
-        console.log("SettingSelectedState 2", stateOptions, state, selectedState)
+
         setSelectedState(state);
       }
       if(!selectedDistrict || !selectedDistrict?.state_code){
         const district = uniqueDistricts.find((district) => district.district_name_english === userDetails?.user[0]?.permanentDistrict);
-        console.log("SettingSelectedDistrict 2", uniqueDistricts, district, userDetails?.user[0]?.permanentDistrict)
+
         setSelectedDistrict(district);
       }
       if(!isAddressSame){
@@ -189,8 +189,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         }
         if(!selectedCorrespondentDistrict || !selectedCorrespondentDistrict?.state_code){
           const district = uniqueDistrictsCor.find((district) => district.district_name_english === userDetails?.user[0]?.correspondenceDistrict);
-          console.log("SettingSelectedCorrespondentDistrict 2", uniqueDistrictsCor, district, userDetails?.user[0]?.correspondenceDistrict);
-          
+
+
           setSelectedCorrespondentDistrict(district);
         }
       }
@@ -199,12 +199,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
 
   // useEffect(() => {
-  //   console.log("come here", formData?.formData);
+
   //   if (formData?.formData?.LicneseDetails?.SelectedState) {
-  //     console.log("yeah in");
+
   //     const selState = formData?.formData?.LicneseDetails?.SelectedState;
-  //     console.log("selState", selState);
-  //     console.log("stateOptions", stateOptions);
+
+
   //     const state = stateOptions?.find((state) => state.name === selState);
   //     setSelectedState(state);
   //   }
@@ -212,11 +212,11 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
   useEffect(() => {
     if (formData?.result?.Licenses) {
-      console.log("eya come here", formData);
+
       const selCity = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
       const selCorCity = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict;
-      console.log("selState", selCity);
-      console.log("stateOptions", uniqueDistricts);
+
+
       const cityOpt = uniqueDistricts?.find((state) => state.district_name_english === selCity);
       // if(cityOpt)setSelectedDistrict(cityOpt);
       const cityCorOpt = uniqueDistrictsCor?.find((state) => state.district_name_english === selCorCity);
@@ -325,8 +325,22 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   //   }
   // };
 
+  const cleanDocs = (docs) => {
+    if (!Array.isArray(docs)) return docs;
+    const seen = new Set();
+    const cleaned = [];
+    for (let i = docs.length - 1; i >= 0; i--) {
+      const doc = docs[i];
+      if (doc?.documentType && !seen.has(doc.documentType)) {
+        seen.add(doc.documentType);
+        cleaned.unshift(doc);
+      }
+    }
+    return cleaned;
+  };
+
   const goNext = (selectedAction) => {
-    console.log("selectedDistrict", selectedDistrict);
+
     if (pinCode === "" || pinCode.length < 6) {
       setErrorMessage(t("BPA_PINCODE_ERROR_MESSAGE"));
       setShowToast({ error: true, message: t("BPA_PINCODE_ERROR_MESSAGE") });
@@ -467,7 +481,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           },
         ],
       };
-      console.log("payload", payload);
+
       setLoader(true);
       Digit.OBPSService.BPAREGCreate(payload, tenantId)
         .then((result) => {
@@ -527,6 +541,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
@@ -577,7 +592,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           },
         ],
       };
-      console.log("payload", payload);
+
       setLoader(true);
       Digit.OBPSService.BPAREGCreate(payload, tenantId)
         .then((result) => {
@@ -638,6 +653,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
@@ -689,7 +705,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           },
         ],
       };
-      console.log("payload", payload);
+
       setLoader(true);
       Digit.OBPSService.BPAREGCreate(payload, tenantId)
         .then((result) => {
@@ -751,6 +767,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo: validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   // gender: formData?.LicneseDetails?.gender?.code,
@@ -791,7 +808,6 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 ...formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.address,
                 pincode: pinCode,
               },
-              applicationDocuments: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments || [],
             },
             licenseType: "PERMANENT",
             businessService: "BPAREG",
@@ -864,6 +880,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo: validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   // gender: formData?.LicneseDetails?.gender?.code,
@@ -913,7 +930,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           },
         ],
       };
-      console.log("payload", payload);
+
       setLoader(true);
       Digit.OBPSService.BPAREGCreate(payload, tenantId)
         .then((result) => {
@@ -973,6 +990,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo: validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
               owners: [
                 {
                   // gender: formData?.LicneseDetails?.gender?.code,
@@ -1022,7 +1040,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           },
         ],
       };
-      console.log("payload", payload);
+
       setLoader(true);
       Digit.OBPSService.BPAREGCreate(payload, tenantId)
         .then((result) => {
@@ -1053,13 +1071,13 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       const role = formData?.LicneseType?.LicenseType?.role || formData?.formData?.LicneseType?.LicenseType?.role;
       const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
 
-      console.log("isArchitect",isArchitect)
+
 
       const tenantToSend = isArchitect ? "pb.punjab" : window?.localStorage?.getItem("CITIZEN.CITY");
 
       const actionToSend = selectedAction?.action || "NOWORKFLOW";
       const licenseData = formData?.result?.Licenses[0];
-      console.log("formData?.formData?.LicneseType?.validTo",formData?.formData?.LicneseType?.validTo)
+
 
       const payload = {
         Licenses: [
@@ -1092,13 +1110,13 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
               },
-              applicationDocuments: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments || []
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
             },         
             action: "SAVE_AS_DRAFT",            
           },
         ],
       };
-      console.log("payload", payload);
+
       setLoader(true);
       Digit.OBPSService.BPAREGupdate(payload, tenantId)
         .then((result) => {
@@ -1177,7 +1195,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
             onChange={handleAddressSame}
             checked={isAddressSame}
-           
+
             //  disable={!isCitizenEditable}
           />
 

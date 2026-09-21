@@ -47,7 +47,7 @@ const useInboxMobileCardsData = ({ table, setShowToast }) => {
   };
 
   const handleUpdateSurveyConfirm = (row) => {
-    console.log("Current row: ", row);
+
     const currentStatus = row?.active?"Active":"Inactive";
     const updatedStatus= row?.active?"Inactive":"Active";
     setShowToast({

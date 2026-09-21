@@ -41,7 +41,7 @@ const ViewAttendence = () => {
       const result = await response.json();
       return result.display_name || "Address not available";
     } catch (error) {
-      console.error("Error fetching address:", error);
+
       return "Address not available";
     }
   };

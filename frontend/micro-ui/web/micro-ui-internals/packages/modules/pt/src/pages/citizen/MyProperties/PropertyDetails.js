@@ -29,8 +29,8 @@ const PropertyDetails = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { id:applicationNumber } = useParams(); 
-  
-  console.log("application Number",applicationNumber)
+
+
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
   const [enableAudit, setEnableAudit] = useState(false);
@@ -45,7 +45,7 @@ const PropertyDetails = () => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   sessionStorage.setItem("propertyIdinPropertyDetail", applicationNumber);
-  
+
   // const isMobile = window.Digit.Utils.browser.isMobile();
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 780);
 
@@ -72,16 +72,16 @@ const PropertyDetails = () => {
   //   .then(
   //     (response) =>
   //     {
-  //       console.log("response",response)
+
   //     }
   //   )
   //   }
   //   catch(error){
-  //    console.log(error)
+
   //   }
   // },[])
-  console.log("fetchBillData",fetchBillData)
-console.log("applicationDetails",applicationDetails)
+
+
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.pt.usePropertySearch(
     {
       tenantId,
@@ -94,7 +94,7 @@ console.log("applicationDetails",applicationDetails)
     }
   );
   const mutation = Digit.Hooks.pt.usePropertyAPI(tenantId, false);
-console.log("mutation",mutation)
+
   const { data: UpdateNumberConfig } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["UpdateNumber"], {
     select: (data) => {
       return data?.PropertyTax?.UpdateNumber?.[0];
@@ -102,27 +102,13 @@ console.log("mutation",mutation)
     retry: false,
     enable: false,
   });
-console.log("auditData",auditData)
-console.log("updateNumberConfig",UpdateNumberConfig)
+
+
   React.useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth <= 780 && !isMobile) {
-        setIsMobile(true);
-      } else if (window.innerWidth > 780 && isMobile) {
-        setIsMobile(false);
-      }
-    }
-
-    window.addEventListener("resize", () => {
-      onResize();
-    });
-
-    return () => {
-      window.removeEventListener("resize", () => {
-        onResize()
-      });
-    };
-  });
+    const onResize = () => setIsMobile(window.innerWidth <= 780);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
 
   useEffect(() => {
@@ -131,7 +117,7 @@ console.log("updateNumberConfig",UpdateNumberConfig)
       {
       if (applicationDetails?.applicationDetails[1].values.length ==4)
       {
-        console.log("hi")
+
         let obj = {
           "title": "PT_ASSESMENT_ELECTRICITY",
           "value": applicationDetails?.additionalDetails?.electricity || "NA"
@@ -159,7 +145,7 @@ console.log("updateNumberConfig",UpdateNumberConfig)
       const lastActiveProperty = auditData?.[0];
       lastActiveProperty.owners = lastActiveProperty?.owners?.filter((owner) => owner.status == "ACTIVE");
       if (lastActiveProperty) {
-        console.log("hello")
+
         let applicationDetails = appDetailsToShow?.transformToAppDetailsForEmployee({ property: lastActiveProperty, t });
 
         setAppDetailsToShow({ ...appDetailsToShow, applicationDetails });
@@ -173,7 +159,7 @@ console.log("updateNumberConfig",UpdateNumberConfig)
     moduleCode: "PT.UPDATE",
     role: "PT_CEMP",
   });
-console.log("workflowDetails",workflowDetails)
+
   const closeToast = () => {
     setShowToast(null);
   };
@@ -211,7 +197,7 @@ console.log("workflowDetails",workflowDetails)
       }
       if (e.title === "PT_OWNERSHIP_INFO_SUB_HEADER") {
         if (applicationDetails?.applicationData?.status === "ACTIVE") {
-          console.log("holla")
+
           e.additionalDetails.owners.map((owner, ind) => {
             owner.values.map((value) => {
               if (value.title == "PT_OWNERSHIP_INFO_MOBILE_NO") {
@@ -281,26 +267,39 @@ console.log("workflowDetails",workflowDetails)
         asSectionHeader: true,
        // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
-          <LinkLabel
-            onClick={() => {
-              const element = document.getElementById("payment-history");
-              if (element) {
-                const header = element.querySelector(".accordion-header");
-                const body = element.querySelector(".accordion-body");
-                if (header && !body) {
-                  header.click();
+          <div style={{ display: "flex", textAlign : "center",  gap: "15px", flexWrap: "wrap" }}>
+            <LinkLabel
+              onClick={() => {
+               isCitizen ?
+                history.push( `/digit-ui/citizen/payment/collect/PT/${applicationNumber}?tenantId=${applicationDetails?.tenantId}`)
+                :
+                history.push( `/digit-ui/employee/payment/collect/PT/${applicationNumber}?tenantId=${applicationDetails?.tenantId}`)
+              }}
+              style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '100px', borderRadius: '8px', backgroundColor: '#2947a3', color: 'white', cursor: 'pointer', textDecoration: 'none' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '100px', borderRadius: '8px', backgroundColor: '#2947a3', color: 'white', cursor: 'pointer', textDecoration: 'none' }}
+            >
+              {t("PT_PAY_DUE")}
+            </LinkLabel>
+            <LinkLabel
+              onClick={() => {
+                const element = document.getElementById("payment-history");
+                if (element) {
+                  const header = element.querySelector(".accordion-header");
+                  const body = element.querySelector(".accordion-body");
+                  if (header && !body) {
+                    header.click();
+                  }
+                  setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                } else {
+                  history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`, state: { tenantId: appDetailsToShow?.applicationData?.tenantId } });
                 }
-                setTimeout(() => {
-                  element.scrollIntoView({ behavior: "smooth" });
-                }, 100);
-              } else {
-                history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`, state: { tenantId: appDetailsToShow?.applicationData?.tenantId } });
-              }
-            }}
-            style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
-          >
-            {t("PT_VIEW_PAYMENT")}
-          </LinkLabel>
+              }}
+              style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' }}
+            >
+              {t("PT_VIEW_PAYMENT")}
+            </LinkLabel>
+          </div>
         ),
         values: [
           // {
@@ -324,7 +323,7 @@ console.log("workflowDetails",workflowDetails)
             title:"",
             value:dateString
 
-          
+
           }
 
         ],
@@ -386,7 +385,7 @@ console.log("workflowDetails",workflowDetails)
                 history.push("/digit-ui/employee/pt/response", { Property: data.Property, key: "UPDATE", action: "SUBMIT" });
                 },
                 // redirectionUrl: {
-                 
+
                 //   state: { workflow: { action: "OPEN", moduleName: "PT", businessService: "PT.CREATE" } },
                 // },
                // AmountDueForPay: fetchBillData?.Bill[0]?.totalAmount,
@@ -406,7 +405,7 @@ console.log("workflowDetails",workflowDetails)
       },
     };
   }
-console.log("workflow details",workflowDetails)
+
   if (appDetailsToShow?.applicationData?.status === "ACTIVE" && PT_CEMP) {
     if (businessService == "PT.CREATE") setBusinessService("PT.UPDATE");
     if (!workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "UPDATE")) {
@@ -425,10 +424,10 @@ console.log("workflow details",workflowDetails)
     return <Loader />;
   }
   const UpdatePropertyNumberComponent = Digit?.ComponentRegistryService?.getComponent("EmployeeUpdateOwnerNumber");
- 
+
     appDetailsToShow?.applicationData?.owners.sort((item, item2) => { return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence })
-    
-  console.log("appDetailsToShow",appDetailsToShow)
+
+
   const handleDownloadPdf = async () => {
     try {
       const Property = appDetailsToShow?.applicationData || applicationDetails?.applicationData;
@@ -480,7 +479,7 @@ console.log("workflow details",workflowDetails)
           <button onClick={handlePrintPdf} style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px',cursor:'pointer'}}>Print</button>
         </div>
       </div>
-   
+
       <ApplicationDetailsTemplate
         applicationDetails={appDetailsToShow}
         isLoading={isLoading}
@@ -579,11 +578,11 @@ console.log("workflow details",workflowDetails)
                   },
                   {
                     onError: (error) => {
-                      console.error("Property update failed:", error);
+
                       setShowToast({ key: "error", message: "Failed to update property survey ID", type: "error" });
                     },
                     onSuccess: async (successRes) => {
-                      console.log("Property updated successfully", successRes);
+
                       setShowToast({ key: "success", message: t("PT_SURVEY_ID_UPDATED_SUCCESS") || "Survey ID updated successfully!", type: "success" });
                       setShowModal(false);
                       setShowUpdateSurveyId(null);
@@ -634,7 +633,7 @@ console.log("workflow details",workflowDetails)
         //     <CloseBtn
         //       onClick={() => {
         //         setShowOwnershipModal(false);
-               
+
         //       }}
         //     />
         //   }

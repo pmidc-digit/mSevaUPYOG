@@ -16,7 +16,7 @@ const LayoutResponseEmployee = (props) => {
   const [pdfError, setPdfError] = useState(null)
 
   const layoutData = state?.data?.Layout?.[0]
-  console.log("layoutData in response page", layoutData)
+
 
   const tenantId = window.localStorage.getItem("Employee.tenant-id")
 

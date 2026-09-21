@@ -20,8 +20,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
+import EmployeeTenantSelection from "./EmployeeTenantSelection";
+import { hasConfirmedEmployeeTenant } from "./employeeTenant";
 import CitizenHomeCardWithExternalLink from "../pages/citizen/CitizenHomeCardWithExternalLink";
 import CitizenHomeCardAccordian from "../pages/citizen/CitizenHomeCardAccordian";
+import { MSEVA_APP_LINK, MSEVA_YOUTUBE_LINK, OBPS_EMPLOYEE_USER_MANUAL } from "../../../../constants/constants";
 /* 
 Feature :: Citizen All service screen cards
 */
@@ -102,6 +105,8 @@ const iconSelector = (code) => {
     case "GarbageCollection":
       return <PTRIcon className="fill-path-primary-main" />;
     case "KibanaDashboard":
+      return <PTRIcon className="fill-path-primary-main" />;
+    case "OBPSKibanaDashboard":
       return <PTRIcon className="fill-path-primary-main" />;
     case "CLU":
       return <OBPSIcon className="fill-path-primary-main" />;
@@ -205,29 +210,22 @@ const EmployeeHome = ({ modules }) => {
 
   return (
     <div className="employee-app-container employee-dashboard-container">
-      <section className="employee-dashboard-hero" aria-labelledby="employee-dashboard-welcome">
-        <div className="employee-dashboard-hero__content">
-          <p className="employee-dashboard-hero__eyebrow">mSeva Employee Portal</p>
-          <h1 id="employee-dashboard-welcome">
-            Hi, <span>{userName?.info?.name || "User"}</span>
-          </h1>
-        </div>
-      </section>
+      {userName?.info?.tenantId === "pb.punjab" && !hasConfirmedEmployeeTenant(userName) && <EmployeeTenantSelection />}
+      <div style={welcomeCardStyle}>
+        <h1 style={welcomeTitleStyle}>Welcome {userName?.info?.name || "User"}</h1>
+        <p style={welcomeSubtitleStyle}>Manage and access employee services with ease and efficiency</p>
+      </div>
 
       <div className="employee-dashboard-table-and-services">
         <div className="employee-dashboard-quick-services-container">
           <div className="employee-dashboard-quick-services-header">
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
             {hasOBPSModule && (
-              <SubmitBar
-                label={t("User Manual")}
-                onSubmit={() =>
-                  window.open(
-                    "https://sdc-uat.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FAugust%2F24%2F1787583703919JNROWeZZwT.pdf",
-                    "_blank"
-                  )
-                }
-              />
+              <div className="display-flex-gap-2 items-center">
+                <SubmitBar label={t("mSeva Mobile App")} onSubmit={() => window.open(MSEVA_APP_LINK, "_blank")} />
+                <SubmitBar label={t("mSeva YouTube Channel")} onSubmit={() => window.open(MSEVA_YOUTUBE_LINK, "_blank")} />
+                <SubmitBar label={t("User Manual")} onSubmit={() => window.open(OBPS_EMPLOYEE_USER_MANUAL, "_blank")} />
+              </div>
             )}
           </div>
           <div className="employee-dashboard-module-card-wrapper">

@@ -20,7 +20,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setSelectedCheckBox(e.target.checked);
   }
 
-  console.log("selectedCheckBox", selectedCheckBox);
+
 
   const currentStepData = useSelector(function (state) {
     return state?.noc?.NOCNewApplicationFormReducer?.formData || {};
@@ -38,7 +38,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     return state?.noc?.NOCNewApplicationFormReducer?.ownerPhotos || [];
   });
 
-  //console.log("coordinates in summary page", coordinates);
+
 
   const menuRef = useRef();
   let user = Digit.UserService.getUser();
@@ -61,7 +61,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const goNext = (action) => {
-    console.log("formData in parent SummaryPage", currentStepData);
+
 
     onSubmit(currentStepData, action);
   };
@@ -95,10 +95,10 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     revalidate();
   }, [currentStepData?.siteDetails, currentStepData?.applicationDetails]);
 
-  console.log("calculatorData", calculatorData);
+
 
   const onSubmit = async (data, selectedAction) => {
-    console.log("formData inside onSubmit", data);
+
 
     if (window.location.pathname.includes("edit") && selectedAction.action === "EDIT") {
       setShowToast({ key: "true", warning: true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL" });
@@ -119,13 +119,13 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         taxHeadEstimates: taxHeadEstimates,
       },
     ];
-    console.log("finalPayload here==>", finalPayload);
+
 
     try {
       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
 
       if (response?.ResponseInfo?.status === "successful") {
-        console.log("success: Update API ");
+
         // dispatch(RESET_NOC_NEW_APPLICATION_FORM());
 
         if (window.location.href.includes("citizen")) {
@@ -136,14 +136,14 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             }, 3000);
           } else {
             //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
-            console.log("We are calling citizen response page");
+
             history.replace({
               pathname: `/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
               state: { data: response },
             });
           }
         } else {
-          console.log("we are calling employee response page");
+
 
           if (selectedAction.action === "CANCEL") {
             setShowToast({ key: "true", success: true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
@@ -159,11 +159,11 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           }
         }
       } else {
-        console.error("Submission failed, not moving to next step.", res?.response);
+
         setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
     } catch (error) {
-      console.log("errors here in goNext - catch block", error);
+
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     } finally {
       setTimeout(() => {
@@ -173,7 +173,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   function mapToNOCPayload(nocFormData, selectedAction) {
-    console.log("nocFormData", nocFormData);
+
 
     const updatedApplication = {
       ...nocFormData?.apiData?.Noc?.[0],
@@ -209,7 +209,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             specificationIsSiteUnderMasterPlan: nocFormData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
             existingNocType: nocFormData?.siteDetails?.existingNocType?.name || "",
             existingNocNumber: nocFormData?.siteDetails?.existingNocNumber || "",
-            existingNocDate: nocFormData?.siteDetails?.existingNocDate || "",
+            existingNocDate: nocFormData?.siteDetails?.existingNocDate ? convertToDDMMYYYY(nocFormData?.siteDetails?.existingNocDate) : "",
             existingNocDocument: nocFormData?.siteDetails?.existingNocDocument || null,
             isNocValidated: nocFormData?.siteDetails?.isNocValidated || false,
           },
@@ -286,7 +286,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
       const overallDocs = [...updatedApiResponseDocuments, ...updatedNewlyAddedDocs];
 
-      console.log("overallDocs", overallDocs);
+
 
       overallDocs.forEach((doc) => {
         updatedApplication?.documents?.push({
@@ -321,16 +321,16 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setShowToast(null);
   };
 
-  console.log("currentStepData in StepFour", currentStepData);
+
   const applicationNo = currentStepData?.apiData?.Noc?.[0]?.applicationNo || "";
-  console.log("applicationNo here==>", applicationNo);
+
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: applicationNo,
     moduleCode: "obpas_noc",
   });
 
-  console.log("workflow Details here==>", workflowDetails);
+
 
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -340,11 +340,11 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions here", actions);
+
 
   function onActionSelect(action) {
     goNext(action);
-    //console.log("selectedAction here", action);
+
   }
   if (nocCalculatorLoading) return <Loader />;
   const applicantDetails = currentStepData?.applicationDetails?.owners;

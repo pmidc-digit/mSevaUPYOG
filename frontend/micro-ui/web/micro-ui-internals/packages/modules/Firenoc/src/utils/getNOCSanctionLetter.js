@@ -1,14 +1,14 @@
 const getNOCSanctionLetter = async ({application, t,EmpData,approverComment,matchedCity = {}}) => {
-  
+
   const currentDate = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
 
-  console.log(matchedCity ,"matchedCity in here");
-  
-  console.log('application', application)
+
+
+
   const firmName = application?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName
   const owners = application?.fireNOCDetails?.applicantDetails?.owners || [];
   let ownersString = "NA";
@@ -30,8 +30,8 @@ const getNOCSanctionLetter = async ({application, t,EmpData,approverComment,matc
     ownersString = firmName;
   }
 
-  console.log(EmpData , "emp");
-  
+
+
 
   let regularized_label ="";
   const getFloorLabel = (index) => {
@@ -54,7 +54,7 @@ const getNOCSanctionLetter = async ({application, t,EmpData,approverComment,matc
   const nocDetails = application?.nocDetails?.additionalDetails || {};
   const site = nocDetails?.siteDetails || {};
 
-  
+
   let floorArea = [];
   let basementArea = site?.basementArea || "NA";
   let totalFloorArea = site?.totalFloorArea || "NA";
@@ -148,7 +148,7 @@ const getNOCSanctionLetter = async ({application, t,EmpData,approverComment,matc
 const addr = fireNOCDetails?.propertyDetails?.address || {};
 const ulbName = matchedCity?.city?.name;
 const ulbType = matchedCity?.city?.ulbType;
-console.log(ulbName, ulbType ,  "ULBBB");
+
 
 const zoneLabel = fireNOCDetails?.zone || " ";
 const validityPeriod = `${fireNOCDetails?.validityPeriod || fireNOCDetails?.additionalDetail?.validityYears || 1} Year(s)`;

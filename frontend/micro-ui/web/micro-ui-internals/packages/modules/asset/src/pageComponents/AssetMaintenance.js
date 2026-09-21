@@ -177,7 +177,7 @@ const OwnerForm = (_props) => {
 
 
     const handleSelect = (value) => {
-       
+
         switch (value.code) {
 
             case 'IN_WARRANTY':
@@ -209,8 +209,8 @@ const OwnerForm = (_props) => {
     };
 
     // useEffect(() => {
-    //     console.log("isWarrantyExpired:", getValues("isWarrantyExpired"));  this is use for testing purpose
-    //     console.log("isAMCExpired:", getValues("isAMCExpired"));
+
+
     //   }, [warrantyExp]);
 
     // Common function to handle file upload

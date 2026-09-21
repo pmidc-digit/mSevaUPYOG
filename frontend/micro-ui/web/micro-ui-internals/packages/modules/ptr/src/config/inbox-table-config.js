@@ -16,7 +16,7 @@ export const TableConfig = (t) => ({
       {
         Header: t("REPORT_FSM_RESULT_APPLICATION_NO"),
         Cell: ({ row }) => {
-          // console.log("row :>> ", row);
+
           return (
             <div>
               <span className="link">

@@ -21,7 +21,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       {
         Header: t("CHB_APPLICANT_NAME"),
         Cell: ({ row }) => {
-          console.log("row", row);
+
           return (
             <div>
               <span className="link">{row?.original?.owner}</span>

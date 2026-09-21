@@ -91,7 +91,7 @@ const ApplicationDetails = () => {
   //   label: t("CHB_FEE_RECIEPT"),
   //   onClick: () => getRecieptSearch(),
   // };
-  // console.log("appDetailsToShow?.applicationData?.applicationData?.bookingNo",appDetailsToShow?.applicationData?.applicationData?.bookingNo);
+
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {

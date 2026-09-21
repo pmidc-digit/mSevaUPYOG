@@ -13,7 +13,7 @@ function NDCDocument({ value = {} }) {
   const { t } = useTranslation();
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  console.log("value", value);
+
 
   const { isLoading, isError, error, data } = Digit.Hooks.ndc.useNDCDocumentSearch(
     {
@@ -31,8 +31,8 @@ function NDCDocument({ value = {} }) {
         <div className="document-grid">
           {documents?.map((document, index) => {
             let documentLink = pdfDownloadLink(data.pdfFiles, document?.documentAttachment);
-            // console.log("data", data?.pdfFiles);
-            // console.log("document", document);
+
+
 
             return (
               <a target="_blank" rel="noopener noreferrer" href={documentLink} className="document-link" key={index}>

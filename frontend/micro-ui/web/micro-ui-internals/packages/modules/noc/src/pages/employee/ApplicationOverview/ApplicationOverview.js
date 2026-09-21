@@ -60,7 +60,7 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
             setUrl(result.data.fileStoreIds[0].url);
           }
         } catch (error) {
-          console.error("Error fetching document:", error);
+
         }
       }
     };
@@ -147,7 +147,7 @@ const NOCEmployeeApplicationOverview = () => {
   const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
   const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
-  console.log("applicationDetails", applicationDetails);
+
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
   const [checklistRemarks, setChecklistRemarks] = useState({});
@@ -171,11 +171,11 @@ const NOCEmployeeApplicationOverview = () => {
   const [distances, setDistances] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [showPdfModal, setShowPdfModal] = useState(false);
-  // console.log("applicationDetails here==>", applicationDetails);
+
   const stateId = Digit.ULBService.getStateId();
   const { data: allowedDistance, isLoading: isDistanceLoading } = Digit.Hooks.useCommonMDMS(stateId, "common-masters", ["AllowedDistance"]);
   const businessServiceCode = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService || null;
-  //  console.log("businessService here==>", businessServiceCode);
+
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -192,11 +192,11 @@ const NOCEmployeeApplicationOverview = () => {
     moduleCode: businessServiceCode, //businessService
   });
 
-  // console.log("workflowDetails here=>", workflowDetails);
+
 
   const { data: searchChecklistData, refetch: refetchChecklist } = Digit.Hooks.noc.useNOCCheckListSearch({ applicationNo: id }, tenantId);
 
-  //  console.log('searchChecklistData', searchChecklistData)
+
 
   useEffect(() => {
     if (eSignError) {
@@ -224,7 +224,7 @@ const NOCEmployeeApplicationOverview = () => {
     }
   }, [siteImages]);
 
-  // console.log('geoLocations', geoLocations)
+
   const documentData = useMemo(
     () =>
       siteImages?.documents?.map((value, index) => ({
@@ -287,11 +287,11 @@ const NOCEmployeeApplicationOverview = () => {
       try {
         setLoader(true);
         const wf = await Digit.WorkflowService.init(tenantId, businessServiceCode);
-        // console.log("wf=>", wf);
+
         setLoader(false);
         setWorkflowService(wf?.BusinessServices?.[0]?.states);
       } catch (e) {
-        console.error("Error Occurred", e);
+
       } finally {
         setLoader(false);
       }
@@ -356,7 +356,7 @@ const NOCEmployeeApplicationOverview = () => {
   //     if (!fileStoreId) throw new Error("Failed to generate filestoreId");
   //      return fileStoreId;
   //   }catch (error) {
-  //     console.error("Sanction Letter download error:", error);
+
   //   } finally {
   //     setLoader(false);
   //   }
@@ -389,7 +389,7 @@ const NOCEmployeeApplicationOverview = () => {
       setPdfUrl(downloadUrl);
       setShowPdfModal(true);
     } catch (error) {
-      console.error("Sanction Letter popup error:", error);
+
       setShowToast({
         key: "true",
         error: true,
@@ -404,7 +404,7 @@ const NOCEmployeeApplicationOverview = () => {
     try {
       setLoader(true);
       const Property = applicationDetails?.Noc?.[0];
-      //console.log("tenants", tenants);
+
       const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
       const site = Property?.nocDetails?.additionalDetails?.siteDetails;
@@ -416,7 +416,7 @@ const NOCEmployeeApplicationOverview = () => {
         Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
       }, 0);
     } catch (error) {
-      console.error("Error generating acknowledgement:", error);
+
     } finally {
       setLoader(false);
     }
@@ -440,7 +440,7 @@ const NOCEmployeeApplicationOverview = () => {
 
       return fileStoreId;
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoader(false);
       Digit.StoreData.getCurrentLanguage = prevGetLang;
@@ -449,7 +449,7 @@ const NOCEmployeeApplicationOverview = () => {
 
   const printCertificateWithESign = async () => {
     try {
-      // console.log("🎯 Starting certificate eSign process...");
+
 
       const fileStoreId = await getSanctionLetterReceipt({
         tenantId: reciept_data?.Payments[0]?.tenantId,
@@ -480,9 +480,9 @@ const NOCEmployeeApplicationOverview = () => {
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken  },
         {
-          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onSuccess: () => void 0,
           onError: (error) => {
-            console.error("❌ eSign failed:", error);
+
             setShowToast({
               key: "true",
               error: true,
@@ -492,7 +492,7 @@ const NOCEmployeeApplicationOverview = () => {
         }
       );
     } catch (error) {
-      console.error("❌ Certificate preparation failed:", error);
+
       setShowToast({
         key: "true",
         error: true,
@@ -583,7 +583,7 @@ const NOCEmployeeApplicationOverview = () => {
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
 
-  // console.log('user', user)
+
 
   const order = {
     "OWNER.SITEPHOTOGRAPHONE": 1,
@@ -593,17 +593,17 @@ const NOCEmployeeApplicationOverview = () => {
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
   )?.sort((a, b) => order[a.documentType] - order[b.documentType]);
 
-  // console.log('sitePhotos', sitePhotos)
+
   const remainingDocs = displayData?.Documents?.filter(
     (doc) => !(doc?.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc?.documentType === "OWNER.SITEPHOTOGRAPHTWO")
   )?.filter((doc) => !!doc?.documentAttachment);
   const coordinates = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.coordinates;
-  // console.log('coordinates', coordinates)
+
 
   useEffect(() => {
     const status = applicationDetails?.Noc?.[0]?.applicationStatus;
     const additionalDetails = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails;
-    // console.log('additionalDetails', additionalDetails)
+
     if (status === "DOCUMENTVERIFY") {
       setDocumentVerifier(additionalDetails?.documentVerifier || user?.info?.name || "");
     } else if (status === "INSPECTION_REPORT_PENDING") {
@@ -642,7 +642,7 @@ const NOCEmployeeApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  // console.log("actions here", actions);
+
 
   useEffect(() => {
     const nocObject = applicationDetails?.Noc?.[0];
@@ -658,8 +658,8 @@ const NOCEmployeeApplicationOverview = () => {
 
       const ownerPhotoList = nocObject?.nocDetails?.additionalDetails?.ownerPhotos || [];
 
-      //console.log("applicantDetails",applicantDetails);
-      //console.log("siteDetails", siteDetails);
+
+
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
@@ -671,26 +671,26 @@ const NOCEmployeeApplicationOverview = () => {
 
       setDisplayData(finalDisplayData);
       const submittedOn = nocObject?.nocDetails?.additionalDetails?.SubmittedOn;
-      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
+
       const endTime = Date.now();
 
       if(submittedOn!== null){
         setAppDate(Number(submittedOn))
       }
-      // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
+
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
       const time = formatDuration(totalTime);
-      // console.log('time full', time)
+
       setTimeObj(time);
       const siteImagesFromData = nocObject?.nocDetails?.additionalDetails?.siteImages;
 
       setSiteImages(siteImagesFromData ? { documents: siteImagesFromData } : {});
-      // console.log('nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending', nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending)
+
       setFieldInspectionPending(nocObject?.nocDetails?.additionalDetails?.fieldinspection_pending || []);
     }
   }, [applicationDetails?.Noc]);
 
-  // console.log('timeObj', timeObj)
+
   function routeToImage(filestoreId) {
     getUrlForDocumentView(filestoreId);
   }
@@ -713,21 +713,21 @@ const NOCEmployeeApplicationOverview = () => {
           // if (props?.setError) {
           //   props?.setError(t("CS_FILE_FETCH_ERROR"));
           // } else {
-          console.error(t("CS_FILE_FETCH_ERROR"));
+
           // }
         }
       } else {
         // if (props?.setError) {
         //   props?.setError(t("CS_FILE_FETCH_ERROR"));
         // } else {
-        console.error(t("CS_FILE_FETCH_ERROR"));
+
         // }
       }
     } catch (e) {
       // if (props?.setError) {
       //   props?.setError(t("CS_FILE_FETCH_ERROR"));
       // } else {
-      console.error(t("CS_FILE_FETCH_ERROR"));
+
       // }
     }
   };
@@ -738,7 +738,7 @@ const NOCEmployeeApplicationOverview = () => {
   };
   function onActionSelect(action) {
     const validationMsg = validateSiteImages(action);
-    // console.log("selected action", action);
+
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
     const allDocumentsUploaded = siteImages?.documents?.every((doc) => doc?.filestoreId != null && doc?.filestoreId !== "");
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
@@ -814,14 +814,14 @@ const NOCEmployeeApplicationOverview = () => {
                 parseFloat(loc?.longitude)
               );
               const minDistance = Math.min(d1, d2);
-              // console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
+
               return minDistance;
             })
           );
           setDistances(results);
-          // console.log("Final distances (m):", results);
+
         } catch (err) {
-          console.error("Error fetching distances:", err);
+
         }
       }
     };
@@ -846,7 +846,7 @@ const NOCEmployeeApplicationOverview = () => {
     return null; // no error
   };
 
-  // console.log('distances', distances)
+
 
   const isFeeDisabled = applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS";
   const isDocPending = applicationDetails?.Noc?.[0]?.applicationStatus === "DOCUMENTVERIFY";
@@ -866,7 +866,7 @@ const NOCEmployeeApplicationOverview = () => {
   };
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Noc?.[0] || {};
-    // console.log("payloadData", payloadData);
+
     const vasikaNumber = payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "";
     const vasikaDate = convertToDDMMYYYY(payloadData?.nocDetails?.additionalDetails?.siteDetails?.vasikaDate) || "";
     const filtData = data?.Licenses?.[0];
@@ -887,7 +887,7 @@ const NOCEmployeeApplicationOverview = () => {
       }
 
       if (applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING") {
-        // console.log("INSPECTION_REPORT_PENDING", fieldInspectionPending);
+
         if (fieldInspectionPending?.length === 0) {
           closeModal();
           setShowToast({ key: "true", error: true, message: "Please fill in the Field Inspection Report before submitting" });
@@ -953,7 +953,7 @@ const NOCEmployeeApplicationOverview = () => {
           return;
         }
       }
-      // console.log("data ==>", data);
+
     }
 
     const newCalculation = {
@@ -989,7 +989,7 @@ const NOCEmployeeApplicationOverview = () => {
         },
       },
     };
-    // console.log("updatedApplicant", updatedApplicant);
+
 
     if (filtData?.action === "UPDATE_ZONE") {
       const currentSite = updatedApplicant?.nocDetails?.additionalDetails?.siteDetails || {};
@@ -999,7 +999,7 @@ const NOCEmployeeApplicationOverview = () => {
       };
     }
 
-    //console.log("filtData", filtData);
+
     updatedApplicant.workflow = {
       action: filtData.action,
       assignes:
@@ -1010,13 +1010,13 @@ const NOCEmployeeApplicationOverview = () => {
       documents: filtData?.wfDocuments,
     };
 
-    // console.log("updatedApplicant", updatedApplicant);
+
 
     const finalPayload = {
       Noc: { ...updatedApplicant },
     };
 
-    // console.log("final Payload ", finalPayload);
+
 
     try {
       if (["SENDBACKTOCITIZEN", "REJECT"].includes(filtData?.action)) {
@@ -1084,7 +1084,7 @@ const NOCEmployeeApplicationOverview = () => {
           }, 3000);
         } else if (filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT") {
           //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
-          // console.log("We are calling employee response page");
+
           history.replace({
             pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
             state: { data: response },
@@ -1137,7 +1137,7 @@ const NOCEmployeeApplicationOverview = () => {
   };
 
   const onChangeReport = (key, value) => {
-    // console.log("key,value", key, value);
+
     setFieldInspectionPending(value);
   };
 
@@ -1156,7 +1156,7 @@ const NOCEmployeeApplicationOverview = () => {
     const timelineSection = document.getElementById("timeline");
     if (timelineSection) timelineSection.scrollIntoView({ behavior: "smooth" });
   };
-  // console.log("displayData here", displayData);
+
 
   const ownersList = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
@@ -1318,7 +1318,7 @@ const NOCEmployeeApplicationOverview = () => {
 
               <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
               <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
-              <Row label={t("NOC_VASIKA_DATE")} text={detail?.vasikaDate || "N/A"} />
+              <Row label={t("NOC_VASIKA_DATE")} text={convertToDDMMYYYY(detail?.vasikaDate) || detail?.vasikaDate || "N/A"} />
               <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
             </StatusTable>
           </div>
@@ -1344,7 +1344,7 @@ const NOCEmployeeApplicationOverview = () => {
                 />
 
                 <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
-                {(isFinalNoc || isDigitizationOfManual) && (
+                {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
                   <React.Fragment>
                     {isFinalNoc && (
                       <Row
@@ -1352,13 +1352,13 @@ const NOCEmployeeApplicationOverview = () => {
                         text={
                           detail?.existingNocType?.name ||
                           detail?.existingNocType?.code ||
-                          (typeof detail?.existingNocType === "string" ? detail?.existingNocType : "N/A")
+                          (typeof detail?.existingNocType === "string" && detail?.existingNocType ? detail?.existingNocType : "N/A")
                         }
                       />
                     )}
                     <Row label={t("NOC_NUMBER_LABEL")} text={detail?.existingNocNumber || "N/A"} />
                     {(isOffline || isDigitizationOfManual) && (
-                      <Row label={t("NOC_DATE_LABEL")} text={detail?.existingNocDate || "N/A"} />
+                      <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(detail?.existingNocDate) || detail?.existingNocDate || "N/A"} />
                     )}
                     {detail?.existingNocDocument && (
                       <Row

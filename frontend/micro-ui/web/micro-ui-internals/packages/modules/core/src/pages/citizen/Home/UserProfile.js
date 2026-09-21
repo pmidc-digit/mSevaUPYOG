@@ -20,6 +20,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import UploadDrawer from "./ImageUpload/UploadDrawer";
 import CustomBackButton from "../../../../../templates/ApplicationDetails/components/CustomBackButton";
 import { subYears, format, differenceInYears } from "date-fns";
+import { formatEmployeeAuthUsername } from "../../employee/EmployeeAuth";
 
 const defaultImage = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
@@ -76,11 +77,10 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   };
 
   React.useEffect(() => {
-    window.addEventListener("resize", () => setWindowWidth(window.innerWidth));
-    return () => {
-      window.removeEventListener("resize", () => setWindowWidth(window.innerWidth));
-    };
-  });
+    const onResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "DistrictMaster" }]);
   const uniqueDistricts = useMemo(() => {
@@ -252,6 +252,9 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     try {
       const requestData = {
         ...userDetails,
+        userName: userType === "employee"
+          ? formatEmployeeAuthUsername(userDetails?.userName)
+          : userDetails?.userName,
         name,
         dob: dob !== undefined ? dob.split("-").reverse().join("/") : "",
         gender: gender?.value,

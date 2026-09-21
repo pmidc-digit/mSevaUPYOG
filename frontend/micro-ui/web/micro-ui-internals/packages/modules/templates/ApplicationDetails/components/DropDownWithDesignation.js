@@ -120,8 +120,6 @@ const DropdownWithDesignation = (props) => {
     }
   }
 
-  console.log("option", props.option);
-
   function dropdownOn(val) {
     const waitForOptions = () => setTimeout(() => setDropdownStatus(val), 500);
     const timerId = waitForOptions();
@@ -216,7 +214,6 @@ const DropdownWithDesignation = (props) => {
           >
             {filteredOption &&
               filteredOption.map((option, index) => {
-                console.log("option", option);
                 return (
                   <div
                     className={`cp profile-dropdown--item display: flex `}

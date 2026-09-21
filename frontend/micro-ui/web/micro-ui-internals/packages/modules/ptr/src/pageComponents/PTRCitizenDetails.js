@@ -18,7 +18,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const userInfo = Digit.UserService.getUser();
-  console.log("userInfo?.info", userInfo?.info);
+
   const { mobileNumber, emailId, name } = userInfo?.info;
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
   const [loader, setLoader] = useState(false);
@@ -91,7 +91,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     setLoader(true);
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
-      console.log("userData", userData);
+
+      sessionStorage.removeItem("CitizenConsentdocFilestoreidPTR");
       if (userData?.user?.[0]) {
         setValue("name", userData.user[0].name);
         setValue("emailId", userData.user[0].emailId);

@@ -293,14 +293,14 @@ const CustomUploadFile = (props) => {
           if (props?.setError) {
             props?.setError(t("CS_FILE_FETCH_ERROR"));
           } else {
-            console.error(t("CS_FILE_FETCH_ERROR"));
+
           }
         }
       } else {
         if (props?.setError) {
           props?.setError(t("CS_FILE_FETCH_ERROR"));
         } else {
-          console.error(t("CS_FILE_FETCH_ERROR"));
+
         }
       }
     } catch (e) {
@@ -308,7 +308,7 @@ const CustomUploadFile = (props) => {
       if (props?.setError) {
         props?.setError(t("CS_FILE_FETCH_ERROR"));
       } else {
-        console.error(t("CS_FILE_FETCH_ERROR"));
+
       }
     }
   };

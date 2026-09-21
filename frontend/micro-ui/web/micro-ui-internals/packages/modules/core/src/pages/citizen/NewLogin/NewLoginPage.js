@@ -169,6 +169,9 @@ const NewLogin = ({ stateCode }) => {
 
       setUser({ info, ...tokens });
     } catch (e) {
+      const errorMessage = e?.response?.data?.error_description || e?.error_description || t("CS_COMMON_ERROR");
+      setError(errorMessage);
+      setIsError(true);
       setCanSubmit(true);
       setIsOtpValid(false);
     }
@@ -287,9 +290,13 @@ const NewLogin = ({ stateCode }) => {
           <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/citizen")}>
             <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
           </button>
-          <div className="mseva-entry-civic-title" aria-label="mSeva">mSeva</div>
+          <div className="mseva-entry-civic-title" aria-label="mSeva">
+            mSeva
+          </div>
           <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">
-            <button type="button" className="is-active" onClick={() => history.push("/digit-ui/citizen")}>Home</button>
+            <button type="button" className="is-active" onClick={() => history.push("/digit-ui/citizen")}>
+              Home
+            </button>
           </nav>
         </header>
       )}
@@ -298,7 +305,9 @@ const NewLogin = ({ stateCode }) => {
         <div className="login-hero-panel">
           <div className="hero-content">
             <p className="mseva-entry-eyebrow">Punjab Local Government</p>
-            <h1 className="hero-title">Welcome to <span>mSeva</span></h1>
+            <h1 className="hero-title">
+              Welcome to <span>mSeva</span>
+            </h1>
             <p className="hero-description">Your digital gateway to urban governance services. Access all municipal services in one place.</p>
             <div className="hero-features">
               <div className="feature-item">
@@ -311,7 +320,11 @@ const NewLogin = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Secure<br />Infrastructure</span>
+                <span className="feature-text">
+                  Secure
+                  <br />
+                  Infrastructure
+                </span>
                 <p>End-to-end encrypted services for your safety.</p>
               </div>
               <div className="feature-item">
@@ -323,7 +336,11 @@ const NewLogin = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Real-time<br />Updates</span>
+                <span className="feature-text">
+                  Real-time
+                  <br />
+                  Updates
+                </span>
                 <p>Track each application as it progresses.</p>
               </div>
               <div className="feature-item">
@@ -335,16 +352,27 @@ const NewLogin = ({ stateCode }) => {
                     />
                   </svg>
                 </div>
-                <span className="feature-text">Mobile<br />First</span>
+                <span className="feature-text">
+                  Mobile
+                  <br />
+                  First
+                </span>
                 <p>Access services easily from any device.</p>
               </div>
               <div className="feature-item">
                 <div className="feature-icon" aria-hidden="true">
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z" fill="currentColor" />
+                    <path
+                      d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3ZM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z"
+                      fill="currentColor"
+                    />
                   </svg>
                 </div>
-                <span className="feature-text">Citizen<br />Centric</span>
+                <span className="feature-text">
+                  Citizen
+                  <br />
+                  Centric
+                </span>
                 <p>Designed around simple, accessible services.</p>
               </div>
             </div>
@@ -354,44 +382,156 @@ const NewLogin = ({ stateCode }) => {
         {/* Right Panel - Login Form */}
         <div className="login-form-panel">
           <div className="login-wrapper">
-            {!isRegistering && <div className="login-form-header">
-              {isLanguageEntryPage && (
-                <div className="mseva-portal-switch" role="tablist" aria-label="Choose portal">
-                  <button type="button" className={portal === "citizen" ? "is-selected" : ""} role="tab" aria-selected={portal === "citizen"} onClick={() => { setPortal("citizen"); setStep("MOBILE"); setOtp(""); }}>Citizen Portal</button>
-                  <button type="button" className={portal === "employee" ? "is-selected" : ""} role="tab" aria-selected={portal === "employee"} onClick={() => { setPortal("employee"); setStep("EMPLOYEE"); setOtp(""); }}>Employee</button>
-                </div>
-              )}
-              <h2 className="login-title">{portal === "employee" ? (employeeView === "forgot" ? "RESET PASSWORD" : "EMPLOYEE LOGIN") : t("CORE_COMMON_LOGIN")}</h2>
-              <p className="login-subtitle">{employeeView === "forgot" ? "Enter your registered details to receive a password reset OTP." : "Enter your details to access your account"}</p>
-            </div>}
-
-            {isRegistering ? <NewRegistration stateCode={stateCode} embedded initialCity={selectedCity} initialMobileNumber={mobileNumber} onBackToLogin={() => setIsRegistering(false)} /> : portal === "employee" ? (
-              <div className="mseva-employee-login-fields">
-                {employeeView === "forgot" ? <>
-                  <label className="label">Mobile Number <span>*</span><input type="tel" maxLength="10" value={resetMobileNumber} onChange={(event) => setResetMobileNumber(event.target.value.replace(/\D/g, ""))} /></label>
-                  <div className="location-wrapper"><div className="label">City <span>*</span></div>{!isEmployeeCitiesLoading && <Dropdown option={employeeCityOptions} optionKey="i18nKey" selected={resetCity} select={setResetCity} t={t} />}</div>
-                  <button type="button" className="submit-bar" onClick={onEmployeeForgotPassword}>Send reset OTP</button>
-                  <button type="button" className="mseva-employee-back-link" onClick={() => setEmployeeView("login")}>Back to employee login</button>
-                </> : step !== "EMPLOYEE_OTP" && <>
-                  <label className="label">User Name <span>*</span><input value={employeeCredentials.username} onChange={(event) => setEmployeeCredentials({ ...employeeCredentials, username: event.target.value })} /></label>
-                  <label className="label">Password <span>*</span><input type="password" value={employeeCredentials.password} onChange={(event) => setEmployeeCredentials({ ...employeeCredentials, password: event.target.value })} /></label>
-                  <div className="location-wrapper"><div className="label">City <span>*</span></div>{!isEmployeeCitiesLoading && <Dropdown option={employeeCityOptions} optionKey="i18nKey" selected={employeeCredentials.city} select={(city) => setEmployeeCredentials({ ...employeeCredentials, city })} t={t} />}</div>
-                  <button
-                    type="button"
-                    className="submit-bar"
-                    onClick={onEmployeeLogin}
-                    disabled={isEmployeeLoginLoading || !employeeCredentials.username || !employeeCredentials.password || !employeeCredentials.city?.code}
-                  >
-                    {isEmployeeLoginLoading ? "Signing in..." : "Continue"}
-                  </button>
-                  <button type="button" className="mseva-employee-back-link" onClick={() => setEmployeeView("forgot")}>Forgot Password?</button>
-                </>}
-                {step === "EMPLOYEE_OTP" && <OtpInput otp={otp} onOtpChange={setOtp} onVerifyOtp={onVerifyEmployeeOtp} onResendOtp={onEmployeeLogin} canSubmit={canSubmit} isOtpValid={isOtpValid} />}
+            {!isRegistering && (
+              <div className="login-form-header">
+                {isLanguageEntryPage && (
+                  <div className="mseva-portal-switch" role="tablist" aria-label="Choose portal">
+                    <button
+                      type="button"
+                      className={portal === "citizen" ? "is-selected" : ""}
+                      role="tab"
+                      aria-selected={portal === "citizen"}
+                      onClick={() => {
+                        setPortal("citizen");
+                        setStep("MOBILE");
+                        setOtp("");
+                      }}
+                    >
+                      Citizen Portal
+                    </button>
+                    <button
+                      type="button"
+                      className={portal === "employee" ? "is-selected" : ""}
+                      role="tab"
+                      aria-selected={portal === "employee"}
+                      onClick={() => {
+                        setPortal("employee");
+                        setStep("EMPLOYEE");
+                        setOtp("");
+                      }}
+                    >
+                      Employee
+                    </button>
+                  </div>
+                )}
+                <h2 className="login-title">
+                  {portal === "employee" ? (employeeView === "forgot" ? "RESET PASSWORD" : "EMPLOYEE LOGIN") : t("CORE_COMMON_LOGIN")}
+                </h2>
+                <p className="login-subtitle">
+                  {employeeView === "forgot"
+                    ? "Enter your registered details to receive a password reset OTP."
+                    : "Enter your details to access your account"}
+                </p>
               </div>
-            ) : <>
-            <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
-            <MobileInput mobileNumber={mobileNumber} onMobileChange={handleMobileChange} onSendOtp={onSendOtp} canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)} step={step} />
-            </>}
+            )}
+
+            {isRegistering ? (
+              <NewRegistration
+                stateCode={stateCode}
+                embedded
+                initialCity={selectedCity}
+                initialMobileNumber={mobileNumber}
+                onBackToLogin={() => setIsRegistering(false)}
+              />
+            ) : portal === "employee" ? (
+              <div className="mseva-employee-login-fields">
+                {employeeView === "forgot" ? (
+                  <>
+                    <label className="label">
+                      Mobile Number <span>*</span>
+                      <input
+                        type="tel"
+                        maxLength="10"
+                        value={resetMobileNumber}
+                        onChange={(event) => setResetMobileNumber(event.target.value.replace(/\D/g, ""))}
+                      />
+                    </label>
+                    <div className="location-wrapper">
+                      <div className="label">
+                        City <span>*</span>
+                      </div>
+                      {!isEmployeeCitiesLoading && (
+                        <Dropdown option={employeeCityOptions} optionKey="i18nKey" selected={resetCity} select={setResetCity} t={t} />
+                      )}
+                    </div>
+                    <button type="button" className="submit-bar" onClick={onEmployeeForgotPassword}>
+                      Send reset OTP
+                    </button>
+                    <button type="button" className="mseva-employee-back-link" onClick={() => setEmployeeView("login")}>
+                      Back to employee login
+                    </button>
+                  </>
+                ) : (
+                  step !== "EMPLOYEE_OTP" && (
+                    <>
+                      <label className="label">
+                        User Name <span>*</span>
+                        <input
+                          value={employeeCredentials.username}
+                          onChange={(event) => setEmployeeCredentials({ ...employeeCredentials, username: event.target.value })}
+                        />
+                      </label>
+                      <label className="label">
+                        Password <span>*</span>
+                        <input
+                          type="password"
+                          value={employeeCredentials.password}
+                          onChange={(event) => setEmployeeCredentials({ ...employeeCredentials, password: event.target.value })}
+                        />
+                      </label>
+                      <div className="location-wrapper">
+                        <div className="label">
+                          City <span>*</span>
+                        </div>
+                        {!isEmployeeCitiesLoading && (
+                          <Dropdown
+                            option={employeeCityOptions}
+                            optionKey="i18nKey"
+                            selected={employeeCredentials.city}
+                            select={(city) => setEmployeeCredentials({ ...employeeCredentials, city })}
+                            t={t}
+                          />
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="submit-bar"
+                        onClick={onEmployeeLogin}
+                        disabled={
+                          isEmployeeLoginLoading || !employeeCredentials.username || !employeeCredentials.password || !employeeCredentials.city?.code
+                        }
+                      >
+                        {isEmployeeLoginLoading ? "Signing in..." : "Continue"}
+                      </button>
+                      <button type="button" className="mseva-employee-back-link" onClick={() => setEmployeeView("forgot")}>
+                        Forgot Password?
+                      </button>
+                    </>
+                  )
+                )}
+                {step === "EMPLOYEE_OTP" && (
+                  <OtpInput
+                    otp={otp}
+                    onOtpChange={setOtp}
+                    onVerifyOtp={onVerifyEmployeeOtp}
+                    onResendOtp={onEmployeeLogin}
+                    canSubmit={canSubmit}
+                    isOtpValid={isOtpValid}
+                  />
+                )}
+              </div>
+            ) : (
+              <>
+                <LocationSelect onLocationChange={setSelectedCity} selectedCity={selectedCity} />
+                <MobileInput
+                  mobileNumber={mobileNumber}
+                  onMobileChange={handleMobileChange}
+                  onSendOtp={onSendOtp}
+                  canSubmit={canSubmit && (lastSubmittedMobile ? mobileNumber !== lastSubmittedMobile : true)}
+                  step={step}
+                />
+              </>
+            )}
 
             {portal === "citizen" && step === "OTP" && (
               <OtpInput
@@ -417,7 +557,7 @@ const NewLogin = ({ stateCode }) => {
           </div>
         </div>
       </div>
-      </div>
+    </div>
   );
 };
 

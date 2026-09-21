@@ -22,10 +22,10 @@ const LocationSelection = () => {
 
   function selectCity(city) {
     setSelectedCity(city);
-    console.log("selected city", city);
+
     setShowError(false);
   }
-  console.log("selected city", selectCity);
+
   const RadioButtonProps = useMemo(() => {
     return {
       options: cities,

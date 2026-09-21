@@ -23,7 +23,7 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     const commonDocs = mdmsData?.PropertyTax?.Documents || [];
 
     const propertyTaxDocuments = mutationDocs?.map?.((doc) => commonDocs.find((e) => doc.code === e.code) || doc) || [];
-    
+
     // Extract required documents
     const requiredDocs = propertyTaxDocuments.filter((doc) => doc.required).map((doc) => doc.code);
 
@@ -52,7 +52,7 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
 
     const missingFields = validation(data);
     if (missingFields.length > 0) {
@@ -72,20 +72,20 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in Property details step one: ", data, "\n Bool: ", !_.isEqual(data, localStepData));
+
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
     if (!_.isEqual(data, localStepData)) {
-      console.log("the formValuechange is called in step two", data);
+
       dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
-      console.log("Dispatching UPDATE_PTNewApplication_FORM with key:", config.key, "and data:", data);
+
     }
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step two ", state);
+
 
     return state.pt.PTNewApplicationFormReducer?.formData &&
       state.pt.PTNewApplicationFormReducer?.formData?.DocuementDetails
@@ -99,14 +99,14 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         ?.DocuementDetails
   );
 
-  console.log("Step twoo formdata +", formData);
+
   const [localStepData, setLocalStepData] = useState(reduxStepData);
-  console.log("reduxStepData in step twoo: +", localStepData);
-  
+
+
   useEffect(() => {
     setLocalStepData(reduxStepData);
   }, [reduxStepData]);
-  
+
   const dispatch = useDispatch();
 
   const closeToast = () => {

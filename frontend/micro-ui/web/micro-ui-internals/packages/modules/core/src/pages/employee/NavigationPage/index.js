@@ -82,7 +82,7 @@ const NavigationApp = () => {
         if (response.status === true) {
           if (typeof response?.result?.url == "string") {
               let domainURL = response?.result?.url.split('/').slice(0, 3).join('/');
-              //console.log("domainURL",domainURL)
+
             setNavigateToUrl(domainURL);
             callOauthTokenApi(response);
             setShowSuccessToast(response.message);
@@ -100,7 +100,7 @@ const NavigationApp = () => {
       })
       .catch((err) => {
         setIsLoading(false);
-        console.log("Error in Digit.HRMSService.ssoAuthenticateUser: ", err.response);
+
         setShowToast(err?.response?.data?.Errors?.[0]?.message || "Something went wrong");
         setTimeout(closeToast, 5000);
       });
@@ -121,7 +121,7 @@ const NavigationApp = () => {
       setUser({ info, ...tokens });
     } catch (err) {
       setIsLoading(false);
-      console.log("Error in Digit.UserService.authenticate: ", err.response);
+
       setShowToast(err?.response?.data?.error_description || "Invalid login credentials");
       setTimeout(closeToast, 5000);
     }

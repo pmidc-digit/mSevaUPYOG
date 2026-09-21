@@ -62,7 +62,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
       })
     })
   }
-  
+
   return (
     <div>
       {wsDocs?.[wsDocsData]?.map((document, index) => {
@@ -223,7 +223,7 @@ function SelectDocument({
     if (isHidden) setUploadedFile(null);
   }, [isHidden]);
 
-  console.log("Document Label in WSDocumentsEmployee: ",t(doc?.i18nKey));
+
 
   return (
     <Card style={{ marginBottom: "24px", backgroundColor: "#F5F5F5" }}>

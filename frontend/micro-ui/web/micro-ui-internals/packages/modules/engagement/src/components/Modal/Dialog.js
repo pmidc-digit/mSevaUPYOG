@@ -29,27 +29,11 @@ const Dialog = ({ onSelect, onCancel, onDismiss, heading, actionCancel, content,
   const { t } = useTranslation();
   const mobileDeviceWidth = 780;
   const [isMobileView, setIsMobileView] = React.useState(window.innerWidth <= mobileDeviceWidth);
-  const onResize = () => {
-    if (window.innerWidth <= mobileDeviceWidth) {
-      if (!isMobileView) {
-        setIsMobileView(true);
-      }
-    } else {
-      if (isMobileView) {
-        setIsMobileView(false);
-      }
-    }
-  };
   React.useEffect(() => {
-    window.addEventListener("resize", () => {
-      onResize();
-    });
-    return () => {
-      window.addEventListener("resize", () => {
-        onResize();
-      });
-    };
-  });
+    const onResize = () => setIsMobileView(window.innerWidth <= mobileDeviceWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   return isMobileView ? (
     <Modal
       popupStyles={{

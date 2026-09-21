@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
-import { LoginIcon, Toast, Dropdown, MarqueeBanner } from "@mseva/digit-ui-react-components";
+import { LoginIcon, Toast, Dropdown } from "@mseva/digit-ui-react-components";
 import LanguageSelect from "../NewLogin/NewLanguageSelect";
 import LocationSelect from "../NewLogin/NewLocationSelect";
 import RegistrationForm from "./NewRegistrationForm";
@@ -70,6 +70,10 @@ const NewRegistration = ({ stateCode, embedded = false, onBackToLogin, initialCi
     }
     if (!selectedCity || !selectedCity.code) {
       setError(t("CS_COMMON_CHOOSE_LOCATION"));
+      return;
+    }
+    if (!getGender || !getGender.code) {
+      setError(t("CS_COMMON_CHOOSE_GENDER"));
       return;
     }
 
@@ -197,7 +201,6 @@ const NewRegistration = ({ stateCode, embedded = false, onBackToLogin, initialCi
   }
 
   return (
-
     <div className="login-page-cover">
       <div className="login-container">
         {/* Left Panel - Same Hero Section as Login */}

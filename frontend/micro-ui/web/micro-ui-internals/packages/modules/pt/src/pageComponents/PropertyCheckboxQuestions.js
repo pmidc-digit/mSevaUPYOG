@@ -15,7 +15,7 @@ const PropertyCheckboxQuestions = ({ t, config, onSelect, value, userType, formD
     onSelect(config.key, { ...formData?.propertyCheckboxQuestions, isPropertyHeightMoreThan36Feet });
   }, [isPropertyHeightMoreThan36Feet]);
 
-  console.log("formData in PropertyCheckboxQuestions: ", formData);
+
 
   return (
     <div>

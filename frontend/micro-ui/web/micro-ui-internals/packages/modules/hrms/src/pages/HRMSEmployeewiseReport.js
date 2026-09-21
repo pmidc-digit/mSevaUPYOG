@@ -276,7 +276,7 @@
 //   }, []);
 
 //   const handleSearch = (values) => {
-//     console.log("Searching hrms reports", values);
+
 //     const columns = ReportsData.reportHeader.map((item) => {
 //       return { ...item, Header: item.label, accessor: item.name };
 //     });
@@ -289,12 +289,12 @@
 //       return rowData;
 //     });
 //     setColumns(columns);
-//     console.log(rows);
+
 //     setTableData(rows);
 //   };
 
 //   const handleReset = () => {
-//     console.log("resetting");
+
 //     reset();
 //     setTableData([]);
 //   };
@@ -313,13 +313,13 @@
 //       .map((city) => {
 //         return { ...city, i18text: Digit.Utils.locale.getCityLocale(city.code) };
 //       });
-//     console.log("ulbs: ", data, ulbs);
+
 //     setUlbOptions(ulbs);
 //   };
 
-//   console.log("Reports page api response:", ReportsData);
-//   console.log("Get values: ", getValues());
-//   console.log("ulb value: ", getValues().ulb);
+
+
+
 
 //   return (
 //     <div>

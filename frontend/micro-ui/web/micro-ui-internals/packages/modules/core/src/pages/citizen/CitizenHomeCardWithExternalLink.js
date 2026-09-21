@@ -11,7 +11,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
   const isUserLoggedIn = user?.access_token;
   const isUserRegistered = user?.info?.roles?.some(role => role?.code === "BPA_ARCHITECT") || user?.info?.roles?.some(role => role?.code?.includes("BPA") && role?.tenantId === tenantId);
 
-  console.log(links, "links in CitizenHomeCardWithExternalLink");
+
   const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false;
 
   // Predefined color schemes for cards
@@ -150,7 +150,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
     const handleRedirect = (url) => {
       if(url?.navigationURL) window.open(url?.navigationURL, "_blank");
     };
-    
+
     return (
     <React.Fragment>
       <div className={`chcwe-card chcwe-card-bg-2`} onClick={() => setDisplayMenu(!displayMenu)} >
@@ -217,10 +217,10 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
   const remainingSampleFilesCommLink = links?.filter((value) => isSampleFileCommercial(value?.displayName))
   const remainingSampleFilesIndLink = links?.filter((value) => isSampleFileIndustrial(value?.displayName))
   const remainingSampleFilesInstLink = links?.filter((value) => isSampleFileInstitutional(value?.displayName))
-  
+
   const remainingVideoLink = links?.filter((value) => isVideo(value?.displayName))
 
-  console.log("remainingUserManualLinks", remainingUserManualLinks)
+
 
   return (
     <div className={`chcwe-root ${className}`.trim()} style={styles ? styles : undefined}>
@@ -275,7 +275,7 @@ const CitizenHomeCardWithExternalLink = ({ header, links = [], state, Icon, Info
             </a>
           );
         })}
-        
+
         {remainingUserManualLinks?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingUserManualLinks)}</div>}
         {remainingSampleFilesLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingSampleFilesLink?.sort((a,b) => a.order - b .order))}</div>}
         {remainingSampleFilesCommLink?.length > 0 && <div className="card-dropdown-wrapper" >{renderCardDropDownContent(remainingSampleFilesCommLink?.sort((a,b) => a.order - b .order))}</div>}

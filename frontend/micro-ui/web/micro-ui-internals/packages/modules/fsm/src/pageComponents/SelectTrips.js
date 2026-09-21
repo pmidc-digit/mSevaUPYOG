@@ -80,7 +80,7 @@ const SelectTrips = ({ t, config, onSelect, formData = {}, userType, styles, FSM
     setVehicle({ label: value.capacity });
     onSelect(config.key, { ...formData[config.key], vehicleType: value });
   }
-  //console.log(formdata)
+
   function setValue(value, input) {
     onSelect(config.key, { ...formData[config.key], [input]: value });
   }

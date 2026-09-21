@@ -31,7 +31,7 @@ const RenewPTRStepFormTwo = ({ config, onGoNext, onBackClick }) => {
     setError("");
   };
 
-  console.log("config", config);
+
 
   return (
     <React.Fragment>

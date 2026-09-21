@@ -13,10 +13,10 @@ const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustme
   const closeToast = () => setShowToast(null);
   const stateCode = Digit.ULBService.getStateId();
   const [timeObj, setTimeObj] = useState(null);
-  console.log("savedCalc", formData);
+
 
   useEffect(() => {
-    console.log("Component mounted. Initial feeAdjustments:", feeAdjustments);
+
   }, []);
 
   const getOriginals = (taxHeadCode) => {
@@ -85,7 +85,7 @@ const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustme
       }
     } catch (err) {
       setShowToast({ error: true, message: "PT_FILE_UPLOAD_ERROR" });
-      console.log("err in file upload", err);
+
     }
   };
 
@@ -161,10 +161,10 @@ const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustme
     return buildFeeHistoryByTax(filteredCalcs, { newestFirst: true });
   }, [formData?.calculations]);
 
-  console.log("[payload] built with formData:", formData);
-  console.log("[payload] CalculationCriteria:", payload.CalculationCriteria);
 
-  console.log("payload for calc apiiiii", payload);
+
+
+
   const { isLoading: nocCalculatorLoading, data, revalidate } = Digit.Hooks.noc.useNOCFeeCalculator(
     {
       payload,
@@ -174,20 +174,20 @@ const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustme
     }
   );
 
-  console.log("[useNOCFeeCalculator] isLoading:", nocCalculatorLoading, "data:", data);
 
-  console.log("data from calc  api", data);
 
-  console.log("Raw API taxHeadEstimates:", data?.Calculation?.[0]?.taxHeadEstimates);
+
+
+
   data?.Calculation?.[0]?.taxHeadEstimates?.forEach((tax, i) => {
-    console.log(`API row ${i}: taxHead=${tax.taxHeadCode}, estimate=${tax.estimateAmount}, remarks=${tax.remarks}`);
+
   });
 
   const [prevSiteDetails, setPrevSiteDetails] = useState(null);
 
   useEffect(() => {
     if (!_.isEqual(prevSiteDetails, formData?.siteDetails)) {
-      console.log("[revalidate] siteDetails changed. Old:", prevSiteDetails, "New:", formData?.siteDetails);
+
       revalidate();
       setPrevSiteDetails(formData?.siteDetails);
     }
@@ -231,10 +231,10 @@ const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustme
 
   useEffect(() => {
     if (formData) {
-      console.log("formData", formData);
+
       const submittedOn = formData?.apiData?.Noc?.[0]?.nocDetails?.additionalDetails?.SubmittedOn;
       const lastModified = formData?.apiData?.Noc?.[0]?.auditDetails?.lastModifiedTime;
-      console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
+
       const totalTime = submittedOn && lastModified ? lastModified - submittedOn : null;
       const time = formatDuration(totalTime);
 
@@ -248,7 +248,7 @@ const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustme
       const adjustedAmount = (feeAdjustments && feeAdjustments[index] && feeAdjustments[index].adjustedAmount) || tax.estimateAmount;
       const remarkValue = (feeAdjustments && feeAdjustments[index] && feeAdjustments[index].remark) || tax.remarks || "";
 
-      console.log(`Row ${index}: taxHead=${tax.taxHeadCode}, estimate=${tax.estimateAmount}, adjusted=${adjustedAmount}, remark=${remarkValue}`);
+
       return {
         index,
         id: `tax-${index}`,
@@ -261,12 +261,12 @@ const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustme
         filestoreId: feeAdjustments[index]?.filestoreId || null,
       };
     });
-    console.log("[applicationFeeDataWithTotal] built rows:", rows);
+
 
     const totalAmount = rows.reduce((acc, item) => acc + (item.adjustedAmount || 0), 0);
-    console.log("[applicationFeeDataWithTotal] grand total:", totalAmount);
 
-    console.log("Final rows with total:", rows);
+
+
     return [
       ...rows,
       {

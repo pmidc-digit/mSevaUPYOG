@@ -94,7 +94,7 @@ const SearchChallan = (props) => {
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
+
     }
   };
 

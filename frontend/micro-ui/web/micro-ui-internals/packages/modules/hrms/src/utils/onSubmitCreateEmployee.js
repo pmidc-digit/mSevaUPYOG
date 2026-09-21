@@ -2,15 +2,15 @@ import { TENANT_IDS } from "../../../../constants/constants";
 
 export const onSubmit = (data, tenantId, setShowToast, history) => {
 
-  
+
   // Safety check for Jurisdictions
   if (!data.Jurisdictions || !Array.isArray(data.Jurisdictions) || data.Jurisdictions.length === 0) {
     setShowToast({ key: true, label: "ERR_NO_JURISDICTIONS" });
     return;
   }
-  
+
   const hasNoAccess = (tenantId !== TENANT_IDS.PUNJAB) && data.Jurisdictions.filter((juris) => juris.tenantId == tenantId).length == 0;
-  
+
   // if (hasNoAccess) {
   //   setShowToast({ key: true, label: "ERR_BASE_TENANT_MANDATORY" });
   //   return;
@@ -36,7 +36,7 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
   });
 
   const mappedroles = [].concat.apply([], roles);
-  
+
   // Calculate baseTenantId based on user type
   const currentUserTenantId = tenantId;
   let employeeTenantId;
@@ -89,7 +89,7 @@ export const onSubmit = (data, tenantId, setShowToast, history) => {
         }
       })
       .catch((e) => {
-        console.error("HRMS ID check error:", e);
+
         setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_ID" });
       });
   } else {

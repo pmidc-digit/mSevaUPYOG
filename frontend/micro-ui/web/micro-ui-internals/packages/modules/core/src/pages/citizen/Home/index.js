@@ -11,6 +11,7 @@ import { useHistory } from "react-router-dom";
 import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/CitizenSideBar";
 import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 import DashboardFooter from "./DashboardFooter";
+import "./service-icons.css";
 import CardBasedOptions from "../CardBasedOptions";
 import { SurveyModal } from "@mseva/digit-ui-module-engagement";
 
@@ -95,7 +96,21 @@ const Home = () => {
     window.open(obj?.navigationUrl);
   };
 
-  const getIconClassForService = (code) => {
+  const getIconClassForService = (code, label = "", navigationUrl = "") => {
+    // MDMS service codes vary between environments; use stable metadata for aliases.
+    const service = `${code || ""} ${label} ${navigationUrl}`.toUpperCase();
+    if (/FIRE/.test(service)) return "mseva-fire-noc";
+    if (/RENT|LEASE/.test(service)) return "mseva-rent-lease";
+    if (/GARBAGE|(?:^|[_/])GC(?:[_/\s]|$)/.test(service)) return "mseva-garbage-collection";
+    if (/MCOLLECT|MISCELLANEOUS|MISC_COLLECTION/.test(service)) return "mseva-misc-collections";
+    if (/PGRAI|PGR.AI|GRIEVANCE/.test(service) && code !== "CITIZEN_SERVICE_PGR") return "mseva-grievance-support";
+    if (/SURVEY/.test(service)) return "mseva-social-survey";
+    if (/PET|(?:^|_)PTR(?:_|\s|$)/.test(service)) return "mseva-pet-registration";
+    if (/VENUE|(?:^|_)CHB(?:_|\s|$)|COMMUNITY.HALL/.test(service)) return "mseva-venue-booking";
+    if (/BUILDING|(?:^|_)(?:OBPS|BPA)(?:_|\s|$)/.test(service)) return "mseva-building-plan-approval";
+    if (/NO.DUES|(?:^|_)NDC(?:_|\s|$)/.test(service)) return "mseva-no-dues";
+    if (/STREET.VEND|(?:^|_)SV(?:_|\s|$)/.test(service)) return "mseva-street-vending";
+    if (/PLOT|(?:^|_)NOC(?:_|\s|$)/.test(service)) return "mseva-plot-regularisation";
     const icons = {
       CITIZEN_SERVICE_PGR: "mseva-public-grievance-pgr",
       CITIZEN_SERVICE_PT: "mseva-property-tax",
@@ -136,7 +151,7 @@ const Home = () => {
         ? [
             {
               name: t(citizenServicesObj?.props?.[7]?.label),
-              iconClass: getIconClassForService(citizenServicesObj?.props?.[7]?.code),
+              iconClass: getIconClassForService(citizenServicesObj?.props?.[7]?.code, citizenServicesObj?.props?.[7]?.label, citizenServicesObj?.props?.[7]?.navigationUrl),
               onClick: () => toDigitUrl(citizenServicesObj?.props?.[7]?.navigationUrl),
             },
           ]
@@ -144,7 +159,7 @@ const Home = () => {
             ?.filter((item) => item?.enabled)
             ?.map((item) => ({
               name: t(item.label),
-              iconClass: getIconClassForService(item.code),
+              iconClass: getIconClassForService(item.code, item.label, item.navigationUrl),
               onClick: () => toDigitUrl(item.navigationUrl),
             })) || [];
 
@@ -210,7 +225,7 @@ const Home = () => {
         ? [
             {
               name: t(citizenServicesObj?.props?.[7]?.label),
-              iconClass: getIconClassForService(citizenServicesObj?.props?.[7]?.code),
+              iconClass: getIconClassForService(citizenServicesObj?.props?.[7]?.code, citizenServicesObj?.props?.[7]?.label, citizenServicesObj?.props?.[7]?.navigationUrl),
               onClick: () => history.push(citizenServicesObj?.props?.[7]?.navigationUrl),
             },
           ]
@@ -218,7 +233,7 @@ const Home = () => {
             ?.filter((item) => item?.enabled && item?.code !== "CITIZEN_SERVICE_SWACH")
             ?.map((item) => ({
               name: t(item.label),
-              iconClass: getIconClassForService(item.code),
+              iconClass: getIconClassForService(item.code, item.label, item.navigationUrl),
               // onClick: () => {
               //   window.location.href = item.navigationUrl;
               // },

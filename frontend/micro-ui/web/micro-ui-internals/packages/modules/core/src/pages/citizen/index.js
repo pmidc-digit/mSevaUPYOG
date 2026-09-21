@@ -1,5 +1,5 @@
 import { BackButton, WhatsappIcon, Card, CitizenInfoLabel, PrivateRoute } from "@mseva/digit-ui-react-components";
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Route, Switch, useRouteMatch, useHistory, Link } from "react-router-dom";
 import ErrorBoundary from "../../components/ErrorBoundaries";
@@ -79,11 +79,7 @@ const Home = ({
     {
       select: (data) => {
         const formattedData = data?.["ACCESSCONTROL-ACTIONS-TEST"]?.["actions-test"]
-          ?.filter(
-            (el) =>
-              el.enabled === true &&
-              (el.url === "digit-ui-card" || (el.url === "mseva-ui-card" && el.name === "PT_MY_PROPERTIES"))
-          )
+          ?.filter((el) => el.enabled === true && (el.url === "digit-ui-card" || (el.url === "mseva-ui-card" && el.name === "PT_MY_PROPERTIES")))
           .reduce((a, b) => {
             a[b.parentModule] = a[b.parentModule]?.length > 0 ? [b, ...a[b.parentModule]] : [b];
             return a;
@@ -130,20 +126,21 @@ const Home = ({
       <React.Fragment key={index}>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
           <div
-            className="moduleLinkHomePage"
+            className={`moduleLinkHomePage moduleLinkHomePage--${code.toLowerCase()}`}
             style={{
               width: "100%",
               minHeight: "100vh",
               backgroundColor: "#F9FAFB",
-            
+
               paddingBottom: "80px",
               marginTop: "3rem",
             }}
           >
             {/* Content Container */}
             <div
+              className="moduleLinkHomePageContent"
               style={{
-                margin: "0 auto",
+                // margin: "0 auto",
                 padding: isMobile ? "0 20px" : "0 40px",
               }}
             >
@@ -152,6 +149,7 @@ const Home = ({
 
               {/* Breadcrumb - Outside purple card */}
               <div
+                className="moduleLinkHomePageBreadcrumb"
                 style={{
                   fontSize: isMobile ? "13px" : "14px",
                   color: "#6B7280",
@@ -172,6 +170,7 @@ const Home = ({
 
               {/* Purple Gradient Rounded Card Banner */}
               <div
+                className="moduleLinkHomePageBanner"
                 style={{
                   background: "linear-gradient(135deg, #4F65D8 0%, #00157A 100%)",
                   borderRadius: "16px",
@@ -183,6 +182,7 @@ const Home = ({
               >
                 {/* Title */}
                 <h1
+                  className="moduleLinkHomePageTitle"
                   style={{
                     fontSize: isMobile ? "28px" : "40px",
                     fontWeight: "700",
@@ -215,6 +215,7 @@ const Home = ({
 
               {/* Services Section Header */}
               <h2
+                className="moduleLinkHomePageServicesTitle"
                 style={{
                   fontSize: isMobile ? "18px" : "20px",
                   fontWeight: "600",
@@ -231,6 +232,7 @@ const Home = ({
                   <CitizenHomeCardSecond
                     header=""
                     links={mdmsDataObj?.links}
+                    className={`module-home-cards module-home-cards--${code.toLowerCase()}`}
                     Icon={() => <span />}
                     Info={
                       code === "OBPS"
@@ -250,6 +252,7 @@ const Home = ({
                   <CitizenHomeCardWithExternalLink
                     header=""
                     links={mdmsDataObj?.links}
+                    className={`module-home-cards module-home-cards--${code.toLowerCase()}`}
                     Icon={() => <span />}
                     Info={
                       code === "OBPS"
@@ -281,11 +284,12 @@ const Home = ({
       </React.Fragment>
     );
   });
-   useEffect(() => {
-      const script = document.createElement("script");
-      script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
-      script.async = true;document.body.appendChild(script);
-    }, []);
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
   return (
     <div className={classname}>
       {hideTopSidebar ? null : (
@@ -303,7 +307,7 @@ const Home = ({
           islinkDataLoading={islinkDataLoading}
         />
       )}
-       <div className='language-plugin'>
+      <div className="language-plugin">
         <div className="bhashini-plugin-container"></div>
       </div>
       <div className={`main center-container citizen-home-container mb-25`}>
@@ -338,7 +342,6 @@ const Home = ({
           </Route>
 
           <Route exact path={`${path}/select-language`}>
-            {/* <LanguageSelection /> */}
             <NewLoginPage stateCode={stateCode} />
           </Route>
 

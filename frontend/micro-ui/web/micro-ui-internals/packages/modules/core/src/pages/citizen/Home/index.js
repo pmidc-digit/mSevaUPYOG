@@ -1,25 +1,9 @@
 import React, { useEffect, useState } from "react";
 import {
-  StandaloneSearchBar,
   Loader,
-  ComplaintIcon,
-  PTIcon,
-  CaseIcon,
-  DropIcon,
   HomeIcon,
   Calender,
   DocumentIcon,
-  NDCIcon,
-  HelpIcon,
-  WhatsNewCard,
-  OBPSIcon,
-  WSICon,
-  PTRIcon,
-  GenericFileIcon,
-  NOCIcon,
-  ADSIcone,
-  MCollectIcon,
-  CHBIcon,
   SearchIconSvg,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
@@ -27,6 +11,7 @@ import { useHistory } from "react-router-dom";
 import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/CitizenSideBar";
 import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 import DashboardFooter from "./DashboardFooter";
+import "./service-icons.css";
 import CardBasedOptions from "../CardBasedOptions";
 import { SurveyModal } from "@mseva/digit-ui-module-engagement";
 
@@ -111,51 +96,47 @@ const Home = () => {
     window.open(obj?.navigationUrl);
   };
 
-  const getIconForService = (code) => {
-    switch (code) {
-      case "CITIZEN_SERVICE_PGR":
-        return <ComplaintIcon />;
-      case "CITIZEN_SERVICE_PT":
-        return <PTIcon />;
-      case "CITIZEN_SERVICE_TL":
-        return <CaseIcon />;
-      case "CITIZEN_SERVICE_WS":
-        return <WSICon />;
-      case "CITIZEN_SERVICE_PTR":
-        return <PTRIcon />;
-      case "CITIZEN_SERVICE_SWACH":
-        return <CHBIcon />;
-      case "CITIZEN_SERVICE_NOC":
-        return <NOCIcon />;
-      case "CITIZEN_SERVICE_OBPS":
-        return <PTIcon />;
-      case "CITIZEN_SERVICE_ADS":
-        return <ADSIcone />;
-      case "CITIZEN_SERVICE_NDC":
-        return <NDCIcon />;
-      case "CITIZEN_SERVICE_MODULE_SV":
-        return <MCollectIcon />;
-      case "CITIZEN_SERVICE_CHALLANGENERATION":
-        return <NDCIcon />;
-      case "CITIZEN_SERVICE_MCOLLECT":
-        return <MCollectIcon />;
-      case "CITIZEN_SERVICE_DOCUMENTS":
-        return <DocumentIcon />;
-      case "CITIZEN_SERVICE_HELP":
-        return <HelpIcon />;
-      case "CITIZEN_SERVICE_RENTANDLEASE":
-        return <GenericFileIcon />;
-      case "CITIZEN_SERVICE_CHB":
-        return <CHBIcon />;
+  const getIconClassForService = (code, label = "", navigationUrl = "") => {
+    // MDMS service codes vary between environments; use stable metadata for aliases.
+    const service = `${code || ""} ${label} ${navigationUrl}`.toUpperCase();
+    if (/FIRE/.test(service)) return "mseva-fire-noc";
+    if (/RENT|LEASE/.test(service)) return "mseva-rent-lease";
+    if (/GARBAGE|(?:^|[_/])GC(?:[_/\s]|$)/.test(service)) return "mseva-garbage-collection";
+    if (/MCOLLECT|MISCELLANEOUS|MISC_COLLECTION/.test(service)) return "mseva-misc-collections";
+    if (/PGRAI|PGR.AI|GRIEVANCE/.test(service) && code !== "CITIZEN_SERVICE_PGR") return "mseva-grievance-support";
+    if (/SURVEY/.test(service)) return "mseva-social-survey";
+    if (/PET|(?:^|_)PTR(?:_|\s|$)/.test(service)) return "mseva-pet-registration";
+    if (/VENUE|(?:^|_)CHB(?:_|\s|$)|COMMUNITY.HALL/.test(service)) return "mseva-venue-booking";
+    if (/BUILDING|(?:^|_)(?:OBPS|BPA)(?:_|\s|$)/.test(service)) return "mseva-building-plan-approval";
+    if (/NO.DUES|(?:^|_)NDC(?:_|\s|$)/.test(service)) return "mseva-no-dues";
+    if (/STREET.VEND|(?:^|_)SV(?:_|\s|$)/.test(service)) return "mseva-street-vending";
+    if (/PLOT|(?:^|_)NOC(?:_|\s|$)/.test(service)) return "mseva-plot-regularisation";
+    const icons = {
+      CITIZEN_SERVICE_PGR: "mseva-public-grievance-pgr",
+      CITIZEN_SERVICE_PT: "mseva-property-tax",
+      CITIZEN_SERVICE_TL: "mseva-trade-license",
+      CITIZEN_SERVICE_WS: "mseva-water-bill",
+      CITIZEN_SERVICE_PTR: "mseva-noc",
+      CITIZEN_SERVICE_SWACH: "mseva-solid-waste-complaint",
+      CITIZEN_SERVICE_NOC: "mseva-noc",
+      CITIZEN_SERVICE_OBPS: "mseva-building-plan-approval",
+      CITIZEN_SERVICE_ADS: "mseva-advertisement-license",
+      CITIZEN_SERVICE_NDC: "mseva-noc",
+      CITIZEN_SERVICE_MODULE_SV: "mseva-pay-other-dues",
+      CITIZEN_SERVICE_CHALLANGENERATION: "mseva-pay-other-dues",
+      CITIZEN_SERVICE_MCOLLECT: "mseva-pay-other-dues",
+      CITIZEN_SERVICE_DOCUMENTS: "mseva-rti-application",
+      CITIZEN_SERVICE_HELP: "mseva-public-grievance-pgr",
+      CITIZEN_SERVICE_RENTANDLEASE: "mseva-community-hall-booking",
+      CITIZEN_SERVICE_CHB: "mseva-community-hall-booking",
+    };
 
-      default:
-        return <MCollectIcon />;
-    }
+    return icons[code] || "mseva-noc";
   };
 
   // Handle search and filter services
   const handleSearchChange = (e) => {
-    const query = e.target.value.toLowerCase();
+    const query = e.target.value;
     setSearchQuery(query);
 
     if (query.trim() === "") {
@@ -170,7 +151,7 @@ const Home = () => {
         ? [
             {
               name: t(citizenServicesObj?.props?.[7]?.label),
-              Icon: <ComplaintIcon />,
+              iconClass: getIconClassForService(citizenServicesObj?.props?.[7]?.code, citizenServicesObj?.props?.[7]?.label, citizenServicesObj?.props?.[7]?.navigationUrl),
               onClick: () => toDigitUrl(citizenServicesObj?.props?.[7]?.navigationUrl),
             },
           ]
@@ -178,11 +159,12 @@ const Home = () => {
             ?.filter((item) => item?.enabled)
             ?.map((item) => ({
               name: t(item.label),
-              Icon: getIconForService(item.code),
+              iconClass: getIconClassForService(item.code, item.label, item.navigationUrl),
               onClick: () => toDigitUrl(item.navigationUrl),
             })) || [];
 
-    const filtered = allServices.filter((service) => service.name.toLowerCase().includes(query));
+    const normalizedQuery = query.trim().toLowerCase();
+    const filtered = allServices.filter((service) => service.name.toLowerCase().includes(normalizedQuery));
     setFilteredServices(filtered);
   };
 
@@ -243,7 +225,7 @@ const Home = () => {
         ? [
             {
               name: t(citizenServicesObj?.props?.[7]?.label),
-              Icon: <ComplaintIcon />,
+              iconClass: getIconClassForService(citizenServicesObj?.props?.[7]?.code, citizenServicesObj?.props?.[7]?.label, citizenServicesObj?.props?.[7]?.navigationUrl),
               onClick: () => history.push(citizenServicesObj?.props?.[7]?.navigationUrl),
             },
           ]
@@ -251,7 +233,7 @@ const Home = () => {
             ?.filter((item) => item?.enabled && item?.code !== "CITIZEN_SERVICE_SWACH")
             ?.map((item) => ({
               name: t(item.label),
-              Icon: getIconForService(item.code),
+              iconClass: getIconClassForService(item.code, item.label, item.navigationUrl),
               // onClick: () => {
               //   window.location.href = item.navigationUrl;
               // },
@@ -291,96 +273,88 @@ const Home = () => {
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
 
+  const quickActions = allCitizenServicesProps.options?.slice(0, 4) || [];
+  const visibleServices = showAllCards ? allCitizenServicesProps.options : allCitizenServicesProps.options?.slice(0, 12);
+  const displayedServices = searchQuery.trim() ? filteredServices : visibleServices;
+  const citizenName = citizenInfo?.name || citizenInfoMain?.name || "Citizen";
+
   return isLoading ? (
     <Loader />
   ) : (
     <React.Fragment>
       <SurveyModal isOpen={showSurveyModal} onClose={() => setShowSurveyModal(false)} />
-      <div className="HomePageContainer">
+      <main className="HomePageContainer mseva-citizen-dashboard">
         <div className="HomePageWrapper">
-          <div className="hero-banner-styles">
-            <h1 className="hero-title-styles">mSeva Punjab</h1>
-            <p className="heroSubtitleStyles">Access citizen services digitally with ease and transparency</p>
-            <div className="searchBarStyles">
-              <span className="searchIconStyles">
-                <SearchIconSvg />
-              </span>
-              <input
-                type="text"
-                placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER") || "Search for services..."}
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="searchInputStyles"
-              />
+          <section className="hero-banner-styles" aria-labelledby="mseva-dashboard-welcome">
+            <div className="mseva-dashboard__hero-content">
+              <h1 id="mseva-dashboard-welcome" className="hero-title-styles">
+                Welcome, <span>{citizenName}</span>
+              </h1>
+              <p className="heroSubtitleStyles">Access all municipal services in one place</p>
+              <label className="mseva-dashboard__search-label" htmlFor="mseva-service-search">
+                Search municipal services
+              </label>
+              <div className="searchBarStyles">
+                <input
+                  id="mseva-service-search"
+                  type="text"
+                  placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER") || "Search for services..."}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="searchInputStyles"
+                />
+                <button
+                  type="button"
+                  className="mseva-dashboard__search-action"
+                  aria-label="Search municipal services"
+                  onClick={() => document.getElementById("mseva-service-search")?.focus()}
+                >
+                  <SearchIconSvg />
+                </button>
+              </div>
             </div>
 
-            {/* Display filtered services when user is typing */}
-            {searchQuery.trim() !== "" && filteredServices.length > 0 && (
-              <div style={{ marginTop: "24px" }}>
-                <div style={{ color: "#ffffff", fontSize: "18px", fontWeight: "600", marginBottom: "16px" }}>{t("Search Results")}</div>
-                <CardBasedOptions
-                  header=""
-                  sideOption={{
-                    name: t(citizenServicesObj?.sideOption?.name),
-                    onClick: () => history.push(citizenServicesObj?.sideOption?.navigationUrl),
-                  }}
-                  options={filteredServices}
-                  styles={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" }}
-                />
-              </div>
-            )}
+          </section>
 
-            {/* Show no results message */}
-            {searchQuery.trim() !== "" && filteredServices.length === 0 && (
-              <div style={{ marginTop: "24px", padding: "20px", textAlign: "center", color: "#999" }}>
+          {/* {quickActions.length > 0 && (
+            <section className="mseva-dashboard__quick-actions" aria-labelledby="mseva-quick-actions-heading">
+              <div className="mseva-dashboard__section-heading">
+                <h2 id="mseva-quick-actions-heading">Quick Actions</h2>
+              </div>
+              <CardBasedOptions options={quickActions} variant="quick-actions" />
+            </section>
+          )} */}
+
+          <section className="ServicesSection mseva-dashboard__services" aria-label="Municipal services">
+            <CardBasedOptions
+              {...allCitizenServicesProps}
+              header={allCitizenServicesProps.header || "Our Services"}
+              options={displayedServices}
+              variant="services"
+            />
+            {searchQuery.trim() && filteredServices.length === 0 && (
+              <div className="mseva-dashboard__empty-search" role="status">
                 <p>
                   {t("No services found matching") || "No services found matching"} "{searchQuery}"
                 </p>
               </div>
             )}
-          </div>
-
-          <div className="ServicesSection" style={{ marginTop: "40px" }}>
-            <CardBasedOptions
-              {...allCitizenServicesProps}
-              options={showAllCards ? allCitizenServicesProps.options : allCitizenServicesProps.options?.slice(0, 4)}
-            />
-            {allCitizenServicesProps.options?.length > 4 && (
-              <div style={{ marginTop: "24px", textAlign: "center", justifyContent: "center", display: "flex", width: "100%" }}>
+            {!searchQuery.trim() && allCitizenServicesProps.options?.length > 4 && (
+              <div className="mseva-dashboard__show-more">
                 <button
+                  type="button"
+                  className="mseva-dashboard__show-more-button"
                   onClick={() => {
                     const newValue = !showAllCards;
                     setShowAllCards(newValue);
                     sessionStorage.setItem("citizen.home.showAllCards", newValue.toString());
-                  }}
-                  style={{
-                    padding: "12px 32px",
-                    backgroundColor: "#2563eb",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "8px",
-                    fontSize: "15px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    boxShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#1d4ed8";
-                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(37, 99, 235, 0.4)";
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#2563eb";
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(37, 99, 235, 0.3)";
-                    e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
                   {showAllCards ? "Show Less" : "Show More"}
                 </button>
               </div>
             )}
-          </div>
+          </section>
 
           {/* WhatsApp Banner Section */}
           {/* {isMobile ? (
@@ -399,7 +373,7 @@ const Home = () => {
 
           {/* <DashboardFooter /> */}
         </div>
-      </div>
+      </main>
     </React.Fragment>
   );
 };

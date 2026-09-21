@@ -53,6 +53,7 @@ const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings })
 
   return (
     <React.Fragment>
+      <article className="ads-booking-card">
       <Card>
         {application.bookingStatus === "PENDING_FOR_PAYMENT" && application?.auditDetails?.createdTime && (
           <div className="ads-reservation-wrapper">
@@ -63,11 +64,15 @@ const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings })
             />
           </div>
         )}
-        <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
-        <KeyNote keyValue={t("ADS_APPLICANT_NAME")} note={application?.applicantDetail?.applicantName} />
-        {/* <KeyNote keyValue={t("ADS_BOOKING_START_DATE")} note={getBookingDateRange(application?.cartDetails)} /> */}
-        <KeyNote keyValue={t("CS_APPLICATION_DETAILS_APPLICATION_DATE")} note={appDate} />
-        <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
+        <div className="ads-booking-card__details">
+          <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
+          <KeyNote keyValue={t("ADS_APPLICANT_NAME")} note={application?.applicantDetail?.applicantName} />
+          {/* <KeyNote keyValue={t("ADS_BOOKING_START_DATE")} note={getBookingDateRange(application?.cartDetails)} /> */}
+          <KeyNote keyValue={t("CS_APPLICATION_DETAILS_APPLICATION_DATE")} note={appDate} />
+          <div className="ads-booking-card__status">
+            <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
+          </div>
+        </div>
 
         <div className="action-button-myapplication">
           <Link to={`/digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}`}>
@@ -93,6 +98,7 @@ const AdsApplication = ({ application, tenantId, buttonLabel, refetchBookings })
           />
         )}
       </Card>
+      </article>
       {showModal && (
         <ADSCancelBooking
           t={t}

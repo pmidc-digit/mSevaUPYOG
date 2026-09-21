@@ -17,6 +17,7 @@ import {
   SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import React from "react";
+import "./EmployeeHome.scss";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
@@ -59,7 +60,7 @@ export const processLinkData = (newData, code, t) => {
         });
       else
         newObj?.links?.push({
-          link: `/digit-ui/citizen/login`,
+          link: `/digit-ui/citizen/select-language`,
           state: { role: "FSM_DSO", from },
           i18nKey: t(loginLink),
         });
@@ -208,50 +209,23 @@ const EmployeeHome = ({ modules }) => {
   const obpsModuleCodes = ["OBPS", "BPAStakeholder", "Layout", "CLU", "NOC"];
   const hasOBPSModule = modules?.some((moduleData) => obpsModuleCodes.includes(moduleData?.code));
 
-  const welcomeCardStyle = {
-    background: "linear-gradient(135deg, #4F65D8 0%, #00157A 100%)",
-    borderRadius: "20px",
-    padding: "60px 40px",
-    margin: "24px 0",
-    textAlign: "center",
-    color: "#FFFFFF",
-    boxShadow: "0 12px 32px rgba(0, 21, 122, 0.2), 0 4px 12px rgba(79, 101, 216, 0.15)",
-    position: "relative",
-    overflow: "hidden",
-  };
-
-  const welcomeTitleStyle = {
-    fontSize: "40px",
-    fontWeight: "700",
-    color: "white",
-    margin: "0 0 12px 0",
-    lineHeight: "1.2",
-    textAlign: "center",
-  };
-
-  const welcomeSubtitleStyle = {
-    fontSize: "16px",
-    color: "rgba(255, 255, 255, 0.95)",
-    margin: "0",
-    fontWeight: "400",
-    lineHeight: "1.5",
-    textAlign: "center",
-  };
-
   return (
     <div className="employee-app-container employee-dashboard-container">
-      {userName?.info?.tenantId === "pb.punjab" && !hasConfirmedEmployeeTenant(userName) && <EmployeeTenantSelection />}
-      <div style={welcomeCardStyle}>
-        <h1 style={welcomeTitleStyle}>Welcome {userName?.info?.name || "User"}</h1>
-        <p style={welcomeSubtitleStyle}>Manage and access employee services with ease and efficiency</p>
-      </div>
+      <section className="employee-dashboard-hero" aria-labelledby="employee-dashboard-welcome">
+        <div className="employee-dashboard-hero__content">
+          <p className="employee-dashboard-hero__eyebrow">mSeva Employee Portal</p>
+          <h1 id="employee-dashboard-welcome">
+            Hi, <span>{userName?.info?.name || "User"}</span>
+          </h1>
+        </div>
+      </section>
 
       <div className="employee-dashboard-table-and-services">
         <div className="employee-dashboard-quick-services-container">
           <div className="employee-dashboard-quick-services-header">
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
             {hasOBPSModule && (
-              <div className="display-flex-gap-2 items-center">
+              <div className="employee-dashboard-resource-links">
                 <SubmitBar label={t("mSeva Mobile App")} onSubmit={() => window.open(MSEVA_APP_LINK, "_blank")} />
                 <SubmitBar label={t("mSeva YouTube Channel")} onSubmit={() => window.open(MSEVA_YOUTUBE_LINK, "_blank")} />
                 <SubmitBar label={t("User Manual")} onSubmit={() => window.open(OBPS_EMPLOYEE_USER_MANUAL, "_blank")} />

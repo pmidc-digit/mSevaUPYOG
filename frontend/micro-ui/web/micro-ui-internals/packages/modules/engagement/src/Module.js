@@ -232,7 +232,7 @@ const EventsBreadCrumb = ({ location }) => {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
       <BreadCrumb crumbs={crumbs} />
-      <p className="breadcrumb">
+      {/* <p className="breadcrumb">
         <button
           onClick={() => {
             history.goBack();
@@ -241,17 +241,18 @@ const EventsBreadCrumb = ({ location }) => {
         >
           {"<"} {t("CS_COMMON_BACK")}
         </button>
-      </p>
+      </p> */}
     </div>
   );
 };
 
 const EmployeeApp = ({ path, url, userType, tenants, stateCode }) => {
   const location = useLocation();
+  const isSurveyPage = location.pathname.includes("/engagement/surveys");
 
   return (
     // <div className="ground-container">
-    <>
+    <div className={isSurveyPage ? "ground-container" : ""}>
       <EventsBreadCrumb location={location} />
       <Switch>
         <Route path={`${path}/event/inbox`} exact>
@@ -284,7 +285,7 @@ const EmployeeApp = ({ path, url, userType, tenants, stateCode }) => {
           component={(props) => <Surveys {...props} tenants={tenants} parentRoute={path} userType={userType} stateCode={stateCode} />}
         />
       </Switch>
-    </>
+    </div>
     // </div>
   );
 };

@@ -1,187 +1,148 @@
-import React, { useCallback, useEffect, useState, useReducer, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Header } from "@mseva/digit-ui-react-components";
-import { Loader } from "../../components/Loader";
+import { InboxPagination, InboxWrapper } from "../../../../templates/Inbox/components";
+import ChallanInboxFilters from "../../components/inbox/ChallanInboxFilters";
+import ChallanInboxSearch from "../../components/inbox/ChallanInboxSearch";
+import useChallanInboxTableConfig from "../../components/inbox/useChallanInboxTableConfig";
 
-import DesktopInbox from "../../components/DesktopInbox";
-import MobileInbox from "../../components/MobileInbox";
-import { businessServiceList } from "../../utils";
+const DEFAULT_FILTERS = {
+  challanNo: "",
+  mobileNumber: "",
+  status: [],
+  businessService: [],
+};
 
-const Inbox = ({
-  parentRoute,
-  businessService = "PT",
-  initialStates = {},
-  filterComponent,
-  isInbox,
-  rawWfHandler,
-  rawSearchHandler,
-  combineResponse,
-  wfConfig,
-  searchConfig,
-  middlewaresWf,
-  middlewareSearch,
-}) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+const Inbox = ({ parentRoute, initialStates = {} }) => {
   const { t } = useTranslation();
-  const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
-  const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
-  const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: false }]);
-  const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
-  const [isLoader, setIsLoader] = useState(false);
-  const [getFilter, setFilter] = useState();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isMobile = Digit.Utils.browser.isMobile();
+  const storedInboxState = Digit.SessionStorage.get("Challan.INBOX");
+  const [filters, setFilters] = useState(() => ({
+    ...DEFAULT_FILTERS,
+    ...(initialStates?.searchParams || {}),
+    ...(storedInboxState?.filters || {}),
+  }));
+  const [pageSize, setPageSize] = useState(storedInboxState?.pageSize || (isMobile ? 50 : 10));
+  const [pageOffset, setPageOffset] = useState(0);
 
-  const isMobile = window.Digit.Utils.browser.isMobile();
-  const paginationParams = isMobile
-    ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" }
-    : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "ASC" : "DESC" };
+  const inboxFilters = useMemo(
+    () => ({
+      ...filters,
+      limit: pageSize,
+      offset: pageOffset,
+      sortOrder: "DESC",
+    }),
+    [filters, pageOffset, pageSize]
+  );
 
-  // const { isLoading: hookLoading, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
-  //   tenantId,
-  //   filters: { ...searchParams, ...paginationParams },
-  //   isMcollectAppChanged,
-  // });
-
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("Challan.INBOX");
-
-  const searchFormDefaultValues = {
-    // add defaults if needed
-  };
-
-  const filterFormDefaultValues = {
-    moduleName: "Challan_Generation", // <--- default moduleName for CHB inbox
-    applicationStatus: [],
-    businessService: null,
-    locality: [],
-    assignee: "ASSIGNED_TO_ALL",
-    businessServiceArray: businessServiceList(true) || [],
-  };
-
-  const tableOrderFormDefaultValues = {
-    sortBy: "",
-    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
-    offset: 0,
-    sortOrder: "DESC",
-  };
-
-  const { isLoading: hookLoading, data } = Digit.Hooks.challangeneration.useInbox({
+  const { isLoading, data } = Digit.Hooks.challangeneration.useInbox({
     tenantId,
-    filters: { ...searchParams, ...paginationParams },
+    filters: inboxFilters,
+    config: { enabled: Boolean(tenantId) },
   });
 
-  const formedData = (data?.table || []).map((item) => ({
-    challanNo: item?.applicationId,
-    name: item?.offenderName,
-    applicationStatus: item?.status,
-    businessService: item?.businessService,
-    totalAmount: item?.amount || 0,
-    offenceName: item?.offenceTypeName,
-    challanStatus: item?.challanStatus,
-    date: item?.date,
-    feeWaiver: item?.feeWaiver,
-    // dueDate: businessIdToOwnerMappings[item.challanNo]?.dueDate || "NA",
-    // tenantId: item?.tenantId,
-    // receiptNumber: item?.receiptNumber,
-  }));
+  const statuses = useMemo(() => {
+    return (data?.statuses || []).reduce((accumulator, status) => {
+      const statusCode = status?.applicationstatus || status?.statusCode;
+      const count = status?.count ?? status?.totalCount ?? status?.noOfRecords ?? 0;
+
+      if (!statusCode) return accumulator;
+
+      const existing = accumulator.find((item) => item.applicationstatus === statusCode);
+      if (existing) {
+        existing.count += count;
+        existing.totalCount = existing.count;
+      } else {
+        accumulator.push({
+          ...status,
+          applicationstatus: statusCode,
+          count,
+          totalCount: count,
+          selectionValue: statusCode,
+          selectionValues: [statusCode],
+        });
+      }
+      return accumulator;
+    }, []);
+  }, [data?.statuses]);
+
+  const table = data?.table || [];
+  const totalCount = data?.totalCount || 0;
 
   useEffect(() => {
+    Digit.SessionStorage.set("Challan.INBOX", { filters, pageSize });
+  }, [filters, pageSize]);
+
+  const updateFilters = useCallback((nextValues) => {
     setPageOffset(0);
-  }, [searchParams]);
-
-  const fetchNextPage = () => setPageOffset((prev) => prev + pageSize);
-  const fetchPrevPage = () => setPageOffset((prev) => prev - pageSize);
-  const fetchLastPage = () => setPageOffset(data?.totalCount ? Math.ceil(data.totalCount / 10) * 10 - pageSize : 0);
-  const fetchFirstPage = () => setPageOffset(0);
-
-  const handleFilterChange = (filterParam) => {
-    let keys_to_delete = filterParam.delete;
-    let _new = isMobile ? { ...filterParam } : { ...searchParams, ...filterParam };
-    if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
-    delete _new.delete;
-    setSearchParams(_new);
-  };
-
-  const handleSort = useCallback((args) => {
-    if (args.length === 0) return;
-    setSortParams(args);
+    setFilters((current) => ({ ...current, ...nextValues }));
   }, []);
 
-  const handlePageSizeChange = (e) => setPageSize(Number(e.target.value));
-
-  const getSearchFields = () => [
-    { label: t("UC_CHALLAN_NO"), name: "challanNo" },
-    {
-      label: t("UC_MOBILE_NO_LABEL"),
-      name: "mobileNumber",
-      maxlength: 10,
-      pattern: "[6-9][0-9]{9}",
-      title: t("ES_SEARCH_APPLICATION_MOBILE_INVALID"),
-      componentInFront: "+91",
+  const handleSearch = useCallback(
+    ({ challanNo, mobileNumber }) => {
+      updateFilters({
+        challanNo: String(challanNo || "").trim(),
+        mobileNumber: String(mobileNumber || "").trim(),
+      });
     },
-    // { label: t("UC_RECEPIT_NO_LABEL"), name: "receiptNumber" },
-  ];
+    [updateFilters]
+  );
 
-  // if (rest?.data?.length !== null) {
-  if (isMobile) {
-    return (
-      <MobileInbox
-        data={formedData}
-        defaultSearchParams={initialStates.searchParams}
-        isLoading={hookLoading}
-        isSearch={!isInbox}
-        searchFields={getSearchFields()}
-        onFilterChange={handleFilterChange}
-        onSearch={handleFilterChange}
-        onSort={handleSort}
-        parentRoute={parentRoute}
-        searchParams={searchParams}
-        sortParams={sortParams}
-        // tableConfig={rest?.tableConfig}
-        filterComponent={filterComponent}
-      />
-    );
-  } else {
-    return (
-      <div>
-        {isInbox && (
-          <Header>
-            {t("ES_COMMON_INBOX")}
-            {data?.totalCount ? <p className="inbox-count">{data?.totalCount}</p> : null}
-          </Header>
-        )}
-        <DesktopInbox
-          businessService={businessService}
-          data={formedData}
-          // tableConfig={rest?.tableConfig}
-          isLoading={hookLoading}
-          defaultSearchParams={initialStates.searchParams}
-          isSearch={!isInbox}
-          onFilterChange={handleFilterChange}
-          searchFields={getSearchFields()}
-          onSearch={handleFilterChange}
-          onSort={handleSort}
-          onNextPage={fetchNextPage}
-          onPrevPage={fetchPrevPage}
-          onLastPage={fetchLastPage}
-          onFirstPage={fetchFirstPage}
-          currentPage={Math.floor(pageOffset / pageSize)}
-          pageSizeLimit={pageSize}
-          disableSort={false}
-          onPageSizeChange={handlePageSizeChange}
-          parentRoute={parentRoute}
-          searchParams={searchParams}
-          sortParams={sortParams}
-          totalRecords={data?.totalCount}
-          filterComponent={filterComponent}
-          isLoader={isLoader}
-          statutes={data?.statuses}
+  const handleStatusChange = useCallback(
+    (selectedStatuses) => {
+      updateFilters({ status: selectedStatuses });
+    },
+    [updateFilters]
+  );
+
+  const handleOffenceTypeChange = useCallback(
+    (offenceTypes) => {
+      updateFilters({ businessService: offenceTypes });
+    },
+    [updateFilters]
+  );
+
+  const tableProps = useChallanInboxTableConfig({
+    parentRoute,
+    tenantId,
+    table,
+    totalCount,
+  });
+
+  return (
+    <InboxWrapper
+      title={t("ES_COMMON_INBOX")}
+      totalCount={totalCount}
+      isLoading={isLoading}
+      tableData={table}
+      tableProps={tableProps}
+      tableHeader="ACTION_TEST_CHALLANGENERATION"
+      filterSection={
+        <ChallanInboxFilters
+          statuses={statuses}
+          isInboxLoading={isLoading}
+          selectedStatuses={filters.status}
+          selectedOffenceTypes={filters.businessService}
+          onStatusChange={handleStatusChange}
+          onOffenceTypeChange={handleOffenceTypeChange}
         />
-        {hookLoading && <Loader page={true} />}
-      </div>
-    );
-  }
-  // }
-
-  return null;
+      }
+      topBar={<ChallanInboxSearch values={filters} onSearch={handleSearch} />}
+      pagination={
+        <InboxPagination
+          offset={pageOffset}
+          limit={pageSize}
+          totalCount={totalCount}
+          onPageSizeChange={(event) => {
+            setPageSize(Number(event.target.value));
+            setPageOffset(0);
+          }}
+          onNextPage={() => setPageOffset((current) => current + pageSize)}
+          onPrevPage={() => setPageOffset((current) => Math.max(0, current - pageSize))}
+        />
+      }
+    />
+  );
 };
 
 export default Inbox;

@@ -44,7 +44,7 @@ const SubMenu = ({ item, onLinkClick }) => {
   const leftIconArray = item?.icon?.leftIcon?.split?.(":")?.[1] || item?.leftIcon?.split?.(":")[1];
   const leftIcon = IconsObject[leftIconArray] || IconsObject.collections;
   const getModuleName = item?.moduleName?.replace(/[ -]/g, "_");
-  const appendTranslate = t(`ACTION_TEST_${getModuleName.toUpperCase()}`);
+  const appendTranslate = t(`ACTION_TEST_${getModuleName?.toUpperCase()}`);
   const trimModuleName = t(appendTranslate);
   // const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
 

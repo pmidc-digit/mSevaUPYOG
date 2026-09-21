@@ -1,150 +1,164 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Header } from "@mseva/digit-ui-react-components";
+import { InboxPagination, InboxWrapper } from "../../../../templates/Inbox/components";
+import { TableConfig } from "../../config/inbox-table-config";
+import ADSInboxFilters from "./ADSInboxFilters";
+import ADSInboxSearch from "./ADSInboxSearch";
 
-import ADSDesktopInbox from "../../components/ADSDesktopInbox";
-import MobileInbox from "../../components/MobileInbox";
+const DEFAULT_FILTERS = {
+  uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
+  services: ["ADV"],
+  applicationStatus: [],
+  locality: [],
+  bookingNo: "",
+  mobileNumber: "",
+};
 
-const Inbox = ({
-  useNewInboxAPI,
-  parentRoute,
-  moduleCode = "ADV",
-  initialStates = {},
-  filterComponent,
-  isInbox,
-  rawWfHandler,
-  rawSearchHandler,
-  combineResponse,
-  wfConfig,
-  searchConfig,
-  middlewaresWf,
-  middlewareSearch,
-  EmptyResultInboxComp,
-}) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-
+const Inbox = ({ parentRoute, initialStates = {}, moduleCode = "ADV" }) => {
   const { t } = useTranslation();
-  const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
-  const [TableConfig, setTableConfig] = useState(() => Digit.ComponentRegistryService?.getComponent("ADSInboxTableConfig"));
-  // const [getSearchFi]
-  const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
-  const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
-  const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: true }]);
-  const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isMobile = Digit.Utils.browser.isMobile();
+  const [filters, setFilters] = useState(() => ({
+    ...DEFAULT_FILTERS,
+    ...(initialStates?.searchParams || {}),
+    applicationStatus: Array.isArray(initialStates?.searchParams?.applicationStatus) ? initialStates.searchParams.applicationStatus : [],
+  }));
+  const [pageSize, setPageSize] = useState(initialStates?.pageSize || (isMobile ? 50 : 10));
+  const [pageOffset, setPageOffset] = useState(initialStates?.pageOffset || 0);
 
-  let isMobile = window.Digit.Utils.browser.isMobile();
-  let paginationParams = isMobile
-    ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-    : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+  const inboxFilters = useMemo(
+    () => ({
+      ...filters,
+      limit: pageSize,
+      offset: pageOffset,
+      sortBy: "createdTime",
+      sortOrder: "DESC",
+    }),
+    [filters, pageOffset, pageSize]
+  );
 
-  const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = useNewInboxAPI
-    ? Digit.Hooks.useNewInboxGeneral({
-        tenantId,
-        ModuleCode: moduleCode,
-        // filters: { ...searchParams, ...paginationParams, sortParams },
-        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
-      })
-    : Digit.Hooks.useInboxGeneral({
-        tenantId,
-        businessService: moduleCode,
-        isInbox,
-        // filters: { ...searchParams, ...paginationParams, sortParams },
-        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
-        rawWfHandler,
-        rawSearchHandler,
-        combineResponse,
-        wfConfig,
-        searchConfig: { ...enableSarch, ...searchConfig },
-        middlewaresWf,
-        middlewareSearch,
-      });
+  const { isFetching, isLoading, data } = Digit.Hooks.useNewInboxGeneral({
+    tenantId,
+    ModuleCode: moduleCode,
+    filters: inboxFilters,
+    config: { enabled: Boolean(tenantId) },
+  });
 
-  useEffect(() => {
+  const rawStatuses = data?.[0]?.statusMap || [];
+  const statuses = useMemo(() => {
+    return rawStatuses.reduce((accumulator, status) => {
+      const statusCode = status?.applicationstatus || status?.applicationStatus || status?.state;
+      const count = status?.count ?? status?.totalCount ?? status?.noOfRecords ?? 0;
+
+      if (!statusCode) return accumulator;
+
+      const existingStatus = accumulator.find((item) => item.applicationstatus === statusCode);
+      if (existingStatus) {
+        existingStatus.count += count;
+        existingStatus.totalCount = existingStatus.count;
+      } else {
+        accumulator.push({
+          ...status,
+          applicationstatus: statusCode,
+          count,
+          totalCount: count,
+          selectionValue: statusCode,
+          selectionValues: [statusCode],
+        });
+      }
+
+      return accumulator;
+    }, []);
+  }, [rawStatuses]);
+
+  const table = useMemo(() => (data || []).filter((row) => !row?.dataEmpty), [data]);
+  const totalCount = Number(data?.[0]?.totalCount || 0);
+  const selectedStatuses = useMemo(
+    () =>
+      (filters.applicationStatus || [])
+        .map((status) => status?.applicationStatus || status?.applicationstatus || status?.state || status?.code || status)
+        .filter(Boolean),
+    [filters.applicationStatus]
+  );
+
+  const updateFilters = useCallback((nextValues) => {
     setPageOffset(0);
-  }, [searchParams]);
-
-  const fetchNextPage = () => {
-    setPageOffset((prevState) => prevState + pageSize);
-  };
-
-  const fetchPrevPage = () => {
-    setPageOffset((prevState) => prevState - pageSize);
-  };
-
-  const handleFilterChange = (filterParam) => {
-    let keys_to_delete = filterParam.delete;
-    let _new = { ...searchParams, ...filterParam };
-    if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
-    delete filterParam.delete;
-    setSearchParams({ ..._new });
-    setEnableSearch({ enabled: true });
-  };
-
-  const handleSort = useCallback((args) => {
-    if (args.length === 0) return;
-    setSortParams(args);
+    setFilters((current) => ({ ...current, ...nextValues }));
   }, []);
 
-  const handlePageSizeChange = (e) => {
-    setPageSize(Number(e.target.value));
-  };
+  const handleSearch = useCallback(
+    ({ bookingNo, mobileNumber }) => {
+      updateFilters({
+        bookingNo: String(bookingNo || "").trim(),
+        mobileNumber: String(mobileNumber || "").trim(),
+      });
+    },
+    [updateFilters]
+  );
 
-  if (rest?.data?.length !== null) {
-    if (isMobile) {
-      return (
-        <MobileInbox
-          data={data}
-          isLoading={hookLoading}
-          isSearch={!isInbox}
-          searchFields={searchFields}
-          onFilterChange={handleFilterChange}
-          onSearch={handleFilterChange}
-          onSort={handleSort}
-          parentRoute={parentRoute}
-          searchParams={searchParams}
-          sortParams={sortParams}
-          linkPrefix={`${parentRoute}/applicationsearch/application-details/`}
-          tableConfig={rest?.tableConfig ? rest?.tableConfig : TableConfig(t)["ADS"]}
-          filterComponent={filterComponent}
-          EmptyResultInboxComp={EmptyResultInboxComp}
-          useNewInboxAPI={useNewInboxAPI}
+  const handleStatusChange = useCallback(
+    (selectedStatusCodes) => {
+      const applicationStatus = selectedStatusCodes.map((statusCode) => {
+        const matchingStatus = rawStatuses.find(
+          (status) => (status?.applicationstatus || status?.applicationStatus || status?.state) === statusCode
+        );
+
+        return {
+          ...matchingStatus,
+          applicationStatus: matchingStatus?.applicationStatus || matchingStatus?.applicationstatus || matchingStatus?.state || statusCode,
+          state: matchingStatus?.state || matchingStatus?.applicationStatus || matchingStatus?.applicationstatus || statusCode,
+        };
+      });
+
+      updateFilters({ applicationStatus });
+    },
+    [rawStatuses, updateFilters]
+  );
+
+  const columns = useMemo(() => TableConfig(t).ADS.inboxColumns({ parentRoute }), [parentRoute, t]);
+  const tableProps = useMemo(
+    () => ({
+      data: table,
+      columns,
+      totalRecords: totalCount,
+      disableSort: true,
+      customTableWrapperClassName: "ads-new-inbox-table-wrapper",
+    }),
+    [columns, table, totalCount]
+  );
+
+  return (
+    <InboxWrapper
+      title={t("ES_COMMON_INBOX")}
+      totalCount={totalCount}
+      isLoading={isLoading || isFetching}
+      tableData={table}
+      tableProps={tableProps}
+      tableHeader="ADS_SERVICE"
+      filterSection={
+        <ADSInboxFilters
+          statuses={statuses}
+          isInboxLoading={isLoading || isFetching}
+          selectedStatuses={selectedStatuses}
+          onStatusChange={handleStatusChange}
         />
-        // <div></div>
-      );
-    } else {
-      return (
-        <div>
-          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
-
-          <ADSDesktopInbox
-            moduleCode={moduleCode}
-            data={data}
-            tableConfig={TableConfig(t)["ADS"]}
-            isLoading={hookLoading}
-            defaultSearchParams={initialStates.searchParams}
-            isSearch={!isInbox}
-            onFilterChange={handleFilterChange}
-            searchFields={searchFields}
-            onSearch={handleFilterChange}
-            onSort={handleSort}
-            onNextPage={fetchNextPage}
-            onPrevPage={fetchPrevPage}
-            currentPage={Math.floor(pageOffset / pageSize)}
-            pageSizeLimit={pageSize}
-            disableSort={false}
-            onPageSizeChange={handlePageSizeChange}
-            parentRoute={parentRoute}
-            searchParams={searchParams}
-            sortParams={sortParams}
-            totalRecords={Number(data?.[0]?.totalCount)}
-            filterComponent={filterComponent}
-            EmptyResultInboxComp={EmptyResultInboxComp}
-            useNewInboxAPI={useNewInboxAPI}
-          />
-        </div>
-      );
-    }
-  }
+      }
+      topBar={<ADSInboxSearch values={filters} onSearch={handleSearch} />}
+      pagination={
+        <InboxPagination
+          offset={pageOffset}
+          limit={pageSize}
+          totalCount={totalCount}
+          onPageSizeChange={(event) => {
+            setPageSize(Number(event.target.value));
+            setPageOffset(0);
+          }}
+          onNextPage={() => setPageOffset((current) => current + pageSize)}
+          onPrevPage={() => setPageOffset((current) => Math.max(0, current - pageSize))}
+        />
+      }
+    />
+  );
 };
 
 export default Inbox;

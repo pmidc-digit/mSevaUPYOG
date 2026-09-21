@@ -88,7 +88,7 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
         <LandingPage />
       </Route>
       <Route>
-        <Redirect to="/digit-ui/landing-page" />
+        <Redirect to="/digit-ui/citizen/select-language" />
       </Route>
     </Switch>
   );

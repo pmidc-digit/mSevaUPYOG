@@ -1,0 +1,51 @@
+.topbar .employee-select-wrap.employee-profile-menu {
+  position: relative;
+
+  > .cp {
+    gap: 10px;
+    padding: 4px 6px;
+    border-radius: 28px;
+    transition: background-color 150ms ease;
+    &:hover { background-color: #edf3fb; }
+  }
+
+  .options-card {
+    width: 220px !important;
+    min-width: 220px;
+    max-width: calc(100vw - 32px);
+    margin-top: 12px;
+    padding: 6px;
+    border: 0;
+    outline: 0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+    overflow: hidden;
+  }
+
+  .profile-dropdown--item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 46px;
+    padding: 12px;
+    border: 0;
+    border-radius: 8px;
+    color: #334155;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    transition: background-color 150ms ease, color 150ms ease;
+
+    .icon { display: flex; align-items: center; flex-shrink: 0; }
+    svg { width: 20px; height: 20px; fill: currentColor; }
+    &:hover, &:focus-within { color: #174f9e; background-color: #eff6ff; }
+
+    &:last-child {
+      margin-top: 4px;
+      color: #b4232d;
+      &:hover, &:focus-within { color: #91202a; background-color: #fff1f2; }
+    }
+  }
+}

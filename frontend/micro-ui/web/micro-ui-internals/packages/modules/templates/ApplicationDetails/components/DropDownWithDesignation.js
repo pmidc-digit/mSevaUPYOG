@@ -7,10 +7,11 @@ const TextField = (props) => {
 
   useEffect(() => {
     if (!props.keepNull)
-      if( props.selectedVal)
-        setValue(props.selectedVal)
-      else
-      { setValue(""); props.setFilter("") } 
+      if (props.selectedVal) setValue(props.selectedVal);
+      else {
+        setValue("");
+        props.setFilter("");
+      }
     else setValue("");
   }, [props.selectedVal, props.forceSet]);
 
@@ -77,7 +78,7 @@ const TextField = (props) => {
       autoFocus={props.autoFocus}
       placeholder={props.placeholder}
       autoComplete={"off"}
-      style={{...props.style, zIndex: "auto"}}
+      style={{ ...props.style, zIndex: "auto" }}
     />
   );
 };
@@ -119,8 +120,6 @@ const DropdownWithDesignation = (props) => {
     }
   }
 
-
-
   function dropdownOn(val) {
     const waitForOptions = () => setTimeout(() => setDropdownStatus(val), 500);
     const timerId = waitForOptions();
@@ -150,12 +149,11 @@ const DropdownWithDesignation = (props) => {
     onSelect(filteredOption[ind]);
   }
   if (props?.option?.[0]?.label == "PropertyType") {
-    filteredOption = props.option
+    filteredOption = props.option;
   }
-  if(props.isBPAREG && selectedOption)
-  {
+  if (props.isBPAREG && selectedOption) {
     let isSelectedSameAsOptions = props.option?.filter((ob) => ob?.code === selectedOption?.code)?.length > 0;
-    if(!isSelectedSameAsOptions) setSelectedOption(null)
+    if (!isSelectedSameAsOptions) setSelectedOption(null);
   }
 
   return (
@@ -216,7 +214,6 @@ const DropdownWithDesignation = (props) => {
           >
             {filteredOption &&
               filteredOption.map((option, index) => {
-
                 return (
                   <div
                     className={`cp profile-dropdown--item display: flex `}
@@ -232,17 +229,18 @@ const DropdownWithDesignation = (props) => {
                     onClick={() => onSelect(option)}
                   >
                     {option.icon && <span className="icon"> {option.icon} </span>}
-                    {props.isPropertyAssess? <div>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</div>:
-                    <span> {props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</span>}
-                    <div>({props.t("COMMON_MASTERS_DESIGNATION_"+option["designation"])})</div>
+                    {props.isPropertyAssess ? (
+                      <div>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</div>
+                    ) : (
+                      <span> {props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</span>
+                    )}
+                    <div>({props.t("COMMON_MASTERS_DESIGNATION_" + option["designation"])})</div>
                   </div>
                 );
               })}
             {filteredOption && filteredOption.length === 0 && (
-              <div className={`cp profile-dropdown--item display: flex `} key={"-1"} onClick={()=>{
-
-              }}>
-                {<span> {props.t ? props.t("CMN_NOOPTION") : "CMN_NOOPTION"}</span>}
+              <div className={`cp profile-dropdown--item display: flex `} key={"-1"} onClick={() => {}}>
+                {<span> {props.t ? props.t("No Option") : "No Option"}</span>}
               </div>
             )}
           </div>

@@ -1,21 +1,20 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { InboxComposer, DocumentIcon, Toast, Header } from "@mseva/digit-ui-react-components";
+import React, { useMemo, useReducer, useState } from "react";
+import { Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import FilterFormFieldsComponent from "./FilterFieldsComponent";
-import SearchFormFieldsComponents from "./SearchFieldsComponents";
-import useInboxTableConfig from "./useInboxTableConfig";
-import useInboxMobileCardsData from "./useInboxMobileDataCard";
+// import { InboxPagination, InboxWrapper } from "../../../../../templates/Inbox/components";
+import { InboxPagination, InboxWrapper } from "../../../../../../templates/Inbox/components";
 import DateExtend from "../../../../components/DateExtend";
 import { Loader } from "../../../../components/Loader";
-// import { useHistory } from "react-router-dom";
+import SurveyInboxFilters from "./SurveyInboxFilters";
+import SurveyInboxSearch from "./SurveyInboxSearch";
+import useSurveyInboxTableConfig from "./useSurveyInboxTableConfig";
 
 //Keep below values from localisation:
 const ERR_MESSAGE = "Something went wrong";
 
-const Inbox = ({ parentRoute }) => {
+const Inbox = () => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
-  // const history = useHistory()
   const [showTermsPopup, setShowTermsPopup] = useState(false);
   const [getData, setData] = useState([]);
   const [loader, setLoader] = useState(false);
@@ -65,38 +64,6 @@ const Inbox = ({ parentRoute }) => {
   }
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("CITIZENSURVEY.INBOX");
 
-  // const onSearchFormReset = (setSearchFormValue) => {
-  //   // setSearchFormValue("postedBy", "");
-  //   setSearchFormValue("title", "");
-  //   setSearchFormValue("tenantIds", tenantId);
-  //   dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
-  // };
-
-  const onSearchFormReset = (setSearchFormValue) => {
-    const resetTenant = formState.searchForm.tenantIds;
-
-    setSearchFormValue("title", "");
-    setSearchFormValue("tenantIds", resetTenant);
-
-    dispatch({
-      action: "mutateSearchForm",
-      data: {
-        ...searchFormDefaultValues,
-        tenantIds: resetTenant,
-      },
-    });
-
-    dispatch({
-      action: "mutateTableForm",
-      data: { ...tableOrderFormDefaultValues },
-    });
-  };
-
-  const onFilterFormReset = (setFilterFormValue) => {
-    setFilterFormValue("status", statuses[0]);
-    dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
-  };
-
   const formInitValue = useMemo(() => {
     return (
       InboxObjectInSessionStorage || {
@@ -112,142 +79,53 @@ const Inbox = ({ parentRoute }) => {
   ]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
-  const onPageSizeChange = (e) => {
-    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
-  };
+  const { data: { Surveys = [], TotalCount } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyInbox(formState);
+  const allStatusesFormState = useMemo(() => ({ ...formState, filterForm: { ...formState.filterForm, status: statuses[0] } }), [formState, statuses]);
+  const { data: { Surveys: allSurveys = [] } = {} } = Digit.Hooks.survey.useSurveyInbox(allStatusesFormState);
 
-  const onSortingByData = (e) => {
-    if (e.length > 0) {
-      const [{ id, desc }] = e;
-      const sortOrder = desc ? "DESC" : "ASC";
-      const sortBy = id;
-      if (!(formState.tableForm.sortBy === sortBy && formState.tableForm.sortOrder === sortOrder)) {
-        dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortBy: id, sortOrder: desc ? "DESC" : "ASC" } });
-      }
-    }
-  };
-
-  let { data: { Surveys = [], TotalCount } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyInbox(formState);
-  const [sortedSurveys, setSortedSurveys] = useState([]);
-
-  useEffect(() => {
-    if (Surveys.length > 0) {
-      const sorted = [...Surveys].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
-      Surveys = sorted;
-      setSortedSurveys(sorted);
-    }
-  }, [Surveys]);
-
-  const PropsForInboxLinks = {
-    links: [
+  const sortedSurveys = useMemo(
+    () => [...Surveys].sort((first, second) => (second?.auditDetails?.lastModifiedTime || 0) - (first?.auditDetails?.lastModifiedTime || 0)),
+    [Surveys]
+  );
+  const totalCount = Number(TotalCount ?? sortedSurveys.length);
+  const pageSize = Number(formState.tableForm?.limit) || 10;
+  const pageOffset = Number(formState.tableForm?.offset) || 0;
+  const paginatedSurveys = useMemo(() => sortedSurveys.slice(pageOffset, pageOffset + pageSize), [pageOffset, pageSize, sortedSurveys]);
+  const selectedStatuses = formState.filterForm?.status?.bool === true ? [true] : formState.filterForm?.status?.bool === false ? [false] : [];
+  const statusCards = useMemo(
+    () => [
       {
-        text: t("Surveys Inbox/Search Surveys"),
-        link: "/digit-ui/employee/engagement/surveys/inbox",
-        //link: "/digit-ui/employee/engagement/surveys/inbox?from=ES_EVENT_INBOX",
+        applicationstatus: "ACTIVE",
+        selectionValues: [true],
+        count: allSurveys.filter((survey) => survey?.active === true).length,
       },
       {
-        text: t("Create Category"),
-        link: "/digit-ui/employee/engagement/surveys/create-category",
-        //link: "/digit-ui/employee/engagement/surveys/create-category?from=ES_EVENT_INBOX",
-      },
-      {
-        text: t("Search Category"),
-        link: "/digit-ui/employee/engagement/surveys/search-categories",
-        //link: "/digit-ui/employee/engagement/surveys/search-categories?from=ES_EVENT_INBOX",
-      },
-      {
-        text: t("Create Questions"),
-        link: "/digit-ui/employee/engagement/surveys/create-questions",
-        //link: "/digit-ui/employee/engagement/surveys/create-questions?from=ES_EVENT_INBOX",
-      },
-      {
-        text: t("Search Questions"),
-        link: "/digit-ui/employee/engagement/surveys/search-questions",
-        //link: "/digit-ui/employee/engagement/surveys/search-questions?from=ES_EVENT_INBOX",
-      },
-
-      {
-        // text: t("CS_COMMON_NEW_SURVEY"),
-        text: t("Create New Survey"),
-        link: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
-        //link: "/digit-ui/employee/engagement/surveys/create-survey-step-form?from=ES_EVENT_INBOX",
-      },
-      {
-        text: t("Active and Open Surveys"),
-        link: "/digit-ui/employee/engagement/surveys/active-open-surveys",
-        //link: "/digit-ui/employee/engagement/surveys/active-open-surveys?from=ES_EVENT_INBOX",
+        applicationstatus: "INACTIVE",
+        selectionValues: [false],
+        count: allSurveys.filter((survey) => survey?.active === false).length,
       },
     ],
-  };
-
-  const SearchFormFields = useCallback(
-    ({ registerRef, searchFormState, controlSearchForm }) => <SearchFormFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} />,
-    []
+    [allSurveys]
   );
 
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => (
-      <FilterFormFieldsComponent
-        {...{
-          statuses,
-          registerRef,
-          controlFilterForm,
-          setFilterFormValue,
-          filterFormState: formState?.filterForm,
-          getFilterFormValue,
-        }}
-      />
-    ),
-    [statuses]
-  );
-
-  const onSearchFormSubmit = (data) => {
-    //setting the offset to 0(In case searched from page other than 1)
+  const updateSearch = (data) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-
-    data.hasOwnProperty("") ? delete data?.[""] : null;
     dispatch({ action: "mutateSearchForm", data });
   };
 
-  const onFilterFormSubmit = (data) => {
-    data.hasOwnProperty("") ? delete data?.[""] : null;
-    dispatch({ action: "mutateFilterForm", data });
+  const updateStatus = (active) => {
+    const selectedStatus = statuses.find((status) => status.bool === active) || statuses[0];
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
+    dispatch({ action: "mutateFilterForm", data: { status: selectedStatus } });
   };
 
-  const propsForSearchForm = {
-    SearchFormFields,
-    onSearchFormSubmit,
-    searchFormDefaultValues: formState?.searchForm,
-    resetSearchFormDefaultValues: searchFormDefaultValues,
-    onSearchFormReset,
-  };
-
-  const propsForFilterForm = {
-    FilterFormFields,
-    onFilterFormSubmit,
-    filterFormDefaultValues: formState?.filterForm,
-    resetFilterFormDefaultValues: filterFormDefaultValues,
-    onFilterFormReset,
-  };
-
-  const propsForInboxTable = useInboxTableConfig({
-    ...{
-      parentRoute,
-      onPageSizeChange,
-      formState,
-      totalCount: TotalCount,
-      table: sortedSurveys,
-      noResultsMessage: "CS_SURVEYS_NOT_FOUND",
-      dispatch,
-      inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
-      setShowToast,
-      onSortingByData,
-      setShowTermsPopup,
-      setData,
-    },
+  const tableProps = useSurveyInboxTableConfig({
+    table: paginatedSurveys,
+    totalCount,
+    setShowToast,
+    setShowTermsPopup,
+    setData,
   });
-
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table: sortedSurveys, setShowToast });
 
   //For the card displayed after clicking the delete survey button:
   //On clicking delete button under "Delete Survey" column in a table row, a toast with Yes & No buttons is opened:
@@ -281,22 +159,39 @@ const Inbox = ({ parentRoute }) => {
   };
 
   return (
-    <Fragment>
-      <Header>
-        {t("Inbox")}
-        {TotalCount ? <p className="inbox-count">{TotalCount}</p> : null}
-      </Header>
-      <InboxComposer
-        {...{
-          isInboxLoading,
-          PropsForInboxLinks,
-          ...propsForSearchForm,
-          ...propsForFilterForm,
-          propsForInboxMobileCards,
-          propsForInboxTable,
-          formState,
-        }}
-      />
+    <>
+      <div className="survey-new-inbox-content">
+        <InboxWrapper
+          title={t("ES_COMMON_INBOX")}
+          totalCount={totalCount}
+          isLoading={isInboxLoading}
+          tableData={paginatedSurveys}
+          tableProps={tableProps}
+          tableHeader="CS_COMMON_SURVEYS"
+          emptyMessage={t("CS_NO_SURVEYS_FOUND")}
+          filterSection={
+            <SurveyInboxFilters
+              statuses={statusCards}
+              selectedStatuses={selectedStatuses}
+              isInboxLoading={isInboxLoading}
+              onStatusChange={updateStatus}
+            />
+          }
+          topBar={<SurveyInboxSearch values={formState.searchForm} onSearch={updateSearch} />}
+          pagination={
+            <InboxPagination
+              offset={pageOffset}
+              limit={pageSize}
+              totalCount={totalCount}
+              onPageSizeChange={(event) => {
+                dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: Number(event.target.value), offset: 0 } });
+              }}
+              onNextPage={() => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: pageOffset + pageSize } })}
+              onPrevPage={() => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: Math.max(0, pageOffset - pageSize) } })}
+            />
+          }
+        />
+      </div>
       {showToast && (
         <Toast
           label={t(showToast.label)}
@@ -312,7 +207,6 @@ const Inbox = ({ parentRoute }) => {
           style={{ padding: "16px" }}
         />
       )}
-      <h1 onClick={() => setShowTermsPopup(true)}>Show modal</h1>
       {showTermsPopup && (
         <DateExtend
           showTermsPopupOwner={showTermsPopup}
@@ -326,8 +220,8 @@ const Inbox = ({ parentRoute }) => {
           tenantId={tenantId} // Pass tenant ID for API calls
         />
       )}
-      {(isInboxLoading || loader) && <Loader page={true} />}
-    </Fragment>
+      {loader && <Loader page={true} />}
+    </>
   );
 };
 

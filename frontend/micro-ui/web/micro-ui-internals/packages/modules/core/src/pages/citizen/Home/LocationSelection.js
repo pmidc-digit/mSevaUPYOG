@@ -1,4 +1,4 @@
-import { BackButton, CardHeader, CardLabelError, PageBasedInput, SearchOnRadioButtons , Dropdown } from "@mseva/digit-ui-react-components";
+import { BackButton, CardHeader, CardLabelError, PageBasedInput, SearchOnRadioButtons, Dropdown } from "@mseva/digit-ui-react-components";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
@@ -43,7 +43,7 @@ const LocationSelection = () => {
       const redirectBackTo = location.state?.redirectBackTo;
       if (redirectBackTo) {
         history.replace(redirectBackTo);
-      } else history.push("/digit-ui/citizen/login");
+      } else history.push("/digit-ui/citizen/select-language");
     } else {
       setShowError(true);
     }

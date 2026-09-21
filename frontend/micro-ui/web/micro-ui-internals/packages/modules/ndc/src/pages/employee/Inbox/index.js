@@ -1,243 +1,202 @@
-import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect, use } from "react";
-import { InboxComposer, ComplaintIcon, Header } from "@mseva/digit-ui-react-components";
+import React, { useCallback, useMemo, useReducer } from "react";
 import { useTranslation } from "react-i18next";
-import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
-import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
-import useInboxTableConfig from "./useInboxTableConfig";
-import useInboxMobileCardsData from "./useInboxMobileCardsData";
+import { InboxPagination, InboxWrapper } from "../../../../../templates/Inbox/components";
 import { businessServiceList } from "../../../utils";
-import CreateNDCApplicationStep from "../createNDCApplication";
+import NDCInboxFilters from "./NDCInboxFilters";
+import NDCInboxSearch from "./NDCInboxSearch";
+import useInboxTableConfig from "./useInboxTableConfig";
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
-
-  // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
-  const [getFilter, setFilter] = useState();
+  const isMobile = Digit.Utils.browser.isMobile();
 
-  const searchFormDefaultValues = {
-    // mobileNumber: "",
-    // applicationNumber
-  };
-
-  const filterFormDefaultValues = {
-    moduleName: "ndc-services",
-    applicationStatus: [],
-    businessService: null,
-    locality: [],
-    assignee: "ASSIGNED_TO_ALL",
-    businessServiceArray: businessServiceList(true) || [],
-  };
-  const tableOrderFormDefaultValues = {
-    sortBy: "",
-    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
-    offset: 0,
-    sortOrder: "DESC",
-  };
-
-  function formReducer(state, payload) {
-    switch (payload.action) {
-      case "mutateSearchForm":
-        Digit.SessionStorage.set("NDC.INBOX", { ...state, searchForm: payload.data });
-        return { ...state, searchForm: payload.data };
-      case "mutateFilterForm":
-        Digit.SessionStorage.set("NDC.INBOX", { ...state, filterForm: payload.data });
-        return { ...state, filterForm: payload.data };
-      case "mutateTableForm":
-        Digit.SessionStorage.set("NDC.INBOX", { ...state, tableForm: payload.data });
-        return { ...state, tableForm: payload.data };
-      default:
-        break;
-    }
-  }
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("NDC.INBOX");
-
-  const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("sourceRefId", null);
-    setSearchFormValue("applicationNo", null);
-    setSearchFormValue("mobileNumber", null);
-    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
-  };
-
-  const onFilterFormReset = (setFilterFormValue) => {
-    setFilterFormValue("moduleName", "bpa-services");
-    setFilterFormValue("applicationStatus", "");
-    setFilterFormValue("locality", []);
-    setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
-    setFilterFormValue("applicationType", []);
-    dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
-  };
-
-  const onSortFormReset = (setSortFormValue) => {
-    setSortFormValue("sortOrder", "DESC");
-    dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues });
-  };
-
-  const formInitValue = useMemo(() => {
-    return (
-      InboxObjectInSessionStorage || {
-        filterForm: filterFormDefaultValues,
-        searchForm: searchFormDefaultValues,
-        tableForm: tableOrderFormDefaultValues,
-      }
-    );
-  }, [
-    Object.values(InboxObjectInSessionStorage?.filterForm || {}),
-    Object.values(InboxObjectInSessionStorage?.searchForm || {}),
-    Object.values(InboxObjectInSessionStorage?.tableForm || {}),
-  ]);
-
-  const [formState, dispatch] = useReducer(formReducer, formInitValue);
-
-  const onPageSizeChange = (e) => {
-    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
-  };
-
-  const onSortingByData = (e) => {
-    if (e.length > 0) {
-      const [{ id, desc }] = e;
-      const sortOrder = desc ? "DESC" : "ASC";
-      const sortBy = id;
-      if (!(formState.tableForm.sortBy === sortBy && formState.tableForm.sortOrder === sortOrder)) {
-        dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortBy: id, sortOrder: desc ? "DESC" : "ASC" } });
-      }
-    }
-  };
-
-  const onMobileSortOrderData = (data) => {
-    const { sortOrder } = data;
-    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } });
-  };
-
-  const { data: localitiesForEmployeesCurrentTenant, isLoading: loadingLocalitiesForEmployeesCurrentTenant } = Digit.Hooks.useBoundaryLocalities(
-    tenantId,
-    "revenue",
-    {},
-    t
-  );
-
-  const handleFilter = (filterStatus) => {
-    setFilter(filterStatus);
-  };
-
-  const { isLoading: isInboxLoading, data } = Digit.Hooks.ndc.useInbox({
-    tenantId,
-    filters: { ...formState, getFilter },
-  });
-
-  // const { isLoading, data: testData, isError, error } = Digit.Hooks.ndc.useSearchApplication({ mobileNumber: "1234567890" }, tenantId);
-
-  // const { isLoading: isInboxLoading, data} = Digit.Hooks.ndc.useSearchEmployeeApplication({status: "CREATE"}, tenantId)
-
-  const [table, setTable] = useState([]);
-  const [statuses, setStatuses] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
-
-  useEffect(() => {
-    if (data) {
-      setStatuses(data?.statuses || []);
-      setTable(data?.table || []);
-      setTotalCount(data?.totalCount || 0);
-    }
-  }, [data]);
-
-  const PropsForInboxLinks = {
-    logoIcon: <ComplaintIcon />,
-    headerText: `${t("MODULE_NKS_NO_DUE_CERTIFICATE_FEES")}`,
-    links: [
-      {
-        text: "",
-        link: "",
-        accessTo: [""],
-      },
-    ],
-  };
-
-  const SearchFormFields = useCallback(
-    ({ registerRef, searchFormState, searchFieldComponents }) => (
-      <SearchFormFieldsComponents {...{ registerRef, searchFormState, searchFieldComponents }} />
-    ),
+  const searchFormDefaultValues = useMemo(
+    () => ({
+      applicationNo: "",
+      mobileNumber: "",
+    }),
     []
   );
 
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => (
-      <FilterFormFieldsComponent
-        {...{
-          statuses,
-          isInboxLoading,
-          registerRef,
-          controlFilterForm,
-          setFilterFormValue,
-          filterFormState: formState?.filterForm,
-          getFilterFormValue,
-          localitiesForEmployeesCurrentTenant,
-          loadingLocalitiesForEmployeesCurrentTenant,
-        }}
-        handleFilter={handleFilter}
-      />
-    ),
-    [statuses, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant]
+  const filterFormDefaultValues = useMemo(
+    () => ({
+      moduleName: "ndc-services",
+      applicationStatus: [],
+      businessService: null,
+      locality: [],
+      assignee: "ASSIGNED_TO_ALL",
+      businessServiceArray: businessServiceList(true) || [],
+    }),
+    []
   );
 
-  const onSearchFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""];
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
-    dispatch({ action: "mutateSearchForm", data });
-  };
+  const tableOrderFormDefaultValues = useMemo(
+    () => ({
+      sortBy: "",
+      limit: isMobile ? 50 : 10,
+      offset: 0,
+      sortOrder: "DESC",
+    }),
+    [isMobile]
+  );
 
-  const onFilterFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""];
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
-    dispatch({ action: "mutateFilterForm", data });
-  };
+  function formReducer(state, payload) {
+    const nextState = { ...state, [payload.key]: payload.data };
+    Digit.SessionStorage.set("NDC.INBOX", nextState);
+    return nextState;
+  }
 
-  const propsForSearchForm = {
-    SearchFormFields,
-    onSearchFormSubmit,
-    searchFormDefaultValues: formState?.searchForm,
-    resetSearchFormDefaultValues: searchFormDefaultValues,
-    onSearchFormReset,
-  };
+  const storedInboxState = Digit.SessionStorage.get("NDC.INBOX");
+  const formInitValue = useMemo(
+    () => ({
+      filterForm: {
+        ...filterFormDefaultValues,
+        ...(storedInboxState?.filterForm || {}),
+        applicationStatus: Array.isArray(storedInboxState?.filterForm?.applicationStatus)
+          ? storedInboxState.filterForm.applicationStatus
+          : [],
+      },
+      searchForm: {
+        ...searchFormDefaultValues,
+        ...(storedInboxState?.searchForm || {}),
+      },
+      tableForm: {
+        ...tableOrderFormDefaultValues,
+        ...(storedInboxState?.tableForm || {}),
+        limit: Number(storedInboxState?.tableForm?.limit) || tableOrderFormDefaultValues.limit,
+        offset: 0,
+      },
+    }),
+    [filterFormDefaultValues, searchFormDefaultValues, storedInboxState, tableOrderFormDefaultValues]
+  );
 
-  const propsForFilterForm = {
-    FilterFormFields,
-    onFilterFormSubmit,
-    filterFormDefaultValues: formState?.filterForm,
-    resetFilterFormDefaultValues: filterFormDefaultValues,
-    onFilterFormReset,
-  };
+  const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
-  const propsForInboxTable = useInboxTableConfig({ ...{ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData } });
+  const inboxFilters = useMemo(
+    () => ({
+      ...formState,
+      getFilter: {
+        applicationStatus: (formState.filterForm?.applicationStatus || []).map((code) => ({ code })),
+      },
+    }),
+    [formState]
+  );
 
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table });
+  const { isLoading: isInboxLoading, data } = Digit.Hooks.ndc.useInbox({
+    tenantId,
+    filters: inboxFilters,
+    config: { enabled: Boolean(tenantId) },
+  });
 
-  const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
+  const table = data?.table || [];
+  const totalCount = data?.totalCount || 0;
+  const statuses = useMemo(() => {
+    return (data?.statuses || []).reduce((accumulator, status) => {
+      const statusCode = status?.applicationstatus || status?.statusCode || status?.status;
+      const count = status?.count ?? status?.totalCount ?? status?.noOfRecords ?? 0;
+
+      if (!statusCode) return accumulator;
+
+      const existingStatus = accumulator.find((item) => item.applicationstatus === statusCode);
+      if (existingStatus) {
+        existingStatus.count += count;
+        existingStatus.totalCount = existingStatus.count;
+      } else {
+        accumulator.push({
+          ...status,
+          applicationstatus: statusCode,
+          count,
+          totalCount: count,
+          selectionValue: statusCode,
+          selectionValues: [statusCode],
+        });
+      }
+
+      return accumulator;
+    }, []);
+  }, [data?.statuses]);
+
+  const updateTableForm = useCallback(
+    (nextValues) => {
+      dispatch({
+        key: "tableForm",
+        data: { ...formState.tableForm, ...nextValues },
+      });
+    },
+    [formState.tableForm]
+  );
+
+  const handleSearch = useCallback(
+    ({ applicationNo, mobileNumber }) => {
+      updateTableForm({ offset: 0 });
+      dispatch({
+        key: "searchForm",
+        data: {
+          applicationNo: String(applicationNo || "").trim(),
+          mobileNumber: String(mobileNumber || "").trim(),
+        },
+      });
+    },
+    [updateTableForm]
+  );
+
+  const handleStatusChange = useCallback(
+    (applicationStatus) => {
+      updateTableForm({ offset: 0 });
+      dispatch({
+        key: "filterForm",
+        data: { ...formState.filterForm, applicationStatus },
+      });
+    },
+    [formState.filterForm, updateTableForm]
+  );
+
+  const onPageSizeChange = useCallback(
+    (event) => {
+      updateTableForm({ limit: Number(event.target.value), offset: 0 });
+    },
+    [updateTableForm]
+  );
+
+  const tableProps = useInboxTableConfig({
+    parentRoute,
+    onPageSizeChange,
+    formState,
+    totalCount,
+    table,
+    dispatch,
+    onSortingByData: () => {},
+  });
 
   return (
-    <>
-      <Header>
-        {t("ES_COMMON_INBOX")}
-        {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
-      </Header>
-      {/* <section>
-        <CreateNDCApplicationStep />
-      </section> */}
-      <div className="NDCSection">
-        <InboxComposer
-          {...{
-            isInboxLoading,
-            PropsForInboxLinks,
-            ...propsForSearchForm,
-            ...propsForFilterForm,
-            ...propsForMobileSortForm,
-            propsForInboxTable,
-            propsForInboxMobileCards,
-            formState,
-          }}
+    <InboxWrapper
+      title={t("ES_COMMON_INBOX")}
+      totalCount={totalCount}
+      isLoading={isInboxLoading}
+      tableData={table}
+      tableProps={tableProps}
+      tableHeader="MODULE_NKS_NO_DUE_CERTIFICATE_FEES"
+      filterSection={
+        <NDCInboxFilters
+          statuses={statuses}
+          isInboxLoading={isInboxLoading}
+          selectedStatuses={formState.filterForm?.applicationStatus}
+          onStatusChange={handleStatusChange}
         />
-      </div>
-    </>
+      }
+      topBar={<NDCInboxSearch values={formState.searchForm} onSearch={handleSearch} />}
+      pagination={
+        <InboxPagination
+          offset={formState.tableForm?.offset || 0}
+          limit={formState.tableForm?.limit || 10}
+          totalCount={totalCount}
+          onPageSizeChange={onPageSizeChange}
+          onNextPage={() => updateTableForm({ offset: formState.tableForm.offset + formState.tableForm.limit })}
+          onPrevPage={() => updateTableForm({ offset: Math.max(0, formState.tableForm.offset - formState.tableForm.limit) })}
+        />
+      }
+    />
   );
 };
 

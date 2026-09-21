@@ -37,7 +37,7 @@ export const PTMyApplications = () => {
     history.push("/digit-ui/citizen/pt/property/create-application");
   };
   return (
-    <React.Fragment>
+    <section className="citizen-my-applications citizen-my-applications--pt">
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", float:"right", marginBottom:"15px" }}>
           {/* <h1 style={{ fontSize: "20px" }}>All Applications</h1> */}
@@ -73,6 +73,6 @@ export const PTMyApplications = () => {
       //     <Link to="/digit-ui/citizen/pt/property/new-application/info">{t("PT_COMMON_CLICK_HERE_TO_REGISTER_NEW_PROPERTY")}</Link>
       //   </span>
       // </p> */}
-    </React.Fragment>
+    </section>
   );
 };

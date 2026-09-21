@@ -1,0 +1,37 @@
+.employee-dashboard-container .employee-dashboard-quick-services-container {
+  .employee-dashboard-quick-services-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .employee-dashboard-resource-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    max-width: 100%;
+
+    .submit-bar {
+      width: auto;
+      height: auto;
+      min-height: 44px;
+      margin: 0;
+      padding: 12px 18px;
+      white-space: normal;
+      line-height: 1.4;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .employee-dashboard-resource-links {
+      width: 100%;
+      justify-content: flex-start;
+      .submit-bar { flex: 1 1 160px; }
+    }
+  }
+}

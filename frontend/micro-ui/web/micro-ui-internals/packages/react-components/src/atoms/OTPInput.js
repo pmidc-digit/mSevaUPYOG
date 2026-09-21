@@ -60,6 +60,7 @@ const OTPInput = (props) => {
 
   function inputChange(event) {
     const { value } = event.target;
+    if (props.masked && !/^\d?$/.test(value)) return;
     changeCodeAtFocus(value);
     if (isInputValueValid(value)) {
       focusNextInput();
@@ -72,6 +73,8 @@ const OTPInput = (props) => {
     OTPStack.push(
       <SingleInput
         key={i}
+        type={props.masked ? "password" : "number"}
+        inputMode="numeric"
         isFocus={activeInput === i}
         onChange={inputChange}
         onKeyDown={handleKeyDown}
@@ -89,10 +92,12 @@ const OTPInput = (props) => {
 
 OTPInput.propTypes = {
   length: PropTypes.number,
+  masked: PropTypes.bool,
 };
 
 OTPInput.defaultProps = {
   length: 0,
+  masked: false,
 };
 
 export default OTPInput;

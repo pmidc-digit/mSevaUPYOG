@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -817,13 +818,19 @@ public class EdcrApplicationService {
         return n;
     }
 
-    private ObjectNode buildBuiltUpArea(ObjectMapper mapper, JsonNode frd) {
-        ObjectNode n = mapper.createObjectNode();
-        n.put("existingBuiltUpArea", 0.0d);
-        n.put("proposedBuiltUpArea", num(frd, "totalBuiltUpArea"));
-        n.put("totalBuiltUpArea", num(frd, "totalBuiltUpArea"));
-        return n;
-    }
+	private ObjectNode buildBuiltUpArea(ObjectMapper mapper, JsonNode frd) {
+		ObjectNode n = mapper.createObjectNode();
+		BigDecimal existingBuiltUpArea = BigDecimal.valueOf(num(frd, "totalExistingBuiltUpArea"));
+		BigDecimal totalBuiltUpArea = BigDecimal.valueOf(num(frd, "totalBuiltUpArea"));
+		BigDecimal proposedBuiltUpArea = totalBuiltUpArea;
+		if (existingBuiltUpArea.compareTo(BigDecimal.ZERO) > 0) {
+			proposedBuiltUpArea = totalBuiltUpArea.subtract(existingBuiltUpArea);
+			n.put("existingBuiltUpArea", existingBuiltUpArea);
+		}
+		n.put("proposedBuiltUpArea", proposedBuiltUpArea);
+		n.put("totalBuiltUpArea", totalBuiltUpArea);
+		return n;
+	}
 
     private ObjectNode buildFarDetails(ObjectMapper mapper, JsonNode frd) {
         ObjectNode n = mapper.createObjectNode();

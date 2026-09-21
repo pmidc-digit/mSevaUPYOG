@@ -17,6 +17,7 @@ import {
   SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import React from "react";
+import "./EmployeeHome.scss";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
@@ -210,18 +211,21 @@ const EmployeeHome = ({ modules }) => {
 
   return (
     <div className="employee-app-container employee-dashboard-container">
-      {userName?.info?.tenantId === "pb.punjab" && !hasConfirmedEmployeeTenant(userName) && <EmployeeTenantSelection />}
-      <div style={welcomeCardStyle}>
-        <h1 style={welcomeTitleStyle}>Welcome {userName?.info?.name || "User"}</h1>
-        <p style={welcomeSubtitleStyle}>Manage and access employee services with ease and efficiency</p>
-      </div>
+      <section className="employee-dashboard-hero" aria-labelledby="employee-dashboard-welcome">
+        <div className="employee-dashboard-hero__content">
+          <p className="employee-dashboard-hero__eyebrow">mSeva Employee Portal</p>
+          <h1 id="employee-dashboard-welcome">
+            Hi, <span>{userName?.info?.name || "User"}</span>
+          </h1>
+        </div>
+      </section>
 
       <div className="employee-dashboard-table-and-services">
         <div className="employee-dashboard-quick-services-container">
           <div className="employee-dashboard-quick-services-header">
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
             {hasOBPSModule && (
-              <div className="display-flex-gap-2 items-center">
+              <div className="employee-dashboard-resource-links">
                 <SubmitBar label={t("mSeva Mobile App")} onSubmit={() => window.open(MSEVA_APP_LINK, "_blank")} />
                 <SubmitBar label={t("mSeva YouTube Channel")} onSubmit={() => window.open(MSEVA_YOUTUBE_LINK, "_blank")} />
                 <SubmitBar label={t("User Manual")} onSubmit={() => window.open(OBPS_EMPLOYEE_USER_MANUAL, "_blank")} />

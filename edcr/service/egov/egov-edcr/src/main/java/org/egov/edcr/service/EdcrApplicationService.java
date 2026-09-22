@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.Collections;
+import org.egov.common.entity.edcr.Building;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -598,9 +599,16 @@ public class EdcrApplicationService {
 
         try {
             Map<String, Object> finalReportData = extractFinalReportData(pl, dcrApplication);
-            if(!CollectionUtils.isEmpty(pl.getBlocks())) {
-            	finalReportData.put("buildingHeight", pl.getBlocks().get(0).getBuilding().getBuildingHeightExcludingMP().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
-            	finalReportData.put("totalBuildingHeight", pl.getBlocks().get(0).getBuilding().getBuildingHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+            if (!CollectionUtils.isEmpty(pl.getBlocks()) && pl.getBlocks().get(0).getBuilding() != null) {
+                Building firstBuilding = pl.getBlocks().get(0).getBuilding();
+                if (firstBuilding.getBuildingHeightExcludingMP() != null) {
+                    finalReportData.put("buildingHeight", firstBuilding.getBuildingHeightExcludingMP()
+                            .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+                }
+                if (firstBuilding.getBuildingHeight() != null) {
+                    finalReportData.put("totalBuildingHeight", firstBuilding.getBuildingHeight()
+                            .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+                }
             }
             if (finalReportData == null || finalReportData.isEmpty()) {
                 LOG.warn("finalReportData is empty. Building minimal overlay JSON.");

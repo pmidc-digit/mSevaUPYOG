@@ -520,148 +520,6 @@ public class RestEdcrApplicationController {
         planRes.setResponseInfo(responseInfo);
         return new ResponseEntity<>(planRes, HttpStatus.OK);
     }
-    
-    @ExceptionHandler(EdcrException.class)
-    public final ResponseEntity<ErrorResponse> handleEdcrException(EdcrException ex) {
-
-        ErrorResponse error = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                ex.getStatus());
-
-        return new ResponseEntity<>(error, ex.getStatus());
-    }
-    
-@ExceptionHandler(DataIntegrityViolationException.class)
-public final ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
-        DataIntegrityViolationException ex) {
-
-    String constraintName = getConstraintName(ex);
-
-    if ("uk_filestoremap_filestoreid".equalsIgnoreCase(constraintName)) {
-
-        ErrorResponse error = new ErrorResponse(
-                "BPA-409",
-                "The provided DXF FileStore ID already exists. Please provide a valid FileStore ID.",
-                HttpStatus.CONFLICT);
-
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
-    }
-
-    ErrorResponse error = new ErrorResponse(
-            "BPA-500",
-            "Unable to process the request due to a database constraint violation.",
-            HttpStatus.INTERNAL_SERVER_ERROR);
-
-    return new ResponseEntity<>(
-            error,
-            HttpStatus.INTERNAL_SERVER_ERROR);
-}
-    
-//  @ExceptionHandler(Exception.class)
-//  public final ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-//
-//      String errorDesc;
-//      if (ex.getLocalizedMessage() == null) {
-//          errorDesc = String.valueOf(ex).length() <= 200
-//                  ? String.valueOf(ex)
-//                  : String.valueOf(ex).substring(0, 200);
-//      } else {
-//          errorDesc = ex.getMessage();
-//      }
-//
-//      ErrorResponse error = new ErrorResponse(
-//              "Internal Server Error",
-//              errorDesc,
-//              HttpStatus.INTERNAL_SERVER_ERROR);
-//
-//      return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-//  }
-  
-@ExceptionHandler(Exception.class)
-public final ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-
-    String constraintName = getConstraintName(ex);
-
-    if ("uk_filestoremap_filestoreid".equalsIgnoreCase(constraintName)) {
-
-        ErrorResponse error = new ErrorResponse(
-                "BPA-409",
-                "The provided DXF FileStore ID already exists. Please provide a valid FileStore ID.",
-                HttpStatus.CONFLICT);
-
-        return new ResponseEntity<>(
-                error,
-                HttpStatus.CONFLICT);
-    }
-
-    String errorDesc = getRootCauseMessage(ex);
-
-    ErrorResponse error = new ErrorResponse(
-            "Internal Server Error",
-            errorDesc,
-            HttpStatus.INTERNAL_SERVER_ERROR);
-
-    return new ResponseEntity<>(
-            error,
-            HttpStatus.INTERNAL_SERVER_ERROR);
-}
-    
-    private String getConstraintName(Throwable ex) {
-
-        Throwable cause = ex;
-
-        while (cause != null) {
-
-            if (cause instanceof ConstraintViolationException) {
-
-                return ((ConstraintViolationException) cause)
-                        .getConstraintName();
-            }
-
-            cause = cause.getCause();
-        }
-
-        return null;
-    }
-    
-    private String getRootCauseMessage(Throwable ex) {
-
-        Throwable current = ex;
-        String lastValidMessage = null;
-
-        while (current != null) {
-
-            String message = current.getMessage();
-
-            if (message != null && !message.trim().isEmpty()) {
-
-                message = message.trim();
-
-                if (isMeaningfulExceptionMessage(message)) {
-                    lastValidMessage = message;
-                }
-            }
-
-            current = current.getCause();
-        }
-
-        if (lastValidMessage == null) {
-            return "Internal Server Error";
-        }
-
-        return lastValidMessage.length() <= 200
-                ? lastValidMessage
-                : lastValidMessage.substring(0, 200);
-    }
-    
-    private boolean isMeaningfulExceptionMessage(String message) {
-
-        return !"could not execute statement".equalsIgnoreCase(message)
-                && !"null".equalsIgnoreCase(message)
-                && !"Internal Server Error".equalsIgnoreCase(message)
-                && !message.trim().isEmpty();
-    }
 
     @PostMapping(value = "/occomparison", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -838,17 +696,17 @@ public final ResponseEntity<ErrorResponse> handleGenericException(Exception ex) 
     		        errorResponse.put("message", "PDF processing failed");
     		        errorResponse.put("error", e.getMessage());
 
-    		        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    		        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 
     		    } catch (Exception e) {
 
     		        LOGGER.error("Unexpected error occurred during mergeSanctionLetter", e);
 
     		        Map<String, Object> errorResponse = new HashMap<>();
-    		        errorResponse.put("message", "Internal server error");
+    		        errorResponse.put("message", "Bad request: PDF processing failed");
     		        errorResponse.put("error", e.getMessage());
 
-    		        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    		        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     		    }
     		}
     		    
@@ -921,8 +779,8 @@ public final ResponseEntity<ErrorResponse> handleGenericException(Exception ex) 
 				} catch (Exception ex) {
 					LOGGER.error("Unexpected error while updating BPA details.", ex);
 					response.put("success", false);
-					response.put("message", "Internal server error occurred while processing BPA details.");
-					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+					response.put("message", "Bad request: Failed to update BPA details: " + ex.getMessage());
+					return ResponseEntity.badRequest().body(response);
 				}
 			}
 

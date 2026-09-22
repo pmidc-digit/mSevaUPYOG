@@ -672,6 +672,51 @@ public class Util {
 
     }
 
+    public static BigDecimal extractBigDecimalFromText(String rawText) {
+        return extractBigDecimalFromText(rawText, null, null, null);
+    }
+
+    public static BigDecimal extractBigDecimalFromText(String rawText, PlanDetail planDetail, String layerName, String fieldName) {
+        if (StringUtils.isBlank(rawText)) {
+            return null;
+        }
+        String text2 = rawText;
+        if (text2.contains(";")) {
+            String[] textSplit = text2.split(";");
+            int length = textSplit.length;
+            if (length >= 1) {
+                text2 = textSplit[length - 1];
+            }
+        }
+        text2 = text2.replaceAll("[^\\d.]", "");
+        if (text2.isEmpty() || text2.equals(".")) {
+            if (planDetail != null) {
+                String layerDesc = StringUtils.isNotBlank(layerName) ? " on layer '" + layerName + "'" : "";
+                String key = StringUtils.isNotBlank(layerName) ? layerName : "INVALID_DIMENSION";
+                planDetail.addError(key, "Dimension text '" + rawText.trim() + "'" + layerDesc + " not defined correctly into the plan.");
+            }
+            return null;
+        }
+        // Handle multiple decimal points gracefully (e.g., "12.3.4" or "10..5")
+        int firstDot = text2.indexOf('.');
+        if (firstDot != -1) {
+            String intPart = text2.substring(0, firstDot);
+            String decPart = text2.substring(firstDot + 1).replace(".", "");
+            text2 = (intPart.isEmpty() ? "0" : intPart) + (decPart.isEmpty() ? "" : "." + decPart);
+        }
+        try {
+            return BigDecimal.valueOf(Double.parseDouble(text2));
+        } catch (NumberFormatException e) {
+            LOG.warn("Failed to parse numeric value from '{}': {}", rawText, e.getMessage());
+            if (planDetail != null) {
+                String layerDesc = StringUtils.isNotBlank(layerName) ? " on layer '" + layerName + "'" : "";
+                String key = StringUtils.isNotBlank(layerName) ? layerName : "INVALID_DIMENSION";
+                planDetail.addError(key, "Dimension text '" + rawText.trim() + "'" + layerDesc + " not defined correctly into the plan.");
+            }
+            return null;
+        }
+    }
+
     public static void extractDimensionValue(PlanDetail planDetail, List<BigDecimal> dimensionValues, DXFDimension line,
             String layerName) {
         DXFDocument dxfDocument = planDetail.getDoc();
@@ -701,21 +746,10 @@ public class Util {
                         BigDecimal convertedValue = convertToInch(text2);
                         dimensionValues.add(convertedValue);
                     } else {
-                        if (text2.contains(";")) {
-                            String[] textSplit = text2.split(";");
-                            int length = textSplit.length;
-
-                            if (length >= 1) {
-                                int index = length - 1;
-                                text2 = textSplit[index];
-                                text2 = text2.replaceAll("[^\\d.]", "");
-                            } else
-                                text2 = text2.replaceAll("[^\\d.]", "");
-                        } else
-                            text2 = text2.replaceAll("[^\\d.]", "");
-
-                        if (!text2.isEmpty())
-                            dimensionValues.add(BigDecimal.valueOf(Double.parseDouble(text2)));
+                        BigDecimal parsedValue = extractBigDecimalFromText(text2, planDetail, layerName, "Dimension value");
+                        if (parsedValue != null) {
+                            dimensionValues.add(parsedValue);
+                        }
                     }
 
                 }
@@ -814,9 +848,10 @@ public class Util {
             LOG.error("Dimension text : " + text2);
             BigDecimal textValue = BigDecimal.ZERO;
             if (StringUtils.isNotBlank(text2)) {
-                textValue = BigDecimal.valueOf(Double.parseDouble(text2))
-                        .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
-
+                BigDecimal parsed = extractBigDecimalFromText(text2, planDetail, layerName, "Dimension text");
+                if (parsed != null) {
+                    textValue = parsed.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
+                }
             }
             LOG.error("dimDecimal : " + textValue);
             // LOG.error("Dimension text : " + text2);
@@ -1497,21 +1532,10 @@ public class Util {
                                     text2 = next.getText();
                                 }
 
-                                if (text2.contains(";")) {
-                                    String[] textSplit = text2.split(";");
-                                    int length = textSplit.length;
-
-                                    if (length >= 1) {
-                                        int index = length - 1;
-                                        text2 = textSplit[index];
-                                        text2 = text2.replaceAll("[^\\d.]", "");
-                                    } else
-                                        text2 = text2.replaceAll("[^\\d.]", "");
-                                } else
-                                    text2 = text2.replaceAll("[^\\d.]", "");
-
-                                if (!text2.isEmpty())
-                                    value = BigDecimal.valueOf(Double.parseDouble(text2));
+                                BigDecimal parsedVal = extractBigDecimalFromText(text2, pl, name, "Dimension");
+                                if (parsedVal != null) {
+                                    value = parsedVal;
+                                }
 
                             }
                         }

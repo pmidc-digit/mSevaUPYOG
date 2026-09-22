@@ -204,29 +204,41 @@ public class CollectionNotificationConsumer {
 	            List<Payment> enrichedPayments = paymentService.getPayments(requestInfo, criteria, businessService);
                 log.info("Payment search response for PDF: {}", enrichedPayments);
 	            if (!CollectionUtils.isEmpty(enrichedPayments)) {
-	                paymentsForPdf = enrichedPayments;
-	                log.info("Using enriched payment from DB search for PDF creation, receipt: " + receiptNumber);
+                paymentsForPdf = enrichedPayments;
+                log.info("Using enriched payment from DB search for PDF creation, receipt: " + receiptNumber);
 
-	                // The row mapper has bill/billDetails/billAccountDetails commented out,
-	                // so paymentDetail.bill is null from DB fetch — for ALL services.
-	                // Always copy bill from original Kafka payment (which has complete bill data)
-	                // and rebuild additionalDetails from it.
-	                for (Payment enriched : paymentsForPdf) {
-	                    for (PaymentDetail enrichedDetail : enriched.getPaymentDetails()) {
-	                        PaymentDetail kafkaDetail = findMatchingPaymentDetail(
-	                                validatedPayments, enrichedDetail.getReceiptNumber());
+                for (Payment enriched : paymentsForPdf) {
+                    for (PaymentDetail enrichedDetail : enriched.getPaymentDetails()) {
+                        PaymentDetail kafkaDetail = findMatchingPaymentDetail(
+                                validatedPayments, enrichedDetail.getReceiptNumber());
 
-	                        if (kafkaDetail != null && kafkaDetail.getBill() != null) {
-	                            enrichedDetail.setBill(kafkaDetail.getBill());
-	                            enrichedDetail.setAdditionalDetails(
-	                                    buildAdditionalDetailsFromBill(enrichedDetail, objectMapper));
-	                            log.info("Copied Kafka bill and built additionalDetails for receipt: {}",
-	                                    enrichedDetail.getReceiptNumber());
-	                        } else {
-	                            log.warn("Could not find Kafka bill for receipt: {}", enrichedDetail.getReceiptNumber());
-	                        }
-	                    }
-	                }
+                        if (kafkaDetail != null && kafkaDetail.getBill() != null) {
+                            // Always copy Kafka bill — needed by ALL templates that read
+                            // bill.billAccountDetails (PT, TL, CLU, BPA, NDC etc.)
+                            enrichedDetail.setBill(kafkaDetail.getBill());
+
+                            // Only rebuild additionalDetails for WS/SW —
+                            // these are the ONLY templates that read paymentDetails[0].additionalDetails.*
+                            // For PT/consolidated/FIRENOC the DB additionalDetails has the correct
+                            // structure (assessmentYears, arrearArray, tax, cgst etc.) — don't overwrite.
+                            String svc = enrichedDetail.getBusinessService();
+                            boolean isWsOrSw = svc != null &&
+                                    (svc.equalsIgnoreCase("WS") || svc.equalsIgnoreCase("SW")
+                                    || svc.toUpperCase().startsWith("WS.") || svc.toUpperCase().startsWith("SW."));
+                            if (isWsOrSw) {
+                                enrichedDetail.setAdditionalDetails(
+                                        buildAdditionalDetailsFromBill(enrichedDetail, objectMapper));
+                                log.info("Rebuilt additionalDetails for WS/SW receipt: {}",
+                                        enrichedDetail.getReceiptNumber());
+                            }
+                            log.info("Copied Kafka bill for receipt: {}, service: {}",
+                                    enrichedDetail.getReceiptNumber(), svc);
+                        } else {
+                            log.warn("Could not find Kafka bill for receipt: {}", enrichedDetail.getReceiptNumber());
+                        }
+                    }
+                }
+
 	            } else {
 	                log.warn("Payment search returned empty, falling back to Kafka payment for receipt: " + receiptNumber);
 	            }

@@ -290,31 +290,71 @@ public class PaymentNotificationService {
 
 
     /**
-     * Enriches the map with values from receipt
+     * Enriches the map with values from receipt.
+     * Each field is read individually so that a missing/null optional field does not
+     * abort processing for the entire receipt (Fix for RECEIPT ERROR CustomException).
+     *
      * @param context The documentContext of the receipt
+     * @param businessService The business service to filter on
      * @return The map containing required fields from receipt
      */
     private Map<String,String> enrichValMap(DocumentContext context, String businessService){
         Map<String,String> valMap = new HashMap<>();
-        try{
 
-            List <String>businessServiceList=context.read("$.Payment.paymentDetails[?(@.businessService=='"+businessService+"')].businessService");
-            List <String>consumerCodeList=context.read("$.Payment.paymentDetails[?(@.businessService=='"+businessService+"')].bill.consumerCode");
-            List <String>mobileNumberList=context.read("$.Payment.paymentDetails[?(@.businessService=='"+businessService+"')].bill.mobileNumber");
-            List <Integer>amountPaidList=context.read("$.Payment.paymentDetails[?(@.businessService=='"+businessService+"')].bill.amountPaid");
-            List <String>receiptNumberList=context.read("$.Payment.paymentDetails[?(@.businessService=='"+businessService+"')].receiptNumber");
-            valMap.put(businessServiceKey,businessServiceList.isEmpty()?null:businessServiceList.get(0));
-            valMap.put(consumerCodeKey,consumerCodeList.isEmpty()?null:consumerCodeList.get(0));
-            valMap.put(tenantIdKey,context.read("$.Payment.tenantId"));
-            valMap.put(payerMobileNumberKey,context.read("$.Payment.mobileNumber"));
-            valMap.put(paidByKey,context.read("$.Payment.paidBy"));
-            valMap.put(amountPaidKey,amountPaidList.isEmpty()?null:String.valueOf(amountPaidList.get(0)));
-            valMap.put(receiptNumberKey,receiptNumberList.isEmpty()?null:receiptNumberList.get(0));
-            valMap.put(payerNameKey,context.read("$.Payment.payerName"));
+        // ── filtered lists (safe: filter returns empty list when field absent) ──
+        List<String> businessServiceList = Collections.emptyList();
+        List<String> consumerCodeList    = Collections.emptyList();
+        List<Integer> amountPaidList     = Collections.emptyList();
+        List<String> receiptNumberList   = Collections.emptyList();
+
+        try {
+            businessServiceList = context.read("$.Payment.paymentDetails[?(@.businessService=='" + businessService + "')].businessService");
+        } catch (Exception e) {
+            log.warn("enrichValMap: could not read businessService list for service={} : {}", businessService, e.getMessage());
         }
-        catch (Exception e){
-            throw new CustomException("RECEIPT ERROR","Unable to fetch values from receipt");
+        try {
+            consumerCodeList = context.read("$.Payment.paymentDetails[?(@.businessService=='" + businessService + "')].bill.consumerCode");
+        } catch (Exception e) {
+            log.warn("enrichValMap: could not read consumerCode list for service={} : {}", businessService, e.getMessage());
         }
+        try {
+            amountPaidList = context.read("$.Payment.paymentDetails[?(@.businessService=='" + businessService + "')].bill.amountPaid");
+        } catch (Exception e) {
+            log.warn("enrichValMap: could not read amountPaid list for service={} : {}", businessService, e.getMessage());
+        }
+        try {
+            receiptNumberList = context.read("$.Payment.paymentDetails[?(@.businessService=='" + businessService + "')].receiptNumber");
+        } catch (Exception e) {
+            log.warn("enrichValMap: could not read receiptNumber list for service={} : {}", businessService, e.getMessage());
+        }
+
+        valMap.put(businessServiceKey, businessServiceList.isEmpty() ? null : businessServiceList.get(0));
+        valMap.put(consumerCodeKey,    consumerCodeList.isEmpty()    ? null : consumerCodeList.get(0));
+        valMap.put(amountPaidKey,      amountPaidList.isEmpty()      ? null : String.valueOf(amountPaidList.get(0)));
+        valMap.put(receiptNumberKey,   receiptNumberList.isEmpty()   ? null : receiptNumberList.get(0));
+
+        // ── top-level scalar fields (optional – may be absent in some gateway payloads) ──
+        try {
+            valMap.put(tenantIdKey, context.read("$.Payment.tenantId"));
+        } catch (Exception e) {
+            log.warn("enrichValMap: could not read Payment.tenantId : {}", e.getMessage());
+        }
+        try {
+            valMap.put(payerMobileNumberKey, context.read("$.Payment.mobileNumber"));
+        } catch (Exception e) {
+            log.warn("enrichValMap: could not read Payment.mobileNumber : {}", e.getMessage());
+        }
+        try {
+            valMap.put(paidByKey, context.read("$.Payment.paidBy"));
+        } catch (Exception e) {
+            log.warn("enrichValMap: could not read Payment.paidBy : {}", e.getMessage());
+        }
+        try {
+            valMap.put(payerNameKey, context.read("$.Payment.payerName"));
+        } catch (Exception e) {
+            log.warn("enrichValMap: could not read Payment.payerName : {}", e.getMessage());
+        }
+
         return valMap;
     }
 

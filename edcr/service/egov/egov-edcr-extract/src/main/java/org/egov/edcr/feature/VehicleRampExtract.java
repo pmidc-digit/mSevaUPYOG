@@ -139,16 +139,12 @@ public class VehicleRampExtract extends FeatureExtract {
 		        String rampHeight = Util.getMtextByLayerName(pl.getDoc(), vehicleRmpLayer,
 		                "RAMP_HT_M");
 				if (!isBlank(rampHeight)) {
-					if (rampHeight.contains("="))
-						rampHeight = rampHeight.split("=")[1] != null
-								? rampHeight.split("=")[1].replaceAll("[^\\d.]", "") : "";
-					else
-						rampHeight = rampHeight.replaceAll("[^\\d.]", "");
-
-					if (!isBlank(rampHeight)) {
-						BigDecimal height = BigDecimal.valueOf(Double.parseDouble(rampHeight));
+					if (rampHeight.contains("=")) {
+						rampHeight = rampHeight.split("=")[1] != null ? rampHeight.split("=")[1] : "";
+					}
+					BigDecimal height = Util.extractBigDecimalFromText(rampHeight, pl, vehicleRmpLayer, "Ramp height");
+					if (height != null) {
 						flight.setHeight(height);
-
 					}
 				}
 				
@@ -191,15 +187,11 @@ public class VehicleRampExtract extends FeatureExtract {
 		                "FLR_HT_M");
 
 		        if (!isBlank(floorHeight)) {
-		            if (floorHeight.contains("="))
-		                floorHeight = floorHeight.split("=")[1] != null
-		                        ? floorHeight.split("=")[1].replaceAll("[^\\d.]", "")
-		                        : "";
-		            else
-		                floorHeight = floorHeight.replaceAll("[^\\d.]", "");
-
-		            if (!isBlank(floorHeight)) {
-		                BigDecimal height = BigDecimal.valueOf(Double.parseDouble(floorHeight));
+		            if (floorHeight.contains("=")) {
+		                floorHeight = floorHeight.split("=")[1] != null ? floorHeight.split("=")[1] : "";
+		            }
+		            BigDecimal height = Util.extractBigDecimalFromText(floorHeight, pl, vehicleRmpLayer, "Floor height");
+		            if (height != null) {
 		                vehicleRamp.setFloorHeight(height);
 		            }
 		        }

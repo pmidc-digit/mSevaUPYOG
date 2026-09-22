@@ -936,8 +936,9 @@ public class PlanReportServiceV2 {
                     dcrReportBlockDetail.setConstructedArea(building.getTotalConstructedArea());
 
                     List<Floor> floors = building.getFloors();
-                    BigDecimal buildingHeightExMumpty = building.getBuildingHeightExcludingMP()
-                            .setScale(2, RoundingMode.HALF_UP);
+                    BigDecimal buildingHeightExMumpty = (building.getBuildingHeightExcludingMP() != null)
+                            ? building.getBuildingHeightExcludingMP().setScale(2, RoundingMode.HALF_UP)
+                            : null;
                     if (buildingHeightExMumpty != null &&
                             buildingHeightExMumpty.compareTo(Fire_Tender_Movement) > 0) {
                         LOG.info("building height exclude mumpty : " + buildingHeightExMumpty);
@@ -1194,7 +1195,12 @@ public class PlanReportServiceV2 {
         } catch (Exception e) {
             LOG.error("Error occurred while generating report for application: {} - Error: {}",
                     dcrApplication.getApplicationNumber(), e.getMessage(), e);
-            throw new RuntimeException("Failed to generate report: " + e.getMessage(), e);
+            String msg = (e.getMessage() != null && !e.getMessage().trim().isEmpty() && !e.getMessage().equalsIgnoreCase("null"))
+                    ? e.getMessage().trim()
+                    : (e.getClass().getSimpleName() + (e.getStackTrace() != null && e.getStackTrace().length > 0
+                            ? " at " + e.getStackTrace()[0].getClassName() + "." + e.getStackTrace()[0].getMethodName() + "(line " + e.getStackTrace()[0].getLineNumber() + ")"
+                            : ""));
+            throw new RuntimeException("Failed to generate report: " + msg, e);
         }
     }
 }

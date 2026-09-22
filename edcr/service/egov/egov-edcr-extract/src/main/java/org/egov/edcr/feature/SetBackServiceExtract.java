@@ -194,17 +194,17 @@ public class SetBackServiceExtract extends FeatureExtract {
         processYard(pl, doc, setBack, yardName, YardType.SIDE_2);
     }
 
-    private void setYardHeight(DXFDocument doc, String yardName, YardDetail yard) {
+    private void setYardHeight(PlanDetail pl, DXFDocument doc, String yardName, YardDetail yard) {
         String height = Util.getMtextByLayerName(doc, yardName, "");// change this api to get by using layer name and
                                                                     // text.
         if (height != null) {
-            if (height.contains("="))
-                height = height.split("=")[1] != null ? height.split("=")[1].replaceAll("[^\\d.]", "") : "";
-            else
-                height = height.replaceAll("[^\\d.]", "");
-
-            if (!height.isEmpty())
-                yard.setHeight(BigDecimal.valueOf(Double.parseDouble(height)));
+            if (height.contains("=")) {
+                height = height.split("=")[1] != null ? height.split("=")[1] : "";
+            }
+            BigDecimal yardHeight = Util.extractBigDecimalFromText(height, pl, yardName, "Yard height");
+            if (yardHeight != null) {
+                yard.setHeight(yardHeight);
+            }
         }
     }
 
@@ -294,7 +294,7 @@ public class SetBackServiceExtract extends FeatureExtract {
         // before requesting the calculated distance.
         attachYard(setBack, yardType, yard);
         setMinimumDistance(pl, doc, setBack, yardName, yard);
-        setYardHeight(doc, yardName, yard);
+        setYardHeight(pl, doc, yardName, yard);
         setYardWidthAndValidateColor(pl, doc, yardName, yard);
 
         LOG.info("{} minimum distance for layer {} = {}", yardType, yardName, yard.getMinimumDistance());

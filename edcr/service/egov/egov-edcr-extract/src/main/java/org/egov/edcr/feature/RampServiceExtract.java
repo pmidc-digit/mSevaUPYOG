@@ -110,15 +110,11 @@ public class RampServiceExtract extends FeatureExtract {
                                     String floorHeight = Util.getMtextByLayerName(pl.getDoc(), rmpLayer, "FLR_HT_M");
 
                                     if (!isBlank(floorHeight)) {
-                                        if (floorHeight.contains("="))
-                                            floorHeight = floorHeight.split("=")[1] != null
-                                                    ? floorHeight.split("=")[1].replaceAll("[^\\d.]", "")
-                                                    : "";
-                                        else
-                                            floorHeight = floorHeight.replaceAll("[^\\d.]", "");
-
-                                        if (!isBlank(floorHeight)) {
-                                            BigDecimal height = BigDecimal.valueOf(Double.parseDouble(floorHeight));
+                                        if (floorHeight.contains("=")) {
+                                            floorHeight = floorHeight.split("=")[1] != null ? floorHeight.split("=")[1] : "";
+                                        }
+                                        BigDecimal height = Util.extractBigDecimalFromText(floorHeight, pl, rmpLayer, "Floor height");
+                                        if (height != null) {
                                             ramp.setFloorHeight(height);
                                         }
                                         ramp.setSlopeRatio(slopeRatio);

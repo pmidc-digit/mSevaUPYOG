@@ -155,13 +155,21 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			BigDecimal height = Util.getSingleDimensionValueByLayer(pl.getDoc(), layerName, pl);
 			
 			Map<String, String> data = Util.getColorByDimensionByLayer(pl, layerName);
-	        String layer = data.get("layerName");
-	        String color = data.get("colorCode");
-			Util.validateLayerColor(layer, Integer.parseInt(color), pl);
+			if (data != null && data.get("colorCode") != null && data.get("layerName") != null) {
+				try {
+					Util.validateLayerColor(data.get("layerName"), Integer.parseInt(data.get("colorCode")), pl);
+				} catch (Exception e) {
+					LOG.warn("Failed to parse color code for layer {}: {}", data.get("layerName"), e.getMessage());
+				}
+			}
 	        
 			b.setHeight(height);
-			b.getBuilding().setBuildingHeight(height.setScale(2, RoundingMode.HALF_UP));
-			b.getBuilding().setDeclaredBuildingHeight(height);
+			if (height != null && b.getBuilding() != null) {
+				b.getBuilding().setBuildingHeight(height.setScale(2, RoundingMode.HALF_UP));
+			}
+			if (b.getBuilding() != null) {
+				b.getBuilding().setDeclaredBuildingHeight(height);
+			}
 
 			String layerName1 = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + b.getNumber() + "_"
 					+ layerNames.getLayerName("LAYER_NAME_HEIGHT_OF_BUILDING_EXCLUDING_MP"); // building height
@@ -169,12 +177,20 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 																								// parapet
 			BigDecimal heightExMP = Util.getSingleDimensionValueByLayer(pl.getDoc(), layerName1, pl);
 			
-			if(heightExMP!=null) {
-				data = Util.getColorByDimensionByLayer(pl, layerName);
-				Util.validateLayerColor(data.get("layerName"), Integer.parseInt(data.get("colorCode")), pl);
+			if (heightExMP != null) {
+				data = Util.getColorByDimensionByLayer(pl, layerName1);
+				if (data != null && data.get("colorCode") != null && data.get("layerName") != null) {
+					try {
+						Util.validateLayerColor(data.get("layerName"), Integer.parseInt(data.get("colorCode")), pl);
+					} catch (Exception e) {
+						LOG.warn("Failed to parse color code for layer {}: {}", data.get("layerName"), e.getMessage());
+					}
+				}
 			}			
 			
-			b.getBuilding().setBuildingHeightExcludingMP(heightExMP);
+			if (b.getBuilding() != null) {
+				b.getBuilding().setBuildingHeightExcludingMP(heightExMP);
+			}
 
 //			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
 //				b.getBuilding().setIsHighRise(true);

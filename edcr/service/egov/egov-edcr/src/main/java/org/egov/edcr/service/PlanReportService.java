@@ -1905,7 +1905,9 @@ public class PlanReportService {
                     dcrReportBlockDetail.setBuildingHeightExcludingMPt(building.getBuildingHeightExcludingMP());
                     dcrReportBlockDetail.setConstructedArea(building.getTotalConstructedArea());
                     List<Floor> floors = building.getFloors();
-                    BigDecimal buildingHeightExMumpty = building.getBuildingHeightExcludingMP().setScale(2, RoundingMode.HALF_UP);
+                    BigDecimal buildingHeightExMumpty = (building.getBuildingHeightExcludingMP() != null)
+                            ? building.getBuildingHeightExcludingMP().setScale(2, RoundingMode.HALF_UP)
+                            : null;
                     if (buildingHeightExMumpty != null &&
                     		buildingHeightExMumpty.compareTo(Fire_Tender_Movement) > 0) {   
                     	LOG.info("building height exclude mumpty : " + buildingHeightExMumpty);

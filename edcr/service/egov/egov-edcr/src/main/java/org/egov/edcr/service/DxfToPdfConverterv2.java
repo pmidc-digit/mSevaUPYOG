@@ -208,6 +208,41 @@ public class DxfToPdfConverterv2 {
                 "stroke=\"%s\" stroke-width=\"%.4f\" fill=\"none\"/>",
                 sx, sy, r, r, largeArc, sweepFlag, ex, ey, color, lw);
         }
+
+        double[] getBoundingBox() {
+            if (radius <= 0) {
+                return new double[]{cx, cy, cx, cy};
+            }
+            double sweep = endAngle - startAngle;
+            if (sweep < 0) sweep += 360.0;
+            if (sweep >= 360.0 || Math.abs(endAngle - startAngle) >= 360.0) {
+                return new double[]{cx - radius, cy - radius, cx + radius, cy + radius};
+            }
+
+            double sa = ((startAngle % 360.0) + 360.0) % 360.0;
+            double sx = cx + radius * Math.cos(Math.toRadians(sa));
+            double sy = cy + radius * Math.sin(Math.toRadians(sa));
+            double ea = ((endAngle % 360.0) + 360.0) % 360.0;
+            double ex = cx + radius * Math.cos(Math.toRadians(ea));
+            double ey = cy + radius * Math.sin(Math.toRadians(ea));
+
+            double minX = Math.min(sx, ex);
+            double maxX = Math.max(sx, ex);
+            double minY = Math.min(sy, ey);
+            double maxY = Math.max(sy, ey);
+
+            double[] quadAngles = {0.0, 90.0, 180.0, 270.0};
+            for (double qa : quadAngles) {
+                double delta = ((qa - sa) % 360.0 + 360.0) % 360.0;
+                if (delta > 0 && delta < sweep) {
+                    if (qa == 0.0) maxX = cx + radius;
+                    else if (qa == 90.0) maxY = cy + radius;
+                    else if (qa == 180.0) minX = cx - radius;
+                    else if (qa == 270.0) minY = cy - radius;
+                }
+            }
+            return new double[]{minX, minY, maxX, maxY};
+        }
     }
 
     static class EllipseEntity extends Entity {
@@ -264,6 +299,58 @@ public class DxfToPdfConverterv2 {
             double ly = -ry * Math.sin(param);
             return new double[]{cx + lx * cosR - ly * sinR, cy + lx * sinR + ly * cosR};
         }
+
+        double[] getBoundingBox() {
+            double a2 = majorX * majorX + majorY * majorY;
+            if (a2 <= 0) {
+                return new double[]{cx, cy, cx, cy};
+            }
+            double sweep = endParam - startParam;
+            if (sweep < 0) sweep += 2 * Math.PI;
+            if (sweep >= 2 * Math.PI || Math.abs(endParam - startParam) >= 2 * Math.PI) {
+                double extX = Math.sqrt(majorX * majorX + (ratio * majorY) * (ratio * majorY));
+                double extY = Math.sqrt(majorY * majorY + (ratio * majorX) * (ratio * majorX));
+                return new double[]{cx - extX, cy - extY, cx + extX, cy + extY};
+            }
+
+            double sp = ((startParam % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+            double ep = ((endParam % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+            double A = majorX;
+            double B = -ratio * majorY;
+            double C = majorY;
+            double D = ratio * majorX;
+
+            double sx = cx + A * Math.cos(sp) + B * Math.sin(sp);
+            double sy = cy + C * Math.cos(sp) + D * Math.sin(sp);
+            double ex = cx + A * Math.cos(ep) + B * Math.sin(ep);
+            double ey = cy + C * Math.cos(ep) + D * Math.sin(ep);
+
+            double minX = Math.min(sx, ex);
+            double maxX = Math.max(sx, ex);
+            double minY = Math.min(sy, ey);
+            double maxY = Math.max(sy, ey);
+
+            double tx1 = Math.atan2(B, A);
+            double tx2 = tx1 + Math.PI;
+            double ty1 = Math.atan2(D, C);
+            double ty2 = ty1 + Math.PI;
+
+            double[] candidates = {tx1, tx2, ty1, ty2};
+            for (double t : candidates) {
+                double delta = ((t - sp) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                if (delta > 0 && delta < sweep) {
+                    double x = cx + A * Math.cos(t) + B * Math.sin(t);
+                    double y = cy + C * Math.cos(t) + D * Math.sin(t);
+                    minX = Math.min(minX, x);
+                    maxX = Math.max(maxX, x);
+                    minY = Math.min(minY, y);
+                    maxY = Math.max(maxY, y);
+                }
+            }
+
+            return new double[]{minX, minY, maxX, maxY};
+        }
     }
 
     static class PolylineEntity extends Entity {
@@ -285,14 +372,14 @@ public class DxfToPdfConverterv2 {
                 double[] v = vertices.get(i);
                 double vx = tx(v[0], t);
                 double vy = ty(v[1], t);
-                double bulge = v.length > 2 ? v[2] : 0;
                 if (i == 0) {
                     d.append(String.format(Locale.US, "M %.4f %.4f", vx, vy));
                 } else {
                     double[] prev = vertices.get(i - 1);
-                    if (Math.abs(bulge) > 1e-10) {
+                    double prevBulge = prev.length > 2 ? prev[2] : 0;
+                    if (Math.abs(prevBulge) > 1e-10) {
                         // Arc segment from bulge
-                        appendBulgeArc(d, prev[0], prev[1], v[0], v[1], prev[2], t);
+                        appendBulgeArc(d, prev[0], prev[1], v[0], v[1], prevBulge, t);
                     } else {
                         d.append(String.format(Locale.US, " L %.4f %.4f", vx, vy));
                     }
@@ -302,8 +389,9 @@ public class DxfToPdfConverterv2 {
             if (closed && !vertices.isEmpty()) {
                 double[] last = vertices.get(vertices.size() - 1);
                 double[] first = vertices.get(0);
-                if (Math.abs(last[2]) > 1e-10) {
-                    appendBulgeArc(d, last[0], last[1], first[0], first[1], last[2], t);
+                double lastBulge = last.length > 2 ? last[2] : 0;
+                if (Math.abs(lastBulge) > 1e-10) {
+                    appendBulgeArc(d, last[0], last[1], first[0], first[1], lastBulge, t);
                 }
                 d.append(" Z");
             }
@@ -330,7 +418,15 @@ public class DxfToPdfConverterv2 {
             // Convert bulge to SVG arc params
             double scale = t[0];
             double len = Math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
+            if (len < 1e-6 || Math.abs(bulge) < 1e-10 || !Double.isFinite(bulge)) {
+                d.append(String.format(Locale.US, " L %.4f %.4f", tx(x2, t), ty(y2, t)));
+                return;
+            }
             double r = len * (bulge * bulge + 1) / (4 * Math.abs(bulge)) * scale;
+            if (!Double.isFinite(r) || r <= 0) {
+                d.append(String.format(Locale.US, " L %.4f %.4f", tx(x2, t), ty(y2, t)));
+                return;
+            }
             int largeArc = Math.abs(bulge) > 1 ? 1 : 0;
             // In SVG (Y-flipped), positive bulge (CCW) -> sweepFlag=0
             int sweepFlag = bulge > 0 ? 0 : 1;
@@ -2211,46 +2307,82 @@ public class DxfToPdfConverterv2 {
     }
 
     if (toExclude.isEmpty()) {
-        /*
-         * IMPORTANT:
-         * Always fit the generated SVG/PDF to the geometry-derived extents.
-         *
-         * A DXF header can contain a perfectly valid but very large/stale
-         * $EXTMIN/$EXTMAX box. The old logic accepted that box whenever it
-         * merely contained the geometry. That makes the real drawing occupy
-         * only a small part of the generated PDF page.
-         *
-         * Header extents are therefore used only as a fallback when no
-         * geometry bounds can be calculated (handled above).
-         */
         doc.minX = fullBox[0];
         doc.minY = fullBox[1];
         doc.maxX = fullBox[2];
         doc.maxY = fullBox[3];
-        doc.extentsSet = true;
+    } else {
+        List<Cluster> kept = new ArrayList<>(clusters);
+        kept.removeAll(toExclude);
+        if (kept.isEmpty()) kept = clusters; // safety net, never end up empty
 
-        LOG.info(
-                "Using geometry-derived fit extents: minX={}, minY={}, maxX={}, maxY={}, width={}, height={}",
-                doc.minX, doc.minY, doc.maxX, doc.maxY,
-                doc.maxX - doc.minX, doc.maxY - doc.minY);
+        for (Cluster c : toExclude) {
+            doc.excludedRegions.add(new double[]{c.minX, c.minY, c.maxX, c.maxY, c.entityCount});
+        }
 
-        return;
+        double[] prunedBox = unionBoxOfClusters(kept);
+        doc.minX = prunedBox[0]; doc.minY = prunedBox[1];
+        doc.maxX = prunedBox[2]; doc.maxY = prunedBox[3];
     }
 
-    // Outlier(s) proven -> header is likely contaminated by the same stray
-    // geometry, so use the pruned, outlier-free box instead.
-    List<Cluster> kept = new ArrayList<>(clusters);
-    kept.removeAll(toExclude);
-    if (kept.isEmpty()) kept = clusters; // safety net, never end up empty
-
-    for (Cluster c : toExclude) {
-        doc.excludedRegions.add(new double[]{c.minX, c.minY, c.maxX, c.maxY, c.entityCount});
+    // ── Smart Multi-Layer Extent Validation & Bounds Stabilization ─────────
+    // 1. Cross-validate with AutoCAD header extents ($EXTMIN / $EXTMAX):
+    //    If geometry extents are wildly inflated compared to AutoCAD's header (e.g. > 1.8x diagonal),
+    //    and the header box already encloses >= 90% of entities, the geometry box was inflated
+    //    by a rogue entity or unhandled large curvature. We fall back to AutoCAD's header extents.
+    double[] extMin = doc.headerVars.get("$EXTMIN");
+    double[] extMax = doc.headerVars.get("$EXTMAX");
+    if (extMin != null && extMax != null
+            && extMax[0] > extMin[0] && extMax[1] > extMin[1]
+            && Math.abs(extMin[0]) < 1e12 && Math.abs(extMax[0]) < 1e12) {
+        double headerDiag = Math.hypot(extMax[0] - extMin[0], extMax[1] - extMin[1]);
+        double curDiag = Math.hypot(doc.maxX - doc.minX, doc.maxY - doc.minY);
+        if (headerDiag > 0.1 && curDiag > 1.8 * headerDiag) {
+            int inHeader = 0;
+            double tolX = (extMax[0] - extMin[0]) * 0.05;
+            double tolY = (extMax[1] - extMin[1]) * 0.05;
+            for (double[] b : entityBoxes) {
+                if (b[0] >= extMin[0] - tolX && b[1] >= extMin[1] - tolY
+                        && b[2] <= extMax[0] + tolX && b[3] <= extMax[1] + tolY) {
+                    inHeader++;
+                }
+            }
+            double headerFraction = (double) inHeader / entityBoxes.size();
+            if (headerFraction >= 0.90) {
+                LOG.info(
+                        "AutoCAD header extents ({}, {}) to ({}, {}) enclose {:.1f}% of entities, but geometry extents were inflated (ratio={:.2f}). Snapping to AutoCAD header extents to prevent extra zoom-out.",
+                        extMin[0], extMin[1], extMax[0], extMax[1], headerFraction * 100, curDiag / headerDiag);
+                doc.minX = extMin[0]; doc.minY = extMin[1];
+                doc.maxX = extMax[0]; doc.maxY = extMax[1];
+            }
+        }
     }
 
-    double[] prunedBox = unionBoxOfClusters(kept);
-    doc.minX = prunedBox[0]; doc.minY = prunedBox[1];
-    doc.maxX = prunedBox[2]; doc.maxY = prunedBox[3];
+    // 2. Anti-Collapse Guard (Prevent Extra Zoom-In):
+    //    If width or height is near-zero (< 1.0 unit), expand symmetrically around the center
+    //    so the scale factor never explodes into astronomical numbers.
+    double w = doc.maxX - doc.minX;
+    double h = doc.maxY - doc.minY;
+    if (w < 1.0 || h < 1.0) {
+        double midX = (doc.minX + doc.maxX) / 2.0;
+        double midY = (doc.minY + doc.maxY) / 2.0;
+        if (w < 1.0) {
+            doc.minX = midX - 0.5;
+            doc.maxX = midX + 0.5;
+        }
+        if (h < 1.0) {
+            doc.minY = midY - 0.5;
+            doc.maxY = midY + 0.5;
+        }
+        LOG.info("Padded near-zero extents to prevent scale explosion: minX={}, minY={}, maxX={}, maxY={}",
+                doc.minX, doc.minY, doc.maxX, doc.maxY);
+    }
+
     doc.extentsSet = true;
+    LOG.info(
+            "Final computed drawing fit extents: minX={}, minY={}, maxX={}, maxY={}, width={}, height={}",
+            doc.minX, doc.minY, doc.maxX, doc.maxY,
+            doc.maxX - doc.minX, doc.maxY - doc.minY);
 }
 
 private static boolean applyHeaderExtentsIfValid(DxfDocument doc) {
@@ -2288,11 +2420,11 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
     // relatively (tiny % of total drawing) AND absolutely (tiny entity count) —
     // protects legitimate small detail views (staircase details, sections)
     // which can be a small % but still have real, meaningful entity counts.
-    private static final double MAX_EXCLUDE_ENTITY_FRACTION = 0.01; // 1%
-    private static final int MAX_EXCLUDE_ENTITY_ABSOLUTE = 15;      // absolute entity cap
+    private static final double MAX_EXCLUDE_ENTITY_FRACTION = 0.02; // 2%
+    private static final int MAX_EXCLUDE_ENTITY_ABSOLUTE = 50;      // absolute entity cap
 
     // Must be a dramatic, unambiguous improvement — not a marginal one.
-    private static final double MIN_DIAGONAL_SHRINK_RATIO = 10.0;
+    private static final double MIN_DIAGONAL_SHRINK_RATIO = 3.0;
 
     /*
      * Secondary protection for isolated dot-like garbage.
@@ -2454,6 +2586,16 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         return true;
     }
 
+    static boolean isValidCoordinate(double v) {
+        return Double.isFinite(v) && Math.abs(v) < 1e12;
+    }
+
+    static boolean isValidBox(double minX, double minY, double maxX, double maxY) {
+        return isValidCoordinate(minX) && isValidCoordinate(minY)
+                && isValidCoordinate(maxX) && isValidCoordinate(maxY)
+                && maxX >= minX && maxY >= minY;
+    }
+
     private static void addEntityBox(DxfDocument doc, Entity e, List<double[]> boxes, List<String> labels, int depth) {
         String label = e.layer + "/" + e.getClass().getSimpleName();
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
@@ -2461,74 +2603,146 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
 
         if (e instanceof LineEntity) {
             LineEntity l = (LineEntity) e;
-            minX = Math.min(l.x1, l.x2); maxX = Math.max(l.x1, l.x2);
-            minY = Math.min(l.y1, l.y2); maxY = Math.max(l.y1, l.y2);
-            valid = true;
+            if (isValidCoordinate(l.x1) && isValidCoordinate(l.y1) && isValidCoordinate(l.x2) && isValidCoordinate(l.y2)) {
+                minX = Math.min(l.x1, l.x2); maxX = Math.max(l.x1, l.x2);
+                minY = Math.min(l.y1, l.y2); maxY = Math.max(l.y1, l.y2);
+                valid = true;
+            }
         } else if (e instanceof CircleEntity) {
             CircleEntity c = (CircleEntity) e;
-            minX = c.cx - c.radius; maxX = c.cx + c.radius;
-            minY = c.cy - c.radius; maxY = c.cy + c.radius;
-            valid = true;
+            if (isValidCoordinate(c.cx) && isValidCoordinate(c.cy) && Double.isFinite(c.radius) && c.radius >= 0 && c.radius < 1e9) {
+                minX = c.cx - c.radius; maxX = c.cx + c.radius;
+                minY = c.cy - c.radius; maxY = c.cy + c.radius;
+                valid = true;
+            }
         } else if (e instanceof ArcEntity) {
             ArcEntity a = (ArcEntity) e;
-            minX = a.cx - a.radius; maxX = a.cx + a.radius;
-            minY = a.cy - a.radius; maxY = a.cy + a.radius;
-            valid = true;
+            if (isValidCoordinate(a.cx) && isValidCoordinate(a.cy) && Double.isFinite(a.radius) && a.radius >= 0 && a.radius < 1e9) {
+                double[] box = a.getBoundingBox();
+                if (isValidBox(box[0], box[1], box[2], box[3])) {
+                    minX = box[0]; minY = box[1];
+                    maxX = box[2]; maxY = box[3];
+                    valid = true;
+                }
+            }
         } else if (e instanceof EllipseEntity) {
             EllipseEntity el = (EllipseEntity) e;
-            double r = Math.sqrt(el.majorX * el.majorX + el.majorY * el.majorY);
-            minX = el.cx - r; maxX = el.cx + r;
-            minY = el.cy - r; maxY = el.cy + r;
-            valid = true;
+            if (isValidCoordinate(el.cx) && isValidCoordinate(el.cy)) {
+                double[] box = el.getBoundingBox();
+                if (isValidBox(box[0], box[1], box[2], box[3])) {
+                    minX = box[0]; minY = box[1];
+                    maxX = box[2]; maxY = box[3];
+                    valid = true;
+                }
+            }
         } else if (e instanceof PolylineEntity) {
-            for (double[] v : ((PolylineEntity) e).vertices) {
-                minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
-                minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
-                valid = true;
+            PolylineEntity poly = (PolylineEntity) e;
+            for (int i = 0; i < poly.vertices.size(); i++) {
+                double[] v = poly.vertices.get(i);
+                if (isValidCoordinate(v[0]) && isValidCoordinate(v[1])) {
+                    minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
+                    minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
+                    valid = true;
+                    // If segment has bulge, include the arc midpoint to enclose the outer curve
+                    if (i > 0) {
+                        double[] prev = poly.vertices.get(i - 1);
+                        double b = prev.length > 2 ? prev[2] : 0;
+                        if (Math.abs(b) > 1e-4 && isValidCoordinate(b)) {
+                            double mx = (prev[0] + v[0]) / 2.0;
+                            double my = (prev[1] + v[1]) / 2.0;
+                            double dx = v[0] - prev[0];
+                            double dy = v[1] - prev[1];
+                            double arcMidX = mx - dy * (b / 2.0);
+                            double arcMidY = my + dx * (b / 2.0);
+                            if (isValidCoordinate(arcMidX) && isValidCoordinate(arcMidY)) {
+                                minX = Math.min(minX, arcMidX); maxX = Math.max(maxX, arcMidX);
+                                minY = Math.min(minY, arcMidY); maxY = Math.max(maxY, arcMidY);
+                            }
+                        }
+                    }
+                }
             }
         } else if (e instanceof SplineEntity) {
             SplineEntity s = (SplineEntity) e;
             List<double[]> pts = s.controlPoints.isEmpty() ? s.fitPoints : s.controlPoints;
             for (double[] v : pts) {
-                minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
-                minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
-                valid = true;
+                if (isValidCoordinate(v[0]) && isValidCoordinate(v[1])) {
+                    minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
+                    minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
+                    valid = true;
+                }
             }
         } else if (e instanceof TextEntity) {
             TextEntity t = (TextEntity) e;
-            minX = maxX = t.x; minY = maxY = t.y; valid = true;
+            if (isValidCoordinate(t.x) && isValidCoordinate(t.y)) {
+                minX = maxX = t.x; minY = maxY = t.y;
+                double h = (t.height > 0 && isValidCoordinate(t.height)) ? t.height : 2.5;
+                String txt = processTextCodes(t.text);
+                double w = (txt != null && !txt.trim().isEmpty()) ? Math.min(txt.length() * 0.7 * h, 100.0 * h) : h;
+                double rad = Math.toRadians(t.rotation);
+                double endX = t.x + w * Math.cos(rad);
+                double endY = t.y + w * Math.sin(rad);
+                minX = Math.min(minX, endX); maxX = Math.max(maxX, endX);
+                minY = Math.min(minY, endY); maxY = Math.max(maxY, endY);
+                minY = Math.min(minY, t.y + h); maxY = Math.max(maxY, t.y + h);
+                valid = true;
+            }
         } else if (e instanceof MTextEntity) {
             MTextEntity m = (MTextEntity) e;
-            minX = maxX = m.x; minY = maxY = m.y; valid = true;
+            if (isValidCoordinate(m.x) && isValidCoordinate(m.y)) {
+                minX = maxX = m.x; minY = maxY = m.y;
+                double h = (m.height > 0 && isValidCoordinate(m.height)) ? m.height : 2.5;
+                double w = (m.width > 0 && isValidCoordinate(m.width)) ? m.width : (m.text != null ? Math.min(m.text.length() * 0.7 * h, 100.0 * h) : h);
+                minX = Math.min(minX, m.x + w); maxX = Math.max(maxX, m.x + w);
+                minY = Math.min(minY, m.y - h); maxY = Math.max(maxY, m.y + h);
+                valid = true;
+            }
         } else if (e instanceof InsertEntity) {
             InsertEntity ins = (InsertEntity) e;
-            double[] insertedBox = getInsertedBlockBox(doc, ins, depth);
-            if (insertedBox != null) {
-                minX = insertedBox[0]; minY = insertedBox[1];
-                maxX = insertedBox[2]; maxY = insertedBox[3];
-            } else {
-                minX = maxX = ins.x; minY = maxY = ins.y;
+            if (isValidCoordinate(ins.x) && isValidCoordinate(ins.y)) {
+                double[] insertedBox = getInsertedBlockBox(doc, ins, depth);
+                if (insertedBox != null && isValidBox(insertedBox[0], insertedBox[1], insertedBox[2], insertedBox[3])) {
+                    minX = insertedBox[0]; minY = insertedBox[1];
+                    maxX = insertedBox[2]; maxY = insertedBox[3];
+                } else {
+                    minX = maxX = ins.x; minY = maxY = ins.y;
+                }
+                valid = true;
             }
-            valid = true;
         } else if (e instanceof LeaderEntity) {
             for (double[] v : ((LeaderEntity) e).vertices) {
-                minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
-                minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
-                valid = true;
+                if (isValidCoordinate(v[0]) && isValidCoordinate(v[1])) {
+                    minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
+                    minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
+                    valid = true;
+                }
             }
         } else if (e instanceof DimensionEntity) {
             DimensionEntity d = (DimensionEntity) e;
-            minX = maxX = d.defX; minY = maxY = d.defY; valid = true;
+            if (isValidCoordinate(d.defX) && isValidCoordinate(d.defY)) {
+                minX = maxX = d.defX; minY = maxY = d.defY;
+                if (isValidCoordinate(d.midX) && isValidCoordinate(d.midY)) {
+                    minX = Math.min(minX, d.midX); maxX = Math.max(maxX, d.midX);
+                    minY = Math.min(minY, d.midY); maxY = Math.max(maxY, d.midY);
+                }
+                valid = true;
+            }
         } else if (e instanceof SolidEntity) {
             double[] c = ((SolidEntity) e).corners;
-            minX = Math.min(Math.min(c[0], c[2]), Math.min(c[4], c[6]));
-            maxX = Math.max(Math.max(c[0], c[2]), Math.max(c[4], c[6]));
-            minY = Math.min(Math.min(c[1], c[3]), Math.min(c[5], c[7]));
-            maxY = Math.max(Math.max(c[1], c[3]), Math.max(c[5], c[7]));
-            valid = true;
+            boolean allValid = true;
+            for (int i = 0; i < 8; i++) {
+                if (!isValidCoordinate(c[i])) { allValid = false; break; }
+            }
+            if (allValid) {
+                minX = Math.min(Math.min(c[0], c[2]), Math.min(c[4], c[6]));
+                maxX = Math.max(Math.max(c[0], c[2]), Math.max(c[4], c[6]));
+                minY = Math.min(Math.min(c[1], c[3]), Math.min(c[5], c[7]));
+                maxY = Math.max(Math.max(c[1], c[3]), Math.max(c[5], c[7]));
+                valid = true;
+            }
         }
 
-        if (valid) {
+        if (valid && isValidBox(minX, minY, maxX, maxY)) {
             boxes.add(new double[]{minX, minY, maxX, maxY});
             labels.add(label);
         }
@@ -2586,6 +2800,7 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
 
     private static double[] transformBlockBox(double[] box, Block block, InsertEntity insert,
             double insertX, double insertY) {
+        if (box == null || !isValidBox(box[0], box[1], box[2], box[3])) return null;
         double angle = Math.toRadians(insert.rotation);
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
@@ -2603,10 +2818,13 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
             double localY = (corner[1] - block.baseY) * insert.scaleY;
             double worldX = insertX + localX * cos - localY * sin;
             double worldY = insertY + localX * sin + localY * cos;
-            minX = Math.min(minX, worldX); minY = Math.min(minY, worldY);
-            maxX = Math.max(maxX, worldX); maxY = Math.max(maxY, worldY);
+            if (isValidCoordinate(worldX) && isValidCoordinate(worldY)) {
+                minX = Math.min(minX, worldX); minY = Math.min(minY, worldY);
+                maxX = Math.max(maxX, worldX); maxY = Math.max(maxY, worldY);
+            }
         }
 
+        if (!isValidBox(minX, minY, maxX, maxY)) return null;
         return new double[]{minX, minY, maxX, maxY};
     }
 
@@ -2631,7 +2849,12 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                 add(c.cx - c.radius, c.cy - c.radius); add(c.cx + c.radius, c.cy + c.radius);
             } else if (e instanceof ArcEntity) {
                 ArcEntity a = (ArcEntity) e;
-                add(a.cx - a.radius, a.cy - a.radius); add(a.cx + a.radius, a.cy + a.radius);
+                double[] box = a.getBoundingBox();
+                add(box[0], box[1]); add(box[2], box[3]);
+            } else if (e instanceof EllipseEntity) {
+                EllipseEntity el = (EllipseEntity) e;
+                double[] box = el.getBoundingBox();
+                add(box[0], box[1]); add(box[2], box[3]);
             } else if (e instanceof PolylineEntity) {
                 for (double[] v : ((PolylineEntity) e).vertices) add(v[0], v[1]);
             } else if (e instanceof TextEntity) {
@@ -2647,11 +2870,14 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
     // ── SVG GENERATOR ─────────────────────────────────────────────────────────
 
     public static String generateSvg(DxfDocument doc, int targetWidthPx, int targetHeightPx) {
+        if (targetWidthPx <= 0) targetWidthPx = 3508;
+        if (targetHeightPx <= 0) targetHeightPx = 2480;
+
         // Compute transform
         double dxfW = doc.maxX - doc.minX;
         double dxfH = doc.maxY - doc.minY;
-        if (dxfW <= 0) dxfW = 1;
-        if (dxfH <= 0) dxfH = 1;
+        if (!Double.isFinite(dxfW) || dxfW <= 0.001) dxfW = 1.0;
+        if (!Double.isFinite(dxfH) || dxfH <= 0.001) dxfH = 1.0;
 
         // Add 2% margin
         double margin = 0.02;
@@ -2664,6 +2890,7 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
 
         // Fit to a fixed target canvas keeping aspect ratio.
         double scale = Math.min(targetWidthPx / dxfW, targetHeightPx / dxfH);
+        if (!Double.isFinite(scale) || scale <= 0) scale = 1.0;
         double drawnW = dxfW * scale;
         double drawnH = dxfH * scale;
         double offsetX = (targetWidthPx - drawnW) / 2.0;

@@ -96,6 +96,12 @@ public class CollectionNotificationConsumer {
 
 	            // --- HTML Email Notification ---
 	            if (!StringUtils.isEmpty(emailId) && emailId.contains("@")) {
+	                try {
+	                    Thread.sleep(1000); // 1-second delay to give UI time to generate receipt & save fileStoreId
+	                } catch (InterruptedException ie) {
+	                    Thread.currentThread().interrupt();
+	                    log.warn("Delay interrupted before email processing", ie);
+	                }
 	                String subject = "Payment Confirmation - " + paymentDetail.getReceiptNumber();
 	                
 	                // 2. Wrap the localized bodyContent inside the professional HTML Template
@@ -132,7 +138,7 @@ public class CollectionNotificationConsumer {
 	    
 	    // Fallback if PDF service fails
 	    if (StringUtils.isEmpty(downloadUrl)) {
-	        downloadUrl = "https://mseva.lgpunjab.gov.in/citizen";
+	        downloadUrl = "https://mseva.lgpunjab.gov.in/digit-ui/citizen";
 	    }
 
 	    // 3. Map Service Type (Using your helper method)
@@ -159,6 +165,12 @@ public class CollectionNotificationConsumer {
 	    sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Kolkata")); 
 	    String formattedDate = sdf.format(new java.util.Date(payment.getTransactionDate()));
 
+	    // Determine button text based on destination
+	    String actionButtonText = "Click to Login to View Receipt";
+	    if (downloadUrl != null && !downloadUrl.contains("digit-ui/citizen")) {
+	        actionButtonText = "Download Official Receipt";
+	    }
+
 	    // 7. Execute Replacements
 	    return template
 	            .replace("{cityName}", cityName)
@@ -171,240 +183,83 @@ public class CollectionNotificationConsumer {
 	            .replace("{transactionId}", payment.getTransactionNumber() != null ? payment.getTransactionNumber() : "N/A")
 	            .replace("{totalPaid}", String.format("%.2f", amountPaid))
 	            .replace("{balanceAmount}", String.format("%.2f", balance))
-	            .replace("{actionButtonText}", "Download Official Receipt")
-	            .replace("https://mseva.lgpunjab.gov.in/citizen", downloadUrl); // Injects the PDF link
+	            .replace("{actionButtonText}", actionButtonText)
+	            .replace("https://mseva.lgpunjab.gov.in/citizen", downloadUrl)
+	            .replace("https://mseva.lgpunjab.gov.in/digit-ui/citizen", downloadUrl);
 	}
 	
 	public String getPublicReceiptUrl(List<Payment> validatedPayments, RequestInfo requestInfo) {
-	    if (CollectionUtils.isEmpty(validatedPayments)) return null;
-	    
-	    String stateId = validatedPayments.get(0).getTenantId().split("\\.")[0];
-	    String fileStoreId = null;
+	    String defaultCitizenUrl = "https://mseva.lgpunjab.gov.in/digit-ui/citizen";
+	    if (CollectionUtils.isEmpty(validatedPayments)) return defaultCitizenUrl;
 
-	    String businessService = null;
-	    if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
-	        businessService = validatedPayments.get(0).getPaymentDetails().get(0).getBusinessService();
+	    String stateId = validatedPayments.get(0).getTenantId().split("\\.")[0];
+
+	    // 1. Check if the incoming Kafka payment message itself already has a fileStoreId
+	    if (!StringUtils.isEmpty(validatedPayments.get(0).getFileStoreId())) {
+	        String kafkaFileStoreId = validatedPayments.get(0).getFileStoreId();
+	        log.info("Kafka payment already contains fileStoreId: {}", kafkaFileStoreId);
+	        String publicUrl = getUrlFromFileStore(kafkaFileStoreId, stateId);
+	        if (!StringUtils.isEmpty(publicUrl)) return publicUrl;
 	    }
 
-	    // Call paymentService.getPayments() to get the fully enriched payment from DB
-	    // (includes paymentDetail.additionalDetails with tax head breakdown, bill details, owner info etc.)
-	    // Fall back to original Kafka payment if search fails.
-	    List<Payment> paymentsForPdf = validatedPayments;
-	    try {
-	        String receiptNumber = null;
-	        if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
-	            receiptNumber = validatedPayments.get(0).getPaymentDetails().get(0).getReceiptNumber();
-	        }
-	        if (!StringUtils.isEmpty(receiptNumber)) {
+	    String businessService = null;
+	    String receiptNumber = null;
+	    if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
+	        businessService = validatedPayments.get(0).getPaymentDetails().get(0).getBusinessService();
+	        receiptNumber = validatedPayments.get(0).getPaymentDetails().get(0).getReceiptNumber();
+	    }
+
+	    // 2. Check if DB already has a fileStoreId
+	    if (!StringUtils.isEmpty(receiptNumber)) {
+	        try {
 	            PaymentSearchCriteria criteria = PaymentSearchCriteria.builder()
 	                    .tenantId(validatedPayments.get(0).getTenantId())
 	                    .receiptNumbers(Collections.singleton(receiptNumber))
 	                    .businessService(businessService)
 	                    .build();
 	            List<Payment> enrichedPayments = paymentService.getPayments(requestInfo, criteria, businessService);
-                log.info("Payment search response for PDF: {}", enrichedPayments);
-	            if (!CollectionUtils.isEmpty(enrichedPayments)) {
-                paymentsForPdf = enrichedPayments;
-                log.info("Using enriched payment from DB search for PDF creation, receipt: " + receiptNumber);
-
-                for (Payment enriched : paymentsForPdf) {
-                    for (PaymentDetail enrichedDetail : enriched.getPaymentDetails()) {
-                        PaymentDetail kafkaDetail = findMatchingPaymentDetail(
-                                validatedPayments, enrichedDetail.getReceiptNumber());
-
-                        if (kafkaDetail != null && kafkaDetail.getBill() != null) {
-                            // Always copy Kafka bill — needed by ALL templates that read
-                            // bill.billAccountDetails (PT, TL, CLU, BPA, NDC etc.)
-                            enrichedDetail.setBill(kafkaDetail.getBill());
-
-                            // Only rebuild additionalDetails for WS/SW —
-                            // these are the ONLY templates that read paymentDetails[0].additionalDetails.*
-                            // For PT/consolidated/FIRENOC the DB additionalDetails has the correct
-                            // structure (assessmentYears, arrearArray, tax, cgst etc.) — don't overwrite.
-                            String svc = enrichedDetail.getBusinessService();
-                            boolean isWsOrSw = svc != null &&
-                                    (svc.equalsIgnoreCase("WS") || svc.equalsIgnoreCase("SW")
-                                    || svc.toUpperCase().startsWith("WS.") || svc.toUpperCase().startsWith("SW."));
-                            if (isWsOrSw) {
-                                enrichedDetail.setAdditionalDetails(
-                                        buildAdditionalDetailsFromBill(enrichedDetail, objectMapper));
-                                log.info("Rebuilt additionalDetails for WS/SW receipt: {}",
-                                        enrichedDetail.getReceiptNumber());
-                            }
-                            log.info("Copied Kafka bill for receipt: {}, service: {}",
-                                    enrichedDetail.getReceiptNumber(), svc);
-                        } else {
-                            log.warn("Could not find Kafka bill for receipt: {}", enrichedDetail.getReceiptNumber());
-                        }
-                    }
-                }
-
-	            } else {
-	                log.warn("Payment search returned empty, falling back to Kafka payment for receipt: " + receiptNumber);
+	            if (!CollectionUtils.isEmpty(enrichedPayments) && !StringUtils.isEmpty(enrichedPayments.get(0).getFileStoreId())) {
+	                String dbFileStoreId = enrichedPayments.get(0).getFileStoreId();
+	                log.info("DB search found existing fileStoreId: {}", dbFileStoreId);
+	                String publicUrl = getUrlFromFileStore(dbFileStoreId, stateId);
+	                if (!StringUtils.isEmpty(publicUrl)) return publicUrl;
 	            }
+	        } catch (Exception e) {
+	            log.error("Failed to query DB for fileStoreId: ", e);
 	        }
-	    } catch (Exception e) {
-	        log.error("Failed to fetch enriched payment, falling back to Kafka payment: ", e);
 	    }
 
-	    String receiptKey = mdmsService.getReceiptKey(requestInfo, stateId, businessService);
+	    // No PDF create API call — directly point to citizen portal
+	    return defaultCitizenUrl;
+	}
 
+	/**
+	 * Helper method to fetch the public download URL from FileStore for a given fileStoreId.
+	 */
+	private String getUrlFromFileStore(String fileStoreId, String stateId) {
+	    if (StringUtils.isEmpty(fileStoreId)) return null;
 	    try {
-	        // --- STEP 1: Generate PDF using enriched payment data ---
-	        String pdfUri = applicationProperties.getEgovServiceHost()
-	                      + applicationProperties.getEgovPdfCreate()
-	                      + "?key=" + receiptKey + "&tenantId=" + stateId;
-
-	        Map<String, Object> pdfRequest = new HashMap<>();
-	        pdfRequest.put("RequestInfo", requestInfo);
-	        pdfRequest.put("Payments", paymentsForPdf);
-
-	        Map<String, Object> pdfResponse = restTemplate.postForObject(pdfUri, pdfRequest, Map.class);
-	        
-	        if (pdfResponse != null && pdfResponse.containsKey("filestoreIds")) {
-	            List<String> ids = (List<String>) pdfResponse.get("filestoreIds");
-	            if (!ids.isEmpty()) {
-	                fileStoreId = ids.get(0); // Pick the first ID
-	            }
-	        }
-
-	        if (StringUtils.isEmpty(fileStoreId)) {
-	            log.error("PDF Service failed to return a filestoreId");
-	            return null;
-	        }
-
-	        // --- STEP 2: Convert FileStoreId to a Public URL ---
 	        String fileStoreUri = applicationProperties.getFileStoreHost()  
 	                            + "/filestore/v1/files/url" 
 	                            + "?tenantId=" + stateId 
 	                            + "&fileStoreIds=" + fileStoreId;
 
-	        // Note: The /url endpoint is a GET request
 	        Map<String, Object> urlResponse = restTemplate.getForObject(fileStoreUri, Map.class);
 
 	        if (urlResponse != null && urlResponse.containsKey("fileStoreIds")) {
 	            List<Map<String, String>> fileDetails = (List<Map<String, String>>) urlResponse.get("fileStoreIds");
 	            if (!fileDetails.isEmpty()) {
 	                String publicUrl = fileDetails.get(0).get("url");
-	                log.info("Successfully generated public receipt link: " + publicUrl);
+	                log.info("Successfully fetched public receipt link from FileStore: " + publicUrl);
 	                return publicUrl;
 	            }
 	        }
-
 	    } catch (Exception e) {
-	        log.error("Error in the Receipt Generation/URL flow: ", e);
-	    }
-
-	    return null;
-	}
-	
-	/**
-	 * Finds the PaymentDetail matching the given receiptNumber in the original Kafka payments list.
-	 */
-	private PaymentDetail findMatchingPaymentDetail(List<Payment> payments, String receiptNumber) {
-	    if (CollectionUtils.isEmpty(payments) || receiptNumber == null) return null;
-	    for (Payment pmt : payments) {
-	        if (!CollectionUtils.isEmpty(pmt.getPaymentDetails())) {
-	            for (PaymentDetail detail : pmt.getPaymentDetails()) {
-	                if (receiptNumber.equals(detail.getReceiptNumber())) {
-	                    return detail;
-	                }
-	            }
-	        }
+	        log.error("Error fetching URL from FileStore for fileStoreId {}: ", fileStoreId, e);
 	    }
 	    return null;
 	}
 
-	/**
-	 * Builds paymentDetail.additionalDetails from bill.billDetails[].billAccountDetails[]
-	 * with human-readable period-formatted labels — exactly as the UI frontend does.
-	 * e.g. [{"taxhead":"Water Charges(01/01/2024-31/03/2024)","amount":2}, {"taxhead":"Total Amount Paid","amount":2}]
-	 */
-	private com.fasterxml.jackson.databind.JsonNode buildAdditionalDetailsFromBill(PaymentDetail detail, ObjectMapper mapper) {
-	    try {
-	        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
-	        java.util.List<java.util.Map<String, Object>> rows = new java.util.ArrayList<>();
-	        java.math.BigDecimal total = java.math.BigDecimal.ZERO;
-
-	        if (detail.getBill() != null && !CollectionUtils.isEmpty(detail.getBill().getBillDetails())) {
-	            for (org.egov.collection.web.contract.BillDetail bd : detail.getBill().getBillDetails()) {
-	                if (!CollectionUtils.isEmpty(bd.getBillAccountDetails())) {
-	                    for (org.egov.collection.web.contract.BillAccountDetail bad : bd.getBillAccountDetails()) {
-	                        java.math.BigDecimal adjAmt = bad.getAdjustedAmount() != null
-	                                ? bad.getAdjustedAmount() : java.math.BigDecimal.ZERO;
-	                        if (adjAmt.compareTo(java.math.BigDecimal.ZERO) != 0 && bad.getTaxHeadCode() != null) {
-	                            String label = buildTaxHeadLabel(bad.getTaxHeadCode(), bd.getFromPeriod(), bd.getToPeriod(), sdf);
-	                            java.util.Map<String, Object> row = new java.util.LinkedHashMap<>();
-	                            row.put("taxhead", label);
-	                            row.put("amount", adjAmt);
-	                            rows.add(row);
-	                            total = total.add(adjAmt);
-	                        }
-	                    }
-	                }
-	            }
-	        }
-
-	        // Total Amount Paid row
-	        java.util.Map<String, Object> totalRow = new java.util.LinkedHashMap<>();
-	        totalRow.put("taxhead", "Total Amount Paid");
-	        totalRow.put("amount", total);
-	        rows.add(totalRow);
-
-	        return mapper.valueToTree(rows);
-	    } catch (Exception e) {
-	        log.error("Error building additionalDetails from billAccountDetails: ", e);
-	        return mapper.nullNode();
-	    }
-	}
-
-	/**
-	 * Builds a human-readable taxhead label from taxHeadCode + billDetail period.
-	 * Strips the service prefix (WS_, SW_, PT_, TL_, etc.), replaces _ and . with spaces,
-	 * and title-cases the result. Works for any service without hardcoding.
-	 * e.g. WS_CHARGE → "Charge", WS_TIME_PENALTY → "Time Penalty", PT_TAX → "Tax"
-	 * Period dates appended for recurring heads: "Charge(01/01/2024-31/03/2024)"
-	 */
-	private String buildTaxHeadLabel(String taxHeadCode, Long fromPeriod, Long toPeriod, java.text.SimpleDateFormat sdf) {
-	    if (taxHeadCode == null) return "Charge";
-
-	    // Replace underscores and dots with spaces, then title-case the full code
-	    // e.g. WS_CHARGE → "Ws Charge",  WS_TIME_PENALTY → "Ws Time Penalty",  PT_TAX → "Pt Tax"
-	    String label = toTitleCase(taxHeadCode.replace("_", " ").replace(".", " ").trim());
-
-	    return appendPeriod(label, taxHeadCode, fromPeriod, toPeriod, sdf);
-	}
-
-	/** Appends (fromDate-toDate) for recurring periodic heads. */
-	private String appendPeriod(String label, String taxHeadCode, Long fromPeriod, Long toPeriod, java.text.SimpleDateFormat sdf) {
-	    String code = taxHeadCode != null ? taxHeadCode.toUpperCase() : "";
-	    boolean isPeriodic = code.contains("_CHARGE") || code.contains("_TAX") || code.contains("_PENALTY")
-	            || code.contains("_INTEREST") || code.contains("_REBATE") || code.contains("_CESS")
-	            || code.contains("ROUND_OFF") || code.contains("_ARREAR") || code.contains("_FEE");
-	    if (isPeriodic && fromPeriod != null && fromPeriod > 0 && toPeriod != null && toPeriod > 0) {
-	        try {
-	            String from = sdf.format(new java.util.Date(fromPeriod));
-	            String to   = sdf.format(new java.util.Date(toPeriod));
-	            return label + "(" + from + "-" + to + ")";
-	        } catch (Exception e) {
-	            log.warn("Could not format period dates for taxHeadCode: {}", taxHeadCode);
-	        }
-	    }
-	    return label;
-	}
-
-	/** Converts a string to Title Case. e.g. "time penalty" → "Time Penalty" */
-	private String toTitleCase(String input) {
-	    if (input == null || input.isEmpty()) return input;
-	    StringBuilder sb = new StringBuilder();
-	    boolean nextUpper = true;
-	    for (char c : input.toCharArray()) {
-	        if (c == ' ') { sb.append(c); nextUpper = true; }
-	        else if (nextUpper) { sb.append(Character.toUpperCase(c)); nextUpper = false; }
-	        else sb.append(Character.toLowerCase(c));
-	    }
-	    return sb.toString();
-	}
 
 	private String mapServiceCode(String code) {
 	    if (code == null || code.isEmpty()) return "General Municipal Service";

@@ -95,6 +95,11 @@ public class EmployeeQueryBuilder {
 	        preparedStmtList.add(criteria.getAssignedTenantId());
 	    }
 
+	    if (criteria.getModulename() != null && !criteria.getModulename().isEmpty()) {
+	        builder.append(" AND modulename = ? ");
+	        preparedStmtList.add(criteria.getModulename());
+	    }
+
 	    return builder.toString();
 	}
 

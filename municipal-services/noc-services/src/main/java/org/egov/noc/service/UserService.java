@@ -12,6 +12,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.noc.config.NOCConfiguration;
 import org.egov.noc.repository.ServiceRequestRepository;
+import org.egov.noc.util.NOCConstants;
 import org.egov.noc.web.model.*;
 import org.egov.tracer.model.CustomException;
 import org.json.JSONObject;
@@ -177,7 +178,7 @@ public class UserService {
 			uri.append("&assignedtenattids=").append(tenantId);
 			if(!org.springframework.util.StringUtils.isEmpty(zones))
 				uri.append("&zones=").append(zones);
-
+			uri.append("&modulename=").append(NOCConstants.MODULENAME);
 		}
 
 		return uri;

@@ -250,7 +250,15 @@ public class NotificationUtil {
 		String message = null;
 		try {
 			Object messageObj = JsonPath.parse(localizationMessage).read(path);
-			message = ((ArrayList<String>) messageObj).get(0);
+			// Fix #5: Guard empty list to prevent IndexOutOfBoundsException when
+			// the notification code is not seeded in the localization database.
+			List<String> messages = (ArrayList<String>) messageObj;
+			if (!CollectionUtils.isEmpty(messages)) {
+				message = messages.get(0);
+			} else {
+				log.warn("getMessageTemplate: No localization message found for code '{}'. " +
+						"Please seed the key in the localization database.", notificationCode);
+			}
 		} catch (Exception e) {
 			log.warn("Fetching from localization failed", e);
 		}
@@ -809,9 +817,15 @@ public class NotificationUtil {
 			try {
 				Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest);
 				if(null != user) {
-					if(JsonPath.read(user, "$.user[0].emailId")!=null) {
-						String email = JsonPath.read(user, "$.user[0].emailId");
-						mapOfPhnoAndEmailIds.put(mobileNo, email);
+					// Fix #4: Guard against empty user array to prevent PathNotFoundException
+					List<Object> userList = JsonPath.read(user, "$.user");
+					if (!CollectionUtils.isEmpty(userList)) {
+						Object emailId = JsonPath.read(user, "$.user[0].emailId");
+						if (emailId != null) {
+							mapOfPhnoAndEmailIds.put(mobileNo, emailId.toString());
+						}
+					} else {
+						log.warn("fetchUserEmailIds: No user record found for username - {}", mobileNo);
 					}
 				}else {
 					log.error("Service returned null while fetching user for username - "+mobileNo);
@@ -847,8 +861,14 @@ public class NotificationUtil {
 			try {
 				Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest);
 				if(null != user) {
-					String uuid = JsonPath.read(user, "$.user[0].uuid");
-					mapOfPhnoAndUUIDs.put(mobileNo, uuid);
+					// Fix #4: Guard against empty user array to prevent PathNotFoundException
+					List<Object> userList = JsonPath.read(user, "$.user");
+					if (!CollectionUtils.isEmpty(userList)) {
+						String uuid = JsonPath.read(user, "$.user[0].uuid");
+						mapOfPhnoAndUUIDs.put(mobileNo, uuid);
+					} else {
+						log.warn("fetchUserUUIDs: No user record found for username - {}", mobileNo);
+					}
 				}else {
 					log.error("Service returned null while fetching user for username - "+mobileNo);
 				}

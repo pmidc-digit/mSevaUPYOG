@@ -150,16 +150,21 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       // additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
 
       // Keep explicit cleared values; do not restore old arrears on update.
-      const arrearsApplicable = applicationType === "Legacy" &&
-        (updatedPropertyDetails?.isArrear?.code || updatedPropertyDetails?.isArrear) !== "No";
+      const arrearsApplicable = applicationType === "Legacy" && (updatedPropertyDetails?.isArrear?.code || updatedPropertyDetails?.isArrear) !== "No";
       additionalDetails.arrearGST = arrearsApplicable
-        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearGST") ? updatedPropertyDetails.arrearGST : originalAdditionalDetails?.arrearGST) ?? null
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearGST")
+            ? updatedPropertyDetails.arrearGST
+            : originalAdditionalDetails?.arrearGST) ?? null
         : null;
       additionalDetails.arrearPenalty = arrearsApplicable
-        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearPenalty") ? updatedPropertyDetails.arrearPenalty : originalAdditionalDetails?.arrearPenalty) ?? null
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearPenalty")
+            ? updatedPropertyDetails.arrearPenalty
+            : originalAdditionalDetails?.arrearPenalty) ?? null
         : null;
       additionalDetails.futurePenalty = arrearsApplicable
-        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "futurePenalty") ? updatedPropertyDetails.futurePenalty : originalAdditionalDetails?.futurePenalty) ?? null
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "futurePenalty")
+            ? updatedPropertyDetails.futurePenalty
+            : originalAdditionalDetails?.futurePenalty) ?? null
         : null;
 
       additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount ?? originalAdditionalDetails?.gstAmount;
@@ -255,16 +260,21 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       // additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
 
       // Keep explicit cleared values; do not restore old arrears on update.
-      const arrearsApplicable = applicationType === "Legacy" &&
-        (updatedPropertyDetails?.isArrear?.code || updatedPropertyDetails?.isArrear) !== "No";
+      const arrearsApplicable = applicationType === "Legacy" && (updatedPropertyDetails?.isArrear?.code || updatedPropertyDetails?.isArrear) !== "No";
       additionalDetails.arrearGST = arrearsApplicable
-        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearGST") ? updatedPropertyDetails.arrearGST : originalAdditionalDetails?.arrearGST) ?? null
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearGST")
+            ? updatedPropertyDetails.arrearGST
+            : originalAdditionalDetails?.arrearGST) ?? null
         : null;
       additionalDetails.arrearPenalty = arrearsApplicable
-        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearPenalty") ? updatedPropertyDetails.arrearPenalty : originalAdditionalDetails?.arrearPenalty) ?? null
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearPenalty")
+            ? updatedPropertyDetails.arrearPenalty
+            : originalAdditionalDetails?.arrearPenalty) ?? null
         : null;
       additionalDetails.futurePenalty = arrearsApplicable
-        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "futurePenalty") ? updatedPropertyDetails.futurePenalty : originalAdditionalDetails?.futurePenalty) ?? null
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "futurePenalty")
+            ? updatedPropertyDetails.futurePenalty
+            : originalAdditionalDetails?.futurePenalty) ?? null
         : null;
 
       additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount ?? originalAdditionalDetails?.gstAmount;
@@ -353,11 +363,13 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return e.action !== "CYCLE_Bill_GENERATED" && (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles);
+      return e.action !== "CYCLE_Bill_GENERATED" && e.action !== "PAY" && (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles);
     }) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
-      return e.action !== "CYCLE_Bill_GENERATED" && (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles);
+      return e.action !== "CYCLE_Bill_GENERATED" && e.action !== "PAY" && (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles);
     });
+
+  console.log("actions", actions);
 
   function onActionSelect(action) {
     goNext(action);

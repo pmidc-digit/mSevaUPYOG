@@ -189,12 +189,21 @@ public class CollectionNotificationConsumer {
 	    // Call paymentService.getPayments() to get the fully enriched payment from DB
 	    // (includes paymentDetail.additionalDetails with tax head breakdown, bill details, owner info etc.)
 	    // Fall back to original Kafka payment if search fails.
+	    String receiptNumber = null;
+	    if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
+	        receiptNumber = validatedPayments.get(0).getPaymentDetails().get(0).getReceiptNumber();
+	    }
+
+	    // Check if the incoming Kafka payment message itself already has a fileStoreId
+	    if (!StringUtils.isEmpty(validatedPayments.get(0).getFileStoreId())) {
+	        String kafkaFileStoreId = validatedPayments.get(0).getFileStoreId();
+	        log.info("Kafka payment already contains fileStoreId: {}, skipping PDF creation", kafkaFileStoreId);
+	        return getUrlFromFileStore(kafkaFileStoreId, stateId);
+	    }
+
+	    // Hit DB search query to get payment from database
 	    List<Payment> paymentsForPdf = validatedPayments;
 	    try {
-	        String receiptNumber = null;
-	        if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
-	            receiptNumber = validatedPayments.get(0).getPaymentDetails().get(0).getReceiptNumber();
-	        }
 	        if (!StringUtils.isEmpty(receiptNumber)) {
 	            PaymentSearchCriteria criteria = PaymentSearchCriteria.builder()
 	                    .tenantId(validatedPayments.get(0).getTenantId())
@@ -202,42 +211,58 @@ public class CollectionNotificationConsumer {
 	                    .businessService(businessService)
 	                    .build();
 	            List<Payment> enrichedPayments = paymentService.getPayments(requestInfo, criteria, businessService);
-                log.info("Payment search response for PDF: {}", enrichedPayments);
+	            log.info("Payment DB search response for receipt {}: {}", receiptNumber, enrichedPayments);
+
 	            if (!CollectionUtils.isEmpty(enrichedPayments)) {
-                paymentsForPdf = enrichedPayments;
-                log.info("Using enriched payment from DB search for PDF creation, receipt: " + receiptNumber);
+	                // --- DB CHECK: If fileStoreId already exists in DB, use it directly! ---
+	                if (!StringUtils.isEmpty(enrichedPayments.get(0).getFileStoreId())) {
+	                    String dbFileStoreId = enrichedPayments.get(0).getFileStoreId();
+	                    log.info("DB search found existing fileStoreId: {}, skipping PDF creation entirely", dbFileStoreId);
+	                    return getUrlFromFileStore(dbFileStoreId, stateId);
+	                }
 
-                for (Payment enriched : paymentsForPdf) {
-                    for (PaymentDetail enrichedDetail : enriched.getPaymentDetails()) {
-                        PaymentDetail kafkaDetail = findMatchingPaymentDetail(
-                                validatedPayments, enrichedDetail.getReceiptNumber());
+	                paymentsForPdf = enrichedPayments;
+	                log.info("No fileStoreId in DB. Using enriched payment from DB search for PDF creation, receipt: " + receiptNumber);
 
-                        if (kafkaDetail != null && kafkaDetail.getBill() != null) {
-                            // Always copy Kafka bill — needed by ALL templates that read
-                            // bill.billAccountDetails (PT, TL, CLU, BPA, NDC etc.)
-                            enrichedDetail.setBill(kafkaDetail.getBill());
+	                for (Payment enriched : paymentsForPdf) {
+	                    for (PaymentDetail enrichedDetail : enriched.getPaymentDetails()) {
+	                        PaymentDetail kafkaDetail = findMatchingPaymentDetail(
+	                                validatedPayments, enrichedDetail.getReceiptNumber());
 
-                            // Only rebuild additionalDetails for WS/SW —
-                            // these are the ONLY templates that read paymentDetails[0].additionalDetails.*
-                            // For PT/consolidated/FIRENOC the DB additionalDetails has the correct
-                            // structure (assessmentYears, arrearArray, tax, cgst etc.) — don't overwrite.
-                            String svc = enrichedDetail.getBusinessService();
-                            boolean isWsOrSw = svc != null &&
-                                    (svc.equalsIgnoreCase("WS") || svc.equalsIgnoreCase("SW")
-                                    || svc.toUpperCase().startsWith("WS.") || svc.toUpperCase().startsWith("SW."));
-                            if (isWsOrSw) {
-                                enrichedDetail.setAdditionalDetails(
-                                        buildAdditionalDetailsFromBill(enrichedDetail, objectMapper));
-                                log.info("Rebuilt additionalDetails for WS/SW receipt: {}",
-                                        enrichedDetail.getReceiptNumber());
-                            }
-                            log.info("Copied Kafka bill for receipt: {}, service: {}",
-                                    enrichedDetail.getReceiptNumber(), svc);
-                        } else {
-                            log.warn("Could not find Kafka bill for receipt: {}", enrichedDetail.getReceiptNumber());
-                        }
-                    }
-                }
+	                        if (kafkaDetail != null && kafkaDetail.getBill() != null) {
+	                            // Always copy Kafka bill — needed by ALL templates that read
+	                            // bill.billAccountDetails (PT, TL, CLU, BPA, NDC etc.)
+	                            enrichedDetail.setBill(kafkaDetail.getBill());
+
+	                            String svc = enrichedDetail.getBusinessService();
+	                            boolean isWsOrSw = svc != null &&
+	                                    (svc.equalsIgnoreCase("WS") || svc.equalsIgnoreCase("SW")
+	                                    || svc.toUpperCase().startsWith("WS.") || svc.toUpperCase().startsWith("SW."));
+	                            boolean isPt = svc != null &&
+	                                    (svc.equalsIgnoreCase("PT") || svc.equalsIgnoreCase("PT.MUTATION"));
+
+	                            if (isWsOrSw) {
+	                                // WS/SW: template reads paymentDetails[0].additionalDetails.*
+	                                // Build [{taxhead, amount}] array from billAccountDetails
+	                                enrichedDetail.setAdditionalDetails(
+	                                        buildAdditionalDetailsFromBill(enrichedDetail, objectMapper));
+	                                log.info("Rebuilt additionalDetails for WS/SW receipt: {}",
+	                                        enrichedDetail.getReceiptNumber());
+	                            } else if (isPt) {
+	                                // PT: template reads additionalDetails.assessmentYears, arrearArray.*, taxArray.*
+	                                // Build these year-wise breakdown arrays from billAccountDetails
+	                                enrichedDetail.setAdditionalDetails(
+	                                        buildPtAdditionalDetails(enrichedDetail, objectMapper));
+	                                log.info("Rebuilt PT additionalDetails for receipt: {}",
+	                                        enrichedDetail.getReceiptNumber());
+	                            }
+	                            log.info("Copied Kafka bill for receipt: {}, service: {}",
+	                                    enrichedDetail.getReceiptNumber(), svc);
+	                        } else {
+	                            log.warn("Could not find Kafka bill for receipt: {}", enrichedDetail.getReceiptNumber());
+	                        }
+	                    }
+	                }
 
 	            } else {
 	                log.warn("Payment search returned empty, falling back to Kafka payment for receipt: " + receiptNumber);
@@ -247,10 +272,9 @@ public class CollectionNotificationConsumer {
 	        log.error("Failed to fetch enriched payment, falling back to Kafka payment: ", e);
 	    }
 
-	    String receiptKey = mdmsService.getReceiptKey(requestInfo, stateId, businessService);
-
 	    try {
-	        // --- STEP 1: Generate PDF using enriched payment data ---
+	        // --- Generate PDF using enriched payment data ---
+	        String receiptKey = mdmsService.getReceiptKey(requestInfo, stateId, businessService);
 	        String pdfUri = applicationProperties.getEgovServiceHost()
 	                      + applicationProperties.getEgovPdfCreate()
 	                      + "?key=" + receiptKey + "&tenantId=" + stateId;
@@ -264,7 +288,7 @@ public class CollectionNotificationConsumer {
 	        if (pdfResponse != null && pdfResponse.containsKey("filestoreIds")) {
 	            List<String> ids = (List<String>) pdfResponse.get("filestoreIds");
 	            if (!ids.isEmpty()) {
-	                fileStoreId = ids.get(0); // Pick the first ID
+	                fileStoreId = ids.get(0);
 	            }
 	        }
 
@@ -273,29 +297,42 @@ public class CollectionNotificationConsumer {
 	            return null;
 	        }
 
-	        // --- STEP 2: Convert FileStoreId to a Public URL ---
-	        String fileStoreUri = applicationProperties.getFileStoreHost()  
-	                            + "/filestore/v1/files/url" 
-	                            + "?tenantId=" + stateId 
-	                            + "&fileStoreIds=" + fileStoreId;
-
-	        // Note: The /url endpoint is a GET request
-	        Map<String, Object> urlResponse = restTemplate.getForObject(fileStoreUri, Map.class);
-
-	        if (urlResponse != null && urlResponse.containsKey("fileStoreIds")) {
-	            List<Map<String, String>> fileDetails = (List<Map<String, String>>) urlResponse.get("fileStoreIds");
-	            if (!fileDetails.isEmpty()) {
-	                String publicUrl = fileDetails.get(0).get("url");
-	                log.info("Successfully generated public receipt link: " + publicUrl);
-	                return publicUrl;
-	            }
-	        }
+	        // Convert newly created fileStoreId to a public URL
+	        return getUrlFromFileStore(fileStoreId, stateId);
 
 	    } catch (Exception e) {
 	        log.error("Error in the Receipt Generation/URL flow: ", e);
 	    }
 
 	    return null;
+	}
+
+	/**
+	 * Helper method to fetch the public download URL from FileStore for a given fileStoreId.
+	 */
+	private String getUrlFromFileStore(String fileStoreId, String stateId) {
+	    if (StringUtils.isEmpty(fileStoreId)) return null;
+	    try {
+	        String fileStoreUri = applicationProperties.getFileStoreHost()  
+	                            + "/filestore/v1/files/url" 
+	                            + "?tenantId=" + stateId 
+	                            + "&fileStoreIds=" + fileStoreId;
+
+	        Map<String, Object> urlResponse = restTemplate.getForObject(fileStoreUri, Map.class);
+
+	        if (urlResponse != null && urlResponse.containsKey("fileStoreIds")) {
+	            List<Map<String, String>> fileDetails = (List<Map<String, String>>) urlResponse.get("fileStoreIds");
+	            if (!fileDetails.isEmpty()) {
+	                String publicUrl = fileDetails.get(0).get("url");
+	                log.info("Successfully fetched public receipt link from FileStore: " + publicUrl);
+	                return publicUrl;
+	            }
+	        }
+	    } catch (Exception e) {
+	        log.error("Error fetching URL from FileStore for fileStoreId {}: ", fileStoreId, e);
+	    }
+	    return null;
+
 	}
 	
 	/**
@@ -354,6 +391,98 @@ public class CollectionNotificationConsumer {
 	        return mapper.valueToTree(rows);
 	    } catch (Exception e) {
 	        log.error("Error building additionalDetails from billAccountDetails: ", e);
+	        return mapper.nullNode();
+	    }
+	}
+
+	/**
+	 * Builds PT-style additionalDetails with assessmentYears, arrearArray, taxArray
+	 * — exactly matching what the UI frontend builds before calling pdf-service.
+	 *
+	 * arrearArray rows = adjustedAmount (what was actually paid) per taxHeadCode per billDetail year
+	 * taxArray rows    = amount (total due) per taxHeadCode per billDetail year
+	 * assessmentYears  = "YYYY-YYYY(Rs.<paid>)" string
+	 */
+	private com.fasterxml.jackson.databind.JsonNode buildPtAdditionalDetails(
+	        PaymentDetail detail, com.fasterxml.jackson.databind.ObjectMapper mapper) {
+	    try {
+	        java.text.SimpleDateFormat yearFmt = new java.text.SimpleDateFormat("yyyy");
+	        java.util.List<java.util.Map<String, Object>> arrearArray = new java.util.ArrayList<>();
+	        java.util.List<java.util.Map<String, Object>> taxArray    = new java.util.ArrayList<>();
+	        StringBuilder assessmentYearsSb = new StringBuilder();
+
+	        if (detail.getBill() != null && !CollectionUtils.isEmpty(detail.getBill().getBillDetails())) {
+	            for (org.egov.collection.web.contract.BillDetail bd : detail.getBill().getBillDetails()) {
+	                if (CollectionUtils.isEmpty(bd.getBillAccountDetails())) continue;
+
+	                // Build year string e.g. "2023-2024"
+	                String fromYear = bd.getFromPeriod() != null && bd.getFromPeriod() > 0
+	                        ? yearFmt.format(new java.util.Date(bd.getFromPeriod())) : "";
+	                String toYear   = bd.getToPeriod() != null && bd.getToPeriod() > 0
+	                        ? yearFmt.format(new java.util.Date(bd.getToPeriod())) : "";
+	                String yearStr  = fromYear.isEmpty() ? toYear : fromYear + "-" + toYear;
+
+	                // arrearRow  = adjustedAmount per PT taxHeadCode (what was paid)
+	                // taxRow     = amount per PT taxHeadCode (total due)
+	                java.util.Map<String, Object> arrearRow = new java.util.LinkedHashMap<>();
+	                java.util.Map<String, Object> taxRow    = new java.util.LinkedHashMap<>();
+	                arrearRow.put("year", yearStr);
+	                taxRow.put("year", yearStr);
+
+	                // PT taxHead keys expected by template
+	                String[] ptHeads = {"PT_TAX","PT_FIRE_CESS","PT_CANCER_CESS","PT_TIME_PENALTY",
+	                        "PT_TIME_REBATE","PT_TIME_INTEREST","PT_UNIT_USAGE_EXEMPTION",
+	                        "PT_OWNER_EXEMPTION","PT_ADHOC_PENALTY","PT_ADHOC_REBATE","PT_ROUNDOFF"};
+	                // Map template key → taxHeadCode
+	                java.util.Map<String, String> headKeyMap = new java.util.LinkedHashMap<>();
+	                headKeyMap.put("tax",                       "PT_TAX");
+	                headKeyMap.put("firecess",                  "PT_FIRE_CESS");
+	                headKeyMap.put("cancercess",                "PT_CANCER_CESS");
+	                headKeyMap.put("penalty",                   "PT_TIME_PENALTY");
+	                headKeyMap.put("rebate",                    "PT_TIME_REBATE");
+	                headKeyMap.put("interest",                  "PT_TIME_INTEREST");
+	                headKeyMap.put("usage_exemption",           "PT_UNIT_USAGE_EXEMPTION");
+	                headKeyMap.put("special_category_exemption","PT_OWNER_EXEMPTION");
+	                headKeyMap.put("adhoc_penalty",             "PT_ADHOC_PENALTY");
+	                headKeyMap.put("adhoc_rebate",              "PT_ADHOC_REBATE");
+	                headKeyMap.put("roundoff",                  "PT_ROUNDOFF");
+
+	                // Index billAccountDetails by taxHeadCode for fast lookup
+	                java.util.Map<String, org.egov.collection.web.contract.BillAccountDetail> badMap
+	                        = new java.util.LinkedHashMap<>();
+	                for (org.egov.collection.web.contract.BillAccountDetail bad : bd.getBillAccountDetails()) {
+	                    if (bad.getTaxHeadCode() != null) badMap.put(bad.getTaxHeadCode(), bad);
+	                }
+
+	                double arrearTotal = 0, taxTotal = 0, arrearPaid = 0;
+	                for (java.util.Map.Entry<String, String> e : headKeyMap.entrySet()) {
+	                    org.egov.collection.web.contract.BillAccountDetail bad = badMap.get(e.getValue());
+	                    double amt    = (bad != null && bad.getAmount() != null)         ? bad.getAmount().doubleValue()         : 0;
+	                    double adjAmt = (bad != null && bad.getAdjustedAmount() != null) ? bad.getAdjustedAmount().doubleValue() : 0;
+	                    arrearRow.put(e.getKey(), adjAmt);
+	                    taxRow.put(e.getKey(), amt);
+	                    arrearTotal += adjAmt;
+	                    taxTotal    += amt;
+	                    arrearPaid  += adjAmt;
+	                }
+	                arrearRow.put("total", arrearTotal);
+	                taxRow.put("total", taxTotal);
+	                arrearArray.add(arrearRow);
+	                taxArray.add(taxRow);
+
+	                // assessmentYears string: "2023-2024(Rs.2)"
+	                if (assessmentYearsSb.length() > 0) assessmentYearsSb.append(",");
+	                assessmentYearsSb.append(yearStr).append("(Rs.").append((long) arrearPaid).append(")");
+	            }
+	        }
+
+	        java.util.Map<String, Object> result = new java.util.LinkedHashMap<>();
+	        result.put("assessmentYears", assessmentYearsSb.toString());
+	        result.put("arrearArray", arrearArray);
+	        result.put("taxArray", taxArray);
+	        return mapper.valueToTree(result);
+	    } catch (Exception e) {
+	        log.error("Error building PT additionalDetails: ", e);
 	        return mapper.nullNode();
 	    }
 	}

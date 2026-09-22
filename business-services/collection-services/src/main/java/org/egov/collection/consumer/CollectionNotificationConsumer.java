@@ -207,28 +207,23 @@ public class CollectionNotificationConsumer {
 	                paymentsForPdf = enrichedPayments;
 	                log.info("Using enriched payment from DB search for PDF creation, receipt: " + receiptNumber);
 
-	                // The row mapper has bill/billDetails/billAccountDetails commented out, so
-	                // paymentDetail.bill is null from DB fetch. Copy bill from original Kafka payment
-	                // (which has complete bill data) and build additionalDetails if missing.
+	                // The row mapper has bill/billDetails/billAccountDetails commented out,
+	                // so paymentDetail.bill is null from DB fetch — for ALL services.
+	                // Always copy bill from original Kafka payment (which has complete bill data)
+	                // and rebuild additionalDetails from it.
 	                for (Payment enriched : paymentsForPdf) {
 	                    for (PaymentDetail enrichedDetail : enriched.getPaymentDetails()) {
-	                        if (enrichedDetail.getAdditionalDetails() == null
-	                                || enrichedDetail.getAdditionalDetails().isNull()
-	                                || enrichedDetail.getAdditionalDetails().isMissingNode()) {
+	                        PaymentDetail kafkaDetail = findMatchingPaymentDetail(
+	                                validatedPayments, enrichedDetail.getReceiptNumber());
 
-	                            // Find matching detail from original Kafka payment by receiptNumber
-	                            PaymentDetail kafkaDetail = findMatchingPaymentDetail(
-	                                    validatedPayments, enrichedDetail.getReceiptNumber());
-
-	                            if (kafkaDetail != null && kafkaDetail.getBill() != null) {
-	                                enrichedDetail.setBill(kafkaDetail.getBill());
-	                                enrichedDetail.setAdditionalDetails(
-	                                        buildAdditionalDetailsFromBill(enrichedDetail, objectMapper));
-	                                log.info("Built additionalDetails from Kafka bill for receipt: {}",
-	                                        enrichedDetail.getReceiptNumber());
-	                            } else {
-	                                log.warn("Could not find Kafka bill for receipt: {}", enrichedDetail.getReceiptNumber());
-	                            }
+	                        if (kafkaDetail != null && kafkaDetail.getBill() != null) {
+	                            enrichedDetail.setBill(kafkaDetail.getBill());
+	                            enrichedDetail.setAdditionalDetails(
+	                                    buildAdditionalDetailsFromBill(enrichedDetail, objectMapper));
+	                            log.info("Copied Kafka bill and built additionalDetails for receipt: {}",
+	                                    enrichedDetail.getReceiptNumber());
+	                        } else {
+	                            log.warn("Could not find Kafka bill for receipt: {}", enrichedDetail.getReceiptNumber());
 	                        }
 	                    }
 	                }

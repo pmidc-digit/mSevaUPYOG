@@ -213,44 +213,55 @@ public class DxfValidator {
         return sorted[lo] + frac * (sorted[hi] - sorted[lo]);
     }
 
+    private static void addPoint(double x, double y, String label, List<double[]> points, List<String> labels) {
+        if (Double.isFinite(x) && Double.isFinite(y) && Math.abs(x) < 1e12 && Math.abs(y) < 1e12) {
+            points.add(new double[]{x, y});
+            labels.add(label);
+        }
+    }
+
     private static void collectPoints(DxfToPdfConverterv2.Entity e, List<double[]> points, List<String> labels) {
         String label = e.layer + "/" + e.getClass().getSimpleName();
         if (e instanceof DxfToPdfConverterv2.LineEntity) {
             DxfToPdfConverterv2.LineEntity l = (DxfToPdfConverterv2.LineEntity) e;
-            points.add(new double[]{l.x1, l.y1}); labels.add(label);
-            points.add(new double[]{l.x2, l.y2}); labels.add(label);
+            addPoint(l.x1, l.y1, label, points, labels);
+            addPoint(l.x2, l.y2, label, points, labels);
         } else if (e instanceof DxfToPdfConverterv2.CircleEntity) {
             DxfToPdfConverterv2.CircleEntity c = (DxfToPdfConverterv2.CircleEntity) e;
-            points.add(new double[]{c.cx, c.cy}); labels.add(label);
+            addPoint(c.cx, c.cy, label, points, labels);
         } else if (e instanceof DxfToPdfConverterv2.ArcEntity) {
             DxfToPdfConverterv2.ArcEntity a = (DxfToPdfConverterv2.ArcEntity) e;
-            points.add(new double[]{a.cx, a.cy}); labels.add(label);
+            double[] box = a.getBoundingBox();
+            addPoint(box[0], box[1], label, points, labels);
+            addPoint(box[2], box[3], label, points, labels);
         } else if (e instanceof DxfToPdfConverterv2.EllipseEntity) {
             DxfToPdfConverterv2.EllipseEntity el = (DxfToPdfConverterv2.EllipseEntity) e;
-            points.add(new double[]{el.cx, el.cy}); labels.add(label);
+            double[] box = el.getBoundingBox();
+            addPoint(box[0], box[1], label, points, labels);
+            addPoint(box[2], box[3], label, points, labels);
         } else if (e instanceof DxfToPdfConverterv2.PolylineEntity) {
             for (double[] v : ((DxfToPdfConverterv2.PolylineEntity) e).vertices) {
-                points.add(new double[]{v[0], v[1]}); labels.add(label);
+                addPoint(v[0], v[1], label, points, labels);
             }
         } else if (e instanceof DxfToPdfConverterv2.TextEntity) {
             DxfToPdfConverterv2.TextEntity t = (DxfToPdfConverterv2.TextEntity) e;
-            points.add(new double[]{t.x, t.y}); labels.add(label);
+            addPoint(t.x, t.y, label, points, labels);
         } else if (e instanceof DxfToPdfConverterv2.MTextEntity) {
             DxfToPdfConverterv2.MTextEntity m = (DxfToPdfConverterv2.MTextEntity) e;
-            points.add(new double[]{m.x, m.y}); labels.add(label);
+            addPoint(m.x, m.y, label, points, labels);
         } else if (e instanceof DxfToPdfConverterv2.InsertEntity) {
             DxfToPdfConverterv2.InsertEntity i = (DxfToPdfConverterv2.InsertEntity) e;
-            points.add(new double[]{i.x, i.y}); labels.add(label);
+            addPoint(i.x, i.y, label, points, labels);
         } else if (e instanceof DxfToPdfConverterv2.LeaderEntity) {
             for (double[] v : ((DxfToPdfConverterv2.LeaderEntity) e).vertices) {
-                points.add(new double[]{v[0], v[1]}); labels.add(label);
+                addPoint(v[0], v[1], label, points, labels);
             }
         } else if (e instanceof DxfToPdfConverterv2.DimensionEntity) {
             DxfToPdfConverterv2.DimensionEntity d = (DxfToPdfConverterv2.DimensionEntity) e;
-            points.add(new double[]{d.defX, d.defY}); labels.add(label);
+            addPoint(d.defX, d.defY, label, points, labels);
         } else if (e instanceof DxfToPdfConverterv2.SolidEntity) {
             double[] c = ((DxfToPdfConverterv2.SolidEntity) e).corners;
-            points.add(new double[]{c[0], c[1]}); labels.add(label);
+            addPoint(c[0], c[1], label, points, labels);
         }
     }
 }

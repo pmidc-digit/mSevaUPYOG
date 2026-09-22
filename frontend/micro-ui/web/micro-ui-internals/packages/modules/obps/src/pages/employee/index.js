@@ -77,7 +77,7 @@ const OBPSBreadCrumbs = ({ location }) => {
     },
   ];
 
-  return <BreadCrumb crumbs={crumbs} />;
+  return <BreadCrumb crumbs={crumbs.filter((crumb) => crumb.show)} />;
 }
 
 const EmployeeApp = ({ path }) => {

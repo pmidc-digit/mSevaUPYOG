@@ -41,7 +41,7 @@ const NOCBreadCrumbs = ({ location }) => {
       show: location.pathname.includes("/digit-ui/employee/noc/search/application-overview") ? true : false,
     },
   ];
-  return <BreadCrumb crumbs={crumbs} />;
+  return <BreadCrumb crumbs={crumbs.filter((crumb) => crumb.show)} />;
 };
 
 const EmployeeApp = ({ path }) => {
@@ -70,7 +70,7 @@ const EmployeeApp = ({ path }) => {
     }, []);
 
   return (
-    <Fragment>
+    <div className={location.pathname.replace(/\/$/, "") === `${path}/inbox` ? "ground-container" : undefined}>
       {!isResponse ? <div className={window.location.href.includes("application-overview") || isMobile ? "noc-employee__breadcrumbs--offset" : "noc-employee__breadcrumbs"}>
         <NOCBreadCrumbs location={location} />
       </div> : null} 
@@ -86,7 +86,7 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/esign/complete/:id/:file`} component={NOCEsignResponse} />
 
       </Switch>
-    </Fragment>
+    </div>
   );
 };
 

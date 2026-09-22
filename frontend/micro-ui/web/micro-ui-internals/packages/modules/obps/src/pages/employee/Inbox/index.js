@@ -425,6 +425,7 @@ const Inbox = ({ parentRoute }) => {
   }, [onApiMobileSearch]);
 
   const propsForInboxTable = useInboxTableConfig({
+    enableColumnSearch: true,
     parentRoute,
     onPageSizeChange,
     formState,

@@ -1,10 +1,34 @@
-import React, { Fragment, useMemo } from "react";
+import React, { Fragment, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils/index";
 
-const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, globalSearch, cities }) => {
+const ColumnSearchHeader = ({ column }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+    <span>{column.searchLabel}</span>
+    <input
+      type="search"
+      aria-label={`Search ${column.searchLabel}`}
+      placeholder="Search…"
+      value={column.searchValue}
+      onChange={(event) => column.updateSearch(event.target.value)}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+      style={{ width: "100%", minWidth: 110, padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: 14, fontWeight: 400, background: "white", color: "#334155" }}
+    />
+  </div>
+);
+
+const cellText = (value) => {
+  if (value == null) return "";
+  if (Array.isArray(value)) return value.map(cellText).join(" ");
+  if (React.isValidElement(value)) return cellText(value.props.children);
+  return String(value);
+};
+
+const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, globalSearch, cities, enableColumnSearch = false }) => {
+  const [columnSearch, setColumnSearch] = useState({});
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value, isSelfCertification) =>
     value === "CS_NA" ? (
@@ -31,7 +55,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       {
         Header: t("Sr No."),
         accessor: "serialNumber",
-        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + row.index + 1),
+        Cell: ({ row }) => GetCell((Number(formState?.tableForm?.offset) || 0) + (enableColumnSearch ? table.indexOf(row.original) : row.index) + 1),
         disableSortBy: true,
       },
       {
@@ -165,7 +189,35 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       },
     ];
     return columns.filter(Boolean);
-  }, [t, tenantId, parentRoute, formState?.tableForm?.offset, cities]);
+  }, [t, tenantId, parentRoute, formState?.tableForm?.offset, cities, enableColumnSearch, table]);
+
+  const searchableColumns = useMemo(() => tableColumnConfig.map((column, index) => ({
+    ...column,
+    id: column.id || (typeof column.accessor === "string" ? column.accessor : `inbox-column-${index}`),
+  })), [tableColumnConfig]);
+
+  const filteredTable = useMemo(() => {
+    if (!enableColumnSearch) return table;
+    return (table || []).filter((row, rowIndex) => searchableColumns.every((column) => {
+      const query = (columnSearch[column.id] || "").trim().toLocaleLowerCase();
+      if (!query) return true;
+      let value;
+      if (column.accessor === "serialNumber") value = (Number(formState?.tableForm?.offset) || 0) + rowIndex + 1;
+      else if (column.accessor === "applicationNo") value = row.applicationId;
+      else if (["createdDate", "submissionDate", "approvalDate", "issuedDate"].includes(column.accessor)) {
+        value = row[column.accessor] ? format(new Date(row[column.accessor]), "dd/MM/yyyy") : "-";
+      } else value = typeof column.accessor === "function" ? column.accessor(row) : row[column.accessor];
+      return cellText(value).toLocaleLowerCase().includes(query);
+    }));
+  }, [enableColumnSearch, table, searchableColumns, columnSearch, formState?.tableForm?.offset]);
+
+  const displayColumns = useMemo(() => enableColumnSearch ? searchableColumns.map((column) => ({
+    ...column,
+    searchLabel: column.Header,
+    searchValue: columnSearch[column.id] || "",
+    updateSearch: (value) => setColumnSearch((previous) => ({ ...previous, [column.id]: value })),
+    Header: ColumnSearchHeader,
+  })) : tableColumnConfig, [enableColumnSearch, searchableColumns, tableColumnConfig, columnSearch]);
 
   return {
     getCellProps: (cellInfo) => {
@@ -210,8 +262,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } }),
     // globalSearch: {searchForItemsInTable},
     // searchQueryForTable,
-    data: table,
-    columns: tableColumnConfig,
+    data: filteredTable,
+    columns: displayColumns,
   };
 };
 

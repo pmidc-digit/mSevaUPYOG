@@ -27,7 +27,7 @@ const NewLogin = ({ stateCode }) => {
   const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
   // const [selectedCity, setSelectedCity] = useState(() => ({ code: Digit.ULBService.getCitizenCurrentTenant(true) }));
   const [selectedCity, setSelectedCity] = useState(() => location.state?.selectedCity || null);
-  const [portal, setPortal] = useState("citizen");
+  const [portal, setPortal] = useState(() => location.state?.portal === "employee" ? "employee" : "citizen");
   const [isRegistering, setIsRegistering] = useState(false);
   const [employeeCredentials, setEmployeeCredentials] = useState({ username: "", password: "", city: null });
   const [isEmployeeLoginLoading, setIsEmployeeLoginLoading] = useState(false);
@@ -200,7 +200,8 @@ const NewLogin = ({ stateCode }) => {
     setIsRegistering(true);
   };
 
-  const employeeCityOptions = employeeCities?.filter((city) => city.code !== "pb.punjab") || [];
+  // Match the original employee login: include every tenant, including Punjab.
+  const employeeCityOptions = employeeCities || [];
 
   const onEmployeeLogin = async () => {
     const { username, password, city } = employeeCredentials;
@@ -242,8 +243,12 @@ const NewLogin = ({ stateCode }) => {
         tenantId: employeeUser?.info?.tenantId,
         userType: "EMPLOYEE",
       });
+      const employeeSession = { info, ...tokens };
+      Digit.SessionStorage.del("Employee.confirmedTenant");
+      Digit.SessionStorage.set("citizen.userRequestObject", employeeSession);
+      Digit.SessionStorage.set("Employee.tenantId", info.tenantId);
       setEmployeeDetail(info, tokens.access_token);
-      Digit.UserService.setUser({ info, ...tokens });
+      Digit.UserService.setUser(employeeSession);
       window.location.href = "/digit-ui/employee";
     } catch (err) {
       setCanSubmit(true);

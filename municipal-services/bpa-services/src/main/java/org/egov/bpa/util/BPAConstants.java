@@ -9,6 +9,8 @@ public class BPAConstants {
 
 	public static final String BPA_MODULE = "BPA";
 
+	public static final String MODULENAME = "bpa-service";
+
 	public static final String BPA_BusinessService = "BPA";
 
 	public static final String BPA_MODULE_CODE = "BPA";

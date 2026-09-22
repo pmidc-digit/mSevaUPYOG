@@ -217,20 +217,32 @@ public class CollectionNotificationConsumer {
                             // bill.billAccountDetails (PT, TL, CLU, BPA, NDC etc.)
                             enrichedDetail.setBill(kafkaDetail.getBill());
 
-                            // Only rebuild additionalDetails for WS/SW —
-                            // these are the ONLY templates that read paymentDetails[0].additionalDetails.*
-                            // For PT/consolidated/FIRENOC the DB additionalDetails has the correct
-                            // structure (assessmentYears, arrearArray, tax, cgst etc.) — don't overwrite.
                             String svc = enrichedDetail.getBusinessService();
                             boolean isWsOrSw = svc != null &&
                                     (svc.equalsIgnoreCase("WS") || svc.equalsIgnoreCase("SW")
                                     || svc.toUpperCase().startsWith("WS.") || svc.toUpperCase().startsWith("SW."));
+                            boolean isPt = svc != null &&
+                                    (svc.equalsIgnoreCase("PT") || svc.equalsIgnoreCase("PT.MUTATION"));
+
                             if (isWsOrSw) {
+                                // WS/SW: template reads paymentDetails[0].additionalDetails.*
+                                // Build [{taxhead, amount}] array from billAccountDetails
                                 enrichedDetail.setAdditionalDetails(
                                         buildAdditionalDetailsFromBill(enrichedDetail, objectMapper));
                                 log.info("Rebuilt additionalDetails for WS/SW receipt: {}",
                                         enrichedDetail.getReceiptNumber());
+                            } else if (isPt) {
+                                // PT: template reads additionalDetails.assessmentYears, arrearArray.*, taxArray.*
+                                // Build these year-wise breakdown arrays from billAccountDetails
+                                // — exactly as the UI frontend does before calling pdf-service
+                                enrichedDetail.setAdditionalDetails(
+                                        buildPtAdditionalDetails(enrichedDetail, objectMapper));
+                                log.info("Rebuilt PT additionalDetails for receipt: {}",
+                                        enrichedDetail.getReceiptNumber());
                             }
+                            // For all other services (TL, consolidated, FIRENOC, CLU etc.):
+                            // keep DB additionalDetails — those templates read specific named fields
+                            // (e.g. additionalDetails.tax, .cgst) that are stored correctly in DB.
                             log.info("Copied Kafka bill for receipt: {}, service: {}",
                                     enrichedDetail.getReceiptNumber(), svc);
                         } else {
@@ -354,6 +366,98 @@ public class CollectionNotificationConsumer {
 	        return mapper.valueToTree(rows);
 	    } catch (Exception e) {
 	        log.error("Error building additionalDetails from billAccountDetails: ", e);
+	        return mapper.nullNode();
+	    }
+	}
+
+	/**
+	 * Builds PT-style additionalDetails with assessmentYears, arrearArray, taxArray
+	 * — exactly matching what the UI frontend builds before calling pdf-service.
+	 *
+	 * arrearArray rows = adjustedAmount (what was actually paid) per taxHeadCode per billDetail year
+	 * taxArray rows    = amount (total due) per taxHeadCode per billDetail year
+	 * assessmentYears  = "YYYY-YYYY(Rs.<paid>)" string
+	 */
+	private com.fasterxml.jackson.databind.JsonNode buildPtAdditionalDetails(
+	        PaymentDetail detail, com.fasterxml.jackson.databind.ObjectMapper mapper) {
+	    try {
+	        java.text.SimpleDateFormat yearFmt = new java.text.SimpleDateFormat("yyyy");
+	        java.util.List<java.util.Map<String, Object>> arrearArray = new java.util.ArrayList<>();
+	        java.util.List<java.util.Map<String, Object>> taxArray    = new java.util.ArrayList<>();
+	        StringBuilder assessmentYearsSb = new StringBuilder();
+
+	        if (detail.getBill() != null && !CollectionUtils.isEmpty(detail.getBill().getBillDetails())) {
+	            for (org.egov.collection.web.contract.BillDetail bd : detail.getBill().getBillDetails()) {
+	                if (CollectionUtils.isEmpty(bd.getBillAccountDetails())) continue;
+
+	                // Build year string e.g. "2023-2024"
+	                String fromYear = bd.getFromPeriod() != null && bd.getFromPeriod() > 0
+	                        ? yearFmt.format(new java.util.Date(bd.getFromPeriod())) : "";
+	                String toYear   = bd.getToPeriod() != null && bd.getToPeriod() > 0
+	                        ? yearFmt.format(new java.util.Date(bd.getToPeriod())) : "";
+	                String yearStr  = fromYear.isEmpty() ? toYear : fromYear + "-" + toYear;
+
+	                // arrearRow  = adjustedAmount per PT taxHeadCode (what was paid)
+	                // taxRow     = amount per PT taxHeadCode (total due)
+	                java.util.Map<String, Object> arrearRow = new java.util.LinkedHashMap<>();
+	                java.util.Map<String, Object> taxRow    = new java.util.LinkedHashMap<>();
+	                arrearRow.put("year", yearStr);
+	                taxRow.put("year", yearStr);
+
+	                // PT taxHead keys expected by template
+	                String[] ptHeads = {"PT_TAX","PT_FIRE_CESS","PT_CANCER_CESS","PT_TIME_PENALTY",
+	                        "PT_TIME_REBATE","PT_TIME_INTEREST","PT_UNIT_USAGE_EXEMPTION",
+	                        "PT_OWNER_EXEMPTION","PT_ADHOC_PENALTY","PT_ADHOC_REBATE","PT_ROUNDOFF"};
+	                // Map template key → taxHeadCode
+	                java.util.Map<String, String> headKeyMap = new java.util.LinkedHashMap<>();
+	                headKeyMap.put("tax",                       "PT_TAX");
+	                headKeyMap.put("firecess",                  "PT_FIRE_CESS");
+	                headKeyMap.put("cancercess",                "PT_CANCER_CESS");
+	                headKeyMap.put("penalty",                   "PT_TIME_PENALTY");
+	                headKeyMap.put("rebate",                    "PT_TIME_REBATE");
+	                headKeyMap.put("interest",                  "PT_TIME_INTEREST");
+	                headKeyMap.put("usage_exemption",           "PT_UNIT_USAGE_EXEMPTION");
+	                headKeyMap.put("special_category_exemption","PT_OWNER_EXEMPTION");
+	                headKeyMap.put("adhoc_penalty",             "PT_ADHOC_PENALTY");
+	                headKeyMap.put("adhoc_rebate",              "PT_ADHOC_REBATE");
+	                headKeyMap.put("roundoff",                  "PT_ROUNDOFF");
+
+	                // Index billAccountDetails by taxHeadCode for fast lookup
+	                java.util.Map<String, org.egov.collection.web.contract.BillAccountDetail> badMap
+	                        = new java.util.LinkedHashMap<>();
+	                for (org.egov.collection.web.contract.BillAccountDetail bad : bd.getBillAccountDetails()) {
+	                    if (bad.getTaxHeadCode() != null) badMap.put(bad.getTaxHeadCode(), bad);
+	                }
+
+	                double arrearTotal = 0, taxTotal = 0, arrearPaid = 0;
+	                for (java.util.Map.Entry<String, String> e : headKeyMap.entrySet()) {
+	                    org.egov.collection.web.contract.BillAccountDetail bad = badMap.get(e.getValue());
+	                    double amt    = (bad != null && bad.getAmount() != null)         ? bad.getAmount().doubleValue()         : 0;
+	                    double adjAmt = (bad != null && bad.getAdjustedAmount() != null) ? bad.getAdjustedAmount().doubleValue() : 0;
+	                    arrearRow.put(e.getKey(), adjAmt);
+	                    taxRow.put(e.getKey(), amt);
+	                    arrearTotal += adjAmt;
+	                    taxTotal    += amt;
+	                    arrearPaid  += adjAmt;
+	                }
+	                arrearRow.put("total", arrearTotal);
+	                taxRow.put("total", taxTotal);
+	                arrearArray.add(arrearRow);
+	                taxArray.add(taxRow);
+
+	                // assessmentYears string: "2023-2024(Rs.2)"
+	                if (assessmentYearsSb.length() > 0) assessmentYearsSb.append(",");
+	                assessmentYearsSb.append(yearStr).append("(Rs.").append((long) arrearPaid).append(")");
+	            }
+	        }
+
+	        java.util.Map<String, Object> result = new java.util.LinkedHashMap<>();
+	        result.put("assessmentYears", assessmentYearsSb.toString());
+	        result.put("arrearArray", arrearArray);
+	        result.put("taxArray", taxArray);
+	        return mapper.valueToTree(result);
+	    } catch (Exception e) {
+	        log.error("Error building PT additionalDetails: ", e);
 	        return mapper.nullNode();
 	    }
 	}

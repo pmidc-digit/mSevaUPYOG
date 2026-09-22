@@ -145,10 +145,24 @@ public class NotificationUtil {
 			Object mdmsData = getMDMSData(requestInfo, noc.getTenantId().split("\\.")[0]);
 			Map<String, Object> notificationConfig = getMDMSNotificationConfig(noc.getWorkflow().getAction()
 					,noc.getApplicationStatus(), mdmsData);
-			
+
 			messageCode = notificationConfig.getOrDefault("messageCode", "").toString();
+			// Fix P2: If MDMS has no NotificationConfig entry for this action+state, skip notification
+			// silently rather than fetching with an empty code and then NPE on message.replace().
+			if (org.apache.commons.lang3.StringUtils.isBlank(messageCode)) {
+				log.warn("getCustomizedMsg: No messageCode configured in MDMS NotificationConfig for action='{}' state='{}'. Skipping notification.",
+						noc.getWorkflow().getAction(), noc.getApplicationStatus());
+				return null;
+			}
 			message = getMessageTemplate(messageCode, localizationMessage);
-			
+
+			// Fix P2: getMessageTemplate may return null when localization key is not seeded.
+			// Guard every message.replace() call below to avoid NullPointerException.
+			if (message == null) {
+				log.warn("getCustomizedMsg: Localization template not found for code '{}'. Notification will not be sent.", messageCode);
+				return null;
+			}
+
 			List<Map<String, Object>> variables = JsonPath.read(notificationConfig, "$.variables");
 			Map<String, String> employeeMap = new HashMap<>();
 			for(Map<String, Object> variable : variables) {
@@ -167,21 +181,21 @@ public class NotificationUtil {
 					}
 				}
 			}
-			
+
 			String uuids = employeeMap.entrySet().stream().map(Entry::getValue).collect(Collectors.joining(","));
-			
+
 			if(!StringUtils.isEmpty(uuids)) {
 				Map<String, String> designationMap = userService.getEmployeeDesignation(requestInfo, uuids, noc.getTenantId());
 				employeeMap.entrySet().stream().forEach(entry -> {
 					List<String> designation = JsonPath.read(mdmsData, "$.MdmsRes.common-masters.Designation.[?(@.code == '" + designationMap.get(entry.getValue()) + "')].name");
 					entry.setValue(designation.get(0));
 				});
-				
+
 				for(Entry<String, String> entry : employeeMap.entrySet()) {
 					message = message.replace(entry.getKey(), entry.getValue());
 				}
 			}
-			
+
 		}		
 		return message;
 	}

@@ -204,8 +204,41 @@ public class CollectionNotificationConsumer {
 	            List<Payment> enrichedPayments = paymentService.getPayments(requestInfo, criteria, businessService);
                 log.info("Payment search response for PDF: {}", enrichedPayments);
 	            if (!CollectionUtils.isEmpty(enrichedPayments)) {
-	                paymentsForPdf = enrichedPayments;
-	                log.info("Using enriched payment from DB search for PDF creation, receipt: " + receiptNumber);
+                paymentsForPdf = enrichedPayments;
+                log.info("Using enriched payment from DB search for PDF creation, receipt: " + receiptNumber);
+
+                for (Payment enriched : paymentsForPdf) {
+                    for (PaymentDetail enrichedDetail : enriched.getPaymentDetails()) {
+                        PaymentDetail kafkaDetail = findMatchingPaymentDetail(
+                                validatedPayments, enrichedDetail.getReceiptNumber());
+
+                        if (kafkaDetail != null && kafkaDetail.getBill() != null) {
+                            // Always copy Kafka bill — needed by ALL templates that read
+                            // bill.billAccountDetails (PT, TL, CLU, BPA, NDC etc.)
+                            enrichedDetail.setBill(kafkaDetail.getBill());
+
+                            // Only rebuild additionalDetails for WS/SW —
+                            // these are the ONLY templates that read paymentDetails[0].additionalDetails.*
+                            // For PT/consolidated/FIRENOC the DB additionalDetails has the correct
+                            // structure (assessmentYears, arrearArray, tax, cgst etc.) — don't overwrite.
+                            String svc = enrichedDetail.getBusinessService();
+                            boolean isWsOrSw = svc != null &&
+                                    (svc.equalsIgnoreCase("WS") || svc.equalsIgnoreCase("SW")
+                                    || svc.toUpperCase().startsWith("WS.") || svc.toUpperCase().startsWith("SW."));
+                            if (isWsOrSw) {
+                                enrichedDetail.setAdditionalDetails(
+                                        buildAdditionalDetailsFromBill(enrichedDetail, objectMapper));
+                                log.info("Rebuilt additionalDetails for WS/SW receipt: {}",
+                                        enrichedDetail.getReceiptNumber());
+                            }
+                            log.info("Copied Kafka bill for receipt: {}, service: {}",
+                                    enrichedDetail.getReceiptNumber(), svc);
+                        } else {
+                            log.warn("Could not find Kafka bill for receipt: {}", enrichedDetail.getReceiptNumber());
+                        }
+                    }
+                }
+
 	            } else {
 	                log.warn("Payment search returned empty, falling back to Kafka payment for receipt: " + receiptNumber);
 	            }
@@ -265,7 +298,114 @@ public class CollectionNotificationConsumer {
 	    return null;
 	}
 	
-	
+	/**
+	 * Finds the PaymentDetail matching the given receiptNumber in the original Kafka payments list.
+	 */
+	private PaymentDetail findMatchingPaymentDetail(List<Payment> payments, String receiptNumber) {
+	    if (CollectionUtils.isEmpty(payments) || receiptNumber == null) return null;
+	    for (Payment pmt : payments) {
+	        if (!CollectionUtils.isEmpty(pmt.getPaymentDetails())) {
+	            for (PaymentDetail detail : pmt.getPaymentDetails()) {
+	                if (receiptNumber.equals(detail.getReceiptNumber())) {
+	                    return detail;
+	                }
+	            }
+	        }
+	    }
+	    return null;
+	}
+
+	/**
+	 * Builds paymentDetail.additionalDetails from bill.billDetails[].billAccountDetails[]
+	 * with human-readable period-formatted labels — exactly as the UI frontend does.
+	 * e.g. [{"taxhead":"Water Charges(01/01/2024-31/03/2024)","amount":2}, {"taxhead":"Total Amount Paid","amount":2}]
+	 */
+	private com.fasterxml.jackson.databind.JsonNode buildAdditionalDetailsFromBill(PaymentDetail detail, ObjectMapper mapper) {
+	    try {
+	        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+	        java.util.List<java.util.Map<String, Object>> rows = new java.util.ArrayList<>();
+	        java.math.BigDecimal total = java.math.BigDecimal.ZERO;
+
+	        if (detail.getBill() != null && !CollectionUtils.isEmpty(detail.getBill().getBillDetails())) {
+	            for (org.egov.collection.web.contract.BillDetail bd : detail.getBill().getBillDetails()) {
+	                if (!CollectionUtils.isEmpty(bd.getBillAccountDetails())) {
+	                    for (org.egov.collection.web.contract.BillAccountDetail bad : bd.getBillAccountDetails()) {
+	                        java.math.BigDecimal adjAmt = bad.getAdjustedAmount() != null
+	                                ? bad.getAdjustedAmount() : java.math.BigDecimal.ZERO;
+	                        if (adjAmt.compareTo(java.math.BigDecimal.ZERO) != 0 && bad.getTaxHeadCode() != null) {
+	                            String label = buildTaxHeadLabel(bad.getTaxHeadCode(), bd.getFromPeriod(), bd.getToPeriod(), sdf);
+	                            java.util.Map<String, Object> row = new java.util.LinkedHashMap<>();
+	                            row.put("taxhead", label);
+	                            row.put("amount", adjAmt);
+	                            rows.add(row);
+	                            total = total.add(adjAmt);
+	                        }
+	                    }
+	                }
+	            }
+	        }
+
+	        // Total Amount Paid row
+	        java.util.Map<String, Object> totalRow = new java.util.LinkedHashMap<>();
+	        totalRow.put("taxhead", "Total Amount Paid");
+	        totalRow.put("amount", total);
+	        rows.add(totalRow);
+
+	        return mapper.valueToTree(rows);
+	    } catch (Exception e) {
+	        log.error("Error building additionalDetails from billAccountDetails: ", e);
+	        return mapper.nullNode();
+	    }
+	}
+
+	/**
+	 * Builds a human-readable taxhead label from taxHeadCode + billDetail period.
+	 * Strips the service prefix (WS_, SW_, PT_, TL_, etc.), replaces _ and . with spaces,
+	 * and title-cases the result. Works for any service without hardcoding.
+	 * e.g. WS_CHARGE → "Charge", WS_TIME_PENALTY → "Time Penalty", PT_TAX → "Tax"
+	 * Period dates appended for recurring heads: "Charge(01/01/2024-31/03/2024)"
+	 */
+	private String buildTaxHeadLabel(String taxHeadCode, Long fromPeriod, Long toPeriod, java.text.SimpleDateFormat sdf) {
+	    if (taxHeadCode == null) return "Charge";
+
+	    // Replace underscores and dots with spaces, then title-case the full code
+	    // e.g. WS_CHARGE → "Ws Charge",  WS_TIME_PENALTY → "Ws Time Penalty",  PT_TAX → "Pt Tax"
+	    String label = toTitleCase(taxHeadCode.replace("_", " ").replace(".", " ").trim());
+
+	    return appendPeriod(label, taxHeadCode, fromPeriod, toPeriod, sdf);
+	}
+
+	/** Appends (fromDate-toDate) for recurring periodic heads. */
+	private String appendPeriod(String label, String taxHeadCode, Long fromPeriod, Long toPeriod, java.text.SimpleDateFormat sdf) {
+	    String code = taxHeadCode != null ? taxHeadCode.toUpperCase() : "";
+	    boolean isPeriodic = code.contains("_CHARGE") || code.contains("_TAX") || code.contains("_PENALTY")
+	            || code.contains("_INTEREST") || code.contains("_REBATE") || code.contains("_CESS")
+	            || code.contains("ROUND_OFF") || code.contains("_ARREAR") || code.contains("_FEE");
+	    if (isPeriodic && fromPeriod != null && fromPeriod > 0 && toPeriod != null && toPeriod > 0) {
+	        try {
+	            String from = sdf.format(new java.util.Date(fromPeriod));
+	            String to   = sdf.format(new java.util.Date(toPeriod));
+	            return label + "(" + from + "-" + to + ")";
+	        } catch (Exception e) {
+	            log.warn("Could not format period dates for taxHeadCode: {}", taxHeadCode);
+	        }
+	    }
+	    return label;
+	}
+
+	/** Converts a string to Title Case. e.g. "time penalty" → "Time Penalty" */
+	private String toTitleCase(String input) {
+	    if (input == null || input.isEmpty()) return input;
+	    StringBuilder sb = new StringBuilder();
+	    boolean nextUpper = true;
+	    for (char c : input.toCharArray()) {
+	        if (c == ' ') { sb.append(c); nextUpper = true; }
+	        else if (nextUpper) { sb.append(Character.toUpperCase(c)); nextUpper = false; }
+	        else sb.append(Character.toLowerCase(c));
+	    }
+	    return sb.toString();
+	}
+
 	private String mapServiceCode(String code) {
 	    if (code == null || code.isEmpty()) return "General Municipal Service";
 	    

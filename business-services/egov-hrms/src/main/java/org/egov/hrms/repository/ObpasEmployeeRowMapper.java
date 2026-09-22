@@ -38,11 +38,22 @@ public class ObpasEmployeeRowMapper implements ResultSetExtractor<List<ObpasEmpl
             emp.setSubcategory(rs.getString("subcategory"));
             emp.setZone(rs.getString("zone"));
             emp.setAssignedTenantId(rs.getString("assigned_tenantid"));
+            if (hasColumn(rs, "modulename")) {
+                emp.setModulename(rs.getString("modulename"));
+            }
             emp.setAuditDetails(audit);
 
             list.add(emp);
         }
 
         return list;
+    }
+
+    private boolean hasColumn(ResultSet rs, String columnName) {
+        try {
+            return rs.findColumn(columnName) > 0;
+        } catch (SQLException e) {
+            return false;
+        }
     }
 }

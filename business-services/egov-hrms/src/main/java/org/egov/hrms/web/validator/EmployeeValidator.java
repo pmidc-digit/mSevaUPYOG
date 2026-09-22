@@ -94,7 +94,8 @@ public class EmployeeValidator {
             validateEmployee(emp, errorMap);
 
             if (emp.getZone() != null && emp.getUserUUID() != null) {
-                String zoneKey = emp.getTenantId() + "-" + emp.getCategory() + "-" + emp.getSubcategory() + "-" + emp.getZone();
+                String modulePart = !StringUtils.isEmpty(emp.getModulename()) ? emp.getModulename() : "";
+                String zoneKey = emp.getTenantId() + "-" + modulePart + "-" + emp.getCategory() + "-" + emp.getSubcategory() + "-" + emp.getZone();
 
                 if (processedZoneToUserMap.containsKey(zoneKey)) {
                     String existingUserUUID = processedZoneToUserMap.get(zoneKey);

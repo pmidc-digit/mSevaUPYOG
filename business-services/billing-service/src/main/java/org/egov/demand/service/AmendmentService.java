@@ -26,7 +26,6 @@ import org.egov.demand.model.UpdateBillCriteria;
 import org.egov.demand.repository.AmendmentRepository;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.util.Util;
-import org.egov.demand.web.contract.BillResponse;
 import org.egov.demand.web.contract.BillResponseV2;
 import org.egov.demand.web.contract.DemandRequest;
 import org.egov.demand.web.contract.RequestInfoWrapper;

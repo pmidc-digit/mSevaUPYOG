@@ -244,6 +244,9 @@ public class EmployeeService {
 	            searchCriteria.setSubcategory(criteria.getSubcategory());
 	            searchCriteria.setZone(criteria.getZone());
 	            searchCriteria.setAssignedTenantId(criteria.getAssignedTenantId());
+	            if (!StringUtils.isEmpty(criteria.getModulename())) {
+	                searchCriteria.setModulename(criteria.getModulename());
+	            }
 	        }
 
 	        // -------------------------
@@ -269,6 +272,7 @@ public class EmployeeService {
 	            empToDelete.setUuid(emp.getUuid());               // required for delete
 	            empToDelete.setTenantId(emp.getTenantId());       // required for delete
 	            empToDelete.setUserUUID(emp.getUserUUID());       // optional but useful
+	            empToDelete.setModulename(emp.getModulename());
 
 	            employeesToDelete.add(empToDelete);
 	        }

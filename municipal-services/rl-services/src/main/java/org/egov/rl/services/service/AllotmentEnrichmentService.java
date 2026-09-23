@@ -163,10 +163,37 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setPenaltyType(allotmentDetails.getPenaltyType());
 		allotmentDbDetails.setOwnerInfo(allotmentDetails.getOwnerInfo());
 		allotmentDbDetails.setDocuments(allotmentDetails.getDocuments());
+
+		// Editable fields that were previously dropped: without these an operator's change on a draft (renewed
+		// rent, closure notes, registration numbers) never reached the stored application. Each one is copied only
+		// when the request actually carries a value, so a partial draft payload never wipes what is stored.
+		if (allotmentDetails.getRentRevisions() != null) {
+			allotmentDbDetails.setRentRevisions(allotmentDetails.getRentRevisions());
+		}
+		if (allotmentDetails.getReasonForClosure() != null) {
+			allotmentDbDetails.setReasonForClosure(allotmentDetails.getReasonForClosure());
+		}
+		if (allotmentDetails.getNotesComments() != null) {
+			allotmentDbDetails.setNotesComments(allotmentDetails.getNotesComments());
+		}
+		if (allotmentDetails.getRegistrationNumber() != null) {
+			allotmentDbDetails.setRegistrationNumber(allotmentDetails.getRegistrationNumber());
+		}
+		if (allotmentDetails.getTradeLicenseNumber() != null) {
+			allotmentDbDetails.setTradeLicenseNumber(allotmentDetails.getTradeLicenseNumber());
+		}
+		if (allotmentDetails.getPreviousApplicationNumber() != null) {
+			allotmentDbDetails.setPreviousApplicationNumber(allotmentDetails.getPreviousApplicationNumber());
+		}
 		
-		allotmentDbDetails.setStatus(allotmentDetails.getWorkflow().getStatus());
+		// Keep the stored status when the request carries none: overwriting it with null would wipe the state the
+		// application is actually in, and the caller relies on it before the workflow transition runs.
+		String incomingStatus = (allotmentDetails.getWorkflow() != null)
+				? allotmentDetails.getWorkflow().getStatus() : null;
+		if (incomingStatus != null && !incomingStatus.trim().isEmpty()) {
+			allotmentDbDetails.setStatus(incomingStatus);
+		}
 		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
-		
 		allotmentDbDetails.setAdditionalDetails(allotmentDetails.getAdditionalDetails());
 		allotmentDbDetails.setApplicationNumber(allotmentDetails.getApplicationNumber());
 		allotmentDbDetails.setPropertyId(allotmentDetails.getPropertyId());

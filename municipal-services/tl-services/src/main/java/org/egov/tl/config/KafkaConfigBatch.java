@@ -7,8 +7,8 @@ import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
-//import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
@@ -18,7 +18,6 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties.AckMode;
-import org.springframework.kafka.support.serializer.JacksonJsonSerializer;
 
 @Configuration
 public class KafkaConfigBatch {
@@ -29,14 +28,31 @@ public class KafkaConfigBatch {
     @Autowired
     private TLConfiguration tlConfiguration;
 
+    // ── Kafka consumer tuning — values sourced from application.properties ──────────────
+    @Value("${kafka.consumer.max.poll.interval.ms:600000}")
+    private int maxPollIntervalMs;
+
+    @Value("${kafka.consumer.session.timeout.ms:60000}")
+    private int sessionTimeoutMs;
+
+    @Value("${kafka.consumer.heartbeat.interval.ms:20000}")
+    private int heartbeatIntervalMs;
+
+    @Value("${kafka.consumer.max.poll.records:5}")
+    private int maxPollRecords;
+    // ─────────────────────────────────────────────────────────────────────────────────────
+
     @Bean("consumerConfigsBatch")
     public Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>(
                 kafkaProperties.buildConsumerProperties()
         );
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, tlConfiguration.getBatchSize());
-        props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 900000);
-        props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 10000);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG,     maxPollRecords);
+        props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG,      900000);
+        props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG,    10000);
+        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, maxPollIntervalMs);
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG,   sessionTimeoutMs);
+        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, heartbeatIntervalMs);
 
         return props;
     }
@@ -65,7 +81,7 @@ public class KafkaConfigBatch {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                 org.apache.kafka.common.serialization.StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-        		JacksonJsonSerializer.class);
+                org.springframework.kafka.support.serializer.JsonSerializer.class);
         props.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG, tlConfiguration.getMaxRequestSize());
         props.put(ProducerConfig.LINGER_MS_CONFIG, tlConfiguration.getLingerMs());
         props.put(ProducerConfig.BATCH_SIZE_CONFIG, tlConfiguration.getBatchSize());

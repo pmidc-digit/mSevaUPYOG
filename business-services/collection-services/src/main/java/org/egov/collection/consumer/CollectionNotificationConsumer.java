@@ -34,6 +34,10 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import org.egov.collection.model.PaymentSearchCriteria;
+import org.egov.collection.service.MDMSService;
+import org.egov.collection.service.PaymentService;
+
 import static org.egov.collection.config.CollectionServiceConstants.*;
 
 @Slf4j
@@ -51,6 +55,13 @@ public class CollectionNotificationConsumer {
 
 	@Autowired
 	private RestTemplate restTemplate;
+
+	@Autowired
+	private MDMSService mdmsService;
+
+	@Autowired
+	private PaymentService paymentService;
+
 
 	@KafkaListener(topics = { "${kafka.topics.payment.create.name}", "${kafka.topics.payment.receiptlink.name}" },
 			concurrency =  "${kafka.topics.bankaccountservicemapping.concurreny.count}" )
@@ -85,6 +96,12 @@ public class CollectionNotificationConsumer {
 
 	            // --- HTML Email Notification ---
 	            if (!StringUtils.isEmpty(emailId) && emailId.contains("@")) {
+	                try {
+	                    Thread.sleep(1000); // 1-second delay to give UI time to generate receipt & save fileStoreId
+	                } catch (InterruptedException ie) {
+	                    Thread.currentThread().interrupt();
+	                    log.warn("Delay interrupted before email processing", ie);
+	                }
 	                String subject = "Payment Confirmation - " + paymentDetail.getReceiptNumber();
 	                
 	                // 2. Wrap the localized bodyContent inside the professional HTML Template
@@ -121,7 +138,7 @@ public class CollectionNotificationConsumer {
 	    
 	    // Fallback if PDF service fails
 	    if (StringUtils.isEmpty(downloadUrl)) {
-	        downloadUrl = "https://mseva.lgpunjab.gov.in/citizen";
+	        downloadUrl = "https://mseva.lgpunjab.gov.in/digit-ui/citizen";
 	    }
 
 	    // 3. Map Service Type (Using your helper method)
@@ -148,6 +165,12 @@ public class CollectionNotificationConsumer {
 	    sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Kolkata")); 
 	    String formattedDate = sdf.format(new java.util.Date(payment.getTransactionDate()));
 
+	    // Determine button text based on destination
+	    String actionButtonText = "Click to Login to View Receipt";
+	    if (downloadUrl != null && !downloadUrl.contains("digit-ui/citizen")) {
+	        actionButtonText = "Download Official Receipt";
+	    }
+
 	    // 7. Execute Replacements
 	    return template
 	            .replace("{cityName}", cityName)
@@ -160,66 +183,84 @@ public class CollectionNotificationConsumer {
 	            .replace("{transactionId}", payment.getTransactionNumber() != null ? payment.getTransactionNumber() : "N/A")
 	            .replace("{totalPaid}", String.format("%.2f", amountPaid))
 	            .replace("{balanceAmount}", String.format("%.2f", balance))
-	            .replace("{actionButtonText}", "Download Official Receipt")
-	            .replace("https://mseva.lgpunjab.gov.in/citizen", downloadUrl); // Injects the PDF link
+	            .replace("{actionButtonText}", actionButtonText)
+	            .replace("https://mseva.lgpunjab.gov.in/citizen", downloadUrl)
+	            .replace("https://mseva.lgpunjab.gov.in/digit-ui/citizen", downloadUrl);
 	}
 	
 	public String getPublicReceiptUrl(List<Payment> validatedPayments, RequestInfo requestInfo) {
-	    if (CollectionUtils.isEmpty(validatedPayments)) return null;
-	    
+	    String defaultCitizenUrl = "https://mseva.lgpunjab.gov.in/digit-ui/citizen";
+	    if (CollectionUtils.isEmpty(validatedPayments)) return defaultCitizenUrl;
+
 	    String stateId = validatedPayments.get(0).getTenantId().split("\\.")[0];
-	    String fileStoreId = null;
 
-	    try {
-	        // --- STEP 1: Generate the PDF and get FileStoreId ---
-	        String pdfUri = applicationProperties.getEgovServiceHost() 
-	                      + applicationProperties.getEgovPdfCreate() 
-	                      + "?key=consolidatedreceipt&tenantId=" + stateId;
+	    // 1. Check if the incoming Kafka payment message itself already has a fileStoreId
+	    if (!StringUtils.isEmpty(validatedPayments.get(0).getFileStoreId())) {
+	        String kafkaFileStoreId = validatedPayments.get(0).getFileStoreId();
+	        log.info("Kafka payment already contains fileStoreId: {}", kafkaFileStoreId);
+	        String publicUrl = getUrlFromFileStore(kafkaFileStoreId, stateId);
+	        if (!StringUtils.isEmpty(publicUrl)) return publicUrl;
+	    }
 
-	        Map<String, Object> pdfRequest = new HashMap<>();
-	        pdfRequest.put("RequestInfo", requestInfo);
-	        pdfRequest.put("Payments", validatedPayments);
+	    String businessService = null;
+	    String receiptNumber = null;
+	    if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
+	        businessService = validatedPayments.get(0).getPaymentDetails().get(0).getBusinessService();
+	        receiptNumber = validatedPayments.get(0).getPaymentDetails().get(0).getReceiptNumber();
+	    }
 
-	        Map<String, Object> pdfResponse = restTemplate.postForObject(pdfUri, pdfRequest, Map.class);
-	        
-	        if (pdfResponse != null && pdfResponse.containsKey("filestoreIds")) {
-	            List<String> ids = (List<String>) pdfResponse.get("filestoreIds");
-	            if (!ids.isEmpty()) {
-	                fileStoreId = ids.get(0); // Pick the first ID
+	    // 2. Check if DB already has a fileStoreId
+	    if (!StringUtils.isEmpty(receiptNumber)) {
+	        try {
+	            PaymentSearchCriteria criteria = PaymentSearchCriteria.builder()
+	                    .tenantId(validatedPayments.get(0).getTenantId())
+	                    .receiptNumbers(Collections.singleton(receiptNumber))
+	                    .businessService(businessService)
+	                    .build();
+	            List<Payment> enrichedPayments = paymentService.getPayments(requestInfo, criteria, businessService);
+	            if (!CollectionUtils.isEmpty(enrichedPayments) && !StringUtils.isEmpty(enrichedPayments.get(0).getFileStoreId())) {
+	                String dbFileStoreId = enrichedPayments.get(0).getFileStoreId();
+	                log.info("DB search found existing fileStoreId: {}", dbFileStoreId);
+	                String publicUrl = getUrlFromFileStore(dbFileStoreId, stateId);
+	                if (!StringUtils.isEmpty(publicUrl)) return publicUrl;
 	            }
+	        } catch (Exception e) {
+	            log.error("Failed to query DB for fileStoreId: ", e);
 	        }
+	    }
 
-	        if (StringUtils.isEmpty(fileStoreId)) {
-	            log.error("PDF Service failed to return a filestoreId");
-	            return null;
-	        }
+	    // No PDF create API call — directly point to citizen portal
+	    return defaultCitizenUrl;
+	}
 
-	        // --- STEP 2: Convert FileStoreId to a Public URL ---
+	/**
+	 * Helper method to fetch the public download URL from FileStore for a given fileStoreId.
+	 */
+	private String getUrlFromFileStore(String fileStoreId, String stateId) {
+	    if (StringUtils.isEmpty(fileStoreId)) return null;
+	    try {
 	        String fileStoreUri = applicationProperties.getFileStoreHost()  
 	                            + "/filestore/v1/files/url" 
 	                            + "?tenantId=" + stateId 
 	                            + "&fileStoreIds=" + fileStoreId;
 
-	        // Note: The /url endpoint is a GET request
 	        Map<String, Object> urlResponse = restTemplate.getForObject(fileStoreUri, Map.class);
 
 	        if (urlResponse != null && urlResponse.containsKey("fileStoreIds")) {
 	            List<Map<String, String>> fileDetails = (List<Map<String, String>>) urlResponse.get("fileStoreIds");
 	            if (!fileDetails.isEmpty()) {
 	                String publicUrl = fileDetails.get(0).get("url");
-	                log.info("Successfully generated public receipt link: " + publicUrl);
+	                log.info("Successfully fetched public receipt link from FileStore: " + publicUrl);
 	                return publicUrl;
 	            }
 	        }
-
 	    } catch (Exception e) {
-	        log.error("Error in the Receipt Generation/URL flow: ", e);
+	        log.error("Error fetching URL from FileStore for fileStoreId {}: ", fileStoreId, e);
 	    }
-
 	    return null;
 	}
-	
-	
+
+
 	private String mapServiceCode(String code) {
 	    if (code == null || code.isEmpty()) return "General Municipal Service";
 	    

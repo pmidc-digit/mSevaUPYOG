@@ -314,7 +314,15 @@ public class TLRenewalNotificationUtil {
         String message = null;
         try {
             Object messageObj = JsonPath.parse(localizationMessage).read(path);
-            message = ((ArrayList<String>) messageObj).get(0);
+            // Fix #5: Guard empty list to prevent IndexOutOfBoundsException when
+            // the notification code is not seeded in the localization database.
+            List<String> messages = (ArrayList<String>) messageObj;
+            if (!CollectionUtils.isEmpty(messages)) {
+                message = messages.get(0);
+            } else {
+                log.warn("getMessageTemplate: No localization message found for code '{}'. " +
+                        "Please seed the key in the localization database.", notificationCode);
+            }
         } catch (Exception e) {
             log.warn("Fetching from localization failed", e);
         }

@@ -8,8 +8,6 @@
   box-shadow: none;
 }
 
-
-
 .card {
   padding: 20px 24px 28px 24px;
   max-width: 95vw;
@@ -81,11 +79,11 @@
     color: #0f172a;
     margin-bottom: 8px;
     margin-top: 8px;
-    font-weight: 700;    
+    font-weight: 700;
     letter-spacing: 0.5px;
     width: 100%;
   }
-  .card-label span{
+  .card-label span {
     color: #dc2626;
     font-weight: "bold";
   }
@@ -407,13 +405,13 @@
   .card {
     margin-top: 2rem;
   }
-  .popup-module{
+  .popup-module {
     width: 100% !important;
   }
-  #search-property-field{
+  #search-property-field {
     display: block !important;
   }
-  .bpa-summary-page{
+  .bpa-summary-page {
     padding: 0 !important;
   }
   .card-link {
@@ -494,7 +492,7 @@
 
 .submit-bar-back {
   background: transparent !important;
-  color: #2563eb !important;
+  color: #e7e9ef !important;
   border: 1px solid #2563eb !important;
   box-shadow: none !important;
   margin-right: 10px;
@@ -769,7 +767,6 @@ button.card-link.submit-bar {
     align-items: flex-start;
   }
 
-
   .employee .employeeCard .field {
     width: 100%;
   }
@@ -859,32 +856,31 @@ button.card-link.submit-bar {
 .ws-citizen-wrapper .app-container {
   margin-top: 1rem !important;
   padding: 0 !important;
-  
 }
 
 @media (max-width: 768px) {
- .chb-citizen .app-container{
-  margin-top: 3rem !important;
- }
+  .chb-citizen .app-container {
+    margin-top: 3rem !important;
+  }
 
- .pet-citizen .app-container{
-  margin-top: 2rem !important;
- }
- .mcollect-citizen .app-container{
-  margin-top: 2rem !important;
- }
- .ads-citizen .app-container{
-  margin-top: 2rem !important;
- }
+  .pet-citizen .app-container {
+    margin-top: 2rem !important;
+  }
+  .mcollect-citizen .app-container {
+    margin-top: 2rem !important;
+  }
+  .ads-citizen .app-container {
+    margin-top: 2rem !important;
+  }
 
- .bills-citizen-wrapper{
-  margin-top: 1rem !important;
-  padding: 10px !important;
-  width: 100% !important;
- }
- .property-search-modal{
-  width: 100% !important;
- }
+  .bills-citizen-wrapper {
+    margin-top: 1rem !important;
+    padding: 10px !important;
+    width: 100% !important;
+  }
+  .property-search-modal {
+    width: 100% !important;
+  }
   .card .card {
     padding: 0;
     background: none;
@@ -965,5 +961,4 @@ button.card-link.submit-bar {
       padding: 0;
     }
   }
-
 }

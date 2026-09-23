@@ -1,3 +1,4 @@
+import { mergeRentalOwners } from "../../utils/mergeRentalOwners";
 import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui-react-components";
@@ -23,7 +24,11 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
 
   const applicationNumber = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.applicationNumber;
 
-  const updatedApplicantDetails = currentStepData?.applicantDetails || {};
+  const updatedApplicantDetails = Array.isArray(currentStepData?.applicants)
+    ? currentStepData.applicants
+    : Array.isArray(currentStepData?.applicantDetails)
+    ? currentStepData.applicantDetails
+    : currentStepData?.applicantDetails?.applicants || [];
   const updatedPropertyDetails = currentStepData?.propertyDetails || {};
   const updatedDocuments = currentStepData?.documents?.documents?.documents || [];
 
@@ -105,28 +110,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const originalOwners = CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
       const updatedApplicants = updatedApplicantDetails || [];
 
-      const mergedOwnerInfo = updatedApplicants?.map((applicant, index) => {
-        const originalOwner = originalOwners[index] || {};
-        return {
-          ...originalOwner,
-          name: applicant?.name,
-          mobileNo: applicant?.mobileNumber,
-          emailId: applicant?.emailId,
-          correspondenceAddress: {
-            ...originalOwner?.correspondenceAddress,
-            pincode: applicant?.pincode,
-            addressId: applicant?.address,
-            address: applicant?.address,
-          },
-          panCard: applicant?.panNumber,
-          permanentAddress: {
-            ...originalOwner?.permanentAddress,
-            pincode: applicant?.pincode,
-            addressId: applicant?.address,
-            address: applicant?.address,
-          },
-        };
-      });
+      const mergedOwnerInfo = mergeRentalOwners(updatedApplicants, originalOwners);
 
       const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
@@ -164,6 +148,24 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           : { ...originalAdditionalDetails };
 
       // additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
+
+      // Keep explicit cleared values; do not restore old arrears on update.
+      const arrearsApplicable = applicationType === "Legacy" && (updatedPropertyDetails?.isArrear?.code || updatedPropertyDetails?.isArrear) !== "No";
+      additionalDetails.arrearGST = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearGST")
+            ? updatedPropertyDetails.arrearGST
+            : originalAdditionalDetails?.arrearGST) ?? null
+        : null;
+      additionalDetails.arrearPenalty = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearPenalty")
+            ? updatedPropertyDetails.arrearPenalty
+            : originalAdditionalDetails?.arrearPenalty) ?? null
+        : null;
+      additionalDetails.futurePenalty = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "futurePenalty")
+            ? updatedPropertyDetails.futurePenalty
+            : originalAdditionalDetails?.futurePenalty) ?? null
+        : null;
 
       additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount ?? originalAdditionalDetails?.gstAmount;
       additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount ?? originalAdditionalDetails?.rebateAmount;
@@ -218,28 +220,7 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
       const originalOwners = CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
       const updatedApplicants = updatedApplicantDetails || [];
 
-      const mergedOwnerInfo = updatedApplicants.map((applicant, index) => {
-        const originalOwner = originalOwners[index] || {};
-        return {
-          ...originalOwner,
-          name: applicant?.name,
-          mobileNo: applicant?.mobileNumber,
-          emailId: applicant?.emailId,
-          correspondenceAddress: {
-            ...originalOwner?.correspondenceAddress,
-            pincode: applicant?.pincode,
-            addressId: applicant?.address,
-            address: applicant?.address,
-          },
-          panCard: applicant?.panNumber,
-          permanentAddress: {
-            ...originalOwner?.permanentAddress,
-            pincode: applicant?.pincode,
-            addressId: applicant?.address,
-            address: applicant?.address,
-          },
-        };
-      });
+      const mergedOwnerInfo = mergeRentalOwners(updatedApplicants, originalOwners);
 
       const rawAdditionalDetails = CreatedResponse?.AllotmentDetails?.[0]?.additionalDetails || {};
       const originalAdditionalDetails = Array.isArray(rawAdditionalDetails) ? rawAdditionalDetails[0] : rawAdditionalDetails;
@@ -277,6 +258,24 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
           : { ...originalAdditionalDetails };
 
       // additionalDetails["alternateMobileNumber"] = originalAdditionalDetails?.alternateMobileNumber;
+
+      // Keep explicit cleared values; do not restore old arrears on update.
+      const arrearsApplicable = applicationType === "Legacy" && (updatedPropertyDetails?.isArrear?.code || updatedPropertyDetails?.isArrear) !== "No";
+      additionalDetails.arrearGST = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearGST")
+            ? updatedPropertyDetails.arrearGST
+            : originalAdditionalDetails?.arrearGST) ?? null
+        : null;
+      additionalDetails.arrearPenalty = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "arrearPenalty")
+            ? updatedPropertyDetails.arrearPenalty
+            : originalAdditionalDetails?.arrearPenalty) ?? null
+        : null;
+      additionalDetails.futurePenalty = arrearsApplicable
+        ? (Object.prototype.hasOwnProperty.call(updatedPropertyDetails, "futurePenalty")
+            ? updatedPropertyDetails.futurePenalty
+            : originalAdditionalDetails?.futurePenalty) ?? null
+        : null;
 
       additionalDetails["gstAmount"] = updatedPropertyDetails?.gstAmount ?? originalAdditionalDetails?.gstAmount;
       additionalDetails["rebateAmount"] = updatedPropertyDetails?.rebateAmount ?? originalAdditionalDetails?.rebateAmount;
@@ -364,11 +363,13 @@ const NewRentAndLeaseStepFormFour = ({ config, onGoNext, onBackClick, t: tProp }
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return e.action !== "CYCLE_Bill_GENERATED" && e.action !== "PAY" && (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles);
     }) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return e.action !== "CYCLE_Bill_GENERATED" && e.action !== "PAY" && (userRoles?.some((role) => e.roles?.includes(role)) || !e.roles);
     });
+
+  console.log("actions", actions);
 
   function onActionSelect(action) {
     goNext(action);

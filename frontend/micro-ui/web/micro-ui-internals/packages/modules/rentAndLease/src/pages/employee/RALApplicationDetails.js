@@ -196,6 +196,7 @@ const RALApplicationDetails = () => {
     const payload = {
       action: [action],
     };
+    console.log("action", action);
 
     // history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
 
@@ -217,6 +218,8 @@ const RALApplicationDetails = () => {
         setShowModal(true);
         setSelectedAction(action);
       }
+    } else if (action?.action == "DRAFT") {
+      history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
     } else {
       setShowModal(true);
       setSelectedAction(action);
@@ -304,8 +307,7 @@ const RALApplicationDetails = () => {
         const WorkflowService = await Digit.WorkflowService.init(tenantId, "RENT_N_LEASE_NEW");
         setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states || []);
       } catch (error) {
-        setWorkflowService([]);
-        setShowToast({ key: true, label: "Something went wrong" });
+        console.error("Error fetching workflow service:", error);
       } finally {
         setLoader(false);
       }
@@ -496,7 +498,11 @@ const RALApplicationDetails = () => {
             <React.Fragment>
               <CardSubHeader className="ral-card-subheader-24">{t("RAL_ARREAR_DETAILS")}</CardSubHeader>
               <StatusTable>
-                <Row label={t("Arrears")} text={tValue(rawAdditionalDetails?.arrear)} />
+                <Row label={t("Base Arrear")} text={tValue(rawAdditionalDetails?.arrear)} />
+                <Row label={t("Arrear GST")} text={rawAdditionalDetails?.arrearGST ?? "-"} />
+                <Row label={t("Arrear Penalty")} text={rawAdditionalDetails?.arrearPenalty ?? "-"} />
+                <Row label={t("Future Penalty")} text={rawAdditionalDetails?.futurePenalty ?? "-"} />
+
                 <Row
                   label={t("Last Billing Period")}
                   text={rawAdditionalDetails?.lastBillingPeriod ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN") : "-"}
@@ -554,7 +560,13 @@ const RALApplicationDetails = () => {
           <ActionBar>
             <div ref={menuRef}>
               {displayMenu ? (
-                <Menu localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+                <Menu
+                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
+                  options={actions?.map((action) => (action.action === "DRAFT" ? { ...action, forcedName: "COMMON_EDIT" } : action))}
+                  optionKey={"action"}
+                  t={t}
+                  onSelect={onActionSelect}
+                />
               ) : null}
               <div className="ral-style-a527bac1ee">
                 <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

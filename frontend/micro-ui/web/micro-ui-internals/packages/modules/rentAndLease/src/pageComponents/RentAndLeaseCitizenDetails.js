@@ -119,6 +119,10 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       applicationType === "Legacy"
         ? {
             arrear: currentStepData?.propertyDetails?.arrear,
+            arrearGST: currentStepData?.propertyDetails?.arrearGST ?? null,
+            arrearPenalty: currentStepData?.propertyDetails?.arrearPenalty ?? null,
+            futurePenalty: currentStepData?.propertyDetails?.futurePenalty ?? null,
+
             arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
             lastRentRevisedDate: lastRentRevisedDate,
             incrementPeriodMonths: currentStepData?.propertyDetails?.incrementPeriodMonths?.code,
@@ -206,7 +210,7 @@ const RentAndLeaseCitizenDetails = ({ t, goNext, onGoBack, currentStepData, vali
       setValue(`applicants.${index}.pincode`, user.permanentPinCode || user?.correspondencePinCode || "", { shouldValidate: true });
       setValue(`applicants.${index}.alternateMobileNumber`, user?.alternateMobileNumber || "", { shouldValidate: true });
     } catch (error) {
-
+      console.error(error);
     } finally {
       triggerLoader(false);
     }

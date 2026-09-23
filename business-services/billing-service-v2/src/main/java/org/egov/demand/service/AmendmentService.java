@@ -112,8 +112,9 @@ public class AmendmentService {
 		requestInfoWrapper.setRequestInfo(requestInfo);
 		BillResponseV2 response =  billServicev2.fetchBill(generateBillCriteria, requestInfoWrapper);
 		
-		if(response.getBill().isEmpty() || response.getBill().get(0).getBillDetails().isEmpty()) {
-			throw new CustomException("NO_BILL_FOUND", "No bill found for the consumer code "+ consumerCodes +" and business service : "+ bussinessService);
+		if (response.getBill().isEmpty() || response.getBill().get(0).getBillDetails().isEmpty()) {
+			new CustomException("NO_BILL_FOUND",
+					"No bill is available, or all bills have already been paid for this user.");
 		}
 		
 		Amendment amendment = amendmentRequest.getAmendment();

@@ -72,10 +72,10 @@ export const PaymentService = {
       data: { ...details },
     }),
 
-  getReciept: (tenantId, businessservice, filters = {}) =>
-    Request({
+  getReciept: (tenantId, businessservice, filters = {}) => {
+    return Request({
       url:
-        businessservice && businessservice !== "BPAREG" || businessservice && businessservice !== "TL"
+        businessservice && businessservice !== "BPAREG" && businessservice !== "TL" && businessservice !== "PT"
           ? `${Urls.payment.print_reciept}/${businessservice}/_search`
           : `${Urls.payment.print_reciept}/_search`,
       useCache: false,
@@ -83,7 +83,10 @@ export const PaymentService = {
       auth: true,
       userService: true,
       params: { tenantId, ...filters },
-    }).then(transformPayments),
+    }).then((response) => {
+      return transformPayments(response);
+    });
+  },
 
   generatePdf: (tenantId, data = {}, key) =>
     Request({

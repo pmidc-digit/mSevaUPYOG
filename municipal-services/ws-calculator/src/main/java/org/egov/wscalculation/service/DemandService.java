@@ -583,15 +583,22 @@ public class DemandService {
 	 				demandReq.addAll(demands);
 	 					businessServices = "SW";
 	 					for (DemandDetail ddSew : demandDetails) {
+	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_DISCHARGE_CHARGES)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_DISCHARGE_CHARGES")) {
+	 							continue;
+	 						}
 	 						DemandDetail dd1 = new DemandDetail();
-	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_CHARGE)) {
+	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_CHARGE)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_CHARGE")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
-	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off)) {
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_Round_Off")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ROUND_OFF);
-	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_ADVANCE_CARRYFORWARD)) {
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_ADVANCE_CARRYFORWARD)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_ADVANCE_CARRYFORWARD")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ADVANCE_CARRYFORWARD);
 	 						} else {
-	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
+	 							continue;
 	 						}
 	 						dd1.setDemandId(ddSew.getDemandId());
 	 						dd1.setAuditDetails(ddSew.getAuditDetails());
@@ -601,8 +608,13 @@ public class DemandService {
 	 						dd1.setTenantId(ddSew.getTenantId());
 	 						demandDetails1.add(dd1);
 	 					}
+
+	 					BigDecimal sewMinimumPayableAmount = demandDetails1.stream()
+	 							.map(DemandDetail::getTaxAmount)
+	 							.reduce(BigDecimal.ZERO, BigDecimal::add);
+
 	 					demandsSw.add(Demand.builder().consumerCode(relatedSwConn).demandDetails(demandDetails1).payer(owner)
-	 							.minimumAmountPayable(minimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
+	 							.minimumAmountPayable(sewMinimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
 	 							.taxPeriodTo(toDate).consumerType("sewerageConnection").businessService(businessService)
 	 							.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate)
 	 							.additionalDetails(additionalDetailsMap).build());

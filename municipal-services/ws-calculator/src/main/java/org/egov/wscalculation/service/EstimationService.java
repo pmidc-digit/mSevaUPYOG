@@ -196,7 +196,7 @@ public class EstimationService {
 				} catch (Exception ex) {
 					disposal_charge = new BigDecimal(200.0);
 				}
-				estimates.add(TaxHeadEstimate.builder().taxHeadCode("WS_DISCHARGE_CHARGES")
+				estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_DISCHARGE_CHARGES)
 						.estimateAmount(disposal_charge.setScale(2, 2)).build());
 			}
 		}

@@ -318,7 +318,7 @@ public class PlanService {
                     || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
 
                 plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
-            }        
+            }          
            
             // Check Measured and Declared plot area match
             BigDecimal declaredPlotArea = plan.getPlanInformation().getPlotArea();
@@ -355,10 +355,12 @@ public class PlanService {
                 LOG.error("Error while fetching ULB Type and District from MDMS", e);
             }
 
-            plan.getPlanInformation().setUlbType(ulbType);
-            plan.getPlanInformation().setDistrict(districtName);
-            plan.getPlanInformation().setUlbName(cityName);
-            LOG.info("ULB Name value from edcr Request : {}", plan.getPlanInformation().getUlbName());
+            if (plan.getPlanInformation() != null) {
+                plan.getPlanInformation().setUlbType(ulbType);
+                plan.getPlanInformation().setDistrict(districtName);
+                plan.getPlanInformation().setUlbName(cityName);
+                LOG.info("ULB Name value from edcr Request : {}", plan.getPlanInformation().getUlbName());
+            }
             LOG.info("ULB Type value from MDMS : {}", ulbType);
             LOG.info("District value from MDMS : {}", districtName);
             
@@ -620,6 +622,7 @@ public class PlanService {
         if (feature != null) {
             for (PlanFeature ruleClass : feature) {
                 String featureName = "UnknownFeature";
+                FeatureProcess rule = null;
 
                 try {
                     if (ruleClass == null || ruleClass.getRuleClass() == null) {
@@ -627,7 +630,6 @@ public class PlanService {
                     }
 
                     featureName = ruleClass.getRuleClass().getSimpleName();
-                    FeatureProcess rule = null;
 
                     String beanName =
                             featureName.substring(0, 1).toLowerCase() + featureName.substring(1);
@@ -670,13 +672,13 @@ public class PlanService {
                     }
 
                 } catch (Exception e) {
-                    // FULL STACKTRACE logged
-                    LOG.error("Exception while processing feature: {}", featureName, e);
+                    String ruleClassName = rule != null ? rule.getClass().getSimpleName() : featureName;
+                    // FULL STACKTRACE logged with exact rule class name for developers
+                    LOG.error("Exception while processing rule in class [{}]: {}", ruleClassName, e.getMessage(), e);
 
-                    plan.getErrors().put(
-                            "Errors in \"" + featureName + "\"",
-                            "Errors in " + featureName + ". Please correct the file and try again."
-                    );
+                    String friendlyRuleName = humanizeRuleName(featureName);
+                    String friendlyMessage = buildUserFriendlyRuleMessage(ruleClassName, featureName, e);
+                    plan.getErrors().put(friendlyRuleName, friendlyMessage);
                 }
             }
         }
@@ -1044,6 +1046,41 @@ public class PlanService {
 		}
 
 		return (String) source;
+	}
+
+	private String humanizeRuleName(String name) {
+		if (name == null || name.isEmpty()) return "Building Rule";
+		String clean = name.replaceAll("Rule$", "").replaceAll("Service$", "");
+		return clean.replaceAll("(?<=[a-z])(?=[A-Z])", " ").trim();
+	}
+
+	private String buildUserFriendlyRuleMessage(String ruleClassName, String featureName, Throwable e) {
+		String ruleLabel = humanizeRuleName(featureName);
+		if (e instanceof NullPointerException) {
+			if (ruleClassName != null && ruleClassName.contains("RoadWidth")) {
+				return "Road width not defined into the plan.";
+			} else if (ruleClassName != null && (ruleClassName.contains("Coverage") || ruleClassName.contains("Far"))) {
+				return "Plot area not defined into the plan.";
+			} else if (ruleClassName != null && (ruleClassName.contains("SetBack") || ruleClassName.contains("RearYard") || ruleClassName.contains("FrontYard") || ruleClassName.contains("SideYard"))) {
+				return ruleLabel + " not defined into the plan.";
+			} else if (ruleClassName != null && (ruleClassName.contains("Height") || ruleClassName.contains("BuildingHeight"))) {
+				return "Building height not defined into the plan.";
+			} else if (ruleClassName != null && (ruleClassName.contains("Stair") || ruleClassName.contains("GeneralStair") || ruleClassName.contains("FireStair"))) {
+				return ruleLabel + " not defined into the plan.";
+			} else if (ruleClassName != null && ruleClassName.contains("Parking")) {
+				return "Parking details not defined into the plan.";
+			} else {
+				return ruleLabel + " not defined into the plan.";
+			}
+		} else if (e instanceof ArithmeticException) {
+			return "Calculation for " + ruleLabel + " failed because required dimension cannot be 0 in the plan.";
+		} else if (e instanceof NumberFormatException) {
+			return "Dimension text for " + ruleLabel + " not defined correctly into the plan.";
+		} else if (e.getMessage() != null && !e.getMessage().trim().isEmpty() && !e.getMessage().equalsIgnoreCase("null")) {
+			return e.getMessage().trim();
+		} else {
+			return ruleLabel + " not defined into the plan.";
+		}
 	}
 	
 }

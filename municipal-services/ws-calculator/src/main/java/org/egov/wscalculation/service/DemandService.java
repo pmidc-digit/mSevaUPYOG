@@ -583,15 +583,22 @@ public class DemandService {
 	 				demandReq.addAll(demands);
 	 					businessServices = "SW";
 	 					for (DemandDetail ddSew : demandDetails) {
+	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_DISCHARGE_CHARGES)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_DISCHARGE_CHARGES")) {
+	 							continue;
+	 						}
 	 						DemandDetail dd1 = new DemandDetail();
-	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_CHARGE)) {
+	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_CHARGE)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_CHARGE")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
-	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off)) {
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_Round_Off")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ROUND_OFF);
-	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_ADVANCE_CARRYFORWARD)) {
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_ADVANCE_CARRYFORWARD)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_ADVANCE_CARRYFORWARD")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ADVANCE_CARRYFORWARD);
 	 						} else {
-	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
+	 							continue;
 	 						}
 	 						dd1.setDemandId(ddSew.getDemandId());
 	 						dd1.setAuditDetails(ddSew.getAuditDetails());
@@ -601,8 +608,13 @@ public class DemandService {
 	 						dd1.setTenantId(ddSew.getTenantId());
 	 						demandDetails1.add(dd1);
 	 					}
+
+	 					BigDecimal sewMinimumPayableAmount = demandDetails1.stream()
+	 							.map(DemandDetail::getTaxAmount)
+	 							.reduce(BigDecimal.ZERO, BigDecimal::add);
+
 	 					demandsSw.add(Demand.builder().consumerCode(relatedSwConn).demandDetails(demandDetails1).payer(owner)
-	 							.minimumAmountPayable(minimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
+	 							.minimumAmountPayable(sewMinimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
 	 							.taxPeriodTo(toDate).consumerType("sewerageConnection").businessService(businessService)
 	 							.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate)
 	 							.additionalDetails(additionalDetailsMap).build());
@@ -1743,21 +1755,17 @@ public class DemandService {
 		                throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
 		        }
 
-		        Boolean cancels = waterCalculatorDao.getUpdates(demandlists);
-
-		        if (!cancels) {
-		            throw new CustomException("Update failed", "Failed to update demand records.");
-		        }
-
 		        List<BillSearchs> billSearchsss = waterCalculatorDao.getBillss(tenantId, demandid);
 		        
 		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
 		        	continue; // Skip bill cancellation if there are no bills and payment is completed
-		        
-		        boolean billCancelled = waterCalculatorDao.getexpiryBills(billSearchsss);
 
-		        if (!billCancelled) {
-		            throw new CustomException("Bill Cancellation Failed", "Failed to cancel bills for the given demand.");
+			  CancelDemandReq cancelDemandReq = new CancelDemandReq(demandid,tenantId,demandlists.get(0).getConsumercode(), "WS");
+
+			  boolean Cancelled = waterCalculatorDao.cancelDemandAndExpiryBills(cancelDemandReq);
+
+		        if (!Cancelled) {
+		            throw new CustomException("Cancel failed", "Failed to cancel demand and bills.");
 		        }
 		    }
 

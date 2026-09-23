@@ -138,6 +138,9 @@ public class WaterDaoImpl implements WaterDao {
 		String reqAction = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
 		
 		String key = waterConnectionRequest.getWaterConnection().getConnectionNo();
+		if (waterConnectionRequest.isDisconnectRequest() || (waterConnectionRequest.getWaterConnection().getApplicationType() != null && waterConnectionRequest.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.DISCONNECT_WATER_CONNECTION))) {
+			waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.DISCONNECT);
+		}
 		if (isStateUpdatable) 
 		{
 			if (WCConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction)) 

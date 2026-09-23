@@ -478,9 +478,7 @@ public class SewerageServiceImpl implements SewerageService {
 	
 	
 public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnection(SewerageConnectionRequest sewerageConnectionRequest) {
-//		
-//		if(sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction() != null 
-//				  && sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction().equals(SWConstants.SUBMIT_APPLICATION_CONST)){
+		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECT);
 		if (sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction() != null 
 				    && (sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction().equals(SWConstants.SUBMIT_APPLICATION_CONST)
 				        || sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction().equals(SWConstants.FORWARD_FOR_INSPECTION))) {	
@@ -493,28 +491,22 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 			                a.getAuditDetails().getCreatedTime()
 			        ));
 
-			        // Inactivate only older connections (skip latest one)
+			        // Set older connections to DISCONNECT
 			        for (int i = 1; i < prevSewerageConnectionList.size(); i++) {
 			            SewerageConnection oldConn = prevSewerageConnectionList.get(i);
-			            log.info("Setting older connection (ID: {}, ApplicationNo: {}) to INACTIVE", 
+			            log.info("Setting older connection (ID: {}, ApplicationNo: {}) to DISCONNECT", 
 			                     oldConn.getId(), oldConn.getApplicationNo());
 			            sewerageDaoImpl.updateSewerageApplicationStatus(
-			                    oldConn.getId(), SWConstants.INACTIVE_STATUS
+			                    oldConn.getId(), SWConstants.DISCONNECT_STATUS
 			            );
 			        }
-
-			        // Keep the latest connection ACTIVE
-			        SewerageConnection latestConn = prevSewerageConnectionList.get(0);
-			        log.info("Keeping latest connection (ID: {}, ApplicationNo: {}) ACTIVE",
-			                 latestConn.getId(), latestConn.getApplicationNo());
 			    }
 
-			    // Ensure the current request (latest connection) is ACTIVE
-			    sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.ACTIVE);
+			    sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECT);
 			}
 		  
 		  if(sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction() != null 
-				  &&sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction().equals(SWConstants.ACTION_REJECT)){
+				  && sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction().equals(SWConstants.ACTION_REJECT)){
 			  List<SewerageConnection> prevSewerageConnectionList = getAllSewerageApplications(sewerageConnectionRequest);
 			  if (prevSewerageConnectionList.size() > 0) { 
 				  Collections.sort(prevSewerageConnectionList, Comparator.comparing((SewerageConnection sw) -> sw.getAuditDetails().getLastModifiedTime()).reversed());

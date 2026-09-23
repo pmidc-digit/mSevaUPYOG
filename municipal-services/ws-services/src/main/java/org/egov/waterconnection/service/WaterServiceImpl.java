@@ -98,6 +98,7 @@ public class WaterServiceImpl implements WaterService {
 	
 	@Autowired
 	private WaterService waterService;
+
 	/**
 	 *
 	 * @param waterConnectionRequest WaterConnectionRequest contains water
@@ -564,6 +565,7 @@ public class WaterServiceImpl implements WaterService {
 	
 	
 public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(WaterConnectionRequest waterConnectionRequest) {
+		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
 		
 		if(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction() != null 
 				  && waterConnectionRequest.getWaterConnection().getProcessInstance().getAction().equals(WCConstants.SUBMIT_APPLICATION_CONST)){
@@ -572,7 +574,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 			  for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
 				  if(previousConnectionsListObj.getStatus().equals(StatusEnum.ACTIVE)){
 					  waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
-							  WCConstants.INACTIVE_STATUS); 
+							  WCConstants.DISCONNECT_STATUS); 
 				  	}
 			  	} 
 			  }

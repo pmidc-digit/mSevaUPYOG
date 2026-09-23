@@ -137,8 +137,11 @@ public class SewerageDaoImpl implements SewerageDao {
 		log.info("SW application state updatable flag:" + isStateUpdatable);
 		log.info("SW application request before update:" + sewerageConnectionRequest);
 		String reqAction = sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction();
+		if (sewerageConnectionRequest.isDisconnectRequest() || (sewerageConnectionRequest.getSewerageConnection().getApplicationType() != null && sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.DISCONNECT_SEWERAGE_CONNECTION))) {
+			sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.DISCONNECT);
+		}
 		if (isStateUpdatable) {
-			if (SWConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction)) {
+			if (SWConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction) || SWConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.DISCONNECT);
 			}
 			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
@@ -149,7 +152,7 @@ public class SewerageDaoImpl implements SewerageDao {
 		} else if (sewerageConnectionRequest.getSewerageConnection().getApplicationType()
 		        .equalsIgnoreCase(SWConstants.DISCONNECT_SEWERAGE_CONNECTION)) {
 
-		    if (SWConstants.APPROVE_CONNECTION.equalsIgnoreCase(reqAction)) {
+		    if (SWConstants.APPROVE_CONNECTION.equalsIgnoreCase(reqAction) || SWConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.DISCONNECT);
 			}
 			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {

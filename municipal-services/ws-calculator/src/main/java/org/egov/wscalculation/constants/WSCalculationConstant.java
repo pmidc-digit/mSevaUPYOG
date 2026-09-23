@@ -477,6 +477,8 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 	public static final String WS_ADVANCE_CARRYFORWARD = "WS_ADVANCE_CARRYFORWARD";
 
 	public static final String SW_ADVANCE_CARRYFORWARD = "SW_ADVANCE_CARRYFORWARD";
+
+	public static final String WS_DISCHARGE_CHARGES = "WS_DISCHARGE_CHARGES";
 	
 	//  Meter Reset status constant
 	public static final String RESET = "Reset";

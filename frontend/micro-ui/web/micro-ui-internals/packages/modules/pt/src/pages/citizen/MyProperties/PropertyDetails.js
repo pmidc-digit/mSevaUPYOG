@@ -45,7 +45,7 @@ const PropertyDetails = () => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   sessionStorage.setItem("propertyIdinPropertyDetail", applicationNumber);
-
+  const isEmployee = window.location.href.includes("employee");
   // const isMobile = window.Digit.Utils.browser.isMobile();
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 780);
 
@@ -200,7 +200,7 @@ const PropertyDetails = () => {
 
           e.additionalDetails.owners.map((owner, ind) => {
             owner.values.map((value) => {
-              if (value.title == "PT_OWNERSHIP_INFO_MOBILE_NO") {
+              if (value.title == "PT_OWNERSHIP_INFO_MOBILE_NO" && isEmployee) {
                 value.textStyle = { display: "flex", wordBreak:"revert" };
                 value.caption = (
                   <span

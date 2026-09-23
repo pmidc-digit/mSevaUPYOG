@@ -923,7 +923,7 @@ const propertyDocuments = propertyDocumentValues.length
           applicationData={applicationData}
         />
       )}
-      {showHistory && <PaymentHistory payments={payments} />}
+      {showHistory && <PaymentHistory payments={payments} assessmentData={filtered} applicationData={applicationData} />}
       {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
@@ -994,27 +994,94 @@ const propertyDocuments = propertyDocumentValues.length
 
        {window.location.href.includes("/pt/") ? (
         <ActionBar className="clear-search-container">
-          <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-            </svg>
-          } onClick={PropertyActive} />
-          <PTActionButton label="Make Inactive" color="#B5451B" hoverColor="#8f3415" icon={
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-            </svg>
-          } onClick={PropertyInActive} />
-          <PTActionButton label="Edit Property" color="#1A5CA8" hoverColor="#134a8a" icon={
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          } onClick={EditProperty} />
-          <PTActionButton label="Access Property" color="#003C71" hoverColor="#002554" icon={
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-            </svg>
-          } onClick={AccessProperty} />
+          {window.location.href.includes("employee") && (
+            <>
+              <PTActionButton
+                label="Make Active"
+                color="#00703C"
+                hoverColor="#005a30"
+                icon={
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                }
+                onClick={PropertyActive}
+              />
+              <PTActionButton
+                label="Make Inactive"
+                color="#B5451B"
+                hoverColor="#8f3415"
+                icon={
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                  </svg>
+                }
+                onClick={PropertyInActive}
+              />
+            </>
+          )}
+          <PTActionButton
+            label="Edit Property"
+            color="#1A5CA8"
+            hoverColor="#134a8a"
+            icon={
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            }
+            onClick={EditProperty}
+          />
+          <PTActionButton
+            label="Assess Property"
+            color="#003C71"
+            hoverColor="#002554"
+            icon={
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            }
+            onClick={AccessProperty}
+          />
         </ActionBar>
       ) : null}
       {showAccessModal && (

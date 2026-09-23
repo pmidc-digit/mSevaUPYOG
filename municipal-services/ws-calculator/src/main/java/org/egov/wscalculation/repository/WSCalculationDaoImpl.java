@@ -544,6 +544,17 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 		return jdbcTemplate.query(query, preparedStatement.toArray(), bulkMeterReadingRowMapper);
 	}
 
+	@Override
+	public Boolean cancelDemandAndExpiryBills(CancelDemandReq demandId) {
+		try {
+			wSCalculationProducer.push(cancelMeterConnection, demandId);
+			return true;
+		} catch (Exception e) {
+			log.error("Error while sending cancel demand to Persister", e);
+			return false;
+		}
+	}
+
 	
 	
 }

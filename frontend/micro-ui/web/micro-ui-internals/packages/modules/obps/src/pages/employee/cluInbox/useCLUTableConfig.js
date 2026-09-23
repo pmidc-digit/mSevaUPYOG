@@ -1,10 +1,11 @@
+import useLocalColumnSearch from "../../../../../templates/Inbox/components/useLocalColumnSearch";
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
 
-const useCLUTableConfig = ({
+const useCLUTableConfig = ({ enableColumnSearch = false,
   parentRoute,
   onPageSizeChange,
   formState,
@@ -132,6 +133,8 @@ const useCLUTableConfig = ({
     ];
   }, [cities]);
 
+  const localTable = useLocalColumnSearch(tableColumnConfig, table, enableColumnSearch);
+
   return {
     getCellProps: (cellInfo) => {
       return {
@@ -177,8 +180,8 @@ const useCLUTableConfig = ({
         },
       }),
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } }),
-    data: table,
-    columns: tableColumnConfig,
+    data: localTable.data,
+    columns: localTable.columns,
   };
 };
 

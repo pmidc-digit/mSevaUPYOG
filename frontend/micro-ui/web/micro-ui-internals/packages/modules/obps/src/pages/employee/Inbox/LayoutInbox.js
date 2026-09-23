@@ -372,6 +372,7 @@ const LayoutInbox = ({ parentRoute }) => {
   }, [onApiMobileSearch]);
 
   const propsForInboxTable = useLayoutTableConfig({
+    enableColumnSearch: true,
     parentRoute,
     onPageSizeChange,
     formState,

@@ -179,7 +179,7 @@ const useInboxTableConfig = ({
         disableSortBy: true,
       },
       !isCitizenOthers && {
-        Header: t("BPA_SEARCH_APPLICATION_TYPE_LABEL"),
+        Header: t("Risk Type"),
         // accessor: (row) => t(row?.original?._searchData?.businessObject?.additionalDetails?.riskType),
         // disableSortBy: true,
         accessor: "riskType",

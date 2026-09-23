@@ -10,6 +10,7 @@ import org.egov.rl.calculator.repository.Repository;
 import org.egov.rl.calculator.util.Configurations;
 import org.egov.rl.calculator.util.RLConstants;
 import org.egov.rl.calculator.web.models.demand.BillingPeriod;
+import org.egov.rl.calculator.web.models.demand.DueDate;
 import org.egov.rl.calculator.web.models.demand.Penalty;
 import org.egov.rl.calculator.penalty.PenaltyConfig;
 import org.egov.rl.calculator.web.models.demand.Interest;
@@ -151,6 +152,38 @@ public class MasterDataService {
         }
     }
 
+    /**
+     * Picks the penalty configuration that governs a scope ({@code "ARREAR"}, {@code "RENT"}, ...) out of the
+     * tenant's configured {@code Penalty} rows.
+     *
+     * <p>A row whose {@code appliesTo} is blank is generic and governs every scope, which keeps single-row tenants
+     * working unchanged. Order: the row declared for the scope, then the generic row, then (with a warning) the
+     * first configured row so a master that does not declare scopes never silently loses its penalty.
+     *
+     * @return the resolved configuration, or null when the tenant has no penalty rows at all.
+     */
+    public PenaltyConfig getPenaltyConfig(RequestInfo requestInfo, String tenantId, String scope) {
+        List<PenaltyConfig> penaltyConfigs = getPenaltyConfigs(requestInfo, tenantId);
+        if (penaltyConfigs == null || penaltyConfigs.isEmpty()) {
+            return null;
+        }
+        PenaltyConfig scoped = penaltyConfigs.stream()
+                .filter(row -> !row.isGeneric() && row.getAppliesTo().trim().equalsIgnoreCase(scope))
+                .findFirst().orElse(null);
+        if (scoped != null) {
+            return scoped;
+        }
+        PenaltyConfig generic = penaltyConfigs.stream()
+                .filter(PenaltyConfig::isGeneric)
+                .findFirst().orElse(null);
+        if (generic != null) {
+            return generic;
+        }
+        log.warn("Tenant {} declares no '{}' or generic penalty configuration - falling back to the first configured "
+                + "row (appliesTo={}).", tenantId, scope, penaltyConfigs.get(0).getAppliesTo());
+        return penaltyConfigs.get(0);
+    }
+
     public List<Interest> getInterestSlabs(RequestInfo requestInfo, String tenantId) {
         try {
             MdmsCriteriaReq mdmsCriteriaReq = getMasterRequest(requestInfo, tenantId,
@@ -171,43 +204,58 @@ public class MasterDataService {
         }
     }
 
-    public org.egov.rl.calculator.web.models.demand.DueDate getDueDateConfig(RequestInfo requestInfo, String tenantId, String billingCycle) {
+    /**
+     * All DueDate rows configured for the tenant (the master is keyed by billing cycle).
+     * Returns an empty list when the master is missing or unreadable - callers fall back to a default.
+     */
+    public List<DueDate> getDueDateConfigs(RequestInfo requestInfo, String tenantId) {
         try {
             MdmsCriteriaReq mdmsCriteriaReq = getMasterRequest(requestInfo, tenantId,
                     RLConstants.RL_SERVICES_MASTER_MODULE, "DueDate", null);
-            
+
             Object result = repository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
             MdmsResponse mdmsResponse = mapper.convertValue(result, MdmsResponse.class);
-            
+
             if (mdmsResponse.getMdmsRes().containsKey(RLConstants.RL_SERVICES_MASTER_MODULE) &&
                 mdmsResponse.getMdmsRes().get(RLConstants.RL_SERVICES_MASTER_MODULE).containsKey("DueDate")) {
-                
-                List<org.egov.rl.calculator.web.models.demand.DueDate> dueDates = mapper.convertValue(
+
+                List<DueDate> dueDates = mapper.convertValue(
                         mdmsResponse.getMdmsRes()
                                 .get(RLConstants.RL_SERVICES_MASTER_MODULE)
                                 .get("DueDate"),
-                        new TypeReference<List<org.egov.rl.calculator.web.models.demand.DueDate>>() {}
+                        new TypeReference<List<DueDate>>() {}
                 );
-                
                 if (dueDates != null && !dueDates.isEmpty()) {
-                    if (billingCycle != null) {
-                        for (org.egov.rl.calculator.web.models.demand.DueDate dd : dueDates) {
-                            if (billingCycle.equalsIgnoreCase(dd.getBillingCycle())) {
-                                return dd;
-                            }
-                        }
-                    }
-                    return dueDates.get(0);
+                    return dueDates;
                 }
             }
         } catch (Exception e) {
             log.warn("Failed to get DueDate from MDMS for tenant " + tenantId + ". Falling back to default.", e);
         }
-        return org.egov.rl.calculator.web.models.demand.DueDate.builder().dueDay(10).rebatePercentage(0.0).build();
+        return Collections.emptyList();
+    }
+
+    public DueDate getDueDateConfig(RequestInfo requestInfo, String tenantId, String billingCycle) {
+        List<DueDate> dueDates = getDueDateConfigs(requestInfo, tenantId);
+        if (!dueDates.isEmpty()) {
+            if (billingCycle != null) {
+                for (DueDate dd : dueDates) {
+                    if (billingCycle.equalsIgnoreCase(dd.getBillingCycle())) {
+                        return dd;
+                    }
+                }
+                if (dueDates.size() > 1) {
+                    log.warn("No DueDate configured for billing cycle '{}' in tenant {}. Falling back to the first row ({}).",
+                            billingCycle, tenantId, dueDates.get(0).getBillingCycle());
+                }
+            }
+            return dueDates.get(0);
+        }
+        return DueDate.builder().dueDay(10).rebatePercentage(0.0).build();
     }
 
     public Integer getLegacyDueDate(RequestInfo requestInfo, String tenantId, String billingCycle) {
-        org.egov.rl.calculator.web.models.demand.DueDate dueDate = getDueDateConfig(requestInfo, tenantId, billingCycle);
+        DueDate dueDate = getDueDateConfig(requestInfo, tenantId, billingCycle);
         return (dueDate != null && dueDate.getDueDay() != null) ? dueDate.getDueDay() : 10;
     }
 

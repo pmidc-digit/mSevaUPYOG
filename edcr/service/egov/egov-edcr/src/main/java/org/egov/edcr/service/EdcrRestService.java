@@ -617,7 +617,17 @@ public class EdcrRestService {
             LOG.log(Level.ERROR, e);
         }
 
-        edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+        //edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+        
+        if (isBlank(tenantId)) {
+            edcrDetail.setTenantId(stateCityCode);
+        } else if (tenantId.contains(".")) {
+            // already fully qualified (e.g. "pb.lalru") — use as-is
+            edcrDetail.setTenantId(tenantId);
+        } else {
+            // raw tenant key only (e.g. "lalru") — qualify it
+            edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+        }
 
         if (!String.valueOf(applnDtls[3]).equalsIgnoreCase("Accepted"))
             edcrDetail.setStatus(String.valueOf(applnDtls[3]));

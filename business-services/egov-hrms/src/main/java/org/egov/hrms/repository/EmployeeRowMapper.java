@@ -81,6 +81,7 @@ public class EmployeeRowMapper implements ResultSetExtractor<List<Employee>> {
 	        if (currentEmployee.getSubcategories() == null) currentEmployee.setSubcategories(new ArrayList<>());
 	        if (currentEmployee.getZones() == null) currentEmployee.setZones(new ArrayList<>());
 	        if (currentEmployee.getAssignedtenattids() == null) currentEmployee.setAssignedtenattids(new ArrayList<>());
+	        if (currentEmployee.getModulenames() == null) currentEmployee.setModulenames(new ArrayList<>());
 
 	        // Helper to safely get column if it exists
 	        String empCategory = hasColumn(rs, "obpas_category") ? rs.getString("obpas_category") : null;
@@ -101,6 +102,11 @@ public class EmployeeRowMapper implements ResultSetExtractor<List<Employee>> {
 	        String empAssignedTenantId = hasColumn(rs, "obpas_assignedtenantid") ? rs.getString("obpas_assignedtenantid") : null;
 	        if (!StringUtils.isEmpty(empAssignedTenantId) && !currentEmployee.getAssignedtenattids().contains(empAssignedTenantId)) {
 	            currentEmployee.getAssignedtenattids().add(empAssignedTenantId);
+	        }
+
+	        String empModulename = hasColumn(rs, "obpas_modulename") ? rs.getString("obpas_modulename") : null;
+	        if (!StringUtils.isEmpty(empModulename) && !currentEmployee.getModulenames().contains(empModulename)) {
+	            currentEmployee.getModulenames().add(empModulename);
 	        }
 
 	    } catch(Exception e) {

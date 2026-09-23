@@ -4,12 +4,13 @@ import { useHistory } from 'react-router-dom';
 const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatus, applicationData }) => {
     const history = useHistory();
     const isEmployee = window.location.href.includes("employee");
+    const isEmployee = window.location.href.includes("employee");
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleAccordion = () => {
         setIsOpen(!isOpen);
     };
-
+    console.log("assessmentData",assessmentData)
     const handleReassess = (assessment) => {
         if (["INACTIVE", "INWORKFLOW"].includes(propertyStatus?.toUpperCase())) {
             alert("This operation is not allowed as Property is in INWORKFLOW or Inactive.");
@@ -84,7 +85,7 @@ function formatAssessmentDate(timestamp) {
             </div>
             {isOpen && (
                 <div className="accordion-body" style={{ padding: " 15px", backgroundColor: "#fff" }}>
-                    {assessmentData.map((assessment, index) => (
+                    {assessmentData.sort((a, b) => b.assessmentDate - a.assessmentDate).map((assessment, index) => (
                         <div key={index} className="assessment-item" style={{ marginBottom: "15px" }}>
                             <div className="assessment-row" style={{
 

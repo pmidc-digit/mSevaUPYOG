@@ -1743,21 +1743,17 @@ public class DemandService {
 		                throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
 		        }
 
-		        Boolean cancels = waterCalculatorDao.getUpdates(demandlists);
-
-		        if (!cancels) {
-		            throw new CustomException("Update failed", "Failed to update demand records.");
-		        }
-
 		        List<BillSearchs> billSearchsss = waterCalculatorDao.getBillss(tenantId, demandid);
 		        
 		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
 		        	continue; // Skip bill cancellation if there are no bills and payment is completed
-		        
-		        boolean billCancelled = waterCalculatorDao.getexpiryBills(billSearchsss);
 
-		        if (!billCancelled) {
-		            throw new CustomException("Bill Cancellation Failed", "Failed to cancel bills for the given demand.");
+			  CancelDemandReq cancelDemandReq = new CancelDemandReq(demandid,tenantId,demandlists.get(0).getConsumercode(), "WS");
+
+			  boolean Cancelled = waterCalculatorDao.cancelDemandAndExpiryBills(cancelDemandReq);
+
+		        if (!Cancelled) {
+		            throw new CustomException("Cancel failed", "Failed to cancel demand and bills.");
 		        }
 		    }
 

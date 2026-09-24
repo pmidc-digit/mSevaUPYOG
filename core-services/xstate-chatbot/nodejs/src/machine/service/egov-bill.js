@@ -261,11 +261,9 @@ class BillService {
     for (let result of results) {
       if (result.status == 'ACTIVE' && result.totalAmount != 0 && count < billLimit) {
         let dueDate = moment(result.billDetails[result.billDetails.length - 1].expiryDate).tz(config.timeZone).format(config.dateFormat);
-        let fromMonth = new Date(result.billDetails[result.billDetails.length - 1].fromPeriod).toLocaleString('en-IN', { month: 'short' });
-        let toMonth = new Date(result.billDetails[result.billDetails.length - 1].toPeriod).toLocaleDateString('en-IN', { month: 'short' });
-        let fromBillYear = new Date(result.billDetails[result.billDetails.length - 1].fromPeriod).getFullYear();
-        let toBillYear = new Date(result.billDetails[result.billDetails.length - 1].toPeriod).getFullYear();
-        let billPeriod = fromMonth + " " + fromBillYear + "-" + toMonth + " " + toBillYear;
+        let billDetail = result.billDetails[result.billDetails.length - 1];
+        let billFromDate = moment(billDetail.fromPeriod).tz(config.timeZone).format(config.dateFormat);
+        let billToDate = moment(billDetail.toPeriod).tz(config.timeZone).format(config.dateFormat);
         let tenantId = result.tenantId;
         let link = await self.getPaymentLink(result.consumerCode, tenantId, result.businessService, locale, user);
         let serviceCode = localisationService.getMessageBundleForCode(localisationServicePrefix + result.businessService.toUpperCase());
@@ -274,10 +272,11 @@ class BillService {
           service: dialog.get_message(serviceCode, locale),
           id: result.consumerCode,
           payerName: result.payerName,
-          secondaryInfo: 'Ajit Nagar,  Phagwara', //to do
+          secondaryInfo: 'Ajit Nagar,  Phagwara',
           dueAmount: result.totalAmount,
           dueDate: dueDate,
-          period: billPeriod,
+          billFromDate: billFromDate,
+          billToDate: billToDate,
           tenantId: tenantId,
           paymentLink: link,
           businessService: result.businessService
@@ -293,7 +292,7 @@ class BillService {
         count++;
       }
     }
-   return Bills['Bills'];
+    return Bills['Bills'];
 
     /*if(Bills['Bills'].length>0){
       var stateLevelCode = "TENANT_TENANTS_"+config.rootTenantId.toUpperCase();
@@ -397,8 +396,8 @@ class BillService {
         // );
 
         results = await this.prepareBillResult(
-            responseBody,
-            user
+          responseBody,
+          user
         );
 
         // console.log(
@@ -407,27 +406,27 @@ class BillService {
         // );
 
         totalBillSize = responseBody.Bill
-            ? responseBody.Bill.length
-            : 0;
+          ? responseBody.Bill.length
+          : 0;
 
         pendingBillSize = results.length;
 
-    } catch (error) {
+      } catch (error) {
         console.error(
-            'ERROR inside prepareBillResult:',
-            error
+          'ERROR inside prepareBillResult:',
+          error
         );
 
         console.error(
-            'ERROR stack:',
-            error.stack
+          'ERROR stack:',
+          error.stack
         );
 
         return {
-            totalBills: 0,
-            pendingBills: undefined
+          totalBills: 0,
+          pendingBills: undefined
         };
-    }
+      }
     } else {
 
       // console.error(
@@ -571,15 +570,15 @@ class BillService {
   }
 
   async getPaymentLink(consumerCode, tenantId, businessService, locale, user) {
-  if (businessService === 'WS') {
-        return 'https://billpay.setu.co/1272707270496486911/biller-form/PMC000000PUN01';
-    }
+    // if (businessService === 'WS') {
+    //       return 'https://billpay.setu.co/1272707270496486911/biller-form/PMC000000PUN01';
+    //   }
 
-    if (businessService === 'SW') {
-        return 'https://billpay.setu.co/1272707270496486911/biller-form/PUNJ00000PUNYS';
-    }
+    //   if (businessService === 'SW') {
+    //       return 'https://billpay.setu.co/1272707270496486911/biller-form/PUNJ00000PUNYS';
+    //   }
 
-    // Keep existing payment-link logic for other services
+    //   // Keep existing payment-link logic for other services
     var UIHost = config.egovServices.externalHost;
     var paymentPath = config.egovServices.msgpaylink;
 
@@ -587,8 +586,8 @@ class BillService {
     paymentPath = paymentPath.replace(/\$tenantId/g, tenantId);
     paymentPath = paymentPath.replace(/\$businessservice/g, businessService);
     paymentPath = paymentPath.replace(
-        /\$redirectNumber/g,
-        "+" + config.whatsAppBusinessNumber
+      /\$redirectNumber/g,
+      "+" + config.whatsAppBusinessNumber
     );
     paymentPath = paymentPath.replace(/\$locale/g, locale);
     paymentPath = paymentPath.replace(/\$name/g, user.name);

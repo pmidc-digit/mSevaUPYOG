@@ -129,6 +129,30 @@ public class BulkMeterReading {
 
 	@JsonProperty("groups")
 	private String groups = null;
+	
+	@SafeHtml
+	@JsonProperty("createdByName")
+	private String createdByName = null;
+
+	@SafeHtml
+	@JsonProperty("lastModifiedByName")
+	private String lastModifiedByName = null;
+
+	public String getCreatedByName() {
+		return createdByName;
+	}
+
+	public void setCreatedByName(String createdByName) {
+		this.createdByName = createdByName;
+	}
+
+	public String getLastModifiedByName() {
+		return lastModifiedByName;
+	}
+
+	public void setLastModifiedByName(String lastModifiedByName) {
+		this.lastModifiedByName = lastModifiedByName;
+	}
 
 	public BulkMeterReading id(String id) {
 		this.id = id;

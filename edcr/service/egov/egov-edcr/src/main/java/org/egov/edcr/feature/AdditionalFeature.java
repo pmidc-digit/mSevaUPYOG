@@ -641,6 +641,8 @@ public class AdditionalFeature extends FeatureProcess {
             BigDecimal buildingHeight = block.getBuilding().getBuildingHeightExcludingMP();
             if (buildingHeight != null) {
                 buildingHeight = buildingHeight.setScale(2, RoundingMode.HALF_UP);
+            }else {
+            	pl.addError("Building Height Excluding Mumty Error ", "Building Height Excluding Mumty is not defined.");
             }
 
             // Get total building height

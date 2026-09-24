@@ -434,7 +434,12 @@ public class EstimationService {
 						}
 					}
 
-					waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
+					if (WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)
+							|| WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)) {
+						waterCharge = BigDecimal.valueOf(Math.round(totalAmount.doubleValue())).setScale(2, RoundingMode.HALF_UP);
+					} else {
+						waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
+					}
 					// PI-20289 Metered Breakdown penalty enable and working new logic
 				}  else if (WSCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
 	                request.setTaxPeriodFrom(criteria.getFrom());

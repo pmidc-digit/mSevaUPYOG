@@ -73,14 +73,14 @@ export const handleSelectAllLogic = (selectedItems, allItems, currentFormValue) 
     newSelection = selected.filter((item) => item.code !== "ALL").map((item) => ({ ...item }));
   } else {
     // Normal selection without "Select All"
-    const selectedWithoutSelectAll = selected.filter((item) => item.code !== "ALL");
+    const selectedWithoutSelectAll = selected?.filter((item) => item.code !== "ALL");
 
     // Check if all items are now selected - if so, add "Select All"
-    if (selectedWithoutSelectAll.length === allItems.length && allItems.length > 0) {
+    if (selectedWithoutSelectAll?.length === allItems?.length && allItems?.length > 0) {
       const selectAllOption = { code: "ALL", name: "Select All" };
-      newSelection = [{ ...selectAllOption }, ...allItems.map((item) => ({ ...item }))];
+      newSelection = [{ ...selectAllOption }, ...allItems?.map((item) => ({ ...item }))];
     } else {
-      newSelection = selectedWithoutSelectAll.map((item) => ({ ...item }));
+      newSelection = selectedWithoutSelectAll?.map((item) => ({ ...item }));
     }
   }
 

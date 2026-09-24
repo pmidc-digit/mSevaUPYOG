@@ -100,8 +100,9 @@ const LayoutNewApplicantDetails = (_props) => {
   useEffect(() => {
     const savedApplicants = currentStepData?.applicants || [];
     const responseOwners = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
-    const ownerSource = (Array.isArray(currentStepData?.applicants) ? savedApplicants : responseOwners)
-      .filter((owner) => owner?.status !== false && owner?.status !== "false");
+    const ownerSource = (Array.isArray(currentStepData?.applicants) ? savedApplicants : responseOwners).filter(
+      (owner) => owner?.status !== false && owner?.status !== "false"
+    );
 
     // If Redux applicants data matches selectedOwners, skip re-restoring to avoid infinite loop
     if (isInitialized && areApplicantsEqual(savedApplicants, selectedOwners)) {
@@ -209,7 +210,7 @@ const LayoutNewApplicantDetails = (_props) => {
 
     const orderedSelectedOwners = [...updatedActive, ...updatedInactive];
 
-    const applicantsArray = orderedSelectedOwners.map((owner, idx) => ({
+    const applicantsArray = orderedSelectedOwners?.map((owner, idx) => ({
       ...owner,
       actualIndex: idx,
       name: owner.name || "",
@@ -480,6 +481,7 @@ const LayoutNewApplicantDetails = (_props) => {
             city: a?.city || "",
             addressId: a?.address,
           },
+          userUuid: a?.uuid,
           panCard: a?.panNumber,
           permanentAddress: {
             pinCode: a?.pincode,
@@ -561,6 +563,7 @@ const LayoutNewApplicantDetails = (_props) => {
     }
 
     triggerLoader(true);
+
     try {
       // Call create API
       const response = await Digit.RentAndLeaseService.create({ AllotmentDetails: [payload] }, tenantId);

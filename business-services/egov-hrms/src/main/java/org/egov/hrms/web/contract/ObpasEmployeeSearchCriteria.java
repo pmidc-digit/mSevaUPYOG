@@ -2,6 +2,7 @@ package org.egov.hrms.web.contract;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
@@ -34,6 +35,10 @@ public class ObpasEmployeeSearchCriteria {
     @JsonProperty("assignedTenantId")
     private String assignedTenantId;
 
+    @JsonProperty("modulename")
+    @JsonAlias({"modulename", "moduleName"})
+    private String modulename;
+
     @JsonProperty("uuids")
     private List<String> uuids;   // optional filter
 
@@ -42,4 +47,16 @@ public class ObpasEmployeeSearchCriteria {
 
     @JsonProperty("offset")
     private Integer offset;
+
+    public String getModulename() {
+        return modulename;
+    }
+
+    public void setModulename(String modulename) {
+        this.modulename = modulename;
+    }
+
+    public void setModuleName(String moduleName) {
+        this.modulename = moduleName;
+    }
 }

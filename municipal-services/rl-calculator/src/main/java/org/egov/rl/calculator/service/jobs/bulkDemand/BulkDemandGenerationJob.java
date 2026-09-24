@@ -28,13 +28,13 @@ public class BulkDemandGenerationJob implements Job {
     @Override
     public void execute(JobExecutionContext context) {
         log.info("Quartz Scheduler - Bulk Demand Generation Job Started Every day at 03:30 AM");
-        log.info("Bulk Demand Generation Scheduler Start Date Time: {}", LocalDateTime.now());
+        log.info("Morning Scheduler Start Date Time: {}", LocalDateTime.now());
         try {
             RequestInfo requestInfo = autoEscalationService.getDefaultRequestInfo();
             demandService.generateBatchDemand(requestInfo, null, null);
         } catch (Exception e) {
             log.error("Error during Bulk Demand Generation Job", e);
         }
-        log.info("Bulk Demand Generation Scheduler End Date Time: {}", LocalDateTime.now());
+        log.info("Morning Scheduler End Date Time: {}", LocalDateTime.now());
     }
 }

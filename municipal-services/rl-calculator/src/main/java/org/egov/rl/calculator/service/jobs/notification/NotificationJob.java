@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 /**
  * Quartz Job for sending demand notifications and updating demands.
- * Runs every day at 01:00 AM (IST) by default, configurable via scheduler.notification.cron.
+ * Runs every day at 10:30 PM (IST) by default, configurable via scheduler.notification.cron.
  */
 @Component
 @Slf4j
@@ -27,14 +27,14 @@ public class NotificationJob implements Job {
 
     @Override
     public void execute(JobExecutionContext context) {
-        log.info("Quartz Scheduler - Notification Job Started Every day at 01:00 AM");
-        log.info("Notification Scheduler Start Date Time: {}", LocalDateTime.now());
+        log.info("Quartz Scheduler - Notification Job Started Every day at 10:30 PM");
+        log.info("Afternoon Scheduler Start Date Time: {}", LocalDateTime.now());
         try {
             RequestInfo requestInfo = autoEscalationService.getDefaultRequestInfo();
             demandService.sendNotificationAndUpdateDemand(requestInfo, null, null);
         } catch (Exception e) {
             log.error("Error during Notification and Demand Update Job", e);
         }
-        log.info("Notification Scheduler End Date Time: {}", LocalDateTime.now());
+        log.info("Afternoon Scheduler End Date Time: {}", LocalDateTime.now());
     }
 }

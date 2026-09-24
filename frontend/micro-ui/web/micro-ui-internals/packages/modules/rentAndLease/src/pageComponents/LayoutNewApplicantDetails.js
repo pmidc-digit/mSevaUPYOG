@@ -481,6 +481,7 @@ const LayoutNewApplicantDetails = (_props) => {
             city: a?.city || "",
             addressId: a?.address,
           },
+          userUuid: a?.uuid,
           panCard: a?.panNumber,
           permanentAddress: {
             pinCode: a?.pincode,

@@ -272,7 +272,6 @@ class BillService {
           service: dialog.get_message(serviceCode, locale),
           id: result.consumerCode,
           payerName: result.payerName,
-          secondaryInfo: 'Ajit Nagar,  Phagwara',
           dueAmount: result.totalAmount,
           dueDate: dueDate,
           billFromDate: billFromDate,

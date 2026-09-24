@@ -478,10 +478,11 @@ public class SewerageServiceImpl implements SewerageService {
 	
 	
 public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnection(SewerageConnectionRequest sewerageConnectionRequest) {
-		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECT);
-		if (sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction() != null 
-				    && (sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction().equals(SWConstants.SUBMIT_APPLICATION_CONST)
-				        || sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction().equals(SWConstants.FORWARD_FOR_INSPECTION))) {	
+		
+	String action = sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction();
+
+	if (action != null && (action.equals(SWConstants.SUBMIT_APPLICATION_CONST)
+			|| action.equals(SWConstants.FORWARD_FOR_INSPECTION))) {
 			List<SewerageConnection> prevSewerageConnectionList = getAllSewerageApplications(sewerageConnectionRequest);
 			
 			 if (!prevSewerageConnectionList.isEmpty()) {
@@ -502,19 +503,19 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 			        }
 			    }
 
+			    // The new disconnection application itself is in Disconnect (pending) state
 			    sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECT);
-			}
-		  
-		  if(sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction() != null 
-				  && sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction().equals(SWConstants.ACTION_REJECT)){
+			} else if (action != null && action.equals(SWConstants.ACTION_REJECT)) {
 			  List<SewerageConnection> prevSewerageConnectionList = getAllSewerageApplications(sewerageConnectionRequest);
 			  if (prevSewerageConnectionList.size() > 0) { 
 				  Collections.sort(prevSewerageConnectionList, Comparator.comparing((SewerageConnection sw) -> sw.getAuditDetails().getLastModifiedTime()).reversed());
 				  for (SewerageConnection previousConnectionsListObj : prevSewerageConnectionList) {
 					   if(previousConnectionsListObj.getApplicationStatus().equals(SWConstants.STATUS_APPROVED) 
 							   || previousConnectionsListObj.getApplicationStatus().equals(SWConstants.APPROVED)){
+						   // Restore the original approved connection back to Active
 						   sewerageDaoImpl.updateSewerageApplicationStatus(previousConnectionsListObj.getId(),
 								   SWConstants.ACTIVE_STATUS); 
+						   // The rejected disconnection application stays as Disconnect
 						   sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECT);
 						   break;
 					   }

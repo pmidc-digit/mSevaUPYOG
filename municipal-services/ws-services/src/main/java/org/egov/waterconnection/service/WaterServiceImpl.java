@@ -565,10 +565,10 @@ public class WaterServiceImpl implements WaterService {
 	
 	
 public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(WaterConnectionRequest waterConnectionRequest) {
-		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
 		
-		if(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction() != null 
-				  && waterConnectionRequest.getWaterConnection().getProcessInstance().getAction().equals(WCConstants.SUBMIT_APPLICATION_CONST)){
+		String action = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
+		
+		if(action != null && action.equals(WCConstants.SUBMIT_APPLICATION_CONST)){
 			List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
 			if (previousConnectionsList.size() > 0) { 
 			  for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
@@ -578,19 +578,19 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 				  	}
 			  	} 
 			  }
+		  // The new disconnection application itself is in Disconnect (pending) state
 		  waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
-		}
-		  
-		  if(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction() != null 
-				  && waterConnectionRequest.getWaterConnection().getProcessInstance().getAction().equals(WCConstants.ACTION_REJECT)){
+		} else if(action != null && action.equals(WCConstants.ACTION_REJECT)){
 			  List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
 			  if (previousConnectionsList.size() > 0) { 
 				  Collections.sort(previousConnectionsList, Comparator.comparing((WaterConnection wc) -> wc.getAuditDetails().getLastModifiedTime()).reversed());
 				  for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
 					   if(previousConnectionsListObj.getApplicationStatus().equals(WCConstants.STATUS_APPROVED) 
 							   || previousConnectionsListObj.getApplicationStatus().equals(WCConstants.APPROVED)){
+						   // Restore the original approved connection back to Active
 						   waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
 									  WCConstants.ACTIVE_STATUS); 
+						   // The rejected disconnection application stays as Disconnect
 						   waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
 						   break;
 					   }

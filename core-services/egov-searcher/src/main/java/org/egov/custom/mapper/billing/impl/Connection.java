@@ -54,7 +54,10 @@ public class Connection {
 	            } catch (Exception e) {
 	                e.printStackTrace();
 	                // Handle error in parsing JSON
+	                this.additionalDetails = pgObject.getValue();
 	            }
+	        } else {
+	            this.additionalDetails = additionalDetails;
 	        }
 	    }
 

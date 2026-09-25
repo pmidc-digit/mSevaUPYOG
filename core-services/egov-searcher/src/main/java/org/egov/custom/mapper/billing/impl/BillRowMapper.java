@@ -117,7 +117,7 @@ public class BillRowMapper implements ResultSetExtractor<List<Bill>>{
 					.payerAddress(rs.getString("b_payeraddress"))
 					.payerEmail(rs.getString("b_payeremail"))
 					.mobileNumber(rs.getString("mobilenumber"))
-					.status(StatusEnum.fromValue(rs.getString("b_status")))
+					.status(rs.getString("b_status") != null ? StatusEnum.fromValue(rs.getString("b_status").toUpperCase()) : null)
 					.businessService(rs.getString("bd_businessService"))
 					.billNumber(rs.getString("bd_billno"))
 					.billDate(rs.getLong("bd_billDate"))
@@ -136,7 +136,6 @@ public class BillRowMapper implements ResultSetExtractor<List<Bill>>{
 				userIds.add(user.getId());
 
 				billMap.put(bill.getId(), bill);
-				billDetailMap.clear();
 			}
 			
 			String detailId = rs.getString("bd_id");
@@ -188,10 +187,28 @@ public class BillRowMapper implements ResultSetExtractor<List<Bill>>{
 	}
 	
 	private void assignUsersToBill(List<Bill> bills, Set<String> userIds) {
-		UserSearchCriteria userCriteria = UserSearchCriteria.builder().uuid(userIds).build();
-		UserResponse res = rest.postForObject(userContext.concat(userSearchPath), userCriteria, UserResponse.class);
-		Map<String, String> users = res.getUsers().stream().collect(Collectors.toMap(User::getUuid, User::getName));
-		bills.forEach(bill -> bill.getUser().setName(users.get(bill.getUser().getId())));
+		if (CollectionUtils.isEmpty(userIds)) {
+			return;
+		}
+		try {
+			UserSearchCriteria userCriteria = UserSearchCriteria.builder().uuid(userIds).build();
+			UserResponse res = rest.postForObject(userContext.concat(userSearchPath), userCriteria, UserResponse.class);
+			if (res != null && !CollectionUtils.isEmpty(res.getUsers())) {
+				Map<String, String> users = res.getUsers().stream()
+					.filter(u -> u.getUuid() != null && u.getName() != null)
+					.collect(Collectors.toMap(User::getUuid, User::getName, (u1, u2) -> u1));
+				bills.forEach(bill -> {
+					if (bill.getUser() != null && bill.getUser().getId() != null) {
+						String name = users.get(bill.getUser().getId());
+						if (name != null) {
+							bill.getUser().setName(name);
+						}
+					}
+				});
+			}
+		} catch (Exception e) {
+			log.error("Error fetching user details from user service: ", e);
+		}
 	}
 	
 }

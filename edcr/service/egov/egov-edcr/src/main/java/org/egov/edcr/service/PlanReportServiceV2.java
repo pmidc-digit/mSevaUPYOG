@@ -314,7 +314,7 @@ public class PlanReportServiceV2 {
                 plan.getPlot() != null ? plan.getPlot().getPlotBndryArea(): BigDecimal.ZERO);
         
         model.put("totalExistingBuiltUpArea",
-                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalExistingBuiltUpArea() : BigDecimal.valueOf(0));
+                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalExistingBuiltUpArea() : BigDecimal.ZERO);
 
         Map<String, String> serviceTypeList = new ConcurrentHashMap<>();
         serviceTypeList.put("NEW_CONSTRUCTION", "New Construction");
@@ -390,7 +390,7 @@ public class PlanReportServiceV2 {
                     .flatMap(List::stream)
                     .filter(d -> d.containsKey("Status"))
                     .forEach(d -> d.put("Status", "Accepted"));
-        	plan.getErrors().clear();
+        	//plan.getErrors().clear();
         }
         
         long notFulfilledCount = sections.entrySet().stream()

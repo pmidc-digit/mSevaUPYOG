@@ -316,7 +316,6 @@ public class PlanService {
             
             if (plan.getPlanInformation().getCity() == null 
                     || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
-
                 plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
             }          
            
@@ -407,27 +406,28 @@ public class PlanService {
 
         	if (Boolean.TRUE.equals(plan.getEdcrRequest().getSiteReserved())
         	        && Boolean.TRUE.equals(plan.getEdcrRequest().getApprovedCS())) {
-
         	    MultipartFile controlSheetFile = dcrApplication.getControlSheetFile();
-
         	    if (controlSheetFile == null || controlSheetFile.isEmpty()) {
         	        throw new IllegalArgumentException(
         	                "Control Sheet file is required when Site Reserved and Approved Control Sheet are selected");
         	    }
 
-        	    try {
-        	    	generateReport(plan, amd, dcrApplication);
-        	        reportStream = controlSheetFile.getInputStream();
-        	    } catch (IOException ex) {
-        	        LOG.error("Error while reading Control Sheet file for application {}",
-        	                dcrApplication.getApplicationNumber(), ex);
-        	        throw new RuntimeException("Unable to process Control Sheet file", ex);
+        	    if (plan.getErrors() != null && !plan.getErrors().isEmpty()) {
+        	        reportStream = generateReport(plan, amd, dcrApplication);
+        	    } else {
+        	        try {
+        	            generateReport(plan, amd, dcrApplication);
+        	            reportStream = controlSheetFile.getInputStream();
+        	        } catch (IOException ex) {
+        	            LOG.error("Error while reading Control Sheet file for application {}",
+        	                    dcrApplication.getApplicationNumber(), ex);
+        	            throw new RuntimeException("Unable to process Control Sheet file", ex);
+        	        }
         	    }
 
         	} else {
         	    reportStream = generateReport(plan, amd, dcrApplication);
         	}
-        	
         	saveOutputReport(dcrApplication, reportStream, plan);
             
         } else if (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()

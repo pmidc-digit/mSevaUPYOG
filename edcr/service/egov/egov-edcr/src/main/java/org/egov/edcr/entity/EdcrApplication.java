@@ -81,8 +81,10 @@ public class EdcrApplication extends AbstractAuditable {
     private String thirdPartyUserTenant;
 
     private transient MultipartFile dxfFile; // File to be process.
+    
+    private transient MultipartFile controlSheetFile; // File to be process.
 
-    private transient File savedDxfFile;
+	private transient File savedDxfFile;
 
     private transient EdcrApplicationDetail savedEdcrApplicationDetail;
 
@@ -106,6 +108,15 @@ public class EdcrApplication extends AbstractAuditable {
 
     private transient String deviationStatus;
 
+    public MultipartFile getControlSheetFile() {
+		return controlSheetFile;
+	}
+
+	public void setControlSheetFile(MultipartFile controlSheetFile) {
+		this.controlSheetFile = controlSheetFile;
+	}
+
+    
     @Override
     public Long getId() {
         return id;

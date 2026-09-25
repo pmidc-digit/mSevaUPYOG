@@ -402,8 +402,34 @@ public class PlanService {
                         .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                         && StringUtils.isBlank(comparisonDcrNumber))
                 ) {
-            InputStream reportStream = generateReport(plan, amd, dcrApplication);
-            saveOutputReport(dcrApplication, reportStream, plan);
+        	
+        	InputStream reportStream;
+
+        	if (Boolean.TRUE.equals(plan.getEdcrRequest().getSiteReserved())
+        	        && Boolean.TRUE.equals(plan.getEdcrRequest().getApprovedCS())) {
+
+        	    MultipartFile controlSheetFile = dcrApplication.getControlSheetFile();
+
+        	    if (controlSheetFile == null || controlSheetFile.isEmpty()) {
+        	        throw new IllegalArgumentException(
+        	                "Control Sheet file is required when Site Reserved and Approved Control Sheet are selected");
+        	    }
+
+        	    try {
+        	    	generateReport(plan, amd, dcrApplication);
+        	        reportStream = controlSheetFile.getInputStream();
+        	    } catch (IOException ex) {
+        	        LOG.error("Error while reading Control Sheet file for application {}",
+        	                dcrApplication.getApplicationNumber(), ex);
+        	        throw new RuntimeException("Unable to process Control Sheet file", ex);
+        	    }
+
+        	} else {
+        	    reportStream = generateReport(plan, amd, dcrApplication);
+        	}
+        	
+        	saveOutputReport(dcrApplication, reportStream, plan);
+            
         } else if (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
                 .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                 && StringUtils.isNotBlank(comparisonDcrNumber)) {

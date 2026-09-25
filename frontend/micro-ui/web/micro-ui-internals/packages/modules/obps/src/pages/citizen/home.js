@@ -293,9 +293,10 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
       <CitizenInfoLabel
         info={t("Scheduled Maintenance Notice")}
         text={`Dear Citizens, 
-        The Building Plan Approval (BPA) services on the mSeva Portal will undergo scheduled maintenance from 12 September 2026 to 14 September 2026, 9:00 AM. 
-        During this period, BPA application submission, document upload, and payment services may be temporarily unavailable due to planned data migration activities. 
-        We regret the inconvenience and appreciate your cooperation. 
+        The Plot Regularisation (NOC) module on the mSeva Portal will undergo scheduled maintenance from 25 September 2026 , 7pm to 28 September 2026, 9:00 AM. Alongwith it , the Change of Land Use (CLU) module will 
+        undergo scheduled maintenance from 25 September 2026 , 7pm to 27 September 2026, 10:00 AM
+        During this period, CLU and NOC application submission, document upload, and payment services may be temporarily unavailable due to planned data migration activities. 
+        We regret the inconvenience and appreciate your cooperation.
         
         Team mSeva Punjab Municipal Infrastructure Development Company (PMIDC)`}
         className={"info-banner-wrap-citizen-override"}

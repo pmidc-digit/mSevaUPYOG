@@ -279,11 +279,13 @@ public class RestEdcrApplicationController {
             if (Boolean.TRUE.equals(edcr.getSiteReserved())
                     && Boolean.TRUE.equals(edcr.getApprovedCS())) {
                 if (controlSheet == null || controlSheet.isEmpty()) {
-                    errors.add(new ErrorDetail("BPA-22","Control Sheet PDF is required"));
+                	LOGGER.info("ControSheet is not provided in request. Fetching controlSheet file from FileStore.");
+                	controlSheet = edcrRestService.getControlSheetFromFileStore(edcr);
+                    //errors.add(new ErrorDetail("BPA-22","Control Sheet PDF is required"));
                 } else {
                     String fileName = controlSheet.getOriginalFilename();
                     if (StringUtils.isBlank(fileName) || !fileName.toLowerCase().endsWith(".pdf")) {
-                        errors.add(new ErrorDetail("BPA-23","Only PDF file are allow for Control Sheet upload"));
+                        errors.add(new ErrorDetail("BPA-22","Only PDF file are allow for Control Sheet upload"));
                     }
                 }
             }

@@ -2308,6 +2308,44 @@ public class EdcrRestService {
 	            "Unsupported file type. Expected DXF or ZIP containing DXF.");
 	}
     
+    public MultipartFile getControlSheetFromFileStore(EdcrRequest edcr) throws IOException {
+	    String dxfFileTenantId = edcr.getTenantId();
+	    String controlSheetFileStoreId = edcr.getControlSheet();
+
+	    LOG.info("Fetching controlSheet from FileStore. fileId={}, tenantId={}",controlSheetFileStoreId,dxfFileTenantId);
+
+	    File controlSheet = fileStoreService.fetch(controlSheetFileStoreId, FILESTORE_MODULECODE, dxfFileTenantId);
+
+	    if (controlSheet == null || !controlSheet.exists() || !controlSheet.isFile()) {
+	        LOG.error("ControlSheet not found in FileStore. fileId={}, tenantId={}",
+	        		controlSheetFileStoreId,dxfFileTenantId);
+	        throw new IOException("Unable to fetch controlSheet from FileStore.");
+	    }
+
+	    byte[] fileContent = Files.readAllBytes(controlSheet.toPath());
+	    Files.deleteIfExists(controlSheet.toPath());
+	    
+	    String contentType = fileStoreService.getFileContentType(fileContent);
+	    
+	    MultipartFile multipartFile = new CustomMultipartFile("ControlSheet.pdf", "ControlSheet.pdf", contentType, fileContent);	    
+	    
+	    LOG.info("File fetched from FileStore. fileId={}, fileName={}, contentType={}, size={}",
+	    		controlSheetFileStoreId,multipartFile.getOriginalFilename(),contentType, multipartFile.getSize());
+	    
+	    if (isValidControlSheetPdf(multipartFile, contentType)) {
+	        LOG.info(
+	                "DXF file detected. Returning file directly. fileId={}, fileName={}",
+	                controlSheetFileStoreId,
+	                multipartFile.getOriginalFilename());
+
+	        return multipartFile;
+	    }
+
+	    LOG.warn("Unsupported file type received from FileStore. fileId={}, fileName={}, contentType={}",
+	            controlSheetFileStoreId, multipartFile.getOriginalFilename(), contentType);
+	    throw new IOException("Unsupported file type. Expected PDF.");
+	}
+    
 	private boolean isDxfFile(MultipartFile file, String contentType) {
 
 	    String fileName = file.getOriginalFilename();
@@ -2323,4 +2361,17 @@ public class EdcrRestService {
 	            ;
 	}
     
+	private boolean isValidControlSheetPdf(MultipartFile file, String expectedId) {
+	    if (file == null || file.isEmpty()) {
+	        return false;
+	    }
+	    String fileName = file.getOriginalFilename();
+	    if (StringUtils.isBlank(fileName)) {
+	        return false;
+	    }
+	    
+	    String contentType = file.getContentType();
+	    return "application/pdf".equalsIgnoreCase(contentType)
+	            || fileName.toLowerCase().endsWith(".pdf");
+	}
 }

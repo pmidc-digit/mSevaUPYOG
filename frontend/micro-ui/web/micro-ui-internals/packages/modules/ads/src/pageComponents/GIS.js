@@ -20,7 +20,7 @@ const GIS = ({ t, config, onSelect, formData = {}, handleRemove, onSave, props }
       try {
         return onSelect();
       } catch (e) {
-        console.warn("GIS: onSelect threw", e);
+
         return;
       }
     }
@@ -35,13 +35,13 @@ const GIS = ({ t, config, onSelect, formData = {}, handleRemove, onSave, props }
         try {
           return onSave({ geoLocation: geoLocation || {}, pincode: pincode || "", placeName: placeName || "" });
         } catch (err) {
-          console.warn("GIS: onSave also failed", err);
+
         }
       }
     }
 
     // nothing to call
-    console.warn("GIS: neither onSelect nor onSave provided for skip");
+
   };
   const onChange = (code, location, place) => {
     setPincodeServicability(null);
@@ -99,11 +99,11 @@ const GIS = ({ t, config, onSelect, formData = {}, handleRemove, onSave, props }
                   try {
                     onSave({ geoLocation, pincode, placeName });
                   } catch (err) {
-                    console.warn("GIS: onSave call failed", err);
+
                   }
                 }
               } else {
-                console.warn("GIS: onSave not provided");
+
               }
             }}
             onChange={(code, location, place) => {

@@ -231,6 +231,11 @@ const NewNOCStepperForm = () => {
         relationship: owner?.relationship ? { code: owner.relationship.toUpperCase(), i18nKey: `COMMON_RELATION_${owner.relationship.toUpperCase()}` } : null,
         panNo: owner?.pan || owner?.panNo || "",
         address: owner?.correspondenceAddress || "",
+        institutionName: owner?.institutionName || "",
+        officialTelNo: owner?.officialTelNo || "",
+        authorizedPersonName: owner?.authorizedPersonName || owner?.name || "",
+        designation: owner?.designation || "",
+        officialAddress: owner?.officialAddress || owner?.correspondenceAddress || "",
       })) || [];
 
       const ownerShipType = fireNOCDetails?.applicantDetails?.ownerShipType || "";

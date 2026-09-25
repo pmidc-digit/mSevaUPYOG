@@ -100,7 +100,9 @@ const LayoutNewApplicantDetails = (_props) => {
   useEffect(() => {
     const savedApplicants = currentStepData?.applicants || [];
     const responseOwners = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.OwnerInfo || [];
-    const ownerSource = savedApplicants.length > 0 ? savedApplicants : responseOwners;
+    const ownerSource = (Array.isArray(currentStepData?.applicants) ? savedApplicants : responseOwners).filter(
+      (owner) => owner?.status !== false && owner?.status !== "false"
+    );
 
     // If Redux applicants data matches selectedOwners, skip re-restoring to avoid infinite loop
     if (isInitialized && areApplicantsEqual(savedApplicants, selectedOwners)) {
@@ -208,7 +210,7 @@ const LayoutNewApplicantDetails = (_props) => {
 
     const orderedSelectedOwners = [...updatedActive, ...updatedInactive];
 
-    const applicantsArray = orderedSelectedOwners.map((owner, idx) => ({
+    const applicantsArray = orderedSelectedOwners?.map((owner, idx) => ({
       ...owner,
       actualIndex: idx,
       name: owner.name || "",
@@ -295,14 +297,6 @@ const LayoutNewApplicantDetails = (_props) => {
     };
 
     if (editingOwner) {
-      // EDIT MODE: Check if userObj is the exact same person as editingOwner
-      const isSameUser =
-        userObj === editingOwner ||
-        (Boolean(editingOwner?.uuid) && Boolean(userObj?.uuid) && editingOwner.uuid === userObj.uuid) ||
-        (!editingOwner?.uuid && !userObj?.uuid && editingOwner?.mobileNumber === userObj?.mobileNumber && editingOwner?.name === userObj?.name);
-
-      const isDifferentUser = !isSameUser;
-
       const targetIndex = selectedOwners.findIndex(
         (o) =>
           o === editingOwner ||
@@ -312,15 +306,8 @@ const LayoutNewApplicantDetails = (_props) => {
 
       if (targetIndex !== -1) {
         const updated = [...selectedOwners];
-        if (isDifferentUser) {
-          // Mark previous owner object status as false
-          updated[targetIndex] = { ...editingOwner, status: false, isPrimaryOwner: null };
-          // New owner object takes its place
-          updated.push({ ...newUser, isPrimaryOwner: editingOwner.isPrimaryOwner, status: true });
-        } else {
-          // Same user updated
-          updated[targetIndex] = { ...newUser, isPrimaryOwner: editingOwner.isPrimaryOwner, status: true };
-        }
+        // Replace the selected owner in place; do not retain the previous person.
+        updated[targetIndex] = { ...newUser, ownerId: editingOwner.ownerId, isPrimaryOwner: editingOwner.isPrimaryOwner, status: true };
         setSelectedOwners(updated);
       } else {
         setSelectedOwners([...selectedOwners, newUser]);
@@ -348,9 +335,7 @@ const LayoutNewApplicantDetails = (_props) => {
 
     const activeCount = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false").length;
     if (ownerType?.code === "INDIVIDUAL" && activeCount >= 1) {
-      // For individual mode, set existing active owner status to false and add new primary owner
-      const updated = selectedOwners.map((o) => (o?.status !== false && o?.status !== "false" ? { ...o, status: false, isPrimaryOwner: null } : o));
-      setSelectedOwners([...updated, { ...newUser, isPrimaryOwner: true }]);
+      setSelectedOwners([{ ...newUser, ownerId: activeOwners[0]?.ownerId, isPrimaryOwner: true }]);
     } else {
       const isFirstActive = activeCount === 0;
       setSelectedOwners([...selectedOwners, { ...newUser, isPrimaryOwner: isFirstActive ? true : null }]);
@@ -496,6 +481,7 @@ const LayoutNewApplicantDetails = (_props) => {
             city: a?.city || "",
             addressId: a?.address,
           },
+          userUuid: a?.uuid,
           panCard: a?.panNumber,
           permanentAddress: {
             pinCode: a?.pincode,
@@ -516,8 +502,11 @@ const LayoutNewApplicantDetails = (_props) => {
 
     const data = getUpdatedOwners;
 
-    // ✅ Check for duplicate mobile numbers
-    const mobiles = data?.map((a) => a.mobileNumber).filter(Boolean);
+    // Replaced owners remain as inactive history; only current owners must be unique.
+    const mobiles = data
+      ?.filter((owner) => owner?.status !== false && owner?.status !== "false")
+      .map((owner) => String(owner.mobileNumber || "").trim())
+      .filter(Boolean);
     const duplicateMobile = mobiles.find((m, i) => mobiles.indexOf(m) !== i);
     if (duplicateMobile) {
       triggerToast(t("RAL_DUPLICATE_MOBILE_ERROR"), true);
@@ -532,6 +521,10 @@ const LayoutNewApplicantDetails = (_props) => {
       applicationType === "Legacy"
         ? {
             arrear: currentStepData?.propertyDetails?.arrear,
+            arrearGST: currentStepData?.propertyDetails?.arrearGST ?? null,
+            arrearPenalty: currentStepData?.propertyDetails?.arrearPenalty ?? null,
+            futurePenalty: currentStepData?.propertyDetails?.futurePenalty ?? null,
+
             arrearDoc: currentStepData?.propertyDetails?.arrearDoc,
             lastRentRevisedDate: lastRentRevisedDate,
             incrementPeriodMonths: currentStepData?.propertyDetails?.incrementPeriodMonths?.code,
@@ -570,6 +563,7 @@ const LayoutNewApplicantDetails = (_props) => {
     }
 
     triggerLoader(true);
+
     try {
       // Call create API
       const response = await Digit.RentAndLeaseService.create({ AllotmentDetails: [payload] }, tenantId);

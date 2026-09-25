@@ -33,7 +33,7 @@ const CardDetailsComponent = ({ ...props }) => {
   useEffect(() => {
     if (props.onChange) {
       let errorMsg = "";
-      if (last4Digits.length !== 4) errorMsg = "ES_COMMON_ERROR_LAST_4_DIGITS";
+      if (last4Digits?.length !== 4) errorMsg = "ES_COMMON_ERROR_LAST_4_DIGITS";
       let errorObj = {};
       if (!last4Digits) errorObj.last4Digits = "ES_COMMON_LAST_4_DIGITS";
       if (!transactionNumber) errorObj.transactionNumber = "ES_COMMON_TRANSANCTION_NO";

@@ -62,7 +62,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         setValue("pincode", user.permanentPinCode || user?.correspondencePinCode || "", { shouldValidate: true });
       }
     } catch (error) {
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -83,6 +82,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       // If applicant details also need to be prefilled
       if (created?.applicantDetail) {
         setValue("name", currentStepData?.ownerDetails?.applicantDetail?.applicantName || created.applicantDetail.applicantName || "");
+        setValue("remarks", currentStepData?.ownerDetails?.additionalDetails?.remarks || created?.additionalDetails?.remarks || "");
         setValue("emailId", currentStepData?.ownerDetails?.applicantDetail?.applicantEmailId || created.applicantDetail.applicantEmailId || "");
         setValue(
           "mobileNumber",
@@ -131,6 +131,9 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       address: {
         pincode: data?.pincode || "",
         addressLine1: data?.address || "",
+      },
+      additionalDetails: {
+        remarks: data?.remarks,
       },
       applicantDetail: {
         applicantName: data?.name || "",
@@ -461,6 +464,37 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
             )}
           />
           {errors.pincode && <p className="ads-page-components-adscitizen-details-new--style-5">{errors?.pincode?.message}</p>}
+        </div>
+      </LabelFieldPair>
+
+      {/* remarks */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("Remarks")}`}</CardLabel>
+        <div className="text-input">
+          <Controller
+            control={control}
+            name="remarks"
+            rules={{
+              pattern: {
+                value: /^[A-Za-z0-9\s.,'/-]+$/,
+                message: t("Remarks are invalid"),
+              },
+              maxLength: { value: 500, message: "Maximum 500 characters" },
+              minLength: { value: 5, message: "Minimum 5 characters" },
+            }}
+            render={({ value, onChange, onBlur }) => (
+              <TextArea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onBlur={(e) => {
+                  onBlur(e);
+                  trigger("remarks");
+                }}
+                t={t}
+              />
+            )}
+          />
+          {errors?.remarks && <p className="ads-page-components-adscitizen-details-new--style-4">{errors?.remarks?.message}</p>}
         </div>
       </LabelFieldPair>
 

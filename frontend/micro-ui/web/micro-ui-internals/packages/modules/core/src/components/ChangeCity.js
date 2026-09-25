@@ -2,6 +2,7 @@ import { Dropdown } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { CustomButton, Menu } from "@mseva/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
+import { switchEmployeeTenant } from "./employeeTenant";
 
 const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
   if (searcher == "") return str;
@@ -20,14 +21,7 @@ const ChangeCity = (prop) => {
   let selectedCities = [];
 
   const handleChangeCity = (city) => {
-    const loggedInData = Digit.SessionStorage.get("citizen.userRequestObject");
-    const filteredRoles = Digit.SessionStorage.get("citizen.userRequestObject")?.info?.roles?.filter(role => role.tenantId === city.value);
-    if (filteredRoles?.length > 0) {
-      loggedInData.info.roles = filteredRoles;
-      loggedInData.info.tenantId = city?.value;
-    }
-    Digit.SessionStorage.set("Employee.tenantId", city?.value);
-    Digit.UserService.setUser(loggedInData);
+    if (!switchEmployeeTenant(city?.value)) return;
     setDropDownData(city);
     if (window.location.href.includes("/digit-ui/employee/")) {
       const redirectPath = location.state?.from || "/digit-ui/employee";

@@ -24,11 +24,13 @@ const cleanBillAccountDetails = (billAccountDetails = []) => {
     });
 
   const totalAdjustedAmount = Math.round(cleaned?.reduce((sum, item) => sum + Number(item?.adjustedAmount || 0), 0));
+  const totalpreAdjustedAmount = Math.round(cleaned?.reduce((sum, item) => sum + Number(item?.amount || 0), 0));
     return {
       billAccountDetails: cleaned,
       advanceLabel: advanceItem ? "Advance Amount Paid" : " ",
       advanceAmount: advanceItem ? Math.abs(advanceRawAmount) : " ",
       totalAdjustedAmount,
+      totalpreAdjustedAmount
     };
 };
 
@@ -140,7 +142,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
     };
 
     billDetails?.forEach((detail) => {
-      const { billAccountDetails: cleanedAccountDetails, advanceLabel, advanceAmount, totalAdjustedAmount } = cleanBillAccountDetails(detail?.billAccountDetails);
+      const { billAccountDetails: cleanedAccountDetails, advanceLabel, advanceAmount, totalAdjustedAmount, totalpreAdjustedAmount } = cleanBillAccountDetails(detail?.billAccountDetails);
       const hasArrears = detail?.billAccountDetails?.some((item) => item?.taxHeadCode?.includes("ARREAR") && Number(item?.amount) > 0);
       mergedBillDetails?.push({
         billRootData: {
@@ -165,6 +167,7 @@ const transformBillsForPdf = (Bills, meta = {}) => {
         advanceLabel,
         advanceAmount,
         totalAdjustedAmount,
+        totalpreAdjustedAmount,
         periodMappingEntries: getPeriodMappingEntries({ businessService, hasArrears, searchData }),
       });
     });
@@ -228,7 +231,7 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
         : billDetails;
 
       filteredBillDetails?.forEach((detail) => {
-        const { billAccountDetails: cleanedAccountDetails, advanceLabel, advanceAmount, totalAdjustedAmount } = cleanBillAccountDetails(detail?.billAccountDetails);
+        const { billAccountDetails: cleanedAccountDetails, advanceLabel, advanceAmount, totalAdjustedAmount, totalpreAdjustedAmount } = cleanBillAccountDetails(detail?.billAccountDetails);
         const hasArrears = detail?.billAccountDetails?.some((item) => item?.taxHeadCode?.includes("ARREAR") && Number(item?.amount) > 0);
         extractedBillDetails?.push({
           ...detail,
@@ -236,6 +239,7 @@ const transformPaymentsForPdf = (paymentsResponse, meta = {}) => {
           advanceLabel,
           advanceAmount,
           totalAdjustedAmount,
+          totalpreAdjustedAmount,
           billRootData: {
             // CLEAN bill (no billDetails)
             ...billLevelData,

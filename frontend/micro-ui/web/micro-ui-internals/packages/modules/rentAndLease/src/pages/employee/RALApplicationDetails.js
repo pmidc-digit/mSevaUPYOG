@@ -10,6 +10,7 @@ import {
   Menu,
   SubmitBar,
   MultiLink,
+  PaymentHistory,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,7 +42,7 @@ const RALApplicationDetails = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const menuRef = useRef();
   Digit.Hooks.useClickOutside(menuRef, () => setDisplayMenu(false), displayMenu);
-  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rentandlease-receipt" });
+  const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({ tenantId, setLoader, t, pdfkey: "rl-receipt-employee" });
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -195,6 +196,7 @@ const RALApplicationDetails = () => {
     const payload = {
       action: [action],
     };
+    console.log("action", action);
 
     // history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
 
@@ -216,6 +218,8 @@ const RALApplicationDetails = () => {
         setShowModal(true);
         setSelectedAction(action);
       }
+    } else if (action?.action == "DRAFT") {
+      history.push(`/digit-ui/employee/rentandlease/allot-property/${acknowledgementIds}`);
     } else {
       setShowModal(true);
       setSelectedAction(action);
@@ -256,6 +260,12 @@ const RALApplicationDetails = () => {
 
     if (filtData.action === "FORWARD_FOT_SETLEMENT" && filtData?.amountToBeDeducted !== undefined) {
       updatedApplicant.amountToBeDeducted = filtData.amountToBeDeducted;
+    }
+    if (filtData.action === "APPROVE") {
+      updatedApplicant.additionalDetails = {
+        ...updatedApplicant?.additionalDetails,
+        approverComment: filtData?.comment,
+      };
     }
 
     // if (!filtData?.assignee && filtData.action == "FORWARD") {
@@ -488,7 +498,11 @@ const RALApplicationDetails = () => {
             <React.Fragment>
               <CardSubHeader className="ral-card-subheader-24">{t("RAL_ARREAR_DETAILS")}</CardSubHeader>
               <StatusTable>
-                <Row label={t("Arrears")} text={tValue(rawAdditionalDetails?.arrear)} />
+                <Row label={t("Base Arrear")} text={tValue(rawAdditionalDetails?.arrear)} />
+                <Row label={t("Arrear GST")} text={rawAdditionalDetails?.arrearGST ?? "-"} />
+                <Row label={t("Arrear Penalty")} text={rawAdditionalDetails?.arrearPenalty ?? "-"} />
+                <Row label={t("Future Penalty")} text={rawAdditionalDetails?.futurePenalty ?? "-"} />
+
                 <Row
                   label={t("Last Billing Period")}
                   text={rawAdditionalDetails?.lastBillingPeriod ? new Date(rawAdditionalDetails.lastBillingPeriod).toLocaleDateString("en-IN") : "-"}
@@ -534,13 +548,25 @@ const RALApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
+        <PaymentHistory
+          consumerCode={applicationData?.consumerCode || applicationData?.applicationNumber || acknowledgementIds}
+          service="rl-services"
+          tenantId={tenantId}
+          title="RL Payment History"
+        />
         {/* <ApplicationTimeline workflowDetails={workflowDetails} t={t} /> */}
         <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
         {applicationData?.status != "INITIATED" && actions?.length > 0 && !applicationData?.expireFlag && (
           <ActionBar>
             <div ref={menuRef}>
               {displayMenu ? (
-                <Menu localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+                <Menu
+                  localeKeyPrefix={`WF_EMPLOYEE_${"PTR"}`}
+                  options={actions?.map((action) => (action.action === "DRAFT" ? { ...action, forcedName: "COMMON_EDIT" } : action))}
+                  optionKey={"action"}
+                  t={t}
+                  onSelect={onActionSelect}
+                />
               ) : null}
               <div className="ral-style-a527bac1ee">
                 <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

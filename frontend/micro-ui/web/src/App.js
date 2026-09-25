@@ -152,6 +152,7 @@ const enabledModules = [
   "Layout",
   "GarbageCollection",
   "KibanaDashboard",
+  "OBPSKibanaDashboard",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,

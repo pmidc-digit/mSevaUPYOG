@@ -180,7 +180,7 @@ public class CalculationService {
 			
 			Object edcrDetails = edcrService.getEDCRDetails(requestInfo, calulationCriteria.getBpa());
 			
-			String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea");
+			String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea").toString();
 			BigDecimal totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
 			
 			BigDecimal boundayWallLength=new BigDecimal(node.get("boundaryWallLength")); //In Meter
@@ -361,7 +361,7 @@ public class CalculationService {
 		
 //		Map<String,Object> fee = node.containsKey("selfCertificationCharges") ? (Map<String, Object>)node.get("selfCertificationCharges") : new HashMap<>();
 		
-		String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea");
+		String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea").toString();
 		BigDecimal totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
 		
 		List<Map<String,Object>> adjustedAmountsList = node.get("adjustedAmounts") != null ? (List<Map<String,Object>>)node.get("adjustedAmounts") : new ArrayList();

@@ -65,7 +65,16 @@ public class EdcrRequest {
     
     private String dxfFileStoreId;
     
+    private String controlSheet;
     
+	public String getControlSheet() {
+		return controlSheet;
+	}
+
+	public void setControlSheet(String controlSheet) {
+		this.controlSheet = controlSheet;
+	}
+
 	public String getDxfFileStoreId() {
 		return dxfFileStoreId;
 	}

@@ -211,7 +211,7 @@ public class EdcrRestService {
     
     @Transactional
     public EdcrDetail createEdcr(final EdcrRequest edcrRequest, final MultipartFile file,
-            Map<String, List<Object>> masterData){
+            Map<String, List<Object>> masterData, final MultipartFile controlSheet){
         EdcrApplication edcrApplication = new EdcrApplication();
         edcrApplication.setMdmsMasterData(masterData);
         
@@ -251,6 +251,10 @@ public class EdcrRestService {
        
         edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
         edcrApplication.setDxfFile(file);
+        
+        if(controlSheet!=null) {
+        	edcrApplication.setControlSheetFile(controlSheet);
+        }        
 
         if (edcrRequest.getRequestInfo() != null && edcrRequest.getRequestInfo().getUserInfo() != null) {
             edcrApplication.setThirdPartyUserCode(isNotBlank(edcrRequest.getRequestInfo().getUserInfo().getUuid())
@@ -2119,28 +2123,35 @@ public class EdcrRestService {
         if ("SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
             // Scheme Area Validations
             if (StringUtils.isBlank(edcrRequest.getSchemeArea())) {
-                errors.add(new ErrorDetail("BPA-15", "Scheme type is required for Scheme Area"));
+                errors.add(new ErrorDetail("BPA-15",
+                        "Scheme type is required for Scheme Area"));
             }
             if (StringUtils.isBlank(edcrRequest.getSchName())) {
-                errors.add(new ErrorDetail("BPA-16", "Scheme name is required for Scheme Area"));
+                errors.add(new ErrorDetail("BPA-16",
+                        "Scheme name is required for Scheme Area"));
             }
             if (edcrRequest.getSiteReserved() == null) {
-                errors.add(new ErrorDetail("BPA-17", "Site reserved selection is required for Scheme Area"));
-            } else {
-                if (edcrRequest.getSiteReserved() && edcrRequest.getApprovedCS() == null) {
-                    errors.add(new ErrorDetail("BPA-18", "Approved control sheet selection is required when site is reserved"));
-                }
+                errors.add(new ErrorDetail("BPA-17",
+                        "Site reserved selection is required for Scheme Area"));
             }
+            // If site is reserved, Approved Control Sheet must be YES
+            if (Boolean.TRUE.equals(edcrRequest.getSiteReserved())
+                    && !Boolean.TRUE.equals(edcrRequest.getApprovedCS())) {
+                errors.add(new ErrorDetail("BPA-18", "Approved Control Sheet must be selected as YES when site is reserved"));
+            }
+
         } else if ("NON_SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
             // Non-Scheme Area Validations
             if (edcrRequest.getCluApprove() == null) {
-                errors.add(new ErrorDetail("BPA-19", "CLU approval selection is required for Non-Scheme Area"));
+                errors.add(new ErrorDetail("BPA-19",
+                        "CLU approval selection is required for Non-Scheme Area"));
             }
-            if (edcrRequest.getCoreArea() == null) {
-                errors.add(new ErrorDetail("BPA-20", "Core area selection is required for Non-Scheme Area"));
+            if (StringUtils.isBlank(edcrRequest.getCoreArea())) {
+                errors.add(new ErrorDetail("BPA-20",
+                        "Core area selection is required for Non-Scheme Area"));
             }
         } else {
-            errors.add(new ErrorDetail("BPA-21", "Invalid Area Type value"));
+            errors.add(new ErrorDetail("BPA-21","Invalid Area Type value"));
         }
 
         return errors;

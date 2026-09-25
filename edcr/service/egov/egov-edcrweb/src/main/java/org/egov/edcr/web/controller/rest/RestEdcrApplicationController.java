@@ -193,7 +193,7 @@ public class RestEdcrApplicationController {
             if (errorResponses != null)
                 return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);
             else {
-                edcrDetail = edcrRestService.createEdcr(edcr, planFile, new HashMap<>());
+                edcrDetail = edcrRestService.createEdcr(edcr, planFile, new HashMap<>(), null);
             }
 
         } catch (IOException e) {
@@ -228,7 +228,7 @@ public class RestEdcrApplicationController {
             else {
                 edcr.setAppliactionType(ApplicationType.OCCUPANCY_CERTIFICATE.toString());
 
-                edcrDetail = edcrRestService.createEdcr(edcr, planFile, new HashMap<>());
+                edcrDetail = edcrRestService.createEdcr(edcr, planFile, new HashMap<>(), null);
             }
 
         } catch (IOException e) {
@@ -243,6 +243,7 @@ public class RestEdcrApplicationController {
             MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<?> scrutinize(@RequestPart(value = "planFile", required = false) MultipartFile planFile,
+    		@RequestPart(value = "controlSheet", required = false) MultipartFile controlSheet,
             @RequestParam("edcrRequest") String edcrRequest, final HttpServletRequest request) throws Exception {
         String userInfo = request.getHeader(USER_INFO_HEADER_NAME);
         LOGGER.info("###User Info####"+userInfo);
@@ -273,9 +274,22 @@ public class RestEdcrApplicationController {
             ErrorDetail edcRes = edcrValidator.validate(edcr);
             if (edcRes != null && StringUtils.isNotBlank(edcRes.getErrorMessage()))
                 return new ResponseEntity<>(edcRes, HttpStatus.BAD_REQUEST);
-            List<ErrorDetail> errors = edcrRestService.validateEdcrMandatoryFields(edcr);
+            List<ErrorDetail> errors = edcrRestService.validateEdcrMandatoryFields(edcr);                       
+            
+            if (Boolean.TRUE.equals(edcr.getSiteReserved())
+                    && Boolean.TRUE.equals(edcr.getApprovedCS())) {
+                if (controlSheet == null || controlSheet.isEmpty()) {
+                    errors.add(new ErrorDetail("BPA-22","Control Sheet PDF is required"));
+                } else {
+                    String fileName = controlSheet.getOriginalFilename();
+                    if (StringUtils.isBlank(fileName) || !fileName.toLowerCase().endsWith(".pdf")) {
+                        errors.add(new ErrorDetail("BPA-23","Only PDF file are allow for Control Sheet upload"));
+                    }
+                }
+            }
+            
             if (!errors.isEmpty())
-                return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST); 
             
             // getting the file form the edcrRequest
             if (planFile == null || planFile.isEmpty()) {
@@ -284,7 +298,8 @@ public class RestEdcrApplicationController {
             } else {
                 LOGGER.info("planFile is provided in request. Using uploaded planFile. fileName={}, size={}",
                         planFile.getOriginalFilename(), planFile.getSize());
-            }
+            }            
+            
             
             String applicationType = edcr.getAppliactionType();
             String serviceType = edcr.getApplicationSubType();
@@ -327,7 +342,7 @@ public class RestEdcrApplicationController {
             if (!errorResponses.isEmpty())
                 return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);
             else {
-                edcrDetail = edcrRestService.createEdcr(edcr, planFile, masterData);
+                edcrDetail = edcrRestService.createEdcr(edcr, planFile, masterData, controlSheet);
             }
 
         } catch (IOException e) {
@@ -414,7 +429,7 @@ public class RestEdcrApplicationController {
             if (!errorResponses.isEmpty())
                 return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);
             else {
-                edcrDetail = edcrRestService.createEdcr(edcr, planFile, masterData);
+                edcrDetail = edcrRestService.createEdcr(edcr, planFile, masterData, null);
             }
 
         } catch (IOException e) {

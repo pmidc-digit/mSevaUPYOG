@@ -180,12 +180,13 @@ public class CalculationService {
 			
 			Object edcrDetails = edcrService.getEDCRDetails(requestInfo, calulationCriteria.getBpa());
 			
-			Double totalExistingBuiltUpArea = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea");
+			String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea");
+			BigDecimal totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
 			
 			BigDecimal boundayWallLength=new BigDecimal(node.get("boundaryWallLength")); //In Meter
-			BigDecimal area=new BigDecimal(node.get("builtUpArea")).subtract(BigDecimal.valueOf(totalExistingBuiltUpArea)); //In Sq Meter
+			BigDecimal area=new BigDecimal(node.get("builtUpArea")).subtract(totalExistingBuiltUpArea); //In Sq Meter
 			
-			if(totalExistingBuiltUpArea > 0)
+			if(totalExistingBuiltUpArea.compareTo(BigDecimal.ZERO) > 0)
 				boundayWallLength = BigDecimal.ZERO;
 			
 			for(Map<String,Object> fee : applicationFees) {
@@ -360,7 +361,8 @@ public class CalculationService {
 		
 //		Map<String,Object> fee = node.containsKey("selfCertificationCharges") ? (Map<String, Object>)node.get("selfCertificationCharges") : new HashMap<>();
 		
-		Double totalExistingBuiltUpArea = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea");
+		String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea");
+		BigDecimal totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
 		
 		List<Map<String,Object>> adjustedAmountsList = node.get("adjustedAmounts") != null ? (List<Map<String,Object>>)node.get("adjustedAmounts") : new ArrayList();
 		
@@ -368,7 +370,7 @@ public class CalculationService {
 				.collect(Collectors.toMap(adjustedAmount -> adjustedAmount.get("taxHeadCode").toString(), adjustedAmount -> adjustedAmount));
 		
 		BigDecimal builtUpArea = new BigDecimal((String)node.get("builtUpArea"))
-				.subtract(BigDecimal.valueOf(totalExistingBuiltUpArea))
+				.subtract(totalExistingBuiltUpArea)
 				.multiply(BPACalculatorConstants.SQMETER_TO_SQYARD); //In Sq Yard
 		BigDecimal plotArea = new BigDecimal((String)node.get("area")).multiply(BPACalculatorConstants.SQMETER_TO_SQYARD);  //In Sq Yard
 		BigDecimal plotAreaMsq = new BigDecimal((String)node.get("area"));

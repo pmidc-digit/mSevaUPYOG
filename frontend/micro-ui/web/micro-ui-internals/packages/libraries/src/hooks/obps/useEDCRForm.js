@@ -133,9 +133,13 @@ const useEDCRForm = ({ formData }) => {
   };
 
   const handleLayoutUpload = (e) => {
-    setSelectLayout(e.target.files[0]);
-    setFile(e.target.files[0]);
-    setLayoutFile(e.target.files[0]);
+    const selectedFile = e?.target?.files?.[0];
+    if (!selectedFile) return;
+
+    setError(null);
+    setSelectLayout(selectedFile);
+    setFile(selectedFile);
+    setLayoutFile(selectedFile);
   };
 
   const handleDXFUpload = (event) => {

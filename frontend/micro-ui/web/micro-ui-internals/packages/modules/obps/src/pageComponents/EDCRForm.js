@@ -304,12 +304,14 @@ const EDCRForm = ({
 
               {approvedCS?.code === "YES" && (
                 <React.Fragment>
-                  <CardLabel>{t("EDCR_SCRUTINY_SCHEME_UPLOAD_LAYOUT")}</CardLabel>
+                  <CardLabel>testing {t("EDCR_SCRUTINY_SCHEME_UPLOAD_LAYOUT")}</CardLabel>
                   <UploadFile
                     id={"edcr-layout"}
                     onUpload={handleLayoutUpload}
                     onDelete={() => {
                       setLayoutFile(null);
+                      setSelectLayout(null);
+                      setLayoutMessage("");
                       setFile("");
                     }}
                     message={layoutFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}

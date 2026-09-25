@@ -29,6 +29,8 @@ import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/Stat
 import DashboardFooter from "./DashboardFooter";
 import CardBasedOptions from "../CardBasedOptions";
 import { SurveyModal } from "@mseva/digit-ui-module-engagement";
+import { CitizenInfoLabel } from "@mseva/digit-ui-react-components";
+
 
 const Home = () => {
   const { t } = useTranslation();
@@ -298,6 +300,17 @@ const Home = () => {
       <SurveyModal isOpen={showSurveyModal} onClose={() => setShowSurveyModal(false)} />
       <div className="HomePageContainer">
         <div className="HomePageWrapper">
+          <CitizenInfoLabel
+                  info={t("Scheduled Maintenance Notice")}
+                  text={`Dear Citizens, 
+                  The Plot Regularisation (NOC) module on the mSeva Portal will undergo scheduled maintenance from 25 September 2026 , 7pm to 28 September 2026, 9:00 AM. Alongwith it , the Change of Land Use (CLU) module will 
+                  undergo scheduled maintenance from 25 September 2026 , 7pm to 27 September 2026, 10:00 AM
+                  During this period, CLU and NOC application submission, document upload, and payment services may be temporarily unavailable due to planned data migration activities. 
+                  We regret the inconvenience and appreciate your cooperation.
+                  
+                  Team mSeva Punjab Municipal Infrastructure Development Company (PMIDC)`}
+                  className={"info-banner-wrap-citizen-override"}
+                />
           <div className="hero-banner-styles">
             <h1 className="hero-title-styles">mSeva Punjab</h1>
             <p className="heroSubtitleStyles">Access citizen services digitally with ease and transparency</p>

@@ -33,6 +33,7 @@ import org.springframework.util.CollectionUtils;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
@@ -180,8 +181,14 @@ public class CalculationService {
 			
 			Object edcrDetails = edcrService.getEDCRDetails(requestInfo, calulationCriteria.getBpa());
 			
-			String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea").toString();
-			BigDecimal totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
+			BigDecimal totalExistingBuiltUpArea = BigDecimal.ZERO;
+			try {
+				String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea").toString();
+				totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
+			} catch (PathNotFoundException e) {
+				totalExistingBuiltUpArea = BigDecimal.ZERO;
+			}
+			
 			
 			BigDecimal boundayWallLength=new BigDecimal(node.get("boundaryWallLength")); //In Meter
 			BigDecimal area=new BigDecimal(node.get("builtUpArea")).subtract(totalExistingBuiltUpArea); //In Sq Meter
@@ -361,8 +368,13 @@ public class CalculationService {
 		
 //		Map<String,Object> fee = node.containsKey("selfCertificationCharges") ? (Map<String, Object>)node.get("selfCertificationCharges") : new HashMap<>();
 		
-		String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea").toString();
-		BigDecimal totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
+		BigDecimal totalExistingBuiltUpArea = BigDecimal.ZERO;
+		try {
+			String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea").toString();
+			totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
+		} catch (PathNotFoundException e) {
+			totalExistingBuiltUpArea = BigDecimal.ZERO;
+		}
 		
 		List<Map<String,Object>> adjustedAmountsList = node.get("adjustedAmounts") != null ? (List<Map<String,Object>>)node.get("adjustedAmounts") : new ArrayList();
 		

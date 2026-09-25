@@ -138,22 +138,19 @@ public class SewerageDaoImpl implements SewerageDao {
 		log.info("SW application request before update:" + sewerageConnectionRequest);
 		String reqAction = sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction();
 		if (isStateUpdatable) {
-			if (SWConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction)) {
-				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.INACTIVE);
+			if (SWConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction) || SWConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(reqAction)) {
+				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.DISCONNECT);
 			}
-			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
+			if ((sewerageConnectionRequest.isReconnectRequest() || (sewerageConnectionRequest.getSewerageConnection().getApplicationType() != null && sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION))) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.ACTIVE);
 			}
 			String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
 			sewarageConnectionProducer.push(updateSewarageConnection, key , sewerageConnectionRequest);
-		} else if (sewerageConnectionRequest.getSewerageConnection().getApplicationType()
+		} else if (sewerageConnectionRequest.getSewerageConnection().getApplicationType() != null && sewerageConnectionRequest.getSewerageConnection().getApplicationType()
 		        .equalsIgnoreCase(SWConstants.DISCONNECT_SEWERAGE_CONNECTION)) {
 
-		    if (SWConstants.APPROVE_CONNECTION.equalsIgnoreCase(reqAction)) {
-				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.INACTIVE);
-			}
-			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
-				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.ACTIVE);
+		    if (SWConstants.APPROVE_CONNECTION.equalsIgnoreCase(reqAction) || SWConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(reqAction) || SWConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction)) {
+				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.DISCONNECT);
 			}
 			String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
 			sewarageConnectionProducer.push(updateSewarageConnection, key , sewerageConnectionRequest);

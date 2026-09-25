@@ -355,8 +355,14 @@ class PGRV1Service {
     }
     
     if(slots.image){
-      let filestoreId = await this.getFileForFileStoreId(slots.image,city);
-      requestBody["actionInfo"][0]["media"].push(filestoreId);
+      try {
+        let filestoreId = await this.getFileForFileStoreId(slots.image,city);
+        if (filestoreId) {
+          requestBody["actionInfo"][0]["media"].push(filestoreId);
+        }
+      } catch (error) {
+        console.error(`Skipping complaint image because file processing failed: ${error.message}`);
+      }
     }
 
     var url = config.egovServices.egovServicesHost+config.egovServices.pgrv1CreateEndpoint;
@@ -444,6 +450,21 @@ class PGRV1Service {
   }
 
   async downloadImage(url,filename) {  
+      // Fix: Validate filename before creating WriteStream
+  if (!filename || filename.trim() === '') {
+    const timestamp = Date.now();
+    filename = `pgr_download_${timestamp}.jpg`;
+    console.warn(`Empty filename detected in PGR, using fallback: ${filename}`);
+  }
+  
+  filename = filename.toString().trim();
+  if (filename === '') {
+    filename = `pgr_fallback_${Date.now()}.jpg`;
+    console.warn(`Invalid filename after processing in PGR, using: ${filename}`);
+  }
+  
+  console.log("PGR downloadImage - Using filename:", filename);
+  
     const writer = fs.createWriteStream(filename);
   
     const response = await axios({
@@ -481,6 +502,10 @@ class PGRV1Service {
 
 
   async getFileForFileStoreId(filestoreId,tenantId){
+    if (!filestoreId) {
+      throw new Error('Invalid filestoreId for complaint image');
+    }
+
     var url = config.egovServices.egovServicesHost+config.egovServices.egovFilestoreServiceDownloadEndpoint;
     url = url + '?';
     url = url + 'tenantId='+config.rootTenantId;
@@ -494,10 +519,16 @@ class PGRV1Service {
 
     let response = await fetch(url,options);
     response = await(response).json();
+    if (!response['fileStoreIds'] || !response['fileStoreIds'][0] || !response['fileStoreIds'][0]['url']) {
+      throw new Error(`File URL not found for filestoreId: ${filestoreId}`);
+    }
     var fileURL = response['fileStoreIds'][0]['url'].split(",");
     var fileName = geturl.parse(fileURL[0]);
     fileName = path.basename(fileName.pathname);
     fileName = fileName.substring(13);
+    if (!fileName) {
+      fileName = `pgr-v1-${Date.now()}.jpg`;
+    }
     await this.downloadImage(fileURL[0].toString(),fileName);
     let imageInBase64String = fs.readFileSync(fileName,'base64');
     imageInBase64String = imageInBase64String.replace(/ /g,'+');

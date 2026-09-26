@@ -588,12 +588,13 @@ public class UserService {
      * @param user      user whose failed login attempt to be handled
      * @param ipAddress IP address of remote
      */
-    public void handleFailedLogin(User user, String ipAddress, RequestInfo requestInfo) {
+    public long handleFailedLogin(User user, String ipAddress, RequestInfo requestInfo) {
+    	int attempCount = 0;
         if (!Objects.isNull(user.getUuid())) {
             List<FailedLoginAttempt> failedLoginAttempts = userRepository.fetchFailedAttemptsByUserAndTime(
                     user.getUuid(),
                     System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(maxInvalidLoginAttemptsPeriod));
-
+            attempCount = failedLoginAttempts.size() +1;
             if (failedLoginAttempts.size() + 1 >= maxInvalidLoginAttempts) {
                 User userToBeUpdated = user.toBuilder()
                         .accountLocked(true)
@@ -614,6 +615,7 @@ public class UserService {
             userRepository.insertFailedLoginAttempt(new FailedLoginAttempt(user.getUuid(), ipAddress,
                     System.currentTimeMillis(), true));
         }
+        return maxInvalidLoginAttempts-attempCount;
     }
 
     /**

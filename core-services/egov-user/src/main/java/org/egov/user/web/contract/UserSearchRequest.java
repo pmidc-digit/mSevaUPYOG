@@ -32,7 +32,7 @@ public class UserSearchRequest {
     @JsonProperty("userName")
     private String userName;
 
-    @Size(max = 100)
+    @Size(max = 300)
     @JsonProperty("name")
     private String name;
 

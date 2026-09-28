@@ -308,6 +308,7 @@ const EDCRForm = ({
                   <UploadFile
                     id={"edcr-layout"}
                     onUpload={handleLayoutUpload}
+                    accept=".pdf,application/pdf"
                     onDelete={() => {
                       setLayoutFile(null);
                       setSelectLayout(null);

@@ -172,9 +172,6 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, additionalDetails };
     edcrRequest = { ...edcrRequest, dxfFileStoreId, ...(isLayoutUpload ? { controlSheet } : {}) };
 
-    console.log("edcrRequest", edcrRequest);
-    return;
-
     const bodyFormData = new FormData();
     bodyFormData.append("edcrRequest", JSON.stringify(edcrRequest));
 

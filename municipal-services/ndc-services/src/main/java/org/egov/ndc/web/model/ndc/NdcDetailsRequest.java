@@ -3,7 +3,7 @@ package org.egov.ndc.web.model.ndc;
 import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,7 +33,7 @@ public class NdcDetailsRequest {
     private BigDecimal dueAmount;
 
     @JsonProperty("isDuePending")
-    private boolean duePending;
+    private Boolean duePending;
 
     @JsonProperty("status")
     private String status;

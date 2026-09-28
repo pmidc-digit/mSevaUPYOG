@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+//import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.ndc.web.model.AuditDetails;
@@ -18,14 +18,16 @@ import org.postgresql.util.PGobject;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 @Component
 public class NdcRowMapper implements ResultSetExtractor<List<Application>> {
 
-	private ObjectMapper objectMapper = new ObjectMapper();
+	private JsonMapper objectMapper = JsonMapper.builder().build();
 
 	@Override
-	public List<Application> extractData(ResultSet rs) throws SQLException, DataAccessException {
+	public List<Application> extractData(ResultSet rs) throws SQLException {
 		Map<String, Application> applicationHashMap = new LinkedHashMap<>();
 		Map<String, Set<String>> details = new HashMap<>();
 		Map<String, Set<String>> documents = new HashMap<>();
@@ -53,14 +55,15 @@ public class NdcRowMapper implements ResultSetExtractor<List<Application>> {
 				documents.put(applicationId, new HashSet<>());
 				owners.put(applicationId, new HashSet<>());
 			}
-            try {
-                addNdcDetails(rs, application,details.get(applicationId));
-				addDocuments(rs, application,documents.get(applicationId));
-				addOwnerUuids(rs, application);
+			try {
+			    addNdcDetails(rs, application, details.get(applicationId));
+			    addDocuments(rs, application, documents.get(applicationId));
+			    addOwnerUuids(rs, application);
+			
+			} catch (Exception e) {
+			    throw new RuntimeException(e);
+			}
 
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
 
 		}
 		return new ArrayList<>(applicationHashMap.values());

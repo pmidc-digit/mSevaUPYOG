@@ -34,6 +34,8 @@ const RentAndLeasePropertyDetails = ({
     return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
   });
 
+  const isApprovedApplication = currentStepData?.CreatedResponse?.AllotmentDetails?.[0]?.status === "APPROVED";
+
   // 🔹 Dropdown options
   const propertyTypeOptions = [
     { name: t("ON_RENT"), code: "rent", i18nKey: "rent" },
@@ -811,6 +813,7 @@ const RentAndLeasePropertyDetails = ({
                   <input
                     className="employee-card-input undefined focus-visible undefined"
                     type="number"
+                    disabled={isApprovedApplication}
                     value={value || ""}
                     onChange={(e) => onChange(e.target.value)}
                     onWheel={(e) => e.currentTarget.blur()}
@@ -839,6 +842,7 @@ const RentAndLeasePropertyDetails = ({
                   <input
                     className="employee-card-input undefined focus-visible undefined"
                     type="number"
+                    disabled={isApprovedApplication}
                     value={value ?? ""}
                     onChange={(e) => onChange(e.target.value)}
                     onWheel={(e) => e.currentTarget.blur()}
@@ -867,6 +871,7 @@ const RentAndLeasePropertyDetails = ({
                   <input
                     className="employee-card-input undefined focus-visible undefined"
                     type="number"
+                    disabled={isApprovedApplication}
                     value={value ?? ""}
                     onChange={(e) => onChange(e.target.value)}
                     onWheel={(e) => e.currentTarget.blur()}
@@ -895,6 +900,7 @@ const RentAndLeasePropertyDetails = ({
                   <input
                     className="employee-card-input undefined focus-visible undefined"
                     type="number"
+                    disabled={isApprovedApplication}
                     value={value ?? ""}
                     onChange={(e) => onChange(e.target.value)}
                     onWheel={(e) => e.currentTarget.blur()}

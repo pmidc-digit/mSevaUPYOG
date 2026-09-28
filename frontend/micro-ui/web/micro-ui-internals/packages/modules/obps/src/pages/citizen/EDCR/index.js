@@ -122,28 +122,26 @@ const CreateEDCR = ({ parentRoute }) => {
     const schemeArea = data?.schemeArea?.code;
     const transactionNumber = uuidv4();
     const isLayoutUpload = areaType === "SCHEME_AREA" && siteReserved && approvedCS;
-    const planFile = isLayoutUpload ? data?.layoutFile : data?.dxfFile;
-    let planFileStoreId = isLayoutUpload ? data?.controlSheet : data?.dxfFileStoreId;
-    if (typeof planFile === "string") planFileStoreId = planFile;
-
-    if (planFile && typeof planFile !== "string") {
-      try {
-        const response = await Digit.UploadServices.Filestorage("OBPS", planFile, tenantId);
-        planFileStoreId = response?.data?.files?.[0]?.fileStoreId;
-
-        if (!planFileStoreId) {
-          throw new Error("FileStore ID was not returned for the plan file");
-        }
-      } catch (uploadError) {
-        console.log("uploadError", uploadError);
-
-        alert(isLayoutUpload ? "EDCR layout upload failed" : "EDCR DXF upload failed");
-        setIsSubmitBtnDisable(false);
-        setIsShowToast({ key: true, label: "CS_FILE_UPLOAD_ERROR" });
-        return;
+    const uploadPlanFile = async (file, existingId) => {
+      if (typeof file === "string") return file;
+      if (!file) {
+        if (existingId) return existingId;
+        throw new Error("Required plan file is missing");
       }
-    }
-    if (!planFileStoreId) {
+      const response = await Digit.UploadServices.Filestorage("OBPS", file, tenantId);
+      const fileStoreId = response?.data?.files?.[0]?.fileStoreId;
+      if (!fileStoreId) throw new Error("FileStore ID was not returned for the plan file");
+      return fileStoreId;
+    };
+
+    let dxfFileStoreId;
+    let controlSheet;
+    try {
+      dxfFileStoreId = await uploadPlanFile(data?.dxfFile, data?.dxfFileStoreId);
+      if (isLayoutUpload) {
+        controlSheet = await uploadPlanFile(data?.layoutFile, data?.controlSheet);
+      }
+    } catch (uploadError) {
       setIsSubmitBtnDisable(false);
       setIsShowToast({ key: true, label: "CS_FILE_UPLOAD_ERROR" });
       return;
@@ -172,11 +170,10 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, cluApprove };
     edcrRequest = { ...edcrRequest, purchasableFar };
     edcrRequest = { ...edcrRequest, additionalDetails };
-    edcrRequest = { ...edcrRequest, ...(isLayoutUpload ? { controlSheet: planFileStoreId } : { dxfFileStoreId: planFileStoreId }) };
+    edcrRequest = { ...edcrRequest, dxfFileStoreId, ...(isLayoutUpload ? { controlSheet } : {}) };
 
-    // console.log("edcrRequest", edcrRequest);
-
-    // return;
+    console.log("edcrRequest", edcrRequest);
+    return;
 
     const bodyFormData = new FormData();
     bodyFormData.append("edcrRequest", JSON.stringify(edcrRequest));

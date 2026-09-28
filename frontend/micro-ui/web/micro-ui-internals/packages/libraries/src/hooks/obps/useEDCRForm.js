@@ -198,7 +198,7 @@ const useEDCRForm = ({ formData }) => {
         if (!approvedCS) return false;
         if (approvedCS?.code === "YES") {
           if (!layoutFile) return false;
-          return true;
+          return !!dxfFile;
         }
       }
       return !!dxfFile;

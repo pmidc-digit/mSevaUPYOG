@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.egov.wscalculation.web.models.BillScheduler.StatusEnum;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.minidev.json.JSONArray;
@@ -97,6 +98,12 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 
 	@Autowired
 	private WaterCessUtil waterCessUtil;
+
+	@Autowired
+	private DemandSchedulerNotificationService demandSchedulerNotificationService;
+
+	@Autowired
+	private BillSchedulerNotificationService billSchedulerNotificationService;
 
 
 	/**
@@ -702,10 +709,23 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 //		List<String> tenantIds = wSCalculationDao.getTenantId();
 		List<String> tenantIds = new ArrayList<>();
         List<String> localities = new ArrayList<>();
-        String tenant = bulkDemandCriteria.getTenantId();
-        String locality = bulkDemandCriteria.getLocality();
+		String tenant = null;
+		String locality = null;
 
-		if (!tenant.contains("pb")) {
+		if (bulkDemandCriteria != null) {
+			tenant = bulkDemandCriteria.getTenantId();
+			locality = bulkDemandCriteria.getLocality();
+		}
+
+		if (tenant == null || tenant.trim().isEmpty()) {
+			if (requestInfo != null && requestInfo.getUserInfo() != null && StringUtils.isNotBlank(requestInfo.getUserInfo().getTenantId()) && requestInfo.getUserInfo().getTenantId().startsWith("pb.")) {
+				tenant = requestInfo.getUserInfo().getTenantId().trim();
+			} else if (requestInfo != null && StringUtils.isNotBlank(requestInfo.getMsgId()) && requestInfo.getMsgId().startsWith("pb.")) {
+				tenant = requestInfo.getMsgId().split("\\|")[0].trim();
+			}
+		}
+
+		if (tenant == null || tenant.trim().isEmpty() || !tenant.contains("pb")) {
 			MdmsCriteriaReq mdmsCriteriaReq = calculatorUtil.gettenants(requestInfo);
 			StringBuilder url = calculatorUtil.getMdmsSearchUrl();
 			Object res = repository.fetchResult(url, mdmsCriteriaReq);
@@ -748,6 +768,68 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 			return;
 		}
 		log.info("Tenant Ids : " + tenantIds.toString());
+
+		// ── Step: Compute pre-generation counts and trigger consolidated start email ──
+		try {
+			List<TenantDemandSummary> summaries = new ArrayList<>();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+			for (String tId : tenantIds) {
+				try {
+					RequestInfo clonedInfo = mapper.readValue(mapper.writeValueAsString(requestInfo), RequestInfo.class);
+					clonedInfo.getUserInfo().setTenantId(tId);
+					Map<String, Object> billingMasterData = calculatorUtil.loadBillingFrequencyMasterData(clonedInfo, tId);
+					long taxPeriodFrom = billingMasterData.get("taxPeriodFrom") == null ? 0L : (long) billingMasterData.get("taxPeriodFrom");
+					long taxPeriodTo = billingMasterData.get("taxPeriodTo") == null ? 0L : (long) billingMasterData.get("taxPeriodTo");
+
+					String billingCycle = (taxPeriodFrom > 0 && taxPeriodTo > 0)
+							? dateFormat.format(new Date(taxPeriodFrom)) + " to " + dateFormat.format(new Date(taxPeriodTo))
+							: "Current Period";
+
+					int connCount = 0;
+					String status = "Scheduled";
+
+					if (taxPeriodFrom == 0 || taxPeriodTo == 0) {
+						status = "Billing Period Missing";
+					} else if (wSCalculationDao.isBatchDemandExecuted(tId, null, taxPeriodFrom, taxPeriodTo)) {
+						status = "Already Executed";
+					} else {
+						List<WaterDetails> connList = wSCalculationDao.getConnectionsNoListforsingledemand(
+								tId, null, WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, null);
+						connCount = connList != null ? connList.size() : 0;
+						if (connCount == 0) {
+							status = "No Eligible Connections";
+						}
+					}
+
+					String cityName = tId.contains(".") ? tId.substring(tId.indexOf('.') + 1) : tId;
+					cityName = cityName.substring(0, 1).toUpperCase() + cityName.substring(1).toLowerCase();
+
+					summaries.add(TenantDemandSummary.builder()
+							.tenantId(tId)
+							.cityName(cityName)
+							.billingCycle(billingCycle)
+							.taxPeriodFrom(taxPeriodFrom)
+							.taxPeriodTo(taxPeriodTo)
+							.connectionCount(connCount)
+							.status(status)
+							.build());
+				} catch (Exception ex) {
+					log.error("⚠️ Error calculating pre-demand summary for tenant {}: {}", tId, ex.getMessage());
+					String cityName = tId.contains(".") ? tId.substring(tId.indexOf('.') + 1) : tId;
+					summaries.add(TenantDemandSummary.builder()
+							.tenantId(tId)
+							.cityName(cityName)
+							.billingCycle("N/A")
+							.connectionCount(0)
+							.status("Scheduled")
+							.build());
+				}
+			}
+			demandSchedulerNotificationService.sendConsolidatedStartEmail(summaries, requestInfo);
+		} catch (Exception e) {
+			log.error("⚠️ Non-fatal: Failed to prepare/send consolidated start email: {}", e.getMessage(), e);
+		}
+
 		int tenantPoolSize = configs.getTenantThreadPoolSize() != null ? configs.getTenantThreadPoolSize() : 5;
 		int actualTenantThreads = Math.min(tenantPoolSize, tenantIds.size());
 		log.info("\uD83D\uDE80 Starting parallel demand generation for {} tenants using {} threads.",
@@ -772,10 +854,14 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				try {
                     if(!localities.isEmpty()){
                         localities.forEach(localty -> {
-                            demandService.generateDemandForTenantId(tenantId, localty, requestInfo);
-                        });
-                    }else {
-                        demandService.generateDemandForTenantId(tenantId,null, requestInfo);
+                        	demandService.generateDemandForTenantId(
+                        		    tenantId,
+                        		    localty,
+                        		    tenantRequestInfo
+                        		);
+                        	});
+                    } else {
+                        demandService.generateDemandForTenantId(tenantId, null, tenantRequestInfo);
                     }
 				} catch (Exception e) {
 					// Catch everything — one tenant failure must NOT block others
@@ -856,6 +942,7 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	 * Generate bill Based on Time (Monthly, Quarterly, Yearly)
 	 */
 	public void generateBillBasedLocalityOrTenant(WaterServiceSchedulerRequest waterServiceSchedulerRequest) {
+		long billStartTime = System.currentTimeMillis();
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		LocalDateTime date = LocalDateTime.now();
 		log.info("Time schedule start for water bill generation on : " + date.format(dateTimeFormatter));
@@ -989,6 +1076,16 @@ So, both lists are now filtered to include only records with INITIATED status, w
 						+ " and locality: " + billSchedular.getLocality());
 			}
 
+		}
+
+		// Trigger background monitoring and email notification for the processed bill schedulers
+		if (!billSchedularList.isEmpty()) {
+			try {
+				billSchedulerNotificationService.monitorAndSendBillCompletionEmail(
+						billSchedularList, billStartTime, waterServiceSchedulerRequest.getRequestInfo());
+			} catch (Exception ex) {
+				log.error("⚠️ Non-fatal: Failed to initiate bill completion email monitoring: {}", ex.getMessage(), ex);
+			}
 		}
 	}
 

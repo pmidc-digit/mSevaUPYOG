@@ -2031,6 +2031,7 @@ public class DemandService {
 	 */
 	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId, String locality,
 			Long taxPeriodFrom, Long taxPeriodTo) {
+		long startTime = System.currentTimeMillis();
 		log.info("generateDemandForULB:: {} Locality:: {}  taxPeriodFrom:: {} taxPeriodTo {}", tenantId, locality, taxPeriodFrom, taxPeriodTo);
 		try {
 
@@ -2184,7 +2185,7 @@ public class DemandService {
 				// Send Completion Email & Poll
 				try {
 					List<String> allConnNos = connectionNos.stream().map(WaterDetails::getConnectionNo).collect(Collectors.toList());
-//					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, System.currentTimeMillis(), requestInfo);
+					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, startTime, requestInfo);
 				} catch (Exception e) {
 					log.error("❌ Failed to send completion email for tenant: {} | {}", tenantId, e.getMessage(), e);
 				}

@@ -121,25 +121,30 @@ const CreateEDCR = ({ parentRoute }) => {
     const purchasableFar = data?.purchasableFar?.code === "YES" ? true : false;
     const schemeArea = data?.schemeArea?.code;
     const transactionNumber = uuidv4();
-    let dxfFileStoreId = data?.dxfFileStoreId;
-    const dxfFile = data?.dxfFile;
-
-    if (dxfFile && typeof dxfFile !== "string") {
-      try {
-        const response = await Digit.UploadServices.Filestorage("OBPS", dxfFile, tenantId);
-        dxfFileStoreId = response?.data?.files?.[0]?.fileStoreId;
-
-        if (!dxfFileStoreId) {
-          throw new Error("FileStore ID was not returned for the DXF file");
-        }
-      } catch (uploadError) {
-
-
-        alert("EDCR DXF upload failed");
-        setIsSubmitBtnDisable(false);
-        setIsShowToast({ key: true, label: "CS_FILE_UPLOAD_ERROR" });
-        return;
+    const isLayoutUpload = areaType === "SCHEME_AREA" && siteReserved && approvedCS;
+    const uploadPlanFile = async (file, existingId) => {
+      if (typeof file === "string") return file;
+      if (!file) {
+        if (existingId) return existingId;
+        throw new Error("Required plan file is missing");
       }
+      const response = await Digit.UploadServices.Filestorage("OBPS", file, tenantId);
+      const fileStoreId = response?.data?.files?.[0]?.fileStoreId;
+      if (!fileStoreId) throw new Error("FileStore ID was not returned for the plan file");
+      return fileStoreId;
+    };
+
+    let dxfFileStoreId;
+    let controlSheet;
+    try {
+      dxfFileStoreId = await uploadPlanFile(data?.dxfFile, data?.dxfFileStoreId);
+      if (isLayoutUpload) {
+        controlSheet = await uploadPlanFile(data?.layoutFile, data?.controlSheet);
+      }
+    } catch (uploadError) {
+      setIsSubmitBtnDisable(false);
+      setIsShowToast({ key: true, label: "CS_FILE_UPLOAD_ERROR" });
+      return;
     }
     const appliactionType = "BUILDING_PLAN_SCRUTINY";
     const applicationSubType = "NEW_CONSTRUCTION";
@@ -165,7 +170,7 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, cluApprove };
     edcrRequest = { ...edcrRequest, purchasableFar };
     edcrRequest = { ...edcrRequest, additionalDetails };
-    edcrRequest = { ...edcrRequest, dxfFileStoreId };
+    edcrRequest = { ...edcrRequest, dxfFileStoreId, ...(isLayoutUpload ? { controlSheet } : {}) };
 
     const bodyFormData = new FormData();
     bodyFormData.append("edcrRequest", JSON.stringify(edcrRequest));

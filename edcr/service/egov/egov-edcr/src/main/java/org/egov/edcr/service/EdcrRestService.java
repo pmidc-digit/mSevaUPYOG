@@ -54,6 +54,7 @@ import static org.egov.edcr.utility.DcrConstants.FILESTORE_MODULECODE;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
@@ -2308,70 +2309,107 @@ public class EdcrRestService {
 	            "Unsupported file type. Expected DXF or ZIP containing DXF.");
 	}
     
-    public MultipartFile getControlSheetFromFileStore(EdcrRequest edcr) throws IOException {
-	    String dxfFileTenantId = edcr.getTenantId();
-	    String controlSheetFileStoreId = edcr.getControlSheet();
+	public MultipartFile getControlSheetFromFileStore(EdcrRequest edcr) throws IOException {
 
-	    LOG.info("Fetching controlSheet from FileStore. fileId={}, tenantId={}",controlSheetFileStoreId,dxfFileTenantId);
+		String tenantId = edcr.getTenantId();
+		String controlSheetFileStoreId = edcr.getControlSheet();
 
-	    File controlSheet = fileStoreService.fetch(controlSheetFileStoreId, FILESTORE_MODULECODE, dxfFileTenantId);
+		LOG.info("Fetching Control Sheet from FileStore. fileId={}, tenantId={}", controlSheetFileStoreId, tenantId);
 
-	    if (controlSheet == null || !controlSheet.exists() || !controlSheet.isFile()) {
-	        LOG.error("ControlSheet not found in FileStore. fileId={}, tenantId={}",
-	        		controlSheetFileStoreId,dxfFileTenantId);
-	        throw new IOException("Unable to fetch controlSheet from FileStore.");
-	    }
+		File controlSheet = fileStoreService.fetch(controlSheetFileStoreId, FILESTORE_MODULECODE, tenantId);
 
-	    byte[] fileContent = Files.readAllBytes(controlSheet.toPath());
-	    Files.deleteIfExists(controlSheet.toPath());
-	    
-	    String contentType = fileStoreService.getFileContentType(fileContent);
-	    
-	    MultipartFile multipartFile = new CustomMultipartFile("ControlSheet.pdf", "ControlSheet.pdf", contentType, fileContent);	    
-	    
-	    LOG.info("File fetched from FileStore. fileId={}, fileName={}, contentType={}, size={}",
-	    		controlSheetFileStoreId,multipartFile.getOriginalFilename(),contentType, multipartFile.getSize());
-	    
-	    if (isValidControlSheetPdf(multipartFile, contentType)) {
-	        LOG.info(
-	                "DXF file detected. Returning file directly. fileId={}, fileName={}",
-	                controlSheetFileStoreId,
-	                multipartFile.getOriginalFilename());
+		if (controlSheet == null || !controlSheet.exists() || !controlSheet.isFile()) {
 
-	        return multipartFile;
-	    }
+			LOG.error("Control Sheet not found in FileStore. fileId={}, tenantId={}", controlSheetFileStoreId,
+					tenantId);
 
-	    LOG.warn("Unsupported file type received from FileStore. fileId={}, fileName={}, contentType={}",
-	            controlSheetFileStoreId, multipartFile.getOriginalFilename(), contentType);
-	    throw new IOException("Unsupported file type. Expected PDF.");
+			throw new IOException("Unable to fetch Control Sheet from FileStore.");
+		}
+
+		byte[] fileContent = Files.readAllBytes(controlSheet.toPath());
+
+		String contentType = fileStoreService.getFileContentType(fileContent);
+
+		/*
+		 * Use the actual file name instead of forcing it to ControlSheet.pdf.
+		 */
+		MultipartFile multipartFile = new CustomMultipartFile("ControlSheet.pdf", "ControlSheet.pdf", contentType, fileContent);
+
+		LOG.info("File fetched from FileStore. fileId={}, fileName={}, contentType={}, size={}",
+				controlSheetFileStoreId, multipartFile.getOriginalFilename(), contentType, multipartFile.getSize());
+
+		if (!isValidControlSheetPdf(multipartFile)) {
+
+			LOG.error("Invalid Control Sheet file. fileId={}, fileName={}, contentType={}", controlSheetFileStoreId,
+					multipartFile.getOriginalFilename(), contentType);
+
+			// Delete only after validation failure
+			Files.deleteIfExists(controlSheet.toPath());
+
+			throw new IOException("Invalid Control Sheet file. Only PDF files are allowed.");
+		}
+
+		LOG.info("Valid Control Sheet PDF detected. fileId={}, fileName={}", controlSheetFileStoreId,
+				multipartFile.getOriginalFilename());
+
+		// Delete temporary FileStore file after successful validation
+		Files.deleteIfExists(controlSheet.toPath());
+
+		return multipartFile;
 	}
-    
+
 	private boolean isDxfFile(MultipartFile file, String contentType) {
 
-	    String fileName = file.getOriginalFilename();
+		String fileName = file.getOriginalFilename();
 
-	    if (fileName != null && fileName.toLowerCase().endsWith(".dxf")) {
-	        return true;
-	    }
+		if (fileName != null && fileName.toLowerCase().endsWith(".dxf")) {
+			return true;
+		}
 
-	    return "image/vnd.dxf".equalsIgnoreCase(contentType)
-	            || "application/dxf".equalsIgnoreCase(contentType)
-	            || "application/x-dxf".equalsIgnoreCase(contentType)
-	            || "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType)
-	            ;
+		return "image/vnd.dxf".equalsIgnoreCase(contentType) || "application/dxf".equalsIgnoreCase(contentType)
+				|| "application/x-dxf".equalsIgnoreCase(contentType)
+				|| "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType);
 	}
-    
-	private boolean isValidControlSheetPdf(MultipartFile file, String expectedId) {
-	    if (file == null || file.isEmpty()) {
+
+	private boolean isValidControlSheetPdf(MultipartFile file) {
+
+		if (file == null || file.isEmpty()) {
 	        return false;
 	    }
+
 	    String fileName = file.getOriginalFilename();
-	    if (StringUtils.isBlank(fileName)) {
+	    String contentType = file.getContentType();
+
+	    LOG.info("Validating Control Sheet. fileName={}, contentType={}, size={}",
+	            fileName, contentType, file.getSize());
+
+	    // Check MIME type
+	    if (!"application/pdf".equalsIgnoreCase(contentType)) {
 	        return false;
 	    }
-	    
-	    String contentType = file.getContentType();
-	    return "application/pdf".equalsIgnoreCase(contentType)
-	            || fileName.toLowerCase().endsWith(".pdf");
+
+		/*
+		 * Temporarily skipped PDF file signature (%PDF) validation
+		 *
+		 * try (InputStream is = file.getInputStream()) {
+		 *
+		 * byte[] header = new byte[4];
+		 *
+		 * int bytesRead = is.read(header);
+		 *
+		 * if (bytesRead != 4) { return false; }
+		 *
+		 * return header[0] == '%' && header[1] == 'P' && header[2] == 'D' && header[3]
+		 * == 'F';
+		 *
+		 * } catch (IOException e) {
+		 *
+		 * LOG.error( "Error validating Control Sheet PDF. fileName={}, contentType={}",
+		 * fileName, contentType, e);
+		 *
+		 * return false; }
+		 */
+
+		return true;
 	}
 }

@@ -170,3 +170,5 @@ CREATE INDEX IF NOT EXISTS idx_eg_rl_qrtz_ft_j_g ON eg_rl_qrtz_fired_triggers (S
 CREATE INDEX IF NOT EXISTS idx_eg_rl_qrtz_ft_jg ON eg_rl_qrtz_fired_triggers (SCHED_NAME, JOB_GROUP);
 CREATE INDEX IF NOT EXISTS idx_eg_rl_qrtz_ft_t_g ON eg_rl_qrtz_fired_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP);
 CREATE INDEX IF NOT EXISTS idx_eg_rl_qrtz_ft_tg ON eg_rl_qrtz_fired_triggers (SCHED_NAME, TRIGGER_GROUP);
+
+COMMIT;

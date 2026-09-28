@@ -20,6 +20,13 @@ public class PenaltyConfig {
     @JsonProperty("billingCycle")
     private String billingCycle;
 
+    /**
+     * Scope this row governs: {@code "RENT"}, {@code "ARREAR"}, or blank/null for a generic row that applies to
+     * every scope. Lets a tenant configure a different penalty type for arrears than for rent.
+     */
+    @JsonProperty("appliesTo")
+    private String appliesTo;
+
     @JsonProperty("penaltyType")
     private String penaltyType;
 
@@ -71,5 +78,10 @@ public class PenaltyConfig {
 
     public String resolvedPenaltyType() {
         return (penaltyType != null && !penaltyType.trim().isEmpty()) ? penaltyType.trim().toUpperCase() : "SIMPLE_INTEREST";
+    }
+
+    /** True when this row declares no scope, i.e. it governs every scope. */
+    public boolean isGeneric() {
+        return appliesTo == null || appliesTo.trim().isEmpty();
     }
 }

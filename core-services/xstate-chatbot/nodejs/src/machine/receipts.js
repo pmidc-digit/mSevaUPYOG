@@ -752,7 +752,18 @@ const receipts = {
           receipts:{
             onEntry:assign((context,event)=>{
               let receipts = context.receipts.slots.multipleRecordReceipt;
-
+              if (!Array.isArray(receipts) || receipts.length === 0) {
+                // Handle the error gracefully, e.g. send a message and return early
+                dialog.sendMessage(context, dialog.get_message(messages.receiptSlip.error, context.user.locale), true);
+                return;
+              }
+              let receiptList = [];
+              if(receipts.length == 1){
+                receiptList.push(receipts[0]);
+              }
+              else{
+                receiptList = receipts;
+              }
               let message = dialog.get_message(messages.multipleRecordReceipt.multipleReceipts, context.user.locale);
               //dialog.sendMessage(context, message , false);
                 
@@ -760,8 +771,8 @@ const receipts = {
               receiptMessage = receiptMessage.replace('{{date}}', dialog.get_message(messages.multipleRecordReceipt.header.date,context.user.locale));
               receiptMessage = receiptMessage.replace('{{amount}}', dialog.get_message(messages.multipleRecordReceipt.header.amount,context.user.locale));
               receiptMessage = receiptMessage.replace('{{status}}', dialog.get_message(messages.multipleRecordReceipt.header.status,context.user.locale));
-              for(let i = 0; i < receipts.length; i++) {
-                let receipt = receipts[i];
+              for(let i = 0; i < receiptList.length; i++) {
+                let receipt = receiptList[i];
                 let receiptTemplate = dialog.get_message(messages.multipleRecordReceipt.multipleReceipts.receiptTemplate, context.user.locale);
                 receiptTemplate = receiptTemplate.replace('{{amount}}', "₹ "+receipt.amount);
                 receiptTemplate = receiptTemplate.replace('{{date}}', receipt.date);

@@ -33,6 +33,7 @@ import org.springframework.util.CollectionUtils;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
@@ -180,8 +181,22 @@ public class CalculationService {
 			
 			List<Map<String,Object>> applicationFees = JsonPath.read(mdmsData, BPACalculatorConstants.MDMS_APPLIOCATION_FEES_PATH.replace("{0}", categorie).replace("{1}", subcategorie).replace("{2}", proposedSite));
 			
+			Object edcrDetails = edcrService.getEDCRDetails(requestInfo, calulationCriteria.getBpa());
+			
+			BigDecimal totalExistingBuiltUpArea = BigDecimal.ZERO;
+			try {
+				String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea").toString();
+				totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
+			} catch (PathNotFoundException e) {
+				totalExistingBuiltUpArea = BigDecimal.ZERO;
+			}
+			
+			
 			BigDecimal boundayWallLength=new BigDecimal(node.get("boundaryWallLength")); //In Meter
-			BigDecimal area=new BigDecimal(node.get("builtUpArea")); //In Sq Meter
+			BigDecimal area=new BigDecimal(node.get("builtUpArea")).subtract(totalExistingBuiltUpArea); //In Sq Meter
+			
+			if(totalExistingBuiltUpArea.compareTo(BigDecimal.ZERO) > 0)
+				boundayWallLength = BigDecimal.ZERO;
 			
 			for(Map<String,Object> fee : applicationFees) {
 
@@ -219,9 +234,9 @@ public class CalculationService {
 			String finYear = taxPeriod.get(BPACalculatorConstants.MDMS_FINANCIALYEAR)
 					.toString();
 			String tanentId=calulationCriteria.getBpa().getTenantId();
-			
+			Object edcrDetails = edcrService.getEDCRDetails(requestInfo, calulationCriteria.getBpa());
 			//Calculate Sanction Fee of BPA
-			estimates = calculateSanctionFee(requestInfo, tanentId, finYear, node);
+			estimates = calculateSanctionFee(requestInfo, tanentId, finYear, node, edcrDetails);
 		}
 
 		else {
@@ -344,7 +359,7 @@ public class CalculationService {
 	 * @param finYear Current financial year
 	 * @return List of TaxHeadEstimate for the Demand creation
 	 */
-	private List<TaxHeadEstimate> calculateSanctionFee (RequestInfo requestInfo,String tanentId, String finYear, Map<String,Object> node) {
+	private List<TaxHeadEstimate> calculateSanctionFee (RequestInfo requestInfo,String tanentId, String finYear, Map<String,Object> node, Object edcrDetails) {
 		
 		if(!node.containsKey("area"))
 			throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "Plot area should not be null");
@@ -355,12 +370,22 @@ public class CalculationService {
 		
 //		Map<String,Object> fee = node.containsKey("selfCertificationCharges") ? (Map<String, Object>)node.get("selfCertificationCharges") : new HashMap<>();
 		
+		BigDecimal totalExistingBuiltUpArea = BigDecimal.ZERO;
+		try {
+			String totalExistingBuiltUpAreaStr = JsonPath.read(edcrDetails, "$.edcrDetail.[0].planDetail.virtualBuilding.totalExistingBuiltUpArea").toString();
+			totalExistingBuiltUpArea = new BigDecimal(totalExistingBuiltUpAreaStr);
+		} catch (PathNotFoundException e) {
+			totalExistingBuiltUpArea = BigDecimal.ZERO;
+		}
+		
 		List<Map<String,Object>> adjustedAmountsList = node.get("adjustedAmounts") != null ? (List<Map<String,Object>>)node.get("adjustedAmounts") : new ArrayList();
 		
 		Map<String,Object> adjustedAmounts = adjustedAmountsList.stream()
 				.collect(Collectors.toMap(adjustedAmount -> adjustedAmount.get("taxHeadCode").toString(), adjustedAmount -> adjustedAmount));
 		
-		BigDecimal builtUpArea = new BigDecimal((String)node.get("builtUpArea")).multiply(BPACalculatorConstants.SQMETER_TO_SQYARD); //In Sq Yard
+		BigDecimal builtUpArea = new BigDecimal((String)node.get("builtUpArea"))
+				.subtract(totalExistingBuiltUpArea)
+				.multiply(BPACalculatorConstants.SQMETER_TO_SQYARD); //In Sq Yard
 		BigDecimal plotArea = new BigDecimal((String)node.get("area")).multiply(BPACalculatorConstants.SQMETER_TO_SQYARD);  //In Sq Yard
 		BigDecimal basementArea = BigDecimal.ZERO;
 		String category = StringUtils.isEmpty(node.get("categories")) ? null : node.get("categories").toString();

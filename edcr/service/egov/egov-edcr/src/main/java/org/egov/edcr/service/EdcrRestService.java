@@ -148,6 +148,9 @@ public class EdcrRestService {
 
     private static final String BPA_05 = "BPA-05";
 
+    // Employee user type constant, used to bypass ownership (thirdPartyUserCode/applicantName) filters
+    private static final String EMPLOYEE_TYPE = "EMPLOYEE";
+
     private static Logger LOG = LogManager.getLogger(EdcrRestService.class);
 
     public static final String FILE_DOWNLOAD_URL = "%s/edcr/rest/dcr/downloadfile";
@@ -614,7 +617,17 @@ public class EdcrRestService {
             LOG.log(Level.ERROR, e);
         }
 
-        edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+        //edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+        
+        if (isBlank(tenantId)) {
+            edcrDetail.setTenantId(stateCityCode);
+        } else if (tenantId.contains(".")) {
+            // already fully qualified (e.g. "pb.lalru") — use as-is
+            edcrDetail.setTenantId(tenantId);
+        } else {
+            // raw tenant key only (e.g. "lalru") — qualify it
+            edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+        }
 
         if (!String.valueOf(applnDtls[3]).equalsIgnoreCase("Accepted"))
             edcrDetail.setStatus(String.valueOf(applnDtls[3]));
@@ -636,6 +649,20 @@ public class EdcrRestService {
         }
         LOG.info("[resolveSpecificTenant] Input tenantId: '{}' is state-level, returning null", tenantId);
         return null;
+    }
+
+    /**
+     * Determines whether the calling user is an EMPLOYEE.
+     * Employees bypass the ownership (thirdPartyUserCode/applicantName) filter so they can
+     * pull up any application within their tenant scope by edcr number / transaction number etc.,
+     * not just applications they personally submitted.
+     */
+    private boolean isEmployeeUser(UserInfo userInfo) {
+        if (userInfo == null || userInfo.getType() == null)
+            return false;
+        boolean isEmployee = EMPLOYEE_TYPE.equalsIgnoreCase(userInfo.getType());
+        LOG.info("[isEmployeeUser] userType: '{}', isEmployee: {}", userInfo.getType(), isEmployee);
+        return isEmployee;
     }
     
 //    @SuppressWarnings("unchecked")
@@ -855,6 +882,9 @@ public class EdcrRestService {
 
         	LOG.info("[fetchEdcr] isBpaStakeholderRole flag          : {}", isBpaStakeholderRole);
 
+        // NEW: employee callers bypass the ownership filter entirely
+        boolean isEmployee = isEmployeeUser(userInfo);
+        LOG.info("[fetchEdcr] isEmployee flag                    : {}", isEmployee);
 
         if (edcrRequest.getLimit() == null)
             edcrRequest.setLimit(-1);
@@ -915,10 +945,9 @@ public class EdcrRestService {
             String specificTenant = resolveSpecificTenant(edcrRequest.getTenantId());
             LOG.info("[fetchEdcr] specificTenant after resolve     : '{}'", specificTenant);
 
-//            String queryString = searchAtStateTenantLevel(
-//                    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant);
             String queryString = searchAtStateTenantLevel(
-            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant, isBpaStakeholderRole);
+            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant,
+            	    isBpaStakeholderRole, isEmployee);
 
             LOG.info("[fetchEdcr] Generated SQL query              :\n{}", queryString);
 
@@ -969,7 +998,7 @@ public class EdcrRestService {
             LOG.info("[fetchEdcr] Taking SINGLE-TENANT path for tenantId: '{}'", edcrRequest.getTenantId());
 
             final Criteria criteria = getCriteriaofSingleTenant(
-                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
+                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder, isEmployee);
 
             LOG.info("[fetchEdcr] Criteria query : {}", criteria.toString());
             criteria.setFirstResult(offset);
@@ -1024,6 +1053,10 @@ public class EdcrRestService {
 
         	boolean isBpaStakeholderRole = roles.stream().anyMatch(BPA_STAKEHOLDER_ROLES::contains);
 
+        // NEW: employee callers bypass the ownership filter entirely
+        boolean isEmployee = isEmployeeUser(userInfo);
+        LOG.info("[fetchCount] isEmployee flag                  : {}", isEmployee);
+
         boolean onlyTenantId = edcrRequest != null && isBlank(edcrRequest.getEdcrNumber())
                 && isBlank(edcrRequest.getTransactionNumber()) && isBlank(edcrRequest.getAppliactionType())
                 && isBlank(edcrRequest.getApplicationSubType()) && isBlank(edcrRequest.getStatus())
@@ -1055,7 +1088,8 @@ public class EdcrRestService {
             LOG.info("[fetchCount] specificTenant after resolve     : '{}'", specificTenant);
 
             String queryString = searchAtStateTenantLevel(
-            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant, isBpaStakeholderRole);
+            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant,
+            	    isBpaStakeholderRole, isEmployee);
 
             LOG.info("[fetchCount] Generated SQL query for count   :\n{}", queryString);
 
@@ -1074,7 +1108,7 @@ public class EdcrRestService {
             LOG.info("[fetchCount] Taking SINGLE-TENANT path for count, tenantId: '{}'", edcrRequest.getTenantId());
 
             final Criteria criteria = getCriteriaofSingleTenant(
-                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
+                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder, isEmployee);
 
             int count = criteria.list().size();
             LOG.info("[fetchCount] Count result (single-tenant)    : {}", count);
@@ -1186,7 +1220,7 @@ public class EdcrRestService {
             query = orderByWrapperDesc.replace("{}", queryStr);
         return query;
     }
-    
+
 //    private String searchAtStateTenantLevel(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
 //            boolean onlyTenantId, final Map<String, String> params, boolean isStakeholder,
 //            String specificTenant, boolean isBpaStakeholderRole) {
@@ -1344,15 +1378,21 @@ public class EdcrRestService {
 //        return query;
 //    }
 
+    /**
+     * State/cross-tenant search. When the caller is an EMPLOYEE, the ownership filter
+     * (thirdPartyUserCode / applicantName) is skipped entirely — employees can look up
+     * any application in scope by edcrNumber / transactionNumber / applicationNumber etc.
+     */
     private String searchAtStateTenantLevel(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
             boolean onlyTenantId, final Map<String, String> params, boolean isStakeholder,
-            String specificTenant, boolean isBpaStakeholderRole) {
+            String specificTenant, boolean isBpaStakeholderRole, boolean isEmployee) {
 
         LOG.info("[searchAtStateTenantLevel] ========== START ==========");
         LOG.info("[searchAtStateTenantLevel] specificTenant               : '{}'", specificTenant);
         LOG.info("[searchAtStateTenantLevel] userId                       : '{}'", userId);
         LOG.info("[searchAtStateTenantLevel] onlyTenantId                 : {}", onlyTenantId);
         LOG.info("[searchAtStateTenantLevel] isStakeholder                : {}", isStakeholder);
+        LOG.info("[searchAtStateTenantLevel] isEmployee                   : {}", isEmployee);
         LOG.info("[searchAtStateTenantLevel] edcrNumber                   : '{}'", edcrRequest.getEdcrNumber());
         LOG.info("[searchAtStateTenantLevel] transactionNumber            : '{}'", edcrRequest.getTransactionNumber());
 
@@ -1417,28 +1457,32 @@ public class EdcrRestService {
                 params.put("applicationNumber", edcrRequest.getApplicationNumber());
             }
 
-            // UUID filter:
+            // UUID / ownership filter:
             // Case 1: onlyTenantId or isStakeholder — existing behavior
             // Case 2: specificTenant + userId present — new condition (scope by uuid)
-         // UUID filter is ONLY applied when the user holds one of the designated BPA stakeholder roles.
-         // All other roles (e.g. CITIZEN, EMPLOYEE, ANONYMOUS, etc.) skip this filter entirely.
-         if (isBpaStakeholderRole && userInfo != null && isNotBlank(userId)) {
-             if ((onlyTenantId || isStakeholder)) {
-                 LOG.info("[searchAtStateTenantLevel] Adding uuid filter (onlyTenantId/isStakeholder + BPA role) — userId: '{}'", userId);
-                 queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
-                 params.put("thirdPartyUserCode", userId);
-                 params.put("applicantName", userInfo.getName());
-             } else if (isNotBlank(specificTenant)) {
-                 LOG.info("[searchAtStateTenantLevel] Adding uuid filter (specificTenant + BPA role) — userId: '{}'", userId);
-                 queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
-                 params.put("thirdPartyUserCode", userId);
-                 params.put("applicantName", userInfo.getName());
-             } else {
-                 LOG.info("[searchAtStateTenantLevel] BPA role present but no matching scope condition — uuid filter skipped");
-             }
-         } else {
-             LOG.info("[searchAtStateTenantLevel] Non-BPA role or missing userId — uuid filter NOT applied. roles qualify: {}", isBpaStakeholderRole);
-         }
+            // UUID filter is ONLY applied when the user holds one of the designated BPA stakeholder
+            // roles AND is NOT an employee. Employees (e.g. reviewing/searching staff) always bypass
+            // this filter so they can look up any application within the tenant scope.
+            // All other roles (e.g. CITIZEN, ANONYMOUS, etc.) skip this filter entirely.
+            if (isEmployee) {
+                LOG.info("[searchAtStateTenantLevel] Caller is EMPLOYEE — skipping ownership filter, scoping by tenant/search fields only");
+            } else if (isBpaStakeholderRole && userInfo != null && isNotBlank(userId)) {
+                if ((onlyTenantId || isStakeholder)) {
+                    LOG.info("[searchAtStateTenantLevel] Adding uuid filter (onlyTenantId/isStakeholder + BPA role) — userId: '{}'", userId);
+                    queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
+                    params.put("thirdPartyUserCode", userId);
+                    params.put("applicantName", userInfo.getName());
+                } else if (isNotBlank(specificTenant)) {
+                    LOG.info("[searchAtStateTenantLevel] Adding uuid filter (specificTenant + BPA role) — userId: '{}'", userId);
+                    queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
+                    params.put("thirdPartyUserCode", userId);
+                    params.put("applicantName", userInfo.getName());
+                } else {
+                    LOG.info("[searchAtStateTenantLevel] BPA role present but no matching scope condition — uuid filter skipped");
+                }
+            } else {
+                LOG.info("[searchAtStateTenantLevel] Non-BPA role or missing userId — uuid filter NOT applied. roles qualify: {}", isBpaStakeholderRole);
+            }
 
             String appliactionType = edcrRequest.getAppliactionType();
             if (isNotBlank(appliactionType)) {
@@ -1502,7 +1546,7 @@ public class EdcrRestService {
         LOG.info("[searchAtStateTenantLevel] ========== END ==========");
         return query;
     }
-    
+
 //    private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
 //            boolean onlyTenantId, boolean isStakeholder) {
 //        final Criteria criteria = getCurrentSession().createCriteria(EdcrApplicationDetail.class,
@@ -1708,12 +1752,17 @@ public class EdcrRestService {
 //        return criteria;
 //    }
 
-    
+    /**
+     * Single-tenant search via Hibernate Criteria. When the caller is an EMPLOYEE, the
+     * ownership filter (thirdPartyUserCode / applicantName) is skipped so any application
+     * within the tenant can be found by dcrNumber / transactionNumber / applicationNumber etc.
+     */
     private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest,
             UserInfo userInfo,
             String userId,
             boolean onlyTenantId,
-            boolean isStakeholder) {
+            boolean isStakeholder,
+            boolean isEmployee) {
 
     	LOG.info("============== SINGLE TENANT CRITERIA START ==============");
 
@@ -1791,13 +1840,18 @@ public class EdcrRestService {
 
         LOG.info("onlyTenantId : {}", onlyTenantId);
         LOG.info("isStakeholder : {}", isStakeholder);
+        LOG.info("isEmployee : {}", isEmployee);
         LOG.info("userId : {}", userId);
 
-        if ((onlyTenantId || isStakeholder)
+        // Ownership filter is skipped entirely for employees — they can search across
+        // any application within the tenant using dcrNumber/transactionNumber/etc. alone.
+        if (isEmployee) {
+            LOG.info("Caller is EMPLOYEE — skipping ownership filter, relying on tenant/dcrNumber/transactionNumber criteria only");
+        } else if ((onlyTenantId || isStakeholder)
                 && userInfo != null
                 && isNotBlank(userId)) {
 
-        	LOG.info("Adding filter -> thirdPartyUserCode : {}", userId);
+        	LOG.info("Adding filter -> thirdPartyUserCode/applicantName : {}", userId);
 
         	criteria.add(
         		    Restrictions.or(

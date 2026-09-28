@@ -96,6 +96,9 @@ public class RLProperty {// extends PropertyInfo {
 
 	@JsonProperty("penaltyFlatAmount")
 	private java.math.BigDecimal penaltyFlatAmount;
+
+	@JsonProperty("rents")
+	private java.util.List<RentPeriod> rents;
 	
 //	@JsonProperty("latePayment")
 //	private String latePayment;

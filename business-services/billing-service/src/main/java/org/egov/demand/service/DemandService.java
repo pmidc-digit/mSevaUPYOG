@@ -44,6 +44,7 @@ import static org.egov.demand.util.Constants.ADVANCE_TAXHEAD_JSONPATH_CODE;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -69,7 +70,6 @@ import org.egov.demand.model.DemandApportionRequest;
 import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
 import org.egov.demand.model.PaymentBackUpdateAudit;
-import org.egov.demand.model.UpdateBillCriteria;
 import org.egov.demand.repository.AmendmentRepository;
 import org.egov.demand.repository.BillRepositoryV2;
 import org.egov.demand.repository.DemandRepository;
@@ -153,10 +153,8 @@ public class DemandService {
 		AuditDetails auditDetail = util.getAuditDetail(requestInfo);
 		log.info("requestInfo: {} and AuditDetails: {}", requestInfo, auditDetail);
 		log.info("AuditDetails tostring: {}", auditDetail.toString());
-
-		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands, auditDetail);
-
 		generateAndSetIdsForNewDemands(demands, auditDetail);
+		List<AmendmentUpdate> amendmentUpdates = consumeAmendmentIfExists(demands, auditDetail);
 
 		List<Demand> demandsToBeCreated = new ArrayList<>();
 		List<Demand> demandToBeUpdated = new ArrayList<>();
@@ -800,25 +798,39 @@ public class DemandService {
 				.collect(Collectors.groupingBy(Amendment::getConsumerCode));
 
 		/*
-		 * Add demand-details in to demand from all amendments existing for that
+		 * Add demand-details into first demand from all amendments existing for that
 		 * consumer-code
 		 * 
 		 * Add the amendment to update list for consumed
 		 */
-		for (Demand demand : demands) {
+		Map<String, List<Demand>> mapOfConsumerCodeAndDemandsList = demands.stream()
+				.collect(Collectors.groupingBy(Demand::getConsumerCode));
 
-			List<Amendment> amendments = mapOfConsumerCodeAndAmendmentsList.get(demand.getConsumerCode());
-			if (CollectionUtils.isEmpty(amendments))
+		for (Map.Entry<String, List<Demand>> entry : mapOfConsumerCodeAndDemandsList.entrySet()) {
+
+			String consumerCode = entry.getKey();
+			List<Demand> consumerDemands = entry.getValue();
+
+			List<Amendment> amendments = mapOfConsumerCodeAndAmendmentsList.get(consumerCode);
+			if (CollectionUtils.isEmpty(amendments) || CollectionUtils.isEmpty(consumerDemands))
 				continue;
 
-			for (Amendment amendment : amendments) {
+			Demand firstDemand = consumerDemands.stream()
+					.min(Comparator
+							.comparing(Demand::getTaxPeriodFrom, Comparator.nullsFirst(Comparator.naturalOrder()))
+							.thenComparing(Demand::getTaxPeriodTo, Comparator.nullsFirst(Comparator.naturalOrder())))
+					.orElse(consumerDemands.get(0));
 
-				demand.getDemandDetails().addAll(amendment.getDemandDetails());
+			for (Amendment amendment : amendments) {
+				firstDemand.getDemandDetails().addAll(amendment.getDemandDetails());
 
 				AmendmentUpdate amendmentUpdate = AmendmentUpdate.builder()
-						.additionalDetails(amendment.getAdditionalDetails()).amendedDemandId(demand.getId())
+						.additionalDetails(amendment.getAdditionalDetails()).amendedDemandId(firstDemand.getId())
 						.amendmentId(amendment.getAmendmentId()).auditDetails(auditDetails)
-						.status(AmendmentStatus.CONSUMED).tenantId(demand.getTenantId()).build();
+						.amendmentReason(amendment.getAmendmentReason()).effectiveFrom(amendment.getEffectiveFrom())
+						.effectiveTill(amendment.getEffectiveTill())
+						.reasonDocumentNumber(amendment.getReasonDocumentNumber()).status(AmendmentStatus.CONSUMED)
+						.tenantId(firstDemand.getTenantId()).build();
 				updateListForConsumedAmendments.add(amendmentUpdate);
 			}
 		}

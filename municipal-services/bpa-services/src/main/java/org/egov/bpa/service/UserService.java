@@ -282,6 +282,7 @@ public class UserService {
         		uri.append("&categories=").append(categories);
         	if(!StringUtils.isEmpty(subcategories))
         		uri.append("&subcategories=").append(subcategories);
+        	uri.append("&modulename=").append(BPAConstants.MODULENAME);
     	}
     	
     	return uri;

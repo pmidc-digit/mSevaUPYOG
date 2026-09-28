@@ -62,6 +62,19 @@ public class EmployeeSearchCriteria {
     public List<String> subcategories;
     public List<String> zones;
     public List<String> assignedtenattids;
+    public List<String> modulenames;
+
+    public void setModulename(String modulename) {
+        if (modulename != null && !modulename.trim().isEmpty()) {
+            this.modulenames = java.util.Collections.singletonList(modulename.trim());
+        }
+    }
+
+    public void setModuleName(String moduleName) {
+        if (moduleName != null && !moduleName.trim().isEmpty()) {
+            this.modulenames = java.util.Collections.singletonList(moduleName.trim());
+        }
+    }
 
 
     public boolean isCriteriaEmpty(EmployeeSearchCriteria criteria) {
@@ -74,6 +87,7 @@ public class EmployeeSearchCriteria {
                 && CollectionUtils.isEmpty(criteria.getCategories())
                 && CollectionUtils.isEmpty(criteria.getSubcategories())
                 && CollectionUtils.isEmpty(criteria.getZones())
+                && CollectionUtils.isEmpty(criteria.getModulenames())
         ) {
             return true;
         } else {

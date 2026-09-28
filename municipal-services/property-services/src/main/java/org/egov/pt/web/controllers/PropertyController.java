@@ -204,45 +204,28 @@ public class PropertyController {
     public ResponseEntity<PropertyResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
                                                    @Valid @ModelAttribute PropertyCriteria propertyCriteria) {
 
-        log.info("Property search request started. IsInboxSearch: {}, IsRequestForCount: {}",
-                propertyCriteria.getIsInboxSearch(),
-                propertyCriteria.getIsRequestForCount());
+        log.info("========== PROPERTY SEARCH API CALLED ==========");
+        log.info("RequestInfoWrapper: {}", requestInfoWrapper);
+        log.info("RequestInfo: {}", requestInfoWrapper.getRequestInfo());
+        log.info("PropertyCriteria: {}", propertyCriteria);
+        log.info("IsInboxSearch: {}", propertyCriteria.getIsInboxSearch());
+        log.info("IsRequestForCount: {}", propertyCriteria.getIsRequestForCount());
 
+        // If inbox search has been disallowed at config level or if inbox search is allowed but the current search is NOT, from inbox service validate the search criteria.
         if (!configs.getIsInboxSearchAllowed() || !propertyCriteria.getIsInboxSearch()) {
-
-            log.info("Validating property search criteria. InboxSearchAllowed: {}, IsInboxSearch: {}",
-                    configs.getIsInboxSearchAllowed(),
-                    propertyCriteria.getIsInboxSearch());
-
             propertyValidator.validatePropertyCriteria(propertyCriteria, requestInfoWrapper.getRequestInfo());
-
-            log.info("Property search criteria validation completed.");
         }
 
         List<Property> properties = new ArrayList<Property>();
         Integer count = 0;
 
         if (propertyCriteria.getIsRequestForCount()) {
-
-            log.info("Property count request started.");
-
             count = propertyService.count(requestInfoWrapper.getRequestInfo(), propertyCriteria);
-
-            log.info("Property count request completed. Count: {}", count);
-
         } else {
-
-            log.info("Property search started.");
-
-            properties = propertyService.searchProperty(
-                    propertyCriteria,
-                    requestInfoWrapper.getRequestInfo());
-
-            log.info("Property search completed. Properties found: {}", properties.size());
+            properties = propertyService.searchProperty(propertyCriteria, requestInfoWrapper.getRequestInfo());
         }
 
-        log.info("Property search response prepared. Count: {}, Properties size: {}",
-                count, properties.size());
+        log.info("Property count after search: {}", properties.size());
 
         PropertyResponse response = PropertyResponse.builder()
                 .responseInfo(
@@ -251,8 +234,6 @@ public class PropertyController {
                 .properties(properties)
                 .count(count)
                 .build();
-
-        log.info("Property search request completed successfully.");
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

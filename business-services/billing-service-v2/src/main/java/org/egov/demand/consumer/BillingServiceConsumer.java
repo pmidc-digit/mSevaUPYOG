@@ -3,6 +3,7 @@ package org.egov.demand.consumer;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -66,6 +67,9 @@ public class BillingServiceConsumer {
 	@Autowired
 	private Util util;
 
+	@Autowired
+	private org.egov.demand.producer.Producer producer;
+
 
 	@KafkaListener(topics = { "${kafka.topics.receipt.update.collecteReceipt}", "${kafka.topics.save.bill}",
 			"${kafka.topics.save.demand}", "${kafka.topics.update.demand}", "${kafka.topics.receipt.update.demand}",
@@ -79,8 +83,24 @@ public class BillingServiceConsumer {
 		/*
 		 * save demand topic
 		 */
-		if (applicationProperties.getCreateDemandTopic().equals(topic))
-			demandService.save(objectMapper.convertValue(consumerRecord, DemandRequest.class));
+		if (applicationProperties.getCreateDemandTopic().equals(topic)) {
+			DemandRequest demandRequest = null;
+			try {
+				demandRequest = objectMapper.convertValue(consumerRecord, DemandRequest.class);
+				demandService.save(demandRequest);
+			} catch (Exception e) {
+				log.error("Error occurred while saving demand: ", e);
+				try {
+					Map<String, Object> errorPayload = new HashMap<>();
+					errorPayload.put("demandRequest", demandRequest != null ? demandRequest : consumerRecord);
+					errorPayload.put("errorMessage", e.getMessage());
+					producer.push(applicationProperties.getSaveDemandErrorTopic(), errorPayload);
+				} catch (Exception ex) {
+					log.error("Failed to push failed demand to DLQ: ", ex);
+				}
+				throw e;
+			}
+		}
 		
 		/*
 		 * update demand topic

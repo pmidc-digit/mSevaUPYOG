@@ -888,7 +888,7 @@ const RentAndLeasePropertyDetails = ({
           {/* futurePenalty */}
           <LabelFieldPair>
             <CardLabel>
-              {t("Anual future penalty (%)")} <span className="mandatory-asterisk">*</span>
+              {t("Annual future penalty (%)")} <span className="mandatory-asterisk">*</span>
             </CardLabel>
 
             <div className="form-field">

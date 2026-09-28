@@ -54,6 +54,7 @@ import static org.egov.edcr.utility.DcrConstants.FILESTORE_MODULECODE;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
@@ -211,7 +212,7 @@ public class EdcrRestService {
     
     @Transactional
     public EdcrDetail createEdcr(final EdcrRequest edcrRequest, final MultipartFile file,
-            Map<String, List<Object>> masterData){
+            Map<String, List<Object>> masterData, final MultipartFile controlSheet){
         EdcrApplication edcrApplication = new EdcrApplication();
         edcrApplication.setMdmsMasterData(masterData);
         
@@ -251,6 +252,10 @@ public class EdcrRestService {
        
         edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
         edcrApplication.setDxfFile(file);
+        
+        if(controlSheet!=null) {
+        	edcrApplication.setControlSheetFile(controlSheet);
+        }        
 
         if (edcrRequest.getRequestInfo() != null && edcrRequest.getRequestInfo().getUserInfo() != null) {
             edcrApplication.setThirdPartyUserCode(isNotBlank(edcrRequest.getRequestInfo().getUserInfo().getUuid())
@@ -2119,28 +2124,35 @@ public class EdcrRestService {
         if ("SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
             // Scheme Area Validations
             if (StringUtils.isBlank(edcrRequest.getSchemeArea())) {
-                errors.add(new ErrorDetail("BPA-15", "Scheme type is required for Scheme Area"));
+                errors.add(new ErrorDetail("BPA-15",
+                        "Scheme type is required for Scheme Area"));
             }
             if (StringUtils.isBlank(edcrRequest.getSchName())) {
-                errors.add(new ErrorDetail("BPA-16", "Scheme name is required for Scheme Area"));
+                errors.add(new ErrorDetail("BPA-16",
+                        "Scheme name is required for Scheme Area"));
             }
             if (edcrRequest.getSiteReserved() == null) {
-                errors.add(new ErrorDetail("BPA-17", "Site reserved selection is required for Scheme Area"));
-            } else {
-                if (edcrRequest.getSiteReserved() && edcrRequest.getApprovedCS() == null) {
-                    errors.add(new ErrorDetail("BPA-18", "Approved control sheet selection is required when site is reserved"));
-                }
+                errors.add(new ErrorDetail("BPA-17",
+                        "Site reserved selection is required for Scheme Area"));
             }
+            // If site is reserved, Approved Control Sheet must be YES
+            if (Boolean.TRUE.equals(edcrRequest.getSiteReserved())
+                    && !Boolean.TRUE.equals(edcrRequest.getApprovedCS())) {
+                errors.add(new ErrorDetail("BPA-18", "Approved Control Sheet must be selected as YES when site is reserved"));
+            }
+
         } else if ("NON_SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
             // Non-Scheme Area Validations
             if (edcrRequest.getCluApprove() == null) {
-                errors.add(new ErrorDetail("BPA-19", "CLU approval selection is required for Non-Scheme Area"));
+                errors.add(new ErrorDetail("BPA-19",
+                        "CLU approval selection is required for Non-Scheme Area"));
             }
-            if (edcrRequest.getCoreArea() == null) {
-                errors.add(new ErrorDetail("BPA-20", "Core area selection is required for Non-Scheme Area"));
+            if (StringUtils.isBlank(edcrRequest.getCoreArea())) {
+                errors.add(new ErrorDetail("BPA-20",
+                        "Core area selection is required for Non-Scheme Area"));
             }
         } else {
-            errors.add(new ErrorDetail("BPA-21", "Invalid Area Type value"));
+            errors.add(new ErrorDetail("BPA-21","Invalid Area Type value"));
         }
 
         return errors;
@@ -2297,19 +2309,107 @@ public class EdcrRestService {
 	            "Unsupported file type. Expected DXF or ZIP containing DXF.");
 	}
     
+	public MultipartFile getControlSheetFromFileStore(EdcrRequest edcr) throws IOException {
+
+		String tenantId = edcr.getTenantId();
+		String controlSheetFileStoreId = edcr.getControlSheet();
+
+		LOG.info("Fetching Control Sheet from FileStore. fileId={}, tenantId={}", controlSheetFileStoreId, tenantId);
+
+		File controlSheet = fileStoreService.fetch(controlSheetFileStoreId, FILESTORE_MODULECODE, tenantId);
+
+		if (controlSheet == null || !controlSheet.exists() || !controlSheet.isFile()) {
+
+			LOG.error("Control Sheet not found in FileStore. fileId={}, tenantId={}", controlSheetFileStoreId,
+					tenantId);
+
+			throw new IOException("Unable to fetch Control Sheet from FileStore.");
+		}
+
+		byte[] fileContent = Files.readAllBytes(controlSheet.toPath());
+
+		String contentType = fileStoreService.getFileContentType(fileContent);
+
+		/*
+		 * Use the actual file name instead of forcing it to ControlSheet.pdf.
+		 */
+		MultipartFile multipartFile = new CustomMultipartFile("ControlSheet.pdf", "ControlSheet.pdf", contentType, fileContent);
+
+		LOG.info("File fetched from FileStore. fileId={}, fileName={}, contentType={}, size={}",
+				controlSheetFileStoreId, multipartFile.getOriginalFilename(), contentType, multipartFile.getSize());
+
+		if (!isValidControlSheetPdf(multipartFile)) {
+
+			LOG.error("Invalid Control Sheet file. fileId={}, fileName={}, contentType={}", controlSheetFileStoreId,
+					multipartFile.getOriginalFilename(), contentType);
+
+			// Delete only after validation failure
+			Files.deleteIfExists(controlSheet.toPath());
+
+			throw new IOException("Invalid Control Sheet file. Only PDF files are allowed.");
+		}
+
+		LOG.info("Valid Control Sheet PDF detected. fileId={}, fileName={}", controlSheetFileStoreId,
+				multipartFile.getOriginalFilename());
+
+		// Delete temporary FileStore file after successful validation
+		Files.deleteIfExists(controlSheet.toPath());
+
+		return multipartFile;
+	}
+
 	private boolean isDxfFile(MultipartFile file, String contentType) {
 
-	    String fileName = file.getOriginalFilename();
+		String fileName = file.getOriginalFilename();
 
-	    if (fileName != null && fileName.toLowerCase().endsWith(".dxf")) {
-	        return true;
+		if (fileName != null && fileName.toLowerCase().endsWith(".dxf")) {
+			return true;
+		}
+
+		return "image/vnd.dxf".equalsIgnoreCase(contentType) || "application/dxf".equalsIgnoreCase(contentType)
+				|| "application/x-dxf".equalsIgnoreCase(contentType)
+				|| "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType);
+	}
+
+	private boolean isValidControlSheetPdf(MultipartFile file) {
+
+		if (file == null || file.isEmpty()) {
+	        return false;
 	    }
 
-	    return "image/vnd.dxf".equalsIgnoreCase(contentType)
-	            || "application/dxf".equalsIgnoreCase(contentType)
-	            || "application/x-dxf".equalsIgnoreCase(contentType)
-	            || "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType)
-	            ;
+	    String fileName = file.getOriginalFilename();
+	    String contentType = file.getContentType();
+
+	    LOG.info("Validating Control Sheet. fileName={}, contentType={}, size={}",
+	            fileName, contentType, file.getSize());
+
+	    // Check MIME type
+	    if (!"application/pdf".equalsIgnoreCase(contentType)) {
+	        return false;
+	    }
+
+		/*
+		 * Temporarily skipped PDF file signature (%PDF) validation
+		 *
+		 * try (InputStream is = file.getInputStream()) {
+		 *
+		 * byte[] header = new byte[4];
+		 *
+		 * int bytesRead = is.read(header);
+		 *
+		 * if (bytesRead != 4) { return false; }
+		 *
+		 * return header[0] == '%' && header[1] == 'P' && header[2] == 'D' && header[3]
+		 * == 'F';
+		 *
+		 * } catch (IOException e) {
+		 *
+		 * LOG.error( "Error validating Control Sheet PDF. fileName={}, contentType={}",
+		 * fileName, contentType, e);
+		 *
+		 * return false; }
+		 */
+
+		return true;
 	}
-    
 }

@@ -661,5 +661,23 @@ public class NotificationUtil {
 		else
 			return list.get(0);
 	}
+	
+	public List<EmailRequest> createEmailRequest(String subject, String message, Set<String> sendToList, RequestInfo requestInfo) {
+		List<EmailRequest> emailRequests = new LinkedList<EmailRequest>();
+		sendToList.stream().forEach(sendTo -> {
+			Set<String> sendToSet = new HashSet<String>();
+			sendToSet.add(sendTo);
+			emailRequests.add(EmailRequest.builder()
+					.requestInfo(requestInfo)
+					.email(Email.builder()
+							.subject(subject)
+							.body(message)
+							.emailTo(sendToSet)
+							.build())
+					.build());
+		});
+		
+		return emailRequests;
+	}
 
 }

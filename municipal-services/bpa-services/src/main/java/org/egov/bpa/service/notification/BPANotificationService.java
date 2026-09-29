@@ -362,7 +362,7 @@ public class BPANotificationService {
 		UserDetailResponse userDetailResponse = userService.getUser(bpaSearchCriteria, bpaRequest.getRequestInfo());
 		userDetailResponse.getUser().stream().forEach(owner -> {
 			mobileNumberToOwner.put(owner.getMobileNumber(), owner.getName());
-			if(StringUtils.isEmpty(owner.getEmailId()))
+			if(!StringUtils.isEmpty(owner.getEmailId()))
 				emailToOwner.put(owner.getEmailId(), owner.getName());
 		});
 	}

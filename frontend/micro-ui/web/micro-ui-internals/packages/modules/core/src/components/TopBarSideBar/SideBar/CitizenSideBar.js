@@ -166,18 +166,65 @@ export const CitizenSideBar = ({
       });
       linkData.FSM = FSM;
     }
-    Object.keys(linkData)
-      ?.sort((x, y) => y.localeCompare(x))
-      ?.map((key) => {
-        if (linkData[key][0]?.sidebar === "digit-ui-links")
-          menuItems.splice(1, 0, {
-            type: linkData[key][0]?.sidebarURL?.includes("digit-ui") ? "link" : "external-link",
-            text: t(`ACTION_TEST_${Digit.Utils.locale.getTransformedLocale(key)}`),
-            links: linkData[key],
-            icon: linkData[key][0]?.leftIcon,
-            link: linkData[key][0]?.sidebarURL,
-          });
+    const existingLabels = new Set();
+    const existingUrls = new Set();
+
+    const normalizePath = (url = "") => {
+      return url.replace(/^\/?(digit-ui\/)?(citizen\/)?/, "").replace(/\/$/, "").toLowerCase();
+    };
+
+    if (linkData) {
+      const dynamicItems = [];
+      Object.keys(linkData)?.forEach((key) => {
+        linkData[key]?.forEach((item) => {
+          if (item?.enabled) {
+            const rawUrl = item.navigationURL || item.sidebarURL || "";
+            const path = normalizePath(rawUrl);
+            const name = item.name || "";
+            const nameLower = name.toLowerCase();
+
+            // Exclude employee-only modules and reports
+            if (path.includes("hrms") || nameLower.includes("hrms") || path.includes("report")) {
+              return;
+            }
+
+            const displayNameKey = item.displayName
+              ? `ACTION_TEST_${item.displayName.toUpperCase().replace(/[ -]/g, "_")}`
+              : `ACTION_TEST_${name.toUpperCase().replace(/[ -]/g, "_")}`;
+
+            const translated = t(displayNameKey);
+            const label =
+              translated !== displayNameKey
+                ? translated
+                : t(item.displayName) || t(name) || item.displayName || name;
+
+            const labelLower = (label || "").toLowerCase();
+            if (existingLabels.has(labelLower)) return;
+
+            existingLabels.add(labelLower);
+
+            const navUrl =
+              rawUrl.startsWith("/") || rawUrl.startsWith("http")
+                ? rawUrl
+                : `/citizen/${rawUrl}`;
+
+            const iconName = item.leftIcon?.includes(":")
+              ? item.leftIcon.split(":")[1]
+              : item.leftIcon || "ComplaintIcon";
+
+            dynamicItems.push({
+              type: navUrl.includes("digit-ui") ? "link" : "external-link",
+              text: label,
+              links: linkData[key],
+              icon: iconName,
+              link: navUrl,
+            });
+          }
+        });
       });
+
+      menuItems.splice(1, 0, ...dynamicItems);
+    }
   } else {
     data?.actions
       .filter((e) => e.url === "url" && e.displayName !== "Home")
@@ -247,20 +294,14 @@ export const CitizenSideBar = ({
     profileItem = <span></span>;
     menuItems = menuItems.filter((ele) => ele.element === "LANGUAGE");
   }
-  return isMobile ? (
-    <NavBar
-      open={isOpen}
+  return (
+    <StaticCitizenSideBar
+      isOpen={isOpen}
       toggleSidebar={toggleSidebar}
-      profileItem={profileItem}
-      onClose={closeSidebar}
-      isSideBarScroll={isSideBarScroll}
-      menuItems={menuItems}
-      Footer={<PoweredBy />}
-      isEmployee={isEmployee}
-      search={search}
-      setSearch={setSearch}
+      closeSidebar={closeSidebar}
+      logout={onLogout}
+      linkData={linkData}
+      islinkDataLoading={islinkDataLoading}
     />
-  ) : (
-    <StaticCitizenSideBar logout={onLogout} />
   );
 };

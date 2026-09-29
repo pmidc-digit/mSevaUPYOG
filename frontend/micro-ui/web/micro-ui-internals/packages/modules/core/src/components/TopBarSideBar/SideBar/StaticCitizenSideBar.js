@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   HomeIcon,
   EditPencilIcon,
   LogoutIcon,
   Loader,
-  AddressBookIcon,
   PropertyHouse,
   CaseIcon,
   CollectionIcon,
@@ -29,81 +28,89 @@ import {
   ReceiptIcon,
   DocumentIconSolid,
   DropIcon,
+  PTIcon,
 } from "@mseva/digit-ui-react-components";
 import { Link, useLocation, useHistory } from "react-router-dom";
-import SideBarMenu from "../../../config/sidebar-menu";
 import { useTranslation } from "react-i18next";
 import LogoutDialog from "../../Dialog/LogoutDialog";
-import ChangeCity from "../../ChangeCity";
 import SidebarProfile from "./SidebarProfile";
 
+/**
+ * Icon map — maps icon strings from MDMS / actions-test leftIcon field.
+ */
 const IconsObject = {
-  home: <HomeIcon />,
-  HomeIcon: <HomeIcon />,
-  announcement: <ComplaintIcon />,
-  ComplaintIcon: <ComplaintIcon />,
-  business: <BPAHomeIcon />,
-  BPAHomeIcon: <BPAHomeIcon />,
-  store: <PropertyHouse />,
-  PropertyHouse: <PropertyHouse />,
-  assignment: <CaseIcon />,
-  CaseIcon: <CaseIcon />,
-  receipt: <ReceiptIcon />,
-  ReceiptIcon: <ReceiptIcon />,
-  "business-center": <PersonIcon />,
-  PersonIcon: <PersonIcon />,
-  description: <DocumentIconSolid />,
-  DocumentIconSolid: <DocumentIconSolid />,
-  "water-tap": <DropIcon />,
-  DropIcon: <DropIcon />,
-  "collections-bookmark": <CollectionsBookmarIcons />,
-  CollectionsBookmarIcons: <CollectionsBookmarIcons />,
-  "insert-chart": <FinanceChartIcon />,
-  FinanceChartIcon: <FinanceChartIcon />,
-  edcr: <CollectionIcon />,
-  collections: <CollectionIcon />,
-  CollectionIcon: <CollectionIcon />,
-  EditPencilIcon: <EditPencilIcon />,
-  LogoutIcon: <LogoutIcon />,
-  LoginIcon: <LoginIcon />,
-  Phone: <Phone />,
-  PGRIcon: <ComplaintIcon />,
-  OBPSIcon: <BPAHomeIcon />,
-  WSIcon: <DropIcon />,
-  FirenocIcon: <PersonIcon />,
-  propertyIcon: <PropertyHouse />,
-  CommonPTIcon: <PropertyHouse />,
-  TLIcon: <CaseIcon />,
-  BillsIcon: <ReceiptIcon />,
+  home: <HomeIcon className="icon" />,
+  HomeIcon: <HomeIcon className="icon" />,
+  store: <PropertyHouse className="icon" />,
+  propertyIcon: <PropertyHouse className="icon" />,
+  PropertyHouse: <PropertyHouse className="icon" />,
+  PTIcon: <PTIcon className="icon" />,
+  CommonPTIcon: <PTIcon className="icon" />,
+  assignment: <CaseIcon className="icon" />,
+  TLIcon: <CaseIcon className="icon" />,
+  CaseIcon: <CaseIcon className="icon" />,
+  announcement: <ComplaintIcon className="icon" />,
+  complaint: <ComplaintIcon className="icon" />,
+  ComplaintIcon: <ComplaintIcon className="icon" />,
+  PGRIcon: <PGRIcon className="icon" />,
+  business: <BPAHomeIcon className="icon" />,
+  BPAHomeIcon: <BPAHomeIcon className="icon" />,
+  OBPSIcon: <OBPSIcon className="icon" />,
+  "business-center": <PersonIcon className="icon" />,
+  person: <PersonIcon className="icon" />,
+  PersonIcon: <PersonIcon className="icon" />,
+  description: <DocumentIconSolid className="icon" />,
+  DocumentIconSolid: <DocumentIconSolid className="icon" />,
+  receipt: <ReceiptIcon className="icon" />,
+  ReceiptIcon: <ReceiptIcon className="icon" />,
+  "water-tap": <DropIcon className="icon" />,
+  DropIcon: <DropIcon className="icon" />,
+  WSIcon: <WSICon className="icon" />,
+  "collections-bookmark": <CollectionsBookmarIcons className="icon" />,
+  CollectionsBookmarIcons: <CollectionsBookmarIcons className="icon" />,
+  "insert-chart": <FinanceChartIcon className="icon" />,
+  FinanceChartIcon: <FinanceChartIcon className="icon" />,
+  edcr: <CollectionIcon className="icon" />,
+  collections: <CollectionIcon className="icon" />,
+  CollectionIcon: <CollectionIcon className="icon" />,
+  BillsIcon: <CollectionIcon className="icon" />,
+  firenoc: <FirenocIcon className="icon" />,
+  "fire-noc": <FirenocIcon className="icon" />,
+  FirenocIcon: <FirenocIcon className="icon" />,
+  FSMIcon: <FSMIcon className="icon" />,
+  BirthIcon: <BirthIcon className="icon" />,
+  DeathIcon: <DeathIcon className="icon" />,
+  MCollectIcon: <MCollectIcon className="icon" />,
+  EditPencilIcon: <EditPencilIcon className="icon" />,
+  LogoutIcon: <LogoutIcon className="icon" />,
+  LoginIcon: <LoginIcon className="icon" />,
+  Phone: <Phone className="icon" />,
 };
 
-const resolveIcon = (iconName, labelText = "") => {
-  if (React.isValidElement(iconName)) return iconName;
-
-  let rawKey = typeof iconName === "string" ? iconName : iconName?.type?.name;
-  if (rawKey) {
-    if (rawKey.includes(":")) rawKey = rawKey.split(":")[1];
-    if (rawKey.includes(".")) rawKey = rawKey.split(".")[0];
-    if (IconsObject[rawKey]) return IconsObject[rawKey];
+/**
+ * Resolve icon by leftIcon string or fallback to module name keywords
+ */
+const resolveIcon = (leftIconStr = "", itemName = "") => {
+  if (leftIconStr) {
+    const parts = leftIconStr.split(":");
+    const key = parts[parts.length - 1];
+    if (IconsObject[key]) return IconsObject[key];
+    if (IconsObject[leftIconStr]) return IconsObject[leftIconStr];
   }
-
-  const textLower = (labelText || "").toLowerCase();
-  if (textLower.includes("home")) return IconsObject.home;
-  if (textLower.includes("property")) return IconsObject.store;
-  if (textLower.includes("trade") || textLower.includes("license")) return IconsObject.assignment;
-  if (textLower.includes("fire")) return IconsObject.description;
-  if (textLower.includes("complaint") || textLower.includes("pgr")) return IconsObject.description;
-  if (textLower.includes("water") || textLower.includes("sewerage")) return IconsObject["water-tap"];
-  if (textLower.includes("building") || textLower.includes("bpa") || textLower.includes("obps")) return IconsObject["business-center"];
-  if (textLower.includes("pet")) return IconsObject["business-center"];
-  if (textLower.includes("venue") || textLower.includes("swach") || textLower.includes("chb")) return IconsObject["business-center"];
-  if (textLower.includes("due") || textLower.includes("ndc")) return IconsObject.description;
-  if (textLower.includes("survey")) return IconsObject.announcement;
-  if (textLower.includes("receipt") || textLower.includes("bill") || textLower.includes("collection")) return IconsObject.receipt;
-  if (textLower.includes("profile") || textLower.includes("edit")) return IconsObject.EditPencilIcon;
-  if (textLower.includes("logout")) return IconsObject.LogoutIcon;
-
-  return IconsObject.description;
+  const nameLower = (itemName || "").toLowerCase();
+  if (nameLower.includes("home")) return IconsObject.home;
+  if (nameLower.includes("property") || nameLower.includes("pt")) return IconsObject.store;
+  if (nameLower.includes("fire")) return IconsObject.firenoc;
+  if (nameLower.includes("complaint") || nameLower.includes("pgr")) return IconsObject.announcement;
+  if (nameLower.includes("pet")) return IconsObject.description;
+  if (nameLower.includes("venue")) return IconsObject.store;
+  if (nameLower.includes("due")) return IconsObject.description;
+  if (nameLower.includes("bpa") || nameLower.includes("building")) return IconsObject.business;
+  if (nameLower.includes("survey")) return IconsObject.description;
+  if (nameLower.includes("receipt")) return IconsObject.receipt;
+  if (nameLower.includes("water") || nameLower.includes("sewerage")) return IconsObject["water-tap"];
+  if (nameLower.includes("trade") || nameLower.includes("tl")) return IconsObject.assignment;
+  return IconsObject.collections;
 };
 
 const StaticCitizenSideBar = ({
@@ -111,8 +118,6 @@ const StaticCitizenSideBar = ({
   toggleSidebar,
   closeSidebar,
   logout,
-  linkData,
-  islinkDataLoading,
 }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -124,6 +129,16 @@ const StaticCitizenSideBar = ({
   const [showDialog, setShowDialog] = useState(false);
   const [search, setSearch] = useState("");
   const [openSubmenus, setOpenSubmenus] = useState({});
+
+  // 1. Fetch access control data (same hook & API as monolith ActionMenu)
+  const { isLoading: isAccessLoading, data: accessControlData } = Digit.Hooks.useAccessControl();
+
+  // 2. Fallback to MDMS actions-test if needed
+  const { isLoading: isMdmsLoading, data: mdmsData } = Digit.Hooks.useCustomMDMS(
+    Digit.ULBService.getStateId(),
+    "ACCESSCONTROL-ACTIONS-TEST",
+    [{ name: "actions-test" }]
+  );
 
   const handleClose = () => {
     if (closeSidebar) closeSidebar();
@@ -145,24 +160,7 @@ const StaticCitizenSideBar = ({
   };
 
   const toggleSubmenu = (key) => {
-    setOpenSubmenus((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  if (islinkDataLoading || !isFetched) {
-    return <Loader />;
-  }
-
-  const redirectToLoginPage = () => {
-    handleClose();
-    history.push("/digit-ui/citizen/login");
-  };
-
-  const redirectToScrutinyPage = () => {
-    handleClose();
-    history.push("/digit-ui/citizen/core/edcr/scrutiny");
+    setOpenSubmenus((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const showProfilePage = () => {
@@ -170,254 +168,296 @@ const StaticCitizenSideBar = ({
     history.push("/digit-ui/citizen/user/profile");
   };
 
-  const tenantId = Digit.ULBService.getCitizenCurrentTenant();
-  const filteredTenantContact =
-    storeData?.tenants.filter((e) => e.code === tenantId)[0]?.contactNumber || storeData?.tenants[0]?.contactNumber;
-
-  let menuItems = [
-    ...SideBarMenu(t, showProfilePage, redirectToLoginPage, redirectToScrutinyPage, false, storeData, tenantId),
-  ];
-  menuItems = menuItems.filter((item) => item.element !== "LANGUAGE");
-
-  let profileItem;
-  if (isFetched && user && user.access_token) {
-    profileItem = <SidebarProfile info={user?.info} stateName={stateInfo?.name} t={t} />;
-    menuItems = menuItems.filter((item) => item?.id !== "login-btn" && item?.id !== "help-line");
-    menuItems = [
-      ...menuItems,
-      {
-        text: t("EDIT_PROFILE"),
-        element: "PROFILE",
-        icon: "EditPencilIcon",
-        populators: {
-          onClick: showProfilePage,
-        },
-      },
-      {
-        text: t("CORE_COMMON_LOGOUT"),
-        element: "LOGOUT",
-        icon: "LogoutIcon",
-        populators: { onClick: handleLogout },
-      },
-    ];
-  }
-
-  const existingLabels = new Set();
-  const normalizePath = (url = "") => {
-    return url.replace(/^\/?(digit-ui\/)?(citizen\/)?/, "").replace(/\/$/, "").toLowerCase();
+  const getTranslationLabel = (name) => {
+    if (!name) return "";
+    if (
+      name.toUpperCase() === "HOME" ||
+      name.toUpperCase() === "CS_HOME_HOMEHEADER" ||
+      name.toUpperCase() === "CS_HOME_HEADER_HOME"
+    ) {
+      const homeT = t("ACTION_TEST_HOME") || t("CS_HOME_HOMEHEADER");
+      return homeT && homeT !== "ACTION_TEST_HOME" && homeT !== "CS_HOME_HOMEHEADER" ? homeT : "Home";
+    }
+    const key = "ACTION_TEST_" + name.toUpperCase().replace(/[.:-\s\/]/g, "_");
+    const trans = t(key);
+    return trans !== key ? trans : name;
   };
 
-  if (linkData) {
-    const dynamicItems = [];
-    Object.keys(linkData)?.forEach((key) => {
-      linkData[key]?.forEach((item) => {
-        if (item?.enabled) {
-          const rawUrl = item.navigationURL || item.sidebarURL || "";
-          const path = normalizePath(rawUrl);
-          const name = item.name || "";
-          const nameLower = name.toLowerCase();
+  const handleItemNavigation = (navUrl) => {
+    handleClose();
+    if (!navUrl) return;
+    if (navUrl.startsWith("http://") || navUrl.startsWith("https://")) {
+      window.open(navUrl, "_blank", "noopener,noreferrer");
+    } else if (navUrl.startsWith("/digit-ui")) {
+      history.push(navUrl);
+    } else if (navUrl.startsWith("/")) {
+      history.push(navUrl);
+    } else {
+      history.push(`/${navUrl}`);
+    }
+  };
 
-          // Exclude employee-only modules and reports
-          if (path.includes("hrms") || nameLower.includes("hrms") || path.includes("report")) {
-            return;
-          }
-
-          const displayNameKey = item.displayName
-            ? `ACTION_TEST_${item.displayName.toUpperCase().replace(/[ -]/g, "_")}`
-            : `ACTION_TEST_${name.toUpperCase().replace(/[ -]/g, "_")}`;
-
-          const translated = t(displayNameKey);
-          const label =
-            translated !== displayNameKey
-              ? translated
-              : t(item.displayName) || t(name) || item.displayName || name;
-
-          const labelLower = (label || "").toLowerCase();
-          if (existingLabels.has(labelLower)) return;
-
-          existingLabels.add(labelLower);
-
-          const navUrl =
-            rawUrl.startsWith("/") || rawUrl.startsWith("http")
-              ? rawUrl
-              : `/citizen/${rawUrl}`;
-
-          const iconName = item.leftIcon?.includes(":")
-            ? item.leftIcon.split(":")[1]
-            : item.leftIcon || "ComplaintIcon";
-
-          // Format child sub-links if present
-          const childLinks = Array.isArray(item.links)
-            ? item.links
-                .filter((sub) => sub?.enabled !== false && sub?.navigationURL)
-                .map((sub) => {
-                  const subRawUrl = sub.navigationURL || sub.sidebarURL || "";
-                  const subDisplayNameKey = sub.displayName
-                    ? `ACTION_TEST_${sub.displayName.toUpperCase().replace(/[ -]/g, "_")}`
-                    : `ACTION_TEST_${(sub.name || "").toUpperCase().replace(/[ -]/g, "_")}`;
-                  const subTrans = t(subDisplayNameKey);
-                  const subLabel =
-                    subTrans !== subDisplayNameKey
-                      ? subTrans
-                      : t(sub.displayName) || t(sub.name) || sub.displayName || sub.name;
-                  return {
-                    ...sub,
-                    displayName: subLabel,
-                    link:
-                      subRawUrl.startsWith("/") || subRawUrl.startsWith("http")
-                        ? subRawUrl
-                        : `/citizen/${subRawUrl}`,
-                  };
-                })
-            : [];
-
-          dynamicItems.push({
-            type: childLinks.length > 0 ? "parent" : navUrl.includes("digit-ui") ? "link" : "external-link",
-            text: label,
-            links: childLinks.length > 0 ? childLinks : linkData[key],
-            hasSubmenu: childLinks.length > 0,
-            icon: iconName,
-            link: navUrl,
-          });
-        }
-      });
-    });
-
-    menuItems.splice(1, 0, ...dynamicItems);
+  if ((isAccessLoading && isMdmsLoading) || !isFetched) {
+    return <Loader />;
   }
 
-  // Filter items by search query
-  const filteredMenuItems = menuItems.filter((item) => {
-    if (!search || !search.trim()) return true;
-    const query = search.trim().toLowerCase();
-    const itemText = typeof item.text === "string" ? item.text.toLowerCase() : "";
-    if (itemText.includes(query)) return true;
-    if (item.links && Array.isArray(item.links)) {
+  // Combine actions from AccessControl or MDMS
+  const actionList =
+    (accessControlData?.actions && accessControlData.actions.length > 0
+      ? accessControlData.actions
+      : mdmsData?.["ACCESSCONTROL-ACTIONS-TEST"]?.["actions-test"]) || [];
+
+  // Employee / internal modules blocklist
+  const BLOCKED_NAMES = new Set([
+    "HRMS",
+    "FINANCE",
+    "CITIZEN SCORE CARD",
+    "REPORTS",
+    "RECEIPT CANCELLATION",
+    "UNIVERSAL COLLECTION",
+    "BILL AMENDMENT",
+    "SURE DASHBOARD",
+    "PGRAI",
+  ]);
+
+  // ─── Build Dynamic Menu Items (Exact Monolith ActionMenu logic) ─────────────
+  const dynamicItems = [];
+  for (let i = 0; i < actionList.length; i++) {
+    const item = actionList[i];
+    if (!item || item.enabled === false || !item.path || !item.navigationURL) continue;
+
+    const splitArray = item.path.split(".");
+    const leftIconArray = item.leftIcon ? item.leftIcon.split(".") : [];
+    const leftIcon = leftIconArray.length >= 1 ? leftIconArray[0] : null;
+
+    if (splitArray.length > 1) {
+      const topLevel = splitArray[0];
+      const isHome =
+        topLevel.toUpperCase() === "HOME" ||
+        topLevel.toUpperCase() === "CS_HOME_HOMEHEADER" ||
+        topLevel.toUpperCase() === "CS_HOME_HEADER_HOME";
+      const normalizedName = isHome ? "Home" : topLevel;
+      const normalizedKey = normalizedName.toUpperCase();
+
+      if (!dynamicItems.some((m) => m.name.toUpperCase() === normalizedKey)) {
+        if (!BLOCKED_NAMES.has(normalizedKey)) {
+          dynamicItems.push({
+            path: topLevel,
+            name: normalizedName,
+            url: isHome ? "" : "",
+            queryParams: item.queryParams,
+            orderNumber: isHome ? 0 : item.orderNumber,
+            navigationURL: isHome ? "/digit-ui/citizen" : item.navigationURL,
+            leftIcon: isHome ? "home" : leftIcon,
+            hasSubmenu: isHome ? false : true,
+          });
+        }
+      }
+    } else {
+      const itemName = item.displayName || splitArray[0];
+      const isHome =
+        itemName.toUpperCase() === "HOME" ||
+        itemName.toUpperCase() === "CS_HOME_HOMEHEADER" ||
+        itemName.toUpperCase() === "CS_HOME_HEADER_HOME" ||
+        splitArray[0].toUpperCase() === "HOME";
+      const normalizedName = isHome ? "Home" : itemName;
+      const normalizedKey = normalizedName.toUpperCase();
+
+      if (!dynamicItems.some((m) => m.name.toUpperCase() === normalizedKey)) {
+        if (!BLOCKED_NAMES.has(normalizedKey)) {
+          dynamicItems.push({
+            path: item.path,
+            name: normalizedName,
+            url: item.url,
+            queryParams: item.queryParams,
+            orderNumber: isHome ? 0 : item.orderNumber,
+            navigationURL: isHome ? "/digit-ui/citizen" : item.navigationURL,
+            leftIcon: isHome ? "home" : leftIcon,
+            hasSubmenu: false,
+          });
+        }
+      }
+    }
+  }
+
+  // Ensure Home exists exactly once
+  if (!dynamicItems.some((m) => m.name.toUpperCase() === "HOME")) {
+    dynamicItems.push({
+      path: "Home",
+      name: "Home",
+      url: "",
+      queryParams: "",
+      orderNumber: 0,
+      navigationURL: "/digit-ui/citizen",
+      leftIcon: "home",
+      hasSubmenu: false,
+    });
+  }
+
+  // Sort by orderNumber asc (exact monolith logic)
+  dynamicItems.sort((a, b) => (a.orderNumber ?? 999) - (b.orderNumber ?? 999));
+
+  // Filter SWACH for citizen (exact monolith logic)
+  const userRoles = Digit.UserService.getUser()?.info?.roles || [];
+  const hasPescoRole = userRoles.some((r) => r.code === "PESCO");
+  let filteredDynamicItems = hasPescoRole
+    ? dynamicItems.filter((m) => m.name.toUpperCase() === "SWACH")
+    : dynamicItems.filter((m) => m.name.toUpperCase() !== "SWACH");
+
+  // Get sub-items for a parent menu (exact monolith logic)
+  const getSubmenuItems = (parentName) => {
+    const subItems = [];
+    const seenSubNames = new Set();
+    actionList.forEach((item) => {
+      if (
+        item &&
+        item.enabled !== false &&
+        item.path &&
+        item.path.startsWith(parentName + ".") &&
+        item.navigationURL
+      ) {
+        const remainder = item.path.substring(parentName.length + 1);
+        const split = remainder.split(".");
+        const subName = item.displayName || split[0];
+        if (!seenSubNames.has(subName)) {
+          seenSubNames.add(subName);
+          subItems.push({
+            path: item.path,
+            name: subName,
+            displayName: subName,
+            navigationURL: item.navigationURL,
+            url: item.url,
+            orderNumber: item.orderNumber,
+          });
+        }
+      }
+    });
+    return subItems.sort((a, b) => (a.orderNumber ?? 999) - (b.orderNumber ?? 999));
+  };
+
+  // ─── Assemble Final Menu List ──────────────────────────────────────────────
+  const allMenuItems = filteredDynamicItems.map((item) => ({
+    ...item,
+    text: getTranslationLabel(item.name),
+    links: item.hasSubmenu ? getSubmenuItems(item.name) : [],
+  }));
+
+  // ─── Filter by search ────────────────────────────────────────────────────────
+  const searchTrimmed = search.trim().toLowerCase();
+  const visibleMenuItems = allMenuItems.filter((item) => {
+    if (!searchTrimmed) return true;
+    const itemLabel = (item.text || item.name || "").toLowerCase();
+    if (itemLabel.includes(searchTrimmed)) return true;
+    if (item.hasSubmenu && Array.isArray(item.links)) {
       return item.links.some((sub) => {
-        const subName = (sub.displayName || sub.name || "").toLowerCase();
-        return subName.includes(query);
+        const subLabel = (getTranslationLabel(sub.name) || sub.name || "").toLowerCase();
+        return subLabel.includes(searchTrimmed);
       });
     }
     return false;
   });
 
-  const renderMenuItem = (item, index) => {
-    const label = typeof item.text === "string" ? item.text : item.action || item.text;
-    const leftIcon = resolveIcon(item?.icon, typeof item.text === "string" ? item.text : "");
-    const isActive = pathname === item?.link || pathname === item?.sidebarURL;
+  // ─── Profile / Logout ────────────────────────────────────────────────────────
+  const isLoggedIn = isFetched && user && user.access_token;
+  const profileSection = isLoggedIn ? (
+    <SidebarProfile info={user?.info} stateName={stateInfo?.name} t={t} />
+  ) : null;
+
+  // ─── Render Menu Row ─────────────────────────────────────────────────────────
+  const renderItem = (item, index) => {
+    const label = item.text || item.name;
+    const iconComponent = resolveIcon(item.leftIcon, item.name);
     const hasSubmenu = item.hasSubmenu && Array.isArray(item.links) && item.links.length > 0;
-    const isSubOpen = openSubmenus[index] || (search.trim().length > 0 && hasSubmenu);
+    const isSubOpen = openSubmenus[item.name] || (searchTrimmed.length > 0 && hasSubmenu);
+    const navUrl = item.link || item.navigationURL || "";
+    const isActive =
+      navUrl &&
+      (pathname === navUrl ||
+        (navUrl !== "/digit-ui/citizen" &&
+          navUrl !== "/citizen" &&
+          pathname.startsWith(navUrl)));
 
-    const RowContent = () => (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "10px 14px",
-          margin: "2px 8px",
-          borderRadius: "6px",
-          backgroundColor: isActive ? "#eef2ff" : "transparent",
-          color: isActive ? "#4f46e5" : "#374151",
-          cursor: "pointer",
-          transition: "all 0.15s ease",
-          fontSize: "14px",
-          fontWeight: isActive ? "500" : "400",
-        }}
-        onMouseEnter={(e) => {
-          if (!isActive) e.currentTarget.style.backgroundColor = "#f9fafb";
-        }}
-        onMouseLeave={(e) => {
-          if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
-        }}
-        onClick={() => {
-          if (hasSubmenu) {
-            toggleSubmenu(index);
-          } else {
-            if (item.populators?.onClick) item.populators.onClick();
-            handleClose();
-          }
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minWidth: "22px",
-              color: isActive ? "#4f46e5" : "#4b5563",
-            }}
-          >
-            {leftIcon}
-          </span>
-          <span
-            style={{
-              fontSize: "14px",
-              color: isActive ? "#4f46e5" : "#374151",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {label}
-          </span>
-        </div>
-        {hasSubmenu && (
-          <span style={{ color: "#9ca3af", display: "flex", alignItems: "center", flexShrink: 0 }}>
-            {isSubOpen ? <ArrowVectorDown /> : <ArrowForward />}
-          </span>
-        )}
-      </div>
-    );
-
-    let mainElement;
-    if (hasSubmenu) {
-      mainElement = <RowContent />;
-    } else if (item.type === "external-link") {
-      mainElement = (
-        <a href={item.link} style={{ textDecoration: "none", display: "block" }}>
-          <RowContent />
-        </a>
-      );
-    } else if (item.type === "link") {
-      mainElement = (
-        <Link to={item?.link} style={{ textDecoration: "none", display: "block" }}>
-          <RowContent />
-        </Link>
-      );
-    } else {
-      mainElement = <RowContent />;
-    }
+    const rowStyle = {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "10px 14px",
+      margin: "2px 8px",
+      borderRadius: "6px",
+      backgroundColor: isActive ? "#eef2ff" : "transparent",
+      color: isActive ? "#4f46e5" : "#374151",
+      cursor: "pointer",
+      transition: "all 0.15s ease",
+      fontSize: "14px",
+      fontWeight: isActive ? "500" : "400",
+    };
 
     return (
-      <React.Fragment key={index}>
-        {item?.element === "PROFILE" && (
-          <div
-            style={{
-              height: "1px",
-              backgroundColor: "#f0f0f0",
-              margin: "8px 12px",
-            }}
-          />
-        )}
-        {mainElement}
+      <React.Fragment key={item.name + "_" + index}>
+        <div
+          style={rowStyle}
+          onMouseEnter={(e) => {
+            if (!isActive) e.currentTarget.style.backgroundColor = "#f9fafb";
+          }}
+          onMouseLeave={(e) => {
+            if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
+          }}
+          onClick={() => {
+            if (hasSubmenu) {
+              toggleSubmenu(item.name);
+            } else {
+              handleItemNavigation(navUrl);
+            }
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                minWidth: "22px",
+                color: isActive ? "#4f46e5" : "#4b5563",
+              }}
+            >
+              {iconComponent}
+            </span>
+            <span
+              style={{
+                fontSize: "14px",
+                color: isActive ? "#4f46e5" : "#374151",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {label}
+            </span>
+          </div>
+          {hasSubmenu && (
+            <span style={{ color: "#9ca3af", display: "flex", alignItems: "center", flexShrink: 0 }}>
+              {isSubOpen ? <ArrowVectorDown /> : <ArrowForward />}
+            </span>
+          )}
+        </div>
+
+        {/* Submenu Accordion */}
         {hasSubmenu && isSubOpen && (
           <div style={{ paddingLeft: "42px", paddingRight: "10px" }}>
             {item.links.map((subItem, sIdx) => {
-              const isSubActive = pathname === subItem.link || pathname === subItem.navigationURL;
+              const subUrl = subItem.navigationURL || subItem.sidebarURL || subItem.url || "";
+              const subLabel = getTranslationLabel(subItem.name);
+              const isSubActive = pathname === subUrl;
               return (
-                <Link
+                <div
                   key={sIdx}
-                  to={subItem.link || subItem.navigationURL}
-                  onClick={handleClose}
+                  onClick={() => handleItemNavigation(subUrl)}
                   style={{
                     display: "block",
                     padding: "8px 12px",
                     margin: "2px 0",
                     borderRadius: "4px",
                     fontSize: "13px",
-                    textDecoration: "none",
+                    cursor: "pointer",
                     color: isSubActive ? "#4f46e5" : "#4b5563",
                     backgroundColor: isSubActive ? "#eef2ff" : "transparent",
                     transition: "all 0.15s ease",
@@ -429,8 +469,8 @@ const StaticCitizenSideBar = ({
                     if (!isSubActive) e.currentTarget.style.backgroundColor = "transparent";
                   }}
                 >
-                  {subItem.displayName}
-                </Link>
+                  {subLabel}
+                </div>
               );
             })}
           </div>
@@ -441,19 +481,17 @@ const StaticCitizenSideBar = ({
 
   return (
     <React.Fragment>
-      <style>
-        {`
-          .citizen-custom-sidebar svg {
-            width: 20px !important;
-            height: 20px !important;
-            min-width: 20px !important;
-            fill: currentColor !important;
-            display: inline-block !important;
-          }
-        `}
-      </style>
+      <style>{`
+        .citizen-custom-sidebar svg {
+          width: 20px !important;
+          height: 20px !important;
+          min-width: 20px !important;
+          fill: currentColor !important;
+          display: inline-block !important;
+        }
+      `}</style>
       <div>
-        {/* Backdrop overlay */}
+        {/* Backdrop */}
         <div
           onClick={handleClose}
           style={{
@@ -462,14 +500,14 @@ const StaticCitizenSideBar = ({
             left: 0,
             width: "100vw",
             height: "100vh",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "rgba(0,0,0,0.5)",
             zIndex: 9998,
             display: isOpen ? "block" : "none",
             transition: "opacity 0.2s ease",
           }}
-        ></div>
+        />
 
-        {/* Sliding Sidebar Drawer */}
+        {/* Drawer */}
         <div
           className="citizen-custom-sidebar"
           style={{
@@ -480,23 +518,23 @@ const StaticCitizenSideBar = ({
             height: "100vh",
             backgroundColor: "#ffffff",
             zIndex: 9999,
-            transition: "left 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)",
             overflowY: "auto",
             display: "flex",
             flexDirection: "column",
-            boxShadow: isOpen ? "4px 0 16px rgba(0, 0, 0, 0.15)" : "none",
+            boxShadow: isOpen ? "4px 0 16px rgba(0,0,0,0.15)" : "none",
           }}
         >
-          {profileItem}
+          {profileSection}
 
-          {/* Search bar matching Screenshot 2 */}
+          {/* Search */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: "8px",
               padding: "6px 12px",
-              margin: "10px 12px 6px 12px",
+              margin: "10px 12px 6px",
               backgroundColor: "#f9fafb",
               border: "1px solid #e5e7eb",
               borderRadius: "6px",
@@ -519,39 +557,81 @@ const StaticCitizenSideBar = ({
             />
           </div>
 
-          <div
-            className="drawer-desktop"
-            style={{
-              backgroundColor: "#ffffff",
-              flex: 1,
-              overflowY: "auto",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
+          {/* Menu Items List */}
+          <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
             <div style={{ flex: 1, padding: "6px 0" }}>
-              {filteredMenuItems.map((item, index) => renderMenuItem(item, index))}
+              {visibleMenuItems.map((item, index) => renderItem(item, index))}
+
+              {/* Logged in Actions (Edit Profile & Logout) */}
+              {isLoggedIn && (
+                <React.Fragment>
+                  <div
+                    style={{
+                      height: "1px",
+                      backgroundColor: "#f0f0f0",
+                      margin: "8px 12px",
+                    }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      padding: "10px 14px",
+                      margin: "2px 8px",
+                      borderRadius: "6px",
+                      color: "#374151",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f9fafb")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    onClick={showProfilePage}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", minWidth: "22px", color: "#4b5563" }}>
+                      <EditPencilIcon className="icon" />
+                    </span>
+                    <span>{t("EDIT_PROFILE")}</span>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      padding: "10px 14px",
+                      margin: "2px 8px",
+                      borderRadius: "6px",
+                      color: "#374151",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f9fafb")}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    onClick={handleLogout}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", minWidth: "22px", color: "#4b5563" }}>
+                      <LogoutIcon className="icon" />
+                    </span>
+                    <span>{t("CORE_COMMON_LOGOUT")}</span>
+                  </div>
+                </React.Fragment>
+              )}
             </div>
-            <div
-              className="sidebar-footer"
-              style={{
-                borderTop: "1px solid #f0f0f0",
-                backgroundColor: "#ffffff",
-                padding: "12px 16px",
-              }}
-            >
+
+            {/* Footer */}
+            <div style={{ borderTop: "1px solid #f0f0f0", padding: "12px 16px" }}>
               <div style={{ fontSize: "0.75rem", color: "#767676", textAlign: "center" }}>
                 <p style={{ margin: "0 0 0.25rem 0", fontWeight: "500" }}>© 2025 mSeva Punjab</p>
-                <p style={{ margin: "0", fontSize: "0.7rem", color: "#9e9e9e" }}>Powered by UPMCGCL</p>
+                <p style={{ margin: 0, fontSize: "0.7rem", color: "#9e9e9e" }}>Powered by UPMCGCL</p>
               </div>
             </div>
           </div>
         </div>
-        <div>
-          {showDialog && (
-            <LogoutDialog onSelect={handleOnSubmit} onCancel={handleOnCancel} onDismiss={handleOnCancel}></LogoutDialog>
-          )}
-        </div>
+
+        {showDialog && (
+          <LogoutDialog onSelect={handleOnSubmit} onCancel={handleOnCancel} onDismiss={handleOnCancel} />
+        )}
       </div>
     </React.Fragment>
   );

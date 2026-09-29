@@ -77,12 +77,20 @@ const Home = ({
     ],
     {
       select: (data) => {
+        // Blocklist: exclude known employee-only or non-citizen-sidebar modules
+        const EXCLUDE_NAMES = new Set([
+          "rainmaker-citizen-scorecard",
+          "rainmaker-citizen-swach",
+          "rainmaker-citizen-hrms",
+          "rainmaker-citizen-finance",
+          "rainmaker-citizen-pgrai",
+        ]);
         const formattedData = data?.["ACCESSCONTROL-ACTIONS-TEST"]?.["actions-test"]
           ?.filter(
             (el) =>
               el.enabled === true &&
               el.url === "card" &&
-              el.name?.startsWith("rainmaker-citizen")
+              !EXCLUDE_NAMES.has(el.name)
           )
           .reduce((a, b) => {
             const moduleKey = b.parentModule || b.name;
@@ -93,8 +101,6 @@ const Home = ({
       },
     }
   );
-
-  console.log(linkData,"linkData")
   const isMobile = window.Digit.Utils.browser.isMobile();
   const classname = Digit.Hooks.fsm.useRouteSubscription(pathname);
   const { t } = useTranslation();

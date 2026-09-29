@@ -124,7 +124,7 @@ const StakeholderRegistration = () => {
           documentUid: doc?.documentUid || null,
           active: true,
           tenantId: doc?.tenantId || tenantId,
-          id: doc?.id || null,
+          id: finalDocVal?.tradeLicenseDetail?.applicationDocuments?.find((saved) => saved.documentType === doc?.documentType)?.id || doc?.id || null,
         }))
       : [];
 

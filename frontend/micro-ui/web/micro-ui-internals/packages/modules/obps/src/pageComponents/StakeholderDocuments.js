@@ -107,25 +107,24 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
     setLoader(true);
     try {
       const response = await Digit.OBPSService.BPAREGupdate(payload, tenantId);
-      let data = {
-        ...sessionData,
-        value: {
-          ...sessionData?.value,
-          result: {
-            ...response
-          }
-        }
+      const savedDocuments = response?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments;
+      if (!Array.isArray(savedDocuments) || regularDocs.some((doc) => !savedDocuments.some((saved) => saved.documentType === doc.documentType && saved.id))) {
+        throw new Error("Document IDs were not returned by the update API");
+      }
+      setDocuments(savedDocuments);
+      const updatedData = {
+        ...formData,
+        result: response,
+        [config.key]: { ...documentStep, documents: savedDocuments },
       };
-
-      sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify(data));
-      setLoader(false);
-      console.log("UPDATE response:", response);
+      sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify({ ...sessionData, value: updatedData }));
+      onSelect(config.key, updatedData, false, true);
     } catch (error) {
-      console.log("error", error);
+      setError(t("Unable to save documents. Please try again."));
+    } finally {
       setLoader(false);
     }
 
-    onSelect(config.key, documentStep);
   };
   const onSkip = () => onSelect();
   function onAdd() {}
@@ -165,7 +164,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
           config={config}
           onSelect={handleSubmit}
           onSkip={onSkip}
-          isDisabled={enableSubmit}
+          isDisabled={enableSubmit || loader}
           onAdd={onAdd}
           cardStyle={{ paddingRight: "16px" }}
         >
@@ -189,7 +188,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, setError: setForm
         </FormStep>
       </div>
       <ActionBar>
-        <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleSubmit} disabled={enableSubmit} />
+        <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleSubmit} disabled={enableSubmit || loader} />
       </ActionBar>
       {(loader || isLoading) && <LoaderNew page={true} />}
     </div>
@@ -247,7 +246,8 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
 
   useEffect(() => {
     // GET existing doc entry (if any)
-    const existing = documents?.find((d) => d.documentType === doc.code);
+    const existing = documents?.find((d) => d.documentType === doc.code) ||
+      formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments?.find((d) => d.documentType === doc.code);
     console.log("existing doc", existing, documents);
     if (!uploadedFile) {
       // DELETE CASE
@@ -266,6 +266,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
       return [
         ...filtered,
         {
+          ...existing,
           id: existing?.id || null,
           documentType: doc.code,
           fileStoreId: uploadedFile,

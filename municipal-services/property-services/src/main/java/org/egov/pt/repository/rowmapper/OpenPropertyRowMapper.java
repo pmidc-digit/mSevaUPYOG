@@ -59,12 +59,19 @@ public class OpenPropertyRowMapper implements ResultSetExtractor<List<Property>>
 
 				AuditDetails auditdetails = getAuditDetail(rs, "property");
 
+				Double landArea = rs.getDouble("landArea");
+				if (rs.wasNull()) {
+					landArea = null;
+				}
+
 				currentProperty = Property.builder()
 						.creationReason(CreationReason.fromValue(rs.getString("creationReason")))
 						.status(Status.fromValue(rs.getString("propertystatus")))
 						.oldPropertyId(rs.getString("oldPropertyId"))
 						.propertyId(rs.getString("propertyid"))
 						.surveyId(rs.getString("surveyId"))
+						.landArea(landArea)
+						.superBuiltUpArea(rs.getBigDecimal("propertysbpa"))
 						.additionalDetails(getadditionalDetail(rs, "padditionalDetails"))
 
 						.auditDetails(auditdetails)
@@ -216,6 +223,12 @@ public class OpenPropertyRowMapper implements ResultSetExtractor<List<Property>>
 		currentProperty.setPropertyId(rs.getString("propertyid"));
 		currentProperty.setAddress(address);
 		currentProperty.setStatus(Status.fromValue(rs.getString("propertystatus")));
+		Double landArea = rs.getDouble("landArea");
+		if (rs.wasNull()) {
+			landArea = null;
+		}
+		currentProperty.setLandArea(landArea);
+		currentProperty.setSuperBuiltUpArea(rs.getBigDecimal("propertysbpa"));
 		currentProperty.setOldPropertyId(rs.getString("oldPropertyId"));
 		currentProperty.setSurveyId(rs.getString("surveyId"));
 		currentProperty.setTenantId(tenantId);

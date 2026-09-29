@@ -32,7 +32,7 @@ export const convertEpochToDate = (dateEpoch) => {
 const WrapPaymentComponent = (props) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { eg_pg_txnid: egId, workflow: workflw, propertyId } = Digit.Hooks.useQueryParams();
+  const { eg_pg_txnid: egId, workflow: workflw, propertyId , encResp } = Digit.Hooks.useQueryParams();
   const [printing, setPrinting] = useState(false);
   const [chbPermissionLoading, setChbPermissionLoading] = useState(false);
 
@@ -60,7 +60,7 @@ const WrapPaymentComponent = (props) => {
   console.log("layoutapplicationdetails", layoutapplicationdetails);
   let challanEmpData = ChallanData(tenantId, consumerCode);
 
-  const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
+  const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId :egId , encResp: encResp }, business_service, {
     retry: false,
     staleTime: Infinity,
     refetchOnWindowFocus: false,

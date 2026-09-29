@@ -127,14 +127,17 @@ export const PaymentService = {
       data: { ...details },
     }),
 
-  updateCitizenReciept: (transactionId) =>
+  updateCitizenReciept: (transactionId, encResp) =>
     Request({
       url: Urls.payment.update_citizen_reciept,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
-      params: { transactionId },
+      params: { 
+        transactionId,
+        ...(encResp ? { encResp } : {}),
+      },
     }),
 
   demandSearch: (tenantId, consumerCode, businessService) =>

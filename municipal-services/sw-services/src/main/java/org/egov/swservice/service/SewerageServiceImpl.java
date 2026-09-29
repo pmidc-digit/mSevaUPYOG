@@ -503,7 +503,7 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 				}
 			}
 		}
-		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECT);
+		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECTED);
 	} else if (action != null && action.equals(SWConstants.ACTION_REJECT)) {
 		// When rejected: restore old connection to Active, current application to Disconnect
 		if (!prevSewerageConnectionList.isEmpty()) { 
@@ -517,7 +517,7 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 				}
 			}
 		}
-		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECT);
+		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECTED);
 	} else {
 		// When process in flow (SUBMIT, FORWARD, etc.): make old status Disconnect and current Active
 		if (!prevSewerageConnectionList.isEmpty()) { 

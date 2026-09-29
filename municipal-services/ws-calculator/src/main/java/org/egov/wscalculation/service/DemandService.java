@@ -1239,7 +1239,7 @@ public class DemandService {
 								.toCommonUser();
 					}
 					owner = getPlainOwnerDetails(requestInfo, owner.getUuid(), tenantId);
-					if (!(demand.getPayer().getUuid().equalsIgnoreCase(owner.getUuid())))
+					if (demand.getPayer() == null || !(demand.getPayer().getUuid().equalsIgnoreCase(owner.getUuid())))
 						demand.setPayer(owner);
 				}
 

@@ -201,7 +201,30 @@ public class BillSchedulerNotificationService {
 				return;
 			}
 
-			String primaryCity = getCityName(primaryTenant);
+			List<String> distinctTenantIds = schedulers.stream()
+					.map(BillScheduler::getTenantId)
+					.filter(Objects::nonNull)
+					.distinct()
+					.collect(Collectors.toList());
+
+			List<String> distinctCityNames = distinctTenantIds.stream()
+					.map(this::getCityName)
+					.distinct()
+					.collect(Collectors.toList());
+
+			int tenantCount = distinctTenantIds.size();
+
+			String displayCity;
+			String displayTenant;
+
+			if (tenantCount > 1) {
+				displayCity = "Multi-ULB (" + tenantCount + " Cities)";
+				displayTenant = String.join(", ", distinctCityNames);
+			} else {
+				displayCity = distinctCityNames.isEmpty() ? "Unknown" : distinctCityNames.get(0);
+				displayTenant = distinctTenantIds.isEmpty() ? "Unknown" : distinctTenantIds.get(0);
+			}
+
 			String generatedOn = new SimpleDateFormat("dd-MMM-yyyy hh:mm a").format(new Date(startTime));
 			String completedOn = new SimpleDateFormat("dd-MMM-yyyy hh:mm a").format(new Date());
 
@@ -255,9 +278,16 @@ public class BillSchedulerNotificationService {
 				}
 			}
 
+			// Compute common failure reason from the failed records we already fetched
+			String commonFailureReason = getMostCommonFailureReason(failedRecords);
+			String successRate = totalScheduled > 0
+					? String.format("%.1f", (totalSuccess * 100.0) / totalScheduled)
+					: "0.0";
+
 			String customizedMsg = template
-					.replace("{primaryCity}", primaryCity)
-					.replace("{primaryTenant}", primaryTenant)
+					.replace("{primaryCity}", displayCity)
+					.replace("{primaryTenant}", displayTenant)
+					.replace("{tenantCount}", String.valueOf(tenantCount))
 					.replace("{generatedOn}", generatedOn)
 					.replace("{completedOn}", completedOn)
 					.replace("{duration}", duration)
@@ -268,6 +298,8 @@ public class BillSchedulerNotificationService {
 					.replace("{totalSuccess}", COUNT_FORMAT.format(totalSuccess))
 					.replace("{totalFailure}", COUNT_FORMAT.format(totalFailure))
 					.replace("{totalAmount}", CURRENCY_FORMAT.format(totalAmount))
+					.replace("{successRate}", successRate)
+					.replace("{commonFailureReason}", commonFailureReason)
 					.replace("{localityRows}", localityRows.toString())
 					.replace("{failedRows}", failedRows.toString());
 
@@ -277,7 +309,7 @@ public class BillSchedulerNotificationService {
 				subject = customizedMsg.substring(customizedMsg.indexOf("<h2>") + 4, customizedMsg.indexOf("</h2>"));
 				body = customizedMsg.substring(customizedMsg.indexOf("</h2>") + 5);
 			} else {
-				subject = "Water Bill Generation Completed - " + primaryCity + " (" + new SimpleDateFormat("dd-MMM-yyyy").format(new Date()) + ")";
+				subject = "Water Bill Generation Completed - " + displayCity + " (" + new SimpleDateFormat("dd-MMM-yyyy").format(new Date()) + ")";
 				body = customizedMsg;
 			}
 
@@ -342,11 +374,10 @@ public class BillSchedulerNotificationService {
 	}
 
 	private BigDecimal getSchedulerTotalAmount(String schedulerId) {
-		String sql = "SELECT COALESCE(SUM(b.totalamount), 0) as total_amount "
-				+ "FROM egbs_bill_v1 b "
-				+ "INNER JOIN egbs_billdetail_v1 bd ON bd.billid = b.id "
-				+ "INNER JOIN eg_ws_bill_scheduler_connection_status cs ON cs.consumercode = bd.consumercode "
-				+ "WHERE cs.eg_ws_scheduler_id = :id AND cs.status = 'SUCCESS' AND b.status = 'ACTIVE' AND b.businessservice = 'WS'";
+		// Use billamount column populated directly at bill generation time — no join needed.
+		String sql = "SELECT COALESCE(SUM(billamount), 0) "
+				+ "FROM eg_ws_bill_scheduler_connection_status "
+				+ "WHERE eg_ws_scheduler_id = :id AND status = 'SUCCESS'";
 
 		Map<String, Object> params = Collections.singletonMap("id", schedulerId);
 		try {
@@ -371,5 +402,35 @@ public class BillSchedulerNotificationService {
 			log.warn("⚠️ Error querying failed bill connection records: {}", e.getMessage());
 			return Collections.emptyList();
 		}
+	}
+
+	/**
+	 * From the already-fetched list of failed records, finds the most frequently
+	 * occurring reason and returns a human-readable label with count.
+	 * Example: "EMPTY_DEMANDS: No demands found for the given bill generate criteria (38 connections)"
+	 */
+	private String getMostCommonFailureReason(List<Map<String, Object>> failedRecords) {
+		if (failedRecords == null || failedRecords.isEmpty()) {
+			return "None";
+		}
+		// Group by reason string and count occurrences
+		Map<String, Long> reasonCounts = failedRecords.stream()
+				.map(r -> {
+					String reason = (String) r.get("reason");
+					return reason != null && !reason.trim().isEmpty() ? reason.trim() : "Unknown";
+				})
+				.collect(Collectors.groupingBy(r -> r, Collectors.counting()));
+
+		// Find most frequent
+		return reasonCounts.entrySet().stream()
+				.max(Map.Entry.comparingByValue())
+				.map(e -> {
+					String reason = e.getKey();
+					long count = e.getValue();
+					// Truncate very long reasons to keep the email clean
+					String display = reason.length() > 120 ? reason.substring(0, 117) + "..." : reason;
+					return display + " (" + count + " connection" + (count > 1 ? "s" : "") + ")";
+				})
+				.orElse("Unknown");
 	}
 }

@@ -25,6 +25,7 @@ import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
+import org.egov.tracer.model.ServiceCallException;
 import org.egov.wscalculation.config.WSCalculationConfiguration;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.producer.WSCalculationProducer;
@@ -2430,10 +2431,10 @@ public class DemandService {
 	    List<String> successConsumerCodes = new ArrayList<>();
 
 	    for (String consumerCode : consumerCodes) {
-			List<BillV2> bills =null;
+			List<BillV2> bills = null;
 
 	        try {
-	        	
+
 	            StringBuilder fetchBillURL = calculatorUtils.getFetchBillURL(tenantId, consumerCode);
 
 	            Object result = serviceRequestRepository.fetchResult(
@@ -2445,79 +2446,83 @@ public class DemandService {
 	            if (billResponse == null) {
 	                log.warn("⚠️ BillResponseV2 is null after conversion.");
 	                billGeneratorDao.updateBillSchedulerConnectionStatus(
-	            			  consumerCode,
-			            		 schedlerId,
-		  				        localitycode,
-		  				        WSCalculationConstant.FAILURE,
-		  				        tenantId,
-		  				        "BillResponseV2 is null after conversion.",
-		  				      System.currentTimeMillis()
-		  				    );
+	                        consumerCode, schedlerId, localitycode,
+	                        WSCalculationConstant.FAILURE, tenantId,
+	                        "BillResponseV2 is null after conversion.",
+	                        System.currentTimeMillis());
 	            } else if (billResponse.getBill() == null) {
 	                log.warn("⚠️ Bill list is null in BillResponseV2.");
 	                billGeneratorDao.updateBillSchedulerConnectionStatus(
-	            			  consumerCode,
-			            		 schedlerId,
-		  				        localitycode,
-		  				        WSCalculationConstant.FAILURE,
-		  				        tenantId,
-		  				        "Bill list is null in BillResponseV2.",
-		  				      System.currentTimeMillis()
-		  				    );
+	                        consumerCode, schedlerId, localitycode,
+	                        WSCalculationConstant.FAILURE, tenantId,
+	                        "Bill list is null in BillResponseV2.",
+	                        System.currentTimeMillis());
 	            } else {
 	                bills = billResponse.getBill();
 	            }
-	        	
-	            
-	            if (bills != null && !bills.isEmpty()) {
-	            	
-	            	
-	            	  billGeneratorDao.updateBillSchedulerConnectionStatus(
-	            			  consumerCode,
-		            		 schedlerId,
-	  				        localitycode,
-	  				        WSCalculationConstant.SUCCESS,
-	  				        tenantId,
-	  				        WSCalculationConstant.SUCCESS_MESSAGE,
-	  				      System.currentTimeMillis()
-	  				    );
 
-	            	 
-	            	
+	            if (bills != null && !bills.isEmpty()) {
+
+	                // Sum total amount from all bills for this consumer code and persist
+	                BigDecimal billAmount = bills.stream()
+	                        .map(b -> b.getTotalAmount() != null ? b.getTotalAmount() : BigDecimal.ZERO)
+	                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+	                billGeneratorDao.updateBillSchedulerConnectionStatus(
+	                        consumerCode, schedlerId, localitycode,
+	                        WSCalculationConstant.SUCCESS, tenantId,
+	                        WSCalculationConstant.SUCCESS_MESSAGE,
+	                        System.currentTimeMillis(), billAmount);
+
 	                successConsumerCodes.addAll(
-	                    bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList())
-	                
-	                		);
-	                log.info("✅ Bill generated successfully for consumerCode: {}", consumerCode);
+	                        bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList()));
+	                log.info("✅ Bill generated successfully for consumerCode: {} amount: {}", consumerCode, billAmount);
+
 	            } else {
-	            	  billGeneratorDao.updateBillSchedulerConnectionStatus(
-	            			  consumerCode,
-			            		 schedlerId,
-		  				        localitycode,
-		  				        WSCalculationConstant.FAILURE,
-		  				        tenantId,
-		  				        WSCalculationConstant.FAILURE_MESSAGE,
-		  				      System.currentTimeMillis()
-		  				    );
+	                billGeneratorDao.updateBillSchedulerConnectionStatus(
+	                        consumerCode, schedlerId, localitycode,
+	                        WSCalculationConstant.FAILURE, tenantId,
+	                        WSCalculationConstant.FAILURE_MESSAGE,
+	                        System.currentTimeMillis());
 
 	                failureCollector.add(consumerCode);
 	                log.warn("⚠️ No bills returned for consumerCode: {}", consumerCode);
 	            }
 
 	        } catch (Exception ex) {
-	        	  billGeneratorDao.updateBillSchedulerConnectionStatus(
-	        			  consumerCode,
-		            		 schedlerId,
-	  				        localitycode,
-	  				        WSCalculationConstant.FAILURE,
-	  				        tenantId,
-	  				      WSCalculationConstant.FAILURE_MESSAGE + " | Error Msg: " + ex.getMessage(),
-	  				      System.currentTimeMillis()
-	  				    );
+	            // Extract the real API error message.
+	            // ServiceCallException stores the HTTP response body in getError(), not getMessage().
+	            String errorReason = WSCalculationConstant.FAILURE_MESSAGE;
+	            try {
+	                if (ex instanceof ServiceCallException) {
+	                    String errorBody = ((ServiceCallException) ex).getError();
+	                    if (errorBody != null && !errorBody.isEmpty()) {
+	                        JsonNode root = mapper.readTree(errorBody);
+	                        // Response body: {"ResponseInfo":null,"Errors":[{"code":"...","message":"..."}]}
+	                        JsonNode errors = root.path("Errors");
+	                        if (errors.isArray() && errors.size() > 0) {
+	                            String code = errors.get(0).path("code").asText("");
+	                            String msg  = errors.get(0).path("message").asText("");
+	                            errorReason = code.isEmpty() ? msg : (code + ": " + msg);
+	                        } else {
+	                            errorReason = errorBody;
+	                        }
+	                    }
+	                } else if (ex.getMessage() != null) {
+	                    errorReason = WSCalculationConstant.FAILURE_MESSAGE + " | Error Msg: " + ex.getMessage();
+	                }
+	            } catch (Exception parseEx) {
+	                log.warn("⚠️ Failed to parse ServiceCallException error body: {}", parseEx.getMessage());
+	            }
+
+	            billGeneratorDao.updateBillSchedulerConnectionStatus(
+	                    consumerCode, schedlerId, localitycode,
+	                    WSCalculationConstant.FAILURE, tenantId,
+	                    errorReason,
+	                    System.currentTimeMillis());
 
 	            failureCollector.add(consumerCode);
-	            log.error("❌ Fetch Bill failed for consumerCode: {} Exception: {}", consumerCode, ex.getMessage(), ex);
-	            
+	            log.error("❌ Fetch Bill failed for consumerCode: {} Reason: {}", consumerCode, errorReason, ex);
 	        }
 	    }
 

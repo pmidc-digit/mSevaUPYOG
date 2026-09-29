@@ -587,7 +587,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 				}
 			}
 		}
-		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
+		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECTED);
 	} else if (action != null && action.equals(WCConstants.ACTION_REJECT)) {
 		// When rejected: restore old connection to Active, current application to Disconnect
 		if (!previousConnectionsList.isEmpty()) { 
@@ -601,7 +601,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 				}
 			}
 		}
-		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
+		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECTED);
 	} else {
 		// When process in flow (SUBMIT, FORWARD, etc.): make old status Disconnect and current Active
 		if (!previousConnectionsList.isEmpty()) { 

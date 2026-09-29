@@ -411,6 +411,8 @@ public class SWConstants {
 
 	public static final String INACTIVE_STATUS = "Inactive";
 
+	public static final String DISCONNECT_STATUS = "Disconnect";
+
 	public static final String SUCCESS_DISCONNECT_MSG = "Successfully disconnected sewerage connection";
 	public static final String ES_DATA_PATH = "$..Data";
 }

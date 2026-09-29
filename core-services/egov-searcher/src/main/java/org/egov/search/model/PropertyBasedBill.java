@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 import org.egov.custom.mapper.billing.impl.Bill;
 
@@ -19,5 +20,5 @@ import org.egov.custom.mapper.billing.impl.Bill;
 public class PropertyBasedBill {
     private String propertyId;
     private String tenantId;
-    private List<Bill> bills;
+    private List<Map<String, Bill>> bills;
 }

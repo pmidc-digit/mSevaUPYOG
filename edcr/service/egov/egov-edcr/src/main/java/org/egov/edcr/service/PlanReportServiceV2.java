@@ -314,7 +314,7 @@ public class PlanReportServiceV2 {
                 plan.getPlot() != null ? plan.getPlot().getPlotBndryArea(): BigDecimal.ZERO);
         
         model.put("totalExistingBuiltUpArea",
-                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalExistingBuiltUpArea() : BigDecimal.valueOf(0));
+                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalExistingBuiltUpArea() : BigDecimal.ZERO);
 
         Map<String, String> serviceTypeList = new ConcurrentHashMap<>();
         serviceTypeList.put("NEW_CONSTRUCTION", "New Construction");
@@ -378,6 +378,21 @@ public class PlanReportServiceV2 {
 
         addSummarySections(allDetails, sections, prefixSummaryNameMap);
 
+        if (Boolean.TRUE.equals(plan.getEdcrRequest().getSiteReserved())
+                && Boolean.TRUE.equals(plan.getEdcrRequest().getApprovedCS())) {
+            /*
+             * Site Reserved = true and Approved Control Sheet = true.
+             * In this case, mark every section/detail status as Accepted.
+             */
+            sections.entrySet().stream()
+                    .flatMap(entry -> entry.getValue().entrySet().stream())
+                    .map(e -> e.getValue().getDetail())
+                    .flatMap(List::stream)
+                    .filter(d -> d.containsKey("Status"))
+                    .forEach(d -> d.put("Status", "Accepted"));
+        	//plan.getErrors().clear();
+        }
+        
         long notFulfilledCount = sections.entrySet().stream()
                 .flatMap(entry -> entry.getValue().entrySet().stream())
                 .map(e -> e.getValue().getDetail())

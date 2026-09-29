@@ -431,5 +431,7 @@ public class BPAConstants {
 	public static final Long DAY_TO_MILLISECOND = 86400000L;
 	
 	public static final String PROPERTY_USAGE = "PropertyUsage";
+	
+	public static final String EMAIL_SUBJECT = "Building Plan Approval - ";
 
 }

@@ -111,7 +111,7 @@ public class EstimationService {
 						billingSlabIds, request, masterData);
 		List<TaxHeadEstimate> taxHeadEstimates = getEstimatesForTax(taxAmt, criteria.getWaterConnection(),
 				timeBasedExemptionMasterMap,
-				RequestInfoWrapper.builder().requestInfo(request.getRequestInfo()).build());
+				RequestInfoWrapper.builder().requestInfo(request.getRequestInfo()).build(), criteria);
 
 		Map<String, List> estimatesAndBillingSlabs = new HashMap<>();
 		estimatesAndBillingSlabs.put("estimates", taxHeadEstimates);
@@ -130,10 +130,11 @@ public class EstimationService {
 	 * @param connection                   - Connection Object
 	 * @param timeBasedExemptionsMasterMap List of Exemptions for the connection
 	 * @param requestInfoWrapper           - RequestInfo Wrapper object
+	 * @param criteria                     - CalculationCriteria object
 	 * @return - Returns list of TaxHeadEstimates
 	 */
 	private List<TaxHeadEstimate> getEstimatesForTax(BigDecimal waterCharge, WaterConnection connection,
-			Map<String, JSONArray> timeBasedExemptionsMasterMap, RequestInfoWrapper requestInfoWrapper) {
+			Map<String, JSONArray> timeBasedExemptionsMasterMap, RequestInfoWrapper requestInfoWrapper, CalculationCriteria criteria) {
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
 		Map<String, Object> add_details = null;
@@ -196,17 +197,19 @@ public class EstimationService {
 				} catch (Exception ex) {
 					disposal_charge = new BigDecimal(200.0);
 				}
+
+				if (criteria != null && criteria.getFrom() != null && criteria.getTo() != null) {
+					long effectiveMonths = calculateEffectiveMonths(criteria.getFrom(), criteria.getTo());
+					double quarterRatio = effectiveMonths / 3.0;
+					disposal_charge = disposal_charge.multiply(BigDecimal.valueOf(quarterRatio)).setScale(2, RoundingMode.HALF_UP);
+				} else {
+					disposal_charge = disposal_charge.setScale(2, RoundingMode.HALF_UP);
+				}
+
 				estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_DISCHARGE_CHARGES)
-						.estimateAmount(disposal_charge.setScale(2, 2)).build());
+						.estimateAmount(disposal_charge).build());
 			}
 		}
-
-//		if (timeBasedExemptionsMasterMap.get(WSCalculationConstant.WC_REBATE_MASTER) != null) {
-//			BigDecimal rebate;
-//			rebate = payService.getApplicableRebate(waterCharge,null,  timeBasedExemptionsMasterMap.get(WSCalculationConstant.WC_REBATE_MASTER));
-//			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_TIME_REBATE)
-//					.estimateAmount(rebate.negate().setScale(2, 2)).build());
-//		}
 
 		return estimates;
 	}
@@ -434,7 +437,12 @@ public class EstimationService {
 						}
 					}
 
-					waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
+					if (WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)
+							|| WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)) {
+						waterCharge = BigDecimal.valueOf(Math.round(totalAmount.doubleValue())).setScale(2, RoundingMode.HALF_UP);
+					} else {
+						waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
+					}
 					// PI-20289 Metered Breakdown penalty enable and working new logic
 				}  else if (WSCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
 	                request.setTaxPeriodFrom(criteria.getFrom());

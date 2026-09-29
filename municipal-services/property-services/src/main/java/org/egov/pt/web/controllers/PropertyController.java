@@ -169,33 +169,72 @@ public class PropertyController {
 
     }
 
+//    @PostMapping("/_search")
+//    public ResponseEntity<PropertyResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+//                                                   @Valid @ModelAttribute PropertyCriteria propertyCriteria) {
+//
+//        // If inbox search has been disallowed at config level or if inbox search is allowed but the current search is NOT, from inbox service validate the search criteria.
+//        if(!configs.getIsInboxSearchAllowed() || !propertyCriteria.getIsInboxSearch()){
+//            propertyValidator.validatePropertyCriteria(propertyCriteria, requestInfoWrapper.getRequestInfo());
+//        }
+//    	List<Property> properties = new ArrayList<Property>();
+//    	Integer count = 0;
+//        
+//        if (propertyCriteria.getIsRequestForCount()) {
+//        	count = propertyService.count(requestInfoWrapper.getRequestInfo(), propertyCriteria);
+//        	
+//        }else {
+//        	 properties = propertyService.searchProperty(propertyCriteria,requestInfoWrapper.getRequestInfo());
+//        }
+//        
+//        log.info("Property count after search"+properties.size());
+//        
+//        PropertyResponse response = PropertyResponse.builder()
+//        		.responseInfo(
+//                        responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
+//        		.properties(properties)
+//        		.count(count)
+//                .build();
+//        
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
+    
+    
     @PostMapping("/_search")
     public ResponseEntity<PropertyResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
                                                    @Valid @ModelAttribute PropertyCriteria propertyCriteria) {
 
+        log.info("========== PROPERTY SEARCH API CALLED ==========");
+        log.info("RequestInfoWrapper: {}", requestInfoWrapper);
+        log.info("RequestInfo: {}", requestInfoWrapper.getRequestInfo());
+        log.info("PropertyCriteria: {}", propertyCriteria);
+        log.info("IsInboxSearch: {}", propertyCriteria.getIsInboxSearch());
+        log.info("IsRequestForCount: {}", propertyCriteria.getIsRequestForCount());
+
         // If inbox search has been disallowed at config level or if inbox search is allowed but the current search is NOT, from inbox service validate the search criteria.
-        if(!configs.getIsInboxSearchAllowed() || !propertyCriteria.getIsInboxSearch()){
+        if (!configs.getIsInboxSearchAllowed() || !propertyCriteria.getIsInboxSearch()) {
             propertyValidator.validatePropertyCriteria(propertyCriteria, requestInfoWrapper.getRequestInfo());
         }
-    	List<Property> properties = new ArrayList<Property>();
-    	Integer count = 0;
-        
+
+        List<Property> properties = new ArrayList<Property>();
+        Integer count = 0;
+
         if (propertyCriteria.getIsRequestForCount()) {
-        	count = propertyService.count(requestInfoWrapper.getRequestInfo(), propertyCriteria);
-        	
-        }else {
-        	 properties = propertyService.searchProperty(propertyCriteria,requestInfoWrapper.getRequestInfo());
+            count = propertyService.count(requestInfoWrapper.getRequestInfo(), propertyCriteria);
+        } else {
+            properties = propertyService.searchProperty(propertyCriteria, requestInfoWrapper.getRequestInfo());
         }
-        
-        log.info("Property count after search"+properties.size());
-        
+
+        log.info("Property count after search: {}", properties.size());
+
         PropertyResponse response = PropertyResponse.builder()
-        		.responseInfo(
-                        responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
-        		.properties(properties)
-        		.count(count)
+                .responseInfo(
+                        responseInfoFactory.createResponseInfoFromRequestInfo(
+                                requestInfoWrapper.getRequestInfo(), true))
+                .properties(properties)
+                .count(count)
                 .build();
-        
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

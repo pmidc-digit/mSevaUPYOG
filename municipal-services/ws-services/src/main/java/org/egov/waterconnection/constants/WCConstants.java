@@ -422,7 +422,7 @@ public class WCConstants {
 	
 	public static final String INACTIVE_STATUS = "Inactive";
 
-	public static final String DISCONNECT_STATUS = "Disconnect";
+	public static final String DISCONNECT_STATUS = "Disconnected";
 
 	public static final String TENANTS_JSONPATH_ROOT = "$.MdmsRes.tenant.tenants";
 

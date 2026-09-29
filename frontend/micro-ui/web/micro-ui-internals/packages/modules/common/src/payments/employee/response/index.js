@@ -41,6 +41,7 @@ export const SuccessfulPayment = (props) => {
   const queryParams = new URLSearchParams(location.search);
     const [allowFetchBill, setallowFetchBill] = useState(false);
   const egPgTxnId = queryParams.get("eg_pg_txnid");
+  const encResp = queryParams.get("encResp");
   const razorpayPaymentId = queryParams.get("razorpayPaymentId");
   const razorpayOrderId = queryParams.get("razorpayOrderId");
   const razorpaySignature = queryParams.get("razorpaySignature");
@@ -71,7 +72,7 @@ export const SuccessfulPayment = (props) => {
     ulbType = selectedTenantData?.city?.ulbGrade;
   }
 
-  const { isLoading, data: dataCheck, isError } = Digit.Hooks.usePaymentUpdate({ egId: egPgTxnId }, businessService, {
+  const { isLoading, data: dataCheck, isError } = Digit.Hooks.usePaymentUpdate({ egId: egPgTxnId, encResp: encResp }, businessService, {
     enabled: !!egPgTxnId,
     retry: false,
     staleTime: Infinity,

@@ -159,7 +159,7 @@ const MyProperties = ({ template, header, actionButtonLabel }) => {
   };
 
   return (
-    <div className="ral-my-properties-container citizen-my-applications citizen-my-applications--rent-and-lease">
+    <div className="ral-my-properties-container">
       <div>
         {header && (
           <Header className="ral-my-properties-header">

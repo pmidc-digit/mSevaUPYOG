@@ -210,7 +210,7 @@ const LayoutNewApplicantDetails = (_props) => {
 
     const orderedSelectedOwners = [...updatedActive, ...updatedInactive];
 
-    const applicantsArray = orderedSelectedOwners.map((owner, idx) => ({
+    const applicantsArray = orderedSelectedOwners?.map((owner, idx) => ({
       ...owner,
       actualIndex: idx,
       name: owner.name || "",
@@ -563,6 +563,7 @@ const LayoutNewApplicantDetails = (_props) => {
     }
 
     triggerLoader(true);
+
     try {
       // Call create API
       const response = await Digit.RentAndLeaseService.create({ AllotmentDetails: [payload] }, tenantId);
@@ -701,11 +702,7 @@ const LayoutNewApplicantDetails = (_props) => {
       </div>
 
       <ActionBar>
-        <SubmitBar
-          label={t("Back")}
-          // className="ral-back-btn"
-          onSubmit={onGoBack}
-        />
+        <SubmitBar label={t("Back")} className="ral-back-btn" onSubmit={onGoBack} />
         <SubmitBar label={t("Next")} onSubmit={() => onSubmit()} />
       </ActionBar>
 

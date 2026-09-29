@@ -369,4 +369,54 @@ public class BPAInboxFilterService {
         return tenantWiseApplns;
     }
 
+    public List<Map<String, String>> fetchTenantWiseApplicationNumbersFromSearcher(InboxSearchCriteria criteria,
+                                                                                    HashMap<String, String> statusIdNameMap,
+                                                                                    RequestInfo requestInfo) {
+        HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
+        ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
+        Boolean isSearchResultEmpty = false;
+        Boolean isMobileNumberPresent = false;
+        List<String> userUUIDs = new ArrayList<>();
+        List<String> citizenRoles = Collections.emptyList();
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
+            isMobileNumberPresent = true;
+        }
+        if (isMobileNumberPresent) {
+            String tenantId = criteria.getTenantId();
+            String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
+            Map<String, List<String>> userDetails = fetchUserUUID(mobileNumber, requestInfo, tenantId);
+            userUUIDs = userDetails.get(USER_UUID);
+            citizenRoles = userDetails.get(USER_ROLES);
+            Boolean isUserPresentForGivenMobileNumber = CollectionUtils.isEmpty(userUUIDs) ? false : true;
+            isSearchResultEmpty = !isMobileNumberPresent || !isUserPresentForGivenMobileNumber;
+            if (isSearchResultEmpty) {
+                return new ArrayList<>();
+            }
+        } else {
+            List<String> roles = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+            if (roles.contains(CITIZEN)) {
+                userUUIDs.add(requestInfo.getUserInfo().getUuid());
+                citizenRoles = roles;
+            }
+        }
+        Map<String, Object> searcherRequest = new HashMap<>();
+        Map<String, Object> searchCriteria = getSearchCriteria(criteria, statusIdNameMap, requestInfo,
+                moduleSearchCriteria, processCriteria, userUUIDs, citizenRoles);
+
+        if (criteria.getOffset() != null) searchCriteria.put(OFFSET_PARAM, criteria.getOffset());
+        if (criteria.getLimit() != null) searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
+        if (moduleSearchCriteria != null && criteria.getLimit() != null) moduleSearchCriteria.put(LIMIT_PARAM, criteria.getLimit());
+
+        searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
+        searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
+
+        StringBuilder uri = new StringBuilder();
+        uri.append(searcherHost).append(bpaStakeholderInboxTenantWiseApplnNosEndpoint);
+
+        Object result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
+        List<Map<String, String>> tenantWiseApplns = JsonPath.read(result, "$.BPA.*");
+        return tenantWiseApplns == null ? new ArrayList<>() : tenantWiseApplns;
+    }
+
 }
+

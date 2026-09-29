@@ -100,6 +100,7 @@ public class NDCService {
 				for (NdcDetailsRequest details : ndcDetails) {
 					details.setUuid(UUID.randomUUID().toString());
 					details.setApplicationId(applicationId);
+					if(details.getDuePending() == null || details.getDuePending().toString() == "") details.setDuePending(false);
 				}
 			}
 

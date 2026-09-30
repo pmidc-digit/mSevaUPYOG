@@ -531,3 +531,172 @@ a:hover {
   font-size: 13px;
   color: #505a5f;
 }
+
+/* =============================================
+   Garbage Collection - Property Search Modal
+   ============================================= */
+
+.gc-property-search-btn {
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+.gc-property-search-modal {
+  width: 85vw;
+  max-width: 1050px;
+  min-width: 320px;
+  padding: 24px;
+}
+
+.gc-property-search-modal .modal-header {
+  margin-bottom: 16px;
+}
+
+.gc-property-search-modal .search-form-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 20px;
+  margin-bottom: 16px;
+  padding: 0;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .gc-property-search-modal .search-form-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gc-property-search-modal .form-field {
+  width: 100%;
+  margin: 0;
+}
+
+.gc-property-search-modal .form-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #0b0c0c;
+}
+
+.gc-property-search-modal .text-input {
+  width: 100%;
+  margin: 0;
+  border: none;
+}
+
+.gc-property-search-modal .text-input input,
+.gc-property-search-modal .select {
+  height: 40px;
+  line-height: 38px;
+  background-color: #fff;
+  border: 1px solid #505a5f;
+  border-radius: 4px;
+  font-size: 14px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.gc-property-search-modal .select {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.gc-property-search-modal .select.disabled {
+  background-color: #f3f2f1;
+  border-color: #b1b4b6;
+  cursor: not-allowed;
+}
+
+.gc-property-search-modal .select.disabled input,
+.gc-property-search-modal .select.disabled svg {
+  color: #505a5f;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.gc-property-search-modal .select input {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  font-size: 14px;
+  color: #0b0c0c;
+  outline: none;
+  width: calc(100% - 24px);
+}
+
+.gc-property-search-modal .select svg {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+}
+
+.gc-property-search-modal .gc-property-search-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.gc-property-search-modal .gc-property-search-clear-btn {
+  background: transparent;
+  color: #f47738;
+  border: 1px solid #f47738;
+  min-width: 100px;
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.gc-property-search-modal .gc-property-search-clear-btn:hover {
+  background-color: rgba(244, 119, 56, 0.08);
+  color: #d46328;
+  border-color: #d46328;
+}
+
+.gc-property-search-modal .gc-property-search-actions .submit-bar {
+  min-width: 120px;
+  height: 40px;
+  margin: 0;
+}
+
+.gc-property-search-modal .gc-property-search-table-wrapper {
+  max-height: 350px;
+  overflow: auto;
+  margin-top: 20px;
+  border: 1px solid #d6d6d6;
+  border-radius: 4px;
+}
+
+.gc-property-search-modal .gc-property-search-table-wrapper table {
+  width: 100%;
+}
+
+.gc-property-search-modal .gc-property-search-table-wrapper th,
+.gc-property-search-modal .gc-property-search-table-wrapper td {
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+.gc-property-search-modal .gc-property-status--active {
+  color: #00703c;
+  font-weight: 600;
+}
+
+.gc-property-search-modal .gc-property-select-btn {
+  min-width: 75px;
+  height: 34px;
+  padding: 4px 10px;
+}

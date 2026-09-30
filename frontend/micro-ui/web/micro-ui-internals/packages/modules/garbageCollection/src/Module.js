@@ -10,6 +10,7 @@ import CHBStepFormThree from "./pageComponents/CHBStepper/CHBStepFormThree";
 import CHBStepFormFour from "./pageComponents/CHBStepper/CHBStepFormFour";
 import CHBCitizenDetailsNew from "./pageComponents/CHBCitizenDetailsNew";
 import CHBCitizenSecond from "./pageComponents/CHBCitizenSecond";
+import PropertySearchModal from "./pageComponents/PropertySearchModal";
 import CHBSelectProofIdentity from "./pageComponents/CHBSelectProofIdentity";
 import CHBSummary from "./pageComponents/CHBSummary";
 import getRootReducer from "../redux/reducer";
@@ -70,6 +71,7 @@ const componentsToRegister = {
   CHBStepFormFour,
   CHBCitizenDetailsNew,
   CHBCitizenSecond,
+  PropertySearchModal,
   CHBSelectProofIdentity,
   CHBSummary,
   GCMyApplications,

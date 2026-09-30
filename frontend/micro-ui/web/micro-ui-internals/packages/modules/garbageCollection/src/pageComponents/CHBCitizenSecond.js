@@ -2,6 +2,7 @@ import React, { use, useEffect, useState } from "react";
 import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFieldPair, UploadFile, Toast } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { Loader } from "../components/Loader";
+import PropertySearchModal from "./PropertySearchModal";
 
 import { parse, format } from "date-fns";
 
@@ -9,6 +10,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
   const isCitizen = window.location.href.includes("citizen");
   const [getPropertyId, setPropertyId] = useState(null);
+  const [showPropertyModal, setShowPropertyModal] = useState(false);
   const [loader, setLoader] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
@@ -39,9 +41,12 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   } = useForm({
     defaultValues: {
       shouldUnregister: false,
+      floorNo: "",
       halls: [{ startDate: "", endDate: "", startTime: "", endTime: "" }], // predefine index 0
     },
   });
+
+  console.log(errors,"errors")
 
   const onSubmit = async (data) => {
     if (currentStepData?.venueDetails?.applicationNo || currentStepData?.apiResponseData?.applicationNo) {
@@ -76,7 +81,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             connectionCategory: "Permanent",
             // connectionCategory: data?.connectionCategory?.name,
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
-            floorNo: data?.floorNo?.floorNo,
+            floorNo: data?.floorNo?.floorNo !== undefined ? data?.floorNo?.floorNo : data?.floorNo,
             defAmount: data?.defAmount,
             isRented: isRented,
           },
@@ -128,7 +133,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           additionalDetails: {
             connectionCategory: "Permanent",
             locality: propertyDetailsFetch?.Properties?.[0]?.address?.locality?.code,
-            floorNo: data?.floorNo?.floorNo,
+            floorNo: data?.floorNo?.floorNo !== undefined ? data?.floorNo?.floorNo : data?.floorNo,
             defAmount: data?.defAmount,
             isRented: isRented,
           },
@@ -178,9 +183,11 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   };
 
   const selectedFloorUnits = React.useMemo(() => {
-    if (!watch("floorNo")) return [];
+    const floor = watch("floorNo");
+    if (floor === undefined || floor === null || floor === "") return [];
 
-    return getPUnits.filter((unit) => unit.floorNo === watch("floorNo")?.floorNo);
+    const floorNum = typeof floor === "object" ? Number(floor?.floorNo) : Number(floor);
+    return getPUnits.filter((unit) => Number(unit.floorNo) === floorNum);
   }, [watch("floorNo"), getPUnits]);
 
   const uniqueUsageCategories = React.useMemo(() => {
@@ -197,23 +204,34 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     return Array.from(map.values());
   }, [selectedFloorUnits]);
 
-  const uniqueFloors = React.useMemo(() => {
-    if (!getPUnits?.length) return [];
+  // Commented out: Fetching floors dynamically from property units
+  // const uniqueFloors = React.useMemo(() => {
+  //   if (!getPUnits?.length) return [];
+  //
+  //   const map = new Map();
+  //
+  //   getPUnits.forEach((item) => {
+  //     if (!map.has(item.floorNo)) {
+  //       map.set(item.floorNo, item);
+  //     }
+  //   });
+  //
+  //   return Array.from(map.values()).sort((a, b) => a.floorNo - b.floorNo);
+  // }, [getPUnits]);
 
-    const map = new Map();
-
-    getPUnits.forEach((item) => {
-      if (!map.has(item.floorNo)) {
-        map.set(item.floorNo, item);
-      }
-    });
-
-    return Array.from(map.values()).sort((a, b) => a.floorNo - b.floorNo);
-  }, [getPUnits]);
+  // Static options for Number of Floors (0 to 10)
+  const uniqueFloors = React.useMemo(
+    () =>
+      Array.from({ length: 11 }, (_, i) => ({
+        floorNo: i,
+        name: `${i}`,
+      })),
+    []
+  );
 
   // PT-1012-2006092
   useEffect(() => {
-    if (propertyDetailsFetch?.Properties[0]) {
+    if (propertyDetailsFetch?.Properties?.[0]) {
       setPUnits(propertyDetailsFetch?.Properties[0]?.units);
       if (propertyDetailsFetch?.Properties || currentStepData?.venueDetails || currentStepData?.apiResponseData) {
         const backStepData = currentStepData?.venueDetails || currentStepData?.apiResponseData;
@@ -241,24 +259,32 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         const freType = freqTypeOptions?.find((item) => item.name == frequency);
         const wasteType = wasteTypeOptions?.find((item) => item.name == typeOfWaste);
         // const connectionCategoryType = connectionCatoptions?.find((item) => item.code == connetionType);
-        const checkUnitid = getPUnits?.find((item) => item?.id == backStepData?.unitId);
+        const checkUnitid = propertyDetailsFetch?.Properties?.[0]?.units?.find((item) => item?.id == backStepData?.unitId);
 
-        const getFloors = uniqueFloors?.find((item) => item?.floorNo == backStepData?.additionalDetails?.floorNo);
+        if (backStepData?.additionalDetails?.floorNo !== undefined && backStepData?.additionalDetails?.floorNo !== null) {
+          setValue("floorNo", backStepData.additionalDetails.floorNo);
+        }
         setValue("propertyType", pType || null);
         setValue("frequency", freType || null);
         setValue("typeOfWaste", wasteType || null);
         // setValue("connectionCategory", connectionCategoryType || null);
         setValue("unitId", checkUnitid || null);
         setValue("defAmount", backStepData?.additionalDetails?.defAmount || null);
-        setValue("floorNo", getFloors || null);
         setValue("termsAccepted", backStepData?.additionalDetails?.isRented);
       }
     }
-  }, [propertyDetailsFetch, GCData, setValue, currentStepData, getPUnits, uniqueFloors]);
+  }, [propertyDetailsFetch, GCData, setValue, currentStepData]);
 
   const searchProperty = async () => {
     const pId = watch("propertyId");
     setPropertyId(pId);
+  };
+
+  const handlePropertySelectFromModal = (selectedProperty) => {
+    if (selectedProperty?.propertyId) {
+      setValue("propertyId", selectedProperty.propertyId);
+      setPropertyId(selectedProperty.propertyId);
+    }
   };
 
   useEffect(() => {
@@ -280,6 +306,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     setValue("location", "");
     setValue("frequency", null);
     setValue("typeOfWaste", null);
+    setValue("floorNo", "");
     // setValue("connectionCategory", null);
     setPropertyId(null); // prevent auto fetch
   };
@@ -328,6 +355,13 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
                 <button className="submit-bar gcButton" type="button" onClick={searchProperty}>
                   {`${t("PT_SEARCH")}`}
+                </button>
+                <button
+                  className="submit-bar gcButton gc-property-search-btn"
+                  type="button"
+                  onClick={() => setShowPropertyModal(true)}
+                >
+                  {`${t("PT_SEARCH_MORE")}`}
                 </button>
               </div>
               {errors?.propertyId && <p className="gc-style-ed9ef6a95c">{errors.propertyId.message}</p>}
@@ -530,13 +564,39 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   {`${t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}`} <span className="gc-style-31981a7d51">*</span>
                 </CardLabel>
                 <div className="form-field">
+                  {/* Number field with validation from 0 to 10 */}
                   <Controller
+                    control={control}
+                    name={"floorNo"}
+                    rules={{
+                      required: t("Floor is required"),
+                      min: { value: 0, message: t("Floor number must be between 0 and 10") },
+                      max: { value: 10, message: t("Floor number must be between 0 and 10") },
+                      pattern: {
+                        value: /^(?:[0-9]|10)$/,
+                        message: t("Floor number must be between 0 and 10"),
+                      },
+                    }}
+                    render={(props) => (
+                      <TextInput
+                        className="gc-style-648149cea2"
+                        type="number"
+                        value={typeof props.value === "object" ? props.value?.floorNo ?? "" : (props.value ?? "")}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        t={t}
+                      />
+                    )}
+                  />
+
+                  {/* Commented out existing Dropdown code */}
+                  {/* <Controller
                     control={control}
                     name={"floorNo"}
                     rules={{ required: t("Floor is required") }}
                     render={(props) => (
                       <Dropdown
-
                         className="form-field gc-style-648149cea2"
                         select={(e) => {
                           props.onChange(e);
@@ -547,7 +607,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         t={t}
                       />
                     )}
-                  />
+                  /> */}
                   {errors?.floorNo && <p className="gc-style-ed9ef6a95c">{errors.floorNo.message}</p>}
                 </div>
               </LabelFieldPair>
@@ -614,6 +674,14 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         </ActionBar>
       </form>
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+
+      {showPropertyModal && (
+        <PropertySearchModal
+          tenantId={tenantId}
+          closeModal={() => setShowPropertyModal(false)}
+          onPropertySelect={handlePropertySelectFromModal}
+        />
+      )}
 
       {(amountDataLoading || loader || isLoading || GCLoading || WasteTypeLoading || FreqTypeLoading) && <Loader page={true} />}
     </React.Fragment>

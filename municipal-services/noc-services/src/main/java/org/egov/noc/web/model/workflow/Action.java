@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import org.egov.noc.web.model.AuditDetails;
 import org.springframework.validation.annotation.Validated;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
@@ -34,6 +35,7 @@ import lombok.ToString;
 @Builder
 @ToString
 @EqualsAndHashCode(of = {"tenantId","currentState","action"})
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Action   {
 
         @Size(max=256)

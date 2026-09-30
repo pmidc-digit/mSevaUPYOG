@@ -504,6 +504,8 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 				}
 			}
 		}
+		sewerageDaoImpl.updateSewerageApplicationStatus(sewerageConnectionRequest.getSewerageConnection().getId(),
+				SWConstants.DISCONNECT_STATUS);
 		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECTED);
 	} else if (action != null && action.equals(SWConstants.ACTION_REJECT)) {
 		// When rejected: restore old connection to Active, current application to Disconnect

@@ -1002,30 +1002,37 @@ public class DemandService {
 				// would silently apply a rate that has nothing to do with the migrated arrears.
 				boolean arrearRateMissing = arrearOnly
 						&& (futurePenaltyRate == null || futurePenaltyRate.compareTo(BigDecimal.ZERO) <= 0);
-				PenaltyConfig penaltyConfig = null;
-				if (futurePenaltyRate != null && futurePenaltyRate.compareTo(BigDecimal.ZERO) > 0) {
-					// The FORMULA is whatever the tenant configured in MDMS for the ARREAR scope (a Penalty row with
-					// appliesTo = "ARREAR", else the generic row): SIMPLE_INTEREST, MONTHLY_FIXED, COMPOUNDING or FIXED.
-					// Only the RATE is overridden by the demand's futurePenalty - a FIXED row ignores the rate and charges
-					// its own flatAmount. min/max caps and the grace period come from the same configured row.
-					PenaltyConfig arrearConfig = masterDataService.getPenaltyConfig(requestInfo, demand.getTenantId(), "ARREAR");
+
+				// The FORMULA always comes from MDMS, resolved per scope, so a tenant can run one rule on arrears
+				// and another on rent. futurePenalty is nothing more than a PERCENTAGE: whether it is charged
+				// once, per month or per year is decided by the penaltyType configured for the scope, never by
+				// the value carried on the request.
+				String scope = arrearOnly ? "ARREAR" : "RENT";
+				PenaltyConfig penaltyConfig = arrearRateMissing
+						? null
+						: masterDataService.getPenaltyConfig(requestInfo, demand.getTenantId(), scope);
+
+				if (penaltyConfig != null && futurePenaltyRate != null
+						&& futurePenaltyRate.compareTo(BigDecimal.ZERO) > 0) {
+					// The demand's own percentage overrides the configured one - that is the entire purpose of
+					// futurePenalty on a migrated arrear. Everything else (the formula, the flat amount, the caps,
+					// the grace period) stays exactly as the tenant configured it.
 					penaltyConfig = PenaltyConfig.builder()
-							.penaltyType(arrearConfig != null ? arrearConfig.resolvedPenaltyType() : "SIMPLE_INTEREST")
+							.penaltyType(penaltyConfig.resolvedPenaltyType())
 							.annualRate(futurePenaltyRate)
 							.rate(futurePenaltyRate)
-							.flatAmount(arrearConfig != null ? arrearConfig.getFlatAmount() : null)
-							.applicableAfterDays(arrearConfig != null && arrearConfig.getApplicableAfterDays() != null
-									? arrearConfig.getApplicableAfterDays() : 0)
-							.minAmount(arrearConfig != null ? arrearConfig.getMinAmount() : null)
-							.maxAmount(arrearConfig != null ? arrearConfig.getMaxAmount() : null)
+							.monthlyRate(penaltyConfig.getMonthlyRate())
+							.flatAmount(penaltyConfig.getFlatAmount())
+							.applicableAfterDays(penaltyConfig.getApplicableAfterDays())
+							.minAmount(penaltyConfig.getMinAmount())
+							.maxAmount(penaltyConfig.getMaxAmount())
 							.build();
-					if ("FIXED".equalsIgnoreCase(penaltyConfig.resolvedPenaltyType())
-							&& penaltyConfig.getFlatAmount() == null) {
-						log.warn("Tenant {} configured the FIXED penalty type for arrears but no flatAmount - no arrear "
-								+ "penalty can be charged on demand {}.", demand.getTenantId(), demand.getId());
-					}
-				} else if (!arrearRateMissing) {
-					penaltyConfig = masterDataService.getPenaltyConfig(requestInfo, demand.getTenantId(), "RENT");
+				}
+
+				if (penaltyConfig != null && "FIXED".equalsIgnoreCase(penaltyConfig.resolvedPenaltyType())
+						&& penaltyConfig.getFlatAmount() == null) {
+					log.warn("Demand {} uses the FIXED penalty type but tenant {} configures no flatAmount - no "
+							+ "penalty can be charged.", demand.getId(), demand.getTenantId());
 				}
 
 				BigDecimal penaltyAmount = BigDecimal.ZERO;
@@ -1038,56 +1045,68 @@ public class DemandService {
 								.filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE))
 								.findFirst().orElse(null);
 
+						// The RL_PENALTY_FEE head holds the penalty the migration already carried over
+						// (arrearPenalty, written verbatim when the arrear demand was created). The accrued penalty
+						// is ADDED on top of that migrated amount so the customer pays both. The migrated part is a
+						// fixed amount stored on the demand, so the total is recomputed from scratch on every run
+						// and never stacks. A demand created before the amount was stored falls back to the head's
+						// current value, which is exactly that migrated amount.
+						BigDecimal migratedPenalty = extractMigratedPenalty(demand, existingPenaltyDetail);
+						BigDecimal totalPenalty = migratedPenalty.add(penaltyAmount).setScale(2, RoundingMode.HALF_UP);
+
 						if (existingPenaltyDetail != null) {
-							if (penaltyAmount.compareTo(existingPenaltyDetail.getTaxAmount()) > 0) {
-								existingPenaltyDetail.setTaxAmount(penaltyAmount);
-								log.info("Updated penalty to {} using strategy {} for demand: {}", penaltyAmount, calculator.getPenaltyType(), demand.getId());
+							if (totalPenalty.compareTo(existingPenaltyDetail.getTaxAmount()) != 0) {
+								existingPenaltyDetail.setTaxAmount(totalPenalty);
+								log.info("Updated penalty to {} (migrated {} + accrued {} using {}) for demand: {} ({} late day(s) since {})",
+										totalPenalty, migratedPenalty, penaltyAmount, calculator.getPenaltyType(),
+										demand.getId(), daysLate, dueDate);
 							}
 						} else {
-							DemandDetail penaltyDetail = DemandDetail.builder().taxAmount(penaltyAmount)
+							DemandDetail penaltyDetail = DemandDetail.builder().taxAmount(totalPenalty)
 									.taxHeadMasterCode(RLConstants.PENALTY_TAXHEAD_CODE).tenantId(demand.getTenantId())
 									.collectionAmount(BigDecimal.ZERO).demandId(demand.getId()).build();
 							demand.getDemandDetails().add(penaltyDetail);
-							log.info("Applied initial penalty of {} using strategy {} for demand: {}", penaltyAmount, calculator.getPenaltyType(), demand.getId());
+							log.info("Applied penalty {} (migrated {} + accrued {} using {}) for demand: {} ({} late day(s) since {})",
+									totalPenalty, migratedPenalty, penaltyAmount, calculator.getPenaltyType(),
+									demand.getId(), daysLate, dueDate);
 						}
 					}
 				} else if (arrearRateMissing) {
-					log.info("Arrear demand {} carries no futurePenalty rate - no penalty is applied to the arrears.",
+					log.info("Arrear demand {} carries no futurePenalty percentage - no penalty is applied to the arrears.",
 							demand.getId());
 				} else {
-					// Fallback if penaltyConfig is null but penaltySlab exists
+					// Safety net: the tenant has a penalty slab with a rate but the MDMS penalty row could not be
+					// resolved for this scope. Charge a ONE TIME percentage of the principal - the same simple rule
+					// the configured strategy expresses - rather than silently charging nothing.
 					Penalty penaltySlab = penaltySlabs.get(0);
-					if (penaltySlab.getApplicableAfterDays() == null || daysLate >= penaltySlab.getApplicableAfterDays()) {
-						if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0) {
-							penaltyAmount = penaltyPrincipalAmount.multiply(penaltySlab.getRate()).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
-						} else if (penaltySlab.getFlatAmount() != null && penaltySlab.getFlatAmount().compareTo(BigDecimal.ZERO) > 0) {
-							penaltyAmount = penaltySlab.getFlatAmount();
+					if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0
+							&& (penaltySlab.getApplicableAfterDays() == null || daysLate >= penaltySlab.getApplicableAfterDays())) {
+						BigDecimal fallback = penaltyPrincipalAmount.multiply(penaltySlab.getRate())
+								.divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+						if (penaltySlab.getMinAmount() != null && fallback.compareTo(penaltySlab.getMinAmount()) < 0) {
+							fallback = penaltySlab.getMinAmount();
+						}
+						if (penaltySlab.getMaxAmount() != null && fallback.compareTo(penaltySlab.getMaxAmount()) > 0) {
+							fallback = penaltySlab.getMaxAmount();
 						}
 
-						if (penaltySlab.getMinAmount() != null && penaltyAmount.compareTo(penaltySlab.getMinAmount()) < 0) {
-							penaltyAmount = penaltySlab.getMinAmount();
-						}
-						if (penaltySlab.getMaxAmount() != null && penaltyAmount.compareTo(penaltySlab.getMaxAmount()) > 0) {
-							penaltyAmount = penaltySlab.getMaxAmount();
-						}
+						DemandDetail existingPenaltyDetail = demand.getDemandDetails().stream()
+								.filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE))
+								.findFirst().orElse(null);
+						BigDecimal migratedPenalty = extractMigratedPenalty(demand, existingPenaltyDetail);
+						BigDecimal totalPenalty = migratedPenalty.add(fallback).setScale(2, RoundingMode.HALF_UP);
 
-						if (penaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
-							DemandDetail existingPenaltyDetail = demand.getDemandDetails().stream()
-									.filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE))
-									.findFirst().orElse(null);
-
-							if (existingPenaltyDetail != null) {
-								if (penaltyAmount.compareTo(existingPenaltyDetail.getTaxAmount()) > 0) {
-									existingPenaltyDetail.setTaxAmount(penaltyAmount);
-								}
-							} else {
-								DemandDetail penaltyDetail = DemandDetail.builder().taxAmount(penaltyAmount)
-										.taxHeadMasterCode(RLConstants.PENALTY_TAXHEAD_CODE).tenantId(demand.getTenantId())
-										.collectionAmount(BigDecimal.ZERO).demandId(demand.getId()).build();
-								demand.getDemandDetails().add(penaltyDetail);
-								log.info("Penalty of {} applied for demand: {}", penaltyAmount, demand.getId());
+						if (existingPenaltyDetail != null) {
+							if (totalPenalty.compareTo(existingPenaltyDetail.getTaxAmount()) != 0) {
+								existingPenaltyDetail.setTaxAmount(totalPenalty);
 							}
+						} else {
+							demand.getDemandDetails().add(DemandDetail.builder().taxAmount(totalPenalty)
+									.taxHeadMasterCode(RLConstants.PENALTY_TAXHEAD_CODE).tenantId(demand.getTenantId())
+									.collectionAmount(BigDecimal.ZERO).demandId(demand.getId()).build());
 						}
+						log.info("Applied fallback one time penalty {} (migrated {} + {} at {}%) for demand: {}",
+								totalPenalty, migratedPenalty, fallback, penaltySlab.getRate(), demand.getId());
 					}
 				}
 			}
@@ -1588,8 +1607,13 @@ public class DemandService {
 	}
 
 	/**
-	 * Reads {@code futurePenalty} (an <b>annual</b> percentage) from the demand additionalDetails, if present.
-	 * Returns null when the demand carries no rate, so the caller falls back to the tenant MDMS penalty config.
+	 * Reads {@code futurePenalty} - a <b>percentage</b> - from the demand additionalDetails, if present.
+	 *
+	 * <p>The number is deliberately unit-less here: whether it is charged once, per month or per year is decided
+	 * by the {@code penaltyType} configured for the demand's scope in MDMS, not by this value.
+	 *
+	 * <p>Returns null when the demand carries no percentage, so the caller falls back to the tenant MDMS penalty
+	 * config (and, for an arrear-only demand, charges nothing at all).
 	 */
 	private BigDecimal extractFuturePenaltyRate(Demand demand) {
 		if (demand == null || demand.getAdditionalDetails() == null) return null;
@@ -1605,5 +1629,34 @@ public class DemandService {
 			log.warn("Ignoring unreadable futurePenalty on demand {}: {}", demand.getId(), e.getMessage());
 		}
 		return null;
+	}
+
+	/**
+	 * The penalty the migration already carried over for this demand - the amount behind the existing
+	 * {@code RL_PENALTY_FEE} head. It is the base the accrued penalty is added to.
+	 *
+	 * <p>Preferred source is {@code additionalDetails.migratedPenalty}, written by the generator so the value
+	 * survives every recalculation. A demand created before that field existed falls back to the head's current
+	 * amount, which for such a demand is exactly the migrated figure (the engine only ever added to it from then
+	 * on, so the two agree).
+	 */
+	private BigDecimal extractMigratedPenalty(Demand demand, DemandDetail penaltyDetail) {
+		if (demand != null && demand.getAdditionalDetails() != null) {
+			try {
+				JsonNode details = mapper.convertValue(demand.getAdditionalDetails(), JsonNode.class);
+				if (details != null && details.hasNonNull("migratedPenalty")) {
+					String raw = details.path("migratedPenalty").asText();
+					if (raw != null && !raw.trim().isEmpty()) {
+						return new BigDecimal(raw.trim());
+					}
+				}
+			} catch (Exception e) {
+				log.warn("Ignoring unreadable migratedPenalty on demand {}: {}", demand.getId(), e.getMessage());
+			}
+		}
+		if (penaltyDetail != null && penaltyDetail.getTaxAmount() != null) {
+			return penaltyDetail.getTaxAmount();
+		}
+		return BigDecimal.ZERO;
 	}
 }

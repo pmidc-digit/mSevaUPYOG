@@ -18,12 +18,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.egov.ndc.calculator.web.models.demand.DemandDetail;
 import org.egov.ndc.calculator.web.models.ndc.AuditDetails;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Demand {
 
     @JsonProperty("id")

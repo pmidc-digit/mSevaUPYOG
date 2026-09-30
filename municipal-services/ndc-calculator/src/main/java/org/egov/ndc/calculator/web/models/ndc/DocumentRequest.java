@@ -1,11 +1,15 @@
 package org.egov.ndc.calculator.web.models.ndc;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class DocumentRequest {
     @JsonProperty("uuid")
     private String uuid;

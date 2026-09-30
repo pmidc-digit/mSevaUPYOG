@@ -108,7 +108,7 @@ public class EstimationService {
 				billingSlabIds, request, masterData);
 		List<TaxHeadEstimate> taxHeadEstimates = getEstimatesForTax(taxAmt, criteria.getWaterConnection(),
 				timeBasedExemptionMasterMap,
-				RequestInfoWrapper.builder().requestInfo(request.getRequestInfo()).build());
+				RequestInfoWrapper.builder().requestInfo(request.getRequestInfo()).build(), criteria);
 
 		Map<String, List> estimatesAndBillingSlabs = new HashMap<>();
 		estimatesAndBillingSlabs.put("estimates", taxHeadEstimates);
@@ -127,10 +127,11 @@ public class EstimationService {
 	 * @param connection                   - Connection Object
 	 * @param timeBasedExemptionsMasterMap List of Exemptions for the connection
 	 * @param requestInfoWrapper           - RequestInfo Wrapper object
+	 * @param criteria                     - CalculationCriteria object
 	 * @return - Returns list of TaxHeadEstimates
 	 */
 	private List<TaxHeadEstimate> getEstimatesForTax(BigDecimal waterCharge, WaterConnection connection,
-			Map<String, JSONArray> timeBasedExemptionsMasterMap, RequestInfoWrapper requestInfoWrapper) {
+			Map<String, JSONArray> timeBasedExemptionsMasterMap, RequestInfoWrapper requestInfoWrapper,CalculationCriteria criteria) {
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
 		Map<String, Object> add_details = null;
@@ -193,8 +194,15 @@ public class EstimationService {
 				} catch (Exception ex) {
 					disposal_charge = new BigDecimal(200.0);
 				}
-				estimates.add(TaxHeadEstimate.builder().taxHeadCode("WS_DISCHARGE_CHARGES")
-						.estimateAmount(disposal_charge.setScale(2, 2)).build());
+						if (criteria != null && criteria.getFrom() != null && criteria.getTo() != null) {
+							long effectiveMonths = calculateEffectiveMonths(criteria.getFrom(), criteria.getTo());
+							double quarterRatio = effectiveMonths / 3.0;
+							disposal_charge = disposal_charge.multiply(BigDecimal.valueOf(quarterRatio)).setScale(2, RoundingMode.HALF_UP);
+						} else {
+							disposal_charge = disposal_charge.setScale(2, RoundingMode.HALF_UP);
+						}
+				estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_DISCHARGE_CHARGES)
+						.estimateAmount(disposal_charge).build());
 			}
 		}
 
@@ -544,60 +552,92 @@ public class EstimationService {
 				/* =======================
 				 * METERED CONNECTION
 				 * ======================= */
-				if (WSCalculationConstant.meteredConnectionType
-						.equalsIgnoreCase(waterConnection.getConnectionType())) {
- 
+				if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(waterConnection.getConnectionType())) {
+					Boolean isMonthlyBillingEnabled = Boolean.TRUE.equals(applicableBillSlab.getIsmonthlybillingenabled());
+					long effectiveMonths = calculateEffectiveMonths(criteria.getFrom(), criteria.getTo());
 					Double meterReading = totalUOM;
- 
+
 					if (WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)
 							|| WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)) {
- 
 						Object avgObj = additionalDetail.get(WSCalculationConstant.AVARAGEMETERREADING);
- 
 						if (avgObj instanceof Number) {
-							meterReading = ((Number) avgObj).doubleValue();
+							double rawAvg = ((Number) avgObj).doubleValue();
+							if (isMonthlyBillingEnabled) {
+								double quarterRatio = effectiveMonths / 3.0;
+								meterReading = rawAvg * quarterRatio;
+							} else {
+								meterReading = rawAvg;
+							}
 						} else {
 							meterReading = totalUOM;
 						}
 					}
- 
+
 					BigDecimal remainingConsumption = BigDecimal.valueOf(meterReading);
 					BigDecimal totalAmount = BigDecimal.ZERO;
- 
+
 					// sort slabs by range
 					List<Slab> slabs = applicableBillSlab.getSlabs().stream()
 							.filter(s -> s.getEffectiveFrom() <= System.currentTimeMillis()
 									&& s.getEffectiveTo() >= System.currentTimeMillis())
 							.sorted(Comparator.comparing(Slab::getFrom))
 							.collect(Collectors.toList());
- 
+
 					for (Slab slab : slabs) {
- 
 						if (remainingConsumption.compareTo(BigDecimal.ZERO) <= 0) {
 							break;
 						}
- 
 						double slabFrom = slab.getFrom() == 0 ? 1 : slab.getFrom();
 						double slabTo = slab.getTo();
- 
 						BigDecimal slabRange = BigDecimal.valueOf(slabTo - slabFrom + 1);
- 
 						BigDecimal billableUnits = remainingConsumption.min(slabRange);
- 
 						BigDecimal slabAmount = billableUnits.multiply(BigDecimal.valueOf(slab.getCharge()));
- 
+
 						totalAmount = totalAmount.add(slabAmount);
 						remainingConsumption = remainingConsumption.subtract(billableUnits);
 					}
- 
-					BigDecimal minimumCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
- 
-					if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
-							|| totalAmount.compareTo(minimumCharge) < 0) {
-						totalAmount = minimumCharge;
+
+					BigDecimal minimumCharge;
+					if (isMonthlyBillingEnabled) {
+						double monthlyRate = applicableBillSlab.getMinimumCharge() / 3.0;
+						minimumCharge = BigDecimal.valueOf(monthlyRate * effectiveMonths);
+					} else {
+						minimumCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
 					}
- 
-					waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
+
+					Boolean isMinChargeApplied = applicableBillSlab.getIsminimumchargeapplied();
+					Boolean isMinChargeNotApplied = applicableBillSlab.getIsminimumchargenotapplied();
+					List<String> isMeterStatusApplied = applicableBillSlab.getIsmeterstatusapplied();
+
+					boolean isFeatureActive = Boolean.TRUE.equals(isMinChargeApplied) || Boolean.TRUE.equals(isMinChargeNotApplied);
+
+					if (isFeatureActive) {
+						boolean isStatusMatched = false;
+						if (isMeterStatusApplied != null && !isMeterStatusApplied.isEmpty()) {
+							for (String status : isMeterStatusApplied) {
+								if (status != null && status.trim().equalsIgnoreCase(meterStatus.trim())) {
+									isStatusMatched = true;
+									break;
+								}
+							}
+						}
+						boolean isLockedStatus = WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus);
+						if (isLockedStatus) {
+							totalAmount = minimumCharge;
+						}
+					} else {
+						if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
+								|| totalAmount.compareTo(minimumCharge) < 0) {
+							totalAmount = minimumCharge;
+						}
+					}
+
+					if (WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)
+							|| WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)) {
+						waterCharge = BigDecimal.valueOf(Math.round(totalAmount.doubleValue())).setScale(2, RoundingMode.HALF_UP);
+					} else {
+						waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
+					}
 					// PI-20289 Metered Breakdown penalty enable and working new logic
  
 				}  else if (WSCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
@@ -960,6 +1000,16 @@ public class EstimationService {
 		calendar.set(Calendar.MINUTE, 59);
 		calendar.set(Calendar.SECOND, 59);
 		calendar.set(Calendar.MILLISECOND, 999);
+	}
+	
+	
+	public long calculateEffectiveMonths(Long fromDate, Long toDate) {
+		if (fromDate == null || toDate == null || toDate <= fromDate) {
+			return 1L;
+		}
+		double days = (toDate - fromDate) / (1000.0 * 60 * 60 * 24.0);
+		long months = Math.round(days / 30.0);
+		return months < 1 ? 1L : months;
 	}
 
 	/**

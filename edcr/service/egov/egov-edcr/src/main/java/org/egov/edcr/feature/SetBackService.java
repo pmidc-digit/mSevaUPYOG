@@ -53,6 +53,7 @@ import static org.egov.edcr.utility.DcrConstants.REAR_AND_SIDE_YARD_DESC;
 import static org.egov.edcr.utility.DcrConstants.HEIGHTNOTDEFINED;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 import static org.egov.edcr.utility.DcrConstants.WRONGHEIGHTDEFINED;
+import static org.egov.edcr.constants.DxfFileConstants.F;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -70,7 +71,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.egov.common.entity.dcr.helper.OccupancyHelperDetail;
 import org.egov.common.entity.edcr.Block;
+import org.egov.common.entity.edcr.Occupancy;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
@@ -86,6 +89,7 @@ public class SetBackService extends FeatureProcess {
 	private final Logger LOG = LogManager.getLogger(SetBackService.class);
 	private final String RULE = "4.4.4";
 	private final String MINIMUMLABEL = "Minimum distance";
+	private static final BigDecimal FIFTEEN_MTR = BigDecimal.valueOf(15);
 
     @Autowired
     private FrontYardService frontYardService;
@@ -98,105 +102,114 @@ public class SetBackService extends FeatureProcess {
     
     private static final BigDecimal TWO_HUNDRED = BigDecimal.valueOf(200);
     
-	@Override
-	public Plan validate(Plan pl) {
-		HashMap<String, String> errors = new HashMap<>();
-		BigDecimal heightOfBuilding = BigDecimal.ZERO;
-		
-		boolean isUnitFaPlan = pl.getBlocks().stream().anyMatch(block -> Boolean.TRUE.equals(block.getIsUnitFa()));
-		LOG.info("UnitFA Plan Flag : {}", isUnitFaPlan);
-		for (Block block : pl.getBlocks()) {
-			heightOfBuilding = block.getBuilding().getBuildingHeight();
-			int i = 0;
+    @Override
+    public Plan validate(Plan pl) {
 
-			if (!block.getCompletelyExisting()) {
-				for (SetBack setback : block.getSetBacks()) {
-					if (pl.getCoreArea().equalsIgnoreCase("No")) {
-						i++;
-						if (setback.getLevel() == 0) {
-							if (!isUnitFaPlan) {
-								if (setback.getFrontYard() == null) {
-									if (!Far.shouldSkipValidation(pl.getEdcrRequest(),
-											DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {
-										errors.put("frontyardNodeDefined", getLocaleMessage(OBJECTNOTDEFINED,
-												" Front SetBack of " + block.getName() + " at level zero "));
-									}
-								}
+        HashMap<String, String> errors = new HashMap<>();
+        BigDecimal heightOfBuilding = BigDecimal.ZERO;
 
-								if (pl.getPlot().getArea().compareTo(TWO_HUNDRED) > 0) {
-									if (setback.getRearYard() == null && !pl.getPlanInformation().getNocToAbutRearDesc()
-											.equalsIgnoreCase(DcrConstants.YES)) {
+        boolean isUnitFaPlan = pl.getBlocks().stream()
+                .anyMatch(block -> Boolean.TRUE.equals(block.getIsUnitFa()));
+        LOG.info("UnitFA Plan Flag : {}", isUnitFaPlan);
+        for (Block block : pl.getBlocks()) {
+            heightOfBuilding = block.getBuilding().getBuildingHeight();
+            int i = 0;
+            if (!block.getCompletelyExisting()) {
+                for (SetBack setback : block.getSetBacks()) {
+                    if (pl.getCoreArea().equalsIgnoreCase("No")) {
+                        i++;
+                        if (setback.getLevel() == 0) {
+                            if (!isUnitFaPlan) {
+                                // Front Setback validation
+                                if (setback.getFrontYard() == null) {
+                                    if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {
+                                        errors.put("frontyardNodeDefined", getLocaleMessage(OBJECTNOTDEFINED,
+                                        		"Front SetBack of block "+ block.getName() + " at level zero "));
+                                    }
+                                }
 
-										errors.put("rearyardNodeDefined", getLocaleMessage(OBJECTNOTDEFINED,
-												" Rear Setback of " + block.getName() + " at level zero "));
-									}
-								}
-							}
+                                // Rear Setback validation
+                                String occupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper()
+                                        .getType().getCode();
 
-						} else if (setback.getLevel() > 0) {
-							if (setback.getFrontYard() != null && setback.getFrontYard().getHeight() == null) {
-								errors.put("frontyardnotDefinedHeight", getLocaleMessage(HEIGHTNOTDEFINED,
-										"Front Setback ", block.getName(), setback.getLevel().toString()));
-							}
+                                boolean isFType = F.equals(occupancyType);
+                                boolean heightLessThanOrEqual15 = heightOfBuilding != null
+                                        && FIFTEEN_MTR.compareTo(heightOfBuilding) >= 0;
+                                if (!isFType || !heightLessThanOrEqual15) {
+                                    if (pl.getPlot().getArea().compareTo(TWO_HUNDRED) > 0) {
+                                        if (setback.getRearYard() == null && !pl.getPlanInformation().getNocToAbutRearDesc()
+                                                        .equalsIgnoreCase(DcrConstants.YES)) {
+                                            errors.put("rearyardNodeDefined",getLocaleMessage(OBJECTNOTDEFINED,
+                                                            " Rear Setback of block " + block.getName()+ " at level zero "));
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (setback.getLevel() > 0) {
+                            if (setback.getFrontYard() != null && setback.getFrontYard().getHeight() == null) {
+                                errors.put("frontyardnotDefinedHeight",getLocaleMessage(HEIGHTNOTDEFINED,
+                                                "Front Setback block ", block.getName(),setback.getLevel().toString()));
+                            }
 
-							if (setback.getRearYard() != null && setback.getRearYard().getHeight() == null) {
-								errors.put("rearyardnotDefinedHeight", getLocaleMessage(HEIGHTNOTDEFINED,
-										"Rear Setback ", block.getName(), setback.getLevel().toString()));
-							}
+                            if (setback.getRearYard() != null && setback.getRearYard().getHeight() == null) {
+                                errors.put("rearyardnotDefinedHeight", getLocaleMessage(HEIGHTNOTDEFINED,
+                                                "Rear Setback block ",  block.getName(), setback.getLevel().toString()));
+                            }
 
-							if (setback.getSideYard1() != null && setback.getSideYard1().getHeight() == null) {
-								errors.put("side1yardnotDefinedHeight", getLocaleMessage(HEIGHTNOTDEFINED,
-										"Side Setback 1 ", block.getName(), setback.getLevel().toString()));
-							}
+                            if (setback.getSideYard1() != null && setback.getSideYard1().getHeight() == null) {
+                                errors.put("side1yardnotDefinedHeight", getLocaleMessage(HEIGHTNOTDEFINED, 
+                                		"Side Setback 1 of block ", block.getName(),setback.getLevel().toString()));
+                            }
 
-							if (setback.getSideYard2() != null && setback.getSideYard2().getHeight() == null) {
-								errors.put("side2yardnotDefinedHeight", getLocaleMessage(HEIGHTNOTDEFINED,
-										"Side Setback 2 ", block.getName(), setback.getLevel().toString()));
-							}
-						}
+                            if (setback.getSideYard2() != null && setback.getSideYard2().getHeight() == null) {
+                                errors.put("side2yardnotDefinedHeight", getLocaleMessage(HEIGHTNOTDEFINED,
+                                		"Side Setback 2 of block ", block.getName(), setback.getLevel().toString()));
+                            }
+                        }
 
-						// Existing height validation remains unchanged
-						if (setback.getLevel() > 0 && block.getSetBacks().size() == i) {
+                        // Existing height validation remains unchanged
+                        if (setback.getLevel() > 0 && block.getSetBacks().size() == i) {
+                            if (setback.getFrontYard() != null
+                                    && setback.getFrontYard().getHeight() != null
+                                    && setback.getFrontYard().getHeight()
+                                            .compareTo(heightOfBuilding) != 0) {
+                                errors.put("frontyardDefinedWrongHeight",getLocaleMessage(WRONGHEIGHTDEFINED,
+                                                "Front Setback of block ", block.getName(),setback.getLevel().toString(),
+                                                heightOfBuilding.toString()));
+                            }
 
-							if (setback.getFrontYard() != null && setback.getFrontYard().getHeight() != null
-									&& setback.getFrontYard().getHeight().compareTo(heightOfBuilding) != 0) {
-								errors.put("frontyardDefinedWrongHeight",
-										getLocaleMessage(WRONGHEIGHTDEFINED, "Front Setback ", block.getName(),
-												setback.getLevel().toString(), heightOfBuilding.toString()));
-							}
+                            if (setback.getRearYard() != null && setback.getRearYard().getHeight() != null
+                                    && setback.getRearYard().getHeight().compareTo(heightOfBuilding) != 0) {
+                                errors.put("rearyardDefinedWrongHeight",
+                                        getLocaleMessage(WRONGHEIGHTDEFINED,"Rear Setback of block ",block.getName(),
+                                                setback.getLevel().toString(),heightOfBuilding.toString()));
+                            }
 
-							if (setback.getRearYard() != null && setback.getRearYard().getHeight() != null
-									&& setback.getRearYard().getHeight().compareTo(heightOfBuilding) != 0) {
-								errors.put("rearyardDefinedWrongHeight",
-										getLocaleMessage(WRONGHEIGHTDEFINED, "Rear Setback ", block.getName(),
-												setback.getLevel().toString(), heightOfBuilding.toString()));
-							}
+                            if (setback.getSideYard1() != null && setback.getSideYard1().getHeight() != null
+                                    && setback.getSideYard1().getHeight().compareTo(heightOfBuilding) != 0) {
+                                errors.put("side1yardDefinedWrongHeight", getLocaleMessage(WRONGHEIGHTDEFINED,
+                                                "Side Setback 1 of block  ", block.getName(), setback.getLevel().toString(),
+                                                heightOfBuilding.toString()));
+                            }
 
-							if (setback.getSideYard1() != null && setback.getSideYard1().getHeight() != null
-									&& setback.getSideYard1().getHeight().compareTo(heightOfBuilding) != 0) {
-								errors.put("side1yardDefinedWrongHeight",
-										getLocaleMessage(WRONGHEIGHTDEFINED, "Side Setback 1 ", block.getName(),
-												setback.getLevel().toString(), heightOfBuilding.toString()));
-							}
+                            if (setback.getSideYard2() != null && setback.getSideYard2().getHeight() != null
+                                    && setback.getSideYard2().getHeight().compareTo(heightOfBuilding) != 0) {
+                                errors.put("side2yardDefinedWrongHeight",getLocaleMessage(WRONGHEIGHTDEFINED,
+                                		"Side Setback 2 of block", block.getName(), setback.getLevel().toString(),
+                                                heightOfBuilding.toString()));
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-							if (setback.getSideYard2() != null && setback.getSideYard2().getHeight() != null
-									&& setback.getSideYard2().getHeight().compareTo(heightOfBuilding) != 0) {
-								errors.put("side2yardDefinedWrongHeight",
-										getLocaleMessage(WRONGHEIGHTDEFINED, "Side Setback 2 ", block.getName(),
-												setback.getLevel().toString(), heightOfBuilding.toString()));
-							}
-						}
-					}
-				}
-			}
-		}
+        if (!errors.isEmpty()) {
+            pl.addErrors(errors);
+        }
 
-		if (!errors.isEmpty()) {
-			pl.addErrors(errors);
-		}
-
-		return pl;
-	}
+        return pl;
+    }
 
 	
 	@Override
@@ -305,26 +318,7 @@ public class SetBackService extends FeatureProcess {
                 ? pl.getPlot().getArea()
                 : BigDecimal.ZERO;
 
-//        // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
-//        Map<String, List<ScrutinyDetail>> blockWiseDetails = new HashMap<>();
-//
-//        for (ScrutinyDetail sd : scrutinyDetailList) {
-//            String key = sd.getKey();
-//            if (key == null) continue;
-//
-//            // Extract block prefix: "Block_1", "Block_2", etc.
-//            String blockPrefix = "Unknown_Block";
-//            if (key.startsWith("Block_")) {
-//                String[] parts = key.split("_", 3);
-//                if (parts.length >= 2) {
-//                    blockPrefix = parts[0] + "_" + parts[1];
-//                }
-//            }
-//
-//            blockWiseDetails.computeIfAbsent(blockPrefix, k -> new ArrayList<>()).add(sd);
-//        }
-     // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
-     // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
+        // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
         Map<String, List<ScrutinyDetail>> blockWiseDetails = new HashMap<>();
 
         // Track duplicate Side Setback keys
@@ -336,10 +330,8 @@ public class SetBackService extends FeatureProcess {
 
             // Apply numbering ONLY for Side Setback
             if (key.contains("Side Setback") && !key.matches(".*Side Setback\\d+$")) {
-
                 int count = sideSetbackCounter.getOrDefault(key, 0) + 1;
                 sideSetbackCounter.put(key, count);
-
                 sd.setKey(key + count);
             }
 
@@ -357,8 +349,6 @@ public class SetBackService extends FeatureProcess {
             blockWiseDetails.computeIfAbsent(blockPrefix, k -> new ArrayList<>()).add(sd);
         }
 
-
-
         // Process each block separately
         for (Map.Entry<String, List<ScrutinyDetail>> entry : blockWiseDetails.entrySet()) {
             String blockPrefix = entry.getKey();
@@ -370,41 +360,55 @@ public class SetBackService extends FeatureProcess {
             boolean permissibleIsMeters = false; // flag to decide if we append "m"
             boolean isResidential = false;
 
+            // Permissible must come from Rear (Side is only a fallback)
+            String rearPermissible = null;
+            String sidePermissibleFallback = null;
+
+            // Combine flag decided once per block: if ANY detail says combine, combine Rear + Side(s)
+            boolean blockSetbackCombine = blockDetails.stream()
+                    .filter(sd -> sd.getDetail() != null && !sd.getDetail().isEmpty())
+                    .anyMatch(sd -> Boolean.parseBoolean(sd.getDetail().get(0).get("isSetbackCombine")));
+
             for (ScrutinyDetail scrutinyDetail : blockDetails) {
                 String key = scrutinyDetail.getKey();
-                
-             // ✅ Extract occupancy from details
-                String occupancyType = "";
-                boolean isSetbackCombine = false;
-                if (scrutinyDetail.getDetail() != null && !scrutinyDetail.getDetail().isEmpty()) {
-                    Map<String, String> detail = scrutinyDetail.getDetail().get(0);
-                    if (detail.containsKey("Occupancy")) {
-                        occupancyType = detail.get("Occupancy");
-                        isSetbackCombine = Boolean.valueOf(detail.get("isSetbackCombine"));
-                    }
-                }                
-                
-                if (!isSetbackCombine) {
-                	//isResidential = true;
+
+                if (!blockSetbackCombine) {
                     pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-                }else {
-                	if (key.contains("Front")) {
+                } else {
+                    if (key.contains("Front")) {
                         // Keep Front setbacks directly
                         pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
                     } else if (key.contains("Rear") || key.contains("Side")) {
                         List<Map<String, String>> detailsList = scrutinyDetail.getDetail();
                         if (detailsList == null) continue;
 
+                        boolean isRear = key.contains("Rear");
+
+                        // Remember Permissible: Rear first, Side only as fallback
+                        String perm = null;
+                        for (Map<String, String> d : detailsList) {
+                            String p = d.get("Permissible");
+                            if (p != null && !p.trim().isEmpty()) {
+                                perm = p.trim();
+                                break;
+                            }
+                        }
+                        if (isRear) {
+                            if (rearPermissible == null) rearPermissible = perm;
+                        } else if (sidePermissibleFallback == null) {
+                            sidePermissibleFallback = perm;
+                        }
+
+                        // Rear values win (Rule, Level, Occupancy...); Side only fills gaps
                         for (Map<String, String> detail : detailsList) {
                             detail.forEach((k, v) -> {
-                                if (v != null) {
-                                    detailsMap.put(k, v);
-                                }
+                                if (v == null) return;
+                                if (isRear) detailsMap.put(k, v);
+                                else detailsMap.putIfAbsent(k, v);
                             });
                         }
 
-                        // Sum up Provided values
-                     // Take only the first valid "Provided" value from the detailsList (avoid summing multiple side setbacks inside same ScrutinyDetail)
+                        // Take only the first valid "Provided" value from each detail
                         BigDecimal providedValue = detailsList.stream()
                                 .map(detail -> detail.get("Provided"))
                                 .filter(Objects::nonNull)
@@ -421,64 +425,64 @@ public class SetBackService extends FeatureProcess {
                                     }
                                 })
                                 .filter(Objects::nonNull)
-                                .findFirst()   // <-- get only the first valid value
+                                .findFirst()
                                 .orElse(BigDecimal.ZERO);
-
 
                         rearAndSideSetback = rearAndSideSetback.add(providedValue);
                         LOG.info("Provided setback for key [{}] = {}", key, providedValue);
+                    } else {
+                        // Any other detail is kept as is
+                        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
                     }
                 }
-
-                
             }
-            
-            if(!isResidential) {
-            	rearAndSideSetback = rearAndSideSetback.setScale(2, RoundingMode.HALF_UP);
+
+            if (!isResidential) {
+                rearAndSideSetback = rearAndSideSetback.setScale(2, RoundingMode.HALF_UP);
 
                 if (rearAndSideSetback.compareTo(BigDecimal.ZERO) > 0) {
                     BigDecimal permissibleValue = BigDecimal.ZERO;
                     String permissibleDisplay = "";
-                    String permissibleStr = detailsMap.get("Permissible");
+                    String permissibleStr = rearPermissible != null ? rearPermissible : sidePermissibleFallback;
 
                     if (permissibleStr != null && !permissibleStr.trim().isEmpty()) {
                         permissibleStr = permissibleStr.trim();
-
-                        // Case 1: Permissible in meters (contains "m")
-                        if (permissibleStr.toLowerCase().contains("m")) {
-                            permissibleIsMeters = true;
-                            String numericPart = permissibleStr.replaceAll("[^0-9.]", "");
-                            if (!numericPart.isEmpty()) {
-                                permissibleValue = new BigDecimal(numericPart).setScale(2, RoundingMode.HALF_UP);
-                                permissibleDisplay = permissibleValue + " m";
-                            }
-                        }
-                        // Case 2: Permissible as percentage (e.g., "20")
-                        else {
-                            try {
-                                BigDecimal percentage = new BigDecimal(permissibleStr);
-                                permissibleValue = plotArea
-                                        .multiply(percentage)
+                        try {
+                            // Case 1: percentage, either "30" or "30% of the plot area (xx)"
+                            java.util.regex.Matcher pm = java.util.regex.Pattern
+                                    .compile("^(\\d+(\\.\\d+)?)\\s*(%.*)?$").matcher(permissibleStr);
+                            if (pm.matches()) {
+                                BigDecimal percentage = new BigDecimal(pm.group(1));
+                                permissibleValue = plotArea.multiply(percentage)
                                         .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-                                permissibleDisplay = permissibleStr + "% of plot area (" + permissibleValue + ")";
-                            } catch (NumberFormatException e) {
-                                LOG.warn("Invalid numeric Permissible value: {}", permissibleStr);
+                                permissibleDisplay = pm.group(1) + "% of the plot area (" + permissibleValue + ")";
                             }
+                            // Case 2: Permissible in meters (e.g. "3.00 m")
+                            else if (permissibleStr.toLowerCase().contains("m")) {
+                                permissibleIsMeters = true;
+                                String numericPart = permissibleStr.replaceAll("[^0-9.]", "");
+                                if (!numericPart.isEmpty()) {
+                                    permissibleValue = new BigDecimal(numericPart).setScale(2, RoundingMode.HALF_UP);
+                                    permissibleDisplay = permissibleValue + " m";
+                                }
+                            } else {
+                                LOG.warn("Unrecognised Permissible value: {}", permissibleStr);
+                            }
+                        } catch (NumberFormatException e) {
+                            LOG.warn("Invalid Permissible value: {}", permissibleStr);
                         }
                     }
 
-                    // ✅ Compare permissible vs provided
+                    // Compare permissible vs provided
                     if (rearAndSideSetback.compareTo(permissibleValue) >= 0) {
                         status = Result.Accepted.getResultVal();
                     }
 
-                    // ✅ Create combined key like "Block_1_Rear_And_Side Setback"
-                    String combinedKey = blockPrefix + "_Rear Setback";
+                    String combinedKey = blockPrefix + "_Rear And Side Setback";
 
                     LOG.info("Block [{}]: Provided = {}, Permissible = {}, Status = {}",
                             blockPrefix, rearAndSideSetback, permissibleValue, status);
 
-                    // ✅ Create new scrutiny detail entry
                     ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
                     scrutinyDetail.addColumnHeading(1, RULE_NO);
                     scrutinyDetail.addColumnHeading(2, LEVEL);
@@ -487,7 +491,6 @@ public class SetBackService extends FeatureProcess {
                     scrutinyDetail.addColumnHeading(5, PERMISSIBLE);
                     scrutinyDetail.addColumnHeading(6, PROVIDED);
                     scrutinyDetail.addColumnHeading(7, STATUS);
-                    //scrutinyDetail.setHeading(REAR_AND_SIDE_YARD_DESC);
 
                     scrutinyDetail.setKey(combinedKey);
 
@@ -497,20 +500,235 @@ public class SetBackService extends FeatureProcess {
                     details.put(OCCUPANCY, detailsMap.get("Occupancy"));
                     details.put(PERMISSIBLE, permissibleDisplay);
 
-                    // ✅ Only append "m" to provided if permissible was in meters
-                    details.put(PROVIDED, permissibleIsMeters ? rearAndSideSetback + " m" : rearAndSideSetback.toPlainString());
+                    // Only append "m" to provided if permissible was in meters
+                    details.put(PROVIDED, permissibleIsMeters
+                            ? rearAndSideSetback + " m"
+                            : rearAndSideSetback.toPlainString());
                     details.put(STATUS, status);
-                    details.put("isSetbackCombine", detailsMap.get("isSetbackCombine"));
+                    details.put("isSetbackCombine", "true");
 
                     scrutinyDetail.getDetail().add(details);
                     pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
                 }
             }
-
-            
         }
-
     }
+    
+//    private void buildResult(Plan pl, List<ScrutinyDetail> scrutinyDetailList) {
+//        if (scrutinyDetailList == null || scrutinyDetailList.isEmpty()) {
+//            return;
+//        }
+//
+//        BigDecimal plotArea = pl.getPlot() != null && pl.getPlot().getArea() != null
+//                ? pl.getPlot().getArea()
+//                : BigDecimal.ZERO;
+//
+////        // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
+////        Map<String, List<ScrutinyDetail>> blockWiseDetails = new HashMap<>();
+////
+////        for (ScrutinyDetail sd : scrutinyDetailList) {
+////            String key = sd.getKey();
+////            if (key == null) continue;
+////
+////            // Extract block prefix: "Block_1", "Block_2", etc.
+////            String blockPrefix = "Unknown_Block";
+////            if (key.startsWith("Block_")) {
+////                String[] parts = key.split("_", 3);
+////                if (parts.length >= 2) {
+////                    blockPrefix = parts[0] + "_" + parts[1];
+////                }
+////            }
+////
+////            blockWiseDetails.computeIfAbsent(blockPrefix, k -> new ArrayList<>()).add(sd);
+////        }
+//     // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
+//     // Group all scrutinyDetails by block name (Block_1, Block_2, etc.)
+//        Map<String, List<ScrutinyDetail>> blockWiseDetails = new HashMap<>();
+//
+//        // Track duplicate Side Setback keys
+//        Map<String, Integer> sideSetbackCounter = new HashMap<>();
+//
+//        for (ScrutinyDetail sd : scrutinyDetailList) {
+//            String key = sd.getKey();
+//            if (key == null) continue;
+//
+//            // Apply numbering ONLY for Side Setback
+//            if (key.contains("Side Setback") && !key.matches(".*Side Setback\\d+$")) {
+//
+//                int count = sideSetbackCounter.getOrDefault(key, 0) + 1;
+//                sideSetbackCounter.put(key, count);
+//
+//                sd.setKey(key + count);
+//            }
+//
+//            key = sd.getKey();
+//
+//            // Extract block prefix: "Block_1", "Block_2"
+//            String blockPrefix = "Unknown_Block";
+//            if (key.startsWith("Block_")) {
+//                String[] parts = key.split("_", 3);
+//                if (parts.length >= 2) {
+//                    blockPrefix = parts[0] + "_" + parts[1];
+//                }
+//            }
+//
+//            blockWiseDetails.computeIfAbsent(blockPrefix, k -> new ArrayList<>()).add(sd);
+//        }
+//
+//
+//
+//        // Process each block separately
+//        for (Map.Entry<String, List<ScrutinyDetail>> entry : blockWiseDetails.entrySet()) {
+//            String blockPrefix = entry.getKey();
+//            List<ScrutinyDetail> blockDetails = entry.getValue();
+//
+//            BigDecimal rearAndSideSetback = BigDecimal.ZERO;
+//            Map<String, String> detailsMap = new HashMap<>();
+//            String status = Result.Not_Accepted.getResultVal();
+//            boolean permissibleIsMeters = false; // flag to decide if we append "m"
+//            boolean isResidential = false;
+//
+//            for (ScrutinyDetail scrutinyDetail : blockDetails) {
+//                String key = scrutinyDetail.getKey();
+//                
+//             // ✅ Extract occupancy from details
+//                String occupancyType = "";
+//                boolean isSetbackCombine = false;
+//                if (scrutinyDetail.getDetail() != null && !scrutinyDetail.getDetail().isEmpty()) {
+//                    Map<String, String> detail = scrutinyDetail.getDetail().get(0);
+//                    if (detail.containsKey("Occupancy")) {
+//                        occupancyType = detail.get("Occupancy");
+//                        isSetbackCombine = Boolean.valueOf(detail.get("isSetbackCombine"));
+//                    }
+//                }                
+//                
+//                if (!isSetbackCombine) {
+//                	//isResidential = true;
+//                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                }else {
+//                	if (key.contains("Front")) {
+//                        // Keep Front setbacks directly
+//                        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                    } else if (key.contains("Rear") || key.contains("Side")) {
+//                        List<Map<String, String>> detailsList = scrutinyDetail.getDetail();
+//                        if (detailsList == null) continue;
+//
+//                        for (Map<String, String> detail : detailsList) {
+//                            detail.forEach((k, v) -> {
+//                                if (v != null) {
+//                                    detailsMap.put(k, v);
+//                                }
+//                            });
+//                        }
+//
+//                        // Sum up Provided values
+//                     // Take only the first valid "Provided" value from the detailsList (avoid summing multiple side setbacks inside same ScrutinyDetail)
+//                        BigDecimal providedValue = detailsList.stream()
+//                                .map(detail -> detail.get("Provided"))
+//                                .filter(Objects::nonNull)
+//                                .map(String::trim)
+//                                // remove non-numeric characters except dot and minus (handles "2.00m", "2.00 m", etc.)
+//                                .map(s -> s.replaceAll("[^0-9.\\-]", ""))
+//                                .filter(s -> !s.isEmpty())
+//                                .map(s -> {
+//                                    try {
+//                                        return new BigDecimal(s);
+//                                    } catch (NumberFormatException e) {
+//                                        LOG.warn("Invalid Provided value for {}: {}", key, s);
+//                                        return null;
+//                                    }
+//                                })
+//                                .filter(Objects::nonNull)
+//                                .findFirst()   // <-- get only the first valid value
+//                                .orElse(BigDecimal.ZERO);
+//
+//
+//                        rearAndSideSetback = rearAndSideSetback.add(providedValue);
+//                        LOG.info("Provided setback for key [{}] = {}", key, providedValue);
+//                    }
+//                }
+//
+//                
+//            }
+//            
+//            if(!isResidential) {
+//            	rearAndSideSetback = rearAndSideSetback.setScale(2, RoundingMode.HALF_UP);
+//
+//                if (rearAndSideSetback.compareTo(BigDecimal.ZERO) > 0) {
+//                    BigDecimal permissibleValue = BigDecimal.ZERO;
+//                    String permissibleDisplay = "";
+//                    String permissibleStr = detailsMap.get("Permissible");
+//
+//                    if (permissibleStr != null && !permissibleStr.trim().isEmpty()) {
+//                        permissibleStr = permissibleStr.trim();
+//
+//                        // Case 1: Permissible in meters (contains "m")
+//                        if (permissibleStr.toLowerCase().contains("m")) {
+//                            permissibleIsMeters = true;
+//                            String numericPart = permissibleStr.replaceAll("[^0-9.]", "");
+//                            if (!numericPart.isEmpty()) {
+//                                permissibleValue = new BigDecimal(numericPart).setScale(2, RoundingMode.HALF_UP);
+//                                permissibleDisplay = permissibleValue + " m";
+//                            }
+//                        }
+//                        // Case 2: Permissible as percentage (e.g., "20")
+//                        else {
+//                            try {
+//                                BigDecimal percentage = new BigDecimal(permissibleStr);
+//                                permissibleValue = plotArea
+//                                        .multiply(percentage)
+//                                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+//                                permissibleDisplay = permissibleStr + "% of plot area (" + permissibleValue + ")";
+//                            } catch (NumberFormatException e) {
+//                                LOG.warn("Invalid numeric Permissible value: {}", permissibleStr);
+//                            }
+//                        }
+//                    }
+//
+//                    // ✅ Compare permissible vs provided
+//                    if (rearAndSideSetback.compareTo(permissibleValue) >= 0) {
+//                        status = Result.Accepted.getResultVal();
+//                    }
+//
+//                    // ✅ Create combined key like "Block_1_Rear_And_Side Setback"
+//                    String combinedKey = blockPrefix + "_Rear Setback";
+//
+//                    LOG.info("Block [{}]: Provided = {}, Permissible = {}, Status = {}",
+//                            blockPrefix, rearAndSideSetback, permissibleValue, status);
+//
+//                    // ✅ Create new scrutiny detail entry
+//                    ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+//                    scrutinyDetail.addColumnHeading(1, RULE_NO);
+//                    scrutinyDetail.addColumnHeading(2, LEVEL);
+//                    scrutinyDetail.addColumnHeading(3, OCCUPANCY);
+//                    scrutinyDetail.addColumnHeading(4, FIELDVERIFIED);
+//                    scrutinyDetail.addColumnHeading(5, PERMISSIBLE);
+//                    scrutinyDetail.addColumnHeading(6, PROVIDED);
+//                    scrutinyDetail.addColumnHeading(7, STATUS);
+//                    //scrutinyDetail.setHeading(REAR_AND_SIDE_YARD_DESC);
+//
+//                    scrutinyDetail.setKey(combinedKey);
+//
+//                    Map<String, String> details = new HashMap<>();
+//                    details.put(RULE_NO, detailsMap.get(RULE_NO));
+//                    details.put(LEVEL, detailsMap.get("Level"));
+//                    details.put(OCCUPANCY, detailsMap.get("Occupancy"));
+//                    details.put(PERMISSIBLE, permissibleDisplay);
+//
+//                    // ✅ Only append "m" to provided if permissible was in meters
+//                    details.put(PROVIDED, permissibleIsMeters ? rearAndSideSetback + " m" : rearAndSideSetback.toPlainString());
+//                    details.put(STATUS, status);
+//                    details.put("isSetbackCombine", detailsMap.get("isSetbackCombine"));
+//
+//                    scrutinyDetail.getDetail().add(details);
+//                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//                }
+//            }
+//
+//            
+//        }
+//
+//    }
 }
 
 

@@ -145,8 +145,16 @@ public class WorkflowService {
 			//request.getProperty().setCreationReason(CreationReason.UPDATE);
 			
 		}
-		else
-			request.getProperty().setStatus(Status.fromValue(state.getApplicationStatus()));
+		else {
+			if (request.getProperty().getSource() != null && 
+				(request.getProperty().getSource().toString().equalsIgnoreCase("WATER_CHARGES") || 
+				 request.getProperty().getSource().toString().equalsIgnoreCase("WS")) &&
+				state.getApplicationStatus().equalsIgnoreCase("ACTIVE")) {
+				request.getProperty().setStatus(Status.PENDINGWS);
+			} else {
+				request.getProperty().setStatus(Status.fromValue(state.getApplicationStatus()));
+			}
+		}
 		if (request.getProperty().getCreationReason().equals(CreationReason.CREATE)
 				&&( request.getProperty().getWorkflow().getAction().equalsIgnoreCase("APPROVE")|| 
 						 request.getProperty().getWorkflow().getAction().equalsIgnoreCase("REJECT"))

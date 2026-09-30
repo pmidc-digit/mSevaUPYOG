@@ -115,8 +115,13 @@ public class PropertyService {
 			wfService.updateWorkflow(request, request.getProperty().getCreationReason());
 
 		} else {
-
-			request.getProperty().setStatus(Status.ACTIVE);
+			if (request.getProperty().getSource() != null && 
+				(request.getProperty().getSource().toString().equalsIgnoreCase("WATER_CHARGES") || 
+				 request.getProperty().getSource().toString().equalsIgnoreCase("WS"))) {
+				request.getProperty().setStatus(Status.PENDINGWS);
+			} else {
+				request.getProperty().setStatus(Status.ACTIVE);
+			}
 		}
 
 		/*

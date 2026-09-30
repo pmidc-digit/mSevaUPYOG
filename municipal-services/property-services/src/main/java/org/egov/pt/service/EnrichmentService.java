@@ -214,8 +214,13 @@ public Object fetchDataFromMdms(RequestInfo requestInfo, String tenantId, String
 
 		if (!isWfEnabled)
 		{
-
-			property.setStatus(Status.ACTIVE);
+			if (property.getSource() != null && 
+				(property.getSource().toString().equalsIgnoreCase("WATER_CHARGES") || 
+				 property.getSource().toString().equalsIgnoreCase("WS"))) {
+				property.setStatus(Status.PENDINGWS);
+			} else {
+				property.setStatus(Status.ACTIVE);
+			}
 			property.getAddress().setId(propertyFromDb.getAddress().getId());
 
 		} 

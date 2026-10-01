@@ -391,14 +391,14 @@ validateParamInput(service, searchParamOption, paramInput) {
       body: JSON.stringify(requestBody)
     };
 
-      // console.log('billUrl:', billUrl);
-      // console.log('options:', JSON.stringify(options, null, 2));
+      console.log('billUrl:', billUrl);
+      console.log('options:', JSON.stringify(options, null, 2));
 
     let response = await fetch(billUrl, options);
 
     let responseBody = await response.json();
 
-    // console.log('Bill search response:', JSON.stringify(responseBody));
+    console.log('Bill search response:', JSON.stringify(responseBody));
 
     // console.log(
     //   'Bill search response:',
@@ -486,81 +486,137 @@ validateParamInput(service, searchParamOption, paramInput) {
     }
   }
 
-  async fetchBillsForUser(user, service) {
-    let billSupportedBussinessService;
+async fetchBillsForUser(user, service) {
 
-    if (service) {
-      if (service === 'WS')
-        billSupportedBussinessService = ['WS'];
-      if (service === 'SW')
-        billSupportedBussinessService = ['SW'];
-      if (service === 'PT')
-        billSupportedBussinessService = ['PT'];
-      if (service === 'BPA')
-        billSupportedBussinessService = ['BPA.LOW_RISK_PERMIT_FEE', 'BPA.NC_APP_FEE', 'BPA.NC_SAN_FEE', 'BPA.NC_OC_APP_FEE', 'BPA.NC_OC_SAN_FEE'];
-    }
-    else
-      billSupportedBussinessService = ['WS', 'SW', 'PT', 'TL', 'FIRENOC', 'BPA.LOW_RISK_PERMIT_FEE', 'BPA.NC_APP_FEE', 'BPA.NC_SAN_FEE', 'BPA.NC_OC_APP_FEE', 'BPA.NC_OC_SAN_FEE'];
+  let billSupportedBussinessService;
 
-    let billResults = {
-      pendingBills: [],
-      totalBills: 0
-    };
+  if (service) {
 
-    let self = this;
+    if (service === 'WS')
+      billSupportedBussinessService = ['WS'];
 
-    for (let service of billSupportedBussinessService) {
-      user.service = service;
+    if (service === 'SW')
+      billSupportedBussinessService = ['SW'];
 
-      let results;
+    if (service === 'PT')
+      billSupportedBussinessService = ['PT'];
 
-      if ((service === 'WS' || service === 'SW') &&
-        (!user.hasOwnProperty('paramOption') || user.paramOption == null ||
-          user.paramOption === 'mobile')) {
+    if (service === 'BPA')
+      billSupportedBussinessService = [
+        'BPA.LOW_RISK_PERMIT_FEE',
+        'BPA.NC_APP_FEE',
+        'BPA.NC_SAN_FEE',
+        'BPA.NC_OC_APP_FEE',
+        'BPA.NC_OC_SAN_FEE'
+      ];
 
-        results = await self.searchBillsForWaterSewerageByMobile(
+  } else {
+
+    billSupportedBussinessService = [
+      'WS',
+      'SW',
+      'PT',
+      'TL',
+      'FIRENOC',
+      'BPA.LOW_RISK_PERMIT_FEE',
+      'BPA.NC_APP_FEE',
+      'BPA.NC_SAN_FEE',
+      'BPA.NC_OC_APP_FEE',
+      'BPA.NC_OC_SAN_FEE'
+    ];
+  }
+
+  let billResults = {
+    pendingBills: [],
+    totalBills: 0
+  };
+
+  for (let businessService of billSupportedBussinessService) {
+
+    user.service = businessService;
+
+    let results;
+
+    // ---------------------------------------
+    // WS / SW
+    // ---------------------------------------
+    if (businessService === 'WS' || businessService === 'SW') {
+
+      if (
+        !user.hasOwnProperty('paramOption') ||
+        user.paramOption == null ||
+        user.paramOption === 'mobile'
+      ) {
+
+        results = await this.searchBillsForWaterSewerageByMobile(
           user,
-          service
+          businessService
         );
 
       } else {
 
-        if (!user.hasOwnProperty('paramOption') || user.paramOption == null) {
-          user.paramOption = 'mobile';
-          user.paramInput = user.mobileNumber;
-        }
-
-        results = await self.searchBillsForWaterSewerageByConnectionNumber(user);
-      }
-      if (results.totalBills != 0 && results.pendingBills) {
-        billResults.pendingBills = billResults.pendingBills.concat(results.pendingBills);
-        billResults.totalBills = billResults.totalBills + results.totalBills;
-      }
-    }
-
-    if (billResults.totalBills === 0 || billResults.pendingBills.length === 0) {
-      return {
-        totalBills: 0,
-        pendingBills: undefined
+        results =
+          await this.searchBillsForWaterSewerageByConnectionNumber(
+            user,
+            businessService,
+            user.paramInput
+          );
       }
 
     }
 
-    let finalResult = [];
-    let billLimit = config.billsAndReceiptsUseCase.billSearchLimit;
+    // ---------------------------------------
+    // PT / TL / FIRENOC / BPA
+    // ---------------------------------------
+    else {
 
-    if (billResults.pendingBills.length < billLimit)
-      billLimit = billResults.pendingBills.length;
+      if (
+        !user.hasOwnProperty('paramOption') ||
+        user.paramOption == null
+      ) {
+        user.paramOption = 'mobile';
+        user.paramInput = user.mobileNumber;
+      }
 
-    for (var i = 0; i < billLimit; i++)
-      finalResult = finalResult.concat(billResults.pendingBills[i]);
+      results = await this.searchBillsForUser(user);
+    }
 
+    if (
+      results &&
+      results.totalBills != 0 &&
+      results.pendingBills
+    ) {
 
-    return {
-      pendingBills: finalResult,      // Pending bills exist
-      totalBills: billLimit
+      billResults.pendingBills =
+        billResults.pendingBills.concat(
+          results.pendingBills
+        );
+
+      billResults.totalBills += results.totalBills;
     }
   }
+
+  if (
+    billResults.totalBills === 0 ||
+    billResults.pendingBills.length === 0
+  ) {
+    return {
+      totalBills: 0,
+      pendingBills: undefined
+    };
+  }
+
+  let billLimit =
+    config.billsAndReceiptsUseCase.billSearchLimit;
+
+  if (billResults.pendingBills.length < billLimit)
+    billLimit = billResults.pendingBills.length;
+
+  return {
+    pendingBills: billResults.pendingBills.slice(0, billLimit),
+    totalBills: billLimit
+  };
+}
 
 async fetchBillsForParam(
     user,

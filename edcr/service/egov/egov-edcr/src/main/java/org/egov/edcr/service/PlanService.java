@@ -318,7 +318,6 @@ public class PlanService {
             
             if (plan.getPlanInformation().getCity() == null 
                     || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
-
                 plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
             }        
            
@@ -402,8 +401,36 @@ public class PlanService {
                         .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                         && StringUtils.isBlank(comparisonDcrNumber))
                 ) {
-            InputStream reportStream = generateReport(plan, amd, dcrApplication);
-            saveOutputReport(dcrApplication, reportStream, plan);
+        	
+        	InputStream reportStream;
+        	if (Boolean.TRUE.equals(plan.getEdcrRequest().getSiteReserved())
+        	        && Boolean.TRUE.equals(plan.getEdcrRequest().getApprovedCS())) {
+        	    MultipartFile controlSheetFile = dcrApplication.getControlSheetFile();
+        	    if (controlSheetFile == null || controlSheetFile.isEmpty()) {
+        	        throw new IllegalArgumentException(
+        	                "Control Sheet file is required when Site Reserved and Approved Control Sheet are selected");
+        	    }
+        	    if (plan.getErrors() != null && !plan.getErrors().isEmpty()) {
+        	        reportStream = generateReport(plan, amd, dcrApplication);
+        	        saveOutputReport(dcrApplication, reportStream, plan);
+        	    } else {
+        	        try {
+        	            generateReport(plan, amd, dcrApplication);
+        	            reportStream = controlSheetFile.getInputStream();
+        	            saveOutputReportV2(dcrApplication, reportStream, plan);
+        	        } catch (IOException ex) {
+        	            LOG.error("Error while reading Control Sheet file for application {}",
+        	                    dcrApplication.getApplicationNumber(), ex);
+        	            throw new RuntimeException("Unable to process Control Sheet file", ex);
+        	        }
+        	    }
+
+        	} else {
+        	    reportStream = generateReport(plan, amd, dcrApplication);
+        	    saveOutputReport(dcrApplication, reportStream, plan);
+        	}
+        	//saveOutputReport(dcrApplication, reportStream, plan);
+            
         } else if (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
                 .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                 && StringUtils.isNotBlank(comparisonDcrNumber)) {
@@ -748,6 +775,23 @@ public class PlanService {
 //                DcrConstants.FILESTORE_MODULECODE);
         final FileStoreMapper fileStoreMapper = fileStoreService.store(reportOutputStream, fileName, "application/pdf",
                 DcrConstants.FILESTORE_MODULECODE,plan.getEdcrRequest().getTenantId(),true);
+
+        buildDocuments(edcrApplication, null, fileStoreMapper, plan);
+
+        PlanInformation planInformation = plan.getPlanInformation();
+        edcrApplication.getEdcrApplicationDetails().get(0).setPlanInformation(planInformation);
+        edcrApplicationDetailService.saveAll(edcrApplication.getEdcrApplicationDetails());
+    }
+    
+    @Transactional
+    public void saveOutputReportV2(EdcrApplication edcrApplication, InputStream reportOutputStream, Plan plan) {
+        FileStoreMapper fileStoreMapper = new FileStoreMapper(plan.getEdcrRequest().getControlSheet(),
+        		edcrApplication.getControlSheetFile().getOriginalFilename());
+        fileStoreMapper.setFileStoreId(plan.getEdcrRequest().getControlSheet());
+        fileStoreMapper.setTenantId(plan.getEdcrRequest().getTenantId());
+        
+        LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
+        LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
 
         buildDocuments(edcrApplication, null, fileStoreMapper, plan);
 

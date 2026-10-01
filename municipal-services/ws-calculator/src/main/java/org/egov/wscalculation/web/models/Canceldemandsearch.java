@@ -22,5 +22,12 @@ public class Canceldemandsearch {
 	
 	@JsonProperty("isPaymentCompleted")
 	private Boolean isPaymentCompleted = null;
+
+
+	@JsonProperty("collectionamount")
+	private  String collectionamount=null;
+
+	@JsonProperty("taxamount")
+	private String taxamount=null;
 	
 }

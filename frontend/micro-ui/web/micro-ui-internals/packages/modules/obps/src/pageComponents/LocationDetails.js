@@ -1,4 +1,16 @@
-import { CardLabel, CardLabelError, FormStep, LinkButton, Loader, RadioOrSelect, TextInput,ActionBar,SubmitBar, UploadFile, Toast } from "@mseva/digit-ui-react-components";
+import {
+  CardLabel,
+  CardLabelError,
+  FormStep,
+  LinkButton,
+  Loader,
+  RadioOrSelect,
+  TextInput,
+  ActionBar,
+  SubmitBar,
+  UploadFile,
+  Toast,
+} from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import GIS from "./GIS";
@@ -12,28 +24,44 @@ import CustomUploadFile from "../components/CustomUploadFile";
 
 const imageSize = process.env.IMAGE_UPLOAD_SIZE || 2097152;
 
-
 const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepData, addNewOwner, isShowToast, onGoBack }) => {
   let propertyData = JSON.parse(sessionStorage.getItem("Digit_OBPS_PT"));
   let currCity = JSON.parse(sessionStorage.getItem("currentCity")) || {};
   let currPincode = sessionStorage.getItem("currentPincode");
   let currLocality = JSON.parse(sessionStorage.getItem("currentLocality")) || {};
-  const allCities = Digit.Hooks.obps.useTenants();
+  const obpsCities = Digit.Hooks.obps.useTenants();
+  const { data: tenantCities } = Digit.Hooks.useTenants();
+  const allCities = useMemo(() => {
+    const citiesByCode = new Map();
+    [...(tenantCities || []), ...(obpsCities || [])].forEach((city) => citiesByCode.set(city.code, city));
+    return Array.from(citiesByCode.values());
+  }, [obpsCities, tenantCities]);
   const { pathname: url } = useLocation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = localStorage.getItem("CITIZEN.CITY")
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
   const stateId = Digit.ULBService.getStateId();
   const [Pinerror, setPinerror] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [pincode, setPincode] = useState(currentStepData?.createdResponse?.landInfo?.address?.pincode || currentStepData?.PlotDetails?.landInfo?.address?.pincode ||  "");
-  const [geoLocation, setgeoLocation] = useState(currentStepData?.createdResponse?.landInfo?.address?.geoLocation || currentStepData?.PlotDetails?.landInfo?.address?.geoLocation || { latitude: null, longitude: null });
+  const [pincode, setPincode] = useState(
+    currentStepData?.createdResponse?.landInfo?.address?.pincode || currentStepData?.PlotDetails?.landInfo?.address?.pincode || ""
+  );
+  const [geoLocation, setgeoLocation] = useState(
+    currentStepData?.createdResponse?.landInfo?.address?.geoLocation ||
+      currentStepData?.PlotDetails?.landInfo?.address?.geoLocation || { latitude: null, longitude: null }
+  );
   const [tenantIdData, setTenantIdData] = useState(formData?.Scrutiny?.[0]?.tenantIdData);
-  const [selectedCity, setSelectedCity] = useState(() => currentStepData?.createdResponse?.landInfo?.address?.city || currentStepData?.PlotDetails?.landInfo?.address?.city || null);
+  const [selectedCity, setSelectedCity] = useState(
+    () => currentStepData?.createdResponse?.landInfo?.address?.city || currentStepData?.PlotDetails?.landInfo?.address?.city || null
+  );
   const [street, setStreet] = useState(formData?.address?.street || propertyData?.address?.street || "");
   const [landmark, setLandmark] = useState(formData?.address?.landmark || formData?.address?.Landmark || propertyData?.address?.landmark || "");
   const [placeName, setplaceName] = useState(formData?.address?.placeName || formData?.placeName || "");
   const [localities, setLocalities] = useState();
-  const [selectedLocality, setSelectedLocality] = useState(currentStepData?.createdResponse?.landInfo?.address?.locality?.code ? currentStepData?.createdResponse?.landInfo?.address?.locality : currentStepData?.PlotDetails?.landInfo?.address?.locality || null);
+  const [selectedLocality, setSelectedLocality] = useState(
+    currentStepData?.createdResponse?.landInfo?.address?.locality?.code
+      ? currentStepData?.createdResponse?.landInfo?.address?.locality
+      : currentStepData?.PlotDetails?.landInfo?.address?.locality || null
+  );
   // const [viewSiteImageURL, setViewSiteImageURL] = useState(null);
   // const [viewSiteImageURLTwo, setViewSiteImageURLTwo] = useState(null);
   // const state = localStorage.getItem("Citizen.tenant-id");
@@ -41,73 +69,72 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepD
   let [cities, setcitiesopetions] = useState(allCities);
   let validation = {};
   let cityCode = formData?.data?.edcrDetails?.tenantId;
-// const [sitePhotoGraph, setSitePhotoGraph] = useState()
-const [uploadedFile, setUploadedFile] = useState(() => {
-  return currentStepData?.createdResponse?.documents?.find((item) => item?.documentType === "SITEPHOTOGRAPH_ONE")?.fileStoreId || null;
-});
-const [uploadedFileTwo, setUploadedFileTwo] = useState(() => {
-  return currentStepData?.createdResponse?.documents?.find((item) => item?.documentType === "SITEPHOTOGRAPH_TWO")?.fileStoreId || null;
-});
-const [geoLocationFromImg, setGeoLocationFromImg] = useState(currentStepData?.createdResponse?.landInfo?.address?.geoLocation || { latitude: null, longitude: null });
-const [geoLocationFromImgTwo, setGeoLocationFromImgTwo] = useState(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo ? { latitude: parseFloat(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo?.latitude), longitude: parseFloat(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo?.longitude) } : { latitude: null, longitude: null });
-const [errors, setError] = useState(null);
-const [apiLoading, setApiLoading] = useState(false);
+  // const [sitePhotoGraph, setSitePhotoGraph] = useState()
+  const [uploadedFile, setUploadedFile] = useState(() => {
+    return currentStepData?.createdResponse?.documents?.find((item) => item?.documentType === "SITEPHOTOGRAPH_ONE")?.fileStoreId || null;
+  });
+  const [uploadedFileTwo, setUploadedFileTwo] = useState(() => {
+    return currentStepData?.createdResponse?.documents?.find((item) => item?.documentType === "SITEPHOTOGRAPH_TWO")?.fileStoreId || null;
+  });
+  const [geoLocationFromImg, setGeoLocationFromImg] = useState(
+    currentStepData?.createdResponse?.landInfo?.address?.geoLocation || { latitude: null, longitude: null }
+  );
+  const [geoLocationFromImgTwo, setGeoLocationFromImgTwo] = useState(
+    currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo
+      ? {
+          latitude: parseFloat(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo?.latitude),
+          longitude: parseFloat(currentStepData?.createdResponse?.additionalDetails?.geoLocationTwo?.longitude),
+        }
+      : { latitude: null, longitude: null }
+  );
+  const [errors, setError] = useState(null);
+  const [apiLoading, setApiLoading] = useState(false);
 
-const [isUploading, setIsUploading] = useState(false);
-const [isFileLoading, setIsFileLoading] = useState(false);
-const [isUploadingTwo, setIsUploadingTwo] = useState(false);
-const [isFileLoadingTwo, setIsFileLoadingTwo] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isFileLoading, setIsFileLoading] = useState(false);
+  const [isUploadingTwo, setIsUploadingTwo] = useState(false);
+  const [isFileLoadingTwo, setIsFileLoadingTwo] = useState(false);
 
-const geoLocations = useMemo(() => {
-  return [{...geoLocationFromImg},{...geoLocationFromImgTwo}]
-},[geoLocationFromImg, geoLocationFromImgTwo])
-
+  const geoLocations = useMemo(() => {
+    return [{ ...geoLocationFromImg }, { ...geoLocationFromImgTwo }];
+  }, [geoLocationFromImg, geoLocationFromImgTwo]);
 
   if (!formData.address) {
     formData.address = {};
   }
 
-
-
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth" // use "auto" for instant scroll
-      });
-  }, [])
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // use "auto" for instant scroll
+    });
+  }, []);
 
-  useEffect(()=>{
-    if(typeof selectedCity === "string"){
-      if(selectedCity?.includes("pb.")){
-        const city = allCities.find((item) => item.code === selectedCity);
-        if(city) setSelectedCity(city);
-      }else{
-
-        const city = allCities.find((item) => item?.name?.toUpperCase() === selectedCity?.toUpperCase());
-        if(city) setSelectedCity(city);
-      }
-    }else if(selectedCity === null){
-      if(currentStepData?.createdResponse?.landInfo?.address?.city){
-        setSelectedCity(currentStepData?.createdResponse?.landInfo?.address?.city)
-      }
-    }
-  },[selectedCity, currentStepData?.createdResponse?.landInfo?.address?.city])
+  const savedCity =
+    currentStepData?.createdResponse?.landInfo?.address?.city ||
+    currentStepData?.PlotDetails?.landInfo?.address?.city ||
+    currentStepData?.createdResponse?.tenantId;
 
   useEffect(() => {
-    if(selectedCity && typeof selectedCity !== "string" && localities?.length > 0 && !selectedLocality?.i18nkey && selectedLocality?.code){
-      const locality = localities?.find((item) => item?.code === selectedLocality?.code)
-      if(locality) setSelectedLocality(locality)
-    }else if(selectedLocality === null){
-      if(currentStepData?.createdResponse?.landInfo?.address?.locality){
-        setSelectedLocality(currentStepData?.createdResponse?.landInfo?.address?.locality)
+    const value = selectedCity || savedCity;
+    const codeOrName = typeof value === "string" ? value : value?.code || value?.name;
+    if (!codeOrName) return;
+    const city = allCities.find((item) => item.code === codeOrName || item.name?.toUpperCase() === codeOrName.toUpperCase());
+    if (city && city !== selectedCity) setSelectedCity(city);
+  }, [allCities, selectedCity, savedCity]);
+
+  useEffect(() => {
+    if (selectedCity && typeof selectedCity !== "string" && localities?.length > 0 && !selectedLocality?.i18nkey && selectedLocality?.code) {
+      const locality = localities?.find((item) => item?.code === selectedLocality?.code);
+      if (locality) setSelectedLocality(locality);
+    } else if (selectedLocality === null) {
+      if (currentStepData?.createdResponse?.landInfo?.address?.locality) {
+        setSelectedLocality(currentStepData?.createdResponse?.landInfo?.address?.locality);
       }
     }
-  }, [selectedCity, localities, selectedLocality])
-
-
-
+  }, [selectedCity, localities, selectedLocality]);
 
   useEffect(() => {
     if (!selectedCity || !localities) {
@@ -133,13 +160,12 @@ const geoLocations = useMemo(() => {
         setPinerror(null); // don't set error for partial/invalid format yet
       }
     }
-  }, [pincode]);
+  }, [pincode, allCities]);
 
   // useEffect(async () => {
   //   if(uploadedFile){
   //     setIsFileLoading(true);
   //     const result = await Digit.UploadServices.Filefetch([uploadedFile], state)
-
   //     if(result?.data?.fileStoreIds?.length>0){
   //       setViewSiteImageURL(result?.data?.fileStoreIds?.[0]?.url);
   //       setIsFileLoading(false);
@@ -153,7 +179,6 @@ const geoLocations = useMemo(() => {
   //   if(uploadedFileTwo){
   //     setIsFileLoadingTwo(true);
   //     const result = await Digit.UploadServices.Filefetch([uploadedFileTwo], state)
-
   //     if(result?.data?.fileStoreIds?.length>0){
   //       setViewSiteImageURLTwo(result?.data?.fileStoreIds?.[0]?.url);
   //       setIsFileLoadingTwo(false);
@@ -162,7 +187,6 @@ const geoLocations = useMemo(() => {
   //     }
   //   }
   // }, [uploadedFileTwo])
-
 
   useEffect(() => {
     cities.map((city, index) => {
@@ -182,19 +206,17 @@ const geoLocations = useMemo(() => {
     }
   }, [cities]);
 
-useEffect(() => {
-  if (formData?.documents?.sitePhotoGraph) {
-    setUploadedFile(formData.documents.sitePhotoGraph);
-  }
-}, [formData?.documents]);
-
-
+  useEffect(() => {
+    if (formData?.documents?.sitePhotoGraph) {
+      setUploadedFile(formData.documents.sitePhotoGraph);
+    }
+  }, [formData?.documents]);
 
   const { data: fetchedLocalities, isLoading } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
     "revenue",
     {
-      enabled: !!selectedCity,
+      enabled: !!selectedCity?.code,
     },
     t
   );
@@ -207,7 +229,6 @@ useEffect(() => {
       if (selectedCity && fetchedLocalities) {
         let __localityList = fetchedLocalities;
         let filteredLocalityList = [];
-
         if (formData?.address?.locality && formData?.address?.locality?.code === selectedLocality?.code) {
           setSelectedLocality(formData.address.locality);
         }
@@ -221,7 +242,6 @@ useEffect(() => {
           (filteredLocalityList.length > 0 && localities.length !== filteredLocalityList.length) ||
           (filteredLocalityList.length <= 0 && localities && localities.length !== __localityList.length)
         ) {
-
           setLocalities(() => (filteredLocalityList.length > 0 ? filteredLocalityList : __localityList));
         }
         if (
@@ -245,9 +265,9 @@ useEffect(() => {
     setIsOpen(!isOpen);
   };
 
-  const closeToast = () =>{
+  const closeToast = () => {
     setError(null);
-  }
+  };
 
   // const handleSubmit = () => {
   //   // const address = {...currentStepData?.createdResponse?.landInfo?.address};
@@ -269,8 +289,6 @@ useEffect(() => {
   //     fileUrl: "",
   //     additionalDetails: {}
   //   })
-
-
 
   //   // onSelect(config.key, address);
   // };
@@ -296,8 +314,8 @@ useEffect(() => {
       return false;
     }
 
-    if(pincode?.length > 0){
-      if(!Digit.Utils.getPattern("Pincode").test(pincode)){
+    if (pincode?.length > 0) {
+      if (!Digit.Utils.getPattern("Pincode").test(pincode)) {
         setError(t("Please fill Correct Pincode"));
         return false;
       }
@@ -307,8 +325,8 @@ useEffect(() => {
   };
 
   const handleSubmit = async () => {
-    const address = {...currentStepData?.createdResponse?.landInfo?.address};
-    address.pincode = pincode.length>0 ? pincode : "";
+    const address = { ...currentStepData?.createdResponse?.landInfo?.address };
+    address.pincode = pincode.length > 0 ? pincode : "";
     address.city = selectedCity?.name;
     address.locality = selectedLocality;
     // address.street = street;
@@ -316,19 +334,19 @@ useEffect(() => {
     address.geoLocation = {
       ...address.geoLocation,
       latitude: Number(geoLocationFromImg?.latitude)?.toFixed(6) || null,
-      longitude: Number(geoLocationFromImg?.longitude)?.toFixed(6) || null
+      longitude: Number(geoLocationFromImg?.longitude)?.toFixed(6) || null,
     };
     // address.placeName = placeName;
-    const userInfo = Digit.UserService.getUser()
-    const accountId = userInfo?.info?.uuid
+    const userInfo = Digit.UserService.getUser();
+    const accountId = userInfo?.info?.uuid;
     const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
     const additionalDetails = {
       ...currentStepData?.createdResponse?.additionalDetails,
       geoLocationTwo: {
         latitude: Number(geoLocationFromImgTwo?.latitude)?.toFixed(6) || null,
-        longitude: Number(geoLocationFromImgTwo?.longitude)?.toFixed(6) || null
-      }
-    }
+        longitude: Number(geoLocationFromImgTwo?.longitude)?.toFixed(6) || null,
+      },
+    };
 
     // ✅ Run validation first
     if (!validateForm(address.city, address.locality, uploadedFile, pincode, uploadedFileTwo)) {
@@ -340,15 +358,9 @@ useEffect(() => {
       (item) => item.documentType !== "SITEPHOTOGRAPH_ONE" && item.documentType !== "SITEPHOTOGRAPH_TWO"
     );
 
-    const siteDocument = [...(currentStepData?.createdResponse?.documents || [])]?.find(
-      (item) => item.documentType === "SITEPHOTOGRAPH_ONE"
-    );
+    const siteDocument = [...(currentStepData?.createdResponse?.documents || [])]?.find((item) => item.documentType === "SITEPHOTOGRAPH_ONE");
 
-    const siteDocumentTwo = [...(currentStepData?.createdResponse?.documents || [])]?.find(
-      (item) => item.documentType === "SITEPHOTOGRAPH_TWO"
-    );
-
-
+    const siteDocumentTwo = [...(currentStepData?.createdResponse?.documents || [])]?.find((item) => item.documentType === "SITEPHOTOGRAPH_TWO");
 
     documents.push({
       documentType: "SITEPHOTOGRAPH_ONE",
@@ -358,7 +370,7 @@ useEffect(() => {
       fileUrl: "",
       additionalDetails: {},
       id: siteDocument?.id || null,
-      order: 18
+      order: 18,
     });
 
     documents.push({
@@ -369,50 +381,48 @@ useEffect(() => {
       fileUrl: "",
       additionalDetails: {},
       id: siteDocumentTwo?.id || null,
-      order: 19
+      order: 19,
     });
 
-
-
-    try{
-        setApiLoading(true);
-        const result = await Digit.OBPSService.update({ BPA: {
-          ...currentStepData?.createdResponse,
-          additionalDetails,
-          landInfo: {
-            ...currentStepData?.createdResponse?.landInfo,
-            address
+    try {
+      setApiLoading(true);
+      const result = await Digit.OBPSService.update(
+        {
+          BPA: {
+            ...currentStepData?.createdResponse,
+            additionalDetails,
+            landInfo: {
+              ...currentStepData?.createdResponse?.landInfo,
+              address,
+            },
+            documents,
+            workflow: {
+              action: workflowAction,
+              assignes: [accountId],
+            },
           },
-          documents,
-          workflow: {
-            action: workflowAction,
-            assignes: [accountId]
-          }
-        } }, tenantId)
-        if(result?.ResponseInfo?.status === "successful"){
-          setApiLoading(false);
-          // onSelect("");
-          onSelect({selectedCity});
-        }else{
-          alert(t("BPA_CREATE_APPLICATION_FAILED"));
-          setApiLoading(false);
-        }
-
-      }catch(e){
-
+        },
+        tenantId
+      );
+      if (result?.ResponseInfo?.status === "successful") {
+        setApiLoading(false);
+        // onSelect("");
+        onSelect({ selectedCity });
+      } else {
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
-
+    } catch (e) {
+      alert(t("BPA_CREATE_APPLICATION_FAILED"));
+      setApiLoading(false);
+    }
   };
-
-
 
   function selectPincode(e) {
     const val = typeof e === "object" && e !== null ? e.target.value : e;
     setPinerror(null);
 
-    if(val && !Digit.Utils.getPattern("Pincode").test(val)){
+    if (val && !Digit.Utils.getPattern("Pincode").test(val)) {
       setPinerror("BPA_PIN_NOT_VALID_ERROR");
     }
 
@@ -425,58 +435,50 @@ useEffect(() => {
     // setLocalities(null);
   }
 
-
-
-
   function selectLocality(locality) {
-
     setSelectedLocality(locality);
     formData.address["locality"] = locality;
     sessionStorage.setItem("currLocality", JSON.stringify(locality));
   }
 
-
-
   function convertToDecimal(dmsArray, ref) {
-  // Handle both object format {numerator, denominator} and direct decimal
-  if (!Array.isArray(dmsArray)) {
-    return ref === "S" || ref === "W" ? -Math.abs(dmsArray) : Math.abs(dmsArray);
+    // Handle both object format {numerator, denominator} and direct decimal
+    if (!Array.isArray(dmsArray)) {
+      return ref === "S" || ref === "W" ? -Math.abs(dmsArray) : Math.abs(dmsArray);
+    }
+
+    const [degrees, minutes, seconds] = dmsArray;
+    const d = degrees?.numerator / degrees?.denominator || 0;
+    const m = minutes?.numerator / minutes?.denominator || 0;
+    const s = seconds?.numerator / seconds?.denominator || 0;
+
+    let decimal = d + m / 60 + s / 3600;
+    if (ref === "S" || ref === "W") decimal = -decimal;
+    return decimal;
   }
 
-  const [degrees, minutes, seconds] = dmsArray;
-  const d = degrees?.numerator / degrees?.denominator || 0;
-  const m = minutes?.numerator / minutes?.denominator || 0;
-  const s = seconds?.numerator / seconds?.denominator || 0;
+  function extractGeoLocation(file) {
+    return new Promise((resolve) => {
+      EXIF.getData(file, function () {
+        const lat = EXIF.getTag(this, "GPSLatitude");
+        const lon = EXIF.getTag(this, "GPSLongitude");
+        const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+        const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-  let decimal = d + m / 60 + s / 3600;
-  if (ref === "S" || ref === "W") decimal = -decimal;
-  return decimal;
-}
-
-function extractGeoLocation(file) {
-  return new Promise((resolve) => {
-    EXIF.getData(file, function () {
-      const lat = EXIF.getTag(this, "GPSLatitude");
-      const lon = EXIF.getTag(this, "GPSLongitude");
-      const latRef = EXIF.getTag(this, "GPSLatitudeRef");
-      const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
-
-      if (lat && lon && latRef && lonRef) {
-        const latitude = convertToDecimal(lat, latRef);
-        const longitude = convertToDecimal(lon, lonRef);
-        resolve({ latitude, longitude });
-      } else {
-        resolve({ latitude: null, longitude: null });
-      }
+        if (lat && lon && latRef && lonRef) {
+          const latitude = convertToDecimal(lat, latRef);
+          const longitude = convertToDecimal(lon, lonRef);
+          resolve({ latitude, longitude });
+        } else {
+          resolve({ latitude: null, longitude: null });
+        }
+      });
     });
-  });
-}
+  }
 
   async function selectfiles(e) {
     const file = e.target.files[0];
-
     if (!file) return;
-
 
     const geo = await extractGeoLocation(file);
     if (!geo.latitude || !geo.longitude) {
@@ -486,11 +488,10 @@ function extractGeoLocation(file) {
       return;
     }
 
-
     setError(null);
     setGeoLocationFromImg(geo);
     setgeoLocation(geo);
-    setIsUploading(true)
+    setIsUploading(true);
 
     try {
       let newFile;
@@ -504,8 +505,6 @@ function extractGeoLocation(file) {
         const fileStoreId = response.data.files[0].fileStoreId;
         setUploadedFile(fileStoreId);
 
-
-
         // 🔥 Update formData
         // formData.documents = { ...formData.documents, sitePhotoGraph: fileStoreId };
 
@@ -514,19 +513,15 @@ function extractGeoLocation(file) {
       } else {
         setError("File upload failed");
       }
-
-
     } catch (err) {
       setError("File upload error");
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
   }
   async function selectfilesTwo(e) {
     const file = e.target.files[0];
-
     if (!file) return;
-
 
     const geo = await extractGeoLocation(file);
     if (!geo.latitude || !geo.longitude) {
@@ -536,11 +531,10 @@ function extractGeoLocation(file) {
       return;
     }
 
-
     setError(null);
     setGeoLocationFromImgTwo(geo);
     setgeoLocation(geo);
-    setIsUploadingTwo(true)
+    setIsUploadingTwo(true);
 
     try {
       let newFile;
@@ -554,8 +548,6 @@ function extractGeoLocation(file) {
         const fileStoreId = response.data.files[0].fileStoreId;
         setUploadedFileTwo(fileStoreId);
 
-
-
         // 🔥 Update formData
         // formData.documents = { ...formData.documents, sitePhotoGraph: fileStoreId };
 
@@ -564,118 +556,113 @@ function extractGeoLocation(file) {
       } else {
         setError("File upload failed");
       }
-
-
     } catch (err) {
       setError("File upload error");
     } finally {
-      setIsUploadingTwo(false)
+      setIsUploadingTwo(false);
     }
   }
 
+  if (apiLoading || isLoading || isUploading || isUploadingTwo || isFileLoading || isFileLoadingTwo) return <LoaderNew page={true} />;
 
-  if(apiLoading || isLoading || isUploading || isUploadingTwo || isFileLoading || isFileLoadingTwo) return <LoaderNew page={true} />
-
-return (
-  <div >
-
-    {!isOpen && (
-      <FormStep
-        t={t}
-        config={{...config, texts:{header: "BPA_NEW_TRADE_DETAILS_HEADER_DETAILS_NEW"}}}
-        onSelect={handleSubmit}
-        isDisabled={!selectedCity || Pinerror}
-        isMultipleAllow={true}
-        // forcedError={t(Pinerror)}
-      >
-
-        {/* Pincode Section */}
-        <div>
-          <h2 className="card-label">{t("BPA_DETAILS_PIN_LABEL")}</h2>
-          {!isOpen && (
-            <TextInput
-              isMandatory={false}
-              optionKey="i18nKey"
-              type={"text"}
-              t={t}
-              name="pincode"
-              onChange={selectPincode}
-              value={pincode}
-              disabled={currentStepData?.PlotDetails?.landInfo?.address?.pincode ? true : false}
-            />
-          )}
-        </div>
-
-
-        {/* City Section */}
-        <div>
-          <h2 className="card-label">{t("BPA_CITY_LABEL")}<span className="requiredField"> *</span></h2>
-          {!isOpen && (
-            <TextInput
-              value={selectedCity?.name || ""}
-              disable={true}
-
-            />
-          )}
-        </div>
-
-        {/* Locality (Mohalla) Section - RESTORED ORIGINAL GUARD */}
-        <div>
-          <h2 className="card-label" >{t("BPA_LOC_MOHALLA_LABEL")}<span className="requiredField"> *</span></h2>
-
-          {!isOpen && selectedCity && localities && !propertyData?.address ? (
-            <span className={"form-pt-dropdown-only"}>
-              {/* <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel> */}
-              <RadioOrSelect
-
-                isMandatory={false}
-                options={localities.sort((a, b) => a.name.localeCompare(b.name))}
-                selectedOption={selectedLocality}
-                optionKey="i18nkey"
-                onSelect={selectLocality}
-                t={t}
-                isDependent={true}
-                labelKey={`${stringReplaceAll(selectedCity?.code, ".", "_").toUpperCase()}_REVENUE`}
-                disabled={currentStepData?.PlotDetails?.landInfo?.address?.locality ? true : false}
-              />
-            </span>
-          ) : (
-            <span className={"form-pt-dropdown-only"}>
-              {/* <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")} `}<span className="requiredField">*</span></CardLabel> */}
+  return (
+    <div>
+      {!isOpen && (
+        <FormStep
+          t={t}
+          config={{ ...config, texts: { header: "BPA_NEW_TRADE_DETAILS_HEADER_DETAILS_NEW" } }}
+          onSelect={handleSubmit}
+          isDisabled={!selectedCity || Pinerror}
+          isMultipleAllow={true}
+          // forcedError={t(Pinerror)}
+        >
+          {/* Pincode Section */}
+          <div>
+            <h2 className="card-label">{t("BPA_DETAILS_PIN_LABEL")}</h2>
+            {!isOpen && (
               <TextInput
-
                 isMandatory={false}
-                value={propertyData?.address?.locality?.name}
-                optionKey="i18nkey"
+                optionKey="i18nKey"
+                type={"text"}
                 t={t}
-                isDependent={true}
-                labelKey={`${stringReplaceAll(selectedCity?.code, ".", "_").toUpperCase()}_REVENUE`}
-                disabled={propertyData?.address ? true : false}
+                name="pincode"
+                onChange={selectPincode}
+                value={pincode}
+                disabled={currentStepData?.PlotDetails?.landInfo?.address?.pincode ? true : false}
               />
-            </span>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Site Photograph Section */}
-        <div>
-          <h2 className="card-label" >{t("BPA_LOC_SITE_PHOTOGRAPH")} <span className="requiredField">*</span></h2>
+          {/* City Section */}
+          <div>
+            <h2 className="card-label">
+              {t("BPA_CITY_LABEL")}
+              <span className="requiredField"> *</span>
+            </h2>
+            {!isOpen && <TextInput value={selectedCity?.name || ""} disable={true} />}
+          </div>
 
-          <CustomUploadFile
-            id="loc-site-photo"
-            onUpload={selectfiles}
-            onDelete={() => {
-              setUploadedFile(null);
-              setGeoLocationFromImg({ latitude: null, longitude: null })
-              // setFiles && setFiles(null);
-            }}
-            uploadedFile={uploadedFile}
-            message={uploadedFile ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-            accept=".jpg,.jpeg,.png"
-          />
-          <p className="obps-page-components-location-details--style-1">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+          {/* Locality (Mohalla) Section - RESTORED ORIGINAL GUARD */}
+          <div>
+            <h2 className="card-label">
+              {t("BPA_LOC_MOHALLA_LABEL")}
+              <span className="requiredField"> *</span>
+            </h2>
 
+            {!isOpen && selectedCity && localities && !propertyData?.address ? (
+              <span className={"form-pt-dropdown-only"}>
+                {/* <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel> */}
+                <RadioOrSelect
+                  isMandatory={false}
+                  options={localities.sort((a, b) => a.name.localeCompare(b.name))}
+                  selectedOption={selectedLocality}
+                  optionKey="i18nkey"
+                  onSelect={selectLocality}
+                  t={t}
+                  isDependent={true}
+                  labelKey={`${stringReplaceAll(selectedCity?.code, ".", "_").toUpperCase()}_REVENUE`}
+                  disabled={currentStepData?.PlotDetails?.landInfo?.address?.locality ? true : false}
+                />
+              </span>
+            ) : (
+              <span className={"form-pt-dropdown-only"}>
+                {/* <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")} `}<span className="requiredField">*</span></CardLabel> */}
+                <TextInput
+                  isMandatory={false}
+                  value={propertyData?.address?.locality?.name}
+                  optionKey="i18nkey"
+                  t={t}
+                  isDependent={true}
+                  labelKey={`${stringReplaceAll(selectedCity?.code, ".", "_").toUpperCase()}_REVENUE`}
+                  disabled={propertyData?.address ? true : false}
+                />
+              </span>
+            )}
+          </div>
 
-          {/* {uploadedFile && viewSiteImageURL && !isFileLoading && !isUploading &&(
+          {/* Site Photograph Section */}
+          <div>
+            <h2 className="card-label">
+              {t("BPA_LOC_SITE_PHOTOGRAPH")} <span className="requiredField">*</span>
+            </h2>
+
+            <CustomUploadFile
+              id="loc-site-photo"
+              onUpload={selectfiles}
+              onDelete={() => {
+                setUploadedFile(null);
+                setGeoLocationFromImg({ latitude: null, longitude: null });
+                // setFiles && setFiles(null);
+              }}
+              uploadedFile={uploadedFile}
+              message={uploadedFile ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+              accept=".jpg,.jpeg,.png"
+            />
+            <p className="obps-page-components-location-details--style-1">
+              {t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
+            </p>
+
+            {/* {uploadedFile && viewSiteImageURL && !isFileLoading && !isUploading &&(
             <div>
               <a
                 href={viewSiteImageURL}
@@ -687,39 +674,49 @@ return (
               </a>
             </div>
           )} */}
+          </div>
+          <div>
+            <h2 className="card-label">
+              {t("BPA_LOC_SITE_PHOTOGRAPH_2")} <span className="requiredField">*</span>
+            </h2>
 
-        </div>
-        <div>
-          <h2 className="card-label" >{t("BPA_LOC_SITE_PHOTOGRAPH_2")} <span className="requiredField">*</span></h2>
-
-          <CustomUploadFile
-            id="loc-site-photo"
-            onUpload={selectfilesTwo}
-            onDelete={() => {
-              setUploadedFileTwo(null);
-              setGeoLocationFromImgTwo({ latitude: null, longitude: null })
-              // setFiles && setFiles(null);
-            }}
-            uploadedFile={uploadedFileTwo}
-            message={uploadedFileTwo ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-            accept=".jpg,.jpeg,.png"
-          />
-          <p className="obps-page-components-location-details--style-2">{t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-        </div>
-        <div className="obps-page-components-location-details--style-3">
-        {((!isUploading && geoLocationFromImg?.latitude && geoLocationFromImg?.latitude !==0 && geoLocationFromImg?.longitude && geoLocationFromImg?.longitude !==0)||(!isUploadingTwo && geoLocationFromImgTwo?.latitude && geoLocationFromImgTwo?.latitude !==0 && geoLocationFromImgTwo?.longitude && geoLocationFromImgTwo?.longitude !==0)) &&(
-            <CustomLocationSearch position={geoLocations}/>
-        )}
-        </div>
-      </FormStep>
-    )}
-       <ActionBar>
+            <CustomUploadFile
+              id="loc-site-photo"
+              onUpload={selectfilesTwo}
+              onDelete={() => {
+                setUploadedFileTwo(null);
+                setGeoLocationFromImgTwo({ latitude: null, longitude: null });
+                // setFiles && setFiles(null);
+              }}
+              uploadedFile={uploadedFileTwo}
+              message={uploadedFileTwo ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+              accept=".jpg,.jpeg,.png"
+            />
+            <p className="obps-page-components-location-details--style-2">
+              {t("Only .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
+            </p>
+          </div>
+          <div className="obps-page-components-location-details--style-3">
+            {((!isUploading &&
+              geoLocationFromImg?.latitude &&
+              geoLocationFromImg?.latitude !== 0 &&
+              geoLocationFromImg?.longitude &&
+              geoLocationFromImg?.longitude !== 0) ||
+              (!isUploadingTwo &&
+                geoLocationFromImgTwo?.latitude &&
+                geoLocationFromImgTwo?.latitude !== 0 &&
+                geoLocationFromImgTwo?.longitude &&
+                geoLocationFromImgTwo?.longitude !== 0)) && <CustomLocationSearch position={geoLocations} />}
+          </div>
+        </FormStep>
+      )}
+      <ActionBar>
         <SubmitBar label="Back" onSubmit={onGoBack} />
-        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  disabled={!selectedCity || Pinerror || apiLoading}/>}
-       </ActionBar>
-       {errors && <Toast isDleteBtn={true} error={true} label={errors} onClose={closeToast} />}
-  </div>
-);
-}
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!selectedCity || Pinerror || apiLoading} />}
+      </ActionBar>
+      {errors && <Toast isDleteBtn={true} error={true} label={errors} onClose={closeToast} />}
+    </div>
+  );
+};
 
 export default LocationDetails;

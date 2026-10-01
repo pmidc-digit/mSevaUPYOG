@@ -587,9 +587,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 				}
 			}
 		}
-		waterDaoImpl.updateWaterApplicationStatus(waterConnectionRequest.getWaterConnection().getId(),
-				WCConstants.DISCONNECT_STATUS);
-		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECTED);
+		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
 	} else if (action != null && action.equals(WCConstants.ACTION_REJECT)) {
 		// When rejected: restore old connection to Active, current application to Disconnect
 		if (!previousConnectionsList.isEmpty()) { 
@@ -603,7 +601,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 				}
 			}
 		}
-		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECTED);
+		waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECT);
 	} else {
 		// When process in flow (SUBMIT, FORWARD, etc.): make old status Disconnect and current Active
 		if (!previousConnectionsList.isEmpty()) { 

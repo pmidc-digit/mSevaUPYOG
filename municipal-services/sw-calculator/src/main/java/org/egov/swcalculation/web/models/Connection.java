@@ -57,7 +57,7 @@ public class Connection {
 
 		INACTIVE("Inactive"),
 
-		DISCONNECTED("Disconnected");
+		DISCONNECT("Disconnect");
 
 		private String value;
 

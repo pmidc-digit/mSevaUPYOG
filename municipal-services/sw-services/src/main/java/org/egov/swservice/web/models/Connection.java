@@ -60,9 +60,7 @@ public class Connection {
 	public enum StatusEnum {
 		ACTIVE("Active"),
 
-		INACTIVE("Inactive"),
-
-		DISCONNECTED("Disconnected");
+		INACTIVE("Inactive");
 
 		private String value;
 

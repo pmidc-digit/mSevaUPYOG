@@ -500,7 +500,11 @@ const LayoutNewApplicantDetails = (_props) => {
     //   if (Object.keys(validationErrors)?.length > 0) return;
     // }
 
-    const data = getUpdatedOwners;
+    const data = (getUpdatedOwners || []).filter((owner) => owner && owner.status !== false && owner.status !== "false");
+    if (data.length === 0) {
+      triggerToast(t("Please select an owner before proceeding."), true);
+      return;
+    }
 
     // Replaced owners remain as inactive history; only current owners must be unique.
     const mobiles = data

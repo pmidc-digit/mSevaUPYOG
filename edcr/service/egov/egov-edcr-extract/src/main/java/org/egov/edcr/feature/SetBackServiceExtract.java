@@ -53,97 +53,131 @@ public class SetBackServiceExtract extends FeatureExtract {
     public PlanDetail validate(PlanDetail pl) {
         return pl;
     }
+    
+	private void extractSetBack(PlanDetail pl, DXFDocument doc) {
+		LOG.info("Starting set back Extract......");
+		boolean unitFaSetbackValidated = false;
+		for (Block block : pl.getBlocks()) {
+			LOG.info("Block....   " + block.getName());
+			checkAndSetUnitFaFlag(pl, block);			
+			if (Boolean.TRUE.equals(block.getIsUnitFa()) && !unitFaSetbackValidated) {
+				validateUnitFaSetbackLayerNames(pl, doc);
+				unitFaSetbackValidated = true;
+			}
+			for (SetBack setBack : block.getSetBacks()) {
+				if (setBack.getLevel() < 0) {
+					extractBasementSetBacks(pl, doc, block, setBack);
 
-    private void extractSetBack(PlanDetail pl, DXFDocument doc) {
-        LOG.info("Starting set back Extract......");
-        String yardName;
-        // VALIDATION : CHECK NUMBER OF BLOCKS and floors. Check block height provided ?
-        // Check whether level defined ? if yes, then check level height is correct
-        // format ?
-        // check whether for each block setback defined ?
-        // side/front/front yard.. Not necessary to define level for all the side.. if
-        // any one side define also.. we need to
-        // consider
-        // Each block combine multiple occupancies to decide the most restrictive
-        // occupancy.
-        // if height is more than building height in the level. if more than one level,
-        // then height is mandatory from 1st level.
-        // It should be greater than previous level.
-        // they may or may not define yards in that case ..?? throw error ? required
-        // only other than level cases.
-        // if all levels not defined, then how to using building height ?
-        // extract NOC Details and opening above 2.1mt etc.
+				} else {
+					setFrontYardDetails(pl, doc, setBack, getSetbackLayerName(block, setBack.getLevel(),
+							layerNames.getLayerName("LAYER_NAME_FRONT_YARD")));
 
+					setRearYardDetails(pl, doc, setBack, getSetbackLayerName(block, setBack.getLevel(),
+							layerNames.getLayerName("LAYER_NAME_REAR_YARD")));
+
+					setSideYard1Details(pl, doc, setBack, getSetbackLayerName(block, setBack.getLevel(),
+							layerNames.getLayerName("LAYER_NAME_SIDE_YARD_1")));
+
+					setSideYard2Details(pl, doc, getSetbackLayerName(block, setBack.getLevel(),
+							layerNames.getLayerName("LAYER_NAME_SIDE_YARD_2")), setBack);
+				}
+			}
+		}
+		pl.sortBlockByName();
+		pl.sortSetBacksByLevel();
+		LOG.info("End of set back Extract......");
+	}
+
+//    private void extractSetBack(PlanDetail pl, DXFDocument doc) {
+//        LOG.info("Starting set back Extract......");
+//        String yardName;
+//        // VALIDATION : CHECK NUMBER OF BLOCKS and floors. Check block height provided ?
+//        // Check whether level defined ? if yes, then check level height is correct
+//        // format ?
+//        // check whether for each block setback defined ?
+//        // side/front/front yard.. Not necessary to define level for all the side.. if
+//        // any one side define also.. we need to
+//        // consider
+//        // Each block combine multiple occupancies to decide the most restrictive
+//        // occupancy.
+//        // if height is more than building height in the level. if more than one level,
+//        // then height is mandatory from 1st level.
+//        // It should be greater than previous level.
+//        // they may or may not define yards in that case ..?? throw error ? required
+//        // only other than level cases.
+//        // if all levels not defined, then how to using building height ?
+//        // extract NOC Details and opening above 2.1mt etc.
+//
+////        for (Block block : pl.getBlocks()) {
+////            LOG.info("Block....   " + block.getName());
+////
+////            // extractBasementFootPrint(doc, block);           
+////
+////            // based on foot prints provided, set back will be decide in general rule.
+////            for (SetBack setBack : block.getSetBacks())
+////                if (setBack.getLevel() < 0)
+////                    extractBasementSetBacks(pl, doc, block, setBack);
+////                else {
+////                    yardName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getName() + "_"
+////                            + layerNames.getLayerName("LAYER_NAME_LEVEL_NAME_PREFIX") + setBack.getLevel() + "_"
+////                            + layerNames.getLayerName("LAYER_NAME_FRONT_YARD");
+////                    setFrontYardDetails(pl, doc, setBack, yardName);
+////                    yardName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getName() + "_"
+////                            + layerNames.getLayerName("LAYER_NAME_LEVEL_NAME_PREFIX") + setBack.getLevel() + "_"
+////                            + layerNames.getLayerName("LAYER_NAME_REAR_YARD");
+////                    setRearYardDetails(pl, doc, setBack, yardName);
+////                    yardName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getName() + "_"
+////                            + layerNames.getLayerName("LAYER_NAME_LEVEL_NAME_PREFIX") + setBack.getLevel() + "_"
+////                            + layerNames.getLayerName("LAYER_NAME_SIDE_YARD_1");
+////                    setSideYard1Details(pl, doc, setBack, yardName);
+////                    yardName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getName() + "_"
+////                            + layerNames.getLayerName("LAYER_NAME_LEVEL_NAME_PREFIX") + setBack.getLevel() + "_"
+////                            + layerNames.getLayerName("LAYER_NAME_SIDE_YARD_2");
+////                    setSideYard2Details(pl, doc, yardName, setBack);
+////                }
+////            
+////            
+////        }
+//        
 //        for (Block block : pl.getBlocks()) {
-//            LOG.info("Block....   " + block.getName());
+//          LOG.info("Block....   " + block.getName());
+//          
+//          //check for unitFa layers if available then set Flag true
+//          checkAndSetUnitFaFlag(pl, block);
 //
-//            // extractBasementFootPrint(doc, block);           
+//          if (Boolean.TRUE.equals(block.getIsUnitFa())) {
+//              validateUnitFaSetbackLayerNames(pl, doc, block);
+//          }
+//          
+//          for (SetBack setBack : block.getSetBacks())
+//              if (setBack.getLevel() < 0)
+//                  extractBasementSetBacks(pl, doc, block, setBack);
+//              else {
+//            	  setFrontYardDetails(pl, doc, setBack,
+//			        getSetbackLayerName(block, setBack.getLevel(),
+//            		                layerNames.getLayerName("LAYER_NAME_FRONT_YARD")));
 //
-//            // based on foot prints provided, set back will be decide in general rule.
-//            for (SetBack setBack : block.getSetBacks())
-//                if (setBack.getLevel() < 0)
-//                    extractBasementSetBacks(pl, doc, block, setBack);
-//                else {
-//                    yardName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getName() + "_"
-//                            + layerNames.getLayerName("LAYER_NAME_LEVEL_NAME_PREFIX") + setBack.getLevel() + "_"
-//                            + layerNames.getLayerName("LAYER_NAME_FRONT_YARD");
-//                    setFrontYardDetails(pl, doc, setBack, yardName);
-//                    yardName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getName() + "_"
-//                            + layerNames.getLayerName("LAYER_NAME_LEVEL_NAME_PREFIX") + setBack.getLevel() + "_"
-//                            + layerNames.getLayerName("LAYER_NAME_REAR_YARD");
-//                    setRearYardDetails(pl, doc, setBack, yardName);
-//                    yardName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getName() + "_"
-//                            + layerNames.getLayerName("LAYER_NAME_LEVEL_NAME_PREFIX") + setBack.getLevel() + "_"
-//                            + layerNames.getLayerName("LAYER_NAME_SIDE_YARD_1");
-//                    setSideYard1Details(pl, doc, setBack, yardName);
-//                    yardName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getName() + "_"
-//                            + layerNames.getLayerName("LAYER_NAME_LEVEL_NAME_PREFIX") + setBack.getLevel() + "_"
-//                            + layerNames.getLayerName("LAYER_NAME_SIDE_YARD_2");
-//                    setSideYard2Details(pl, doc, yardName, setBack);
-//                }
-//            
-//            
-//        }
-        
-        for (Block block : pl.getBlocks()) {
-          LOG.info("Block....   " + block.getName());
-          
-          //check for unitFa layers if available then set Flag true
-          checkAndSetUnitFaFlag(pl, block);
-
-          if (Boolean.TRUE.equals(block.getIsUnitFa())) {
-              validateUnitFaSetbackLayerNames(pl, doc, block);
-          }
-          
-          for (SetBack setBack : block.getSetBacks())
-              if (setBack.getLevel() < 0)
-                  extractBasementSetBacks(pl, doc, block, setBack);
-              else {
-            	  setFrontYardDetails(pl, doc, setBack,
-			        getSetbackLayerName(block, setBack.getLevel(),
-            		                layerNames.getLayerName("LAYER_NAME_FRONT_YARD")));
-
-            		setRearYardDetails(pl, doc, setBack,
-			        getSetbackLayerName(block, setBack.getLevel(),
-            		                layerNames.getLayerName("LAYER_NAME_REAR_YARD")));
-
-            		setSideYard1Details(pl, doc, setBack,
-			        getSetbackLayerName(block, setBack.getLevel(),
-            		                layerNames.getLayerName("LAYER_NAME_SIDE_YARD_1")));
-
-            		setSideYard2Details(pl, doc,
-			        getSetbackLayerName(block, setBack.getLevel(),
-            		                layerNames.getLayerName("LAYER_NAME_SIDE_YARD_2")),
-            		        setBack);
-              }
-          
-          
-      }        
-        pl.sortBlockByName();
-        pl.sortSetBacksByLevel();
-        LOG.info("End of set back Extract......");
-
-    }
+//            		setRearYardDetails(pl, doc, setBack,
+//			        getSetbackLayerName(block, setBack.getLevel(),
+//            		                layerNames.getLayerName("LAYER_NAME_REAR_YARD")));
+//
+//            		setSideYard1Details(pl, doc, setBack,
+//			        getSetbackLayerName(block, setBack.getLevel(),
+//            		                layerNames.getLayerName("LAYER_NAME_SIDE_YARD_1")));
+//
+//            		setSideYard2Details(pl, doc,
+//			        getSetbackLayerName(block, setBack.getLevel(),
+//            		                layerNames.getLayerName("LAYER_NAME_SIDE_YARD_2")),
+//            		        setBack);
+//              }
+//          
+//          
+//      }        
+//        pl.sortBlockByName();
+//        pl.sortSetBacksByLevel();
+//        LOG.info("End of set back Extract......");
+//
+//    }
     
     private String getSetbackLayerName(Block block, Integer level, String yardLayerName) {
         // UnitFA setback geometry is deliberately shared at plan level and must
@@ -159,25 +193,39 @@ public class SetBackServiceExtract extends FeatureExtract {
         return qualifiedLayerName;
     }
 
-    private void validateUnitFaSetbackLayerNames(PlanDetail pl, DXFDocument doc, Block block) {
-        String[] yardLayerNames = {
-                layerNames.getLayerName("LAYER_NAME_FRONT_YARD"),
-                layerNames.getLayerName("LAYER_NAME_REAR_YARD"),
-                layerNames.getLayerName("LAYER_NAME_SIDE_YARD_1"),
-                layerNames.getLayerName("LAYER_NAME_SIDE_YARD_2")
-        };
+//    private void validateUnitFaSetbackLayerNames(PlanDetail pl, DXFDocument doc, Block block) {
+//        String[] yardLayerNames = {
+//                layerNames.getLayerName("LAYER_NAME_FRONT_YARD"),
+//                layerNames.getLayerName("LAYER_NAME_REAR_YARD"),
+//                layerNames.getLayerName("LAYER_NAME_SIDE_YARD_1"),
+//                layerNames.getLayerName("LAYER_NAME_SIDE_YARD_2")
+//        };
+//
+//        for (String yardLayerName : yardLayerNames) {
+//            List<String> invalidLayers = findQualifiedUnitFaSetbackLayers(doc, block, yardLayerName);
+//            String errorKey = "UNITFA_SETBACK_LAYER_" + block.getName() + "_" + yardLayerName;
+//            if (!invalidLayers.isEmpty()) {
+//                pl.addError(errorKey, "Invalid UnitFA setback layer name(s) " + invalidLayers
+//                        + ". For UnitFA block " + block.getName() + ", use exactly " + yardLayerName + ".");
+//            } else if (!doc.containsDXFLayer(yardLayerName)) {
+//                pl.addError(errorKey, "For UnitFA block " + block.getName() + ", setback layer must be named exactly "
+//                        + yardLayerName + ".");
+//            }
+//        }
+//    }
+    
+	private void validateUnitFaSetbackLayerNames(PlanDetail pl, DXFDocument doc) {
+		String[] unitFaSetbackLayerNames = { layerNames.getLayerName("LAYER_NAME_FRONT_YARD"),
+				layerNames.getLayerName("LAYER_NAME_REAR_YARD"), layerNames.getLayerName("LAYER_NAME_SIDE_YARD_1"),
+				layerNames.getLayerName("LAYER_NAME_SIDE_YARD_2") };
 
-        for (String yardLayerName : yardLayerNames) {
-            List<String> invalidLayers = findQualifiedUnitFaSetbackLayers(doc, block, yardLayerName);
-            String errorKey = "UNITFA_SETBACK_LAYER_" + block.getName() + "_" + yardLayerName;
-            if (!invalidLayers.isEmpty()) {
-                pl.addError(errorKey, "Invalid UnitFA setback layer name(s) " + invalidLayers
-                        + ". For UnitFA block " + block.getName() + ", use exactly " + yardLayerName + ".");
-            } else if (!doc.containsDXFLayer(yardLayerName)) {
-                pl.addError(errorKey, "For UnitFA block " + block.getName() + ", setback layer must be named exactly "
-                        + yardLayerName + ".");
-            }
-        }
+		for (String setbackLayerName : unitFaSetbackLayerNames) {			
+			if (!doc.containsDXFLayer(setbackLayerName)) {
+				String errorKey = "UNITFA_SETBACK_LAYER_" + setbackLayerName;
+				pl.addError(errorKey, "Required UnitFA setback layer '" + setbackLayerName
+						+ "' is not present. Please use the exact layer name.");
+			}
+		}
     }
 
     private List<String> findQualifiedUnitFaSetbackLayers(DXFDocument doc, Block block, String yardLayerName) {

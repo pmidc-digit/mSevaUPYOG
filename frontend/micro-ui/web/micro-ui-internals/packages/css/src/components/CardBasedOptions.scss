@@ -174,6 +174,17 @@
   transform: translateY(-4px);
 }
 
+.new-card-option--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  filter: grayscale(1);
+}
+
+.new-card-option--disabled:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transform: translateY(0);
+}
+
 /* Icon wrapper */
 .new-card-icon {
   width: 56px;
@@ -279,6 +290,20 @@
   font-weight: 600;
   margin-bottom: 20px;
   color: #1F1F1F;
+}
+
+.chc-maintenance-banner {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 8px;
+}
+
+.chc-card--disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  filter: grayscale(1);
 }
 
 /* Card container */

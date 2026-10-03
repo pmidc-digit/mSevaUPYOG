@@ -314,6 +314,13 @@ public class SetBackService extends FeatureProcess {
             return;
         }
 
+        boolean isUnitFaPlan = pl.getBlocks().stream()
+                .anyMatch(block -> Boolean.TRUE.equals(block.getIsUnitFa()));
+        if (isUnitFaPlan) {
+            buildUnitFaCommonResult(pl, scrutinyDetailList);
+            return;
+        }
+        
         BigDecimal plotArea = pl.getPlot() != null && pl.getPlot().getArea() != null
                 ? pl.getPlot().getArea()
                 : BigDecimal.ZERO;
@@ -511,6 +518,68 @@ public class SetBackService extends FeatureProcess {
                     pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
                 }
             }
+        }
+    }
+    
+    /**
+     * UnitFA setback layers are plan-level, so their result belongs in the Common section,
+     * once per setback type, instead of repeating under every block.
+     */
+    private void buildUnitFaCommonResult(Plan pl, List<ScrutinyDetail> scrutinyDetailList) {
+        // one best row per setback type, e.g. "Common_Front Setback"
+        Map<String, Map<String, String>> bestRows = new LinkedHashMap<>();
+        Map<String, Integer> sideCounter = new HashMap<>();
+
+        for (ScrutinyDetail sd : scrutinyDetailList) {
+            String key = sd.getKey();
+            if (key == null || sd.getDetail() == null || sd.getDetail().isEmpty()) continue;
+
+            // number side setbacks per block so Side 1 and Side 2 stay distinct
+            if (key.contains("Side Setback") && !key.matches(".*Side Setback\\d+$")) {
+                int count = sideCounter.getOrDefault(key, 0) + 1;
+                sideCounter.put(key, count);
+                key = key + count;
+            }
+
+            // "Block_1_Rear Setback" -> "Common_Rear Setback"
+            String commonKey = "Common_" + key.replaceFirst("^Block_[^_]+_", "");
+
+            Map<String, String> row = new HashMap<>(sd.getDetail().get(0));
+            Map<String, String> existing = bestRows.get(commonKey);
+
+            // same setback seen from another block: keep the stricter (higher permissible) row
+            if (existing == null || parsePermissible(row).compareTo(parsePermissible(existing)) > 0) {
+                bestRows.put(commonKey, row);
+            }
+        }
+
+        for (Map.Entry<String, Map<String, String>> e : bestRows.entrySet()) {
+            ScrutinyDetail commonDetail = new ScrutinyDetail();
+            commonDetail.setKey(e.getKey());
+
+            commonDetail.addColumnHeading(1, RULE_NO);
+            commonDetail.addColumnHeading(2, LEVEL);
+            commonDetail.addColumnHeading(3, OCCUPANCY);
+            commonDetail.addColumnHeading(4, FIELDVERIFIED);
+            commonDetail.addColumnHeading(5, PERMISSIBLE);
+            commonDetail.addColumnHeading(6, PROVIDED);
+            commonDetail.addColumnHeading(7, STATUS);
+
+            commonDetail.getDetail().add(e.getValue());
+            pl.getReportOutput().getScrutinyDetails().add(commonDetail);
+        }
+    }
+
+    // changed: now takes the row map instead of a ScrutinyDetail
+    private BigDecimal parsePermissible(Map<String, String> row) {
+        try {
+            String p = row.get(PERMISSIBLE);
+            if (p == null) p = row.get("Permissible");
+            if (p == null) return BigDecimal.ZERO;
+            String num = p.replaceAll("[^0-9.]", "");
+            return num.isEmpty() ? BigDecimal.ZERO : new BigDecimal(num);
+        } catch (NumberFormatException ex) {
+            return BigDecimal.ZERO;
         }
     }
     

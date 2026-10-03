@@ -536,35 +536,83 @@ private class FrontYardResult {
 	    return valid;
 	}
 
+//	private void validateFrontYard(Plan pl) {
+//		// Front yard may not be mandatory at each level. We can check whether in any
+//		// level front yard defined or not ?
+//		for (Block block : pl.getBlocks()) {
+//			if (!block.getCompletelyExisting()) {
+//				Boolean frontYardDefined = false;
+//				for (SetBack setback : block.getSetBacks()) {
+//					if (setback.getFrontYard() != null
+//							&& setback.getFrontYard().getMean().compareTo(BigDecimal.valueOf(0)) > 0) {
+//						frontYardDefined = true;
+//					}
+//				}
+//				if (!frontYardDefined) {
+//					HashMap<String, String> errors = new HashMap<>();
+//					if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {				
+//						errors.put(FRONT_YARD_DESC,
+//								prepareMessage(OBJECTNOTDEFINED, FRONT_YARD_DESC + " for Block " + block.getName()));
+//						pl.addErrors(errors);
+//                    }
+//					
+//				}
+//			}
+//
+//		}
+//
+//	}
+
 	private void validateFrontYard(Plan pl) {
 
-		// Front yard may not be mandatory at each level. We can check whether in any
-		// level front yard defined or not ?
+	    boolean isUnitFaPlan = pl.getBlocks().stream()
+	            .anyMatch(block -> Boolean.TRUE.equals(block.getIsUnitFa()));
 
-		for (Block block : pl.getBlocks()) {
-			if (!block.getCompletelyExisting()) {
-				Boolean frontYardDefined = false;
-				for (SetBack setback : block.getSetBacks()) {
-					if (setback.getFrontYard() != null
-							&& setback.getFrontYard().getMean().compareTo(BigDecimal.valueOf(0)) > 0) {
-						frontYardDefined = true;
-					}
-				}
-				if (!frontYardDefined) {
-					HashMap<String, String> errors = new HashMap<>();
-					if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {				
-						errors.put(FRONT_YARD_DESC,
-								prepareMessage(OBJECTNOTDEFINED, FRONT_YARD_DESC + " for Block " + block.getName()));
-						pl.addErrors(errors);
-                    }
-					
-				}
-			}
+	    // If any block is marked as UnitFA, skip block-wise
+	    // front setback mandatory validation.
+	    if (isUnitFaPlan) {
+	        return;
+	    }
 
-		}
+	    for (Block block : pl.getBlocks()) {
 
+	        if (!block.getCompletelyExisting()) {
+
+	            boolean frontYardDefined = false;
+
+	            for (SetBack setback : block.getSetBacks()) {
+
+	                if (setback.getFrontYard() != null
+	                        && setback.getFrontYard().getMean() != null
+	                        && setback.getFrontYard().getMean()
+	                                .compareTo(BigDecimal.ZERO) > 0) {
+
+	                    frontYardDefined = true;
+	                    break;
+	                }
+	            }
+
+	            if (!frontYardDefined) {
+
+	                HashMap<String, String> errors = new HashMap<>();
+
+	                if (!Far.shouldSkipValidation(
+	                        pl.getEdcrRequest(),
+	                        DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {
+
+	                    errors.put(
+	                            FRONT_YARD_DESC,
+	                            prepareMessage(
+	                                    OBJECTNOTDEFINED,
+	                                    FRONT_YARD_DESC + " for Block " + block.getName()));
+
+	                    pl.addErrors(errors);
+	                }
+	            }
+	        }
+	    }
 	}
-
+	
 	private Boolean checkFrontYardUptoSixteenMts(SetBack setback, Building building, BigDecimal blockBuildingHeight,
 			Plan pl, Integer level, Block block, Plot plot, String frontYardFieldName, BigDecimal min, BigDecimal mean,
 			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult,

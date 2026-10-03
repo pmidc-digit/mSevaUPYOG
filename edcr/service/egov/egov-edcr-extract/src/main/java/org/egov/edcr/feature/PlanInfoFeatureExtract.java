@@ -250,13 +250,19 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			pl.setPlot(plot);
 		} else {
 			plotArea = plotArea.replaceAll(digitsRegex, "");
-			BigDecimal numericValue = getNumericValue(plotArea, pl, DxfFileConstants.PLOT_AREA).setScale(2, RoundingMode.HALF_UP);
+			plotArea = sanitizeDecimal(plotArea);
+			BigDecimal numericValue = getNumericValue(plotArea, pl, DxfFileConstants.PLOT_AREA);
 			if (numericValue != null) {
-				pi.setPlotArea(numericValue);
-				plot.setArea(numericValue);
-				if (numericValue.compareTo(ONEHUDREDTWENTYFIVE) <= 0)
-					plot.setSmallPlot(true);
-			}
+				 numericValue = numericValue.setScale(2, RoundingMode.HALF_UP);
+
+			        pi.setPlotArea(numericValue);
+			        plot.setArea(numericValue);
+
+			        if (numericValue.compareTo(ONEHUDREDTWENTYFIVE) <= 0) {
+			            plot.setSmallPlot(true);
+			        }
+			}			
+			
 			plot.setPresentInDxf(true);
 			pl.setPlot(plot);
 		}
@@ -840,4 +846,20 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		this.layerNames = layerNames;
 	}
 
+	private String sanitizeDecimal(String value) {
+	    if (StringUtils.isBlank(value)) {
+	        return value;
+	    }
+
+	    value = value.replaceAll("[^\\d.]", "");
+
+	    int firstDot = value.indexOf('.');
+	    if (firstDot >= 0) {
+	        value = value.substring(0, firstDot + 1)
+	                + value.substring(firstDot + 1).replace(".", "");
+	    }
+
+	    return value;
+	}
+	
 }

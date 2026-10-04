@@ -274,14 +274,14 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   //   },
   // ];
   const homeDetails = obpsHomePageUI?.BPA?.OBPSHomePageUI?.length > 0 ? obpsHomePageUI?.BPA?.OBPSHomePageUI?.map((data) => {
-    const links = data?.title === "ACTION_TEST_BPA_STAKE_HOLDER_HOME" && !data?.links?.length ? bpaLinks : data?.links;
-
-    return {
-      ...data,
-      links: data?.isUnderMaintenance
-        ? links?.map((link) => ({ ...link, disabled: true }))
-        : links,
-    };
+    if(data?.title === "ACTION_TEST_BPA_STAKE_HOLDER_HOME"){
+      return {
+        ...data,
+        links: data?.links?.length > 0 ? data?.links : bpaLinks
+      }
+    }else{
+      return data
+    }
   }) : []
 
   if(isOBPSHomePageUILoading){
@@ -296,13 +296,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
             {data.name === "employeeCard" ? (
               <EmployeeModuleCard {...data} />
             ) : (
-              <CitizenHomeCardSecond
-                header={data.title}
-                links={data.links}
-                Icon={() => data.Icon}
-                isUnderMaintenance={data?.isUnderMaintenance}
-                maintenanceMessage={data?.maintenanceMessage}
-              />
+              <CitizenHomeCardSecond header={data.title} links={data.links} Icon={() => data.Icon} />
             )}
               {showModal && <ProfessionalSignUpdate closeModal={closeModal} userDetails={userDetails} refetch={refetch}/>}
           </div>

@@ -153,18 +153,6 @@ const Home = () => {
     }
   };
 
-  const toCitizenServiceCard = (item) => {
-    const isUnderMaintenance = item?.isUnderMaintenance === true;
-
-    return {
-      name: t(item.label),
-      Icon: getIconForService(item.code),
-      disabled: isUnderMaintenance,
-      disabledMessage: isUnderMaintenance ? item?.maintenanceMessage : undefined,
-      onClick: isUnderMaintenance ? undefined : () => toDigitUrl(item.navigationUrl),
-    };
-  };
-
   // Handle search and filter services
   const handleSearchChange = (e) => {
     const query = e.target.value.toLowerCase();
@@ -188,7 +176,11 @@ const Home = () => {
           ]
         : citizenServicesObj?.props
             ?.filter((item) => item?.enabled)
-            ?.map(toCitizenServiceCard) || [];
+            ?.map((item) => ({
+              name: t(item.label),
+              Icon: getIconForService(item.code),
+              onClick: () => toDigitUrl(item.navigationUrl),
+            })) || [];
 
     const filtered = allServices.filter((service) => service.name.toLowerCase().includes(query));
     setFilteredServices(filtered);
@@ -257,7 +249,14 @@ const Home = () => {
           ]
         : citizenServicesObj?.props
             ?.filter((item) => item?.enabled && item?.code !== "CITIZEN_SERVICE_SWACH")
-            ?.map(toCitizenServiceCard),
+            ?.map((item) => ({
+              name: t(item.label),
+              Icon: getIconForService(item.code),
+              // onClick: () => {
+              //   window.location.href = item.navigationUrl;
+              // },
+              onClick: () => toDigitUrl(item.navigationUrl),
+            })),
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
 

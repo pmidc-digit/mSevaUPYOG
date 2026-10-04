@@ -69,30 +69,37 @@ const arrowStyles = {
   fontSize: "18px",
 }
 
-const Option = ({ name, Icon, onClick, className, colorIndex = 0 }) => {
+const Option = ({ name, Icon, onClick, className, colorIndex = 0, disabled = false, disabledMessage }) => {
   const [isCardHovered, setIsCardHovered] = React.useState(false)
   // const colors = cardColors[colorIndex % cardColors.length]
   const colors = cardColors[colorIndex % cardColors.length]
 
   return (
     <div 
-      className="new-card-option"
+      className={`new-card-option${disabled ? " new-card-option--disabled" : ""}`}
       style={{
         background: isCardHovered ? colors.bg : "#ffffff",
         border: isCardHovered ? "2px solid transparent" : "2px solid #e2e8f0",
         transition: "all 0.25s ease",
       }}
-      onClick={onClick}
-      onMouseEnter={() => setIsCardHovered(true)}
+      onClick={disabled ? undefined : onClick}
+      onMouseEnter={() => !disabled && setIsCardHovered(true)}
       onMouseLeave={() => setIsCardHovered(false)}
+      aria-disabled={disabled}
     >
       <div className="new-card-icon" style={{ background: colors.iconBg, color: colors.icon }}>
         {Icon}
       </div>
       <div className="new-card-service-name" style={{ color: colors.textColor }}>{name}</div>
       <div className="new-card-access" style={{ color: isCardHovered ? colors.textColor : "#4a5568" }}>
-        <span>Access service</span>
-        <span className="new-card-arrow">→</span>
+        {disabled ? (
+          <span>{disabledMessage || "This service is temporarily unavailable."}</span>
+        ) : (
+          <React.Fragment>
+            <span>Access service</span>
+            <span className="new-card-arrow">→</span>
+          </React.Fragment>
+        )}
       </div>
     </div>
   )

@@ -5,6 +5,7 @@ import static org.egov.edcr.constants.DxfFileConstants.OPENING_ABOVE_2_1_ON_SIDE
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -211,10 +212,14 @@ public class PlanInfoFeatureExtractLocalTest extends FeatureExtract {
 			plotArea = plotArea.replaceAll(digitsRegex, "");
 			BigDecimal numericValue = getNumericValue(plotArea, pl, DxfFileConstants.PLOT_AREA);
 			if (numericValue != null) {
+				numericValue = numericValue.setScale(2, RoundingMode.HALF_UP);
 				pi.setPlotArea(numericValue);
 				plot.setArea(numericValue);
 				if (numericValue.compareTo(ONEHUDREDTWENTYFIVE) <= 0)
 					plot.setSmallPlot(true);
+			} else {
+				pl.addError(DxfFileConstants.PLOT_AREA,
+						DxfFileConstants.PLOT_AREA + " is null or invalid in the Plan Information Layer");
 			}
 			plot.setPresentInDxf(true);
 			pl.setPlot(plot);

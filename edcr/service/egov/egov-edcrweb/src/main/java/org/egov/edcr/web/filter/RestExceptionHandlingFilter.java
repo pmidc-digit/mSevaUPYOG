@@ -177,10 +177,13 @@ public class RestExceptionHandlingFilter extends OncePerRequestFilter {
             current = current.getCause();
         }
 
-        if (lastValidMessage == null) {
-            String location = getExceptionLocation(deepest);
-            String exName = deepest != null ? deepest.getClass().getSimpleName() : ex.getClass().getSimpleName();
-            String detailed = location != null ? exName + " at " + location : exName;
+        if (lastValidMessage == null || "null".equalsIgnoreCase(lastValidMessage)) {
+            String detailed;
+            if (deepest instanceof NullPointerException || (deepest != null && "NullPointerException".equals(deepest.getClass().getSimpleName()))) {
+                detailed = describeNullPointer(deepest);
+            } else {
+                detailed = describeEmptyException(deepest);
+            }
 
             if (wrapperContext != null && !wrapperContext.isEmpty()) {
                 lastValidMessage = wrapperContext + ": " + detailed;
@@ -193,24 +196,99 @@ public class RestExceptionHandlingFilter extends OncePerRequestFilter {
             lastValidMessage = deepest != null ? deepest.getClass().getSimpleName() : ex.getClass().getSimpleName();
         }
 
-        String cleaned = lastValidMessage.replace("\"", "'").replace("\r", " ").replace("\n", " ").trim();
+        String cleaned = cleanDatabaseOrTechnicalMessage(lastValidMessage);
         return cleaned.length() <= 300 ? cleaned : cleaned.substring(0, 300);
     }
 
-    private String getExceptionLocation(Throwable t) {
+    private String describeNullPointer(Throwable t) {
         if (t == null || t.getStackTrace() == null || t.getStackTrace().length == 0) {
-            return null;
+            return "NullPointerException: Required plan information is null or not provided in the drawing.";
         }
         for (StackTraceElement elem : t.getStackTrace()) {
-            String className = elem.getClassName();
-            if (className.startsWith("org.egov.")) {
-                String simpleName = className.substring(className.lastIndexOf('.') + 1);
-                return simpleName + "." + elem.getMethodName() + "(line " + elem.getLineNumber() + ")";
+            String cls = elem.getClassName();
+            String method = elem.getMethodName();
+            if (cls.startsWith("org.egov.")) {
+                String simple = cls.substring(cls.lastIndexOf('.') + 1);
+                if (simple.contains("PlanInfoFeatureExtract") || "extractPlanInfo".equalsIgnoreCase(method)) {
+                    return "NullPointerException: Mandatory plan information (such as Plot Area, Road Type, or City) is null or missing in the drawing.";
+                } else if (simple.contains("PlanService")) {
+                    if (method.contains("process")) {
+                        return "NullPointerException: Required plan detail (plot area, plot boundary, or tenant information) is null or not provided in the drawing.";
+                    } else if (method.contains("applyRules")) {
+                        return "NullPointerException: Required plan dimension or scrutiny rule input is null in the drawing.";
+                    }
+                    return "NullPointerException: Required plan information is null or not provided in the drawing.";
+                } else if (simple.endsWith("FeatureExtract") || simple.endsWith("Extract")) {
+                    String featureName = simple.replace("FeatureExtract", "").replace("Extract", "");
+                    return "NullPointerException: Required drawing entity or dimension for " + featureName + " is null or missing in the drawing.";
+                } else if (simple.endsWith("Rule") || simple.endsWith("Service")) {
+                    String ruleName = simple.replace("Rule", "").replace("Service", "").replaceAll("(?<=[a-z])(?=[A-Z])", " ").trim();
+                    return "NullPointerException: Required dimension or property for " + ruleName + " is null or not defined in the plan.";
+                }
             }
         }
-        StackTraceElement first = t.getStackTrace()[0];
-        String simpleName = first.getClassName().substring(first.getClassName().lastIndexOf('.') + 1);
-        return simpleName + "." + first.getMethodName() + "(line " + first.getLineNumber() + ")";
+        return "NullPointerException: Required plan information is null or not provided in the drawing.";
+    }
+
+    private String describeEmptyException(Throwable t) {
+        if (t == null) {
+            return "Application request processing failed.";
+        }
+        return t.getClass().getSimpleName();
+    }
+
+    private String cleanDatabaseOrTechnicalMessage(String message) {
+        if (message == null || message.trim().isEmpty()) {
+            return message;
+        }
+        String cleaned = message;
+
+        // 1. Strip PostgreSQL position / offset indicators (e.g. "   Position: 620", "Position: 123")
+        cleaned = cleaned.replaceAll("(?i)\\s*Position:\\s*\\d+", "");
+
+        // 2. Strip Postgres / JDBC technical prefixes
+        cleaned = cleaned.replaceAll("^(?i)(org\\.postgresql\\.util\\.)?PSQLException:\\s*", "");
+        cleaned = cleaned.replaceAll("^(?i)ERROR:\\s*", "");
+
+        // 3. Transform "relation 'xyz' does not exist" into clean explanation
+        java.util.regex.Matcher relationMatcher = java.util.regex.Pattern.compile("(?i)relation\\s*[\"']([^\"']+)[\"']\\s*does not exist").matcher(cleaned);
+        if (relationMatcher.find()) {
+            String relationName = relationMatcher.group(1);
+            cleaned = "Database table or entity '" + relationName + "' does not exist. Please verify tenant database setup or migrations.";
+        }
+
+        // 4. Transform "column 'xyz' does not exist"
+        java.util.regex.Matcher colMatcher = java.util.regex.Pattern.compile("(?i)column\\s*[\"']([^\"']+)[\"']\\s*does not exist").matcher(cleaned);
+        if (colMatcher.find()) {
+            String colName = colMatcher.group(1);
+            cleaned = "Database column '" + colName + "' does not exist in the database schema.";
+        }
+
+        // 5. Transform duplicate key / unique constraint
+        java.util.regex.Matcher dupMatcher = java.util.regex.Pattern.compile("(?i)duplicate key value violates unique constraint\\s*[\"']([^\"']+)[\"']").matcher(cleaned);
+        if (dupMatcher.find()) {
+            String constraint = dupMatcher.group(1);
+            cleaned = "A duplicate record exists violating constraint '" + constraint + "'.";
+        }
+
+        // 6. Strip internal line numbers like "at PlanService.process(line 324)" or "(line 123)" if present
+        cleaned = cleaned.replaceAll("(?i)\\s*at\\s+[\\w\\.$]+\\(\\s*line\\s+\\d+\\s*\\)", "");
+        cleaned = cleaned.replaceAll("(?i)\\s*\\(line\\s+\\d+\\)", "");
+
+        // If the message is just bare "NullPointerException", enhance it
+        if ("NullPointerException".equalsIgnoreCase(cleaned.trim())) {
+            cleaned = "NullPointerException: Required plan information is null or not provided in the drawing.";
+        }
+
+        // If message contains raw IndexOutOfBoundsException output like "Index: 0, Size: 0"
+        if (cleaned.contains("Index:") && cleaned.contains("Size:")) {
+            cleaned = "Required drawing entity or dimension is not defined or missing in the plan.";
+        }
+
+        // 7. Normalize whitespace and quotes
+        cleaned = cleaned.replace("\"", "'").replace("\r", " ").replace("\n", " ").replaceAll("\\s+", " ").trim();
+
+        return cleaned;
     }
 
     private boolean isMeaningful(String msg) {

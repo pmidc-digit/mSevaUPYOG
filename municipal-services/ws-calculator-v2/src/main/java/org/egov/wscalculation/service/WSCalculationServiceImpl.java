@@ -706,26 +706,39 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		LocalDateTime date = LocalDateTime.now();
 		log.info("Time schedule start for water demand generation on : " + date.format(dateTimeFormatter));
-//		List<String> tenantIds = wSCalculationDao.getTenantId();
 		List<String> tenantIds = new ArrayList<>();
         List<String> localities = new ArrayList<>();
 		String tenant = null;
 		String locality = null;
 
+		// ── Step 1: Check BulkDemandCriteria first (explicit request payload) ──
 		if (bulkDemandCriteria != null) {
-			tenant = bulkDemandCriteria.getTenantId();
+			if (StringUtils.isNotBlank(bulkDemandCriteria.getTenantId())) {
+				tenant = bulkDemandCriteria.getTenantId().trim();
+				log.info("Tenant resolved from BulkDemandCriteria: {}", tenant);
+			}
 			locality = bulkDemandCriteria.getLocality();
 		}
 
-		if (tenant == null || tenant.trim().isEmpty()) {
-			if (requestInfo != null && requestInfo.getUserInfo() != null && StringUtils.isNotBlank(requestInfo.getUserInfo().getTenantId()) && requestInfo.getUserInfo().getTenantId().startsWith("pb.")) {
+		// ── Step 2: If no tenantId in criteria, try userInfo (must be a child tenant like pb.nangal) ──
+		if (StringUtils.isBlank(tenant)) {
+			if (requestInfo != null && requestInfo.getUserInfo() != null
+					&& StringUtils.isNotBlank(requestInfo.getUserInfo().getTenantId())
+					&& requestInfo.getUserInfo().getTenantId().contains(".")) {
 				tenant = requestInfo.getUserInfo().getTenantId().trim();
-			} else if (requestInfo != null && StringUtils.isNotBlank(requestInfo.getMsgId()) && requestInfo.getMsgId().startsWith("pb.")) {
+				log.info("Tenant resolved from userInfo: {}", tenant);
+			} else if (requestInfo != null && StringUtils.isNotBlank(requestInfo.getMsgId())
+					&& requestInfo.getMsgId().contains(".")) {
 				tenant = requestInfo.getMsgId().split("\\|")[0].trim();
+				log.info("Tenant resolved from msgId: {}", tenant);
 			}
 		}
 
-		if (tenant == null || tenant.trim().isEmpty() || !tenant.contains("pb")) {
+		// ── Step 3: If still no valid child tenant, fall back to MDMS (all tenants) ──
+		// A valid child tenant must contain "." (e.g. pb.nangal). State-level "pb" is NOT valid.
+		boolean isValidChildTenant = StringUtils.isNotBlank(tenant) && tenant.contains(".");
+		if (!isValidChildTenant) {
+			log.info("No specific child tenantId found (tenant={}). Fetching ALL tenants from MDMS.", tenant);
 			MdmsCriteriaReq mdmsCriteriaReq = calculatorUtil.gettenants(requestInfo);
 			StringBuilder url = calculatorUtil.getMdmsSearchUrl();
 			Object res = repository.fetchResult(url, mdmsCriteriaReq);
@@ -767,7 +780,7 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 			log.info("No tenants are found for generating demand");
 			return;
 		}
-		log.info("Tenant Ids : " + tenantIds.toString());
+		log.info("Tenant Ids resolved for demand generation: " + tenantIds.toString());
 
 		// ── Step: Compute pre-generation counts and trigger consolidated start email ──
 		try {

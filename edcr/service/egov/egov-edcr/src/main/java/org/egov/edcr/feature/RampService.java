@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -412,7 +413,9 @@ public class RampService extends FeatureProcess {
                             	            SUBRULE_50_C_4_B,
                             	            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION, ""),
                             	            expectedRatio,
-                            	            mapOfRampNumberAndSlopeValues.get("slope"),
+                            	            Optional.ofNullable(
+                            	                    mapOfRampNumberAndSlopeValues.get("slope"))
+                            	                    .orElse("0"),
                             	            Result.Not_Accepted.getResultVal(),
                             	            scrutinyDetail2
                             	    );

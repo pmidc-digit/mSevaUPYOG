@@ -6,6 +6,7 @@ const dialog = require('../util/dialog');
 
 let supportedServiceForLocality = "{\"TL\" : \"tl-services\",\"FIRENOC\" : \"fireNoc\",\"WS\" : \"ws-services\",\"SW\" : \"sw-services\",\"PT\" : \"PT\",\"BPA\" : \"bpa-services\"}";
 
+
 class BillService {
 
   constructor() {
@@ -202,44 +203,62 @@ class BillService {
     return { option, example };
   }
 
-  validateParamInput(service, searchParamOption, paramInput) {
-    var state = config.rootTenantId;
-    state = state.toUpperCase();
+validateParamInput(service, searchParamOption, paramInput) {
+    // const state = config.rootTenantId.toUpperCase();
 
-    if (searchParamOption === 'mobile') {
-      let regexp = new RegExp('^[0-9]{10}$');
-      return regexp.test(paramInput);
-    }
+    // if (!paramInput) {
+    //     return false;
+    // }
 
-    if (searchParamOption === 'consumerNumber' || searchParamOption === 'propertyId' || searchParamOption === 'connectionNumber') {
-      // if(service === 'PT'){
-      //   let regexp = new RegExp(state+'-PT-\\d{4}-\\d{2}-\\d{2}-\\d+$');
-      //   return regexp.test(paramInput);
-      // }
-      if (service === 'WS' || service === 'SW') {
-        //todo
-        let regexp = new RegExp('^(WS|SW)/\\d{3}/\\d{4}-\\d{2}/\\d+$');
-        return regexp.test(paramInput);
-      }
-    }
+    // paramInput = paramInput.trim();
 
+    // if (searchParamOption === 'mobile') {
+    //     return /^[0-9]{10}$/.test(paramInput);
+    // }
 
-    if (searchParamOption === 'tlApplicationNumber') {
-      let regexp = new RegExp(state + '-TL-\\d{4}-\\d{2}-\\d{2}-\\d+$');
-      return regexp.test(paramInput);
-    }
+    // if (searchParamOption === 'connectionNumber') {
 
-    if (searchParamOption === 'nocApplicationNumber') {
-      let regexp = new RegExp(state + '-FN-\\d{4}-\\d{2}-\\d{2}-\\d+$');
-      return regexp.test(paramInput);
-    }
+    //     if (service === 'WS') {
+    //         return (/^(?:\d{10}|WS\/\d{3}\/\d{2}-\d{2}\/\d+)$/.test(paramInput) || /^\d{4}W\d{6}$/.test(paramInput));
+    //     }
 
-    if (searchParamOption === 'bpaApplicationNumber') {
-      let regexp = new RegExp(state + '-BP-\\d{4}-\\d{2}-\\d{2}-\\d+$');
-      return regexp.test(paramInput);
-    }
+    //     if (service === 'SW') {
+    //         return (/^(?:\d{10}|SW\/\d{3}\/\d{2}-\d{2}\/\d+)$/.test(paramInput) || /^\d{4}S\d{6}$/.test(paramInput));
+    //     }
+
+    //     return false;
+    // }
+
+    // if (searchParamOption === 'propertyId') {
+    //     return new RegExp(
+    //         '^' + state + '-PT-\\d{4}-\\d{2}-\\d{2}-\\d+$'
+    //     ).test(paramInput);
+    // }
+
+    // if (searchParamOption === 'consumerNumber') {
+    //     return true;
+    // }
+
+    // if (searchParamOption === 'tlApplicationNumber') {
+    //     return new RegExp(
+    //         '^' + state + '-TL-\\d{4}-\\d{2}-\\d{2}-\\d+$'
+    //     ).test(paramInput);
+    // }
+
+    // if (searchParamOption === 'nocApplicationNumber') {
+    //     return new RegExp(
+    //         '^' + state + '-FN-\\d{4}-\\d{2}-\\d{2}-\\d+$'
+    //     ).test(paramInput);
+    // }
+
+    // if (searchParamOption === 'bpaApplicationNumber') {
+    //     return new RegExp(
+    //         '^' + state + '-BP-\\d{4}-\\d{2}-\\d{2}-\\d+$'
+    //     ).test(paramInput);
+    // }
+
     return true;
-  }
+}
 
 
   async prepareBillResult(responseBody, user) {
@@ -329,7 +348,7 @@ class BillService {
 
     let requestBody = {
       RequestInfo: {
-        // authToken: user.authToken
+         authToken: user.authToken
       }
     };
 
@@ -372,9 +391,14 @@ class BillService {
       body: JSON.stringify(requestBody)
     };
 
+      console.log('billUrl:', billUrl);
+      console.log('options:', JSON.stringify(options, null, 2));
+
     let response = await fetch(billUrl, options);
 
     let responseBody = await response.json();
+
+    console.log('Bill search response:', JSON.stringify(responseBody));
 
     // console.log(
     //   'Bill search response:',
@@ -411,7 +435,7 @@ class BillService {
         pendingBillSize = results.length;
 
       } catch (error) {
-        console.error(
+         console.error(
           'ERROR inside prepareBillResult:',
           error
         );
@@ -462,95 +486,182 @@ class BillService {
     }
   }
 
-  async fetchBillsForUser(user, service) {
-    let billSupportedBussinessService;
+async fetchBillsForUser(user, service) {
 
-    if (service) {
-      if (service === 'WS')
-        billSupportedBussinessService = ['WS'];
-      if (service === 'SW')
-        billSupportedBussinessService = ['SW'];
-      if (service === 'PT')
-        billSupportedBussinessService = ['PT'];
-      if (service === 'BPA')
-        billSupportedBussinessService = ['BPA.LOW_RISK_PERMIT_FEE', 'BPA.NC_APP_FEE', 'BPA.NC_SAN_FEE', 'BPA.NC_OC_APP_FEE', 'BPA.NC_OC_SAN_FEE'];
-    }
-    else
-      billSupportedBussinessService = ['WS', 'SW', 'PT', 'TL', 'FIRENOC', 'BPA.LOW_RISK_PERMIT_FEE', 'BPA.NC_APP_FEE', 'BPA.NC_SAN_FEE', 'BPA.NC_OC_APP_FEE', 'BPA.NC_OC_SAN_FEE'];
+  let billSupportedBussinessService;
 
-    let billResults = {
-      pendingBills: [],
-      totalBills: 0
-    };
+  if (service) {
 
-    let self = this;
+    if (service === 'WS')
+      billSupportedBussinessService = ['WS'];
 
-    for (let service of billSupportedBussinessService) {
-      user.service = service;
+    if (service === 'SW')
+      billSupportedBussinessService = ['SW'];
 
-      let results;
+    if (service === 'PT')
+      billSupportedBussinessService = ['PT'];
 
-      if ((service === 'WS' || service === 'SW') &&
-        (!user.hasOwnProperty('paramOption') || user.paramOption == null ||
-          user.paramOption === 'mobile')) {
+    if (service === 'BPA')
+      billSupportedBussinessService = [
+        'BPA.LOW_RISK_PERMIT_FEE',
+        'BPA.NC_APP_FEE',
+        'BPA.NC_SAN_FEE',
+        'BPA.NC_OC_APP_FEE',
+        'BPA.NC_OC_SAN_FEE'
+      ];
 
-        results = await self.searchBillsForWaterSewerageByMobile(
+  } else {
+
+    billSupportedBussinessService = [
+      'WS',
+      'SW',
+      'PT',
+      'TL',
+      'FIRENOC',
+      'BPA.LOW_RISK_PERMIT_FEE',
+      'BPA.NC_APP_FEE',
+      'BPA.NC_SAN_FEE',
+      'BPA.NC_OC_APP_FEE',
+      'BPA.NC_OC_SAN_FEE'
+    ];
+  }
+
+  let billResults = {
+    pendingBills: [],
+    totalBills: 0
+  };
+
+  for (let businessService of billSupportedBussinessService) {
+
+    user.service = businessService;
+
+    let results;
+
+    // ---------------------------------------
+    // WS / SW
+    // ---------------------------------------
+    if (businessService === 'WS' || businessService === 'SW') {
+
+      if (
+        !user.hasOwnProperty('paramOption') ||
+        user.paramOption == null ||
+        user.paramOption === 'mobile'
+      ) {
+
+        results = await this.searchBillsForWaterSewerageByMobile(
           user,
-          service
+          businessService
         );
 
       } else {
 
-        if (!user.hasOwnProperty('paramOption') || user.paramOption == null) {
-          user.paramOption = 'mobile';
-          user.paramInput = user.mobileNumber;
-        }
-
-        results = await self.searchBillsForUser(user);
-      }
-      if (results.totalBills != 0 && results.pendingBills) {
-        billResults.pendingBills = billResults.pendingBills.concat(results.pendingBills);
-        billResults.totalBills = billResults.totalBills + results.totalBills;
-      }
-    }
-
-    if (billResults.totalBills === 0 || billResults.pendingBills.length === 0) {
-      return {
-        totalBills: 0,
-        pendingBills: undefined
+        results =
+          await this.searchBillsForWaterSewerageByConnectionNumber(
+            user,
+            businessService,
+            user.paramInput
+          );
       }
 
     }
 
-    let finalResult = [];
-    let billLimit = config.billsAndReceiptsUseCase.billSearchLimit;
+    // ---------------------------------------
+    // PT / TL / FIRENOC / BPA
+    // ---------------------------------------
+    else {
 
-    if (billResults.pendingBills.length < billLimit)
-      billLimit = billResults.pendingBills.length;
+      if (
+        !user.hasOwnProperty('paramOption') ||
+        user.paramOption == null
+      ) {
+        user.paramOption = 'mobile';
+        user.paramInput = user.mobileNumber;
+      }
 
-    for (var i = 0; i < billLimit; i++)
-      finalResult = finalResult.concat(billResults.pendingBills[i]);
+      results = await this.searchBillsForUser(user);
+    }
 
+    if (
+      results &&
+      results.totalBills != 0 &&
+      results.pendingBills
+    ) {
 
-    return {
-      pendingBills: finalResult,      // Pending bills exist
-      totalBills: billLimit
+      billResults.pendingBills =
+        billResults.pendingBills.concat(
+          results.pendingBills
+        );
+
+      billResults.totalBills += results.totalBills;
     }
   }
 
-  async fetchBillsForParam(user, service, paramOption, paramInput) {
+  if (
+    billResults.totalBills === 0 ||
+    billResults.pendingBills.length === 0
+  ) {
+    return {
+      totalBills: 0,
+      pendingBills: undefined
+    };
+  }
+
+  let billLimit =
+    config.billsAndReceiptsUseCase.billSearchLimit;
+
+  if (billResults.pendingBills.length < billLimit)
+    billLimit = billResults.pendingBills.length;
+
+  return {
+    pendingBills: billResults.pendingBills.slice(0, billLimit),
+    totalBills: billLimit
+  };
+}
+
+async fetchBillsForParam(
+    user,
+    service,
+    paramOption,
+    paramInput
+) {
+
+    paramInput = paramInput.trim();
+
     user.service = service;
     user.paramOption = paramOption;
     user.paramInput = paramInput;
 
-    let billsForUser;
-    if (service === 'WS' || service === 'BPA')
-      billsForUser = await this.fetchBillsForUser(user, service);
-    else
-      billsForUser = await this.searchBillsForUser(user);
+    // console.log(
+    //     'Fetching bills for:',
+    //     service,
+    //     paramOption,
+    //     paramInput
+    // );
+
+    // WS / SW:
+    // Search connection independently of mobile number.
+    if (
+        (service === 'WS' || service === 'SW') &&
+        paramOption === 'connectionNumber'
+    ) {
+
+        const billsForUser =
+            await this.searchBillsForWaterSewerageByConnectionNumber(
+                user,
+                service,
+                paramInput
+            );
+
+        return billsForUser.pendingBills;
+    }
+
+    // PT / TL / FIRENOC / BPA etc.
+    // Search directly using consumerCode.
+    const billsForUser =
+        await this.searchBillsForUser(user);
 
     return billsForUser.pendingBills;
-  }
+}
 
   async getShortenedURL(finalPath) {
     var url = config.egovServices.egovServicesHost + config.egovServices.urlShortnerEndpoint;
@@ -739,6 +850,8 @@ class BillService {
     paymentPath = paymentPath.replace(/\$locale/g, locale);
 
     var finalPath = UIHost + paymentPath;
+
+    console.log('finalPath:', finalPath);
     var link = await this.getShortenedURL(finalPath);
     return link;
   }
@@ -849,6 +962,138 @@ class BillService {
 
     return connections;
   }
+
+  async searchWSConnectionsByConnectionNumber(user, businessService, connectionNumber) {
+
+    let baseUrl = config.egovServices.egovServicesHost;
+
+    let searchPath;
+
+    if (businessService === 'WS') {
+        searchPath = config.egovServices.waterConnectionSearch;
+    } else if (businessService === 'SW') {
+        searchPath = config.egovServices.sewerageConnectionSearch;
+    } else {
+        console.error(
+            'Invalid business service:',
+            businessService
+        );
+
+        return [];
+    }
+
+    let billUrl = baseUrl + searchPath;
+
+    billUrl += '&connectionNumber=' +
+        encodeURIComponent(connectionNumber);
+
+    billUrl += '&locality=';
+
+    billUrl += '&tenantId=' +
+        encodeURIComponent(config.rootTenantId);
+
+    billUrl += '&transactionType=' +
+        businessService;
+
+    if (billUrl.indexOf('searchType=CONNECTION') === -1) {
+        billUrl += '&searchType=CONNECTION';
+    }
+
+    let requestBody = {
+        RequestInfo: {
+            apiId: 'Rainmaker',
+            ver: '.01',
+            action: '_search',
+            did: '1',
+            key: '',
+            msgId: '20170310130900|' + (user.locale || 'en_IN'),
+            requesterId: ''
+        }
+    };
+
+    let options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+        },
+        body: JSON.stringify(requestBody)
+    };
+
+    console.log(
+        'Searching ' + businessService +
+        ' connection using connection number:',
+        connectionNumber
+    );
+
+    console.log(
+        'Connection search URL:',
+        billUrl
+    );
+
+    let response;
+
+    try {
+        response = await fetch(billUrl, options);
+    } catch (error) {
+
+        console.error(
+            'Exception while searching ' +
+            businessService +
+            ' connection:',
+            error
+        );
+
+        return [];
+    }
+
+    console.log(
+        businessService +
+        ' connection search status:',
+        response.status
+    );
+
+    if (response.status !== 200) {
+
+        let errorBody;
+
+        try {
+            errorBody = await response.text();
+        } catch (e) {
+            errorBody = '';
+        }
+
+        console.error(
+            'Connection search failed:',
+            errorBody
+        );
+
+        return [];
+    }
+
+    let responseBody = await response.json();
+
+    console.log(
+        businessService +
+        ' connection search response:',
+        JSON.stringify(responseBody, null, 2)
+    );
+
+    let connections;
+
+    if (businessService === 'WS') {
+        connections = responseBody.WaterConnection || [];
+    } else {
+        connections = responseBody.SewerageConnections || [];
+    }
+
+    console.log(
+        businessService +
+        ' connections found by connection number:',
+        connections.length
+    );
+
+    return connections;
+}
 
   async searchBillsForWaterSewerageByMobile(user, businessService) {
 
@@ -1014,6 +1259,144 @@ class BillService {
       totalBills: billLimit
     };
   }
+
+  async searchBillsForWaterSewerageByConnectionNumber(
+    user,
+    businessService,
+    connectionNumber
+) {
+
+    console.log(
+        'Searching bill using connection number:',
+        businessService,
+        connectionNumber
+    );
+
+    // Step 1:
+    // Search connection directly, WITHOUT mobile number.
+    let connections =
+        await this.searchWSConnectionsByConnectionNumber(
+            user,
+            businessService,
+            connectionNumber
+        );
+
+    if (!connections || connections.length === 0) {
+
+        console.log(
+            'No ' +
+            businessService +
+            ' connection found for:',
+            connectionNumber
+        );
+
+        return {
+            totalBills: 0,
+            pendingBills: undefined
+        };
+    }
+
+    // Step 2:
+    // Extract actual connection numbers returned by
+    // Water/Sewerage service.
+    let connectionNumbers = [];
+
+    for (let connection of connections) {
+
+        if (
+            connection.connectionNo &&
+            !connectionNumbers.includes(connection.connectionNo)
+        ) {
+            connectionNumbers.push(
+                connection.connectionNo
+            );
+        }
+    }
+
+    console.log(
+        'Actual connection numbers returned:',
+        connectionNumbers
+    );
+
+    if (connectionNumbers.length === 0) {
+
+        console.log(
+            'Connection search returned records but connectionNo is missing.'
+        );
+
+        return {
+            totalBills: 0,
+            pendingBills: undefined
+        };
+    }
+
+    // Step 3:
+    // Fetch bill for every matching connection.
+    let billResults = {
+        pendingBills: [],
+        totalBills: 0
+    };
+
+    for (let actualConnectionNumber of connectionNumbers) {
+
+        let connectionUser = Object.assign({}, user);
+
+        connectionUser.service = businessService;
+        connectionUser.paramOption = 'connectionNumber';
+        connectionUser.paramInput = actualConnectionNumber;
+
+        console.log(
+            'Fetching bill for connection:',
+            actualConnectionNumber
+        );
+
+        let result =
+            await this.searchBillsForUser(
+                connectionUser
+            );
+
+        if (
+            result &&
+            result.totalBills !== 0 &&
+            result.pendingBills
+        ) {
+
+            billResults.pendingBills =
+                billResults.pendingBills.concat(
+                    result.pendingBills
+                );
+
+            billResults.totalBills +=
+                result.totalBills;
+        }
+    }
+
+    if (
+        billResults.totalBills === 0 ||
+        billResults.pendingBills.length === 0
+    ) {
+
+        return {
+            totalBills: 0,
+            pendingBills: undefined
+        };
+    }
+
+    let billLimit =
+        config.billsAndReceiptsUseCase.billSearchLimit;
+
+    billLimit = Math.min(
+        billLimit,
+        billResults.pendingBills.length
+    );
+
+    return {
+        pendingBills:
+            billResults.pendingBills.slice(0, billLimit),
+
+        totalBills: billLimit
+    };
+}
 
 }
 module.exports = new BillService();

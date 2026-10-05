@@ -1,4 +1,3 @@
-package org.egov.wscalculation.service;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -9,11 +8,11 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.wscalculation.config.WSCalculationConfiguration;
-import org.egov.wscalculation.constants.WSCalculationConstant;
-import org.egov.wscalculation.producer.WSCalculationProducer;
-import org.egov.wscalculation.util.NotificationUtil;
-import org.egov.wscalculation.web.models.*;
+import org.egov.swcalculation.config.SWCalculationConfiguration;
+import org.egov.swcalculation.constants.SWCalculationConstant;
+import org.egov.swcalculation.producer.SWCalculationProducer;
+import org.egov.swcalculation.util.SWCalculationUtil;
+import org.egov.swcalculation.web.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -23,13 +22,13 @@ import org.springframework.stereotype.Service;
 public class BillSchedulerNotificationService {
 
 	@Autowired
-	private WSCalculationConfiguration configs;
+	private SWCalculationConfiguration configs;
 
 	@Autowired
-	private WSCalculationProducer wsCalculationProducer;
+	private SWCalculationProducer swCalculationProducer;
 
 	@Autowired
-	private NotificationUtil notificationUtil;
+	private SWCalculationUtil utils;
 
 	@Autowired
 	private NamedParameterJdbcTemplate jdbcTemplate;
@@ -73,8 +72,8 @@ public class BillSchedulerNotificationService {
 	 * and sends a completion email using template from localization service (message table).
 	 */
 	public void monitorAndSendBillCompletionEmail(List<BillScheduler> billSchedularList, long startTime, RequestInfo requestInfo) {
-		if (configs.getIsEmailEnabled() == null || !configs.getIsEmailEnabled()) {
-			log.info("Email notifications disabled. Skipping bill scheduler completion email.");
+		if (configs.getIsMailEnabled() == null || !configs.getIsMailEnabled()) {
+			log.info("Email notifications disabled. Skipping sewerage bill scheduler completion email.");
 			return;
 		}
 
@@ -96,7 +95,7 @@ public class BillSchedulerNotificationService {
 		// Run monitoring in background thread
 		CompletableFuture.runAsync(() -> {
 			try {
-				log.info("🚀 Started async monitoring for {} bill scheduler ID(s)", schedulerIds.size());
+				log.info("🚀 Started async monitoring for {} sewerage bill scheduler ID(s)", schedulerIds.size());
 				long pollStartTime = System.currentTimeMillis();
 
 				// Poll up to 15 minutes for consumer processing
@@ -107,18 +106,18 @@ public class BillSchedulerNotificationService {
 						long totalCount = ((Number) overallStats.getOrDefault("total_count", 0)).longValue();
 
 						if (totalCount > 0 && initiatedCount == 0) {
-							log.info("🎯 All {} scheduled bill connections processed!", totalCount);
+							log.info("🎯 All {} scheduled sewerage bill connections processed!", totalCount);
 							break;
 						}
 					} catch (Exception e) {
-						log.warn("⚠️ Polling bill connection status error: {}", e.getMessage());
+						log.warn("⚠️ Polling sewerage bill connection status error: {}", e.getMessage());
 					}
 
 					try {
 						Thread.sleep(10000); // Poll every 10 seconds
 					} catch (InterruptedException ie) {
 						Thread.currentThread().interrupt();
-						log.error("❌ Bill monitoring interrupted");
+						log.error("❌ Sewerage bill monitoring interrupted");
 						break;
 					}
 				}
@@ -177,7 +176,7 @@ public class BillSchedulerNotificationService {
 				sendBillEmail(billSchedularList, localitySummaries, failedRecords, schedulerIds, totalScheduled, totalSuccess, totalFailure, grandTotalAmount, startTime, requestInfo);
 
 			} catch (Exception ex) {
-				log.error("❌ Error in async bill scheduler completion notification: {}", ex.getMessage(), ex);
+				log.error("❌ Error in async sewerage bill scheduler completion notification: {}", ex.getMessage(), ex);
 			}
 		});
 	}
@@ -190,15 +189,15 @@ public class BillSchedulerNotificationService {
 			String primaryTenant = schedulers.get(0).getTenantId();
 			String localizationMessage = "";
 			try {
-				localizationMessage = notificationUtil.getLocalizationMessages(primaryTenant, requestInfo);
+				localizationMessage = utils.getLocalizationMessages(primaryTenant, requestInfo);
 			} catch (Exception e) {
-				log.warn("Failed to fetch localization messages for bill completion email", e);
+				log.warn("Failed to fetch localization messages for sewerage bill completion email", e);
 			}
 
-			String template = notificationUtil.getMessageTemplate(WSCalculationConstant.WS_BILL_GEN_COMPLETION_EMAIL_TEMPLATE, localizationMessage);
+			String template = utils.getMessageTemplate(SWCalculationConstant.SW_BILL_GEN_COMPLETION_EMAIL_TEMPLATE, localizationMessage);
 			if (StringUtils.isEmpty(template)) {
-				log.warn("⚠️ {} not found in localization service (message table). Skipping bill completion email.",
-						WSCalculationConstant.WS_BILL_GEN_COMPLETION_EMAIL_TEMPLATE);
+				log.warn("⚠️ {} not found in localization service (message table). Skipping sewerage bill completion email.",
+						SWCalculationConstant.SW_BILL_GEN_COMPLETION_EMAIL_TEMPLATE);
 				return;
 			}
 
@@ -310,7 +309,7 @@ public class BillSchedulerNotificationService {
 				subject = customizedMsg.substring(customizedMsg.indexOf("<h2>") + 4, customizedMsg.indexOf("</h2>"));
 				body = customizedMsg.substring(customizedMsg.indexOf("</h2>") + 5);
 			} else {
-				subject = "Water Bill Generation Completed - " + displayCity + " (" + new SimpleDateFormat("dd-MMM-yyyy").format(new Date()) + ")";
+				subject = "Sewerage Bill Generation Completed - " + displayCity + " (" + new SimpleDateFormat("dd-MMM-yyyy").format(new Date()) + ")";
 				body = customizedMsg;
 			}
 
@@ -322,11 +321,11 @@ public class BillSchedulerNotificationService {
 					.isHTML(true)
 					.build();
 
-			wsCalculationProducer.push(configs.getEmailNotifyTopic(), EmailRequest.builder().requestInfo(requestInfo).email(email).build());
-			log.info("📧 Bill generation completion email notification pushed to Kafka topic {} (To: {}, Cc: {})",
-					configs.getEmailNotifyTopic(), getToRecipients(), getCcRecipients());
+			swCalculationProducer.push(configs.getEmailNotifTopic(), EmailRequest.builder().requestInfo(requestInfo).email(email).build());
+			log.info("📧 Sewerage bill generation completion email notification pushed to Kafka topic {} (To: {}, Cc: {})",
+					configs.getEmailNotifTopic(), getToRecipients(), getCcRecipients());
 		} catch (Exception e) {
-			log.error("❌ Failed to construct and send bill generation completion email: {}", e.getMessage(), e);
+			log.error("❌ Failed to construct and send sewerage bill generation completion email: {}", e.getMessage(), e);
 		}
 	}
 
@@ -336,14 +335,14 @@ public class BillSchedulerNotificationService {
 				+ "COUNT(CASE WHEN status = 'Success' THEN 1 END) as success_count, "
 				+ "COUNT(CASE WHEN status = 'Failure' THEN 1 END) as failure_count, "
 				+ "COUNT(CASE WHEN status = 'Initiated' THEN 1 END) as initiated_count "
-				+ "FROM eg_ws_bill_scheduler_connection_status "
-				+ "WHERE eg_ws_scheduler_id IN (:ids)";
+				+ "FROM eg_sw_bill_scheduler_connection_status "
+				+ "WHERE eg_sw_scheduler_id IN (:ids)";
 
 		Map<String, Object> params = Collections.singletonMap("ids", schedulerIds);
 		try {
 			return jdbcTemplate.queryForMap(sql, params);
 		} catch (Exception e) {
-			log.warn("⚠️ Error querying overall bill status stats: {}", e.getMessage());
+			log.warn("⚠️ Error querying overall sewerage bill status stats: {}", e.getMessage());
 			Map<String, Object> empty = new HashMap<>();
 			empty.put("total_count", 0);
 			empty.put("success_count", 0);
@@ -358,14 +357,14 @@ public class BillSchedulerNotificationService {
 				+ "COUNT(*) as total_count, "
 				+ "COUNT(CASE WHEN status = 'Success' THEN 1 END) as success_count, "
 				+ "COUNT(CASE WHEN status = 'Failure' THEN 1 END) as failure_count "
-				+ "FROM eg_ws_bill_scheduler_connection_status "
-				+ "WHERE eg_ws_scheduler_id = :id";
+				+ "FROM eg_sw_bill_scheduler_connection_status "
+				+ "WHERE eg_sw_scheduler_id = :id";
 
 		Map<String, Object> params = Collections.singletonMap("id", schedulerId);
 		try {
 			return jdbcTemplate.queryForMap(sql, params);
 		} catch (Exception e) {
-			log.warn("⚠️ Error querying scheduler status stats for {}: {}", schedulerId, e.getMessage());
+			log.warn("⚠️ Error querying sewerage scheduler status stats for {}: {}", schedulerId, e.getMessage());
 			Map<String, Object> empty = new HashMap<>();
 			empty.put("total_count", 0);
 			empty.put("success_count", 0);
@@ -377,23 +376,23 @@ public class BillSchedulerNotificationService {
 	private BigDecimal getSchedulerTotalAmount(String schedulerId) {
 		// Use billamount column populated directly at bill generation time — no join needed.
 		String sql = "SELECT COALESCE(SUM(billamount), 0) "
-				+ "FROM eg_ws_bill_scheduler_connection_status "
-				+ "WHERE eg_ws_scheduler_id = :id AND status = 'Success'";
+				+ "FROM eg_sw_bill_scheduler_connection_status "
+				+ "WHERE eg_sw_scheduler_id = :id AND status = 'Success'";
 
 		Map<String, Object> params = Collections.singletonMap("id", schedulerId);
 		try {
 			Number num = jdbcTemplate.queryForObject(sql, params, Number.class);
 			return num != null ? new BigDecimal(num.toString()) : BigDecimal.ZERO;
 		} catch (Exception e) {
-			log.warn("⚠️ Error calculating bill amount for scheduler {}: {}", schedulerId, e.getMessage());
+			log.warn("⚠️ Error calculating sewerage bill amount for scheduler {}: {}", schedulerId, e.getMessage());
 			return BigDecimal.ZERO;
 		}
 	}
 
 	private List<Map<String, Object>> getFailedConnectionRecords(List<String> schedulerIds) {
 		String sql = "SELECT consumercode, locality, reason "
-				+ "FROM eg_ws_bill_scheduler_connection_status "
-				+ "WHERE eg_ws_scheduler_id IN (:ids) AND status = 'Failure' "
+				+ "FROM eg_sw_bill_scheduler_connection_status "
+				+ "WHERE eg_sw_scheduler_id IN (:ids) AND status = 'Failure' "
 				+ "ORDER BY lastupdatedtime DESC "
 				+ "LIMIT 100";
 
@@ -401,7 +400,7 @@ public class BillSchedulerNotificationService {
 		try {
 			return jdbcTemplate.queryForList(sql, params);
 		} catch (Exception e) {
-			log.warn("⚠️ Error querying failed bill connection records: {}", e.getMessage());
+			log.warn("⚠️ Error querying failed sewerage bill connection records: {}", e.getMessage());
 			return Collections.emptyList();
 		}
 	}
@@ -416,8 +415,8 @@ public class BillSchedulerNotificationService {
 			return "None";
 		}
 		String sql = "SELECT reason, COUNT(*) as cnt "
-				+ "FROM eg_ws_bill_scheduler_connection_status "
-				+ "WHERE eg_ws_scheduler_id IN (:ids) AND status = 'Failure' "
+				+ "FROM eg_sw_bill_scheduler_connection_status "
+				+ "WHERE eg_sw_scheduler_id IN (:ids) AND status = 'Failure' "
 				+ "  AND reason IS NOT NULL AND TRIM(reason) <> '' "
 				+ "GROUP BY reason "
 				+ "ORDER BY cnt DESC "

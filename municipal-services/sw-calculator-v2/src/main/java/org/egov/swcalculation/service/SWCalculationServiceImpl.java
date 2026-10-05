@@ -126,6 +126,9 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 	@Autowired
     private CalculatorUtils calculatorUtils;
 
+	@Autowired
+	private BillSchedulerNotificationService billSchedulerNotificationService;
+
 	/**
 	 * Get CalculationReq and Calculate the Tax Head on Sewerage Charge
 	 * @param request  calculation request
@@ -679,6 +682,7 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 		if (billSchedularList != null && billSchedularList.isEmpty())
 			return;
 		log.info("billSchedularList count : " + billSchedularList.size());
+		long startTime = System.currentTimeMillis();
 		for (BillScheduler billSchedular : billSchedularList) {
 			try {
 				List<String> connectionNos = null;
@@ -770,6 +774,13 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 				log.error("Execptio occured while generating bills for tenant"+billSchedular.getTenantId()+" and locality: "+billSchedular.getLocality());
 			}
 
+		}
+
+		// Send bill generation completion email notification asynchronously
+		try {
+			billSchedulerNotificationService.monitorAndSendBillCompletionEmail(billSchedularList, startTime, requestInfo);
+		} catch (Exception emailEx) {
+			log.warn("⚠️ Failed to trigger sewerage bill completion email notification: {}", emailEx.getMessage());
 		}
 	}
 	

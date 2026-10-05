@@ -621,6 +621,14 @@ public class PlanReportServiceV2 {
 
     private Map<String, String> buildSingleTypicalStairRow(List<Map<String, String>> modelFloorRows,
             TypicalFloor typicalFloor, String typicalFloorLabel) {
+        if (modelFloorRows == null || modelFloorRows.isEmpty()) {
+            Map<String, String> typicalRow = new HashMap<>();
+            typicalRow.put("Floor", typicalFloorLabel);
+            typicalRow.put("Description", "Same as Floor " + typicalFloor.getModelFloorNo());
+            typicalRow.put("Provided", "Same as Floor " + typicalFloor.getModelFloorNo() + " (" + typicalFloorLabel + ")");
+            typicalRow.put("Status", "Accepted");
+            return typicalRow;
+        }
         Map<String, String> firstRow = modelFloorRows.get(0);
         Map<String, String> typicalRow = new HashMap<>(firstRow);
         typicalRow.put("Floor", typicalFloorLabel);

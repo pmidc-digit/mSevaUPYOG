@@ -276,12 +276,19 @@ public class PlanService {
             LOG.info("Competency Check Role Wise");
             BigDecimal plotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
 
+            List<org.egov.infra.microservice.models.Role> userRoles = null;
+            if (plan.getEdcrRequest() != null 
+                    && plan.getEdcrRequest().getRequestInfo() != null 
+                    && plan.getEdcrRequest().getRequestInfo().getUserInfo() != null) {
+                userRoles = plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles();
+            }
+
             if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
                 // Valid case → pass actual plot area
                 extractService.validateRolesWisePlotArea(
                         dcrApplication.getSavedDxfFile(),
                         asOnDate,
-                        plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
+                        userRoles,
                         plotArea,
                         plan
                 );
@@ -290,7 +297,7 @@ public class PlanService {
                 extractService.validateRolesWisePlotArea(
                         dcrApplication.getSavedDxfFile(),
                         asOnDate,
-                        plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
+                        userRoles,
                         BigDecimal.ZERO,
                         plan
                 );
@@ -305,26 +312,34 @@ public class PlanService {
             String roadType = getRoadTypeViaReflection(
     				plan.getEdcrRequest() != null ? plan.getEdcrRequest().getAdditionalDetails() : null);
             
-            if(roadType!=null) {
-            	plan.getPlanInformation().setRoadType(roadType);
-            	plan.getPlanInfoProperties().put("ROAD_TYPE", roadType);
-            }else {
+            if (roadType != null) {
+            	if (plan.getPlanInformation() != null) {
+            		plan.getPlanInformation().setRoadType(roadType);
+            	}
+            	if (plan.getPlanInfoProperties() != null) {
+            		plan.getPlanInfoProperties().put("ROAD_TYPE", roadType);
+            	}
+            } else {
             	plan.getErrors().put("ROAD_TYPE NOT PROVIDED", "ROAD TYPE not provided");
             }
             
-            String cityName = getCityFromTenant(plan.getEdcrRequest().getTenantId());
+            String cityName = getCityFromTenant(plan.getEdcrRequest() != null ? plan.getEdcrRequest().getTenantId() : null);
             
-            if (plan.getPlanInformation().getCity() == null 
+            if (plan.getPlanInformation() == null || plan.getPlanInformation().getCity() == null 
                     || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
                 plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
             }          
            
             // Check Measured and Declared plot area match
-            BigDecimal declaredPlotArea = plan.getPlanInformation().getPlotArea();
-            BigDecimal measuredPlotArea = plan.getPlot().getArea();
+            BigDecimal declaredPlotArea = (plan.getPlanInformation() != null) ? plan.getPlanInformation().getPlotArea() : null;
+            BigDecimal measuredPlotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
 
-            if (declaredPlotArea.compareTo(measuredPlotArea) != 0) {
-            	plan.getErrors().put("Invalid Plot Area", "Declared plot area and Measured plot area must be the same.");
+            if (declaredPlotArea == null) {
+            	plan.getErrors().put("PLOT_AREA", "Declared plot area is not defined or null in Plan Information.");
+            } else if (measuredPlotArea == null) {
+            	plan.getErrors().put("PLOT_AREA", "Measured plot area is not defined or null in the drawing.");
+            } else if (declaredPlotArea.compareTo(measuredPlotArea) != 0) {
+            	plan.getErrors().put("Invalid Plot Area", "Declared plot area (" + declaredPlotArea + ") and Measured plot area (" + measuredPlotArea + ") must be the same.");
             }
             
             String ulbType = "";
@@ -1116,11 +1131,15 @@ public class PlanService {
 			} else {
 				return ruleLabel + " not defined into the plan.";
 			}
+		} else if (e instanceof IndexOutOfBoundsException || (e.getMessage() != null && e.getMessage().contains("Index:") && e.getMessage().contains("Size:"))) {
+			return ruleLabel + " details not defined into the plan (required entity or measurement missing in drawing).";
+		} else if (e instanceof java.util.NoSuchElementException) {
+			return ruleLabel + " details not defined into the plan.";
 		} else if (e instanceof ArithmeticException) {
 			return "Calculation for " + ruleLabel + " failed because required dimension cannot be 0 in the plan.";
 		} else if (e instanceof NumberFormatException) {
 			return "Dimension text for " + ruleLabel + " not defined correctly into the plan.";
-		} else if (e.getMessage() != null && !e.getMessage().trim().isEmpty() && !e.getMessage().equalsIgnoreCase("null")) {
+		} else if (e.getMessage() != null && !e.getMessage().trim().isEmpty() && !e.getMessage().equalsIgnoreCase("null") && !e.getMessage().startsWith("Index:")) {
 			return e.getMessage().trim();
 		} else {
 			return ruleLabel + " not defined into the plan.";

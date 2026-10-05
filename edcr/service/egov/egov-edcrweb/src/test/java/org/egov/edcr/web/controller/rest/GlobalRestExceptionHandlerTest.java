@@ -164,4 +164,43 @@ public class GlobalRestExceptionHandlerTest {
         assertNotNull(response.getBody());
         assertEquals("DOWNSTREAM_SERVICE_UNAVAILABLE", response.getBody().getErrorCode());
     }
+
+    @Test
+    public void testHandleDatabaseRelationDoesNotExistStripsPosition() {
+        RuntimeException sqlEx = new RuntimeException("ERROR: relation 'eg_city' does not exist   Position: 620");
+        ResponseEntity<ErrorResponse> response = handler.handleGenericException(sqlEx);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("BAD_REQUEST", response.getBody().getErrorCode());
+        String msg = response.getBody().getErrorMessage();
+        assertTrue("Should not contain Position offset", !msg.contains("Position: 620"));
+        assertTrue("Should contain human-readable message", msg.contains("Database table or entity 'eg_city' does not exist"));
+    }
+
+    @Test
+    public void testHandleNullPointerExceptionDoesNotExposeLineNumbers() {
+        NullPointerException npe = new NullPointerException(); // no message
+        ResponseEntity<ErrorResponse> response = handler.handleGenericException(npe);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("BAD_REQUEST", response.getBody().getErrorCode());
+        String msg = response.getBody().getErrorMessage();
+        assertTrue("Should not contain raw line number clutter", !msg.matches(".*\\(line \\d+\\).*"));
+        assertTrue("Should describe what is null", msg.contains("Required plan information"));
+    }
+
+    @Test
+    public void testHandleIndexOutOfBoundsExceptionSanitizesMessage() {
+        IndexOutOfBoundsException ioobe = new IndexOutOfBoundsException("Index: 0, Size: 0");
+        ResponseEntity<ErrorResponse> response = handler.handleGenericException(ioobe);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("BAD_REQUEST", response.getBody().getErrorCode());
+        String msg = response.getBody().getErrorMessage();
+        assertTrue("Should not contain raw Index: 0, Size: 0", !msg.equals("Index: 0, Size: 0"));
+        assertTrue("Should describe missing entity or dimension", msg.contains("Required drawing entity or dimension is not defined or missing in the plan"));
+    }
 }

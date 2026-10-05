@@ -49,10 +49,16 @@ public class IntegratedBillRowMapper implements ResultSetExtractor<List<Property
             // 1. Get or create PropertyBasedBill for the propertyId
             PropertyBasedBill propertyBill = propertyBillMap.get(propertyId);
             if (propertyBill == null) {
+                // Pre-populate both keys with empty map so they always appear in response
+                Map<String, Object> billsMap = new LinkedHashMap<>();
+                billsMap.put("waterBill", new LinkedHashMap<>());
+                billsMap.put("sewerageBill", new LinkedHashMap<>());
+
                 propertyBill = PropertyBasedBill.builder()
                     .propertyId(propertyId)
                     .tenantId(getStringSafely(rs, "b_tenantid"))
-                    .bills(new ArrayList<>())
+                    .mobileNumber(getStringSafely(rs, "mobilenumber"))
+                    .bills(billsMap)
                     .build();
                 propertyBillMap.put(propertyId, propertyBill);
             }
@@ -68,19 +74,17 @@ public class IntegratedBillRowMapper implements ResultSetExtractor<List<Property
                 bill = createBill(rs, propertyId, userIds);
                 billMap.put(billId, bill);
 
+                // Determine key: waterBill or sewerageBill
                 String service = bill.getBusinessService();
-                String billTypeKey = "waterBill";
+                String billTypeKey;
                 if ("SW".equalsIgnoreCase(service) || (service != null && service.toUpperCase().contains("SW"))) {
                     billTypeKey = "sewerageBill";
-                } else if ("WS".equalsIgnoreCase(service) || (service != null && service.toUpperCase().contains("WS"))) {
+                } else {
                     billTypeKey = "waterBill";
-                } else if (service != null && !service.trim().isEmpty()) {
-                    billTypeKey = service.toLowerCase() + "Bill";
                 }
 
-                Map<String, Bill> billWrapper = new LinkedHashMap<>();
-                billWrapper.put(billTypeKey, bill);
-                propertyBill.getBills().add(billWrapper);
+                // Replace the pre-populated empty map with the actual Bill object
+                propertyBill.getBills().put(billTypeKey, bill);
             }
 
             // 3. Get or create BillDetail
@@ -128,19 +132,6 @@ public class IntegratedBillRowMapper implements ResultSetExtractor<List<Property
                         });
                     }
                 }
-            }
-        }
-
-        // Ensure waterBill is always before sewerageBill in bills list
-        for (PropertyBasedBill propertyBill : propertyBillMap.values()) {
-            if (propertyBill.getBills() != null && propertyBill.getBills().size() > 1) {
-                propertyBill.getBills().sort((m1, m2) -> {
-                    boolean m1IsWater = m1.containsKey("waterBill");
-                    boolean m2IsWater = m2.containsKey("waterBill");
-                    if (m1IsWater && !m2IsWater) return -1;
-                    if (!m1IsWater && m2IsWater) return 1;
-                    return 0;
-                });
             }
         }
 
@@ -290,16 +281,15 @@ public class IntegratedBillRowMapper implements ResultSetExtractor<List<Property
 
                 propertyBills.forEach(propertyBill -> {
                     if (propertyBill.getBills() != null) {
-                        propertyBill.getBills().forEach(billMapItem -> {
-                            if (billMapItem != null) {
-                                billMapItem.values().forEach(bill -> {
-                                    if (bill != null && bill.getUser() != null && bill.getUser().getId() != null) {
-                                        String name = users.get(bill.getUser().getId());
-                                        if (name != null) {
-                                            bill.getUser().setName(name);
-                                        }
+                        propertyBill.getBills().forEach((key, value) -> {
+                            if (value instanceof Bill) {
+                                Bill bill = (Bill) value;
+                                if (bill.getUser() != null && bill.getUser().getId() != null) {
+                                    String name = users.get(bill.getUser().getId());
+                                    if (name != null) {
+                                        bill.getUser().setName(name);
                                     }
-                                });
+                                }
                             }
                         });
                     }

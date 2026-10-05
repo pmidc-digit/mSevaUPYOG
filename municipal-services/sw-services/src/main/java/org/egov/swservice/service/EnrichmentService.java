@@ -94,19 +94,19 @@ public class EnrichmentService {
 				.getAuditDetails(sewerageConnectionRequest.getRequestInfo().getUserInfo().getUuid(), true);
 		sewerageConnectionRequest.getSewerageConnection().setAuditDetails(auditDetails);
 		sewerageConnectionRequest.getSewerageConnection().setId(UUID.randomUUID().toString());
-		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.ACTIVE);
-		String roleCodeName=null;
-		/*
-		 *Changing Hard coded channel and moving hardcoded part to constant
-		 *Moreover adding 3rd party channer config here on the basis  of role if it contains particular role.
-		 *Abhishek Rana -- 30-12-2024
-		 *		 */
-		
-		if (sewerageServicesUtil.isModifyConnectionRequest(sewerageConnectionRequest)){
+		if (sewerageConnectionRequest.isDisconnectRequest() 
+				|| (sewerageConnectionRequest.getSewerageConnection() != null 
+				    && sewerageConnectionRequest.getSewerageConnection().getApplicationType() != null 
+				    && sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.DISCONNECT_SEWERAGE_CONNECTION))) {
+			sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.ACTIVE);
+		} else if (sewerageServicesUtil.isModifyConnectionRequest(sewerageConnectionRequest)){
 			sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.INACTIVE);
+		} else {
+			sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.ACTIVE);
 		}
 		
-String userType = sewerageConnectionRequest.getRequestInfo().getUserInfo().getType().toUpperCase();
+		String roleCodeName = null;
+		String userType = sewerageConnectionRequest.getRequestInfo().getUserInfo().getType().toUpperCase();
 
 		
 		Object thirdPartyData = fetchThirdPartyIntegration(sewerageConnectionRequest.getRequestInfo(), config.getStateLevelTenantId(), SWConstants.MDMS_WC_ROLE_MODLENAME , SWConstants.MDMS_WC_ROLE_MASTERNAME, userType,true);

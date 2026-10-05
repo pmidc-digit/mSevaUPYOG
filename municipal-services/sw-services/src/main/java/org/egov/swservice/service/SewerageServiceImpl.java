@@ -530,7 +530,9 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 				}
 			}
 		}
-		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.ACTIVE);
+		sewerageDaoImpl.updateSewerageApplicationStatus(sewerageConnectionRequest.getSewerageConnection().getId(),
+				SWConstants.DISCONNECT_STATUS);
+		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECTED);
 	}
 
 	return sewerageConnectionRequest;

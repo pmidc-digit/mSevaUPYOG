@@ -1,8 +1,8 @@
 import { BPAHomeIcon, BPAIcon, CitizenHomeCard, EDCRIcon, Loader, Toast } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
+import "./home.css";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router-dom";
-import { EmployeeModuleCard } from "../../components/EmployeeModuleCard";
+import { Link, useLocation } from "react-router-dom";
 import CitizenHomeCardSecond from "@mseva/digit-ui-module-core/src/pages/citizen/CitizenHomeCardSecond";
 import { ProfessionalSignUpdate } from "../../pageComponents/ProfessionalSignUpdate";
 import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../../constants/constants";
@@ -287,19 +287,25 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   }
 
   const homeScreen = (
-    <div className="mainContent">
-      {homeDetails.map((data) => {
+    <div className="obps-citizen-home module-home-cards">
+      <header className="obps-citizen-home__banner">
+        <h1>{t("MODULE_OBPS")}</h1>
+      </header>
+      <nav className="obps-citizen-home__inbox-actions" aria-label={t("Inbox")}>
+        {homeDetails.filter((data) => data.name === "employeeCard").flatMap((data) => data.links || []).filter((item) => item.link).map((item, index) => (
+          <Link className="obps-citizen-home__inbox-button" key={`${item.link}-${index}`} to={item.link}>
+            {t(item.label || item.i18nKey)}
+          </Link>
+        ))}
+      </nav>
+      {homeDetails.filter((data) => data.name !== "employeeCard").map((data, index) => {
         return (
-          <div>
-            {data.name === "employeeCard" ? (
-              <EmployeeModuleCard {...data} />
-            ) : (
-              <CitizenHomeCardSecond header={data.title} links={data.links} Icon={() => data.Icon} />
-            )}
-              {showModal && <ProfessionalSignUpdate closeModal={closeModal} userDetails={userDetails} refetch={refetch}/>}
-          </div>
+          <section className="obps-citizen-home__section" key={data.title || data.moduleName || index}>
+            <CitizenHomeCardSecond header={data.title} links={data.links} Icon={() => data.Icon} />
+          </section>
         );
       })}
+      {showModal && <ProfessionalSignUpdate closeModal={closeModal} userDetails={userDetails} refetch={refetch}/>}
     </div>
   );
   sessionStorage.setItem("isPermitApplication", true);

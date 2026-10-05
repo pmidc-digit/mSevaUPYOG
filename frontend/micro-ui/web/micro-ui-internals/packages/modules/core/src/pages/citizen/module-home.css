@@ -1,0 +1,22 @@
+.citizen .moduleLinkHomePage .moduleLinkHomePageBanner h1.moduleLinkHomePageTitle {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 1;
+  height: auto !important;
+  max-height: none !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff;
+  font-size: clamp(1.75rem, 3vw, 2.75rem) !important;
+  font-weight: 700;
+  line-height: 1.25 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  overflow-wrap: anywhere;
+}

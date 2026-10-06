@@ -59,6 +59,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${default.employee.password}")
     private String defaultEmployeePassword;
+    
+    @Value("#{'${login.withpassword.usernames}'.split(',')}")
+    private List<String> loginWithPasswordUsernames;
 
     @Autowired
     private HttpServletRequest request;
@@ -140,7 +143,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         boolean isPasswordMatched;
 
-        if (isCitizen) {
+        if (isCitizen && !loginWithPasswordUsernames.contains(userName)) {
 
             if (fixedOTPEnabled
                     && !fixedOTPPassword.isEmpty()

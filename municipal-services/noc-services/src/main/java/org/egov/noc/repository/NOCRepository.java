@@ -1,8 +1,10 @@
 package org.egov.noc.repository;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 import org.egov.noc.config.NOCConfiguration;
@@ -45,7 +47,11 @@ public class NOCRepository {
 	 * @param nocRequest
 	 */
 	public void save(NocRequest nocRequest) {
-		producer.push(config.getSaveTopic(), nocRequest.getNoc().getApplicationNo(),nocRequest);
+		Map<String, Object> payload = new LinkedHashMap<>();
+
+	    payload.put("RequestInfo", nocRequest.getRequestInfo());
+	    payload.put("Noc", nocRequest.getNoc());
+		producer.push(config.getSaveTopic(), nocRequest.getNoc().getApplicationNo(),payload);
 	}
 	
 	/**

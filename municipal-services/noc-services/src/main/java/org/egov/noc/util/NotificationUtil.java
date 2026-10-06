@@ -30,7 +30,7 @@ import static org.egov.noc.util.NOCConstants.ACTION_STATUS_INITIATED;
 import static org.egov.noc.util.NOCConstants.ACTION_STATUS_REJECTED;
 import static org.egov.noc.util.NOCConstants.ACTION_STATUS_APPROVED;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
@@ -147,8 +147,22 @@ public class NotificationUtil {
 					,noc.getApplicationStatus(), mdmsData);
 			
 			messageCode = notificationConfig.getOrDefault("messageCode", "").toString();
+			// Fix P2: If MDMS has no NotificationConfig entry for this action+state, skip notification
+			// silently rather than fetching with an empty code and then NPE on message.replace().
+			if (StringUtils.isBlank(messageCode)) {
+				log.warn("getCustomizedMsg: No messageCode configured in MDMS NotificationConfig for action='{}' state='{}'. Skipping notification.",
+						noc.getWorkflow().getAction(), noc.getApplicationStatus());
+				return null;
+			}
 			message = getMessageTemplate(messageCode, localizationMessage);
 			
+			// Fix P2: getMessageTemplate may return null when localization key is not seeded.
+			// Guard every message.replace() call below to avoid NullPointerException.
+			if (message == null) {
+				log.warn("getCustomizedMsg: Localization template not found for code '{}'. Notification will not be sent.", messageCode);
+				return null;
+			}
+
 			List<Map<String, Object>> variables = JsonPath.read(notificationConfig, "$.variables");
 			Map<String, String> employeeMap = new HashMap<>();
 			for(Map<String, Object> variable : variables) {

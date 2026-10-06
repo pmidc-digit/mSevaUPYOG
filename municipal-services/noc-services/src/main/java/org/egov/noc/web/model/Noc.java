@@ -50,9 +50,8 @@ public class Noc   {
   private String applicationNo = null;
 
   @SanitizeHtml
-  @JsonIgnore
   @JsonProperty("nocNo")
-  private String nocNo = null;
+  private String nocNo;
 
   
   @JsonProperty("applicationType")
@@ -67,7 +66,6 @@ public class Noc   {
   private String nocType = null;
 
   @SanitizeHtml
-  @JsonIgnore
   @JsonProperty("accountId")
   private String accountId = null;
 

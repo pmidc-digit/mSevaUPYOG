@@ -178,8 +178,8 @@ const LayoutInbox = ({ parentRoute }) => {
     ];
   }, []);
 
-  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
-  // const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
+  // const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
 
   useEffect(() => {
     if (tenantId !== "pb.punjab") return;
@@ -372,6 +372,7 @@ const LayoutInbox = ({ parentRoute }) => {
   }, [onApiMobileSearch]);
 
   const propsForInboxTable = useLayoutTableConfig({
+    enableColumnSearch: true,
     parentRoute,
     onPageSizeChange,
     formState,

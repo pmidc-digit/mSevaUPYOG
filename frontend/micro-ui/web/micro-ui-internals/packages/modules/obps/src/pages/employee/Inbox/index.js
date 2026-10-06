@@ -433,7 +433,8 @@ const Inbox = ({ parentRoute }) => {
     dispatch,
     onSortingByData,
     globalSearch: topBarSearch,
-    cities
+    cities,
+    enableColumnSearch: true,
   });
 
   const {

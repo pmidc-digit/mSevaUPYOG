@@ -178,12 +178,21 @@ public class PropertyValidator {
 				isstateUpdatable = true;
 
 			} 
-			else	if (property.getWorkflow().getAction().equalsIgnoreCase(configs.getMutationOpenState())
+			else if (property.getWorkflow().getAction().equalsIgnoreCase(configs.getMutationOpenState())
 					&& propertyFromSearch.getStatus().equals(Status.INACTIVE)) {
 				fieldsUpdated.remove("creationReason");
 				isstateUpdatable = true;
 
-			} 
+			}
+			else if (propertyFromSearch.getStatus().equals(Status.PENDINGWS)) {
+				/* Allow APPROVE / REJECT actions on properties that are in PENDINGWS state
+				 * (created from Water & Sewerage connection). The workflow engine itself
+				 * enforces which roles/actions are valid; here we just lift the validator
+				 * gate so the request reaches the workflow service.
+				 */
+				fieldsUpdated.remove("creationReason");
+				isstateUpdatable = false; // state not directly editable; driven by WF action
+			}
 			else {
 
 				State currentState = workflowService.getCurrentState(request.getRequestInfo(), property.getTenantId(),
@@ -256,9 +265,11 @@ public class PropertyValidator {
 		property.getAddress().setId(propertyFromSearch.getAddress().getId());
         validateMasterData(request, errorMap);
 
-		if (propertyFromSearch.getStatus().equals(Status.INWORKFLOW) && (property.getAcknowldgementNumber() == null
-				|| (property.getAcknowldgementNumber() != null && !propertyFromSearch.getAcknowldgementNumber()
-						.equalsIgnoreCase(property.getAcknowldgementNumber()))))
+		if ((propertyFromSearch.getStatus().equals(Status.INWORKFLOW)
+				|| propertyFromSearch.getStatus().equals(Status.PENDINGWS))
+				&& (property.getAcknowldgementNumber() == null
+						|| (property.getAcknowldgementNumber() != null && !propertyFromSearch.getAcknowldgementNumber()
+								.equalsIgnoreCase(property.getAcknowldgementNumber()))))
 			errorMap.put("EG_PT_MUTATION_WF_UPDATE_ERROR", "Acknowledgement Number is Invalid OR NULL, Please provide the valid number");
 
 		if (!errorMap.isEmpty())

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useTranslation } from "react-i18next";
-import {processPTPayment} from "./ptPaymentProcessor";
+
 const ChevronDown = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#505A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "transform 0.3s ease" }}>
     <polyline points="6 9 12 15 18 9"></polyline>
   </svg>
 );
 
-const PaymentHistory = ({ payments, assessmentData = null, applicationData = null }) => {
+const PaymentHistory = ({ payments }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -30,25 +30,13 @@ const PaymentHistory = ({ payments, assessmentData = null, applicationData = nul
 
   const handleDownloadReceipt = async (payment) => {
     try {
-      debugger
       const tenantId = payment?.tenantId || Digit.ULBService.getCurrentTenantId();
       const businessService = payment?.paymentDetails?.[0]?.businessService || "PT";
       const receiptNo = payment.paymentDetails?.[0]?.receiptNumber || payment.receiptNumber;
 
-      // Process PT payment with assessment and application data if provided
-      let receiptPTData = null;
-      if (businessService === "PT" && applicationData && assessmentData) {
-        receiptPTData = processPTPayment(payment, applicationData, assessmentData);
-        console.log("receiptPTData", receiptPTData)
-      }
-
       // 1. Fetch latest payment details from /collection-services/payments/{businessService}/_search
       const searchResponse = await Digit.PaymentService.getReciept(tenantId, businessService, { receiptNumbers: receiptNo });
-
-      // Use receiptPTData for PT, otherwise use searchResponse
-      const latestPayment = businessService === "PT"
-        ? (receiptPTData || searchResponse?.Payments?.[0] || payment)
-        : (searchResponse?.Payments?.[0] || payment);
+      const latestPayment = searchResponse?.Payments?.[0] || payment;
 
       // 2. Generate PDF using the fetched payment object
       let pdfKey = "consolidatedreceipt";
@@ -70,7 +58,7 @@ const PaymentHistory = ({ payments, assessmentData = null, applicationData = nul
         const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
         window.open(fileStore[fileStoreId], "_blank");
       } else {
-          alert("NO File Found against this ID")
+        console.error("No fileStoreId generated or found.");
       }
     } catch (error) {
       console.error("Error downloading receipt:", error);

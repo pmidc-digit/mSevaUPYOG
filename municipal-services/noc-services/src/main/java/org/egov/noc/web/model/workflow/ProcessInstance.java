@@ -11,6 +11,7 @@ import org.egov.common.contract.request.User;
 import org.egov.noc.web.model.AuditDetails;
 import org.egov.noc.web.model.Document;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -29,6 +30,7 @@ import lombok.ToString;
 @Builder
 @EqualsAndHashCode(of = {"id"})
 @ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProcessInstance {
 	  @Size(max=64)
       @JsonProperty("id")

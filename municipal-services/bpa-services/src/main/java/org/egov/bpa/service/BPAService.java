@@ -527,7 +527,7 @@ public class BPAService {
 
 					if (!CollectionUtils.isEmpty(roles)) {
 						List<String> assignee = null;
-						assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, true);
+						assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, false);
 						bpa.getWorkflow().setAssignes(assignee);
 					}
 

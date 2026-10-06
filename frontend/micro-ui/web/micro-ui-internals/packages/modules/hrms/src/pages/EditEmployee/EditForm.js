@@ -2,7 +2,7 @@ import { FormComposer, Toast,Loader } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-import { newConfig } from "../../components/config/config";
+import { newConfig } from "../../components/config/editConfig";
 import { convertEpochToDate } from "../../components/Utils";
 
 const EditForm = ({ tenantId, data }) => {

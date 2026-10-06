@@ -60,7 +60,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Value("${default.employee.password}")
     private String defaultEmployeePassword;
     
-    @Value("#{'${login.withpassword.usernames}'.split(',')}")
+    @Value("${login.withpassword.usernames}")
     private List<String> loginWithPasswordUsernames;
 
     @Autowired

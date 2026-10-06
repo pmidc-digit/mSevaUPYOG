@@ -20,7 +20,6 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
   function validateStepData(data) {
     const { tradedetils, tradeUnits, validityYears, address, cpt, accessories } = data;
-
     const missingFields = [];
 
     // Check tradedetils[0]
@@ -32,6 +31,12 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     if (!tradeDetail?.structureSubType?.code) missingFields.push("Structure Sub-Type");
     if (!tradeDetail?.commencementDate) missingFields.push("Commencement Date");
 
+    if (
+      tenantTLValidationList.includes(cpt?.tenantId) &&
+      !cpt?.details?.propertyId
+    ) {
+      missingFields.push("Property ID");
+    }
     // Check tradeUnits
     if (!tradeUnits || tradeUnits.length === 0) {
       missingFields.push("At least one Trade Unit");
@@ -85,7 +90,7 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-   if (!_.isEqual(data, currentStepData)) {
+    if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }
   };
@@ -94,14 +99,14 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     setShowToast(false);
     setError("");
   };
-useEffect(() => {
-  if (showToast) {
-    const timer = setTimeout(() => {
-      closeToast();
-    }, 3000); 
-    return () => clearTimeout(timer);
-  }
-}, [showToast]);
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        closeToast();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
   useEffect(() => {
     setShowApplicationModal(true);
@@ -117,7 +122,7 @@ useEffect(() => {
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
-       
+
       />
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
 

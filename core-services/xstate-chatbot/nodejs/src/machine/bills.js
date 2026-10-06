@@ -36,6 +36,7 @@ const bills = {
             },
             actions: assign((context, event) => {
               context.bills.pendingBills = event.data.pendingBills;
+              context.bills.fromMobileSearch = true;
             })
           },
           {
@@ -215,7 +216,15 @@ const bills = {
           dialog.sendMessage(context, endStatement, true);
         })();
       }),
-      always: '#searchBillInitiate'
+      always: [
+        {
+          target: '#billServices',
+          cond: (context) => context.bills.fromMobileSearch === true
+        },
+        {
+          target: '#searchBillInitiate'
+        }
+      ]
     },
     paytmLinkForERPWnS: {
       id: 'paytmLinkForERPWnS',
@@ -497,20 +506,12 @@ const bills = {
             let paramInput = event.message.input;
             let { searchOptions, messageBundle } = billService.getSearchOptionsAndMessageBundleForService(context.service);
             context.slots.bills.searchParamOption = searchOptions[0];
-            context.isValid = billService.validateParamInput(context.service, context.slots.bills.searchParamOption, paramInput);
-            if (context.isValid) {
-              context.slots.bills.paramInput = paramInput;
-            }
+            // context.isValid = billService.validateParamInput(context.service, context.slots.bills.searchParamOption, paramInput);
+            // if (context.isValid) {
+            context.slots.bills.paramInput = paramInput.trim();;
+            // }
           }),
-          always: [
-            {
-              target: '#billSearchResults',
-              cond: (context, event) => context.isValid
-            },
-            {
-              target: 're_enter'
-            }
-          ]
+          always: '#billSearchResults'
         },
         re_enter: {
           onEntry: assign((context, event) => {
@@ -897,7 +898,7 @@ let messages = {
       billTemplate: {
         en_IN: '👉  *{{service}} Bill*\n\n*{{serviceid}}*\n{{id}}\n\n*Owner Name*\n{{payerName}}\n\n*Bill Date*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*Amount Due*\nRs {{dueAmount}}\n\n*Payment Link :*\n{{paymentLink}}',
 
-        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*स्वामी का नाम*\n{{payerName}}\n\n*बिल की तारीख*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
+        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*धारक का नाम*\n{{payerName}}\n\n*बिल की तारीख*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
 
         pa_IN: '👉  *{{service}} ਬਿੱਲ*\n\n*{{serviceid}}*\n{{id}}\n\n*ਮਾਲਕ ਦਾ ਨਾਮ*\n{{payerName}}\n\n*ਬਿੱਲ ਦੀ ਮਿਤੀ*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*ਬਕਾਯਾ ਰਕਮ*\nरु {{dueAmount}}\n\n*ਭੁਗਤਾਨ ਲਿੰਕ :*\n{{paymentLink}}'
       }
@@ -909,7 +910,7 @@ let messages = {
       billTemplate: {
         en_IN: '👉  *{{service}} Bill*\n\n*{{serviceid}}*\n{{id}}\n\n*Owner Name*\n{{payerName}}\n\n*Bill Date*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*Amount Due*\nRs {{dueAmount}}\n\n*Payment Link :*\n{{paymentLink}}',
 
-        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*स्वामी का नाम*\n{{payerName}}\n\n*बिल की तारीख*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
+        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*धारक का नाम*\n{{payerName}}\n\n*बिल की तारीख*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
 
         pa_IN: '👉  *{{service}} ਬਿੱਲ*\n\n*{{serviceid}}*\n{{id}}\n\n*ਮਾਲਕ ਦਾ ਨਾਮ*\n{{payerName}}\n\n*ਬਿੱਲ ਦੀ ਮਿਤੀ*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*ਬਕਾਯਾ ਰਕਮ*\nरु {{dueAmount}}\n\n*ਭੁਗਤਾਨ ਲਿੰਕ :*\n{{paymentLink}}'
       }
@@ -921,7 +922,7 @@ let messages = {
       billTemplate: {
         en_IN: '👉  *{{service}} Bill*\n\n*{{serviceid}}*\n{{id}}\n\n*Owner Name*\n{{payerName}}\n\n*Bill Date*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*Amount Due*\nRs {{dueAmount}}\n\n*Payment Link :*\n{{paymentLink}}',
 
-        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*स्वामी का नाम*\n{{payerName}}\n\n*बिल की तारीख*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
+        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*धारक का नाम*\n{{payerName}}\n\n*बिल की तारीख*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
 
         pa_IN: '👉  *{{service}} ਬਿੱਲ*\n\n*{{serviceid}}*\n{{id}}\n\n*ਮਾਲਕ ਦਾ ਨਾਮ*\n{{payerName}}\n\n*ਬਿੱਲ ਦੀ ਮਿਤੀ*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*ਬਕਾਯਾ ਰਕਮ*\nरु {{dueAmount}}\n\n*ਭੁਗਤਾਨ ਲਿੰਕ :*\n{{paymentLink}}'
       }
@@ -951,9 +952,11 @@ let messages = {
   billServices: {
     question: {
       preamble: {
-        en_IN: 'Type and send the option number to indicate if you know the *{{searchOption}}* 👇\n\n*1.* Yes\n*2.* No',
-        hi_IN: 'टाइप करें और विकल्प संख्या भेजें यह इंगित करने के लिए कि क्या आप संपत्ति आईडी जानते हैं 👇\n\n1.हां\n2.नहीं',
-        pa_IN: 'ਇਹ ਸੰਕੇਤ ਕਰਨ ਲਈ ਵਿਕਲਪ ਨੰਬਰ ਲਿਖੋ ਅਤੇ ਭੇਜੋ ਕਿ ਕੀ ਤੁਹਾਨੂੰ ਜਾਇਦਾਦ ID know ਪਤਾ ਹੈ 👇\n\n1.हां\n2.नहीं'
+        en_IN: 'Type and send the option number to indicate if you want to know other *{{searchOption}}* bill details.👇\n\n*1.* Yes\n*2.* No',
+
+        hi_IN: 'यह बताने के लिए विकल्प संख्या टाइप करके भेजें कि क्या आप किसी अन्य *{{searchOption}}* बिल का विवरण जानना चाहते हैं।👇\n\n*1.* हाँ\n*2.* नहीं',
+
+        pa_IN: 'ਇਹ ਦੱਸਣ ਲਈ ਵਿਕਲਪ ਨੰਬਰ ਲਿਖ ਕੇ ਭੇਜੋ ਕਿ ਕੀ ਤੁਸੀਂ ਕਿਸੇ ਹੋਰ *{{searchOption}}* ਬਿੱਲ ਦਾ ਵੇਰਵਾ ਜਾਣਨਾ ਚਾਹੁੰਦੇ ਹੋ।👇\n\n*1.* ਹਾਂ\n*2.* ਨਹੀਂ'
       },
       confirmation: {
         en_IN: 'Do you have the *{{searchOption}}* to proceed for payment ?\n',
@@ -998,9 +1001,11 @@ let messages = {
       hi_IN: 'निम्नलिखित अवैतनिक बिल पाए जाते हैं',
       pa_IN: 'ਹੇਠ ਦਿੱਤੇ ਬਿਨਾਂ ਭੁਗਤਾਨ ਕੀਤੇ ਬਿਲ ਮਿਲਦੇ ਹਨ 👇',
       billTemplate: {
-        en_IN: '👉  *{{service}} Bill*\n\n*{{serviceid}}*\n{{id}}\n\n*Owner Name*\n{{payerName}}\n\n*Amount Due*\nRs {{dueAmount}}\n\n*Payment Link :*\n{{paymentLink}}',
-        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*स्वामी का नाम*\n{{payerName}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
-        pa_IN: '👉  *{{service}} ਬਿੱਲ*\n\n*{{serviceid}}*\n{{id}}\n\n*ਮਾਲਕ ਦਾ ਨਾਮ*\n{{payerName}}\n\n*ਬਕਾਯਾ ਰਕਮ*\nरु {{dueAmount}}\n\n*ਭੁਗਤਾਨ ਲਿੰਕ :*\n{{paymentLink}}'
+        en_IN: '👉  *{{service}} Bill*\n\n*{{serviceid}}*\n{{id}}\n\n*Owner Name*\n{{payerName}}\n\n*Bill Date*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*Amount Due*\nRs {{dueAmount}}\n\n*Payment Link :*\n{{paymentLink}}',
+
+        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*धारक का नाम*\n{{payerName}}\n\n*बिल की तारीख*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
+
+        pa_IN: '👉  *{{service}} ਬਿੱਲ*\n\n*{{serviceid}}*\n{{id}}\n\n*ਮਾਲਕ ਦਾ ਨਾਮ*\n{{payerName}}\n\n*ਬਿੱਲ ਦੀ ਮਿਤੀ*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*ਬਕਾਯਾ ਰਕਮ*\nरु {{dueAmount}}\n\n*ਭੁਗਤਾਨ ਲਿੰਕ :*\n{{paymentLink}}'
       }
     },
     multipleRecords: {
@@ -1008,9 +1013,11 @@ let messages = {
       hi_IN: 'निम्नलिखित अवैतनिक बिल पाए जाते हैं',
       pa_IN: 'ਹੇਠ ਦਿੱਤੇ ਬਿਨਾਂ ਭੁਗਤਾਨ ਕੀਤੇ ਬਿਲ ਮਿਲਦੇ ਹਨ 👇',
       billTemplate: {
-        en_IN: '👉  *{{service}} Bill*\n\n*{{serviceid}}*\n{{id}}\n\n*Owner Name*\n{{payerName}}\n\n*Amount Due*\nRs {{dueAmount}}\n\n*Payment Link :*\n{{paymentLink}}',
-        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*स्वामी का नाम*\n{{payerName}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
-        pa_IN: '👉  *{{service}} ਬਿੱਲ*\n\n*{{serviceid}}*\n{{id}}\n\n*ਮਾਲਕ ਦਾ ਨਾਮ*\n{{payerName}}\n\n*ਬਕਾਯਾ ਰਕਮ*\nरु {{dueAmount}}\n\n*ਭੁਗਤਾਨ ਲਿੰਕ :*\n{{paymentLink}}'
+        en_IN: '👉  *{{service}} Bill*\n\n*{{serviceid}}*\n{{id}}\n\n*Owner Name*\n{{payerName}}\n\n*Bill Date*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*Amount Due*\nRs {{dueAmount}}\n\n*Payment Link :*\n{{paymentLink}}',
+
+        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*धारक का नाम*\n{{payerName}}\n\n*बिल की तारीख*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
+
+        pa_IN: '👉  *{{service}} ਬਿੱਲ*\n\n*{{serviceid}}*\n{{id}}\n\n*ਮਾਲਕ ਦਾ ਨਾਮ*\n{{payerName}}\n\n*ਬਿੱਲ ਦੀ ਮਿਤੀ*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*ਬਕਾਯਾ ਰਕਮ*\nरु {{dueAmount}}\n\n*ਭੁਗਤਾਨ ਲਿੰਕ :*\n{{paymentLink}}'
       }
     },
     multipleRecordsSameService: {
@@ -1018,9 +1025,9 @@ let messages = {
       hi_IN: 'निम्नलिखित अवैतनिक बिल पाए जाते हैं',
       pa_IN: 'ਹੇਠ ਦਿੱਤੇ ਬਿਨਾਂ ਭੁਗਤਾਨ ਕੀਤੇ ਬਿਲ ਮਿਲਦੇ ਹਨ 👇',
       billTemplate: {
-        en_IN: '👉  *{{service}} Bill*\n\n*{{serviceid}}*\n{{id}}\n\n*Owner Name*\n{{payerName}}\n\n*Amount Due*\nRs {{dueAmount}}\n\n*Payment Link :*\n{{paymentLink}}',
-        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*स्वामी का नाम*\n{{payerName}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
-        pa_IN: '👉  *{{service}} ਬਿੱਲ*\n\n*{{serviceid}}*\n{{id}}\n\n*ਮਾਲਕ ਦਾ ਨਾਮ*\n{{payerName}}\n\n*ਬਕਾਯਾ ਰਕਮ*\nरु {{dueAmount}}\n\n*ਭੁਗਤਾਨ ਲਿੰਕ :*\n{{paymentLink}}'
+        en_IN: '👉  *{{service}} Bill*\n\n*{{serviceid}}*\n{{id}}\n\n*Owner Name*\n{{payerName}}\n\n*Bill Date*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*Amount Due*\nRs {{dueAmount}}\n\n*Payment Link :*\n{{paymentLink}}',
+        hi_IN: '👉  *{{service}} विधेयक*\n\n*{{serviceid}}*\n{{id}}\n\n*धारक का नाम*\n{{payerName}}\n\n*बिल की तारीख*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*देय राशि*\nरु {{dueAmount}}\n\n*भुगतान लिंक :*\n{{paymentLink}}',
+        pa_IN: '👉  *{{service}} ਬਿੱਲ*\n\n*{{serviceid}}*\n{{id}}\n\n*ਮਾਲਕ ਦਾ ਨਾਮ*\n{{payerName}}\n\n*ਬਿੱਲ ਦੀ ਮਿਤੀ*\nFrom: {{billFromDate}}\nTo: {{billToDate}}\n\n*ਬਕਾਯਾ ਰਕਮ*\nरु {{dueAmount}}\n\n*ਭੁਗਤਾਨ ਲਿੰਕ :*\n{{paymentLink}}'
       }
     }
   },

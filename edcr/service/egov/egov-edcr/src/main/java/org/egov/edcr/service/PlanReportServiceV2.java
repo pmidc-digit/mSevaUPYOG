@@ -741,69 +741,136 @@ public class PlanReportServiceV2 {
         return minFloorNo + " to " + maxFloorNo;
     }
 
-    private void addSummarySections(List<ScrutinyDetail> scrutinyDetails,
-                                    Map<String, Map<String, ScrutinyDetail>> sections,
-                                    Map<String, String> prefixSummaryNameMap) {
+//    private void addSummarySections(List<ScrutinyDetail> scrutinyDetails,
+//                                    Map<String, Map<String, ScrutinyDetail>> sections,
+//                                    Map<String, String> prefixSummaryNameMap) {
+//
+//        final String SETBACK_KEY = "Setback";
+//
+//        final String[] setbackColumns = {
+//                "Section", "Setback", "Occupancy", "Level", "Permissible", "Provided", "Status"
+//        };
+//
+//        for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
+//            if (scrutinyDetail.getKey() == null) continue;
+//
+//            String[] keyArr   = scrutinyDetail.getKey().split("_");
+//            String detailsHeading = keyArr[keyArr.length - 1];
+//
+//            prefixSummaryNameMap.forEach((prefix, summaryName) -> {
+//                if (!scrutinyDetail.getKey().toLowerCase().startsWith(prefix.toLowerCase())) return;
+//
+//                boolean isSetback = scrutinyDetail.getKey().toLowerCase().contains("setback")
+//                        && !CollectionUtils.isEmpty(scrutinyDetail.getDetail());
+//
+//                if (isSetback) {
+//                    if (!sections.get(summaryName).containsKey(SETBACK_KEY)) {
+//                        ScrutinyDetail setbackSd = new ScrutinyDetail();
+//                        setbackSd.setKey(SETBACK_KEY);
+//                        for (int i = 0; i < setbackColumns.length; i++)
+//                            setbackSd.addColumnHeading(i + 1, setbackColumns[i]);
+//                        sections.get(summaryName).put(SETBACK_KEY, setbackSd);
+//                    }
+//
+//                    for (Map<String, String> srcRow : scrutinyDetail.getDetail()) {
+//                        Map<String, String> row = new HashMap<>();
+//                        String sdKeyLower = scrutinyDetail.getKey().toLowerCase();
+//                        if (sdKeyLower.contains("front")) {
+//                            row.put("Setback", "Front");
+//                        } else if (sdKeyLower.contains("rear")) {
+//                            row.put("Setback", "Rear");
+//                        } else {
+//                            String sideNum = srcRow.getOrDefault("Side Number", "");
+//                            if (StringUtils.isNotBlank(sideNum)) {
+//                                row.put("Setback", "Side Setback " + sideNum.trim().charAt(sideNum.trim().length() - 1));
+//                            } else {
+//                                row.put("Setback", scrutinyDetail.getHeading() != null
+//                                        ? scrutinyDetail.getHeading() : "Side");
+//                            }
+//                        }
+//
+//                        for (String col : setbackColumns) {
+//                            if (!"Setback".equals(col)) {
+//                                row.put(col, srcRow.getOrDefault(col, ""));
+//                            }
+//                        }
+//
+//                        sections.get(summaryName).get(SETBACK_KEY).addDetail(row);
+//                    }
+//
+//                } else {
+//                    sections.get(summaryName).put(detailsHeading, scrutinyDetail);
+//                }
+//            });
+//        }
+//    }
+    
+	private void addSummarySections(List<ScrutinyDetail> scrutinyDetails,
+			Map<String, Map<String, ScrutinyDetail>> sections, Map<String, String> prefixSummaryNameMap) {
 
-        final String SETBACK_KEY = "Setback";
+		final String SETBACK_KEY = "Setback";
 
-        final String[] setbackColumns = {
-                "Section", "Setback", "Occupancy", "Level", "Permissible", "Provided", "Status"
-        };
+		final String[] setbackColumns = { "Section", "Setback", "Occupancy", "Level", "Permissible", "Provided",
+				"Status" };
 
-        for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
-            if (scrutinyDetail.getKey() == null) continue;
+		for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
+			if (scrutinyDetail.getKey() == null)
+				continue;
 
-            String[] keyArr   = scrutinyDetail.getKey().split("_");
-            String detailsHeading = keyArr[keyArr.length - 1];
+			String[] keyArr = scrutinyDetail.getKey().split("_");
+			String detailsHeading = keyArr[keyArr.length - 1];
 
-            prefixSummaryNameMap.forEach((prefix, summaryName) -> {
-                if (!scrutinyDetail.getKey().toLowerCase().startsWith(prefix.toLowerCase())) return;
+			prefixSummaryNameMap.forEach((prefix, summaryName) -> {
+				if (!scrutinyDetail.getKey().toLowerCase().startsWith(prefix.toLowerCase()))
+					return;
 
-                boolean isSetback = scrutinyDetail.getKey().toLowerCase().contains("setback")
-                        && !CollectionUtils.isEmpty(scrutinyDetail.getDetail());
+				boolean isSetback = scrutinyDetail.getKey().toLowerCase().contains("setback")
+						&& !CollectionUtils.isEmpty(scrutinyDetail.getDetail());
 
-                if (isSetback) {
-                    if (!sections.get(summaryName).containsKey(SETBACK_KEY)) {
-                        ScrutinyDetail setbackSd = new ScrutinyDetail();
-                        setbackSd.setKey(SETBACK_KEY);
-                        for (int i = 0; i < setbackColumns.length; i++)
-                            setbackSd.addColumnHeading(i + 1, setbackColumns[i]);
-                        sections.get(summaryName).put(SETBACK_KEY, setbackSd);
-                    }
+				if (isSetback) {
+					if (!sections.get(summaryName).containsKey(SETBACK_KEY)) {
+						ScrutinyDetail setbackSd = new ScrutinyDetail();
+						setbackSd.setKey(SETBACK_KEY);
+						for (int i = 0; i < setbackColumns.length; i++)
+							setbackSd.addColumnHeading(i + 1, setbackColumns[i]);
+						sections.get(summaryName).put(SETBACK_KEY, setbackSd);
+					}
 
-                    for (Map<String, String> srcRow : scrutinyDetail.getDetail()) {
-                        Map<String, String> row = new HashMap<>();
-                        String sdKeyLower = scrutinyDetail.getKey().toLowerCase();
-                        if (sdKeyLower.contains("front")) {
-                            row.put("Setback", "Front");
-                        } else if (sdKeyLower.contains("rear")) {
-                            row.put("Setback", "Rear");
-                        } else {
-                            String sideNum = srcRow.getOrDefault("Side Number", "");
-                            if (StringUtils.isNotBlank(sideNum)) {
-                                row.put("Setback", "Side Setback " + sideNum.trim().charAt(sideNum.trim().length() - 1));
-                            } else {
-                                row.put("Setback", scrutinyDetail.getHeading() != null
-                                        ? scrutinyDetail.getHeading() : "Side");
-                            }
-                        }
+					for (Map<String, String> srcRow : scrutinyDetail.getDetail()) {
+						Map<String, String> row = new HashMap<>();
+						String sdKeyLower = scrutinyDetail.getKey().toLowerCase();
+						if (sdKeyLower.contains("front")) {
+							row.put("Setback", "Front");
+						} else if (sdKeyLower.contains("rear") && sdKeyLower.contains("side")) {
+							row.put("Setback", "Rear and Side Setback"); // combined row
+						} else if (sdKeyLower.contains("rear")) {
+							row.put("Setback", "Rear");
+						} else {
+							String sideNum = srcRow.getOrDefault("Side Number", "");
+							if (StringUtils.isNotBlank(sideNum)) {
+								row.put("Setback",
+										"Side Setback " + sideNum.trim().charAt(sideNum.trim().length() - 1));
+							} else {
+								row.put("Setback",
+										scrutinyDetail.getHeading() != null ? scrutinyDetail.getHeading() : "Side");
+							}
+						}
 
-                        for (String col : setbackColumns) {
-                            if (!"Setback".equals(col)) {
-                                row.put(col, srcRow.getOrDefault(col, ""));
-                            }
-                        }
+						for (String col : setbackColumns) {
+							if (!"Setback".equals(col)) {
+								row.put(col, srcRow.getOrDefault(col, ""));
+							}
+						}
 
-                        sections.get(summaryName).get(SETBACK_KEY).addDetail(row);
-                    }
+						sections.get(summaryName).get(SETBACK_KEY).addDetail(row);
+					}
 
-                } else {
-                    sections.get(summaryName).put(detailsHeading, scrutinyDetail);
-                }
-            });
-        }
-    }
+				} else {
+					sections.get(summaryName).put(detailsHeading, scrutinyDetail);
+				}
+			});
+		}
+	}
 
     private void addBlockWiseSummary(List<DcrReportBlockDetail> proposedBlockDetails,
                                      Map<String, Map<String, ScrutinyDetail>> sections) {

@@ -202,13 +202,6 @@ public class PropertyUtil extends CommonUtils {
 					JSONObject response=getWnsPTworkflowConfig(request);
 					if (response.has("businessService")) {
 						wf.setBusinessService(response.get("businessService").toString());
-					} else {
-						// Fallback: MDMS PTWorkflow config returned no enabled entry or missing businessService key.
-						// Without this, wf.businessService would silently retain the caller-supplied value (e.g. "PT.CREATE"),
-						// causing the workflow engine to throw "Action APPROVE not found" when the property is in PENDINGWS state.
-						log.warn("PTWorkflow MDMS config returned no enabled businessService for WATER_CHARGES source; "
-								+ "defaulting to PT.CREATEWITHWNS for businessId: {}", wf.getBusinessId());
-						wf.setBusinessService("PT.CREATEWITHWNS");
 					}
 					wf.setModuleName(configs.getPropertyModuleName());
 				}

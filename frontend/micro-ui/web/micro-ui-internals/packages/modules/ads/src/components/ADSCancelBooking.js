@@ -90,10 +90,6 @@ const ADSCancelBooking = ({ t, closeModal, actionCancelLabel, actionCancelOnSubm
     actionSaveOnSubmit(payload);
   };
 
-  useEffect(() => {
-    console.log("documentsData", documentsData);
-  }, [documentsData]);
-
   return (
     <Modal
       headerBarMain={<Heading t={t} />}

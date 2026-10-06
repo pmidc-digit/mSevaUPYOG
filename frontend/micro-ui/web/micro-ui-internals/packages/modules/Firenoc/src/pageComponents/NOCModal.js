@@ -56,6 +56,12 @@ const NOCModal = ({
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
 
+  const isFieldInspection = applicationDetails?.Noc?.[0]?.fireNOCDetails?.status
+    ?.replace(/_/g, "")
+    .toLowerCase()
+    .includes("fieldinspection");
+    
+
   const checkRole = action?.state?.actions;
 
   const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles || []))];
@@ -155,13 +161,9 @@ const NOCModal = ({
 
   function submit(data) {
 
-    const mandatoryActions = ["APPROVE", "VERIFY", "REJECT", "SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER", "FORWARD"];
+    // const mandatoryActions = ["APPROVE", "VERIFY", "REJECT", "SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER", "FORWARD"];
 
-    let checkCommentsMandatory = mandatoryActions.includes(action?.action);
-
-    if (action?.isTerminateState) {
-      checkCommentsMandatory = true;
-    }
+    let checkCommentsMandatory = isFieldInspection;
 
     const commentsText = data?.comments?.toString().trim();
     const conditionalText = data?.conditionalComments?.trim();
@@ -176,6 +178,7 @@ const NOCModal = ({
       action?.action !== "REJECT" &&
       action?.action !== "SEND_FOR_INSPECTION_REPORT" &&
       action?.action !== "CANCEL" &&
+      (action?.action !== "RESUBMIT" || isFieldInspection) &&
       !selectedApprover?.uuid
     ) {
       setTimeout(() => {
@@ -201,6 +204,33 @@ const NOCModal = ({
       }, 2000);
 
       setShowToast({ key: "true", error: true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") });
+      return;
+    }
+
+    if (isFieldInspection && !data?.applicantName?.trim()) {
+      setTimeout(() => {
+        closeToast();
+      }, 2000);
+
+      setShowToast({ key: "true", error: true, message: t("OWNER_NAME_REQUIRED_LABEL") });
+      return;
+    }
+
+    if (isFieldInspection && !data?.resubmitDate) {
+      setTimeout(() => {
+        closeToast();
+      }, 2000);
+
+      setShowToast({ key: "true", error: true, message: t("DATE_REQUIRED_LABEL") });
+      return;
+    }
+
+    if (isFieldInspection && !uploadedFile) {
+      setTimeout(() => {
+        closeToast();
+      }, 2000);
+
+      setShowToast({ key: "true", error: true, message: t("DOCUMENT_REQUIRED_LABEL") });
       return;
     }
 
@@ -256,6 +286,7 @@ const NOCModal = ({
           setUploadedFile,
           businessService,
           isEmployee,
+          isFieldInspection,
         })
       );
     }

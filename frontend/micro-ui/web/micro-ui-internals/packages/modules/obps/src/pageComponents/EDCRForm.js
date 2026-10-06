@@ -308,8 +308,11 @@ const EDCRForm = ({
                   <UploadFile
                     id={"edcr-layout"}
                     onUpload={handleLayoutUpload}
+                    accept=".pdf,application/pdf"
                     onDelete={() => {
                       setLayoutFile(null);
+                      setSelectLayout(null);
+                      setLayoutMessage("");
                       setFile("");
                     }}
                     message={layoutFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
@@ -350,27 +353,25 @@ const EDCRForm = ({
             <Dropdown t={t} isMandatory={true} option={roadTypeOptions} selected={roadType} optionKey="name" select={selectRoadType} />
           </React.Fragment>
 
-          {approvedCS?.code !== "YES" && (
-            <React.Fragment>
-              <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
-              <UploadFile
-                id={"edcr-doc"}
-                onUpload={handleDXFUpload}
-                accept=".dxf"
-                onDelete={() => {
-                  setUploadedFile(null);
-                  setFile("");
-                  setDxfFile(null);
-                  setDxfFileStoreId(null);
-                }}
-                message={dxfFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                error={error}
-                uploadMessage={uploadMessage}
-              />
-              {/* <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p> */}
-              <p>{t("EDCR_ONLY_DXF_FILE")}</p>
-            </React.Fragment>
-          )}
+          <React.Fragment>
+            <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
+            <UploadFile
+              id={"edcr-doc"}
+              onUpload={handleDXFUpload}
+              accept=".dxf"
+              onDelete={() => {
+                setUploadedFile(null);
+                setFile("");
+                setDxfFile(null);
+                setDxfFileStoreId(null);
+              }}
+              message={dxfFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+              error={error}
+              uploadMessage={uploadMessage}
+            />
+            {/* <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p> */}
+            <p>{t("EDCR_ONLY_DXF_FILE")}</p>
+          </React.Fragment>
         </FormStep>
       </div>
     </React.Fragment>

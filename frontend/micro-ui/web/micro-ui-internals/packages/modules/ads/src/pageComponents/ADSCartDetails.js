@@ -26,6 +26,9 @@ const ADSCartDetails = ({ cartDetails, t, demands }) => {
     },
   ];
 
+
+
+
   return (
     <div className="ads-cart-details">
       {cartDetails?.length === 0 ? (

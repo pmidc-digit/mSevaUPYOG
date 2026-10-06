@@ -192,8 +192,8 @@ const CLUInbox = ({ parentRoute }) => {
     totalCountData,
   ]);
 
-  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
-  // const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
+  // const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+  const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
 
   useEffect(() => {
     if (tenantId !== "pb.punjab") return;
@@ -385,6 +385,7 @@ const CLUInbox = ({ parentRoute }) => {
   }, [onApiMobileSearch]);
 
   const propsForInboxTable = useCLUTableConfig({
+    enableColumnSearch: true,
     parentRoute,
     onPageSizeChange,
     formState,

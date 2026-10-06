@@ -13,6 +13,8 @@ const NewRentAndLeaseStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {};
   });
 
+  console.log("currentStepData", currentStepData);
+
   function goNext(data) {
     dispatch(UPDATE_RENTANDLEASE_NEW_APPLICATION_FORM(config.key, data));
     onGoNext();

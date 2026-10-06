@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next";
 
-const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
+const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo = false, styles, isUnderMaintenance = false, maintenanceMessage }) => {
   const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false
   const location = useLocation()
   const shouldRemoveGrid = location.pathname.endsWith("all-services")
@@ -174,7 +174,6 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
     backgroundClip: isHovered ? "padding-box, border-box" : "padding-box",
     textDecoration: "none",
     transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-    cursor: "pointer",
     position: "relative",
     overflow: "hidden",
     boxShadow: isHovered
@@ -256,11 +255,11 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
       </div>
       <div style={contentStyle}>
         <div style={titleStyle}>{t(link.i18nKey)}</div>
-        {link.description && <div style={descriptionStyle}>{link.description}</div>}
+        {(link.disabledMessage || link.description) && <div style={descriptionStyle}>{link.disabledMessage || link.description}</div>}
       </div>
-      <div style={getArrowContainerStyle(isHovered, index)}>
-        <ArrowIcon style={getArrowStyle(isHovered)} />
-      </div>
+      {!link.disabled && <div style={getArrowContainerStyle(isHovered, index)}>
+          <ArrowIcon style={getArrowStyle(isHovered)} />
+        </div>}
     </React.Fragment>
   )
 
@@ -277,9 +276,16 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
         </div>
       )}
 
+      {isUnderMaintenance && (
+        <div className="chc-maintenance-banner">
+          {maintenanceMessage || "This service is temporarily unavailable."}
+        </div>
+      )}
+
       <div style={containerStyle}>
         {links.map((link, index) => {
           const isHovered = hoveredIndices[index]
+          const isDisabled = link?.disabled === true
           const linkPathname =
             typeof link?.link === "string" && link.link.startsWith("/mseva-ui")
               ? link.link.replace("/mseva-ui", "/digit-ui")
@@ -290,11 +296,20 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
             link?.parentModule?.toUpperCase() === "FIRENOC"
 
           const handleMouseEnter = () => {
+            if (isDisabled) return
             setHoveredIndices((prev) => prev.map((item, i) => (i === index ? true : item)))
           }
 
           const handleMouseLeave = () => {
             setHoveredIndices((prev) => prev.map((item, i) => (i === index ? false : item)))
+          }
+
+          if (isDisabled) {
+            return (
+              <div key={index} className="chc-card--disabled" style={getCardStyle(index, false)} aria-disabled="true">
+                {renderCardContent(link, index, false)}
+              </div>
+            )
           }
 
           if (isExternalLink) {

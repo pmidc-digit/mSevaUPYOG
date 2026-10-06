@@ -179,7 +179,7 @@ import {
   NOCIcon,
   ADSIcone,
   SVIcon,
-  CHBIcon
+  CHBIcon,
 } from "./atoms/svgindex";
 import Table from "./atoms/Table";
 import TelePhone from "./atoms/TelePhone";
@@ -231,6 +231,7 @@ import { DownloadBtnCommon } from "./atoms/svgindex";
 import ToggleSwitch from "./atoms/ToggleSwitch";
 
 import CitizenConsentForm from "./atoms/CitizenConsentForm";
+export { default as PaymentHistory } from "./atoms/PaymentHistory";
 
 export {
   Phone,
@@ -470,5 +471,5 @@ export {
   FirenocIcon,
   InfoIcon,
   LoginIcon,
-  CitizenConsentForm
+  CitizenConsentForm,
 };

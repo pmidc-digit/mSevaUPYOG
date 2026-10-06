@@ -195,9 +195,9 @@ const NewRentAndLeaseStepperForm = ({ userType }) => {
               formPropertyDetails.arrearEndDate = rawAdditionalDetails?.arrearEndDate
                 ? new Date(rawAdditionalDetails.arrearEndDate).toISOString().split("T")[0]
                 : "";
-              formPropertyDetails.arrearReason = rawAdditionalDetails?.arrearReason
-                ? { name: t(rawAdditionalDetails.arrearReason), code: rawAdditionalDetails.arrearReason }
-                : null;
+              const savedReason = rawAdditionalDetails?.arrearReason ?? apiAdditionalDetails?.arrearReason;
+              const reasonCode = typeof savedReason === "string" ? savedReason : savedReason?.code;
+              formPropertyDetails.arrearReason = reasonCode ? { name: t(reasonCode), code: reasonCode } : null;
               formPropertyDetails.remarks = rawAdditionalDetails?.remarks;
               formPropertyDetails.arrearDoc = rawAdditionalDetails?.arrearDoc;
             }

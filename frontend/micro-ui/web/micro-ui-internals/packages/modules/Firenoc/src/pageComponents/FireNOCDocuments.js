@@ -109,28 +109,37 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
     <div className="bpa-doc-required-wrapper">
       {isUploading && <Loader />}
 
-      <LabelFieldPair>
-        <CardLabel className="bpa-doc-required-label">
-          {t(doc.code.replaceAll(".", "_"))}
-          {doc.required && <span className="requiredField">*</span>}
-        </CardLabel>
+      
+        {doc.hasDropdown && (
+          <CardLabel className="noc-doc-label noc-doc-label--with-dropdown">
+            {t(doc.code.replaceAll(".", "_"))}
+            {doc.required && <span className="requiredField">*</span>}
+          </CardLabel>
+        )}
 
-        <div className="fire-noc-doc-required-field" style={{width: "100%"}}>
-          {/* Dropdown for documents with multiple options (e.g., Identity Proof) */}
-          {doc.hasDropdown && dropdownOptions.length > 0 && (
-            <div style={{ marginBottom: "8px" }}>
-              <Dropdown
-                className="form-field"
-                option={dropdownOptions}
-                optionKey="name"
-                select={(val) => setSelectedDocument(val)}
-                selected={selectedDocument}
-                t={t}
-                placeholder={t("Select Document Type")}
-              />
-            </div>
+        <div className={`noc-doc-row${doc.hasDropdown ? " noc-doc-row--has-dropdown" : ""}`}>
+        
+        {/* 3. Left Column: Either Dropdown OR the Label (if no dropdown) */}
+        <div className="noc-doc-col">
+          {doc.hasDropdown ? (
+            <Dropdown
+              className="form-field"
+              option={dropdownOptions}
+              optionKey="name"
+              select={(val) => setSelectedDocument(val)}
+              selected={selectedDocument}
+              t={t}
+              placeholder={t("Select Document Type")}
+            />
+          ) : (
+            <CardLabel className="noc-doc-label">
+              {t(doc.code.replaceAll(".", "_"))}
+              {doc.required && <span className="requiredField">*</span>}
+            </CardLabel>
           )}
-
+        </div>
+        {/* 4. Right Column: File Upload */}
+        <div className="noc-doc-col">
           <NOCCustomUploadFile
             id={`firenoc-doc-${doc.code}`}
             onUpload={handleFileSelect}
@@ -147,15 +156,16 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
           />
-
-          <p style={{ padding: "10px", fontSize: "14px" }}>
+          <p className="noc-doc-hint">
             {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
           </p>
         </div>
-      </LabelFieldPair>   
+      </div>
+
+         
 
       {doc.description && (
-        <p style={{ padding: "0 10px 10px", fontSize: "13px", color: "#717171" }}>
+        <p className="noc-doc-description">
           {/* {t(doc.description.replaceAll(".", "_"))} */}
         </p>
       )}

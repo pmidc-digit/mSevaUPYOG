@@ -23,8 +23,6 @@ const StakeholderRegistration = () => {
     state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
   );
 
-  console.log("params in StakeholderRegistration", params, state);
-
   const stepperConfig = [
     {
       head: "Applicant Details",
@@ -76,20 +74,16 @@ const StakeholderRegistration = () => {
   const onSuccess = (data) => {
     clearParams();
     queryClient.invalidateQueries("PT_CREATE_PROPERTY");
-    console.log("Mutationdata 1", data);
     sessionStorage.setItem("isStakeholderRegistered", true);
     sessionStorage.setItem("stakeholder.mutationData", JSON.stringify(data));
   };
 
   const createApplication = async (selectedAction) => {
-    console.log("createApplication called with action:", selectedAction);
-
     // If no action provided (initial submission), just navigate to acknowledgement
     // if (!selectedAction) {
     //   history.push(`${path}/acknowledgement`);
     //   return;
     // }
-    console.log("selectedAction", selectedAction);
     // if (!selectedAction) {
     //   history.push(`${path}/acknowledgement?action=APPLY`);
     //   return;
@@ -124,13 +118,11 @@ const StakeholderRegistration = () => {
           documentUid: doc?.documentUid || null,
           active: true,
           tenantId: doc?.tenantId || tenantId,
-          id: doc?.id || null,
+          id: finalDocVal?.tradeLicenseDetail?.applicationDocuments?.find((saved) => saved.documentType === doc?.documentType)?.id || doc?.id || null,
         }))
       : [];
 
-    const applicationDocuments = cleanDocs(
-      formattedDocs?.length > 0 ? formattedDocs : finalDocVal?.tradeLicenseDetail?.applicationDocuments
-    );
+    const applicationDocuments = cleanDocs(formattedDocs?.length > 0 ? formattedDocs : finalDocVal?.tradeLicenseDetail?.applicationDocuments);
 
     let setselectedAction = !selectedAction ? "APPLY" : typeof selectedAction === "object" ? selectedAction.action : selectedAction;
 
@@ -147,12 +139,10 @@ const StakeholderRegistration = () => {
       ],
     };
 
-    console.log("final payload", finalPayload);
     setLoader(true);
     // return;
     try {
       const response = await Digit.OBPSService.BPAREGupdate(finalPayload, tenantId);
-      console.log("UPDATE response:", response);
       setLoader(false);
 
       sessionStorage.setItem("FinalDataDocAfterStep", JSON.stringify(response));
@@ -162,7 +152,6 @@ const StakeholderRegistration = () => {
       });
     } catch (error) {
       setLoader(false);
-      console.error("UPDATE API Error:", error?.response?.data?.Errors);
       // Still navigate to acknowledgement even on error (or show error toast)
       // history.push(`${path}/acknowledgement`);
     }
@@ -172,14 +161,11 @@ const StakeholderRegistration = () => {
     // Extract action string from action object or use directly if it's a string
     let actionString = typeof selectedAction === "object" ? selectedAction.action : selectedAction;
 
-    console.log("Action string extracted:", actionString);
-
     // Build the UPDATE payload with the workflow action
     const formData = params?.formData || params;
     const result = params?.result;
 
     if (!result?.Licenses?.[0]?.id) {
-      console.error("No license ID found for update");
       history.push(`${path}/acknowledgement`);
       return;
     }
@@ -188,15 +174,12 @@ const StakeholderRegistration = () => {
 
     const currentState = licenseData?.status || selectedAction?.state?.state;
     if (currentState === "CITIZEN_ACTION_REQUIRED") {
-      console.log("State is CITIZEN_ACTION_REQUIRED, forcing action to RESUBMIT");
       actionString = "RESUBMIT";
     }
 
     const getDocs = JSON.parse(sessionStorage.getItem("FinalDataDoc"));
 
     const finalDoc = getDocs?.result?.Licenses?.[0]?.tradeLicenseDetail;
-
-    console.log("params", getDocs?.result?.Licenses?.[0]?.tradeLicenseDetail);
 
     const payload = {
       Licenses: [
@@ -212,11 +195,9 @@ const StakeholderRegistration = () => {
         },
       ],
     };
-    console.log("final payload", payload);
     setLoader(true);
     try {
       const response = await Digit.OBPSService.BPAREGupdate(payload, tenantId);
-      console.log("UPDATE response:", response);
       setLoader(false);
 
       sessionStorage.setItem("workflowActionCompleted", "true");
@@ -239,14 +220,12 @@ const StakeholderRegistration = () => {
       });
     } catch (error) {
       setLoader(false);
-      console.error("UPDATE API Error:", error?.response?.data?.Errors);
       // Still navigate to acknowledgement even on error (or show error toast)
       history.push(`${path}/acknowledgement`);
     }
   };
 
   // const createApplication = async (selectedAction) => {
-  //   console.log("  createApplication called with action:", selectedAction)
 
   //   // Extract only serializable properties from workflow action
   //   let workflowAction = null
@@ -263,8 +242,6 @@ const StakeholderRegistration = () => {
   //     }
   //   }
 
-  //   console.log("  Passing workflow action to acknowledgement:", workflowAction)
-
   //   // Pass the workflow action to acknowledgement page via history state
   //   history.push({
   //     pathname: `${path}/acknowledgement`,
@@ -275,8 +252,6 @@ const StakeholderRegistration = () => {
   // }
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
-    console.log("key===", key);
-    console.log("data===", data);
     if (isFromCreateApi) setParams(data);
     else if (key === "") setParams({ ...data });
     else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
@@ -305,16 +280,14 @@ const StakeholderRegistration = () => {
   const StakeholderAcknowledgement = Digit?.ComponentRegistryService?.getComponent("StakeholderAcknowledgement");
   const newParams = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))?.value || {};
 
-  console.log("formData in StakeholderRegistration", params);
-  console.log("config in StakeholderRegistration", config);
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
+    <div className="obps-pages-citizen-stakeholder-registration-index--style-1">
       {!(window.location.href.includes("stakeholder-docs-required") || window.location.href.includes("acknowledgement")) && !isMobile && (
-        <div className="stepper-margin">
+        <div className="obps-pages-citizen-stakeholder-registration-index--style-2">
           <Stepper stepsList={stepperConfig} step={currentStep} />
         </div>
       )}
-      <div style={{ flexGrow: 1 }}>
+      <div className="obps-pages-citizen-stakeholder-registration-index--style-3">
         <Switch>
           {config.map((routeObj, index) => {
             const { component, texts, inputs, key } = routeObj;

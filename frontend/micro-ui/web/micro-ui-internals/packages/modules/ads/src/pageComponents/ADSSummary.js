@@ -49,7 +49,6 @@ function ADSSummary({ t }) {
       setDemands(response?.demands?.[0]?.additionalDetails?.slotWiseBreakdown);
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
     }
   };
 
@@ -68,6 +67,7 @@ function ADSSummary({ t }) {
         {renderRow(TT("CORE_Mobile_Number"), applicant?.applicantMobileNo)}
         {renderRow(TT("CORE_EMAIL_ID"), applicant?.applicantEmailId)}
         {renderRow(TT("CORE_COMMON_PINCODE"), address?.pincode)}
+        {renderRow(TT("Remarks"), formData?.ownerDetails?.additionalDetails?.remarks)}
         {renderRow(TT("ES_CREATECOMPLAINT_ADDRESS"), address?.addressLine1)}
       </div>
 

@@ -1,10 +1,11 @@
+import useLocalColumnSearch from "../../../../../templates/Inbox/components/useLocalColumnSearch";
 import React, { Fragment, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encodeURIComponentCustom } from "../../../utils";
 
-const useInboxTableConfig = ({
+const useInboxTableConfig = ({ enableColumnSearch = false,
   parentRoute,
   onPageSizeChange,
   formState,
@@ -161,6 +162,8 @@ const useInboxTableConfig = ({
     ];
   }, [cities]);
 
+  const localTable = useLocalColumnSearch(tableColumnConfig, table, enableColumnSearch);
+
   return {
     getCellProps: (cellInfo) => {
       return {
@@ -200,8 +203,8 @@ const useInboxTableConfig = ({
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } }),
     // globalSearch: {searchForItemsInTable},
     // searchQueryForTable,
-    data: table,
-    columns: tableColumnConfig,
+    data: localTable.data,
+    columns: localTable.columns,
   };
 };
 

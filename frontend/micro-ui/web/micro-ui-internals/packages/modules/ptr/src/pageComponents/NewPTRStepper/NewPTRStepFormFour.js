@@ -109,10 +109,11 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       workflow: existingWorkflow,
       ...otherDetails
     } = CreatedResponse;
+    const ptrId = sessionStorage.getItem("CitizenConsentdocFilestoreidPTR");
 
     const formData = {
       ...CreatedResponse, // keep untouched fields like applicationNumber, tenantId, etc.
-
+      consentDocument: ptrId,
       // Merge updated owner details
       owner: {
         ...CreatedResponse?.owner,

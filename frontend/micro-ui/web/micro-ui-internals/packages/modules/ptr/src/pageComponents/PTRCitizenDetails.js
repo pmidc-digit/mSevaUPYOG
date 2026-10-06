@@ -92,6 +92,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     try {
       const userData = await Digit.UserService.userSearch(tenantId, { userName: value, mobileNumber: value, userType: "CITIZEN" }, {});
       console.log("userData", userData);
+      sessionStorage.removeItem("CitizenConsentdocFilestoreidPTR");
       if (userData?.user?.[0]) {
         setValue("name", userData.user[0].name);
         setValue("emailId", userData.user[0].emailId);

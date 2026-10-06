@@ -315,5 +315,18 @@ export const quickServiceModules = {
       subHeading: "",
       roles: [],
     },
+    {
+      moduleCode: "OBPSKibanaDashboard",
+      moduleName: "OBPS Dashboard",
+      bgColor: "#3e4b5b",
+      labelKey: "",
+      icon: "",
+      routes:
+        "https://mseva.lgpunjab.gov.in/kibana-v2/s/anonymous-user/app/dashboards?auth_provider_hint=anonymous1#/view/36efa59f-3889-44af-b60e-599838f6250b?embed=true&hide-filter-bar=true&_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:now-15m,to:now))",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles: [],
+    },
   ],
 };

@@ -189,8 +189,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     /* ── propertyDetails.address ── */
     const address = {
       areaType: (site.areaType?.code || site.areaType?.name || "").toUpperCase(),
-      city: site.cityName?.code || site.cityName || tenantId,
-      subDistrict: site.districtName?.code || site.districtName?.name || site.districtName || "",
+      city: site.districtName?.code || site.districtName?.name || site.districtName || tenantId,
+      subDistrict: site.cityName?.code || "",
       addressLine2: (site.areaType?.code === "RURAL" || site.areaType?.code === "Rural") ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || ""),
       doorNo: site.plotSurveyNo || "",
       street: site.streetName || "",

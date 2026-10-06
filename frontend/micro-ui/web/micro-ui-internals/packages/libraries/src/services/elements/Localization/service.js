@@ -37,24 +37,27 @@ const LocalizationStore = {
     modules.forEach((module) => {
       if (!Namespaces.includes(module)) {
         Namespaces.push(module);
-        const moduleMessages = messages.filter((message) => message.module === module);
-        LocalizationStore.setCacheData(LOCALE_MODULE(locale, module), moduleMessages);
       }
+      // Refresh the data even when the module is already listed in the index.
+      const moduleMessages = messages.filter((message) => message.module === module);
+      LocalizationStore.setCacheData(LOCALE_MODULE(locale, module), moduleMessages);
     });
     LocalizationStore.setCacheData(LOCALE_LIST(locale), Namespaces);
     LocalizationStore.setAllList(getUnique([...AllNamespaces, ...Namespaces]));
   },
   get: (locale, modules) => {
     const storedModules = LocalizationStore.getList(locale);
-    const newModules = modules.filter((module) => !storedModules.includes(module));
+    const availableModules = [];
     const messages = [];
-    storedModules.forEach((module) => {
+    // The index and module data expire independently. Verify the actual data.
+    getUnique([...storedModules, ...modules])?.forEach((module) => {
       const moduleMessages = LocalizationStore.getCaheData(LOCALE_MODULE(locale, module));
       if (Array.isArray(moduleMessages)) {
+        availableModules.push(module);
         messages.push(...moduleMessages);
       }
-      // messages.push(...LocalizationStore.getCaheData(LOCALE_MODULE(locale, module)));
     });
+    const newModules = modules?.filter((module) => !availableModules.includes(module));
     return [newModules, messages];
   },
 
@@ -79,10 +82,8 @@ export const LocalizationService = {
     return messages;
   },
   changeLanguage: (locale, tenantId) => {
-    const modules = LocalizationStore.getList(locale);
     const allModules = LocalizationStore.getAllList();
-    const uniqueModules = allModules.filter((module) => !modules.includes(module));
-    LocalizationService.getLocale({ modules: uniqueModules, locale, tenantId });
+    LocalizationService.getLocale({ modules: allModules, locale, tenantId });
     localStorage.setItem("Employee.locale", locale);
     localStorage.setItem("Citizen.locale", locale);
     Digit.SessionStorage.set("locale", locale);

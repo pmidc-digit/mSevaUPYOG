@@ -180,8 +180,8 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           address: {
             ...fireNOCData?.fireNOCDetails?.propertyDetails?.address,
             areaType: (site.areaType?.code || site.areaType?.name || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.areaType || "").toUpperCase(),
-            city: site.cityName?.code || site.cityName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.city || tenantId,
-            subDistrict: site.districtName?.code || site.districtName?.name || site.districtName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.subDistrict || "",
+            city: site.districtName?.code || site.districtName?.name || site.districtName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.city || tenantId,
+            subDistrict: site.cityName?.code || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.subDistrict || "",
             addressLine2: (site.areaType?.code === "RURAL" || site.areaType?.code === "Rural") ? (site.villageName || "") : (site.mohalla?.name || site.mohalla || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.addressLine2 || ""),
             doorNo: site.plotSurveyNo || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.doorNo || "",
             street: site.streetName || fireNOCData?.fireNOCDetails?.propertyDetails?.address?.street || "",

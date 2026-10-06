@@ -150,6 +150,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             mobileNumber: u.mobileNumber || u.userName || currentMobile,
             uuid: u.uuid || "",
             panNumber: u.panNumber || u.pan || "",
+            userUuid: u?.uuid,
           };
         });
 
@@ -740,9 +741,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             )}
 
             {/* Passport Photo */}
-            <CardLabel className="card-label-smaller">
-              {t("BPA_APPLICANT_PASSPORT_PHOTO")}
-            </CardLabel>
+            <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_PASSPORT_PHOTO")}</CardLabel>
             <div className="field obps-page-components-layout-owner-search-modal--style-49">
               <CustomUploadFile
                 id="passport-photo-modal"
@@ -762,9 +761,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             {errors?.photo && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-50">{errors.photo}</CardLabelError>}
 
             {/* ID Proof */}
-            <CardLabel className="card-label-smaller">
-              {t("BPA_APPLICANT_ID_PROOF")}
-            </CardLabel>
+            <CardLabel className="card-label-smaller">{t("BPA_APPLICANT_ID_PROOF")}</CardLabel>
             <div className="field obps-page-components-layout-owner-search-modal--style-51">
               <CustomUploadFile
                 id="id-proof-modal"
@@ -786,9 +783,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             )}
 
             {/* PAN Document */}
-            <CardLabel className="card-label-smaller">
-              {t("Pan Card")}
-            </CardLabel>
+            <CardLabel className="card-label-smaller">{t("Pan Card")}</CardLabel>
             <div className="field obps-page-components-layout-owner-search-modal--style-53">
               <CustomUploadFile
                 id="pan-document-modal"
@@ -810,9 +805,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
             )}
 
             {/* PAN Number */}
-            <CardLabel className="card-label-smaller">
-              {`${t("Pan Number")}`}
-            </CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("Pan Number")}`}</CardLabel>
             <div className="field">
               <TextInput
                 value={panNumber || ""}

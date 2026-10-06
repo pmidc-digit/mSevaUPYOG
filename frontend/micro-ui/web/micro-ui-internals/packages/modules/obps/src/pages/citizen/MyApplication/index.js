@@ -521,7 +521,10 @@ const MyApplication = () => {
           </button>
           <button
             onClick={() => {
-              history.push("/digit-ui/citizen/noc/noc-my-application");
+              history.push({
+                pathname: "/digit-ui/citizen/noc/noc-my-application",
+                state: { fromOBPS: true }
+              });
             }}
             type="button"
             className={`ndc-new-filter-status-card ndc-new-filter-option-card ndc-new-filter-card success ${true ? "active" : ""}`}

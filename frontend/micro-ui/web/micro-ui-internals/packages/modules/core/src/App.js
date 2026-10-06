@@ -3,6 +3,7 @@ import { Redirect, Route, Switch, useHistory, useLocation } from "react-router-d
 import EmployeeApp from "./pages/employee";
 import CitizenApp from "./pages/citizen";
 import LandingPage from "./LandingPage";
+import ENaksha from "./pages/ENaksha";
 import NewLoginPage from "./pages/citizen/NewLogin/NewLoginPage";
 
 export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) => {
@@ -79,6 +80,7 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
 
   return (
     <Switch>
+      <Route exact path="/digit-ui/enaksha" component={ENaksha} />
       <Route exact path="/digit-ui/select-language">
         <div className="citizen">
           <div className="main center-container citizen-home-container mb-25">

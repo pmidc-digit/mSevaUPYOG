@@ -25,6 +25,7 @@ import org.egov.pt.models.Property;
 import org.egov.common.contract.request.Role;
 import org.egov.pt.models.PropertyCriteria;
 import org.egov.pt.models.enums.Channel;
+import org.egov.pt.models.enums.Source;
 import org.egov.pt.models.enums.Status;
 import org.egov.pt.models.user.User;
 import org.egov.pt.util.PTConstants;
@@ -217,12 +218,23 @@ public Object fetchDataFromMdms(RequestInfo requestInfo, String tenantId, String
 
 			property.setStatus(Status.ACTIVE);
 			property.getAddress().setId(propertyFromDb.getAddress().getId());
-
-		} 
-		
-		else if ((propertyFromDb.getStatus().equals(Status.ACTIVE)|| propertyFromDb.getStatus().equals(Status.INACTIVE) || propertyFromDb.getStatus().equals(Status.PENDINGWS)) && isWfEnabled && !isnumberchange)
-		{
-				enrichPropertyForNewWf(requestInfo, property, false);	
+	
+		}
+	
+		else if (propertyFromDb.getStatus().equals(Status.PENDINGWS) && property.getSource() != null
+				&& property.getSource().equals(Source.WATER_CHARGES) && isWfEnabled && !isnumberchange) {
+			// PENDINGWS + WATER_CHARGES: property is already mid-workflow
+			// (PT.CREATEWITHWNS).
+			// Skip enrichPropertyForNewWf — do NOT assign a new UUID or acknowledgement
+			// number.
+			// The existing businessId must be preserved so the workflow engine can locate
+			// and
+			// transition the live process instance (APPROVE / REJECT).
+		}
+	
+		else if ((propertyFromDb.getStatus().equals(Status.ACTIVE) || propertyFromDb.getStatus().equals(Status.INACTIVE)
+				|| propertyFromDb.getStatus().equals(Status.PENDINGWS)) && isWfEnabled && !isnumberchange) {
+					enrichPropertyForNewWf(requestInfo, property, false);	
 		}
 		
 		

@@ -143,23 +143,32 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         boolean isPasswordMatched;
 
-        if (isCitizen && !loginWithPasswordUsernames.contains(userName)) {
-
-            if (fixedOTPEnabled
-                    && !fixedOTPPassword.isEmpty()
-                    && fixedOTPPassword.equals(password)) {
-
-                isPasswordMatched = true;
-
-            } else {
-
-                isPasswordMatched = isPasswordMatch(
-                        citizenLoginPasswordOtpEnabled,
+        if (isCitizen) {
+        	if(loginWithPasswordUsernames.contains(userName)) {
+            	isPasswordMatched = isPasswordMatch(
+                        false,
                         password,
                         user,
                         authentication
                 );
             }
+        	else {
+        		 if (fixedOTPEnabled
+                         && !fixedOTPPassword.isEmpty()
+                         && fixedOTPPassword.equals(password)) {
+
+                     isPasswordMatched = true;
+
+                 } else {
+
+                     isPasswordMatched = isPasswordMatch(
+                             citizenLoginPasswordOtpEnabled,
+                             password,
+                             user,
+                             authentication
+                     );
+                 }
+        	}
 
         } else {
         	log.info("Employee login - validating credentials for user: {}", userName);

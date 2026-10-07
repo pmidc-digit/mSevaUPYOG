@@ -400,10 +400,11 @@ public class PlanService {
         }
         
         
+        int errorsBefore = plan.getErrors() == null ? 0 : plan.getErrors().size();
         DxfValidator.validate(dcrApplication.getSavedDxfFile(), plan);
-        if (plan.getErrors() != null && !plan.getErrors().isEmpty()) {
-            LOG.warn("DXF preflight found {} issue(s) for : {}",
-                    plan.getErrors().size(), plan.getErrors());
+        int errorsAfter = plan.getErrors() == null ? 0 : plan.getErrors().size();
+        if (errorsAfter > errorsBefore) {
+            LOG.warn("DXF preflight added {} issue(s): {}", errorsAfter - errorsBefore, plan.getErrors());
         }
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();

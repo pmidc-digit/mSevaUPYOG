@@ -24,7 +24,7 @@ public class ServiceRequestRepository {
 	
 	@Autowired
 	private ObjectMapper mapper;
-	public Optional<Object> fetchResult(StringBuilder uri, Object request) {
+	public Object fetchResult(StringBuilder uri, Object request) {
 
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		Object response = null;
@@ -41,6 +41,6 @@ public class ServiceRequestRepository {
 			log.error("Exception while fetching from external service: ", e);
 			throw new CustomException("REST_CALL_EXCEPTION : "+uri.toString(),e.getMessage());
 		}
-		return Optional.ofNullable(response);
+		return response;
 	}
 }

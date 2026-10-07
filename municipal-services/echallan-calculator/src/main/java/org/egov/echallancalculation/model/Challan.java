@@ -19,6 +19,7 @@ import org.egov.echallancalculation.web.models.calculation.Calculation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import lombok.AllArgsConstructor;
@@ -39,6 +40,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Challan {
 
   @JsonProperty("citizen")

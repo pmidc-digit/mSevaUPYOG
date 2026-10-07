@@ -60,6 +60,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Value("${default.employee.password}")
     private String defaultEmployeePassword;
 
+	@Value("${login.withpassword.usernames}")
+    private List<String> loginWithPasswordUsernames;
+	
     @Autowired
     private HttpServletRequest request;
 
@@ -109,6 +112,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             user = encryptionDecryptionUtil.decryptObject(
                     user, "UserListSelf", User.class, requestInfo
             );
+            
+            requestInfo.setUserInfo(org.egov.common.contract.request.User.builder().uuid(user.getUuid()).id(user.getId()).build());
 
         } catch (UserNotFoundException | DuplicateUserNameException e) {
             log.error("Login failed", e);
@@ -139,22 +144,31 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         boolean isPasswordMatched;
 
         if (isCitizen) {
-
-            if (fixedOTPEnabled
-                    && !fixedOTPPassword.isEmpty()
-                    && fixedOTPPassword.equals(password)) {
-
-                isPasswordMatched = true;
-
-            } else {
-
-                isPasswordMatched = isPasswordMatch(
-                        citizenLoginPasswordOtpEnabled,
+        	if(loginWithPasswordUsernames.contains(userName)) {
+            	isPasswordMatched = isPasswordMatch(
+                        false,
                         password,
                         user,
                         authentication
                 );
             }
+        	else {
+        		 if (fixedOTPEnabled
+                         && !fixedOTPPassword.isEmpty()
+                         && fixedOTPPassword.equals(password)) {
+
+                     isPasswordMatched = true;
+
+                 } else {
+
+                     isPasswordMatched = isPasswordMatch(
+                             citizenLoginPasswordOtpEnabled,
+                             password,
+                             user,
+                             authentication
+                     );
+                 }
+        	}
 
         } else {
         	log.info("Employee login - validating credentials for user: {}", userName);
@@ -253,7 +267,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         User updatedUser = userService.updateWithoutOtpValidation(
                 user.toBuilder()
                         .accountLocked(false)
-                        .password(user.getPassword())
+                        .password(null)
                         .build(),
                 requestInfo
         );

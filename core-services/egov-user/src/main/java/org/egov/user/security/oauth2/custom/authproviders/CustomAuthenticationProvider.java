@@ -59,6 +59,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${default.employee.password}")
     private String defaultEmployeePassword;
+    
+    @Value("${login.withpassword.usernames}")
+    private List<String> loginWithPasswordUsernames;
 
     @Autowired
     private HttpServletRequest request;
@@ -141,22 +144,31 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         boolean isPasswordMatched;
 
         if (isCitizen) {
-
-            if (fixedOTPEnabled
-                    && !fixedOTPPassword.isEmpty()
-                    && fixedOTPPassword.equals(password)) {
-
-                isPasswordMatched = true;
-
-            } else {
-
-                isPasswordMatched = isPasswordMatch(
-                        citizenLoginPasswordOtpEnabled,
+        	if(loginWithPasswordUsernames.contains(userName)) {
+            	isPasswordMatched = isPasswordMatch(
+                        false,
                         password,
                         user,
                         authentication
                 );
             }
+        	else {
+        		 if (fixedOTPEnabled
+                         && !fixedOTPPassword.isEmpty()
+                         && fixedOTPPassword.equals(password)) {
+
+                     isPasswordMatched = true;
+
+                 } else {
+
+                     isPasswordMatched = isPasswordMatch(
+                             citizenLoginPasswordOtpEnabled,
+                             password,
+                             user,
+                             authentication
+                     );
+                 }
+        	}
 
         } else {
         	log.info("Employee login - validating credentials for user: {}", userName);
@@ -199,13 +211,13 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             );
         }
 
-        userService.handleFailedLogin(
+        long attempLeftCount = userService.handleFailedLogin(
                 user,
                 request.getHeader(IP_HEADER_NAME),
                 requestInfo
         );
 
-        throw new OAuth2Exception("Invalid login credentials");
+        throw new OAuth2Exception("Invalid login credentials. You have " + attempLeftCount + " login attempts left.");
     }
 
     private boolean isPasswordMatch(Boolean isOtpBased,
@@ -276,7 +288,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         return authUser;
     }
-
     private Set<Role> toAuthRole(
             Set<org.egov.user.domain.model.Role> domainRoles) {
 

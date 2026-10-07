@@ -607,7 +607,7 @@ public class WaterServiceImpl implements WaterService {
 			}
 			waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECTED);
 		} else {
-			// When process in flow (SUBMIT, FORWARD, etc.): make ALL connections Disconnected
+			// When process in flow (SUBMIT, FORWARD, etc.): old connection → DISCONNECTED, current application → ACTIVE
 			if (!previousConnectionsList.isEmpty()) {
 				for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
 					if (!previousConnectionsListObj.getId()
@@ -617,9 +617,7 @@ public class WaterServiceImpl implements WaterService {
 					}
 				}
 			}
-			waterDaoImpl.updateWaterApplicationStatus(waterConnectionRequest.getWaterConnection().getId(),
-					WCConstants.DISCONNECT_STATUS);
-			waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECTED);
+			waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.ACTIVE);
 		}
 
 		return waterConnectionRequest;

@@ -521,8 +521,8 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 		}
 		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECTED);
 	} else {
-		// When process in flow (SUBMIT, FORWARD, etc.): make old status Disconnect and current Active
-		if (!prevSewerageConnectionList.isEmpty()) { 
+		// When process in flow (SUBMIT, FORWARD, etc.): old connection → DISCONNECTED, current application → ACTIVE
+		if (!prevSewerageConnectionList.isEmpty()) {
 			for (SewerageConnection previousConnectionsListObj : prevSewerageConnectionList) {
 				if (!previousConnectionsListObj.getId().equalsIgnoreCase(sewerageConnectionRequest.getSewerageConnection().getId())) {
 					sewerageDaoImpl.updateSewerageApplicationStatus(previousConnectionsListObj.getId(),
@@ -530,9 +530,7 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 				}
 			}
 		}
-		sewerageDaoImpl.updateSewerageApplicationStatus(sewerageConnectionRequest.getSewerageConnection().getId(),
-				SWConstants.DISCONNECT_STATUS);
-		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.DISCONNECTED);
+		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.ACTIVE);
 	}
 
 	return sewerageConnectionRequest;

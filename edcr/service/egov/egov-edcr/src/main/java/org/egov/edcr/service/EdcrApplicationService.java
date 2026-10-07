@@ -26,11 +26,14 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -168,6 +171,9 @@ public class EdcrApplicationService {
     //private static final PDFont TIMESTAMP_FONT = PDType1Font.HELVETICA_BOLD;
     private static final DateTimeFormatter TS_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    
+    private static final Set<String> DEFAULT_ALLOWED_OUTSIDE_LAYERS =
+            new LinkedHashSet<>(Arrays.asList("DUMMY_ALLOWED_LAYER_1", "DUMMY_ALLOWED_LAYER_2"));
     
     @Autowired
     protected SecurityUtils securityUtils;
@@ -2238,6 +2244,12 @@ public class CustomMultipartFile implements MultipartFile {
                 StandardCopyOption.REPLACE_EXISTING);
     }
 }
+
+static Set<String> getAllowedOutsideLayers() {
+    return Collections.emptySet(); // or read from config / request later
+}
+
+
 
 }
 

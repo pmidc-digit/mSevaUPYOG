@@ -18,7 +18,7 @@ const SingleInput = ({ isFocus, onChange, onFocus, value, ...rest }) => {
       onChange={onChange}
       onFocus={onFocus}
       ref={inputRef}
-      type="number"
+      type="password"
       value={value ? value : ""}
       {...rest}
     />

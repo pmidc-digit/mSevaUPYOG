@@ -261,15 +261,17 @@ public class ccAvanueGateway implements Gateway {
 	                           "&version=" + PgConstants.CCAVENUE_VERSION +
 	                           "&from_date=" + formattedDate);
   	     try {
-  	    	 
+  	    	  log.info("Merchant Fetch Status URL: {}",MERCHANT_URL_STATUS);
+              log.info("Request Body: {}",wsDataBuff.toString());
 			  vResponse = processUrlConnectionReq(wsDataBuff.toString(), MERCHANT_URL_STATUS);
+              log.info("Enc response From Merchant: {}",vResponse.toString());
 	  	      String[] keyValuePairs = vResponse.toString().split("&");
 	      	  String resp = keyValuePairs[1];
 	          String decResp = aesUtilenc.decrypt(resp.substring(13, resp.length()));
 	       
 	          JSONObject jsonResponse = new JSONObject(decResp);
 
-	   
+
 	       		 txn =  transformRawResponseNew(jsonResponse,currentStatus); 
 	         	 return txn; 
   	     
@@ -412,7 +414,7 @@ public static String processUrlConnectionReq(String pBankData,String pBankUrl) t
 
         JSONArray orderStatusList = response.optJSONArray("order_Status_List");
         JSONObject lastSuccessfulOrder = null;
-
+        log.info("Decrypted Response From Merchant: {}",response.toString());
         // Check if any order status is "Shipped" or "Successful"
         if (orderStatusList != null) {
             for (int i = 0; i < orderStatusList.length(); i++) {

@@ -128,7 +128,9 @@ const BpaApplicationDetail = () => {
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
     const userInfo = userInfos ? JSON.parse(userInfos) : {};
-    user = userInfo?.value;
+    if (userInfo?.value) {
+      user = userInfo.value;
+    }
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
   const [displayMenu, setDisplayMenu] = useState(false);

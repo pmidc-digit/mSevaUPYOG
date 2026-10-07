@@ -310,6 +310,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
           </div>
         </div>
       </div>
+    </Card>
     </React.Fragment>
   );
 };

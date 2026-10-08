@@ -22,7 +22,7 @@ const NOCBreadCrumbs = ({ location, cameFromOBPS }) => {
       location.pathname.includes("/noc/new-application") ||
       location.pathname.includes("noc/my-application") ||
       location.pathname.includes("noc/search/application-overview") ||
-      location.pathname.includes("noc/search-application")||
+      location.pathname.includes("noc/search-application") ||
       location.pathname.includes("noc/noc-my-application");
 
     // Always push Home
@@ -62,7 +62,7 @@ const NOCBreadCrumbs = ({ location, cameFromOBPS }) => {
           <span className="noc-pages-citizen-index--style-2">/</span>
         </span>
       );
-     const isDetail = location.pathname.includes("noc/search/application-overview");
+      const isDetail = location.pathname.includes("noc/search/application-overview");
       breadcrumbs.push(
         <span key="noc-label" className="noc-pages-citizen-index--style-3">
           {isDetail ? (
@@ -80,7 +80,6 @@ const NOCBreadCrumbs = ({ location, cameFromOBPS }) => {
           )}
         </span>
       );
-
     } else {
       // Default NOC breadcrumb — user arrived directly
       if (hasSecondBreadcrumb) {
@@ -117,18 +116,22 @@ const App = () => {
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
-    <span className={["pgr-citizen-wrapper", "noc-pages-citizen-index--style-5"].filter(Boolean).join(" ")} >
+    <span className={["pgr-citizen-wrapper", "noc-pages-citizen-index--style-5"].filter(Boolean).join(" ")}>
       <Switch>
         <AppContainer>
           {!isResponse ? (
-            <div className={window.location.href.includes("application-overview") || isMobile ? "noc-citizen__breadcrumbs--offset" : "noc-citizen__breadcrumbs"}>
+            <div
+              className={
+                window.location.href.includes("application-overview") || isMobile ? "noc-citizen__breadcrumbs--offset" : "noc-citizen__breadcrumbs"
+              }
+            >
               <NOCBreadCrumbs location={location} cameFromOBPS={cameFromOBPS} />
             </div>
           ) : null}
           {/* {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""} */}
           <PrivateRoute path={`${path}/new-application`} component={NewNOCApplication} />
           <PrivateRoute path={`${path}/response/:id`} component={NOCResponseCitizen} />
-          <PrivateRoute path={`${path}/my-application`} component={NOCCitizenMyApplications} />
+          {/* <PrivateRoute path={`${path}/my-application`} component={NOCCitizenMyApplications} /> */}
           <PrivateRoute path={`${path}/my-application`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/noc-my-application`} component={(props) => <Inbox {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/edit-application/:nocid`} component={NewNOCEditApplication} />

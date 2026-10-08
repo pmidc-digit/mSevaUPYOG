@@ -892,6 +892,14 @@ public class WaterServiceImpl implements WaterService {
 				if (!waterConnection.getOldApplication()
 						&& !(waterConnection.getApplicationNo().equalsIgnoreCase(currentModifiedApplicationNo))) {
 					waterConnection.setOldApplication(Boolean.TRUE);
+					
+					/* 
+					 *Connectionholders status set to inactive of old 
+					 */
+					if (!CollectionUtils.isEmpty(waterConnection.getConnectionHolders())) {
+						waterConnection.getConnectionHolders().forEach(holder -> holder.setStatus(Status.INACTIVE));
+					}
+					
 					waterConnection = encryptConnectionDetails(waterConnection);
 					WaterConnectionRequest previousWaterConnectionRequest = WaterConnectionRequest.builder()
 							.requestInfo(waterConnectionRequest.getRequestInfo()).waterConnection(waterConnection)

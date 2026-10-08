@@ -200,6 +200,13 @@ public class DgrIntegration {
                             auditDetails.getCreatedTime());
                     return;
                 }
+
+                // Safeguard 3: Hard-code rule: Never push complaints belonging to test tenant (pb.testing)
+                String tenant = serviceReqRequest.getServices().get(0).getTenantId();
+                if (tenant != null && org.egov.pgr.utils.PGRConstants.TEST_TENANT.equalsIgnoreCase(tenant.trim())) {
+                    log.info("Complaint belongs to test tenant [{}]. Skipping push to DGR.", tenant);
+                    return;
+                }
             }
 
             Map<String, Object> reqInfoMap = (Map<String, Object>) record.get("RequestInfo");
@@ -369,6 +376,14 @@ public class DgrIntegration {
        ========================= */
     public String createGrievance(ServiceRequest serviceReqRequest, String bearerToken, UserResponse userResponse) {
         try {
+            if (serviceReqRequest.getServices() != null && !serviceReqRequest.getServices().isEmpty()) {
+                String reqTenantId = serviceReqRequest.getServices().get(0).getTenantId();
+                if (reqTenantId != null && org.egov.pgr.utils.PGRConstants.TEST_TENANT.equalsIgnoreCase(reqTenantId.trim())) {
+                    log.info("Complaint belongs to test tenant [{}]. Skipping CreateGrievance call to DGR.", reqTenantId);
+                    return "SKIPPED_TEST_TENANT";
+                }
+            }
+
             RestTemplate restTemplate = createRestTemplate(10000, 60000);  // CreateGrievance API: 60s
             String url = CREATE_GRIEVANCE_URL;
 

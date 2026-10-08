@@ -12,6 +12,7 @@ export const NOCFeeTable = ({
   handleRemarkChange,
   onAdjustedAmountBlur,
   feeHistory,
+  enabledEmployee,
   t,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
@@ -27,7 +28,7 @@ export const NOCFeeTable = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  console.log('feeHistory', feeHistory)
+  console.log("feeHistory", feeHistory);
 
   const columns = [
     {
@@ -45,14 +46,8 @@ export const NOCFeeTable = ({
         if (row.taxHeadCode === "NOC_TOTAL") {
           return (
             <div>
-              <strong className="noc-page-components-nocfee-table--style-1">
-                ₹ {row.grandTotal.toLocaleString("en-IN")}
-              </strong>
-              <div
-                className="noc-page-components-nocfee-table--style-2"
-              >
-               {amountToWords(row.grandTotal)} only
-              </div>
+              <strong className="noc-page-components-nocfee-table--style-1">₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
+              <div className="noc-page-components-nocfee-table--style-2">{amountToWords(row.grandTotal)} only</div>
             </div>
           );
         }
@@ -73,7 +68,7 @@ export const NOCFeeTable = ({
               }
               handleAdjustedAmountChange(row.index, val);
             }}
-            disable={disable}
+            disable={disable || enabledEmployee}
             step={1}
             onBlur={onAdjustedAmountBlur}
           />
@@ -92,19 +87,15 @@ export const NOCFeeTable = ({
 
         if (disable) {
           return (
-            <div>
-              {feeData[row.index]?.remark || <TextArea placeholder="Enter remarks" disabled={true} className="custom-fee-table-textarea" />}
-            </div>
+            <div>{feeData[row.index]?.remark || <TextArea placeholder="Enter remarks" disabled={true} className="custom-fee-table-textarea" />}</div>
           );
         }
 
         return (
           <TextArea
             value={feeData[row.index]?.remark || ""}
-            onChange={(e) =>
-              handleRemarkChange(row.index, e.target.value, row.amount)
-            }
-            disabled={false}
+            onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
+            disabled={enabledEmployee}
             className="custom-fee-table-textarea"
             placeholder="Enter remarks..."
           />
@@ -124,15 +115,12 @@ export const NOCFeeTable = ({
 
     const feeTypes = Object.keys(feeHistory);
     // Find the maximum number of history entries across all fee types
-    const maxHistoryLength = Math.max(...feeTypes.map(ft => feeHistory[ft]?.length || 0));
+    const maxHistoryLength = Math.max(...feeTypes.map((ft) => feeHistory[ft]?.length || 0));
     //style removed from toggle button to bring it closer to feehistory label as per feedback
     return (
       <div className="custom-fix-fee-history-wrapper">
         {/* Toggle Header */}
-        <div
-          className="custom-fix-fee-history-toggle"
-          onClick={() => setShowHistory(!showHistory)}
-        >
+        <div className="custom-fix-fee-history-toggle" onClick={() => setShowHistory(!showHistory)}>
           <span>{t("BPA_FEE_HISTORY_LABEL")}</span>
           <span className="custom-fix-fee-history-toggle-icon">{showHistory ? "▲" : "▼"}</span>
         </div>
@@ -160,7 +148,9 @@ export const NOCFeeTable = ({
                       <td className="custom-fix-fee-history-table-cell-label">{t("BPA_FEE2_LABEL")}</td>
                       {feeTypes.map((feeType) => (
                         <td key={`${feeType}-fee-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
-                          {feeHistory[feeType]?.[entryIndex] && feeHistory[feeType][entryIndex].estimateAmount != null && feeHistory[feeType][entryIndex].estimateAmount !== ""
+                          {feeHistory[feeType]?.[entryIndex] &&
+                          feeHistory[feeType][entryIndex].estimateAmount != null &&
+                          feeHistory[feeType][entryIndex].estimateAmount !== ""
                             ? `₹ ${feeHistory[feeType][entryIndex].estimateAmount}`
                             : ""}
                         </td>
@@ -177,9 +167,24 @@ export const NOCFeeTable = ({
                     </tr>
                     {/* Updated By Row */}
                     <tr>
-                      <td className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator" : "custom-fix-fee-history-table-cell-separator-last"}>{t("BPA_UPDATED_BY_LABEL")}</td>
+                      <td
+                        className={
+                          entryIndex < maxHistoryLength - 1
+                            ? "custom-fix-fee-history-table-cell-separator"
+                            : "custom-fix-fee-history-table-cell-separator-last"
+                        }
+                      >
+                        {t("BPA_UPDATED_BY_LABEL")}
+                      </td>
                       {feeTypes.map((feeType) => (
-                        <td key={`${feeType}-updatedby-${entryIndex}`} className={entryIndex < maxHistoryLength - 1 ? "custom-fix-fee-history-table-cell-separator-value" : "custom-fix-fee-history-table-cell-separator-value-last"}>
+                        <td
+                          key={`${feeType}-updatedby-${entryIndex}`}
+                          className={
+                            entryIndex < maxHistoryLength - 1
+                              ? "custom-fix-fee-history-table-cell-separator-value"
+                              : "custom-fix-fee-history-table-cell-separator-value-last"
+                          }
+                        >
                           {feeHistory[feeType]?.[entryIndex]?.who || t("UNKNOWN")}
                         </td>
                       ))}
@@ -311,7 +316,9 @@ export const NOCFeeTable = ({
     );
   };
 
-  return isMobile ? renderMobileCardView() : (
+  return isMobile ? (
+    renderMobileCardView()
+  ) : (
     <div>
       <CustomFeeTable
         data={feeDataWithTotal}
@@ -325,4 +332,5 @@ export const NOCFeeTable = ({
       />
       {renderCustomHistory()}
     </div>
-  );}
+  );
+};

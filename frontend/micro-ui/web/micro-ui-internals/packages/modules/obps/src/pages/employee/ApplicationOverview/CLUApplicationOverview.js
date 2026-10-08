@@ -138,8 +138,8 @@ const CLUEmployeeApplicationDetails = () => {
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [distances, setDistances] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
-    const [showPdfModal, setShowPdfModal] = useState(false);
-  const { isLoading, data, refetch } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const { isLoading, data, refetch } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
@@ -263,7 +263,7 @@ const CLUEmployeeApplicationDetails = () => {
         tenantId: reciept_data2?.Payments[0]?.tenantId,
         payments: reciept_data2?.Payments[0],
         pdfkey: "clu-sanctionletter",
-        forcePnLocale: true
+        forcePnLocale: true,
       });
 
       if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
@@ -313,20 +313,17 @@ const CLUEmployeeApplicationDetails = () => {
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
-      const hasConditionText =
-      typeof conditionText === "string" && conditionText?.trim().length > 0;
+      const hasConditionText = typeof conditionText === "string" && conditionText?.trim().length > 0;
 
       const conditionData = {
-        conditionLine: hasConditionText
-          ? "The above approval is subjected to the following conditions:"
-          : " ",
+        conditionLine: hasConditionText ? "The above approval is subjected to the following conditions:" : " ",
         conditionText: hasConditionText ? conditionText : " ",
       };
       const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
       if (!fileStoreId) {
-        if(forcePnLocale){
+        if (forcePnLocale) {
           Digit.StoreData.getCurrentLanguage = () => "pn_IN";
         }
         const response = await Digit.PaymentService.generatePdf(
@@ -337,7 +334,7 @@ const CLUEmployeeApplicationDetails = () => {
                 ...payments,
                 Clu: application,
                 ApproverComment: finalComment,
-                conditionData:conditionData,
+                conditionData: conditionData,
                 usage,
                 amountinwords,
                 approvalDate: approvalDate,
@@ -355,7 +352,7 @@ const CLUEmployeeApplicationDetails = () => {
       console.error("Sanction Letter download error:", error);
     } finally {
       setLoader(false);
-      if(forcePnLocale){
+      if (forcePnLocale) {
         Digit.StoreData.getCurrentLanguage = prevGetLang;
       }
     }
@@ -366,7 +363,7 @@ const CLUEmployeeApplicationDetails = () => {
         tenantId: reciept_data2?.Payments[0]?.tenantId,
         payments: reciept_data2?.Payments[0],
         pdfkey: "clu-sanctionletter",
-        forcePnLocale: true
+        forcePnLocale: true,
       });
 
       // Update application with sanctionLetterFilestoreId here
@@ -387,7 +384,7 @@ const CLUEmployeeApplicationDetails = () => {
       // refetch();
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${encodeURIComponent(id)}`;
-      const authToken = localStorage.getItem('token');
+      const authToken = localStorage.getItem("token");
       // Trigger eSign
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
@@ -432,7 +429,11 @@ const CLUEmployeeApplicationDetails = () => {
       accessor: "fileStoreId",
       Cell: ({ value }) => {
         return value ? (
-          <LinkButton className="obps-pages-employee-application-overview-cluapplication-overview--style-3" label={t("View")} onClick={() => routeToImage(value)} />
+          <LinkButton
+            className="obps-pages-employee-application-overview-cluapplication-overview--style-3"
+            label={t("View")}
+            onClick={() => routeToImage(value)}
+          />
         ) : (
           t("CS_NA")
         );
@@ -957,14 +958,16 @@ const CLUEmployeeApplicationDetails = () => {
         doc?.documentType?.includes("Owner Id") ||
         doc?.documentType?.includes("Owner Photo")
       )
-  )?.filter((doc) => doc?.documentAttachment)?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  )
+    ?.filter((doc) => doc?.documentAttachment)
+    ?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
   React.useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth" // use "auto" for instant scroll
-      });
-  }, [])
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // use "auto" for instant scroll
+    });
+  }, []);
 
   useEffect(() => {
     const fetchDistances = async () => {
@@ -1201,7 +1204,9 @@ const CLUEmployeeApplicationDetails = () => {
           </StatusTable>
           {geoLocations?.length > 0 && (
             <React.Fragment>
-              <CardSectionHeader className="obps-pages-employee-application-overview-cluapplication-overview--style-9">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CardSectionHeader className="obps-pages-employee-application-overview-cluapplication-overview--style-9">
+                {t("SITE_INSPECTION_IMAGES_LOCATIONS")}
+              </CardSectionHeader>
               <CustomLocationSearch position={geoLocations} />
             </React.Fragment>
           )}
@@ -1221,11 +1226,7 @@ const CLUEmployeeApplicationDetails = () => {
       {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
-          <CardSubHeader>
-            {empName
-              ? `${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}`
-              : t("BPA_FI_REPORT")}
-          </CardSubHeader>
+            <CardSubHeader>{empName ? `${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}` : t("BPA_FI_REPORT")}</CardSubHeader>
             <InspectionReportDisplay fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending} />
           </Card>
         )}
@@ -1317,6 +1318,7 @@ const CLUEmployeeApplicationDetails = () => {
               setFeeAdjustments={setFeeAdjustments}
               disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
               applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
+              actions={actions}
             />
           )}
         </div>
@@ -1394,7 +1396,12 @@ const CLUEmployeeApplicationDetails = () => {
         <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />}>
           {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
           {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-            <a className="obps-pages-employee-application-overview-cluapplication-overview--style-12" href={imageUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              className="obps-pages-employee-application-overview-cluapplication-overview--style-12"
+              href={imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {t("CS_VIEW_DOCUMENT")}
             </a>
           ) : (
@@ -1403,7 +1410,9 @@ const CLUEmployeeApplicationDetails = () => {
         </Modal>
       )}
 
-      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} tenantId={tenantId} />}
+      {showZoneModal && (
+        <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} tenantId={tenantId} />
+      )}
 
       {showPdfModal && (
         <PdfPreviewModal

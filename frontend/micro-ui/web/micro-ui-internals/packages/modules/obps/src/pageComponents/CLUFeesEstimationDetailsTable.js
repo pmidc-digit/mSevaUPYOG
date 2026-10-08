@@ -5,7 +5,7 @@ import _ from "lodash";
 import { CLUFeeTable } from "./CLUFeeTable";
 import { buildFeeHistoryByTax } from "../utils";
 
-const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFeeAdjustments, disable, applicationStatus }) => {
+const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFeeAdjustments, disable, applicationStatus, actions = [] }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const closeToast = () => setShowToast(null);
@@ -19,6 +19,10 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
       originalRemark: apiTax?.remarks || savedCalc?.remarks || "",
     };
   };
+
+  const isEmployee = window.location.href.includes("employee");
+
+  const enabledEmployee = isEmployee ? actions?.length > 0 : true;
 
   const handleAdjustedAmountChange = (index, value) => {
     const normalizedValue = value === "" ? null : Number(value);
@@ -260,6 +264,7 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
             t={t}
             onAdjustedAmountBlur={onAdjustedAmountBlur}
             feeHistory={feeHistory}
+            enabledEmployee
           />
         </div>
       )}

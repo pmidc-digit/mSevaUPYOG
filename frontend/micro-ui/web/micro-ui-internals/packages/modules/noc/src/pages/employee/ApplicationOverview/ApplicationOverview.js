@@ -69,12 +69,7 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
 
   if (!url) return <span>{t("CS_NA") || "NA"}</span>;
 
-  return (
-    <LinkButton
-      label={t("View") || "View"}
-      onClick={() => window.open(url, "_blank")}
-    />
-  );
+  return <LinkButton label={t("View") || "View"} onClick={() => window.open(url, "_blank")} />;
 };
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -155,8 +150,8 @@ const NOCEmployeeApplicationOverview = () => {
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
       ? {
-        documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
-      }
+          documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
+        }
       : {}
   );
   const [timeObj, setTimeObj] = useState(null);
@@ -337,9 +332,9 @@ const NOCEmployeeApplicationOverview = () => {
 
     return conditionText
       ? {
-        ConditionLine: "The above approval is subjected to the following conditions:\n",
-        ConditionText: conditionText,
-      }
+          ConditionLine: "The above approval is subjected to the following conditions:\n",
+          ConditionText: conditionText,
+        }
       : "";
   }, [workflowDetails]);
 
@@ -475,7 +470,7 @@ const NOCEmployeeApplicationOverview = () => {
       // refetch();
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/noc/esign/complete/${id}`;
-      const authToken = localStorage.getItem('token');
+      const authToken = localStorage.getItem("token");
       // Trigger eSign
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
@@ -675,7 +670,7 @@ const NOCEmployeeApplicationOverview = () => {
       const endTime = Date.now();
 
       if (submittedOn !== null) {
-        setAppDate(Number(submittedOn))
+        setAppDate(Number(submittedOn));
       }
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
@@ -1162,13 +1157,15 @@ const NOCEmployeeApplicationOverview = () => {
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
   const isFirm = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
 
-  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
+    .filter((v, i, arr) => v && arr.indexOf(v) === i)
+    .join(", ");
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   return (
     <div className={"employee-main-application-details"}>
-      <div className="cardHeaderWithOptions noc-pages-employee-application-overview-application-overview--style-3" >
+      <div className="cardHeaderWithOptions noc-pages-employee-application-overview-application-overview--style-3">
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}
@@ -1363,9 +1360,7 @@ const NOCEmployeeApplicationOverview = () => {
                     {detail?.existingNocDocument && (
                       <Row
                         label={t("NOC_UPLOAD_DOCUMENT_LABEL")}
-                        text={
-                          <DocumentLink fileStoreId={detail?.existingNocDocument} stateCode={Digit.ULBService.getStateId()} t={t} />
-                        }
+                        text={<DocumentLink fileStoreId={detail?.existingNocDocument} stateCode={Digit.ULBService.getStateId()} t={t} />}
                       />
                     )}
                   </React.Fragment>
@@ -1386,9 +1381,7 @@ const NOCEmployeeApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable
-          className="noc-pages-employee-application-overview-application-overview--style-9"
-        >
+        <StatusTable className="noc-pages-employee-application-overview-application-overview--style-9">
           {sitePhotos?.length > 0 &&
             [...sitePhotos].map((doc) => (
               <NocSitePhotographs
@@ -1418,9 +1411,7 @@ const NOCEmployeeApplicationOverview = () => {
       {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
         <Card>
           <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
-          <StatusTable
-            className="noc-pages-employee-application-overview-application-overview--style-10"
-          >
+          <StatusTable className="noc-pages-employee-application-overview-application-overview--style-10">
             {documentData?.length > 0 &&
               documentData.map((doc) => (
                 <NocUploadedDocument
@@ -1436,7 +1427,9 @@ const NOCEmployeeApplicationOverview = () => {
 
           {geoLocations?.length > 0 && (
             <>
-              <CardSectionHeader className="noc-pages-employee-application-overview-application-overview--style-11">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CardSectionHeader className="noc-pages-employee-application-overview-application-overview--style-11">
+                {t("SITE_INSPECTION_IMAGES_LOCATIONS")}
+              </CardSectionHeader>
               <CustomLocationSearch position={geoLocations} />
             </>
           )}
@@ -1447,8 +1440,9 @@ const NOCEmployeeApplicationOverview = () => {
         <Card>
           <CardSubHeader>
             {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-              ? `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-              }`
+              ? `${t("BPA_FI_REPORT")} - Verified by ${
+                  InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                }`
               : t("BPA_FI_REPORT")}
           </CardSubHeader>
 
@@ -1473,8 +1467,9 @@ const NOCEmployeeApplicationOverview = () => {
           <Card>
             <CardSubHeader>
               {InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                ? `${t("BPA_FI_REPORT")} - Verified by ${InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
-                }`
+                ? `${t("BPA_FI_REPORT")} - Verified by ${
+                    InspectionReportVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.InspectionReportVerifier
+                  }`
                 : t("BPA_FI_REPORT")}
             </CardSubHeader>
 
@@ -1499,14 +1494,15 @@ const NOCEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>
           {documentVerifier || applicationDetails?.documentVerifier || applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
-            ? `Document Checklist Verified by - ${documentVerifier ||
-            applicationDetails?.documentVerifier ||
-            applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
-            }`
+            ? `Document Checklist Verified by - ${
+                documentVerifier ||
+                applicationDetails?.documentVerifier ||
+                applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.documentVerifier
+              }`
             : "Documents Uploaded"}
         </CardSubHeader>
         {applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" ||
-          applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" ? (
+        applicationDetails?.Noc?.[0]?.applicationStatus === "INSPECTION_REPORT_PENDING" ? (
           <StatusTable>{remainingDocs?.length > 0 && <NOCDocumentTableView documents={remainingDocs} />}</StatusTable>
         ) : (
           <>
@@ -1537,6 +1533,7 @@ const NOCEmployeeApplicationOverview = () => {
             setFeeAdjustments={setFeeAdjustments}
             disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
+            actions={actions}
           />
         )}
       </Card>
@@ -1558,7 +1555,7 @@ const NOCEmployeeApplicationOverview = () => {
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}
-            // style={MenuStyle}
+              // style={MenuStyle}
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
@@ -1569,7 +1566,12 @@ const NOCEmployeeApplicationOverview = () => {
         <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />}>
           {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
           {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-            <a className="noc-pages-employee-application-overview-application-overview--style-12" href={imageUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              className="noc-pages-employee-application-overview-application-overview--style-12"
+              href={imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {t("CS_VIEW_DOCUMENT")}
             </a>
           ) : (

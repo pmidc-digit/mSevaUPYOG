@@ -7,7 +7,14 @@ import { NOCFeeTable } from "./NOCFeeTable";
 import { buildFeeHistoryByTax } from "../utils";
 import { formatDuration } from "../utils";
 
-const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustments = () => {}, disable = false, applicationStatus = null }) => {
+const NOCFeeEstimationDetails = ({
+  formData,
+  feeAdjustments = [],
+  setFeeAdjustments = () => {},
+  disable = false,
+  applicationStatus = null,
+  actions = [],
+}) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const closeToast = () => setShowToast(null);
@@ -30,6 +37,9 @@ const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustme
       originalRemark: (apiTax && apiTax.remarks) || (savedCalc && savedCalc.remarks) || "",
     };
   };
+  const isEmployee = window.location.href.includes("employee");
+
+  const enabledEmployee = isEmployee ? actions?.length > 0 : true;
 
   const handleAdjustedAmountChange = (index, value) => {
     const normalizedValue = value === "" ? 0 : Number(value);
@@ -305,6 +315,7 @@ const NOCFeeEstimationDetails = ({ formData, feeAdjustments = [], setFeeAdjustme
             onAdjustedAmountBlur={onAdjustedAmountBlur}
             feeHistory={feeHistory}
             timeObj={timeObj}
+            enabledEmployee
           />
           {showToast && (
             <Toast

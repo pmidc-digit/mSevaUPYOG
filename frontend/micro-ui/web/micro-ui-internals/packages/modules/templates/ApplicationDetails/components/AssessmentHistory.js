@@ -4,7 +4,6 @@ import { useHistory } from 'react-router-dom';
 const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatus, applicationData }) => {
     const history = useHistory();
     const isEmployee = window.location.href.includes("employee");
-    const isEmployee = window.location.href.includes("employee");
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleAccordion = () => {

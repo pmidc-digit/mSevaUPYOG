@@ -102,7 +102,7 @@ public class EmployeeQueryBuilder {
 	    }
 	    
 	    if (criteria.getRoles() != null && !criteria.getRoles().isEmpty()) {
-	        builder.append(" AND roles IN (").append(createQuery(criteria.getRoles())).append(") ");
+	        builder.append(" AND role_code IN (").append(createQuery(criteria.getRoles())).append(") ");
 	        addToPreparedStatement(preparedStmtList, criteria.getRoles());
 	    }
 
@@ -217,7 +217,7 @@ public class EmployeeQueryBuilder {
 		    }
 		    
 		    if(!CollectionUtils.isEmpty(criteria.getRoles())){
-		        builder.append(" and obpas.roles IN (").append(createQuery(criteria.getRoles())).append(")");
+		        builder.append(" and obpas.role_code IN (").append(createQuery(criteria.getRoles())).append(")");
 		        addToPreparedStatement(preparedStmtList, criteria.getRoles());
 		    }
 	}

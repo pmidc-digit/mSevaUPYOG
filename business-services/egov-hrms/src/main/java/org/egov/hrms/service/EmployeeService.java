@@ -157,7 +157,19 @@ public class EmployeeService {
 
 	    // 4️⃣ Push to Kafka
 	    String key = employeeRequest.getEmployees().get(0).getUuid();
-	    hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), key, employeeRequest);
+	    
+	    com.fasterxml.jackson.databind.node.ObjectNode kafkaPayload = objectMapper.valueToTree(employeeRequest);
+	    for (com.fasterxml.jackson.databind.JsonNode empNode : kafkaPayload.path("Employees")) {
+	        if (empNode.has("roles") && empNode.get("roles").isArray()) {
+	            List<String> roleList = new ArrayList<>();
+	            for (com.fasterxml.jackson.databind.JsonNode roleNode : empNode.get("roles")) {
+	                roleList.add(roleNode.asText());
+	            }
+	            ((com.fasterxml.jackson.databind.node.ObjectNode) empNode).put("role_code", String.join(",", roleList));
+	        }
+	    }
+	    
+	    hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), key, kafkaPayload);
 
 	    // 5️⃣ Generate response
 	    return generateObpassResponse(employeeRequest);

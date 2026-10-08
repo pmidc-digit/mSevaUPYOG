@@ -775,6 +775,12 @@ public SewerageConnectionRequest updateConnectionStatusBasedOnActionDisconnectio
 			for(SewerageConnection sewerageConnection:sewerageConnectionList){
 				if(!sewerageConnection.getOldApplication() && !(sewerageConnection.getApplicationNo().equalsIgnoreCase(currentModifiedApplicationNo))){
 					sewerageConnection.setOldApplication(Boolean.TRUE);
+					if (sewerageConnection.getConnectionHolders() != null) {
+						for (OwnerInfo holder : sewerageConnection.getConnectionHolders()) {
+							holder.setStatus(Status.INACTIVE);
+						}
+					}
+					
 					sewerageConnection = encryptConnectionDetails(sewerageConnection);
 					SewerageConnectionRequest previousSewerageConnectionRequest = SewerageConnectionRequest.builder().requestInfo(sewerageConnectionRequest.getRequestInfo())
 							.sewerageConnection(sewerageConnection).build();

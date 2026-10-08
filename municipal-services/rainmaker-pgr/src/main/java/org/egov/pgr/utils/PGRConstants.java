@@ -137,6 +137,11 @@ public class PGRConstants {
 	    public static final Long DGR_CUTOFF_DATE_EPOCH = 1767724200000L;
 
 	    // =========================
+	    // Test tenant (excluded from DGR)
+	    // =========================
+	    public static final String TEST_TENANT = "pb.testing";
+
+	    // =========================
 	    // Application info
 	    // =========================
 	    public static final String DEPARTMENT_ID = "178";

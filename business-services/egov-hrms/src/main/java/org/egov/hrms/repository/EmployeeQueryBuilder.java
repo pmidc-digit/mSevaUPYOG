@@ -36,12 +36,12 @@ public class EmployeeQueryBuilder {
 
 	    StringBuilder builder;
 
-	    // Check if category, subcategory, zone, assigned_tenantid, or modulename are present
 	    boolean hasCatSubZone = (criteria.getCategories() != null && !criteria.getCategories().isEmpty())
 	                            || (criteria.getSubcategories() != null && !criteria.getSubcategories().isEmpty())
 	                            || (criteria.getZones() != null && !criteria.getZones().isEmpty())
 	                            || (criteria.getAssignedtenattids() != null && !criteria.getAssignedtenattids().isEmpty())
-	                            || (criteria.getModulenames() != null && !criteria.getModulenames().isEmpty());
+	                            || (criteria.getModulenames() != null && !criteria.getModulenames().isEmpty())
+	                            || (criteria.getRoles() != null && !criteria.getRoles().isEmpty());
 	                            
 
 	    if (hasCatSubZone) {
@@ -99,6 +99,11 @@ public class EmployeeQueryBuilder {
 	    if (criteria.getModulename() != null && !criteria.getModulename().isEmpty()) {
 	        builder.append(" AND modulename = ? ");
 	        preparedStmtList.add(criteria.getModulename());
+	    }
+	    
+	    if (criteria.getRoles() != null && !criteria.getRoles().isEmpty()) {
+	        builder.append(" AND roles IN (").append(createQuery(criteria.getRoles())).append(") ");
+	        addToPreparedStatement(preparedStmtList, criteria.getRoles());
 	    }
 
 	    return builder.toString();
@@ -209,6 +214,11 @@ public class EmployeeQueryBuilder {
 		    if(!CollectionUtils.isEmpty(criteria.getModulenames())){
 		        builder.append(" and obpas.modulename IN (").append(createQuery(criteria.getModulenames())).append(")");
 		        addToPreparedStatement(preparedStmtList, criteria.getModulenames());
+		    }
+		    
+		    if(!CollectionUtils.isEmpty(criteria.getRoles())){
+		        builder.append(" and obpas.roles IN (").append(createQuery(criteria.getRoles())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getRoles());
 		    }
 	}
 	

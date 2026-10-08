@@ -44,6 +44,10 @@ public class DgrRetryRepository {
         if (tenantId != null && !tenantId.trim().isEmpty()) {
             query.append(" AND tenantid = ? ");
             params.add(tenantId.trim());
+        } else {
+            // Hard-code rule: Never fetch complaints belonging to test tenant (pb.testing)
+            query.append(" AND tenantid != ? ");
+            params.add(org.egov.pgr.utils.PGRConstants.TEST_TENANT);
         }
 
         // Hard-code rule: Never fetch/process complaints created before 7th Jan 2026 00:00:00 IST (1767724200000L)

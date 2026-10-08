@@ -45,7 +45,7 @@ const PropertyDetails = () => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   sessionStorage.setItem("propertyIdinPropertyDetail", applicationNumber);
-  
+  const isEmployee = window.location.href.includes("employee");
   // const isMobile = window.Digit.Utils.browser.isMobile();
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 780);
 
@@ -210,7 +210,7 @@ const PropertyDetails = () => {
           console.log("holla")
           e.additionalDetails.owners.map((owner, ind) => {
             owner.values.map((value) => {
-              if (value.title == "PT_OWNERSHIP_INFO_MOBILE_NO") {
+              if (value.title == "PT_OWNERSHIP_INFO_MOBILE_NO" && isEmployee) {
                 value.textStyle = { display: "flex", wordBreak:"revert" };
                 value.caption = (
                   <span
@@ -316,26 +316,6 @@ const PropertyDetails = () => {
               {t("PT_VIEW_PAYMENT")}
             </LinkLabel>
           </div>
-          <LinkLabel
-            onClick={() => {
-              const element = document.getElementById("payment-history");
-              if (element) {
-                const header = element.querySelector(".accordion-header");
-                const body = element.querySelector(".accordion-body");
-                if (header && !body) {
-                  header.click();
-                }
-                setTimeout(() => {
-                  element.scrollIntoView({ behavior: "smooth" });
-                }, 100);
-              } else {
-                history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${applicationNumber}`, state: { tenantId: appDetailsToShow?.applicationData?.tenantId } });
-              }
-            }}
-            style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
-          >
-            {t("PT_VIEW_PAYMENT")}
-          </LinkLabel>
           </>
         ),
         values: [

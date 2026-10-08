@@ -915,14 +915,10 @@ function ApplicationDetailsContent({
           applicationData={applicationData}
         />
       )}
-      {showHistory && <PaymentHistory payments={payments} />}
-      {showHistory &&
-        moduleCode !== "WS" &&
-        moduleCode !== "SW" &&
-        moduleCode !== "OBPS" &&
-        moduleCode !== "BPAStakeholder" &&
-        moduleCode !== "BPAREG" &&
-        moduleCode !== "TL" && <ApplicationHistory applicationData={applicationDetails?.applicationData} />}
+      {showHistory && <PaymentHistory payments={payments} assessmentData={filtered} applicationData={applicationData} />}
+      {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
+        <ApplicationHistory applicationData={applicationDetails?.applicationData} />
+      )}
       {isPTLocation && propertyDocuments.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (

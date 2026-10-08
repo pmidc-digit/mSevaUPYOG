@@ -12,6 +12,7 @@ export const NOCFeeTable = ({
   handleRemarkChange,
   onAdjustedAmountBlur,
   feeHistory,
+  enabledEmployee,
   t,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
@@ -27,7 +28,7 @@ export const NOCFeeTable = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-
+  console.log("feeHistory", feeHistory);
 
   const columns = [
     {
@@ -45,14 +46,8 @@ export const NOCFeeTable = ({
         if (row.taxHeadCode === "NOC_TOTAL") {
           return (
             <div>
-              <strong className="noc-page-components-nocfee-table--style-1">
-                ₹ {row.grandTotal.toLocaleString("en-IN")}
-              </strong>
-              <div
-                className="noc-page-components-nocfee-table--style-2"
-              >
-                {amountToWords(row.grandTotal)} only
-              </div>
+              <strong className="noc-page-components-nocfee-table--style-1">₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
+              <div className="noc-page-components-nocfee-table--style-2">{amountToWords(row.grandTotal)} only</div>
             </div>
           );
         }
@@ -61,7 +56,11 @@ export const NOCFeeTable = ({
             t={t}
             type="number"
             isMandatory={false}
-            value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount || row.amount || ""}
+            value={
+              feeData[row.index] && feeData[row.index].adjustedAmount === 0
+                ? ""
+                : (feeData[row.index] && feeData[row.index].adjustedAmount) || row.amount || ""
+            }
             onChange={(e) => {
               let val = e.target.value;
               if (val.length > 1 && val.startsWith("0")) {
@@ -69,7 +68,7 @@ export const NOCFeeTable = ({
               }
               handleAdjustedAmountChange(row.index, val);
             }}
-            disable={disable}
+            disable={disable || enabledEmployee}
             step={1}
             onBlur={onAdjustedAmountBlur}
           />
@@ -96,7 +95,7 @@ export const NOCFeeTable = ({
           <TextArea
             value={feeData[row.index]?.remark || ""}
             onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
-            disabled={false}
+            disabled={enabledEmployee}
             className="custom-fee-table-textarea"
             placeholder="Enter remarks..."
           />
@@ -149,7 +148,9 @@ export const NOCFeeTable = ({
                       <td className="custom-fix-fee-history-table-cell-label">{t("BPA_FEE2_LABEL")}</td>
                       {feeTypes.map((feeType) => (
                         <td key={`${feeType}-fee-${entryIndex}`} className="custom-fix-fee-history-table-cell-value">
-                          {feeHistory[feeType]?.[entryIndex] && feeHistory[feeType][entryIndex].estimateAmount != null && feeHistory[feeType][entryIndex].estimateAmount !== ""
+                          {feeHistory[feeType]?.[entryIndex] &&
+                          feeHistory[feeType][entryIndex].estimateAmount != null &&
+                          feeHistory[feeType][entryIndex].estimateAmount !== ""
                             ? `₹ ${feeHistory[feeType][entryIndex].estimateAmount}`
                             : ""}
                         </td>
@@ -217,7 +218,15 @@ export const NOCFeeTable = ({
                         t={t}
                         type="text"
                         isMandatory={false}
-                        value={feeData[row.index]?.adjustedAmount === 0 ? "" : feeData[row.index]?.adjustedAmount || row.amount || ""}
+                        value={
+                          feeData[row.index] && feeData[row.index].adjustedAmount === 0
+                            ? ""
+                            : feeData[row.index] && feeData[row.index].adjustedAmount !== null && feeData[row.index].adjustedAmount !== undefined
+                            ? feeData[row.index].adjustedAmount
+                            : row.amount !== null && row.amount !== undefined
+                            ? row.amount
+                            : ""
+                        }
                         onChange={(e) => {
                           let val = e.target.value;
                           if (/^\d*\.?\d*$/.test(val)) {

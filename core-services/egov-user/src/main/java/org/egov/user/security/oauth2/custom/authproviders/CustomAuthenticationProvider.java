@@ -59,6 +59,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${default.employee.password}")
     private String defaultEmployeePassword;
+<<<<<<< HEAD
+=======
+    
+    @Value("#{'${login.withpassword.usernames}'.split(',')}") 
+    private List<String> loginWithPasswordUsernames;
+>>>>>>> 34d9f47239 (update multiple user name list)
 
 	@Value("${login.withpassword.usernames}")
     private List<String> loginWithPasswordUsernames;

@@ -39,6 +39,9 @@ public class ObpasEmployeeSearchCriteria {
     @JsonAlias({"modulename", "moduleName"})
     private String modulename;
 
+    @JsonProperty("roles")
+    private List<String> roles;
+
     @JsonProperty("uuids")
     private List<String> uuids;   // optional filter
 

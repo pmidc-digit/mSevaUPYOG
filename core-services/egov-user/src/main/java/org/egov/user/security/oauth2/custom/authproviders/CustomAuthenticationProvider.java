@@ -10,6 +10,7 @@ import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.enums.UserType;
 import org.egov.user.domain.service.UserService;
 import org.egov.user.domain.service.utils.EncryptionDecryptionUtil;
+import org.egov.user.domain.service.utils.IpAddressUtil;
 import org.egov.user.web.contract.auth.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,10 +60,10 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${default.employee.password}")
     private String defaultEmployeePassword;
-
-	@Value("#{'${login.withpassword.usernames}'.split(',')}") 
+    
+    @Value("#{'${login.withpassword.usernames}'.split(',')}") 
     private List<String> loginWithPasswordUsernames;
-	
+
     @Autowired
     private HttpServletRequest request;
 
@@ -211,13 +212,13 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             );
         }
 
-        userService.handleFailedLogin(
+        long attempLeftCount = userService.handleFailedLogin(
                 user,
-                request.getHeader(IP_HEADER_NAME),
+                IpAddressUtil.getClientIp(request),
                 requestInfo
         );
 
-        throw new OAuth2Exception("Invalid login credentials");
+        throw new OAuth2Exception("Invalid login credentials. You have " + attempLeftCount + " login attempts left.");
     }
 
     private boolean isPasswordMatch(Boolean isOtpBased,
@@ -288,7 +289,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         return authUser;
     }
-
     private Set<Role> toAuthRole(
             Set<org.egov.user.domain.model.Role> domainRoles) {
 

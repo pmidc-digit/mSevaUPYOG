@@ -18,6 +18,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+import org.egov.user.domain.service.utils.IpAddressUtil;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 
 
 @Service
+@Slf4j
 public class CustomTokenEnhancer extends TokenEnhancerChain {
 	 private UserService userService;
 	 org.egov.user.domain.model.User user;
@@ -85,17 +88,7 @@ public class CustomTokenEnhancer extends TokenEnhancerChain {
 //	      }
 
 	      // ✅ Save session
-	      String ipAddress = "";
-	      ServletRequestAttributes attr =
-	              (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-
-	      if (attr != null) {
-	          HttpServletRequest request = attr.getRequest();
-	          ipAddress = request.getHeader("X-Forwarded-For");
-	          if (ipAddress == null || ipAddress.isEmpty()) {
-	              ipAddress = request.getRemoteAddr();
-	          }
-	      }
+	      String ipAddress = IpAddressUtil.getClientIp();
 
 	      ZoneId IST = ZoneId.of("Asia/Kolkata");
 	      ZonedDateTime nowIST = ZonedDateTime.now(IST);
@@ -112,7 +105,11 @@ public class CustomTokenEnhancer extends TokenEnhancerChain {
 	              .isautologout(false)
 	              .build();
 
-	      userRepository.insertUserSession(session);
+	      try {
+	          userRepository.insertUserSession(session);
+	      } catch (Exception e) {
+	          log.error("Failed to insert user session for user {}: {}", su.getUsername(), e.getMessage());
+	      }
 
 	      return enhancedToken;   // ✅ RETURN THIS
 	  }

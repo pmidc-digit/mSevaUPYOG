@@ -18,6 +18,7 @@ import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.UserSearchCriteria;
 import org.egov.user.domain.model.enums.UserType;
 import org.egov.user.domain.service.utils.EncryptionDecryptionUtil;
+import org.egov.user.domain.service.utils.IpAddressUtil;
 import org.egov.user.domain.service.utils.NotificationUtil;
 import org.egov.user.persistence.dto.FailedLoginAttempt;
 import org.egov.user.persistence.repository.FileStoreRepository;
@@ -39,6 +40,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.*;
@@ -303,6 +308,22 @@ public class UserService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.set("Authorization", "Basic ZWdvdi11c2VyLWNsaWVudDplZ292LXVzZXItc2VjcmV0");
+
+            ServletRequestAttributes attr =
+                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attr != null) {
+                HttpServletRequest currentRequest = attr.getRequest();
+                String clientIp = IpAddressUtil.getClientIp(currentRequest);
+                if (!isEmpty(clientIp)) {
+                    headers.set("X-Forwarded-For", clientIp);
+                    headers.set("x-real-ip", clientIp);
+                }
+                String userAgent = currentRequest.getHeader("User-Agent");
+                if (!isEmpty(userAgent)) {
+                    headers.set("User-Agent", userAgent);
+                }
+            }
+
             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
             map.add("username", user.getUserName());
             if (!isEmpty(password))
@@ -591,6 +612,11 @@ public class UserService {
     public long handleFailedLogin(User user, String ipAddress, RequestInfo requestInfo) {
     	int attempCount = 0;
         if (!Objects.isNull(user.getUuid())) {
+            if (isEmpty(ipAddress) || "unknown".equalsIgnoreCase(ipAddress)) {
+                ipAddress = IpAddressUtil.getClientIp();
+            } else {
+                ipAddress = IpAddressUtil.sanitizeIp(ipAddress);
+            }
             List<FailedLoginAttempt> failedLoginAttempts = userRepository.fetchFailedAttemptsByUserAndTime(
                     user.getUuid(),
                     System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(maxInvalidLoginAttemptsPeriod));

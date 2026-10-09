@@ -31,6 +31,7 @@ import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.enums.UserType;
 import org.egov.user.domain.service.UserService;
 import org.egov.user.domain.service.utils.EncryptionDecryptionUtil;
+import org.egov.user.domain.service.utils.IpAddressUtil;
 import org.egov.user.web.contract.auth.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -180,9 +181,8 @@ public class EsewaAuthenticationProvider implements CustomThirdPartyAuthenticati
 			userService.resetFailedLoginAttempts(user);
 			return new UsernamePasswordAuthenticationToken(secureUser, password, grantedAuths);
 		} else {
-			// Handle failed login attempt
 			// Fetch Real IP after being forwarded by reverse proxy
-			userService.handleFailedLogin(user, request.getHeader(IP_HEADER_NAME), requestInfo);
+			userService.handleFailedLogin(user, IpAddressUtil.getClientIp(request), requestInfo);
 
 			throw new OAuth2Exception("Invalid login credentials");
 		}

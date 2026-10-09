@@ -10,6 +10,7 @@ import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.enums.UserType;
 import org.egov.user.domain.service.UserService;
 import org.egov.user.domain.service.utils.EncryptionDecryptionUtil;
+import org.egov.user.domain.service.utils.IpAddressUtil;
 import org.egov.user.web.contract.auth.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -213,7 +214,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         long attempLeftCount = userService.handleFailedLogin(
                 user,
-                request.getHeader(IP_HEADER_NAME),
+                IpAddressUtil.getClientIp(request),
                 requestInfo
         );
 

@@ -192,7 +192,8 @@ public class InboxService {
                     "INPROGRESS",
                     "PENDING_APPL_FEE_PAYMENT",
                     "PROFESSIONAL_ACTION_REQUIRED",
-                    "BLOCKED"
+                    "BLOCKED",
+                    "PENDING_SANC_FEE_PAYMENT"
             )
     );
     

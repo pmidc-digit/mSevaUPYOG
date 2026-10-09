@@ -1,6 +1,4 @@
-import {
-  BackButton, CardSubHeader, CardText, FormComposer, Toast
-} from "@mseva/digit-ui-react-components";
+import { BackButton, CardSubHeader, CardText, FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import PropTypes from "prop-types";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -8,6 +6,10 @@ import Background from "../../../components/Background";
 import Header from "../../../components/Header";
 import SelectOtp from "../../citizen/Login/SelectOtp";
 import { formatEmployeeAuthUsername } from "../EmployeeAuth";
+
+const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[@#$%])[A-Za-z0-9@#$%]+$/;
+const PASSWORD_FORMAT_ERROR =
+  "Password must contain an uppercase letter (A-Z), a lowercase letter (a-z), a number (0-9), and a special character (@#$%). No other characters or spaces are allowed.";
 
 const ChangePasswordComponent = ({ config: propsConfig, t }) => {
   const [user, setUser] = useState(null);
@@ -19,7 +21,7 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
   const getUserType = () => Digit.UserService.getType();
   let sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
   const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf";
-  
+
   useEffect(() => {
     if (!user) {
       Digit.UserService.setType("employee");
@@ -55,6 +57,13 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
 
   const onChangePassword = async (data) => {
     try {
+      if (!data.userName?.trim()) return setShowToast(t("User name is required."));
+      if (!data.newPassword?.trim()) return setShowToast(t("New password is required."));
+      if (!data.confirmPassword?.trim()) return setShowToast(t("Confirm password is required."));
+      if (!otp?.trim()) return setShowToast(t("OTP is required."));
+      if (typeof data.newPassword !== "string" || !PASSWORD_PATTERN.test(data.newPassword)) {
+        return setShowToast(t(PASSWORD_FORMAT_ERROR));
+      }
       if (data.newPassword !== data.confirmPassword) {
         return setShowToast(t("ERR_PASSWORD_DO_NOT_MATCH"));
       }
@@ -69,7 +78,9 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
       const response = await Digit.UserService.changePassword(requestData, tenantId);
       navigateToLogin();
     } catch (err) {
-      setShowToast(err?.response?.data?.error?.fields?.[0]?.message || t("ES_SOMETHING_WRONG"));
+      const error = err?.response?.data?.Errors?.[0]?.message || err?.response?.data?.error?.message;
+
+      setShowToast(error || t("ES_SOMETHING_WRONG"));
       setTimeout(closeToast, 5000);
     }
   };
@@ -95,6 +106,9 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
           type: password.type,
           populators: {
             name: password.name,
+            showPasswordToggle: true,
+            showPasswordLabel: t("Show password"),
+            hidePasswordLabel: t("Hide password"),
           },
           isMandatory: true,
         },
@@ -103,6 +117,9 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
           type: confirmPassword.type,
           populators: {
             name: confirmPassword.name,
+            showPasswordToggle: true,
+            showPasswordLabel: t("Show password"),
+            hidePasswordLabel: t("Hide password"),
           },
           isMandatory: true,
         },
@@ -116,10 +133,12 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
         <BackButton variant="white" style={{ borderBottom: "none" }} />
       </div>
       <FormComposer
+        noValidate
         onSubmit={onChangePassword}
         noBoxShadow
         inline
         submitInForm
+        buttonStyle={{ marginTop: "20px" }}
         config={config}
         label={propsConfig.texts.submitButtonLabel}
         cardStyle={{ maxWidth: "408px", margin: "auto" }}
@@ -148,23 +167,53 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
           </div>
         </div> */}
       </FormComposer>
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
+      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true} />}
 
-      <div style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"white",textAlign:"center" }}>
-        <div style={{ display: 'flex', justifyContent: 'center', color:"black" }}>
-          <span style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('https://www.digit.org/', '_blank').focus();}} >Powered by DIGIT</span>
-          <span style={{ margin: "0 10px" ,fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px"}}>|</span>
-          <a style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
+      <div style={{ width: "100%", position: "fixed", bottom: 0, backgroundColor: "white", textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", color: "black" }}>
+          <span
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "12px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("https://www.digit.org/", "_blank").focus();
+            }}
+          >
+            Powered by DIGIT
+          </span>
+          <span style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "12px" }}>|</span>
+          <a
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "12px", fontWeight: "400" }}
+            href="#"
+            target="_blank"
+          >
+            UPYOG License
+          </a>
 
-          <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize:"12px" }} >|</span>
-          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
-          
+          <span className="upyog-copyright-footer" style={{ margin: "0 10px", fontSize: "12px" }}>
+            |
+          </span>
+          <span
+            className="upyog-copyright-footer"
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "12px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("", "_blank").focus();
+            }}
+          >
+            Copyright © {new Date().getFullYear()}
+          </span>
+
           {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
-
         </div>
         <div className="upyog-copyright-footer-web">
-          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"14px":"16px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
-          </div>
+          <span
+            className=""
+            style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "14px" : "16px", fontWeight: "400" }}
+            onClick={() => {
+              window.open("", "_blank").focus();
+            }}
+          >
+            Copyright © {new Date().getFullYear()}
+          </span>
+        </div>
       </div>
     </Background>
   );

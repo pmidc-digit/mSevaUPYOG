@@ -4,6 +4,10 @@ import PropTypes from "prop-types";
 const TextInput = (props) => {
   const user_type = Digit.SessionStorage.get("userType");
   const [date, setDate] = useState();
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const canTogglePassword = props.showPasswordToggle && props.type === "password";
+  const inputType = canTogglePassword ? (passwordVisible ? "text" : "password") :
+    (props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text");
   const data = props?.watch
     ? {
         fromDate: props?.watch("fromDate"),
@@ -20,11 +24,11 @@ const TextInput = (props) => {
     <React.Fragment>
       <div
         className={`text-input ${user_type === "employee" ? "" : "text-input-width"} ${props.className}`}
-        style={props?.textInputStyle ? { ...props.textInputStyle } : {}}
+        style={{ ...props.textInputStyle, ...(canTogglePassword ? { position: "relative", display: "grid", alignItems: "center" } : {}) }}
       >
         {props.isMandatory ? (
           <input
-            type={props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text"}
+            type={inputType}
             name={props.name}
             id={props.id}
             className={`${user_type ? "employee-card-input-error" : "card-input-error"} ${props.disable && "disabled"}`}
@@ -39,7 +43,7 @@ const TextInput = (props) => {
             }}
             ref={props.inputRef}
             value={props.value}
-            style={{ ...props.style }}
+            style={{ ...props.style, ...(canTogglePassword ? { paddingRight: "48px", gridArea: "1 / 1", marginTop: 0, marginBottom: 0 } : {}) }}
             defaultValue={props.defaultValue}
             minLength={props.minlength}
             maxLength={props.maxlength}
@@ -56,7 +60,7 @@ const TextInput = (props) => {
           />
         ) : (
           <input
-            type={props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text"}
+            type={inputType}
             name={props.name}
             id={props.id}
             className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${
@@ -73,7 +77,7 @@ const TextInput = (props) => {
             }}
             ref={props.inputRef}
             value={props.value}
-            style={{ ...props.style }}
+            style={{ ...props.style, ...(canTogglePassword ? { paddingRight: "48px", gridArea: "1 / 1", marginTop: 0, marginBottom: 0 } : {}) }}
             defaultValue={props.defaultValue}
             minLength={props.minlength}
             maxLength={props.maxlength}
@@ -96,6 +100,22 @@ const TextInput = (props) => {
           />
         )}
         {/* {props.type === "date" && <DatePicker {...props} date={date} setDate={setDate} data={data} />} */}
+        {canTogglePassword && (
+          <button
+            type="button"
+            aria-label={passwordVisible ? props.hidePasswordLabel || "Hide password" : props.showPasswordLabel || "Show password"}
+            aria-pressed={passwordVisible}
+            disabled={props.disabled || props.disable}
+            onClick={() => setPasswordVisible((visible) => !visible)}
+            style={{ position: "relative", gridArea: "1 / 1", justifySelf: "end", alignSelf: "center", margin: "0 4px 0 0", padding: 0, width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: 0, cursor: "pointer", color: "#154e85" }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+              <circle cx="12" cy="12" r="3" />
+              {passwordVisible && <path d="M3 3l18 18" />}
+            </svg>
+          </button>
+        )}
         {props.signature ? props.signatureImg : null}
       </div>
     </React.Fragment>

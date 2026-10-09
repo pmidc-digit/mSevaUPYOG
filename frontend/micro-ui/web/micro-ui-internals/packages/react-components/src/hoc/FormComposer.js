@@ -345,7 +345,7 @@ export const FormComposer = (props) => {
   };
   const styles = { boxShadow: "none", padding: "20px 48px 48px" };
   return (
-    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)} id={props.formId} className={props.className}>
+    <form noValidate={props.noValidate} onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)} id={props.formId} className={props.className}>
       <Card
         style={props?.box === true ? styles : null}
         // style={getCardStyles()}

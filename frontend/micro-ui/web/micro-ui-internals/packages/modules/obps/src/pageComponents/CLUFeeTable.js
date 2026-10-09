@@ -13,6 +13,7 @@ export const CLUFeeTable = ({
   onAdjustedAmountBlur,
   feeHistory,
   t,
+  enabledEmployee,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -44,11 +45,7 @@ export const CLUFeeTable = ({
           return (
             <div>
               <strong className="obps-page-components-clufee-table--style-1">₹ {row.grandTotal.toLocaleString("en-IN")}</strong>
-              <div
-                className="obps-page-components-clufee-table--style-2"
-              >
-                Rupees {amountToWords(row.grandTotal).replace(" Rupees", "")} only
-              </div>
+              <div className="obps-page-components-clufee-table--style-2">Rupees {amountToWords(row.grandTotal).replace(" Rupees", "")} only</div>
             </div>
           );
         }
@@ -65,7 +62,7 @@ export const CLUFeeTable = ({
               }
               handleAdjustedAmountChange(row.index, val);
             }}
-            disable={readOnly}
+            disable={readOnly || enabledEmployee}
             step={1}
             onBlur={onAdjustedAmountBlur}
           />
@@ -96,10 +93,9 @@ export const CLUFeeTable = ({
               e.target.style.height = e.target.scrollHeight + "px";
               handleRemarkChange(row.index, e.target.value, row.amount);
             }}
-            disabled={false}
+            disabled={enabledEmployee}
             className="custom-fee-table-textarea obps-page-components-clufee-table--style-3"
             placeholder="Enter remarks..."
-
           />
         );
       },
@@ -242,7 +238,7 @@ export const CLUFeeTable = ({
                           }
                           handleAdjustedAmountChange(row.index, val);
                         }}
-                        disable={readOnly}
+                        disable={readOnly || enabledEmployee}
                         step={1}
                         onBlur={onAdjustedAmountBlur}
                       />
@@ -259,10 +255,9 @@ export const CLUFeeTable = ({
                           e.target.style.height = e.target.scrollHeight + "px";
                           handleRemarkChange(row.index, e.target.value, row.amount);
                         }}
-                        disabled={readOnly}
+                        disabled={readOnly || enabledEmployee}
                         className="custom-fee-table-textarea obps-page-components-clufee-table--style-4"
                         placeholder="Enter remarks..."
-
                       />
                     </div>
                   </div>

@@ -616,6 +616,7 @@ const BpaApplicationDetail = () => {
     fileUrl: doc.values?.[0]?.fileURL || null,
     fileStoreId: doc?.fileStoreId || null,
   }));
+
   const documentsColumnsOwner = [
     {
       Header: t("BPA_OWNER_DETAILS_LABEL"),
@@ -2162,7 +2163,6 @@ const BpaApplicationDetail = () => {
                                 </div>
                               ))
                             : null}
-
                           {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && 
                           (data?.applicationData?.additionalDetails?.isSelfCertification ? (
                             <div>
@@ -2249,7 +2249,7 @@ const BpaApplicationDetail = () => {
                                       />
                                     ))}
                               </StatusTable>
-                              {!(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && ["DOC_VERIFICATION_PENDING", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
+                              {!(data?.applicationData?.status === "DOC_VERIFICATION_PENDING" && user?.info?.roles?.some((role) => role.code === "OBPAS_BPA_DM")) && ["DOC_VERIFICATION_PENDING", "FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
                                   {(
                                     <div>
                                       {pdfLoading ? <Loader /> : <Table
@@ -2266,7 +2266,7 @@ const BpaApplicationDetail = () => {
                                     </div>
                                   )}
                               </div>}
-                              {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !(user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0) && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
+                              {data?.applicationData?.status != "DOC_VERIFICATION_PENDING" && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) && <div>
                                 {(
                                     <StatusTable>
                                       {remainingDoc?.length > 0 && (
@@ -2281,7 +2281,7 @@ const BpaApplicationDetail = () => {
                                     </StatusTable>
                                 )}
                               </div>}
-                              {data?.applicationData?.status === "DOC_VERIFICATION_PENDING" && user?.info?.roles.filter((role) => role.code === "OBPAS_BPA_DM")?.length > 0 && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) &&  <div>
+                              {data?.applicationData?.status === "DOC_VERIFICATION_PENDING" && user?.info?.roles?.some((role) => role.code === "OBPAS_BPA_DM") && !["FIELDINSPECTION_INPROGRESS", "INSPECTION_REPORT_PENDING"].includes(data?.applicationData?.status) &&  <div>
                                 <CardSubHeader>{t("BPA_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
                                 <StatusTable>
                                   {remainingDoc?.length > 0 && (

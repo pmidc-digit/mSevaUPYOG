@@ -515,13 +515,16 @@
 
 .obps-components-noc-site-photographs-new--style-2 {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   margin-top: 10px;
   padding: 0px 20px;
 }
 
 .obps-components-noc-site-photographs-new--style-3 {
-  text-align: start;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .obps-components-pdf-preview-modal--style-1 {

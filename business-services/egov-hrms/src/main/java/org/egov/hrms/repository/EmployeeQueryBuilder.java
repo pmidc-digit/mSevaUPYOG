@@ -53,7 +53,7 @@ public class EmployeeQueryBuilder {
 	        builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
 	    }
 
-	    addWhereClause(criteria, builder, preparedStmtList);
+	    addWhereClause(criteria, builder, preparedStmtList, hasCatSubZone);
 	    return paginationClause(criteria, builder);
 	}
 
@@ -155,7 +155,7 @@ public class EmployeeQueryBuilder {
 	 * @param builder
 	 * @param preparedStmtList
 	 */
-	public void addWhereClause(EmployeeSearchCriteria criteria, StringBuilder builder, List<Object> preparedStmtList) {
+	public void addWhereClause(EmployeeSearchCriteria criteria, StringBuilder builder, List<Object> preparedStmtList, boolean hasCatSubZone) {
 		if(!StringUtils.isEmpty(criteria.getTenantId())) {
 			builder.append(" employee.tenantid = ?");
 			preparedStmtList.add(criteria.getTenantId());
@@ -217,7 +217,7 @@ public class EmployeeQueryBuilder {
 		        addToPreparedStatement(preparedStmtList, criteria.getModulenames());
 		    }
 		    
-		    if(!CollectionUtils.isEmpty(criteria.getRoles())){
+		    if(!CollectionUtils.isEmpty(criteria.getRoles()) && hasCatSubZone){
 		        builder.append(" and obpas.role_code IN (").append(createQuery(criteria.getRoles())).append(")");
 		        addToPreparedStatement(preparedStmtList, criteria.getRoles());
 		    }

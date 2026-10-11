@@ -41,7 +41,8 @@ public class EmployeeQueryBuilder {
 	                            || (criteria.getZones() != null && !criteria.getZones().isEmpty())
 	                            || (criteria.getAssignedtenattids() != null && !criteria.getAssignedtenattids().isEmpty())
 	                            || (criteria.getModulenames() != null && !criteria.getModulenames().isEmpty())
-	                            || (criteria.getRoles() != null && !criteria.getRoles().isEmpty());
+	                            //|| (criteria.getRoles() != null && !criteria.getRoles().isEmpty())
+	                            ;
 	                            
 
 	    if (hasCatSubZone) {

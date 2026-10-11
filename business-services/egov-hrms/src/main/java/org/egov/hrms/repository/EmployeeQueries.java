@@ -152,7 +152,8 @@ public class EmployeeQueries {
 	        "obpas.subcategory as obpas_subcategory, " +
 	        "obpas.zone as obpas_zone, " +
 	        "obpas.assigned_tenantid as obpas_assignedtenantid, " +
-	        "obpas.modulename as obpas_modulename " +
+	        "obpas.modulename as obpas_modulename, " +
+	        "obpas.role_code as obpas_roles " +
 	        "FROM eg_hrms_employee employee " +
 	        "LEFT JOIN eg_hrms_assignment assignment ON employee.uuid = assignment.employeeid " +
 	        "LEFT JOIN eg_hrms_educationaldetails education ON employee.uuid = education.employeeid " +

@@ -958,10 +958,12 @@ public class PlanReportServiceV2 {
         sections.put("Existing Block Wise Summary", new LinkedHashMap<>());
 
         BigDecimal grandTotalBuiltUpArea = BigDecimal.ZERO;
+        BigDecimal grandTotalDeductionArea = BigDecimal.ZERO;
         BigDecimal grandTotalFloorArea   = BigDecimal.ZERO;
 
         for (DcrReportBlockDetail existingBlockDetail : existingBlockDetails) {
             BigDecimal totalBuiltUpArea = BigDecimal.ZERO;
+            BigDecimal totalDeductionArea = BigDecimal.ZERO;    // NEW
             BigDecimal totalFloorArea   = BigDecimal.ZERO;
 
             String heading = "Block No " + existingBlockDetail.getBlockNo() + " - Existing Details";
@@ -970,17 +972,22 @@ public class PlanReportServiceV2 {
             scrutinyDetail.addColumnHeading(1, "Floor");
             scrutinyDetail.addColumnHeading(2, "Occupancy/Sub Occupancy");
             scrutinyDetail.addColumnHeading(3, "Built Up Area in m²");
-            scrutinyDetail.addColumnHeading(4, "Floor Area in m²");
+            scrutinyDetail.addColumnHeading(4, "Deduction Area in m²");   // NEW
+            scrutinyDetail.addColumnHeading(5, "Floor Area in m²");
 
             if (existingBlockDetail.getDcrReportFloorDetails() != null) {
                 for (DcrReportFloorDetail floor : existingBlockDetail.getDcrReportFloorDetails()) {
+                	BigDecimal ded = floor.getBuiltUpDeductionArea() != null
+                            ? floor.getBuiltUpDeductionArea() : BigDecimal.ZERO;
                     totalBuiltUpArea = totalBuiltUpArea.add(floor.getBuiltUpArea()).setScale(2, RoundingMode.HALF_UP);
+                    totalDeductionArea = totalDeductionArea.add(ded).setScale(2, RoundingMode.HALF_UP);   // NEW
                     totalFloorArea   = totalFloorArea.add(floor.getFloorArea()).setScale(2, RoundingMode.HALF_UP);
 
                     Map<String, String> details = new HashMap<>();
                     details.put("Floor", floor.getFloorNo());
                     details.put("Occupancy/Sub Occupancy", floor.getOccupancy());
                     details.put("Built Up Area in m²", floor.getBuiltUpArea().toString());
+                    details.put("Deduction Area in m²", ded.setScale(2, RoundingMode.HALF_UP).toString()); // NEW
                     details.put("Floor Area in m²", floor.getFloorArea().toString());
                     scrutinyDetail.addDetail(details);
                 }
@@ -990,21 +997,25 @@ public class PlanReportServiceV2 {
             Map<String, String> totalRow = new HashMap<>();
             totalRow.put("Occupancy/Sub Occupancy", "Total-colspan-2");
             totalRow.put("Built Up Area in m²", totalBuiltUpArea.toString());
+            totalRow.put("Deduction Area in m²", totalDeductionArea.toString());   // NEW
             totalRow.put("Floor Area in m²", totalFloorArea.toString());
             scrutinyDetail.addDetail(totalRow);
 
             sections.get("Existing Block Wise Summary").put(heading, scrutinyDetail);
 
             grandTotalBuiltUpArea = grandTotalBuiltUpArea.add(totalBuiltUpArea).setScale(2, RoundingMode.HALF_UP);
+            grandTotalDeductionArea = grandTotalDeductionArea.add(totalDeductionArea).setScale(2, RoundingMode.HALF_UP); // NEW
             grandTotalFloorArea   = grandTotalFloorArea.add(totalFloorArea).setScale(2, RoundingMode.HALF_UP);
         }
 
         ScrutinyDetail totalExisting = new ScrutinyDetail();
         totalExisting.setKey("Total Existing Details");
         totalExisting.addColumnHeading(1, "Built Up Area in m²");
-        totalExisting.addColumnHeading(2, "Floor Area in m²");
+        totalExisting.addColumnHeading(2, "Deduction Area in m²");   // NEW
+        totalExisting.addColumnHeading(3, "Floor Area in m²");
         Map<String, String> totalExistingRow = new HashMap<>();
         totalExistingRow.put("Built Up Area in m²", grandTotalBuiltUpArea.toString());
+        totalExistingRow.put("Deduction Area in m²", grandTotalDeductionArea.toString()); // NEW
         totalExistingRow.put("Floor Area in m²", grandTotalFloorArea.toString());
         totalExisting.addDetail(totalExistingRow);
         sections.get("Existing Block Wise Summary").put("Total Existing Details", totalExisting);
@@ -1135,14 +1146,24 @@ public class PlanReportServiceV2 {
                                             occupancyName = occupancy.getTypeHelper().getType().getName();
                                     }
                                     if (occupancy != null
+                                            && occupancy.getExistingBuiltUpArea() != null
                                             && occupancy.getExistingBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) {
-                                        DcrReportFloorDetail dcrReportFloorDetail = new DcrReportFloorDetail();
-                                        dcrReportFloorDetail.setFloorNo(
-                                                floor.getTerrace() ? "Terrace" : floor.getNumber().toString());
-                                        dcrReportFloorDetail.setOccupancy(occupancyName);
-                                        dcrReportFloorDetail.setBuiltUpArea(occupancy.getExistingBuiltUpArea());
-                                        dcrReportFloorDetail.setFloorArea(occupancy.getExistingFloorArea() != null ? occupancy.getExistingFloorArea() : BigDecimal.ZERO);
-                                        dcrReportFloorDetails.add(dcrReportFloorDetail);
+                                        try {
+                                            DcrReportFloorDetail dcrReportFloorDetail = new DcrReportFloorDetail();
+                                            dcrReportFloorDetail.setFloorNo(
+                                                    floor.getTerrace() ? "Terrace" : floor.getNumber().toString());
+                                            dcrReportFloorDetail.setOccupancy(occupancyName);
+
+                                            // all three values rounded to 2 decimals, null-safe
+                                            dcrReportFloorDetail.setBuiltUpArea(scale2(occupancy.getExistingBuiltUpArea()));
+                                            dcrReportFloorDetail.setFloorArea(scale2(occupancy.getExistingFloorArea()));
+                                            dcrReportFloorDetail.setBuiltUpDeductionArea(scale2(occupancy.getExistingDeduction()));
+
+                                            dcrReportFloorDetails.add(dcrReportFloorDetail);
+                                        } catch (Exception e) {
+                                            LOG.error("Error building existing floor detail for block {}, floor {}: {}",
+                                                    block.getNumber(), floor.getNumber(), e.getMessage(), e);
+                                        }
                                     }
                                 }
                             }
@@ -1293,4 +1314,11 @@ public class PlanReportServiceV2 {
             throw new RuntimeException("Failed to generate report: " + msg, e);
         }
     }
+    
+    private static BigDecimal scale2(BigDecimal value) {
+        return value == null
+                ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
+                : value.setScale(2, RoundingMode.HALF_UP);
+    }
+    
 }

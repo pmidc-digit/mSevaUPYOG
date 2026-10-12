@@ -55,8 +55,8 @@ const NOCDocumentTableView = ({documents}) => {
   );
 
   const mappedDocuments = documents?.map(doc => {
-   const { documentUid, documentType, order } = doc;
-   const url = urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
+   const { documentUid, documentType, order , documentAttachment, filestoreId } = doc;
+   const url = urlsList?.pdfFiles?.[documentAttachment] || urlsList?.pdfFiles?.[filestoreId] || urlsList?.pdfFiles?.[documentUid]; // Get URL using documentUid
    return {
     documentUid,
     documentType,

@@ -40,7 +40,7 @@ public class ObpasEmployeeSearchCriteria {
     private String modulename;
 
     @JsonProperty("roles")
-    private List<String> roles;
+    private String roles;
 
     @JsonProperty("uuids")
     private List<String> uuids;   // optional filter

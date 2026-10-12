@@ -316,3 +316,37 @@
   transform: translateY(6px);
   will-change: transform;
 }
+.employee-change-city {
+  width: fit-content;
+  min-width: 180px;
+  max-width: 100%;
+
+  .select-wrap {
+    width: fit-content;
+    min-width: 180px;
+    max-width: 100%;
+  }
+
+  .options-card {
+    width: max-content !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    max-height: 500px !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .employee-change-city,
+  .employee-change-city .select-wrap {
+    width: 100%;
+    min-width: 100%;
+  }
+}
+
+.employee-change-city .options-card {
+  max-height: 120px !important;
+  overflow-y: auto !important;
+  display: block !important;
+}
+

@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DxfToPdfConverterv2 {
+
+    static final double TEXT_CHAR_W = 0.65;  // avg glyph width / height (used only to wrap long MTEXT)
 	
 	private static Logger LOG = LogManager.getLogger(DxfToPdfConverterv2.class);
 	
@@ -613,6 +615,9 @@ public class DxfToPdfConverterv2 {
             if (!currentLine.isEmpty()) lines.add(currentLine);
             if (lines.isEmpty()) lines.add(new ArrayList<>());
 
+            // Wrap long MTEXT so it stays inside the drawing instead of stretching past the border.
+            lines = wrapLinesByWidth(lines, mtextWrapWidth(doc, this) * scale, fontSize);
+
             double effectiveLineSpacing = Math.max(1.0, lineSpacing > 0 ? lineSpacing : 1.0);
             double lineSpacingFactor = 1.35 * effectiveLineSpacing;
             List<Double> lineFontSizes = new ArrayList<>();
@@ -681,6 +686,85 @@ public class DxfToPdfConverterv2 {
         }
 
 
+    }
+
+    // ── MTEXT wrapping ────────────────────────────────────────────────────────
+    /** Wrap width in drawing units: MTEXT width (group 41), else the distance to the right edge of the drawing geometry. */
+    static double mtextWrapWidth(DxfDocument doc, MTextEntity m) {
+        if (m.width > 0) return m.width;
+        if (doc != null && Double.isFinite(doc.contentRightX) && Math.abs(m.rotation) < 0.01
+                && (m.attachment == 1 || m.attachment == 4 || m.attachment == 7)) {
+            double h = m.height > 0 ? m.height : 2.5;
+            double avail = doc.contentRightX - m.x - 0.5 * h;
+            return avail > 0 ? avail : 0;
+        }
+        return 0;
+    }
+
+    /** Right edge of all visible non-text geometry (the drawing frame/plan), used as the MTEXT wrap limit. */
+    static void computeContentRightX(DxfDocument doc) {
+        double maxX = -Double.MAX_VALUE;
+        boolean any = false;
+        for (Entity e : doc.entities) {
+            if (!e.visible || e instanceof TextEntity || e instanceof MTextEntity) continue;
+            Layer lay = doc.layers.get(e.layer.toUpperCase());
+            if (lay != null && !lay.visible) continue;
+            List<double[]> boxes = new ArrayList<>();
+            addEntityBox(doc, e, boxes, new ArrayList<>(), 0);
+            for (double[] b : boxes) { maxX = Math.max(maxX, b[2]); any = true; }
+        }
+        doc.contentRightX = any ? maxX : Double.NaN;
+    }
+
+    static int segLen(MTextSegment s) {
+        return s.isFraction ? s.fractionNum.length() + s.fractionDenom.length() + 1 : cleanMTextVisibleText(s.text).length();
+    }
+
+    static MTextSegment copySeg(MTextSegment s, String text) {
+        MTextSegment c = new MTextSegment();
+        c.text = text; c.color = s.color; c.fontSize = s.fontSize; c.bold = s.bold; c.italic = s.italic;
+        c.underline = s.underline; c.fontName = s.fontName;
+        return c;
+    }
+
+    static double lineWidth(List<MTextSegment> line, double base) {
+        double w = 0;
+        for (MTextSegment s : line) w += segLen(s) * TEXT_CHAR_W * (s.fontSize > 0 ? s.fontSize : base);
+        return w;
+    }
+
+    static List<List<MTextSegment>> wrapLinesByWidth(List<List<MTextSegment>> lines, double maxW, double base) {
+        if (maxW <= 0) return lines;
+        List<List<MTextSegment>> out = new ArrayList<>();
+        for (List<MTextSegment> line : lines) {
+            if (lineWidth(line, base) <= maxW) { out.add(line); continue; }
+            List<MTextSegment> cur = new ArrayList<>();
+            double curW = 0;
+            for (MTextSegment s : line) {
+                double cw = TEXT_CHAR_W * (s.fontSize > 0 ? s.fontSize : base);
+                if (s.isFraction) {
+                    double w = segLen(s) * cw;
+                    if (curW + w > maxW && !cur.isEmpty()) { out.add(cur); cur = new ArrayList<>(); curW = 0; }
+                    cur.add(s); curW += w;
+                    continue;
+                }
+                int maxCh = Math.max(1, (int) Math.floor(maxW / cw));
+                for (String piece : cleanMTextVisibleText(s.text).split("(?<=[ ,/;])")) {
+                    if (piece.isEmpty()) continue;
+                    if (curW + piece.length() * cw > maxW && !cur.isEmpty()) { out.add(cur); cur = new ArrayList<>(); curW = 0; }
+                    while (piece.length() > maxCh) {
+                        List<MTextSegment> one = new ArrayList<>();
+                        one.add(copySeg(s, piece.substring(0, maxCh)));
+                        out.add(one);
+                        piece = piece.substring(maxCh);
+                    }
+                    if (cur.isEmpty()) piece = piece.replaceFirst("^ +", "");
+                    if (!piece.isEmpty()) { cur.add(copySeg(s, piece)); curW += piece.length() * cw; }
+                }
+            }
+            if (!cur.isEmpty()) out.add(cur);
+        }
+        return out;
     }
 
     static String renderMTextRuns(List<MTextSegment> runs, String baseColor, double baseFontSize, String baseFontFamily) {
@@ -965,6 +1049,7 @@ public class DxfToPdfConverterv2 {
     // ── DXF Document ──────────────────────────────────────────────────────────
     static class DxfDocument {
         Map<String, Layer> layers = new LinkedHashMap<>();
+        double contentRightX = Double.NaN;   // right edge of non-text geometry (wrap limit for long MTEXT)
         Map<String, TextStyle> textStyles = new LinkedHashMap<>();
         Map<String, Block> blocks = new LinkedHashMap<>();
         List<Entity> entities = new ArrayList<>();
@@ -1540,6 +1625,7 @@ public class DxfToPdfConverterv2 {
         for (Block b : doc.blocks.values()) {
             mergeAdjacentCollinearText(b.entities);
         }
+        computeContentRightX(doc);
         computeExtents(doc);
         detectApprovalPlanTitles(doc);
 
@@ -2693,6 +2779,8 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                 minX = maxX = m.x; minY = maxY = m.y;
                 double h = (m.height > 0 && isValidCoordinate(m.height)) ? m.height : 2.5;
                 double w = (m.width > 0 && isValidCoordinate(m.width)) ? m.width : (m.text != null ? Math.min(m.text.length() * 0.7 * h, 100.0 * h) : h);
+                double wrapW = mtextWrapWidth(doc, m);
+                if (m.width <= 0 && wrapW > 0) w = Math.min(w, wrapW);   // wrapped text never extends past the drawing
                 minX = Math.min(minX, m.x + w); maxX = Math.max(maxX, m.x + w);
                 minY = Math.min(minY, m.y - h); maxY = Math.max(maxY, m.y + h);
                 valid = true;

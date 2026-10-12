@@ -37,7 +37,7 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import { decodeURIComponentCustom, EmployeeData } from "../../../utils/index";
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
-import { convertToDDMMYYYY, formatDuration, downloadPdfFromURL, getCode } from "../../../utils/index";
+import { convertToDDMMYYYY, formatDuration, downloadPdfFromURL, getCode, amountToWords } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
@@ -417,7 +417,35 @@ const NOCEmployeeApplicationOverview = () => {
     }
   };
 
-  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
+  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, filestoreId = null, ...params }) {
+      const application = applicationDetails?.Noc?.[0];
+      try {
+        setLoader(true);
+        if (!application) {
+          throw new Error("Noc Application data is missing");
+        }
+        if(!filestoreId){
+          const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
+          const fee = payments?.totalAmountPaid;
+          const amountinwords = amountToWords(fee);
+          const response = await Digit.PaymentService.generatePdf(
+            tenantId,
+            { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] },
+            pdfkey
+          );
+          filestoreId = response?.filestoreIds[0];
+        }
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+        const receiptUrl = fileStore[filestoreId];
+        await downloadPdfFromURL(receiptUrl);
+      } catch (error) {
+        // console.error("Sanction Letter download error:", error);
+      } finally {
+        setLoader(false);
+      }
+    }
+
+  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter",filestoreId, ...params }) {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoader(true);
@@ -511,6 +539,39 @@ const NOCEmployeeApplicationOverview = () => {
   //     });
   //   }
   // }
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
+    if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: reciept_data?.Payments[0]?.tenantId,
+            payments: reciept_data?.Payments[0],
+            EmpData,
+            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+          }),
+      });
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData, filestoreId :  reciept_data?.Payments[0]?.fileStoreId}),
+      });
+    } else if (
+      applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.isMigrationTrue &&
+      applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+    ) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: tenantId,
+            payments: {},
+            EmpData,
+            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+          }),
+      });
+    }
+  }
   useEffect(() => {
     const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
     const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];

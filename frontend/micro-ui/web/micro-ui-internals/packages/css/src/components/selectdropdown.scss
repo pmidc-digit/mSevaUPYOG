@@ -316,3 +316,9 @@
   transform: translateY(6px);
   will-change: transform;
 }
+.employee-change-city .options-card {
+  max-height: 120px !important;
+  overflow-y: auto !important;
+  display: block !important;
+}
+

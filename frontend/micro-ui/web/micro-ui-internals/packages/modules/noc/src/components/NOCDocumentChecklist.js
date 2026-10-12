@@ -58,7 +58,7 @@ const NOCDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
         </thead>
         <tbody>
           {sortedDocuments?.map((doc, i) => {
-            const url = urlsList?.pdfFiles?.[doc?.documentUid] || doc?.fileUrl;
+            const url = urlsList?.pdfFiles?.[doc?.documentAttachment] || urlsList?.pdfFiles?.[doc?.filestoreId] || urlsList?.pdfFiles?.[doc?.documentUid] || doc?.fileUrl;
             return (
               <tr key={doc.documentUid || i}>
                 <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>

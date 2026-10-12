@@ -42,8 +42,8 @@ public class ObpasEmployeeRowMapper implements ResultSetExtractor<List<ObpasEmpl
             if (hasColumn(rs, "modulename")) {
                 emp.setModulename(rs.getString("modulename"));
             }
-            if (hasColumn(rs, "role_code") && rs.getString("role_code") != null) {
-                emp.setRoles(Arrays.asList(rs.getString("role_code").split(",")));
+            if (hasColumn(rs, "role_code")) {
+                emp.setRoles(rs.getString("role_code"));
             }
             emp.setAuditDetails(audit);
 

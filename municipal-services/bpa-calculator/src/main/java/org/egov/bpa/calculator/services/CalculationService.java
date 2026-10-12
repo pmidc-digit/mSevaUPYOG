@@ -390,7 +390,7 @@ public class CalculationService {
 
 		String category = StringUtils.isEmpty(node.get("subcategories")) ? null : node.get("subcategories").toString();
 
-		String categories = StringUtils.isEmpty(node.get("categoriesName")) ? null : node.get("categoriesName").toString();
+		String categories = StringUtils.isEmpty(node.get("categories")) ? null : node.get("categories").toString();
 	
 		String approvedColony = (String)node.getOrDefault("approvedColony", "NO");
 //		String buildingStatus  = (String)node.getOrDefault("buildingStatus", "");
@@ -445,7 +445,7 @@ public class CalculationService {
 				break;
 			case BPACalculatorConstants.BPA_LABOUR_CESS:
 				BigDecimal labourCessSqFeetArea = builtUpArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET);
-				if (categories != null && categories.equalsIgnoreCase("Residential")
+				if (categories != null && categories.equalsIgnoreCase(BPACalculatorConstants.RESIDENTIAL_OCCUPANCY)
 						&& (labourCessSqFeetArea.compareTo(BigDecimal.valueOf(909)) <= 0)) {
 					amount = BigDecimal.ZERO;
 				} else {

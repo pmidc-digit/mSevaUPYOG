@@ -372,7 +372,8 @@ public class PlanService {
             if (plan.getPlanInformation() != null) {
                 plan.getPlanInformation().setUlbType(ulbType);
                 plan.getPlanInformation().setDistrict(districtName);
-                plan.getPlanInformation().setUlbName(cityName);
+                plan.getPlanInformation().setUlbName(capitalizeFirstLetter(cityName));
+                plan.getPlanInformation().setCity(capitalizeFirstLetter(cityName));
                 LOG.info("ULB Name value from edcr Request : {}", plan.getPlanInformation().getUlbName());
             }
             LOG.info("ULB Type value from MDMS : {}", ulbType);
@@ -1145,6 +1146,15 @@ public class PlanService {
 		} else {
 			return ruleLabel + " not defined into the plan.";
 		}
+	}
+	
+	public static String capitalizeFirstLetter(String str) {
+	    if (str == null || str.isEmpty()) {
+	        return str;
+	    }
+
+	    return str.substring(0, 1).toUpperCase()
+	            + str.substring(1).toLowerCase();
 	}
 	
 }

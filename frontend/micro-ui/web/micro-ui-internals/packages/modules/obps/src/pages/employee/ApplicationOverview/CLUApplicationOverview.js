@@ -247,11 +247,51 @@ const CLUEmployeeApplicationDetails = () => {
   };
 
   const dowloadOptions = [];
+  const sanctionLetterID = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId
   if (applicationDetails?.Clu?.[0]) {
     dowloadOptions.push({
       label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
+  }
+
+  if (applicationDetails?.Clu?.[0]?.applicationStatus === "E-SIGNED") {
+    if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
+      dowloadOptions.push({
+        label: t("CLU_FEE_RECEIPT_1"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey: "clu-receipt" }),
+      });
+    }
+    if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+      dowloadOptions.push({
+        label: t("CLU_FEE_RECEIPT_2"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "clu-receiptsecond" }),
+      });
+      if(sanctionLetterID){
+        dowloadOptions.push({
+          label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+          onClick: () =>
+            getRecieptSearch({
+              tenantId: reciept_data2?.Payments[0]?.tenantId,
+              payments: reciept_data2?.Payments[0],
+              fileStoreId : sanctionLetterID
+            }),
+        });
+      }
+    }
+  }
+  else if (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.isMigrationTrue && sanctionLetterID) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: tenantId,
+            payments: {},
+            fileStoreId : sanctionLetterID
+          }),
+      });
   }
 
   async function openSanctionLetterPopup() {
@@ -286,11 +326,16 @@ const CLUEmployeeApplicationDetails = () => {
     }
   }
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey, forcePnLocale = false, ...params }) {
+  async function getRecieptSearch({ tenantId, payments, pdfkey, forcePnLocale = false, openReceipt= false, ...params }) {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoader(true);
       const application = applicationDetails?.Clu;
+      let fileStoreId = application?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
+      if(openReceipt){
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+        window.open(fileStore[fileStoreId], "_blank");
+      }
       const approvecomments = approveComments?.[0];
       const firmName = application?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
       const owners = application?.[0]?.owners || [];
@@ -305,7 +350,6 @@ const CLUEmployeeApplicationDetails = () => {
         ownersString = firmName;
       }
       let conditionText = "";
-      let fileStoreId = application?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
       if (approvecomments?.includes("[#?..**]")) {
         conditionText = approvecomments.split("[#?..**]")[1] || "";
       }

@@ -55,6 +55,11 @@ const ChangeCity = (prop) => {
         select={handleChangeCity}
         freeze={true}
         customSelector={<label className="cp">{prop?.t(`TENANT_TENANTS_${stringReplaceAll(Digit.SessionStorage.get("Employee.tenantId"), ".", "_")?.toUpperCase()}`)}</label>}
+        optionCardStyles={{
+          maxHeight: "120px",      /* Sets a max-height so the list overflows and triggers scrolling */
+          overflowY: "auto",       /* Enables vertical scrolling (or "scroll" to force scrollbar visible) */
+          display: "block",        /* Overrides the 'display: table' class set by customSelector */
+        }}
       />
     </div>
   );

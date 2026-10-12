@@ -387,7 +387,11 @@ public class CalculationService {
 		BigDecimal plotArea = new BigDecimal((String)node.get("area")).multiply(BPACalculatorConstants.SQMETER_TO_SQYARD);  //In Sq Yard
 		BigDecimal plotAreaMsq = new BigDecimal((String)node.get("area"));
 		BigDecimal basementArea = BigDecimal.ZERO;
+
 		String category = StringUtils.isEmpty(node.get("subcategories")) ? null : node.get("subcategories").toString();
+
+		String categories = StringUtils.isEmpty(node.get("categories")) ? null : node.get("categories").toString();
+	
 		String approvedColony = (String)node.getOrDefault("approvedColony", "NO");
 //		String buildingStatus  = (String)node.getOrDefault("buildingStatus", "");
 		Map<String, Object> farDetails  = (Map<String, Object>)node.getOrDefault("farDetails", new HashMap<>());
@@ -440,7 +444,13 @@ public class CalculationService {
 				amount=rate.multiply(basementArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.CEILING);
 				break;
 			case BPACalculatorConstants.BPA_LABOUR_CESS:
-				amount=rate.multiply(builtUpArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET)).setScale(0, RoundingMode.CEILING);
+				BigDecimal labourCessSqFeetArea = builtUpArea.multiply(BPACalculatorConstants.SQYARD_TO_SQFEET);
+				if (categories != null && categories.equalsIgnoreCase(BPACalculatorConstants.RESIDENTIAL_OCCUPANCY)
+						&& (labourCessSqFeetArea.compareTo(BigDecimal.valueOf(909)) <= 0)) {
+					amount = BigDecimal.ZERO;
+				} else {
+					amount = rate.multiply(labourCessSqFeetArea).setScale(0, RoundingMode.CEILING);
+				}
 				break;
 			case BPACalculatorConstants.BPA_CLUBBING_CHARGES:
 				if(isClubbedPlot) {

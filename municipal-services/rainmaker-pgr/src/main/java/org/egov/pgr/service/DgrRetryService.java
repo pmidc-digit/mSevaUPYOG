@@ -188,6 +188,15 @@ public class DgrRetryService {
                             continue;
                         }
 
+                        // Hard-code rule: Never push complaints belonging to test tenant (pb.testing)
+                        if (tenantId != null && org.egov.pgr.utils.PGRConstants.TEST_TENANT.equalsIgnoreCase(tenantId.trim())) {
+                            log.info("Complaint [{}] belongs to test tenant [{}]. Skipping.", serviceRequestId, tenantId);
+                            entryResult.put("status", "SKIPPED_TEST_TENANT");
+                            results.add(entryResult);
+                            processed++;
+                            continue;
+                        }
+
                         // Use caller's RequestInfo if provided, otherwise the one in the record
                         RequestInfo effectiveReqInfo = requestInfo != null ? requestInfo : serviceReqRequest.getRequestInfo();
                         if (effectiveReqInfo != null) {
@@ -353,6 +362,15 @@ public class DgrRetryService {
                         results.add(entryResult);
                         continue;
                     }
+                }
+
+                // Hard-code rule: Never push complaints belonging to test tenant (pb.testing)
+                if (dbTenantId != null && org.egov.pgr.utils.PGRConstants.TEST_TENANT.equalsIgnoreCase(dbTenantId.trim())) {
+                    log.info("Service request [{}] belongs to test tenant [{}]. Skipping.", serviceRequestId, dbTenantId);
+                    entryResult.put("tenantId", dbTenantId);
+                    entryResult.put("status", "SKIPPED_TEST_TENANT");
+                    results.add(entryResult);
+                    continue;
                 }
 
                 // 2. Fetch the full service request details using plain search with mandatory tenantId
@@ -601,6 +619,15 @@ public class DgrRetryService {
                     results.add(entryResult);
                     continue;
                 }
+            }
+
+            // Hard-code rule: Never push complaints belonging to test tenant (pb.testing)
+            if (recordTenantId != null && org.egov.pgr.utils.PGRConstants.TEST_TENANT.equalsIgnoreCase(recordTenantId.trim())) {
+                log.info("Pending record [{}] belongs to test tenant [{}]. Skipping.", serviceRequestId, recordTenantId);
+                entryResult.put("status", "SKIPPED_TEST_TENANT");
+                skippedCount++;
+                results.add(entryResult);
+                continue;
             }
 
             try {

@@ -120,38 +120,43 @@ public class PGRConstants {
 	
 	public static final String  SERVICE_REQID_REGEX = "(^[0-9/]*$)";
 
-	    // =========================
-	    // Citizen defaults
-	    // =========================
-    	public static final String DEFAULT_DESCRIPTION_NAME = "No Description/Title(Subject) Is Provided By User in PMIDC";
+    // =========================
+    // Citizen defaults
+    // =========================
+	public static final String DEFAULT_DESCRIPTION_NAME = "No Description/Title(Subject) Is Provided By User in PMIDC";
 
-	    public static final String DEFAULT_CITIZEN_NAME = "No Name Is Provided By User in PMIDC";
-	    public static final String DEFAULT_CITIZEN_EMAIL = "temp@example.com";
-	    public static final String DEFAULT_CITIZEN_MOBILE = "0000000000";
-	    public static final String DEFAULT_ADDRESS = "No Address Provided By User in PMIDC";
+    public static final String DEFAULT_CITIZEN_NAME = "No Name Is Provided By User in PMIDC";
+    public static final String DEFAULT_CITIZEN_EMAIL = "temp@example.com";
+    public static final String DEFAULT_CITIZEN_MOBILE = "0000000000";
+    public static final String DEFAULT_ADDRESS = "No Address Provided By User in PMIDC";
 
-	    // =========================
-	    // DGR Integration Cutoff Date (7th Jan 2026 00:00:00 IST)
-	    // Complaints created before this date are NEVER pushed to DGR.
-	    // =========================
-	    public static final Long DGR_CUTOFF_DATE_EPOCH = 1767724200000L;
+    // =========================
+    // DGR Integration Cutoff Date (7th Jan 2026 00:00:00 IST)
+    // Complaints created before this date are NEVER pushed to DGR.
+    // =========================
+    public static final Long DGR_CUTOFF_DATE_EPOCH = 1767724200000L;
 
-	    // =========================
-	    // Application info
-	    // =========================
-	    public static final String DEPARTMENT_ID = "178";
-	    public static final String DEPARTMENT_NAME = "Department of Local Government";
-	    public static final String DEPARTMENT_LOCAL_LANG = "ਸਥਾਨਕ ਸਰਕਾਰ ਵਿਭਾਗ";
-	    public static final String STATE_NAME = "PUNJAB";
-	    public static final String STATE_ID = "3";
-	    public static final String CITIZEN_TYPE = "All Other Individuals";
-	    public static final String SYSTEM_TYPE = "EA";
-	    public static final String SERVICE_CODE_DEFAULT = "General";
-	    public static final String FLOW_TYPE = "I";
-	    public static final String SELECTED_LOCALE = "en";
-	    public static final String STATE_LOCAL_LANG = "ਪੰਜਾਬ";
-	    
-	  
+    // =========================
+    // Test tenant (excluded from DGR)
+    // =========================
+    public static final String TEST_TENANT = "pb.testing";
+
+    // =========================
+    // Application info
+    // =========================
+    public static final String DEPARTMENT_ID = "178";
+    public static final String DEPARTMENT_NAME = "Department of Local Government";
+    public static final String DEPARTMENT_LOCAL_LANG = "ਸਥਾਨਕ ਸਰਕਾਰ ਵਿਭਾਗ";
+    public static final String STATE_NAME = "PUNJAB";
+    public static final String STATE_ID = "3";
+    public static final String CITIZEN_TYPE = "All Other Individuals";
+    public static final String SYSTEM_TYPE = "EA";
+    public static final String SERVICE_CODE_DEFAULT = "General";
+    public static final String FLOW_TYPE = "I";
+    public static final String SELECTED_LOCALE = "en";
+    public static final String STATE_LOCAL_LANG = "ਪੰਜਾਬ";
+    
+    
 	
 
 

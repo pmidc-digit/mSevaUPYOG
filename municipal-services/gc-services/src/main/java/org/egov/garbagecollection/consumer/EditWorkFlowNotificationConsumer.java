@@ -7,6 +7,7 @@ import org.egov.garbagecollection.service.GcServiceImpl;
 import org.egov.garbagecollection.web.models.GarbageConnectionRequest;
 import org.egov.garbagecollection.util.EncryptionDecryptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -23,6 +24,7 @@ public class EditWorkFlowNotificationConsumer {
 	private ObjectMapper mapper;
 	
 	@Autowired
+	@Lazy
 	private GcServiceImpl gcServiceImpl;
 	
 	@Autowired
@@ -54,7 +56,7 @@ public class EditWorkFlowNotificationConsumer {
 			 *
 			* WaterConnection searchResult = waterConnections.get(0); */
 			Map <String , String> adddetails=(Map<String, String>) garbageConnectionRequest.getGarbageConnection().getAdditionalDetails();
-			if (!garbageConnectionRequest.isOldDataEncryptionRequest() && !adddetails.containsKey("meterMakeentry"))
+			if (!garbageConnectionRequest.getIsOldDataEncryptionRequest() && !adddetails.containsKey("meterMakeentry"))
 				diffService.checkDifferenceAndSendEditNotification(garbageConnectionRequest);
 		}
 		catch (Exception ex) {

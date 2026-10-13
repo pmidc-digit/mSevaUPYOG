@@ -7,12 +7,14 @@ import java.util.Map;
 import org.egov.gccalculation.constants.GCCalculationConstant;
 import org.egov.gccalculation.service.MasterDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 @Component
 public class GarbageUtil {
 
 	@Autowired
+	@Lazy
 	private MasterDataService mDataService;
 
 	public BigDecimal getWaterCess(BigDecimal waterCharge, String assessmentYear, List<Object> masterList) {

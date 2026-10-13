@@ -4,12 +4,14 @@ import java.util.HashMap;
 
 import org.egov.garbagecollection.service.PaymentUpdateService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ReceiptConsumer {
 	@Autowired
+	@Lazy
 	private PaymentUpdateService paymentUpdateService;
 	
 	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, concurrency = "${kafka.consumer.config.concurrency.count:3}")

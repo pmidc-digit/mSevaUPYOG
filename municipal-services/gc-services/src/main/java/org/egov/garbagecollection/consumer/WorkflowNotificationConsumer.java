@@ -12,6 +12,7 @@ import org.egov.garbagecollection.web.models.OwnerInfo;
 import org.egov.garbagecollection.web.models.GarbageConnection;
 import org.egov.garbagecollection.web.models.GarbageConnectionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -39,6 +40,7 @@ public class WorkflowNotificationConsumer {
 	private ObjectMapper mapper;
 
 	@Autowired
+	@Lazy
 	private GcServiceImpl gcServiceImpl;
 
 	/**

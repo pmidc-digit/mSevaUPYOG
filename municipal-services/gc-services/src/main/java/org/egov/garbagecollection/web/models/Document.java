@@ -1,6 +1,6 @@
 package org.egov.garbagecollection.web.models;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 
 @Data
 @AllArgsConstructor
@@ -19,21 +19,21 @@ import org.hibernate.validator.constraints.SafeHtml;
 @EqualsAndHashCode(of= {"fileStoreId","applicationId","id"})
 public class Document {
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("id")
   private String id ;
 
   @JsonProperty("documentType")
   @NotNull
-  @SafeHtml
+  @SanitizeHtml
   private String documentType ;
 
   @JsonProperty("fileStoreId")
   @NotNull
-  @SafeHtml
+  @SanitizeHtml
   private String fileStoreId ;
 
-  @SafeHtml
+  @SanitizeHtml
   @JsonProperty("applicationId")
   private String applicationId;
 

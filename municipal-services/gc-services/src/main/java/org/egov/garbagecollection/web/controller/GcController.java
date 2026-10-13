@@ -1,7 +1,7 @@
 package org.egov.garbagecollection.web.controller;
 
 import java.util.List;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 
 import org.egov.garbagecollection.constants.GCConstants;
@@ -51,7 +51,7 @@ public class GcController {
 	@RequestMapping(value = "/_create", method = RequestMethod.POST, produces = "application/json")
 	public ResponseEntity<GarbageConnectionResponse> createGarbageConnection(
 			@Valid @RequestBody GarbageConnectionRequest garbageConnectionRequest) {
-		garbageConnectionRequest.setCreateCall(true);
+		garbageConnectionRequest.setIsCreateCall(true);
 		List<GarbageConnection> garbageConnections = waterService.createGarbageConnection(garbageConnectionRequest);
 		GarbageConnectionResponse response = GarbageConnectionResponse.builder().garbageConnections(garbageConnections)
 				.responseInfo(responseInfoFactory

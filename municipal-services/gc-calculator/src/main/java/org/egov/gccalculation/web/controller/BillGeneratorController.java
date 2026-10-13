@@ -2,7 +2,7 @@ package org.egov.gccalculation.web.controller;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.gccalculation.repository.GCCalculationDao;
 import org.egov.gccalculation.service.BillGeneratorService;

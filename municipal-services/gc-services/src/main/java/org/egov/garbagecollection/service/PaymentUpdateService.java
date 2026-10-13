@@ -23,9 +23,10 @@ import org.egov.garbagecollection.web.models.users.UserDetailResponse;
 import org.egov.garbagecollection.web.models.workflow.ProcessInstance;
 import org.egov.garbagecollection.workflow.WorkflowIntegrator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -49,6 +50,7 @@ public class PaymentUpdateService {
 	private GCConfiguration config;
 
 	@Autowired
+	@Lazy
 	private GcServiceImpl gcService;
 
 	@Autowired
@@ -76,6 +78,7 @@ public class PaymentUpdateService {
 	private GcServicesUtil gcServiceUtil;
 
 	@Autowired
+	@Lazy
 	private CalculationService calculationService;
 	/**
 	 * After payment change the application status
@@ -347,7 +350,7 @@ public class PaymentUpdateService {
 		}
 
 		//Send the notification to applicant
-		if(!org.apache.commons.lang.StringUtils.isEmpty(request.getRequestInfo().getUserInfo().getMobileNumber()))
+		if(!StringUtils.isEmpty(request.getRequestInfo().getUserInfo().getMobileNumber()))
 		{
 			mobileNumbersAndNames.put(request.getRequestInfo().getUserInfo().getMobileNumber(), request.getRequestInfo().getUserInfo().getName());
 			mapOfPhnoAndUUIDs.put(request.getRequestInfo().getUserInfo().getMobileNumber(), request.getRequestInfo().getUserInfo().getUuid());
@@ -501,7 +504,7 @@ public class PaymentUpdateService {
 		//send the notification to the connection holders
 		if (!CollectionUtils.isEmpty(garbageConnectionRequest.getGarbageConnection().getConnectionHolders())) {
 			garbageConnectionRequest.getGarbageConnection().getConnectionHolders().forEach(holder -> {
-				if (!org.apache.commons.lang.StringUtils.isEmpty(holder.getUuid())) {
+				if (!StringUtils.isEmpty(holder.getUuid())) {
 					ownersUuids.add(holder.getUuid());
 				}
 			});

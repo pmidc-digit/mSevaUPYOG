@@ -22,6 +22,7 @@ import org.egov.garbagecollection.workflow.WorkflowIntegrator;
 import org.egov.garbagecollection.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -42,6 +43,7 @@ public class GcServiceImpl implements GcService {
 	private GcDao gcDao;
 
 	@Autowired
+	@Lazy
 	private GcValidator gcValidator;
 
 	@Autowired
@@ -73,6 +75,7 @@ public class GcServiceImpl implements GcService {
 	private GcServicesUtil gcServiceUtil;
 
 	@Autowired
+	@Lazy
 	private CalculationService calculationService;
 
 	@Autowired
@@ -93,8 +96,6 @@ public class GcServiceImpl implements GcService {
 	@Autowired
 	private UnmaskingUtil unmaskingUtil;
 	
-	@Autowired
-	private GcService gcService;
 
 	/**
 	 *
@@ -131,7 +132,7 @@ public class GcServiceImpl implements GcService {
 			    criteria.setConnectionNumber(Collections.singleton(connectionNo));
 			    criteria.setTenantId(garbageConnectionRequest.getGarbageConnection().getTenantId());
 
-			    List<GarbageConnection> existingConnections = gcService.search(
+			    List<GarbageConnection> existingConnections = search(
 			        criteria, garbageConnectionRequest.getRequestInfo());
 
 			    if (!existingConnections.isEmpty()) {
@@ -143,13 +144,13 @@ public class GcServiceImpl implements GcService {
 		int reqType = GCConstants.CREATE_APPLICATION;
 		Connection.StatusEnum status = garbageConnectionRequest.getGarbageConnection().getStatus();
 		log.info("isMigration::::" + isMigration);
-		if (garbageConnectionRequest.isDisconnectRequest()
+		if (Boolean.TRUE.equals(garbageConnectionRequest.getDisconnectRequest())
 				|| (garbageConnectionRequest.getGarbageConnection().getApplicationType() != null
 						&& garbageConnectionRequest.getGarbageConnection().getApplicationType()
 								.equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION))) {
 			reqType = GCConstants.DISCONNECT_CONNECTION;
 			validateDisconnectionRequest(garbageConnectionRequest);
-		} else if (garbageConnectionRequest.isReconnectRequest()
+		} else if (Boolean.TRUE.equals(garbageConnectionRequest.getReconnectRequest())
 				|| (garbageConnectionRequest.getGarbageConnection().getApplicationType() != null && garbageConnectionRequest
 						.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))) {
 			reqType = GCConstants.RECONNECTION;
@@ -470,10 +471,10 @@ public class GcServiceImpl implements GcService {
 	@Override
 	public List<GarbageConnection> updateGarbageConnection(GarbageConnectionRequest waterConnectionRequest) {
 		boolean eodbPushed = false;
-		if (waterConnectionRequest.isDisconnectRequest() || waterConnectionRequest.getGarbageConnection()
+		if (Boolean.TRUE.equals(waterConnectionRequest.getDisconnectRequest()) || waterConnectionRequest.getGarbageConnection()
 				.getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION)) {
 			return updateGarbageConnectionForDisconnectFlow(waterConnectionRequest);
-		} else if (waterConnectionRequest.isReconnectRequest() || waterConnectionRequest.getGarbageConnection()
+		} else if (Boolean.TRUE.equals(waterConnectionRequest.getReconnectRequest()) || waterConnectionRequest.getGarbageConnection()
 				.getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION)) {
 			return updateGarbageConnectionForReconnectFlow(waterConnectionRequest);
 		}
@@ -482,7 +483,7 @@ public class GcServiceImpl implements GcService {
 		log.info("isDisconnection" + waterConnectionRequest.getGarbageConnection().getIsDisconnectionTemporary());
 
 
-		if (waterConnectionRequest.getGarbageConnection().isIsworkflowdisabled()) {
+		if (waterConnectionRequest.getGarbageConnection().getIsworkflowdisabled()) {
 			log.info("Water Request: " + waterConnectionRequest);
 			if (waterConnectionRequest.getGarbageConnection().getConnectionHolders() != null) {
 				SearchCriteria criteriaAppNo = new SearchCriteria();
@@ -501,7 +502,7 @@ public class GcServiceImpl implements GcService {
 			}
 
 			gcDao.updateGarbageConnection(waterConnectionRequest,
-					waterConnectionRequest.getGarbageConnection().isIsworkflowdisabled());
+					waterConnectionRequest.getGarbageConnection().getIsworkflowdisabled());
 			return Arrays.asList(waterConnectionRequest.getGarbageConnection());
 		}
 
@@ -869,7 +870,7 @@ public GarbageConnectionRequest updateConnectionStatusBasedOnActionDisconnection
 		SearchCriteria criteria = SearchCriteria.builder()
 				.connectionNumber(Stream.of(waterConnection.getConnectionNo().toString()).collect(Collectors.toSet()))
 				.build();
-		if (waterConnectionRequest.isDisconnectRequest() || !StringUtils.isEmpty(waterConnection.getConnectionNo()))
+		if (waterConnectionRequest.getDisconnectRequest() || !StringUtils.isEmpty(waterConnection.getConnectionNo()))
 			criteria.setIsInternalCall(true);
 		return search(criteria, waterConnectionRequest.getRequestInfo());
 	}

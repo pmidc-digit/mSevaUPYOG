@@ -312,7 +312,7 @@ public class EnrichmentService {
 	private void setApplicationIdGenIds(GarbageConnectionRequest request) {
 		GarbageConnection waterConnection = request.getGarbageConnection();
 		List<String> applicationNumbers = new ArrayList<>();
-		if (request.getGarbageConnection().getApplicationStatus() != null && request.isDisconnectRequest()) {
+		if (request.getGarbageConnection().getApplicationStatus() != null && request.getDisconnectRequest()) {
 			applicationNumbers = getIdList(request.getRequestInfo(),
 					request.getGarbageConnection().getTenantId(), config.getWaterDisconnectionIdGenName(),
 					config.getWaterDisconnectionIdGenFormat());

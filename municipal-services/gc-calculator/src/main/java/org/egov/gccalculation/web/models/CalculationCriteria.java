@@ -1,6 +1,6 @@
 package org.egov.gccalculation.web.models;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.egov.gccalculation.web.models.MeterReading.MeterStatusEnum;
 import org.springframework.validation.annotation.Validated;

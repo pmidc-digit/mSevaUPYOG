@@ -2,10 +2,10 @@ package org.egov.gccalculation.web.models;
 
 import java.math.BigDecimal;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -31,7 +31,7 @@ public class AdhocTaxReq {
 	private RequestInfo requestInfo;
 
 	@JsonProperty("demandId")
-	@SafeHtml
+	@SanitizeHtml
 	@NotNull
 	private String demandId;
 
@@ -41,11 +41,11 @@ public class AdhocTaxReq {
 	@JsonProperty("adhocpenalty")
 	private BigDecimal adhocpenalty = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("consumerCode")
 	private String consumerCode;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("businessService")
 	private String businessService;
 

@@ -20,6 +20,7 @@ import org.egov.garbagecollection.web.models.*;
 import org.egov.garbagecollection.web.models.users.UserDetailResponse;
 import org.egov.garbagecollection.web.models.users.UserSearchRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -39,6 +40,7 @@ public class UserService {
 	private ObjectMapper mapper;
 
 	@Autowired
+	@Lazy
 	private EnrichmentService enrichmentService;
 
 	/**
@@ -363,7 +365,7 @@ public class UserService {
 			 * If it is not _create call/connectionNo already exists (for Modify and Disconnection Applications),
 			 * then a connHolder comparison with existing connHolder for application happens
 			 * */
-			if (!garbageConnectionRequest.isCreateCall() || !StringUtils.isEmpty(newWaterConnection.getConnectionNo())) {
+			if (!garbageConnectionRequest.getIsCreateCall() || !StringUtils.isEmpty(newWaterConnection.getConnectionNo())) {
 				// Check if connHolder already exists
 				if (maskedConnectionHolder != null && !StringUtils.isEmpty(maskedConnectionHolder.getUuid())) {
 

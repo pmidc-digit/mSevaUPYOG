@@ -8,12 +8,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import org.egov.garbagecollection.web.models.workflow.ProcessInstance;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,49 +29,49 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-05-20T12:22:10.265+05:30[Asia/Kolkata]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-05-20T12:22:10.265+05:30[Asia/Kolkata]")
 public class Connection {
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("id")
 	private String id = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("tenantId")
 	private String tenantId = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("propertyId")
 	private String propertyId = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("unitId")
 	private String unitId = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("applicationNo")
 	private String applicationNo = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("applicationStatus")
 	private String applicationStatus = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("propertyType")
 	private String propertyType = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("plotSize")
 	private String plotSize = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("location")
 	private String location = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("frequency")
 	private String frequency_of_garbage_collection = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("typeOfWaste")
 	private String typeOfWaste = null;
 
@@ -112,11 +112,11 @@ public class Connection {
 	@JsonProperty("status")
 	private StatusEnum status = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("connectionNo")
 	private String connectionNo = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("oldConnectionNo")
 	private String oldConnectionNo = null;
 
@@ -128,7 +128,7 @@ public class Connection {
 //	@Valid
 //	private List<PlumberInfo> plumberInfo = null;
 
-//	@SafeHtml
+//	@SanitizeHtml
 //	@JsonProperty("roadType")
 //	private String roadType = null;
 //
@@ -141,11 +141,11 @@ public class Connection {
 	@JsonProperty("connectionExecutionDate")
 	private Long connectionExecutionDate = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("connectionCategory")
 	private String connectionCategory = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("connectionType")
 	private String connectionType = null;
 
@@ -158,7 +158,7 @@ public class Connection {
 	@JsonProperty("processInstance")
 	private ProcessInstance processInstance = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("applicationType")
 	private String applicationType = null;
 
@@ -172,7 +172,7 @@ public class Connection {
 	@JsonProperty("oldApplication")
 	private Boolean oldApplication = false;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("channel")
 	private String channel = null;
 

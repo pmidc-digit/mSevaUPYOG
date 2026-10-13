@@ -59,13 +59,13 @@ public class WorkflowIntegrator {
 	public void callWorkFlow(GarbageConnectionRequest garbageConnectionRequest, Property property) {
 		String wfBusinessServiceName = config.getBusinessServiceValue();
 
-		if((garbageConnectionRequest.isDisconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION)) &&
-				!(garbageConnectionRequest.isReconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))
+		if((Boolean.TRUE.equals(garbageConnectionRequest.getDisconnectRequest()) || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.DISCONNECT_GARBAGE_CONNECTION)) &&
+				!(Boolean.TRUE.equals(garbageConnectionRequest.getReconnectRequest()) || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))
 				|| (garbageConnectionRequest.getGarbageConnection().getApplicationStatus().equalsIgnoreCase(GCConstants.PENDING_FOR_PAYMENT_STATUS_CODE)
 				&& garbageConnectionRequest.getGarbageConnection().getApplicationNo().contains(GCConstants.APPLICATION_DISCONNECTION_CODE))) {
 			wfBusinessServiceName = config.getDisconnectBusinessServiceName();
 		} 
-		else if((garbageConnectionRequest.isReconnectRequest() || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))
+		else if((Boolean.TRUE.equals(garbageConnectionRequest.getReconnectRequest()) || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION))
 				|| (garbageConnectionRequest.getGarbageConnection().getApplicationStatus().equalsIgnoreCase(GCConstants.DISCONNECTION_FINAL_STATE))) {
 			wfBusinessServiceName = config.getWsWorkflowReconnectionName();
 		}

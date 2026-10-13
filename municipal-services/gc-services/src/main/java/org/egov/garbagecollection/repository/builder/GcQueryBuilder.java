@@ -12,6 +12,7 @@ import org.egov.garbagecollection.web.models.Property;
 import org.egov.garbagecollection.web.models.SearchCriteria;
 import org.egov.garbagecollection.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -29,6 +30,7 @@ public class GcQueryBuilder {
 	private GCConfiguration config;
 	
 	@Autowired
+	@Lazy
 	private UserService userService;
 
 	private static final String INNER_JOIN_STRING = "INNER JOIN";

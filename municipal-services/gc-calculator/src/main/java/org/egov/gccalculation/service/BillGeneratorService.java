@@ -35,10 +35,6 @@ public class BillGeneratorService {
 	
 	@Autowired
 	private BillGenerationValidator billGenerationValidator;
-	
-
-	@Autowired
-	private BillGeneratorService billGeneratorService;
 
 	public List<BillScheduler> saveBillGenerationDetails(BillGenerationReq billRequest) {
 		List<BillScheduler> billSchedulers = new ArrayList<>();
@@ -79,7 +75,7 @@ public class BillGeneratorService {
 			boolean localityStatus = billGenerationValidator.checkBillingCycleDates(billGenerationReq, billGenerationReq.getRequestInfo());
 			if(!localityStatus) 
 			{
-			billDetails = billGeneratorService.saveBillGenerationDetails(billGenerationReq);
+			billDetails = saveBillGenerationDetails(billGenerationReq);
 			}
 			
 		}
@@ -98,7 +94,7 @@ public class BillGeneratorService {
 					 Boolean Check=billGenerationValidator.checkBillingCycleDates(billGenerationReq, billGenerationReq.getRequestInfo());
 					
 					 if (!Check)
-						 billDetails = billGeneratorService.saveBillGenerationDetails(billGenerationReq);
+						 billDetails = saveBillGenerationDetails(billGenerationReq);
 					 else 
 						 log.info("Bills Are Already In Initieated Or InProgress For Group--> "+ billGenerationReq.getBillScheduler().getGrup());
 				}
@@ -109,7 +105,7 @@ public class BillGeneratorService {
     	
     	else {
 				billGenerationValidator.validateBillingCycleDates(billGenerationReq, billGenerationReq.getRequestInfo());
-				billDetails = billGeneratorService.saveBillGenerationDetails(billGenerationReq);
+				billDetails = saveBillGenerationDetails(billGenerationReq);
 			   // billDetails1.addAll(billDetails);
 	}
     	

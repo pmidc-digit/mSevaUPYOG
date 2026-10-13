@@ -2,7 +2,7 @@ package org.egov.garbagecollection.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.User;
 import org.egov.garbagecollection.config.GCConfiguration;
 import org.egov.garbagecollection.constants.GCConstants;
@@ -201,7 +201,7 @@ public class EditNotificationService {
 			//send the notification to the connection holders
 			if(!CollectionUtils.isEmpty(waterConnectionRequest.getGarbageConnection().getConnectionHolders())) {
 				waterConnectionRequest.getGarbageConnection().getConnectionHolders().forEach(holder -> {
-					if (!org.apache.commons.lang.StringUtils.isEmpty(holder.getUuid())) {
+					if (!StringUtils.isEmpty(holder.getUuid())) {
 						ownersUuids.add(holder.getUuid());
 					}
 				});
@@ -215,7 +215,7 @@ public class EditNotificationService {
 			}
 
 			//Send the notification to applicant
-			if(!org.apache.commons.lang.StringUtils.isEmpty(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber()))
+			if(!StringUtils.isEmpty(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber()))
 			{
 				mobileNumbersAndNames.put(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber(), waterConnectionRequest.getRequestInfo().getUserInfo().getName());
 			}

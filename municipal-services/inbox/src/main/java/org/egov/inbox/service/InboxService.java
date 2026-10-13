@@ -50,6 +50,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static java.util.Objects.isNull;
@@ -182,7 +183,20 @@ public class InboxService {
     @Autowired
     private RLInboxFilterService rlInboxFilterService;
 
-
+    private static final Set<String> EXCLUDED_STATUSES = new HashSet<>(
+            Arrays.asList(
+                    "CANCELLED",
+                    "INITIATE",
+                    "SEND_TO_CITIZEN",
+                    "CITIZEN_APPROVAL_PENDING",
+                    "INPROGRESS",
+                    "PENDING_APPL_FEE_PAYMENT",
+                    "PROFESSIONAL_ACTION_REQUIRED",
+                    "BLOCKED",
+                    "PENDING_SANC_FEE_PAYMENT"
+            )
+    );
+    
     @Autowired
     public InboxService(InboxConfiguration config, ServiceRequestRepository serviceRequestRepository,
                         ObjectMapper mapper, WorkflowService workflowService, CHBInboxFilterService chbInboxFilterService) {
@@ -869,21 +883,14 @@ public class InboxService {
         );
     }
 
-    private void excludeCancelledAndTerminatedStates(String moduleName, HashMap<String, String> statusIdNameMap) {
-        if (!CollectionUtils.isEmpty(statusIdNameMap) && moduleName != null && (
-                moduleName.equalsIgnoreCase("noc-service") ||
-                        moduleName.equalsIgnoreCase("layout-service") ||
-                        moduleName.equalsIgnoreCase("clu-service")
-        )) {
-            statusIdNameMap.entrySet().removeIf(entry -> {
-                String statusName = entry.getValue();
-                return statusName != null && (
-                        statusName.equalsIgnoreCase("CANCELLED")
-
-                );
-            });
-        }
-    }
+	private void excludeCancelledAndTerminatedStates(String moduleName, HashMap<String, String> statusIdNameMap) {
+		if (!CollectionUtils.isEmpty(statusIdNameMap) && moduleName != null
+				&& (moduleName.equalsIgnoreCase("noc-service") || moduleName.equalsIgnoreCase("layout-service")
+						|| moduleName.equalsIgnoreCase("clu-service") || moduleName.equalsIgnoreCase("bpa-service"))) {
+			statusIdNameMap.entrySet().removeIf(
+					entry -> entry.getValue() != null && EXCLUDED_STATUSES.contains(entry.getValue().toUpperCase()));
+		}
+	}
 
 
         public InboxResponse fetchInboxDataBackup(InboxSearchCriteria criteria, RequestInfo requestInfo) {

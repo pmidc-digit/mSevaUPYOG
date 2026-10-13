@@ -1,6 +1,14 @@
 import React, { useState } from "react";
+import { CardLabelError } from "@mseva/digit-ui-react-components";
 
-const AdhocRebatePenaltyModal = ({ t, licenseData, onClose, onSubmit, isUpdating }) => {
+const AdhocRebatePenaltyModal = ({
+  t,
+  licenseData,
+  billPenaltyAndInterest = 0,
+  onClose,
+  onSubmit,
+  isUpdating,
+}) => {
   const penaltyReasons = [
     { label: t("PT_PENDING_DUES_FROM_EARLIER") || "Pending dues from earlier", value: "Pending dues from earlier" },
     { label: t("PT_MISCALCULATION_DUES") || "Miscalculation of earlier assessment", value: "Miscalculation of earlier assessment" },
@@ -39,7 +47,22 @@ const AdhocRebatePenaltyModal = ({ t, licenseData, onClose, onSubmit, isUpdating
   );
   const [rebateComments, setRebateComments] = useState(existingRebateComments);
 
+  // Combined applicable penalty and interest: bill's late penalty/interest + the adhoc penalty from the modal
+  const currentPenaltyAmount = Number(penaltyAmount) || 0;
+  const totalApplicablePenaltyAndInterest = (Number(billPenaltyAndInterest) || 0) + currentPenaltyAmount;
+  const numRebate = Number(rebateAmount) || 0;
+  const isRebateExceeded = numRebate > 0 && numRebate > totalApplicablePenaltyAndInterest;
+  const rebateErrorMessage = isRebateExceeded
+    ? t("TL_ERROR_REBATE_EXCEEDS_PENALTY_INTEREST") ||
+      `Adhoc Rebate cannot be greater than the total applicable Interest and Penalty amount (₹${totalApplicablePenaltyAndInterest})`
+    : "";
+
   const handleAdd = () => {
+    if (isRebateExceeded) {
+      alert(rebateErrorMessage);
+      return;
+    }
+
     onSubmit({
       adhocPenalty: penaltyAmount ? String(penaltyAmount) : "0",
       adhocPenaltyReason: selectedPenaltyReason?.value || "",
@@ -117,6 +140,7 @@ const AdhocRebatePenaltyModal = ({ t, licenseData, onClose, onSubmit, isUpdating
               placeholder="Enter rebate amount"
               className="TL-form-input"
             />
+            {isRebateExceeded && <CardLabelError>{rebateErrorMessage}</CardLabelError>}
           </div>
           <div className="TL-mb-10">
             <label className="TL-form-label">Reason for Rebate *</label>
@@ -153,8 +177,8 @@ const AdhocRebatePenaltyModal = ({ t, licenseData, onClose, onSubmit, isUpdating
           </button>
           <button
             onClick={handleAdd}
-            disabled={isUpdating}
-            className={`TL-btn-submit${isUpdating ? " TL-btn-disabled" : ""}`}
+            disabled={isUpdating || isRebateExceeded}
+            className={`TL-btn-submit${isUpdating || isRebateExceeded ? " TL-btn-disabled" : ""}`}
           >
             {isUpdating ? "ADDING..." : "ADD"}
           </button>

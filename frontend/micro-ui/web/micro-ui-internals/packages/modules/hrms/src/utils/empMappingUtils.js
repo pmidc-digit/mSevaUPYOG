@@ -93,7 +93,7 @@ export const filterSelectAll = (items) => {
 };
 
 // Utility: Create cartesian product for mappings
-export const createMappingCombinations = (employeeData, categories, subCategories, zones, module) => {
+export const createMappingCombinations = (employeeData, categories, subCategories, zones, module, roles, roleGroups = []) => {
   const newMappings = [];
   const actualCategories = filterSelectAll(categories);
   const actualSubCategories = filterSelectAll(subCategories);
@@ -103,17 +103,23 @@ export const createMappingCombinations = (employeeData, categories, subCategorie
   actualCategories.forEach((category) => {
     actualSubCategories.forEach((subCategory) => {
       actualModules.forEach((module) => {
-        actualZones.forEach((zone) => {
-          newMappings.push({
-            id: Date.now() + Math.random(),
-            employeeCode: employeeData.code,
-            employeeName: employeeData.name,
-            employeeUUID: employeeData.uuid,
-            category,
-            subCategory,
-            zone,
-            module,
-            employeeInfo: employeeData,
+        const moduleRoles = filterSelectAll(roles).filter((role) =>
+          roleGroups.some((group) => group.groupCode === module.code && group.groupId === role.groupId)
+        );
+        moduleRoles.forEach((role) => {
+          actualZones.forEach((zone) => {
+            newMappings.push({
+              id: Date.now() + Math.random(),
+              employeeCode: employeeData.code,
+              employeeName: employeeData.name,
+              employeeUUID: employeeData.uuid,
+              category,
+              subCategory,
+              zone,
+              module,
+              role,
+              employeeInfo: employeeData,
+            });
           });
         });
       });

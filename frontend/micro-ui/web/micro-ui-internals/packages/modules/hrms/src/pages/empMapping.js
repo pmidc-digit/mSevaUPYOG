@@ -37,6 +37,8 @@ const EmpMaping = () => {
     category: [],
     subCategory: [],
     zone: [],
+    module: [],
+    role: [],
   });
   const [formErrors, setFormErrors] = useState({});
   const [mappingsToCreate, setMappingsToCreate] = useState([]);
@@ -64,7 +66,12 @@ const EmpMaping = () => {
   const { employeeList: modalEmployeeList } = Digit.Hooks.hrms.useEmployeeList(selectedULB, obpsRoles.codes);
   const { zones: modalZones } = Digit.Hooks.hrms.useZones(stateId, selectedULB);
 
+  // modules
   const { data: moduleNames = [], isLoading: moduleLoading } = Digit.Hooks.useCustomMDMS("pb", "common-masters", [{ name: "obpasmodules" }]);
+  //
+  const { data: roleGroups = [], isLoading: roleGroupsLoading } = Digit.Hooks.useCustomMDMS("pb", "ACCESSCONTROL-ROLES", [{ name: "roleGroups" }]);
+
+  const { data: roles = [], isLoading: rolesLoading } = Digit.Hooks.useCustomMDMS("pb", "ACCESSCONTROL-ROLES", [{ name: "roles" }]);
 
   // Fetch search employee list separately
   useEffect(() => {
@@ -133,6 +140,26 @@ const EmpMaping = () => {
         categoryId: sub.categoryId,
       }));
   }, [formData.category, allSubCategories]);
+
+  const handleRoles = (data) => {
+    const selectedModules = filterSelectAll(data);
+    const groups = roleGroups?.["ACCESSCONTROL-ROLES"]?.roleGroups || [];
+    const selectedGroups = groups.filter((group) => selectedModules.some((module) => module.code === group.groupCode));
+    const rolesData = roles?.["ACCESSCONTROL-ROLES"]?.roles || [];
+    return rolesData.filter((role) => selectedGroups.some((group) => group.groupId === role.groupId));
+  };
+
+  const filteredRoles = useMemo(() => handleRoles(formData.module), [formData.module, roleGroups, roles]);
+  const rolesWithSelectAll = useMemo(() => addSelectAllOption(filteredRoles), [filteredRoles]);
+
+  useEffect(() => {
+    setFormData((prev) => {
+      const validRoles = filterSelectAll(prev.role).filter((role) => filteredRoles.some((option) => option.code === role.code));
+      const nextRoles = validRoles.length && validRoles.length === filteredRoles.length ? addSelectAllOption(validRoles) : validRoles;
+      if (nextRoles.length === prev.role.length && nextRoles.every((role, index) => role.code === prev.role[index].code)) return prev;
+      return { ...prev, role: nextRoles };
+    });
+  }, [filteredRoles]);
 
   // Add "Select All" to all dropdown options
   const categoriesWithSelectAll = useMemo(() => addSelectAllOption(categories), [categories]);
@@ -248,7 +275,7 @@ const EmpMaping = () => {
 
   // Modal handlers
   const handleAddNew = () => {
-    setFormData({ employeeCode: null, category: [], subCategory: [], zone: [] });
+    setFormData({ employeeCode: null, category: [], subCategory: [], zone: [], module: [], role: [] });
     setFormErrors({});
     setMappingsToCreate([]);
     setShowAddModal(true);
@@ -256,7 +283,7 @@ const EmpMaping = () => {
 
   const closeAddModal = () => {
     setShowAddModal(false);
-    setFormData({ employeeCode: null, category: [], subCategory: [], zone: [] });
+    setFormData({ employeeCode: null, category: [], subCategory: [], zone: [], module: [], role: [] });
     setFormErrors({});
     setMappingsToCreate([]);
     setModalToast(null);
@@ -276,6 +303,7 @@ const EmpMaping = () => {
     const actualSubCategories = filterSelectAll(formData.subCategory);
     const actualZones = filterSelectAll(formData.zone);
     const actualModules = filterSelectAll(formData.module);
+    const actualRoles = filterSelectAll(formData.role);
 
     if (!actualCategories.length) {
       setModalToast({ key: true, label: "Please select at least one category", error: true });
@@ -306,10 +334,40 @@ const EmpMaping = () => {
       return;
     }
 
-    const newMappings = createMappingCombinations(formData.employeeCode, formData.category, formData.subCategory, formData.zone, formData.module);
+    if (!actualRoles.length) {
+      setModalToast({ key: true, label: "Please select at least one role", error: true });
+      return;
+    }
+    const groups = roleGroups?.["ACCESSCONTROL-ROLES"]?.roleGroups || [];
+    if (
+      actualModules.some(
+        (module) => !actualRoles.some((role) => groups.some((group) => group.groupCode === module.code && group.groupId === role.groupId))
+      )
+    ) {
+      setModalToast({ key: true, label: "Please select at least one role for each selected module", error: true });
+      return;
+    }
+
+    const newMappings = createMappingCombinations(
+      formData.employeeCode,
+      formData.category,
+      formData.subCategory,
+      formData.zone,
+      formData.module,
+      formData.role,
+      groups
+    );
 
     setMappingsToCreate((prev) => [...prev, ...newMappings]);
-    setFormData((prev) => ({ employeeCode: prev.employeeCode, roleNames: prev.roleNames, category: [], subCategory: [], zone: [], module: [] }));
+    setFormData((prev) => ({
+      employeeCode: prev.employeeCode,
+      roleNames: prev.roleNames,
+      category: [],
+      subCategory: [],
+      zone: [],
+      module: [],
+      role: [],
+    }));
     setModalToast({ key: true, label: `${newMappings.length} mapping(s) added to list` });
     setTimeout(() => {
       setModalToast(null);
@@ -352,9 +410,12 @@ const EmpMaping = () => {
           subcategory: mapping.subCategory.subCategoryId,
           zone: mapping.zone.code,
           modulename: mapping?.module?.code,
+          roles: mapping.role.code,
           assignedTenantId: selectedULB.code,
         })),
       };
+
+      console.log("payload", payload);
 
       // return;
 
@@ -386,6 +447,7 @@ const EmpMaping = () => {
     const newSelection = handleSelectAllLogic(selectedItems, allItems, formData[field]);
     setFormData((prev) => ({ ...prev, [field]: newSelection }));
     setFormErrors((prev) => ({ ...prev, [field]: null }));
+    return newSelection;
   };
 
   // Pagination handlers
@@ -615,11 +677,29 @@ const EmpMaping = () => {
                   options={modulesWithSelectAll}
                   optionsKey="name"
                   selected={formData.module}
-                  onSelect={(items) => handleSelectWithAll(items, moduleNames?.["common-masters"]?.obpasmodules, "module")}
+                  onSelect={(items) => {
+                    handleSelectWithAll(items, moduleNames?.["common-masters"]?.obpasmodules, "module");
+                  }}
                   defaultLabel={t("Select Module") || "Select Module"}
                   defaultUnit={t("Module Selected") || "selected"}
                 />
                 {formErrors.module && <CardLabelError>{formErrors.module}</CardLabelError>}
+              </div>
+
+              {/* Role Multi-Select */}
+              <div className="hrms-emp-mapping__form-group">
+                <CardLabel className="hrms-emp-mapping__label">
+                  {t("Role")} <span className="hrms-emp-mapping__required-asterisk">*</span>
+                </CardLabel>
+                <MultiSelectDropdown
+                  options={rolesWithSelectAll}
+                  optionsKey="name"
+                  selected={formData.role}
+                  onSelect={(items) => handleSelectWithAll(items, filteredRoles, "role")}
+                  defaultLabel={t(filterSelectAll(formData.module).length ? "Select Role" : "Select module first")}
+                  defaultUnit={t("Roles Selected")}
+                />
+                {formErrors.role && <CardLabelError>{formErrors.role}</CardLabelError>}
               </div>
 
               {/* Zone Multi-Select */}
@@ -677,6 +757,7 @@ const EmpMaping = () => {
                           <th>{t("HR_SUB_CATEGORY_LABEL")}</th>
                           <th>{t("HR_ZONE_LABEL")}</th>
                           <th>{t("Module")}</th>
+                          <th>{t("Role")}</th>
                           <th>{t("COMMON_ACTION")}</th>
                         </tr>
                       </thead>
@@ -688,6 +769,7 @@ const EmpMaping = () => {
                             <td>{mapping.subCategory.name}</td>
                             <td>{mapping.zone.name}</td>
                             <td>{mapping.module.name}</td>
+                            <td>{mapping.role.name}</td>
                             <td className="hrms-emp-mapping__table-action-cell">
                               <button onClick={() => handleRemoveFromList(mapping.id)} className="hrms-btn hrms-btn--delete">
                                 {t("COMMON_DELETE")}

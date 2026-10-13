@@ -103,8 +103,8 @@ public class EmployeeQueryBuilder {
 	    }
 	    
 	    if (criteria.getRoles() != null && !criteria.getRoles().isEmpty()) {
-	        builder.append(" AND role_code IN (").append(createQuery(criteria.getRoles())).append(") ");
-	        addToPreparedStatement(preparedStmtList, criteria.getRoles());
+	        builder.append(" AND role_code = ? ");
+	        preparedStmtList.add(criteria.getRoles());
 	    }
 
 	    return builder.toString();

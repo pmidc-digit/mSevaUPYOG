@@ -8,6 +8,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
+import org.egov.common.entity.edcr.PageLayoutInfo;
+
+
 /**
  * Full-featured DXF Parser and SVG/PDF Converter.
  *
@@ -31,7 +39,15 @@ public class DxfToPdfConverterv2 {
             ThreadLocal.withInitial(() -> false);
     
     public static final String WORK_SHEET_LAYER = "WORK_SHEET";
-
+    public static final String PAGE_LAYOUT_LAYER = "PAGE_LAYOUT";
+    static final String UNDEFINED_LAYER_COLOR = "#808080";
+    
+    private static final Set<String> SYSTEM_LAYERS = new CopyOnWriteArraySet<>(
+            Arrays.asList("0", WORK_SHEET_LAYER, PAGE_LAYOUT_LAYER, "PLAN_INFO"));
+    private static final List<String> SYSTEM_LAYER_PREFIXES =
+            new java.util.concurrent.CopyOnWriteArrayList<>(Arrays.asList("BLK_"));
+    private static volatile boolean grayUndefinedLayers = false; // off until the real list is registered
+    
     // ── ACI (AutoCAD Color Index) table ──────────────────────────────────────
     private static final String[] ACI_COLORS = new String[256];
     static {
@@ -1638,6 +1654,7 @@ public class DxfToPdfConverterv2 {
     }
 
     static String resolveColor(DxfDocument doc, String layerName, int colorIndex, int trueColor) {
+    	if (!isSystemLayer(layerName)) return UNDEFINED_LAYER_COLOR;
         if (trueColor >= 0) return trueColorToHex(trueColor);
         if (colorIndex == -1 || colorIndex == 256) { // BYLAYER
             // Only use currentColor inside a block symbol definition (for ByBlock inheritance)
@@ -4289,134 +4306,6 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
 
     // ── SVG GENERATOR ─────────────────────────────────────────────────────────
 
-    public static String generateSvg(DxfDocument doc, int targetWidthPx, int targetHeightPx) {
-        if (targetWidthPx <= 0) targetWidthPx = 3508;
-        if (targetHeightPx <= 0) targetHeightPx = 2480;
-
-        // Compute transform
-        double dxfW = doc.maxX - doc.minX;
-        double dxfH = doc.maxY - doc.minY;
-        if (!Double.isFinite(dxfW) || dxfW <= 0.001) dxfW = 1.0;
-        if (!Double.isFinite(dxfH) || dxfH <= 0.001) dxfH = 1.0;
-
-        // Add 2% margin
-        double margin = 0.02;
-        double mw = dxfW * margin;
-        double mh = dxfH * margin;
-        double adjMinX = doc.minX - mw, adjMinY = doc.minY - mh;
-        double adjMaxX = doc.maxX + mw, adjMaxY = doc.maxY + mh;
-        dxfW = adjMaxX - adjMinX;
-        dxfH = adjMaxY - adjMinY;
-
-        // Fit to a fixed target canvas keeping aspect ratio.
-        double scale = Math.min(targetWidthPx / dxfW, targetHeightPx / dxfH);
-        if (!Double.isFinite(scale) || scale <= 0) scale = 1.0;
-        double drawnW = dxfW * scale;
-        double drawnH = dxfH * scale;
-        double offsetX = (targetWidthPx - drawnW) / 2.0;
-        double offsetY = (targetHeightPx - drawnH) / 2.0;
-
-        // transform: [scale, translateX, translateY, viewHeight]
-        // tx(x) = offsetX + (x - adjMinX) * scale
-        // ty(y) = offsetY + drawnH - (y - adjMinY) * scale
-        double[] t = new double[]{scale, offsetX - adjMinX * scale, -adjMinY * scale, offsetY + drawnH};
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format(Locale.US,
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" " +
-            "xmlns:xlink=\"http://www.w3.org/1999/xlink\" " +
-            "width=\"%.2fpx\" height=\"%.2fpx\" " +
-            "viewBox=\"0 0 %.4f %.4f\">\n",
-            (double) targetWidthPx, (double) targetHeightPx, (double) targetWidthPx, (double) targetHeightPx));
-
-        // Defs: block symbols + arrowhead marker
-        sb.append("<defs>\n");
-        sb.append("<marker id=\"arrow\" markerWidth=\"10\" markerHeight=\"7\" " +
-                  "refX=\"10\" refY=\"3.5\" orient=\"auto\">" +
-                  "<polygon points=\"0 0, 10 3.5, 0 7\" fill=\"#000000\"/></marker>\n");
-
-            // Render block definitions
-    // FIND this entire defs block loop and REPLACE:
-    for (Map.Entry<String, Block> entry : doc.blocks.entrySet()) {
-        Block block = entry.getValue();
-        // Skip only true model/paper space blocks
-        if (block.name.equalsIgnoreCase("*Model_Space") ||
-                block.name.equalsIgnoreCase("*Paper_Space") ||
-                block.name.toLowerCase().startsWith("*paper_space")) continue;
-
-        String safeId = sanitizeId(block.name);
-        sb.append(String.format("<symbol id=\"block_%s\" overflow=\"visible\">\n", safeId));
-
-        // Block symbols must be local to their own base point. Do not include
-        // the drawing/page translation here, because INSERT applies that when
-        // the symbol is reused at the actual DXF insertion point.
-        double[] blockT = new double[]{
-                t[0],
-                -block.baseX * t[0],
-                -block.baseY * t[0],
-                0
-        };
-
-        // Set flag to indicate we're rendering inside a block definition
-        RENDERING_BLOCK_DEFINITION.set(true);
-        try {
-            for (Entity e : block.entities) {
-                if (!e.visible) continue;
-                try {
-                    String svg = e.toSvg(doc, blockT);
-                    if (!svg.isEmpty()) sb.append("  ").append(svg).append("\n");
-                } catch (Exception ex) {
-                    System.err.println("Block entity error in " + block.name + ": " + ex.getMessage());
-                }
-            }
-        } finally {
-            // Always reset the flag after rendering block entities
-            RENDERING_BLOCK_DEFINITION.remove();
-        }
-        sb.append("</symbol>\n");
-    }
-    sb.append("</defs>\n");
-
-        // White background
-        sb.append(String.format(Locale.US,
-            "<rect width=\"%.4f\" height=\"%.4f\" fill=\"white\"/>\n",
-            (double) targetWidthPx, (double) targetHeightPx));
-
-        // Render entities layer by layer (visible layers first, then by draw order)
-        // Collect layer names in order
-        Set<String> visibleLayers = new LinkedHashSet<>();
-        for (Entity e : doc.entities) {
-            Layer lay = doc.layers.get(e.layer.toUpperCase());
-            if (lay == null || lay.visible) visibleLayers.add(e.layer);
-        }
-
-        // Group by layer
-        Map<String, List<Entity>> byLayer = new LinkedHashMap<>();
-        for (Entity e : doc.entities) {
-            Layer lay = doc.layers.get(e.layer.toUpperCase());
-            if (lay != null && !lay.visible) continue;
-            byLayer.computeIfAbsent(e.layer, k -> new ArrayList<>()).add(e);
-        }
-
-        for (Map.Entry<String, List<Entity>> entry : byLayer.entrySet()) {
-            String layerName = entry.getKey();
-            sb.append(String.format("<g id=\"layer_%s\">\n", sanitizeId(layerName)));
-            for (Entity e : entry.getValue()) {
-                if (!e.visible) continue;
-                try {
-                    String svg = e.toSvg(doc, t);
-                    if (!svg.isEmpty()) sb.append("  ").append(svg).append("\n");
-                } catch (Exception ex) {
-                    System.err.println("Warning: entity render error on layer " + layerName + ": " + ex.getMessage());
-                }
-            }
-            sb.append("</g>\n");
-        }
-
-        sb.append("</svg>\n");
-        return sb.toString();
-    }
 
     static String stripNonStandardCodes(String text) {
         if (text == null) return "";
@@ -4708,7 +4597,90 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
     public static void convertDxfToPdf(InputStream dxfInputStream, File outputPdfFile) throws Exception {
         convertDxfToPdf(dxfInputStream, outputPdfFile, false);
     }
+    
+    
+    public static List<PageLayoutInfo> convertDxfToPdf(InputStream dxfInputStream, File outputPdfFile,
+            boolean saveSvg, List<PageLayoutInfo> pageLayouts) throws Exception {
+    	int width;
+        int height;
 
+        File tempDxf = null;
+        try {
+            // --- Step 1: Write InputStream → temp DXF file ---
+            tempDxf = File.createTempFile("upload_", ".dxf");
+            try (FileOutputStream fos = new FileOutputStream(tempDxf)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = dxfInputStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+            }
+            LOG.info("DXF written to temp file: {}", tempDxf.getAbsolutePath());
+
+            // --- Step 2: Parse DXF ---
+            LOG.info("Parsing DXF: {}", tempDxf.getAbsolutePath());
+            DxfDocument doc;
+            try {
+                doc = parseDxf(tempDxf.getAbsolutePath());
+            } catch (Exception e) {
+                LOG.error("Failed to parse DXF file '{}': {}", tempDxf.getAbsolutePath(), e.getMessage(), e);
+                throw new Exception("DXF parsing failed: " + e.getMessage(), e);
+            }
+
+            LOG.info("Final render extents: ({}, {}) to ({}, {}) | width={} | height={}",
+                    doc.minX, doc.minY, doc.maxX, doc.maxY,
+                    (doc.maxX - doc.minX), (doc.maxY - doc.minY));
+            LOG.info("Entities: {}, Blocks: {}, Layers: {}",
+                    doc.entities.size(), doc.blocks.size(), doc.layers.size());
+
+            int[] renderCanvas = calculateDynamicRenderCanvas(doc);
+            width = renderCanvas[0];
+            height = renderCanvas[1];
+
+            if (pageLayouts != null && !pageLayouts.isEmpty()) {
+                List<PageLayoutInfo> used = renderPaged(doc, pageLayouts, outputPdfFile);
+                if (used != null) {
+                    LOG.info("Paged PDF saved ({} pages): {}", used.size(), outputPdfFile.getAbsolutePath());
+                    return used;               // the existing finally block still deletes the temp DXF
+                }
+            }
+            
+            // --- Step 3: Generate SVG in memory ---
+            LOG.info("Generating SVG...");
+            String svg;
+            try {
+                svg = generateSvg(doc, width, height);
+            } catch (Exception e) {
+                LOG.error("Failed to generate SVG from DXF: {}", e.getMessage(), e);
+                throw new Exception("SVG generation failed: " + e.getMessage(), e);
+            }
+            
+            // sanitize before handing to Batik
+            LOG.info("Sanitizing SVG paths...");
+            svg = sanitizeSvgPaths(svg);
+
+            // --- Step 4: Convert SVG → PDF ---
+            LOG.info("Converting SVG to PDF...");
+            try {
+                convertSvgToPdf(svg, outputPdfFile, saveSvg);
+            } catch (Exception e) {
+                LOG.error("Failed to convert SVG to PDF '{}': {}", outputPdfFile.getAbsolutePath(), e.getMessage(), e);
+                throw new Exception("SVG→PDF conversion failed: " + e.getMessage(), e);
+            }
+
+            LOG.info("PDF saved: {}", outputPdfFile.getAbsolutePath());
+
+        } finally {
+            // Always clean up temp DXF
+            if (tempDxf != null && tempDxf.exists() && !tempDxf.delete()) {
+                LOG.warn("Temp DXF file not deleted: {}", tempDxf.getAbsolutePath());
+                tempDxf.deleteOnExit();
+            }
+        }
+		return null;
+    
+    }
+    
     public static void convertDxfToPdf(InputStream dxfInputStream, File outputPdfFile, boolean saveSvg)
             throws Exception {
 
@@ -5159,4 +5131,248 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         return localRectCorners(m.x, m.y, x0, y0, x1, y1, m.rotation);
     }
     
+    /** Register every layer name (and prefix) your system defines. Gray mode turns on only after this call. */
+    public static void registerSystemLayers(Collection<String> names, Collection<String> prefixes) {
+        if (names != null) for (String n : names) if (n != null) SYSTEM_LAYERS.add(n.trim().toUpperCase(Locale.ROOT));
+        if (prefixes != null) for (String p : prefixes) if (p != null) SYSTEM_LAYER_PREFIXES.add(p.trim().toUpperCase(Locale.ROOT));
+        grayUndefinedLayers = true;
+    }
+
+    static boolean isSystemLayer(String name) {
+        if (!grayUndefinedLayers || name == null || name.trim().isEmpty()) return true;
+        String u = name.trim().toUpperCase(Locale.ROOT);
+        if (SYSTEM_LAYERS.contains(u)) return true;
+        for (String p : SYSTEM_LAYER_PREFIXES) if (u.startsWith(p)) return true;
+        return false;
+    }
+    
+    static class PageInfo {
+        final double[] bounds; final int pageOrder;
+        PageInfo(double[] b, int o) { bounds = b; pageOrder = o; }
+    }
+
+    static int[] getPageDimensions(String paperSize) {
+        if (paperSize == null) return new int[]{3370, 2384};
+        switch (paperSize) {
+            case "A3":  return new int[]{1094, 814};
+            case "A2":  return new int[]{1588, 1162};
+            case "A1":  return new int[]{2356, 1588};
+            case "A0":  return new int[]{3274, 2356};
+            case "2A0": return new int[]{4764, 3370};
+            case "4A0": return new int[]{6741, 4764};
+            default:    return new int[]{3370, 2384};
+        }
+    }
+
+    private static double[] polylineBounds(PolylineEntity p) {
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        boolean any = false;
+        for (double[] v : p.vertices) {
+            if (!isValidCoordinate(v[0]) || !isValidCoordinate(v[1])) continue;
+            minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
+            minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
+            any = true;
+        }
+        return any ? new double[]{minX, minY, maxX, maxY} : null;
+    }
+
+    /** Page number n from the "n/m" text sitting inside the rectangle; MAX_VALUE when absent. */
+    private static int pageNumberIn(DxfDocument doc, double[] b) {
+        Pattern pat = Pattern.compile("(\\d+)\\s*/\\s*(\\d+)");
+        for (Entity e : doc.entities) {
+            if (!PAGE_LAYOUT_LAYER.equalsIgnoreCase(e.layer)) continue;
+            double x, y; String text;
+            if (e instanceof TextEntity) { TextEntity t = (TextEntity) e; x = t.x; y = t.y; text = t.text; }
+            else if (e instanceof MTextEntity) { MTextEntity m = (MTextEntity) e; x = m.x; y = m.y; text = m.getPlainText(); }
+            else continue;
+            if (x < b[0] || x > b[2] || y < b[1] || y > b[3] || text == null) continue;
+            Matcher m = pat.matcher(text.trim());
+            if (m.matches()) return Integer.parseInt(m.group(1));
+            LOG.warn("Invalid PAGE_LAYOUT page number text: {}", text);
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    static List<PageInfo> getOrderedPages(DxfDocument doc) {
+        List<PageInfo> pages = new ArrayList<>();
+        if (doc.workSheetPolygon != null && doc.workSheetPolygon.size() >= 3) {
+            double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+            for (double[] p : doc.workSheetPolygon) {
+                minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+                minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+            }
+            pages.add(new PageInfo(new double[]{minX, minY, maxX, maxY}, 1));
+        }
+        return pages;
+    }
+
+    /** Match by rectangle geometry first, then by page order, then by position. */
+    private static PageLayoutInfo findLayout(PageInfo p, List<PageLayoutInfo> layouts, int idx) {
+        double[] b = p.bounds;
+        double tol = Math.max(1e-6, 0.01 * Math.max(b[2] - b[0], b[3] - b[1]));
+        for (PageLayoutInfo l : layouts) {
+            if (l.isHasBounds() && Math.abs(l.getMinX() - b[0]) <= tol && Math.abs(l.getMinY() - b[1]) <= tol
+                    && Math.abs(l.getMaxX() - b[2]) <= tol && Math.abs(l.getMaxY() - b[3]) <= tol) return l;
+        }
+        if (p.pageOrder != Integer.MAX_VALUE)
+            for (PageLayoutInfo l : layouts) if (l.getPageOrder() == p.pageOrder) return l;
+        return idx < layouts.size() ? layouts.get(idx) : null;
+    }
+
+    /** Returns layouts in rendered page order, or null when paged mode is not possible (caller falls back to single page). */
+    private static List<PageLayoutInfo> renderPaged(DxfDocument doc, List<PageLayoutInfo> pageLayouts, File outputPdf) throws Exception {
+        List<PageInfo> pages = getOrderedPages(doc);
+        if (pages.isEmpty()) return null;
+        List<PageLayoutInfo> ordered = new ArrayList<>();
+        for (int i = 0; i < pages.size(); i++) {
+            PageLayoutInfo l = findLayout(pages.get(i), pageLayouts, i);
+            if (l == null) {
+                LOG.warn("PAGE_LAYOUT page {} has no valid layout; falling back to single-page output.", i + 1);
+                return null;
+            }
+            ordered.add(l);
+        }
+        List<File> temps = new ArrayList<>();
+        try {
+            for (int i = 0; i < pages.size(); i++) {
+                int[] dim = getPageDimensions(ordered.get(i).getPaperSize());
+                String svg = sanitizeSvgPaths(generateSvg(doc, pages.get(i).bounds, dim[0], dim[1]));
+                File f = File.createTempFile("page_" + (i + 1) + "_", ".pdf");
+                temps.add(f);
+                convertSvgToPdf(svg, f, false);
+            }
+            PDFMergerUtility merger = new PDFMergerUtility();
+            merger.setDestinationFileName(outputPdf.getAbsolutePath());
+            for (File f : temps) merger.addSource(f);
+            merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+        } finally {
+            for (File f : temps) if (f.exists() && !f.delete()) f.deleteOnExit();
+        }
+        return ordered;
+    }
+    
+    public static String generateSvg(DxfDocument doc, int targetWidthPx, int targetHeightPx) {
+        return generateSvg(doc, null, targetWidthPx, targetHeightPx);
+    }
+    
+
+    
+    /** pageBounds == null -> single page fitted to extents (2% margin). Otherwise exact WORK_SHEET rectangle, no margin. */
+    public static String generateSvg(DxfDocument doc, double[] pageBounds, int targetWidthPx, int targetHeightPx) {
+        boolean pageMode = pageBounds != null;
+        if (targetWidthPx <= 0) targetWidthPx = 3508;
+        if (targetHeightPx <= 0) targetHeightPx = 2480;
+
+        double bMinX = pageMode ? pageBounds[0] : doc.minX, bMinY = pageMode ? pageBounds[1] : doc.minY;
+        double bMaxX = pageMode ? pageBounds[2] : doc.maxX, bMaxY = pageMode ? pageBounds[3] : doc.maxY;
+        double dxfW = bMaxX - bMinX, dxfH = bMaxY - bMinY;
+        if (!Double.isFinite(dxfW) || dxfW <= 0.001) dxfW = 1.0;
+        if (!Double.isFinite(dxfH) || dxfH <= 0.001) dxfH = 1.0;
+
+        double margin = pageMode ? 0.0 : 0.02;
+        double adjMinX = bMinX - dxfW * margin, adjMinY = bMinY - dxfH * margin;
+        double adjMaxX = bMaxX + dxfW * margin, adjMaxY = bMaxY + dxfH * margin;
+        dxfW = adjMaxX - adjMinX;
+        dxfH = adjMaxY - adjMinY;
+
+        double scale = Math.min(targetWidthPx / dxfW, targetHeightPx / dxfH);
+        if (!Double.isFinite(scale) || scale <= 0) scale = 1.0;
+        double drawnW = dxfW * scale, drawnH = dxfH * scale;
+        double canvasW = pageMode ? drawnW : targetWidthPx;
+        double canvasH = pageMode ? drawnH : targetHeightPx;
+        double offsetX = (canvasW - drawnW) / 2.0, offsetY = (canvasH - drawnH) / 2.0;
+        double[] t = new double[]{scale, offsetX - adjMinX * scale, -adjMinY * scale, offsetY + drawnH};
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format(Locale.US,
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+          + "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" "
+          + "width=\"%.2fpx\" height=\"%.2fpx\" viewBox=\"0 0 %.4f %.4f\">\n",
+            canvasW, canvasH, canvasW, canvasH));
+
+        sb.append("<defs>\n");
+        sb.append("<marker id=\"arrow\" markerWidth=\"10\" markerHeight=\"7\" refX=\"10\" refY=\"3.5\" orient=\"auto\">"
+                + "<polygon points=\"0 0, 10 3.5, 0 7\" fill=\"#000000\"/></marker>\n");
+
+        // block symbols (INSERT targets)
+        appendBlockDefs(sb, doc, t);
+
+        boolean hasWs = doc.workSheetPolygon != null && doc.workSheetPolygon.size() >= 3;
+        if (pageMode) {
+            sb.append(String.format(Locale.US,
+                "<clipPath id=\"pageClip\"><rect x=\"0\" y=\"0\" width=\"%.4f\" height=\"%.4f\"/></clipPath>\n", canvasW, canvasH));
+        }
+        if (hasWs) {
+            StringBuilder pts = new StringBuilder();
+            for (double[] p : doc.workSheetPolygon)
+                pts.append(String.format(Locale.US, "%.4f,%.4f ", tx(p[0], t), ty(p[1], t)));
+            sb.append("<clipPath id=\"wsClip\"><polygon points=\"").append(pts.toString().trim()).append("\"/></clipPath>\n");
+        }
+        sb.append("</defs>\n");
+
+        sb.append(String.format(Locale.US, "<rect width=\"%.4f\" height=\"%.4f\" fill=\"white\"/>\n", canvasW, canvasH));
+
+        Map<String, List<Entity>> byLayer = new LinkedHashMap<>();
+        for (Entity e : doc.entities) {
+            Layer lay = doc.layers.get(e.layer.toUpperCase());
+            if (lay != null && !lay.visible) continue;
+            byLayer.computeIfAbsent(e.layer, k -> new ArrayList<>()).add(e);
+        }
+
+        if (pageMode) sb.append("<g clip-path=\"url(#pageClip)\">\n");
+        if (hasWs) sb.append("<g clip-path=\"url(#wsClip)\">\n");
+        for (Map.Entry<String, List<Entity>> en : byLayer.entrySet())
+            if (!isBorderLayer(en.getKey())) appendLayer(sb, doc, en.getKey(), en.getValue(), t);
+        if (hasWs) sb.append("</g>\n");
+        for (Map.Entry<String, List<Entity>> en : byLayer.entrySet())
+            if (isBorderLayer(en.getKey())) appendLayer(sb, doc, en.getKey(), en.getValue(), t);
+        if (pageMode) sb.append("</g>\n");
+
+        sb.append("</svg>\n");
+        return sb.toString();
+    }
+    
+    private static void appendBlockDefs(StringBuilder sb, DxfDocument doc, double[] t) {
+        for (Map.Entry<String, Block> entry : doc.blocks.entrySet()) {
+            Block block = entry.getValue();
+            if (block.name.equalsIgnoreCase("*Model_Space") || block.name.equalsIgnoreCase("*Paper_Space")
+                    || block.name.toLowerCase().startsWith("*paper_space")) continue;
+            sb.append(String.format("<symbol id=\"block_%s\" overflow=\"visible\">\n", sanitizeId(block.name)));
+            double[] blockT = new double[]{t[0], -block.baseX * t[0], -block.baseY * t[0], 0};
+            RENDERING_BLOCK_DEFINITION.set(true);
+            try {
+                for (Entity e : block.entities) {
+                    if (!e.visible) continue;
+                    try {
+                        String svg = e.toSvg(doc, blockT);
+                        if (!svg.isEmpty()) sb.append("  ").append(svg).append("\n");
+                    } catch (Exception ex) {
+                        System.err.println("Block entity error in " + block.name + ": " + ex.getMessage());
+                    }
+                }
+            } finally {
+                RENDERING_BLOCK_DEFINITION.remove();
+            }
+            sb.append("</symbol>\n");
+        }
+    }
+    
+    
+    private static boolean isBorderLayer(String name) {
+        return WORK_SHEET_LAYER.equalsIgnoreCase(name) || PAGE_LAYOUT_LAYER.equalsIgnoreCase(name);
+    }
+
+    private static void appendLayer(StringBuilder sb, DxfDocument doc, String layerName, List<Entity> list, double[] t) {
+        sb.append(String.format("<g id=\"layer_%s\">\n", sanitizeId(layerName)));
+        for (Entity e : list) {
+            if (!e.visible) continue;
+            try {
+                String svg = e.toSvg(doc, t);
+                if (!svg.isEmpty()) sb.append("  ").append(svg).append("\n");
+            } catch (Exception ex) {
+                System.err.println("Warning: entity render error on layer " + layerName + ": " + ex.getMessage());
+            }
+        }
+        sb.append("</g>\n");
+    }
 }

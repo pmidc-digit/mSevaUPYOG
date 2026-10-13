@@ -1,4 +1,4 @@
-﻿package com.ingestpipeline.service;
+package com.ingestpipeline.service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

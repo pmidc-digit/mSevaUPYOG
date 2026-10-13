@@ -1,4 +1,4 @@
-﻿package com.ingestpipeline.model;
+package com.ingestpipeline.model;
 
 import java.io.Serializable;
 import java.util.List;

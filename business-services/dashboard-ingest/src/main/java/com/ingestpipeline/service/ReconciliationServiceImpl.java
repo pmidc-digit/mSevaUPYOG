@@ -1,7 +1,8 @@
-package com.ingestpipeline.service;
+﻿package com.ingestpipeline.service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,12 +178,45 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		Map<String, Object> requestBody = new HashMap<>();
-		Map<String, Object> requestInfo = new HashMap<>();
-		requestInfo.put("apiId", "dashboard-ingest-v2-reconciliation");
-		requestInfo.put("ver", "1.0");
-		requestInfo.put("action", "search");
-		requestInfo.put("msgId", "reconciliation-" + System.currentTimeMillis());
-		requestBody.put("RequestInfo", requestInfo);
+		Map<String, Object> reqInfo = request.getRequestInfo() != null 
+				? new HashMap<>(request.getRequestInfo()) 
+				: new HashMap<>();
+
+		if (!reqInfo.containsKey("apiId") || reqInfo.get("apiId") == null) {
+			reqInfo.put("apiId", "dashboard-ingest-reconciliation");
+		}
+		if (!reqInfo.containsKey("ver") || reqInfo.get("ver") == null) {
+			reqInfo.put("ver", "1.0");
+		}
+		if (!reqInfo.containsKey("action") || reqInfo.get("action") == null) {
+			reqInfo.put("action", "search");
+		}
+		if (!reqInfo.containsKey("msgId") || reqInfo.get("msgId") == null) {
+			reqInfo.put("msgId", "reconciliation-" + System.currentTimeMillis());
+		}
+
+		// Ensure userInfo exists and has valid uuid and non-null type (required by PaymentValidator)
+		@SuppressWarnings("unchecked")
+		Map<String, Object> userInfo = (Map<String, Object>) reqInfo.get("userInfo");
+		if (userInfo == null) {
+			userInfo = new HashMap<>();
+			userInfo.put("uuid", "dss-reconciliation-system-user");
+			userInfo.put("type", "SYSTEM");
+			userInfo.put("name", "DSS Reconciliation System");
+			userInfo.put("userName", "SYSTEM");
+			userInfo.put("roles", Collections.emptyList());
+			userInfo.put("tenantId", request.getTenantId() != null ? request.getTenantId() : "pb");
+			reqInfo.put("userInfo", userInfo);
+		} else {
+			if (!userInfo.containsKey("uuid") || userInfo.get("uuid") == null) {
+				userInfo.put("uuid", "dss-reconciliation-system-user");
+			}
+			if (!userInfo.containsKey("type") || userInfo.get("type") == null) {
+				userInfo.put("type", "SYSTEM");
+			}
+		}
+
+		requestBody.put("RequestInfo", reqInfo);
 
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 

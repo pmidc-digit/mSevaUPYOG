@@ -1,4 +1,4 @@
-package com.ingestpipeline.model;
+﻿package com.ingestpipeline.model;
 
 import java.io.Serializable;
 import java.util.List;
@@ -50,8 +50,19 @@ public class ReconciliationRequest implements Serializable {
 	@JsonProperty("payments")
 	private List<Map<String, Object>> payments;
 
+	@JsonProperty("RequestInfo")
+	private Map<String, Object> requestInfo;
+
 	public ReconciliationRequest() {
 		super();
+	}
+
+	public Map<String, Object> getRequestInfo() {
+		return requestInfo;
+	}
+
+	public void setRequestInfo(Map<String, Object> requestInfo) {
+		this.requestInfo = requestInfo;
 	}
 
 	public String getTenantId() {

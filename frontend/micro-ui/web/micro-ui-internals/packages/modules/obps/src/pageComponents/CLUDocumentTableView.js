@@ -49,7 +49,13 @@ const CLUDocumentTableView = ({ documents }) => {
   const mappedDocuments = documents?.filter((doc) => doc?.documentAttachment)?.map((doc) => {
     const docUid = doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || "";
     const { documentType } = doc;
-    const url = urlsList?.pdfFiles?.[docUid];
+    const url =
+      urlsList?.pdfFiles?.[doc?.documentAttachment] ||
+      urlsList?.pdfFiles?.[doc?.filestoreId] ||
+      urlsList?.pdfFiles?.[doc?.fileStoreId] ||
+      urlsList?.pdfFiles?.[docUid] ||
+      urlsList?.pdfFiles?.[doc?.documentUid] ||
+      doc?.fileUrl;
     return {
       documentUid: docUid,
       documentType,

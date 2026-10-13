@@ -14,8 +14,16 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
   });
 
   // fetch urls and checklist data as before...
-  const { data: urlsList } = Digit.Hooks.noc.useNOCDocumentSearch(
-    { value: { workflowDocs: (documents || []).map((d) => ({ documentUid: d.documentUid })) } },
+  const { data: urlsList, isLoading } = Digit.Hooks.noc.useNOCDocumentSearch(
+    {
+      value: {
+        workflowDocs: (documents || []).map((d) => ({
+          documentUid: d.documentUid,
+          documentAttachment: d.documentAttachment || d.filestoreId || d.fileStoreId || d.documentUid || "",
+          filestoreId: d.filestoreId || d.fileStoreId || "",
+        })),
+      },
+    },
     { enabled: documents?.length > 0 }
   );
   const { data: searchChecklistData } = Digit.Hooks.obps.useCLUCheckListSearch({ applicationNo }, tenantId);
@@ -51,7 +59,12 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
     return (
       <div className="checklist-mobile-cards">
         {sortedDocuments?.map((doc, i) => {
-          const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
+          const url =
+            urlsList?.pdfFiles?.[doc?.documentAttachment] ||
+            urlsList?.pdfFiles?.[doc?.filestoreId] ||
+            urlsList?.pdfFiles?.[doc?.fileStoreId] ||
+            urlsList?.pdfFiles?.[doc?.documentUid] ||
+            doc?.fileUrl;
           return (
             <div key={doc.documentUid || i} className="checklist-mobile-card">
               <div className="checklist-card-header">
@@ -109,7 +122,12 @@ const CLUDocumentChecklist = ({ documents, applicationNo, tenantId, onRemarksCha
             </thead>
             <tbody>
               {sortedDocuments?.map((doc, i) => {
-                const url = urlsList?.pdfFiles?.[doc.documentUid] || doc.fileUrl;
+                const url =
+                  urlsList?.pdfFiles?.[doc?.documentAttachment] ||
+                  urlsList?.pdfFiles?.[doc?.filestoreId] ||
+                  urlsList?.pdfFiles?.[doc?.fileStoreId] ||
+                  urlsList?.pdfFiles?.[doc?.documentUid] ||
+                  doc?.fileUrl;
                 return (
                   <tr key={doc.documentUid || i}>
                     <td className="checklist-table-cell checklist-table-cell-srno">{i + 1}</td>

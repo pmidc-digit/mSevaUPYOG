@@ -828,7 +828,7 @@ const getFormattedULBName = (ulbCode = "") => {
     let applicationDetailsInfo = {
       title: " ",
       isCommon: true,
-      values: [{ title: "BPA_APPLICATION_NUMBER_LABEL", value: BPA?.applicationNo || "NA" }],
+      values: [{ title: "BPA_APPLICATION_NUMBER_LABEL", value: BPA?.applicationNo || "NA" },{ title: "APPLICATION_STATUS", value: BPA?.status ? `WF_${BPA?.businessService}_${BPA?.status}` : "NA"  } ],
     };
 
     let envCitizenName = window.location.href.includes("/employee") ? "employee" : "citizen";

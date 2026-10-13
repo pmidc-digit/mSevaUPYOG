@@ -1120,6 +1120,7 @@ const CLUEmployeeApplicationDetails = () => {
       <Card>
         <StatusTable>
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL")} text={id} />
+          <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Clu?.[0]?.applicationStatus ? t(`BPA_STATUS_${applicationDetails?.Clu?.[0]?.applicationStatus}`) : "N/A"} />
         </StatusTable>
       </Card>
 

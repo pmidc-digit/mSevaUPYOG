@@ -564,6 +564,27 @@ const ApplicationDetails = () => {
 
   const getTotalAmount = () => getTLTotalAmount({ billData, paymentsHistory });
 
+  // Helper to calculate applicable penalty and interest from bill account details (excluding previous adhoc penalty so it's not double-counted with modal's penalty input)
+  const getApplicablePenaltyAndInterest = () => {
+    const details = getBillAccountDetails();
+    const applicablePenalty =
+      details
+        ?.filter(
+          (item) =>
+            item?.taxHeadCode &&
+            (item.taxHeadCode === "TL_RENEWAL_PENALTY" || item.taxHeadCode.includes("PENALTY")) &&
+            !item.taxHeadCode.includes("ADHOC")
+        )
+        ?.reduce((sum, item) => sum + (Number(item?.amount) || 0), 0) || 0;
+
+    const applicableInterest =
+      details
+        ?.filter((item) => item?.taxHeadCode && item.taxHeadCode.includes("INTEREST"))
+        ?.reduce((sum, item) => sum + (Number(item?.amount) || 0), 0) || 0;
+
+    return applicablePenalty + applicableInterest;
+  };
+
   // Get summarized fee line items for the fee card
   const getFeeLineItems = () => {
     const details = getBillAccountDetails();
@@ -600,6 +621,17 @@ const ApplicationDetails = () => {
 
   // Handle ADHOC submit — update license, then refresh bill + breakup
   const handleAdhocSubmit = async ({ adhocPenalty, adhocPenaltyReason, penaltyComments, adhocExemption, adhocExemptionReason, rebateComments }) => {
+    const billPenaltyAndInterest = getApplicablePenaltyAndInterest();
+    const totalAllowed = (Number(billPenaltyAndInterest) || 0) + (Number(adhocPenalty) || 0);
+    const rebateVal = Math.abs(Number(adhocExemption) || 0);
+    if (rebateVal > 0 && rebateVal > totalAllowed) {
+      alert(
+        t("TL_ERROR_REBATE_EXCEEDS_PENALTY_INTEREST") ||
+        `Adhoc Rebate cannot be greater than the total applicable Interest and Penalty amount (₹${totalAllowed})`
+      );
+      return;
+    }
+
     setIsAdhocUpdating(true);
     try {
       // Fetch fresh license data
@@ -1038,6 +1070,7 @@ const ApplicationDetails = () => {
         <AdhocRebatePenaltyModal
           t={t}
           licenseData={adhocLicenseData || applicationDetails?.applicationData}
+          billPenaltyAndInterest={getApplicablePenaltyAndInterest()}
           onClose={() => setShowAdhocPopup(false)}
           onSubmit={handleAdhocSubmit}
           isUpdating={isAdhocUpdating}

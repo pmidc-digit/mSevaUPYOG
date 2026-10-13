@@ -145,6 +145,16 @@ public class PlanService {
 	@Value("${source.validation}")
 	private Boolean sourceValidation;
 
+	@Value("${edcr.worksheet.validation.enabled:false}")
+	private boolean workSheetValidationEnabled;
+
+	@javax.annotation.PostConstruct
+	public void initWorkSheetValidationFlag() {
+	    Plan.setWorkSheetValidationEnabled(workSheetValidationEnabled);
+	    LOG.info("WORK_SHEET validation enabled = {}", workSheetValidationEnabled);
+	}
+	
+	
     public Plan process(EdcrApplication dcrApplication, String applicationType) {
         Map<String, String> cityDetails = specificRuleService.getCityDetails();
       
@@ -372,8 +382,16 @@ public class PlanService {
             if (plan.getPlanInformation() != null) {
                 plan.getPlanInformation().setUlbType(ulbType);
                 plan.getPlanInformation().setDistrict(districtName);
-                plan.getPlanInformation().setUlbName(capitalizeFirstLetter(cityName));
-                plan.getPlanInformation().setCity(capitalizeFirstLetter(cityName));
+                
+                if (cityName != null && !cityName.isEmpty()) {
+                    plan.getPlanInformation().setUlbName(capitalizeFirstLetter(cityName));
+                }
+                
+                String city = plan.getPlanInformation().getCity();
+                if (city != null && !city.isEmpty()) {
+                    plan.getPlanInformation().setCity(capitalizeFirstLetter(city));
+                }
+                
                 LOG.info("ULB Name value from edcr Request : {}", plan.getPlanInformation().getUlbName());
             }
             LOG.info("ULB Type value from MDMS : {}", ulbType);
@@ -401,11 +419,13 @@ public class PlanService {
         }
         
         
-        int errorsBefore = plan.getErrors() == null ? 0 : plan.getErrors().size();
-        DxfValidator.validate(dcrApplication.getSavedDxfFile(), plan);
-        int errorsAfter = plan.getErrors() == null ? 0 : plan.getErrors().size();
-        if (errorsAfter > errorsBefore) {
-            LOG.warn("DXF preflight added {} issue(s): {}", errorsAfter - errorsBefore, plan.getErrors());
+        if (workSheetValidationEnabled) {
+            int errorsBefore = plan.getErrors() == null ? 0 : plan.getErrors().size();
+            DxfValidator.validate(dcrApplication.getSavedDxfFile(), plan);
+            int errorsAfter = plan.getErrors() == null ? 0 : plan.getErrors().size();
+            if (errorsAfter > errorsBefore) {
+                LOG.warn("DXF preflight added {} issue(s): {}", errorsAfter - errorsBefore, plan.getErrors());
+            }
         }
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();

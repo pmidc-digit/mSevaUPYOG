@@ -27,6 +27,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.util.Matrix;
+import org.egov.common.entity.edcr.PageLayoutInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -84,304 +85,150 @@ public class PdfOverlayTemplateService {
 	 * This gives a balanced visual appearance.
 	 */
 	private static final float TARGET_DRAWING_TO_TABLE_HEIGHT_RATIO = 1.00f;
+	private static final float LAYOUT_PANEL_WIDTH = 360f;   // 5 inch table in paged mode
+	private static final float LAYOUT_MARGIN = 28.35f;      // 10 mm
+	
 
 	@Autowired
 	private TemplateEngine templateEngine;
+	
+	public File impose(File inputPdf, String outputFileName, JsonNode additionalDetails, float expandRight,
+	        float expandBottom, float gapDrawingToTables, float gapTop) throws IOException {
+	    return impose(inputPdf, outputFileName, additionalDetails, expandRight, expandBottom,
+	            gapDrawingToTables, gapTop, null);
+	}
 
 	public File impose(File inputPdf, String outputFileName, JsonNode additionalDetails, float expandRight,
-			float expandBottom, float gapDrawingToTables, float gapTop) throws IOException {
-
-		File outputFile = new File(outputFileName);
-
-		File composedPdf = File.createTempFile("impose_output_", ".pdf");
-
-		File panelPdf = File.createTempFile("impose_panel_", ".pdf");
-
-		try {
-
-			/*
-			 * ========================================================== 1. KEEP TABLE
-			 * WIDTH FIXED ==========================================================
-			 *
-			 * Previously panel width was calculated dynamically from drawing width.
-			 *
-			 * That caused table width to vary.
-			 *
-			 * Requirement: Table should remain same width as before.
-			 */
-			float panelWidth = FIXED_PANEL_WIDTH;
-
-			byte[] panelBytes = renderPanelPdf(additionalDetails, panelWidth);
-
-			try (FileOutputStream fos = new FileOutputStream(panelPdf)) {
-
-				fos.write(panelBytes);
-			}
-
-			try (PDDocument baseDoc = PDDocument.load(inputPdf);
-
-					PDDocument panelDoc = PDDocument.load(panelPdf);
-
-					PDDocument outputDoc = new PDDocument()) {
-
-				LayerUtility lu = new LayerUtility(outputDoc);
-
-				/*
-				 * Panel may contain multiple pages.
-				 *
-				 * Flatten all table pages into one tall page.
-				 */
-				try (PDDocument flattenedPanelDoc = flattenPanelPages(panelDoc)) {
-
-					PDFormXObject panelForm = lu.importPageAsForm(flattenedPanelDoc, 0);
-
-					float panelW = flattenedPanelDoc.getPage(0).getMediaBox().getWidth();
-
-					float panelH = flattenedPanelDoc.getPage(0).getMediaBox().getHeight();
-
-					LOG.info("========================================================");
-
-					LOG.info("SMART PDF COMPOSITION START");
-
-					LOG.info("Table original rendered size -> Width: {} pt, Height: {} pt", panelW, panelH);
-
-					LOG.info("Fixed requested table width -> {} pt (wider scrutiny panel)", panelWidth);
-
-					/*
-					 * Process every drawing page.
-					 */
-					for (int i = 0; i < baseDoc.getNumberOfPages(); i++) {
-
-						PDPage srcPage = baseDoc.getPage(i);
-
-						float origW = srcPage.getMediaBox().getWidth();
-
-						float origH = srcPage.getMediaBox().getHeight();
-
-						/*
-						 * ================================================== TABLE SIZE
-						 * ==================================================
-						 *
-						 * Table will NOT be scaled.
-						 *
-						 * This preserves:
-						 *
-						 * - table width - font size - column proportion - existing table appearance
-						 */
-						float renderedPanelW = panelW;
-
-						float renderedPanelH = panelH;
-
-						/*
-						 * ================================================== SMART DRAWING SCALE
-						 * ==================================================
-						 *
-						 * Drawing grows according to table height.
-						 *
-						 * Bigger table -> bigger drawing.
-						 *
-						 * Small table -> original drawing size maintained.
-						 */
-						float drawingScale = calculateSmartDrawingScale(origH, renderedPanelH);
-
-						float drawingW = origW * drawingScale;
-
-						float drawingH = origH * drawingScale;
-
-						/*
-						 * Find tallest side.
-						 *
-						 * Usually:
-						 *
-						 * drawingH ~= panelH
-						 *
-						 * because our smart scale tries to balance them.
-						 */
-						float contentHeight = Math.max(drawingH, renderedPanelH);
-
-						/*
-						 * Table starts immediately after drawing.
-						 */
-						float targetX = drawingW + gapDrawingToTables;
-
-						/*
-						 * ================================================== DYNAMIC PAGE WIDTH
-						 * ==================================================
-						 *
-						 * Increase canvas instead of shrinking table.
-						 */
-						float calculatedWidth = targetX + renderedPanelW + PAGE_EDGE_GAP;
-
-						/*
-						 * IMPORTANT:
-						 *
-						 * Do NOT force the final page back to the original DXF-PDF
-						 * canvas size. The original temporary PDF can contain large
-						 * internal blank margins. Reusing origW/origH here was the
-						 * reason the final scrutinized PDF still had a huge white
-						 * canvas even after drawingScale was calculated.
-						 */
-						float newW = calculatedWidth;
-
-						/*
-						 * ================================================== DYNAMIC PAGE HEIGHT
-						 * ==================================================
-						 *
-						 * Final page height is driven only by the balanced visible
-						 * content, not by the temporary DXF PDF page height.
-						 */
-						float calculatedHeight = gapTop + contentHeight + PAGE_EDGE_GAP;
-						float newH = calculatedHeight;
-
-						/*
-						 * ================================================== TOP ALIGN BOTH
-						 * ==================================================
-						 *
-						 * Drawing and table both start from same top line.
-						 */
-						float topY = newH - gapTop;
-
-						float drawingY = topY - drawingH;
-
-						float panelY = topY - renderedPanelH;
-
-						LOG.info("--------------------------------------------------------");
-
-						LOG.info("PDF Page {} Layout Details", i + 1);
-
-						LOG.info("Original drawing PDF -> W={} H={}", origW, origH);
-
-						LOG.info("Table -> W={} H={}", renderedPanelW, renderedPanelH);
-
-						LOG.info("Calculated Drawing Scale -> {}", drawingScale);
-
-						LOG.info("Final Drawing -> W={} H={}", drawingW, drawingH);
-
-						LOG.info("Drawing/Table Gap -> {}", gapDrawingToTables);
-
-						LOG.info("Table X Position -> {}", targetX);
-
-						LOG.info("Drawing Y Position -> {}", drawingY);
-
-						LOG.info("Table Y Position -> {}", panelY);
-
-						LOG.info("Final Page -> W={} H={}", newW, newH);
-
-						/*
-						 * Create final page.
-						 */
-						PDPage outPage = new PDPage(new PDRectangle(newW, newH));
-
-						outputDoc.addPage(outPage);
-
-						/*
-						 * Import drawing page.
-						 */
-						PDFormXObject drawingForm = lu.importPageAsForm(baseDoc, i);
-
-						try (PDPageContentStream cs = new PDPageContentStream(outputDoc, outPage,
-								PDPageContentStream.AppendMode.APPEND, true, true)) {
-
-							/*
-							 * ============================================= WHITE BACKGROUND
-							 * =============================================
-							 */
-							cs.setNonStrokingColor(1f, 1f, 1f);
-
-							cs.addRect(0, 0, newW, newH);
-
-							cs.fill();
-
-							/*
-							 * ============================================= DRAWING
-							 * =============================================
-							 *
-							 * Uniform scaling:
-							 *
-							 * X scale == Y scale.
-							 *
-							 * Therefore drawing aspect ratio remains intact.
-							 */
-							cs.saveGraphicsState();
-
-							cs.transform(Matrix.getTranslateInstance(0, drawingY));
-
-							cs.transform(Matrix.getScaleInstance(drawingScale, drawingScale));
-
-							cs.drawForm(drawingForm);
-
-							cs.restoreGraphicsState();
-
-							/*
-							 * ============================================= TABLE
-							 * =============================================
-							 *
-							 * IMPORTANT:
-							 *
-							 * NO SCALE MATRIX applied.
-							 *
-							 * Therefore:
-							 *
-							 * table width remains unchanged font remains unchanged column layout remains
-							 * unchanged
-							 */
-							cs.saveGraphicsState();
-
-							cs.transform(Matrix.getTranslateInstance(targetX, panelY));
-
-							cs.drawForm(panelForm);
-
-							cs.restoreGraphicsState();
-						}
-					}
-				}
-
-				/*
-				 * Open PDF in Fit Page mode.
-				 */
-				if (outputDoc.getNumberOfPages() > 0) {
-
-					org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination dest = new org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination();
-
-					dest.setPage(outputDoc.getPage(0));
-
-					outputDoc.getDocumentCatalog().setOpenAction(dest);
-				}
-
-				outputDoc.save(composedPdf);
-			}
-
-			/*
-			 * inputPdf and outputFileName may point to same file.
-			 *
-			 * Replace only after PDFBox documents are closed.
-			 */
-			Files.copy(composedPdf.toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-			if (!outputFile.isFile() || outputFile.length() == 0L) {
-
-				throw new IOException("Composed scrutinized PDF is empty: " + outputFile.getAbsolutePath());
-			}
-
-			LOG.info("SMART PDF COMPOSITION COMPLETED -> {}", outputFile.getAbsolutePath());
-
-			LOG.info("========================================================");
-
-		} finally {
-
-			if (panelPdf.exists() && !panelPdf.delete()) {
-
-				panelPdf.deleteOnExit();
-			}
-
-			if (composedPdf.exists() && !composedPdf.delete()) {
-
-				composedPdf.deleteOnExit();
-			}
-		}
-
-		return outputFile;
-	}
+        float expandBottom, float gapDrawingToTables, float gapTop, List<PageLayoutInfo> pageLayouts)
+        throws IOException {
+
+    File outputFile = new File(outputFileName);
+    File composedPdf = File.createTempFile("impose_output_", ".pdf");
+    File panelPdf = File.createTempFile("impose_panel_", ".pdf");
+
+    try {
+        try (PDDocument baseDoc = PDDocument.load(inputPdf);
+             PDDocument outputDoc = new PDDocument()) {
+
+            int pageCount = baseDoc.getNumberOfPages();
+
+            // Paged mode only when there is exactly one valid layout per PDF page.
+            // Anything else falls back to the existing single-page "smart" layout.
+            boolean hasLayouts = pageLayouts != null && !pageLayouts.isEmpty();
+            boolean layoutMode = hasLayouts && pageLayouts.size() == pageCount;
+            if (hasLayouts && !layoutMode) {
+                LOG.warn("Page layout count ({}) does not match PDF page count ({}). Using single-page layout.",
+                        pageLayouts.size(), pageCount);
+            }
+
+            // Table width: 5 inch (360pt) in paged mode, unchanged 600pt otherwise.
+            float panelWidth = layoutMode ? LAYOUT_PANEL_WIDTH : FIXED_PANEL_WIDTH;
+            byte[] panelBytes = renderPanelPdf(additionalDetails, panelWidth, layoutMode);
+            try (FileOutputStream fos = new FileOutputStream(panelPdf)) {
+                fos.write(panelBytes);
+            }
+
+            LayerUtility lu = new LayerUtility(outputDoc);
+
+            // The table may span several pages; flatten them into one tall page.
+            try (PDDocument panelDoc = PDDocument.load(panelPdf);
+                 PDDocument flattenedPanelDoc = flattenPanelPages(panelDoc)) {
+
+                PDFormXObject panelForm = lu.importPageAsForm(flattenedPanelDoc, 0);
+                float panelW = flattenedPanelDoc.getPage(0).getMediaBox().getWidth();
+                float panelH = flattenedPanelDoc.getPage(0).getMediaBox().getHeight();
+
+                LOG.info("SMART PDF COMPOSITION START (layoutMode={}, pages={})", layoutMode, pageCount);
+                LOG.info("Table rendered size -> W={} pt, H={} pt (requested width {} pt)", panelW, panelH, panelWidth);
+
+                for (int i = 0; i < pageCount; i++) {
+
+                    // ---------- PAGED MODE: paper size comes from PAGE_LAYOUT ----------
+                    if (layoutMode && pageLayouts.get(i) != null) {
+                        drawLayoutPage(outputDoc, lu, baseDoc, i, panelForm, panelW, panelH,
+                                pageLayouts.get(i), gapTop);
+                        continue;
+                    }
+
+                    // ---------- LEGACY MODE: unchanged behaviour ----------
+                    PDPage srcPage = baseDoc.getPage(i);
+                    float origW = srcPage.getMediaBox().getWidth();
+                    float origH = srcPage.getMediaBox().getHeight();
+
+                    // Table is never scaled; the drawing is scaled to balance the table height.
+                    float renderedPanelW = panelW;
+                    float renderedPanelH = panelH;
+
+                    float drawingScale = calculateSmartDrawingScale(origH, renderedPanelH);
+                    float drawingW = origW * drawingScale;
+                    float drawingH = origH * drawingScale;
+
+                    float contentHeight = Math.max(drawingH, renderedPanelH);
+                    float targetX = drawingW + gapDrawingToTables;
+
+                    // Page size comes from the content, not from the temporary DXF PDF canvas.
+                    float newW = targetX + renderedPanelW + PAGE_EDGE_GAP;
+                    float newH = gapTop + contentHeight + PAGE_EDGE_GAP;
+
+                    // Drawing and table share the same top line.
+                    float topY = newH - gapTop;
+                    float drawingY = topY - drawingH;
+                    float panelY = topY - renderedPanelH;
+
+                    LOG.info("Page {} -> drawing {}x{} (scale {}), table {}x{}, final page {}x{}",
+                            i + 1, drawingW, drawingH, drawingScale, renderedPanelW, renderedPanelH, newW, newH);
+
+                    PDPage outPage = new PDPage(new PDRectangle(newW, newH));
+                    outputDoc.addPage(outPage);
+                    PDFormXObject drawingForm = lu.importPageAsForm(baseDoc, i);
+
+                    try (PDPageContentStream cs = new PDPageContentStream(outputDoc, outPage,
+                            PDPageContentStream.AppendMode.APPEND, true, true)) {
+
+                        cs.setNonStrokingColor(1f, 1f, 1f);
+                        cs.addRect(0, 0, newW, newH);
+                        cs.fill();
+
+                        cs.saveGraphicsState();
+                        cs.transform(Matrix.getTranslateInstance(0, drawingY));
+                        cs.transform(Matrix.getScaleInstance(drawingScale, drawingScale));
+                        cs.drawForm(drawingForm);
+                        cs.restoreGraphicsState();
+
+                        cs.saveGraphicsState();
+                        cs.transform(Matrix.getTranslateInstance(targetX, panelY));
+                        cs.drawForm(panelForm);
+                        cs.restoreGraphicsState();
+                    }
+                }
+            }
+
+            // Open the PDF in Fit Page mode.
+            if (outputDoc.getNumberOfPages() > 0) {
+                org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination dest =
+                        new org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination();
+                dest.setPage(outputDoc.getPage(0));
+                outputDoc.getDocumentCatalog().setOpenAction(dest);
+            }
+
+            outputDoc.save(composedPdf);
+        }
+
+        // inputPdf and outputFileName may be the same file: replace only after all PDFBox documents are closed.
+        Files.copy(composedPdf.toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        if (!outputFile.isFile() || outputFile.length() == 0L) {
+            throw new IOException("Composed scrutinized PDF is empty: " + outputFile.getAbsolutePath());
+        }
+        LOG.info("SMART PDF COMPOSITION COMPLETED -> {}", outputFile.getAbsolutePath());
+
+    } finally {
+        if (panelPdf.exists() && !panelPdf.delete()) panelPdf.deleteOnExit();
+        if (composedPdf.exists() && !composedPdf.delete()) composedPdf.deleteOnExit();
+    }
+
+    return outputFile;
+}
 
 	/**
 	 * Dynamically calculates drawing scale according to table height.
@@ -508,7 +355,7 @@ public class PdfOverlayTemplateService {
 	 *
 	 * panelWidthPt is FIXED_PANEL_WIDTH. Therefore table width remains stable.
 	 */
-	private byte[] renderPanelPdf(JsonNode additionalDetails, float panelWidthPt) throws IOException {
+	private byte[] renderPanelPdf(JsonNode additionalDetails, float panelWidthPt, boolean compact) throws IOException {
 		logXmlFactories();
 		
 		Context context = new Context();
@@ -530,7 +377,10 @@ public class PdfOverlayTemplateService {
 		 *
 		 * Render using standard 297mm pages and combine multiple pages afterwards.
 		 */
-		String widthCss = "<style>@page { size: " + ptToMm(panelWidthPt) + "mm 297mm; margin: 8pt; }</style>";
+		String widthCss = compact
+		        ? "<style>@page { size: " + ptToMm(panelWidthPt) + "mm 297mm; margin: 0; } "
+		          + "table { width: 100%; table-layout: fixed; border-collapse: collapse; border-spacing: 0; }</style>"
+		        : "<style>@page { size: " + ptToMm(panelWidthPt) + "mm 297mm; margin: 8pt; }</style>";
 
 		String htmlWithSize = html.replace("</head>", widthCss + "</head>");
 
@@ -1371,4 +1221,46 @@ public class PdfOverlayTemplateService {
 
 		return (pt * 25.4f) / 72f;
 	}
+	
+	private void drawLayoutPage(PDDocument outputDoc, LayerUtility lu, PDDocument baseDoc, int i,
+	        PDFormXObject panelForm, float panelW, float panelH, PageLayoutInfo layout, float gapTop) throws IOException {
+	    PDPage src = baseDoc.getPage(i);
+	    float origW = src.getMediaBox().getWidth(), origH = src.getMediaBox().getHeight();
+	    int[] dim = DxfToPdfConverterv2.getPageDimensions(layout.getPaperSize());
+	    float newW = dim[0], newH = dim[1];
+
+	    float availW = newW - LAYOUT_MARGIN - LAYOUT_PANEL_WIDTH - LAYOUT_MARGIN;
+	    float availH = newH - gapTop - LAYOUT_MARGIN;
+	    float scale = Math.min(availW / origW, availH / origH);
+	    if (!(scale > 0f)) scale = 1f;
+	    float drawW = origW * scale, drawH = origH * scale;
+	    float drawX = LAYOUT_MARGIN, drawY = newH - gapTop - drawH;
+
+	    float tableX = drawX + drawW - 0.75f;                       // small overlap hides the stroke seam
+	    float panelScale = Math.min(LAYOUT_PANEL_WIDTH / panelW, availH / panelH);
+	    float panelY = drawY + drawH - panelH * panelScale;
+
+	    PDPage outPage = new PDPage(new PDRectangle(newW, newH));
+	    outputDoc.addPage(outPage);
+	    PDFormXObject drawingForm = lu.importPageAsForm(baseDoc, i);
+	    try (PDPageContentStream cs = new PDPageContentStream(outputDoc, outPage,
+	            PDPageContentStream.AppendMode.APPEND, true, true)) {
+	        cs.setNonStrokingColor(1f, 1f, 1f);
+	        cs.addRect(0, 0, newW, newH);
+	        cs.fill();
+
+	        cs.saveGraphicsState();
+	        cs.transform(Matrix.getTranslateInstance(drawX, drawY));
+	        cs.transform(Matrix.getScaleInstance(scale, scale));
+	        cs.drawForm(drawingForm);
+	        cs.restoreGraphicsState();
+
+	        cs.saveGraphicsState();
+	        cs.transform(Matrix.getTranslateInstance(tableX, panelY));
+	        cs.transform(Matrix.getScaleInstance(panelScale, panelScale));
+	        cs.drawForm(panelForm);
+	        cs.restoreGraphicsState();
+	    }
+	}
+	
 }

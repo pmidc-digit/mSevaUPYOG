@@ -53,8 +53,11 @@ import org.egov.collection.model.PaymentRequest;
 import org.egov.collection.model.PaymentResponse;
 import org.egov.collection.model.PaymentSearchCriteria;
 import org.egov.collection.service.MigrationService;
+import org.egov.collection.service.PaymentResettleService;
 import org.egov.collection.service.PaymentService;
 import org.egov.collection.service.PaymentWorkflowService;
+import org.egov.collection.web.contract.PaymentResettleRequest;
+import org.egov.collection.web.contract.PaymentResettleResponse;
 import org.egov.collection.web.contract.PaymentWorkflowRequest;
 import org.egov.collection.web.contract.factory.RequestInfoUpdateWrapper;
 import org.egov.collection.web.contract.factory.RequestInfoWrapper;
@@ -93,6 +96,9 @@ public class PaymentController {
 
     @Autowired
     private MigrationService migrationService;
+
+    @Autowired
+    private PaymentResettleService paymentResettleService;
 
     @RequestMapping(path = {"/_search","/{moduleName}/_search"}, method = RequestMethod.POST)
     @ResponseBody
@@ -157,6 +163,13 @@ public class PaymentController {
         Payment payment = paymentService.vaidateProvisonalPayment(paymentRequest);;
         return getSuccessResponse(Collections.singletonList(payment), paymentRequest.getRequestInfo());
 
+    }
+
+    @RequestMapping(value = "/_resettle", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<PaymentResettleResponse> resettle(@RequestBody @Valid PaymentResettleRequest resettleRequest) {
+        PaymentResettleResponse response = paymentResettleService.resettlePayment(resettleRequest);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 

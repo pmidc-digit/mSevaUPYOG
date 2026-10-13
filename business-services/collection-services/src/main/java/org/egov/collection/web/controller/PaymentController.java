@@ -50,12 +50,16 @@ import javax.validation.Valid;
 
 import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentRequest;
+import org.egov.collection.model.PaymentResettleBatchAudit;
+import org.egov.collection.model.PaymentResettleDetailAudit;
 import org.egov.collection.model.PaymentResponse;
 import org.egov.collection.model.PaymentSearchCriteria;
 import org.egov.collection.service.MigrationService;
 import org.egov.collection.service.PaymentResettleService;
 import org.egov.collection.service.PaymentService;
 import org.egov.collection.service.PaymentWorkflowService;
+import org.egov.collection.web.contract.PaymentAutoResettleRequest;
+import org.egov.collection.web.contract.PaymentAutoResettleResponse;
 import org.egov.collection.web.contract.PaymentResettleRequest;
 import org.egov.collection.web.contract.PaymentResettleResponse;
 import org.egov.collection.web.contract.PaymentWorkflowRequest;
@@ -169,6 +173,29 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity<PaymentResettleResponse> resettle(@RequestBody @Valid PaymentResettleRequest resettleRequest) {
         PaymentResettleResponse response = paymentResettleService.resettlePayment(resettleRequest);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/_auto-resettle", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<PaymentAutoResettleResponse> autoResettle(@RequestBody @Valid PaymentAutoResettleRequest request) {
+        PaymentAutoResettleResponse response = paymentResettleService.autoResettlePayments(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/_resettle-audit", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<?> getResettleAudit(@RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,
+            @RequestParam(required = false) String batchId,
+            @RequestParam(required = false) String paymentId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer limit) {
+        List<PaymentResettleDetailAudit> details = paymentResettleService.getResettleDetailAudits(batchId, paymentId, status, limit);
+        List<PaymentResettleBatchAudit> batches = paymentResettleService.getResettleBatchAudits(null, limit);
+        Map<String, Object> response = new HashMap<>();
+        response.put("ResponseInfo", ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true));
+        response.put("batches", batches);
+        response.put("details", details);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

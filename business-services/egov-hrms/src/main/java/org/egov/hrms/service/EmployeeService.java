@@ -41,8 +41,6 @@
 package org.egov.hrms.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -159,19 +157,7 @@ public class EmployeeService {
 
 	    // 4️⃣ Push to Kafka
 	    String key = employeeRequest.getEmployees().get(0).getUuid();
-	    
-	    ObjectNode kafkaPayload = objectMapper.valueToTree(employeeRequest);
-	    for (JsonNode empNode : kafkaPayload.path("Employees")) {
-	        if (empNode.has("roles") && empNode.get("roles").isArray()) {
-	            List<String> roleList = new ArrayList<>();
-	            for (JsonNode roleNode : empNode.get("roles")) {
-	                roleList.add(roleNode.asText());
-	            }
-	            ((ObjectNode) empNode).put("role_code", String.join(",", roleList));
-	        }
-	    }
-	    
-	    hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), key, kafkaPayload);
+	    hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), key, employeeRequest);
 
 	    // 5️⃣ Generate response
 	    return generateObpassResponse(employeeRequest);
@@ -287,6 +273,7 @@ public class EmployeeService {
 	            empToDelete.setTenantId(emp.getTenantId());       // required for delete
 	            empToDelete.setUserUUID(emp.getUserUUID());       // optional but useful
 	            empToDelete.setModulename(emp.getModulename());
+	            empToDelete.setRoles(emp.getRoles());
 
 	            employeesToDelete.add(empToDelete);
 	        }

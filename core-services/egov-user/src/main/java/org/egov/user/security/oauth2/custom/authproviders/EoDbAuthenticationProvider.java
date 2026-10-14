@@ -98,9 +98,21 @@ public class EoDbAuthenticationProvider implements AuthenticationProvider {
             user = userService.getUniqueUser(userName, tenantId, UserType.fromValue(userType));
             /* decrypt here otp service and final response need decrypted data*/
             Set<org.egov.user.domain.model.Role> domain_roles = user.getRoles();
+            if (domain_roles == null || domain_roles.isEmpty()) {
+                log.error("Login failed: User '{}' of type '{}' in tenant '{}' has no roles assigned in the database.",
+                        userName, userType, tenantId);
+                OAuth2Exception exception = new OAuth2Exception(
+                        "No roles assigned for user: " + userName + ". Your account does not have access permissions configured. Please contact your system administrator.");
+                exception.addAdditionalInformation("roles_missing", "true");
+                exception.addAdditionalInformation("user_name", userName);
+                exception.addAdditionalInformation("user_type", userType);
+                throw exception;
+            }
             List<org.egov.common.contract.request.Role> contract_roles = new ArrayList<>();
             for (org.egov.user.domain.model.Role role : domain_roles) {
-                contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode()).name(role.getName()).build());
+                if (role != null) {
+                    contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode()).name(role.getName()).build());
+                }
             }
 
             org.egov.common.contract.request.User userInfo = org.egov.common.contract.request.User.builder().uuid(user.getUuid())
@@ -128,7 +140,7 @@ public class EoDbAuthenticationProvider implements AuthenticationProvider {
             if (userService.isAccountUnlockAble(user)) {
                 user = unlockAccount(user, requestInfo);
             } else
-                throw new OAuth2Exception("Account locked");
+                throw userService.buildAccountLockedException(user);
         }
 
 
@@ -177,10 +189,32 @@ public class EoDbAuthenticationProvider implements AuthenticationProvider {
             return new UsernamePasswordAuthenticationToken(secureUser,
                     password, grantedAuths);
         } else {
+            log.warn("EoDb login authentication failed for user: '{}', type: {}, tenant: {}",
+                    user.getUserName(), user.getType(), user.getTenantId());
             // Fetch Real IP after being forwarded by reverse proxy
-            userService.handleFailedLogin(user, IpAddressUtil.getClientIp(request), requestInfo);
+            long attemptsLeft = userService.handleFailedLogin(user, IpAddressUtil.getClientIp(request), requestInfo);
 
-            throw new OAuth2Exception("Invalid login credentials");
+            String authMode = isCitizen ? "OTP" : "PASSWORD";
+            String errMsg;
+            if (isCitizen) {
+                if (attemptsLeft == 1) {
+                    errMsg = "Invalid OTP. Warning: You have only 1 attempt remaining before your account is locked.";
+                } else {
+                    errMsg = "Invalid OTP. Please enter the valid OTP. You have " + attemptsLeft + " attempt(s) remaining.";
+                }
+            } else {
+                if (attemptsLeft == 1) {
+                    errMsg = "Invalid password. Warning: You have only 1 attempt remaining before your account is locked.";
+                } else {
+                    errMsg = "Invalid password. You have " + attemptsLeft + " attempt(s) remaining.";
+                }
+            }
+
+            OAuth2Exception ex = new OAuth2Exception(errMsg);
+            ex.addAdditionalInformation("auth_type", authMode);
+            ex.addAdditionalInformation("attempts_left", String.valueOf(attemptsLeft));
+            ex.addAdditionalInformation("max_attempts", String.valueOf(userService.getMaxInvalidLoginAttempts()));
+            throw ex;
         }
 
     }

@@ -487,6 +487,18 @@ public class UserRepository {
                 Collections.singletonMap("user_uuid", uuid));
     }
 
+    public void unlockUser(String uuid, Long modifiedBy) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("uuid", uuid);
+        params.put("accountLocked", false);
+        params.put("accountLockedDate", 0L);
+        params.put("lastModifiedDate", new Date());
+        params.put("lastModifiedBy", modifiedBy != null ? modifiedBy : 0L);
+
+        namedParameterJdbcTemplate.update(UserTypeQueryBuilder.UNLOCK_USER_BY_UUID_SQL, params);
+        resetFailedLoginAttemptsForUser(uuid);
+    }
+
 
     /**
      * Fetch roles by role codes

@@ -26,6 +26,7 @@ import org.egov.user.persistence.repository.OtpRepository;
 import org.egov.user.persistence.repository.UserRepository;
 import org.egov.user.web.contract.Otp;
 import org.egov.user.web.contract.OtpValidateRequest;
+import org.egov.user.web.contract.UserUnlockRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -854,6 +855,57 @@ public class UserService {
 
     public Long getMaxInvalidLoginAttempts() {
         return maxInvalidLoginAttempts != null ? maxInvalidLoginAttempts : 7L;
+    }
+
+    /**
+     * Unlocks a locked/blocked user account and resets failed login attempts.
+     *
+     * @param unlockRequest Request containing user identifiers (uuid, id, or userName + tenantId)
+     * @return Decrypted unlocked user details
+     */
+    public User unlockUser(UserUnlockRequest unlockRequest) {
+        if (unlockRequest == null) {
+            throw new CustomException("INVALID_UNLOCK_REQUEST", "Unlock request cannot be null");
+        }
+
+        User user = null;
+        if (!isEmpty(unlockRequest.getUuid())) {
+            user = getUserByUuid(unlockRequest.getUuid());
+        } else if (unlockRequest.getId() != null) {
+            UserSearchCriteria criteria = UserSearchCriteria.builder()
+                    .id(Collections.singletonList(unlockRequest.getId()))
+                    .build();
+            List<User> users = userRepository.findAll(criteria);
+            if (users.isEmpty()) {
+                throw new UserNotFoundException(criteria);
+            }
+            user = users.get(0);
+        } else if (!isEmpty(unlockRequest.getUserName()) && !isEmpty(unlockRequest.getTenantId())) {
+            if (unlockRequest.getUserType() != null) {
+                user = getUniqueUser(unlockRequest.getUserName(), unlockRequest.getTenantId(), unlockRequest.getUserType());
+            } else {
+                try {
+                    user = getUniqueUser(unlockRequest.getUserName(), unlockRequest.getTenantId(), UserType.EMPLOYEE);
+                } catch (UserNotFoundException e) {
+                    user = getUniqueUser(unlockRequest.getUserName(), unlockRequest.getTenantId(), UserType.CITIZEN);
+                }
+            }
+        } else {
+            throw new CustomException("INVALID_UNLOCK_REQUEST", "Either uuid, id, or (userName and tenantId) must be provided to unlock a user");
+        }
+
+        RequestInfo requestInfo = unlockRequest.getRequestInfo() != null ? unlockRequest.getRequestInfo() : new RequestInfo();
+        Long modifiedBy = (requestInfo.getUserInfo() != null && requestInfo.getUserInfo().getId() != null)
+                ? requestInfo.getUserInfo().getId()
+                : 0L;
+
+        userRepository.unlockUser(user.getUuid(), modifiedBy);
+
+        log.info("User '{}' (uuid: {}, tenant: {}) successfully unlocked by user id: {}",
+                user.getUserName(), user.getUuid(), user.getTenantId(), modifiedBy);
+
+        User updatedUserFromDb = getUserByUuid(user.getUuid());
+        return encryptionDecryptionUtil.decryptObject(updatedUserFromDb, "User", User.class, requestInfo);
     }
 
 }

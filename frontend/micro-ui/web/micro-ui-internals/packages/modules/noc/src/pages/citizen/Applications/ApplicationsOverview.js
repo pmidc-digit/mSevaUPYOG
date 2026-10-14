@@ -700,7 +700,7 @@ const CitizenApplicationOverview = () => {
           <Card>
             <StatusTable>
               <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
-              <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Noc?.[0]?.applicationStatus ? t(`WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.workflowCode}_${applicationDetails?.Noc?.[0]?.applicationStatus}`) : "N/A"} />
+              <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Noc?.[0]?.applicationStatus ? t(`WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService}_${applicationDetails?.Noc?.[0]?.applicationStatus}`) : "N/A"} />
             </StatusTable>
           </Card>
         </React.Fragment>

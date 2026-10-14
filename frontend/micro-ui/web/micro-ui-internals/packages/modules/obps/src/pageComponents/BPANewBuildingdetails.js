@@ -907,11 +907,11 @@ if (anyYes && !ecbcCertificateFile) {
         if(nocObject?.owners?.[0]?.name){
           setApplicantOwnerOrFirmName(nocObject?.owners?.[0]?.name)
         }
-        if(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName){
-          setNocULBName(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbName)
+        if(UlbName){
+          setNocULBName(UlbName)
         }
-        if(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbType){
-          setNocULBType(nocObject?.nocDetails?.additionalDetails?.siteDetails?.ulbType)
+        if(Ulblisttype){
+          setNocULBType(Ulblisttype)
         }
         if(nocObject?.nocDetails?.additionalDetails?.approvedOn){
           const [d1, m1, y1] = nocObject?.nocDetails?.additionalDetails?.approvedOn?.split("-");

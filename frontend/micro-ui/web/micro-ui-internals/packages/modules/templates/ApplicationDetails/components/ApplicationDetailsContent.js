@@ -47,6 +47,92 @@ function ApplicationDetailsContent({
   isInfoLabel = false
 }) {
   const { t } = useTranslation();
+  const history = useHistory();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const [showToast, setShowToast] = useState(null);
+  const [payments, setPayments] = useState([]);
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
+  const [financialYears, setFinancialYears] = useState([]);
+  const isCitizen = window.location.href.includes("citizen");
+  const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "egf-master", [
+    { name: "FinancialYear", filter: "[?(@.module == 'PT')]" },
+  ]);
+  const currentPropertyId = applicationDetails?.applicationData?.propertyId || propertyId;
+  const isPTLocation = window.location.href.includes("/pt/");
+  const { data: propertySearchData, revalidate: revalidatePropertySearch } = Digit.Hooks.pt.usePropertySearch(
+    {
+      tenantId,
+      filters: { propertyIds: currentPropertyId },
+    },
+    {
+      enabled: Boolean(isPTLocation && currentPropertyId),
+    }
+  );
+
+  // refetch property search on page load (and whenever the property id becomes available)
+  useEffect(() => {
+    if (isPTLocation && currentPropertyId) revalidatePropertySearch();
+  }, [currentPropertyId]);
+
+  useEffect(() => {
+    if (financialYearsData?.["egf-master"]?.["FinancialYear"]) {
+      const sorted = [...financialYearsData["egf-master"]["FinancialYear"]].sort((a, b) => b.startingDate - a.startingDate);
+      setFinancialYears(sorted);
+    }
+  }, [financialYearsData]);
+  let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
+  const ownersSequences = applicationDetails?.applicationData?.owners;
+
+  function routeTo(jumpTo) {
+    window.open(jumpTo, "_blank");
+  }
+
+  const documentsColumns = [
+    {
+      Header: t("BPA_DOCUMENT_DETAILS_LABEL"),
+      accessor: "title",
+      Cell: ({ value }) => t(value) || t("CS_NA"),
+    },
+    {
+      Header: t(" "),
+      accessor: "url",
+      Cell: ({ value }) =>
+        value ? <LinkButton style={{ float: "right", display: "inline" }} label={t("View")} onClick={() => routeTo(value)} /> : t("CS_NA"),
+    },
+  ];
+
+  console.log("TIMELINE", applicationDetails, moduleCode);
+  // ISSUE 9 FIX: Fetch payment history for WS applications
+  useEffect(() => {
+    const fetchPaymentHistory = async () => {
+      if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
+        try {
+          // Determine businessService from serviceType (handle both SEWERAGE and SEWARAGE typo)
+          const businessService = applicationData?.serviceType === "SEWERAGE" || applicationData?.serviceType === "SEWARAGE" ? "SW" : "WS";
+
+          const requestParams = {
+            tenantId: applicationData?.tenantId || tenantId,
+            filters: {
+              consumerCodes: applicationData?.connectionNo,
+              consumerCode: applicationData?.connectionNo,
+            },
+            BusinessService: businessService,
+          };
+
+          const paymentData = await Digit.WSService.paymentsearch(requestParams);
+          if (Array.isArray(paymentData) && paymentData.length > 0) {
+            setPayments(paymentData);
+          } else if (paymentData?.Payments && paymentData.Payments.length > 0) {
+            setPayments(paymentData.Payments);
+          }
+        } catch (error) {
+          console.error("❌ Payment fetch error:", error);
+        }
+      }
+    };
+    fetchPaymentHistory();
+  }, [applicationData?.connectionNo, applicationData?.serviceType, tenantId]);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -212,10 +298,232 @@ function ApplicationDetailsContent({
     if (window.location.href.includes("disconnection") || window.location.href.includes("application")) {
         return "WS_DISCONNECTION_CLICK_ON_INFO1_LABEL"
     } else {
-        return ""
+      return "";
     }
-  }
-  console.log("applicationDetails?.applicationDetails",applicationDetails?.applicationDetails)
+  };
+  const toggleTimeline = () => {
+    setShowAllTimeline((prev) => !prev);
+  };
+  const totalDemandInterest = demandData?.reduce((sum, item) => sum + item.demandInterest, 0);
+  const totalDemandPenality = demandData?.reduce((sum, item) => sum + item.demandPenality, 0);
+  const totalCollectionTax = demandData?.reduce((sum, item) => sum + item.collectionTax, 0);
+  const totalCollectionInterest = demandData?.reduce((sum, item) => sum + item.collectionInterest, 0);
+  const totalCollectionPenality = demandData?.reduce((sum, item) => sum + item.collectionPenality, 0);
+  const totalBalanceTax = demandData?.reduce((sum, item) => sum + item.balanceTax, 0);
+  const totalBalanceInterest = demandData?.reduce((sum, item) => sum + item.balanceInterest, 0);
+  const totalBalancePenality = demandData?.reduce((sum, item) => sum + item.balancePenality, 0);
+
+  const closeToast = () => {
+    setShowToast(null);
+  };
+
+  // (Redirect handled centrally in ApplicationDetails template on mutation success)
+
+  // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
+  const updatePropertyStatus = async (propertyData, status, propertyIds) => {
+    const confirm = window.confirm(`Are you sure you want to make this property ${status}?`);
+    if (!confirm) return;
+
+    const payload = {
+      ...propertyData,
+      status: status,
+      isactive: status === "ACTIVE",
+      isinactive: status === "INACTIVE",
+      creationReason: "STATUS",
+      additionalDetails: {
+        ...(propertyData.additionalDetails || {}),
+        propertytobestatus: status, // "ACTIVE" or "INACTIVE" based on what's being triggered
+      },
+      workflow: {
+        ...propertyData.workflow,
+        businessService: "PT.CREATE",
+        action: "OPEN",
+        moduleName: "PT",
+      },
+    };
+    try {
+      //debugger
+      const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
+      if (response && response.Properties && response.Properties.length > 0) {
+        // refetch the property search so propertyStatus / propertyDocumentValues pick up the new status
+        //await revalidatePropertySearch();
+        //console.log("propertySearchDataafter1",propertySearchData)
+        if (status === "INACTIVE") {
+          alert("Application is in workflow first approve the application");
+        } else {
+          alert(`Property marked as ${status} successfully!`);
+        }
+        window.location.href =  window.location.pathname +  "?_t=" + new Date().getTime();
+      } else {
+        alert("Failed to update property status.");
+      }
+    } catch (err) {
+      console.error("Error updating property status:", err);
+      alert(`Something went wrong while making the property ${status}.`);
+    }
+  };
+  //console.log("propertySearchDatabefore",propertySearchData)
+  const applicationData_pt = applicationDetails?.applicationData;
+  const propertyIds = currentPropertyId || "";
+  const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
+  const propertyDocumentValues = propertySearchData?.Properties?.[0]?.documents || applicationDetails?.applicationData?.documents || [];
+
+  const propertyDocuments = propertyDocumentValues.length
+    ? [
+        {
+          title: "PT_PROPERTY_DOCUMENTS",
+          values: propertyDocumentValues.map((doc) => ({
+            ...doc,
+            title: doc.documentType,
+          })),
+        },
+      ]
+    : [];
+  const PropertyInActive = () => {
+    if (window.location.href.includes("employee")) {
+      if (propertyStatus !== "ACTIVE") {
+        alert("This operation is not allowed as Property is not active.");
+        return;
+      }
+
+      updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+    } else {
+      alert("You are not authorized to change the property status.");
+    }
+  };
+
+  const PropertyActive = () => {
+    //debugger
+    //console.log("propertySearchDataafter2",propertySearchData)
+    if (window.location.href.includes("employee")) {
+      if (propertyStatus === "INWORKFLOW") {
+        alert("This operation is not allowed as Property is in INWORKFLOW.");
+        return;
+      }
+
+      if (propertyStatus === "INACTIVE") {
+        updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
+      } else if (propertyStatus === "ACTIVE") {
+        alert("Property is already active.");
+      }
+    } else {
+      alert("You are not authorized to change the property status.");
+    }
+  };
+  // const PropertyInActive = () => updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+  // const PropertyActive = () => updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
+
+  const EditProperty = () => {
+    const pID = applicationDetails?.applicationData?.propertyId;
+    if (pID) {
+      if (window.location.href.includes("employee")) {
+        if (applicationDetails?.applicationData?.status === "INACTIVE") {
+          alert("Property is inactive, cannot edit.");
+          return;
+        } else if (applicationDetails?.applicationData?.status === "INWORKFLOW") {
+          alert("Property is in workflow, cannot edit.");
+          return;
+        } else if (applicationDetails?.applicationData?.status === "ACTIVE") {
+          history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
+        }
+      } else {
+        if (applicationDetails?.applicationData?.status === "INACTIVE") {
+          alert("Property is inactive, cannot edit.");
+          return;
+        } else if (applicationDetails?.applicationData?.status === "INWORKFLOW") {
+          alert("Property is in workflow, cannot edit.");
+          return;
+        } else if (applicationDetails?.applicationData?.status === "ACTIVE") {
+          history.push({ pathname: `/digit-ui/citizen/pt/property/edit-application/${pID}` });
+        }
+      }
+    }
+    // alert("edit property");
+  };
+  const AccessProperty = () => {
+    if (["INACTIVE", "INWORKFLOW"].includes(propertyStatus?.toUpperCase())) {
+      alert("This operation is not allowed as Property is in INWORKFLOW or Inactive.");
+      return;
+    }
+
+    setSelectedFinancialYear(null);
+    setShowAccessModal(true);
+  };
+
+  const handleAccessPropertySubmit = () => {
+    if (!selectedFinancialYear) return;
+    const pID = applicationDetails?.applicationData?.propertyId || propertyId;
+    setShowAccessModal(false);
+    const isEmployee = window.location.href.includes("employee");
+    const pathname = isEmployee ? `/digit-ui/employee/pt/assessment-details/${pID}` : `/digit-ui/citizen/pt/property/assessment-details/${pID}`;
+    history.replace({
+      pathname,
+      state: {
+        submitLabel: "Complete Assessment",
+        Assessment: {
+          financialYear: selectedFinancialYear?.name || selectedFinancialYear?.code,
+          propertyId: pID,
+          tenantId: applicationData?.tenantId || tenantId,
+          source: applicationData?.source,
+          channel: applicationData?.channel,
+          assessmentDate: Date.now(),
+        },
+      },
+    });
+  };
+
+  useEffect(() => {
+    const isWSModule =
+      moduleCode === "WS" || moduleCode === "SW" || window.location.href.includes("employee/ws") || window.location.href.includes("/ws/");
+
+    if (isWSModule) {
+      return;
+    }
+
+    // Handle TL payment history separately using applicationNumber
+    if (moduleCode === "TL") {
+      const appNo = applicationData?.applicationNumber;
+      if (!appNo) return;
+      Digit.PaymentService.recieptSearch(applicationData?.tenantId || tenantId, "TL", { consumerCodes: appNo })
+        .then((response) => {
+          console.log("TL Payment History response:", response);
+          if (response?.Payments?.length > 0) {
+            setPayments(response.Payments);
+          }
+        })
+        .catch((error) => {
+          console.error("TL Payment search error:", error);
+        });
+      return;
+    }
+
+    // Only proceed for PT and BPREG modules
+    if (!currentPropertyId && !propertyId) {
+      return;
+    }
+
+    try {
+      const consumerCodesList = [currentPropertyId, propertyId].filter((value, index, self) => value && self.indexOf(value) === index);
+      let filters = {
+        consumerCodes: consumerCodesList.join(","),
+      };
+      const auth = true;
+
+      const actualQueryTenantId = applicationData?.tenantId || tenantId;
+
+      if (moduleCode === "BPAREG") {
+        Digit.OBPSService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth }).then((response) => {
+          setPayments(response?.Payments);
+        });
+      } else if (moduleCode === "PT") {
+        Digit.PTService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth, isCitizen : isCitizen }).then((response) => {
+          setPayments(response?.Payments);
+        });
+      }
+    } catch (error) {
+      console.error("❌ Payment search error for PT/BPREG:", error);
+    }
+  }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber, applicationData?.tenantId]);
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
@@ -249,18 +557,27 @@ function ApplicationDetailsContent({
                   ))}
                 </tr>
 
-                {detail?.tableRows.map((row,index)=>{
-                if(index===detail?.tableRows.length - 1){
-                  return <>
-                    <hr style={{ width: "370%",marginTop:"15px" }} className="underline" />
+                {detail?.tableRows.map((row, index) => {
+                  if (index === detail?.tableRows.length - 1) {
+                    return (
+                      <>
+                        <hr style={{ width: "370%", marginTop: "15px" }} className="underline" />
+                        <tr>
+                          {row.map((element) => (
+                            <td style={{ textAlign: "left" }}>{t(element)}</td>
+                          ))}
+                        </tr>
+                      </>
+                    );
+                  }
+                  return (
                     <tr>
-                      {row.map(element => <td style={{ textAlign: "left" }}>{t(element)}</td>)}
+                      {row.map((element) => (
+                        <td style={{ paddingTop: "20px", textAlign: "left" }}>{t(element)}</td>
+                      ))}
                     </tr>
-                    </>
-                }
-                return <tr>
-                  {row.map(element => <td style={{ paddingTop:"20px",textAlign:"left" }}>{t(element)}</td>)}
-                </tr>})}
+                  );
+                })}
               </table>
             )}
             <StatusTable style={getTableStyles()}>

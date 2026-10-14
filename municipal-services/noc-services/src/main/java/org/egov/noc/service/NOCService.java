@@ -294,8 +294,6 @@ public class NOCService {
 						.findFirst().orElse(new Action()).getNextState();
 				State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 
-				String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
-
 				List<String> roles = new ArrayList<String>();
 				if(nextState != null && !CollectionUtils.isEmpty(nextState.getActions()))
 					roles = nextState.getActions().stream()
@@ -317,6 +315,18 @@ public class NOCService {
 					List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), true);
 					if(CollectionUtils.isEmpty(assignee))
 						noc.getWorkflow().setAssignes(null);
+				}
+
+				if (CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
+					String createdBy = null;
+					if (searchResult != null && searchResult.getAuditDetails() != null) {
+						createdBy = searchResult.getAuditDetails().getCreatedBy();
+					} else if (noc.getAuditDetails() != null) {
+						createdBy = noc.getAuditDetails().getCreatedBy();
+					}
+					if (!StringUtils.isEmpty(createdBy)) {
+						noc.getWorkflow().setAssignes(Collections.singletonList(createdBy));
+					}
 				}
 
 				wfIntegrator.callWorkFlow(nocRequest,businessServiceName);

@@ -868,6 +868,8 @@ public class UserService {
             throw new CustomException("INVALID_UNLOCK_REQUEST", "Unlock request cannot be null");
         }
 
+        validateUnlockAuthorization(unlockRequest.getRequestInfo());
+
         User user = null;
         if (!isEmpty(unlockRequest.getUuid())) {
             user = getUserByUuid(unlockRequest.getUuid());
@@ -906,6 +908,44 @@ public class UserService {
 
         User updatedUserFromDb = getUserByUuid(user.getUuid());
         return encryptionDecryptionUtil.decryptObject(updatedUserFromDb, "User", User.class, requestInfo);
+    }
+
+    private void validateUnlockAuthorization(RequestInfo requestInfo) {
+        if (requestInfo == null || requestInfo.getUserInfo() == null) {
+            throw new CustomException("ACCESS_DENIED", "User info is mandatory to unblock user. Caller must contain SYSTEM or SUPERUSER.");
+        }
+
+        org.egov.common.contract.request.User userInfo = requestInfo.getUserInfo();
+        boolean isAuthorized = false;
+
+        // Check user type
+        if (!isEmpty(userInfo.getType()) &&
+                ("SYSTEM".equalsIgnoreCase(userInfo.getType().trim()) || "SUPERUSER".equalsIgnoreCase(userInfo.getType().trim()))) {
+            isAuthorized = true;
+        }
+
+        // Check roles
+        if (!isAuthorized && !CollectionUtils.isEmpty(userInfo.getRoles())) {
+            for (org.egov.common.contract.request.Role role : userInfo.getRoles()) {
+                if (role != null) {
+                    if (!isEmpty(role.getCode()) &&
+                            ("SYSTEM".equalsIgnoreCase(role.getCode().trim()) || "SUPERUSER".equalsIgnoreCase(role.getCode().trim()))) {
+                        isAuthorized = true;
+                        break;
+                    }
+                    if (!isEmpty(role.getName()) &&
+                            ("SYSTEM".equalsIgnoreCase(role.getName().trim()) || "SUPERUSER".equalsIgnoreCase(role.getName().trim()))) {
+                        isAuthorized = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!isAuthorized) {
+            log.warn("Unauthorized attempt to unlock user by caller id: {}, type: {}", userInfo.getId(), userInfo.getType());
+            throw new CustomException("ACCESS_DENIED", "User info must contain SYSTEM or SUPERUSER to unblock user.");
+        }
     }
 
 }

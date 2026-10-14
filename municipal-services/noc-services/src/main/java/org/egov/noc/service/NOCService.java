@@ -294,6 +294,8 @@ public class NOCService {
 						.findFirst().orElse(new Action()).getNextState();
 				State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 
+				String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
+
 				List<String> roles = new ArrayList<String>();
 				if(nextState != null && !CollectionUtils.isEmpty(nextState.getActions()))
 					roles = nextState.getActions().stream()

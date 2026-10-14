@@ -1,37 +1,11 @@
 import { ActionBar, Card, CardSubHeader, DocumentSVG, Header, Loader, Menu, Row, StatusTable, SubmitBar, Table, Toast } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState, useMemo,Fragment } from "react";
+import React, { useEffect, useState, useMemo, useCallback, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import ActionModal from "../components/Modal";
 import { convertEpochFormateToDate, pdfDownloadLink } from "../components/Utils";
 
-// Constants
-const OBPS_GROUP_ID = "025";
 
-// Utility: Fetch OBPS roles from sessionStorage or MDMS
-const getOBPSRoles = async (stateId) => {
-  try {
-    const cachedRoles = sessionStorage.getItem('OBPS_ROLES');
-    if (cachedRoles) {
-      return JSON.parse(cachedRoles);
-    }
-
-    const response = await Digit.MDMSService.getMultipleTypes(stateId, "ACCESSCONTROL-ROLES", ["roles"]);
-    const allRoles = response?.['ACCESSCONTROL-ROLES']?.roles || [];
-    const obpsRoles = allRoles.filter(role => role.groupId === OBPS_GROUP_ID);
-    const obpsRoleMap = {};
-    obpsRoles.forEach(role => {
-      obpsRoleMap[role.code] = role.name;
-    });
-
-    const cacheData = { codes: obpsRoles.map(r => r.code), map: obpsRoleMap };
-    sessionStorage.setItem('OBPS_ROLES', JSON.stringify(cacheData));
-    return cacheData;
-  } catch (error) {
-    console.error("Error fetching OBPS roles:", error);
-    return { codes: [], map: {} };
-  }
-};
 
 const HRMSEMPMAPDetails = () => {
   const activeworkflowActions = ["DEACTIVATE_EMPLOYEE_HEAD", "COMMON_EDIT_EMPLOYEE_HEADER"];
@@ -39,12 +13,38 @@ const HRMSEMPMAPDetails = () => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const { t } = useTranslation();
-  const { id: employeeId, uuid: userUUID } = useParams();
-  const { tenantId: tenantId } = useParams()
+  const { id: employeeId, uuid: userUUID, userTenantId: urlUserTenantId } = useParams();
+  const { tenantId: tenantId } = useParams();
   const history = useHistory();
   const [displayMenu, setDisplayMenu] = useState(false);
   const isupdate = Digit.SessionStorage.get("isupdate");
-  const { isLoading, isError, error, data, ...rest } = Digit.Hooks.hrms.useHRMSSearch({ codes: employeeId }, tenantId, null, isupdate);
+  const stateId = Digit.ULBService.getStateId();
+
+  // If userTenantId is in the URL (new links from MappingTable), use it directly.
+  // Otherwise fall back to tenantId from URL.
+  const profileTenantId = urlUserTenantId || tenantId;
+
+  // Primary search uses profileTenantId (could be pb.punjab for state-level employees)
+  const primarySearch = Digit.Hooks.hrms.useHRMSSearch({ codes: employeeId }, profileTenantId, null, isupdate);
+
+  // Fallback: if profileTenantId itself found nothing (e.g. old URL without userTenantId segment),
+  // try with the ULB tenantId from the URL.
+  const fallbackEnabled =
+    !primarySearch.isLoading &&
+    (!primarySearch.data?.Employees || primarySearch.data.Employees.length === 0) &&
+    profileTenantId !== tenantId;
+
+  const fallbackSearch = Digit.Hooks.hrms.useHRMSSearch(
+    { codes: employeeId },
+    tenantId,
+    null,
+    isupdate,
+    { enabled: fallbackEnabled }
+  );
+
+  // isLoading must stay true while fallbackSearch is pending, since disabled queries report isLoading=false
+  const isLoading = primarySearch.isLoading || (fallbackEnabled && (fallbackSearch.isLoading || fallbackSearch.isFetching));
+  const data = primarySearch.data?.Employees?.length > 0 ? primarySearch.data : fallbackSearch.data;
   const [errorInfo, setErrorInfo, clearError] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_ERROR_DATA", false);
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_HAPPENED", false);
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_SUCCESS_DATA", false);
@@ -55,19 +55,20 @@ const HRMSEMPMAPDetails = () => {
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [obpsRoleMap, setObpsRoleMap] = useState({});
   const [refreshCounter, setRefreshCounter] = useState(0);
-  const stateId = Digit.ULBService.getStateId();
 
   // Fetch MDMS data for BPA Category and SubCategory
   const { data: mdmsDataBPA, isLoading: isBPALoading } = Digit.Hooks.useCommonMDMS(stateId, "BPA", ["Category", "SubCategory"]);
+  const { obpsRoles } = Digit.Hooks.hrms.useOBPSRoles(stateId);
+  const obpsRoleMap = useMemo(() => obpsRoles?.map || {}, [obpsRoles]);
 
   // Create lookup maps for categories and subcategories
   const categoryMap = useMemo(() => {
     if (!mdmsDataBPA?.BPA?.Category) return {};
     const map = {};
-    mdmsDataBPA.BPA.Category.forEach(cat => {
+    mdmsDataBPA.BPA.Category.forEach((cat) => {
       map[cat.categoryId] = cat.categoryName;
+      if (cat.code) map[cat.code] = cat.categoryName;
     });
     return map;
   }, [mdmsDataBPA]);
@@ -75,8 +76,9 @@ const HRMSEMPMAPDetails = () => {
   const subCategoryMap = useMemo(() => {
     if (!mdmsDataBPA?.BPA?.SubCategory) return {};
     const map = {};
-    mdmsDataBPA.BPA.SubCategory.forEach(sub => {
+    mdmsDataBPA.BPA.SubCategory.forEach((sub) => {
       map[sub.subCategoryId] = sub.subCategoryName;
+      if (sub.code) map[sub.code] = sub.subCategoryName;
     });
     return map;
   }, [mdmsDataBPA]);
@@ -85,43 +87,43 @@ const HRMSEMPMAPDetails = () => {
     setMutationHappened(false);
     clearSuccessData();
     clearError();
-    
-    // Load OBPS roles on mount
-    const loadRoles = async () => {
-      const roles = await getOBPSRoles(stateId);
-      setObpsRoleMap(roles.map);
-    };
-    loadRoles();
   }, []);
 
   // Fetch mapping data with pagination
-  const fetchMappingData = async () => {
+  const fetchMappingData = useCallback(async () => {
     if (!userUUID) {
       return;
     }
-    
-    // Safety check: Ensure data and obpsRoleMap are loaded before fetching
-    if (!data?.Employees?.[0] || !obpsRoleMap || Object.keys(obpsRoleMap).length === 0) {
-      console.warn("Data or OBPS roles not yet loaded, skipping fetch");
-      return;
-    }
-    
+
     try {
       setMappingLoading(true);
-      
-      const response = await Digit.HRMSService.EmpMapDetails(tenantId, {
+
+      // Use profileTenantId (from URL or derived from data) for the mapping API call
+      const empUserTenantId = data?.Employees?.[0]?.user?.tenantId || profileTenantId;
+      let response = await Digit.HRMSService.EmpMapDetails(empUserTenantId, {
         userUUID: userUUID,
         limit: pageSize,
         offset: pageOffset,
+        assignedTenantId: tenantId,
       });
-      
+
+      // Fallback: If no records found with empUserTenantId and empUserTenantId !== tenantId, try with tenantId
+      if ((!response?.Employees || response.Employees.length === 0) && empUserTenantId !== tenantId) {
+        response = await Digit.HRMSService.EmpMapDetails(tenantId, {
+          userUUID: userUUID,
+          limit: pageSize,
+          offset: pageOffset,
+          assignedTenantId: tenantId,
+        });
+      }
+
       if (response?.Employees) {
         // Get employee's OBPS roles from main data object (calculated once for all mappings)
         let roleNames = "No OBPS Roles";
         if (data?.Employees?.[0]?.user?.roles && obpsRoleMap && Object.keys(obpsRoleMap).length > 0) {
           const empRoles = data.Employees[0].user.roles
-            .filter(role => obpsRoleMap[role.code])
-            .map(role => obpsRoleMap[role.code]);
+            .filter((role) => obpsRoleMap[role.code])
+            .map((role) => obpsRoleMap[role.code]);
           roleNames = empRoles.length > 0 ? empRoles.join(", ") : "No OBPS Roles";
         }
         
@@ -154,16 +156,16 @@ const HRMSEMPMAPDetails = () => {
       }
     } catch (error) {
       console.error("Error fetching mapping data:", error);
+      setMappingData([]);
+      setTotalRecords(0);
     } finally {
       setMappingLoading(false);
     }
-  };
+  }, [userUUID, tenantId, pageOffset, pageSize, data?.Employees?.[0]?.user?.tenantId, obpsRoleMap, categoryMap, subCategoryMap]);
 
   useEffect(() => {
-    if (data && Object.keys(obpsRoleMap).length > 0 && Object.keys(categoryMap).length > 0 && Object.keys(subCategoryMap).length > 0) {
-      fetchMappingData();
-    }
-  }, [userUUID, tenantId, pageOffset, pageSize, data, obpsRoleMap, categoryMap, subCategoryMap, refreshCounter]);
+    fetchMappingData();
+  }, [fetchMappingData, refreshCounter]);
 
   function onActionSelect(action) {
     setSelectedAction(action);
@@ -380,36 +382,40 @@ const HRMSEMPMAPDetails = () => {
       <div className="hrms-emp-mapping__header">
         <Header>{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</Header>
       </div>
-      {!isLoading && data?.Employees.length > 0 ? (
+      {!isLoading && (data?.Employees?.length > 0 || mappingData?.length > 0) ? (
         <div>
           <Card>
-            <StatusTable>
-              <Row
-                label={<CardSubHeader className="card-section-header">{t("HR_EMP_STATUS_LABEL")} </CardSubHeader>}
-                text={
-                  data?.Employees?.[0]?.isActive ? <div className="sla-cell-success"> {t("ACTIVE")} </div> : <div className="sla-cell-error">{t("INACTIVE")}</div>
-                }
-                textStyle={{ fontWeight: "bold", maxWidth: "7.5rem" }}
-              />
-            </StatusTable>
-            <CardSubHeader className="card-section-header">{t("HR_PERSONAL_DETAILS_FORM_HEADER")} </CardSubHeader>
-            <StatusTable>
-              <Row label={t("HR_NAME_LABEL")} text={data?.Employees?.[0]?.user?.name || "NA"} textStyle={{ whiteSpace: "pre" }} />
-              <Row label={t("HR_MOB_NO_LABEL")} text={data?.Employees?.[0]?.user?.mobileNumber || "NA"} textStyle={{ whiteSpace: "pre" }} />
-              <Row label={t("HR_GENDER_LABEL")} text={t(data?.Employees?.[0]?.user?.gender) || "NA"} />
-              <Row label={t("HR_EMAIL_LABEL")} text={data?.Employees?.[0]?.user?.emailId || "NA"} />
-              <Row label={t("HR_CORRESPONDENCE_ADDRESS_LABEL")} text={data?.Employees?.[0]?.user?.correspondenceAddress || "NA"} />
-            </StatusTable>
-            <CardSubHeader className="card-section-header">{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</CardSubHeader>
-            <StatusTable>
-              <Row label={t("HR_EMPLOYMENT_TYPE_LABEL")} text={t(data?.Employees?.[0]?.employeeType ? `EGOV_HRMS_EMPLOYEETYPE_${data?.Employees?.[0]?.employeeType}` : "NA")} textStyle={{ whiteSpace: "pre" }} />
-              <Row
-                label={t("HR_APPOINTMENT_DATE_LABEL")}
-                text={convertEpochFormateToDate(data?.Employees?.[0]?.dateOfAppointment) || "NA"}
-                textStyle={{ whiteSpace: "pre" }}
-              />
-              <Row label={t("HR_EMPLOYEE_ID_LABEL")} text={data?.Employees?.[0]?.code} />
-            </StatusTable>
+            {data?.Employees?.length > 0 && (
+              <>
+                <StatusTable>
+                  <Row
+                    label={<CardSubHeader className="card-section-header">{t("HR_EMP_STATUS_LABEL")} </CardSubHeader>}
+                    text={
+                      data?.Employees?.[0]?.isActive ? <div className="sla-cell-success"> {t("ACTIVE")} </div> : <div className="sla-cell-error">{t("INACTIVE")}</div>
+                    }
+                    textStyle={{ fontWeight: "bold", maxWidth: "7.5rem" }}
+                  />
+                </StatusTable>
+                <CardSubHeader className="card-section-header">{t("HR_PERSONAL_DETAILS_FORM_HEADER")} </CardSubHeader>
+                <StatusTable>
+                  <Row label={t("HR_NAME_LABEL")} text={data?.Employees?.[0]?.user?.name || "NA"} textStyle={{ whiteSpace: "pre" }} />
+                  <Row label={t("HR_MOB_NO_LABEL")} text={data?.Employees?.[0]?.user?.mobileNumber || "NA"} textStyle={{ whiteSpace: "pre" }} />
+                  <Row label={t("HR_GENDER_LABEL")} text={t(data?.Employees?.[0]?.user?.gender) || "NA"} />
+                  <Row label={t("HR_EMAIL_LABEL")} text={data?.Employees?.[0]?.user?.emailId || "NA"} />
+                  <Row label={t("HR_CORRESPONDENCE_ADDRESS_LABEL")} text={data?.Employees?.[0]?.user?.correspondenceAddress || "NA"} />
+                </StatusTable>
+                <CardSubHeader className="card-section-header">{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</CardSubHeader>
+                <StatusTable>
+                  <Row label={t("HR_EMPLOYMENT_TYPE_LABEL")} text={t(data?.Employees?.[0]?.employeeType ? `EGOV_HRMS_EMPLOYEETYPE_${data?.Employees?.[0]?.employeeType}` : "NA")} textStyle={{ whiteSpace: "pre" }} />
+                  <Row
+                    label={t("HR_APPOINTMENT_DATE_LABEL")}
+                    text={convertEpochFormateToDate(data?.Employees?.[0]?.dateOfAppointment) || "NA"}
+                    textStyle={{ whiteSpace: "pre" }}
+                  />
+                  <Row label={t("HR_EMPLOYEE_ID_LABEL")} text={data?.Employees?.[0]?.code} />
+                </StatusTable>
+              </>
+            )}
 
             {/* Employee Mapping Table */}
             <div className="hrms-flex hrms-flex--between hrms-flex--center hrms-spacing--mapping-header">

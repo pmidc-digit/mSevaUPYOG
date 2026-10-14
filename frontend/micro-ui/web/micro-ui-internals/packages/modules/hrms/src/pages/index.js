@@ -145,7 +145,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/create`} component={() => <CreateEmployeeStepForm />} />
           <PrivateRoute path={`${path}/response`} component={(props) => <HRMSResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/details/:tenantId/:id`} component={() => <HRMSDetails />} />
-          <PrivateRoute path={`${path}/Mapdetails/:tenantId/:id/:uuid`} component={() => <HRMSEMPMAPDetails />} />
+          <PrivateRoute path={`${path}/Mapdetails/:tenantId/:id/:uuid/:userTenantId?`} component={() => <HRMSEMPMAPDetails />} />
           <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />
           <PrivateRoute path={`${path}/report/rainmaker-hrms/HRMSEmployeewiseReport`} component={() => <HRMSEmployeewiseReport />} />
           <PrivateRoute path={`${path}/empMaping`} component={() => <EmpMaping />} />

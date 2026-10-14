@@ -132,7 +132,7 @@ public class ESignService {
         
         if(requestInfo.getUserInfo() != null) {
         	Object mdmsData = mdmsService.mDMSCall(requestInfo, tenantId.split("\\.")[0]);
-        	String designation = userService.getEmployeeDesignation(requestInfo, requestInfo.getUserInfo().getUuid(), tenantId);
+        	String designation = userService.getEmployeeDesignation(requestInfo, requestInfo.getUserInfo().getUuid(), requestInfo.getUserInfo().getTenantId());
         	List<String> designations = JsonPath.read(mdmsData, "$.MdmsRes.common-masters.Designation.[?(@.code == '" + designation + "')].name");
         	if(CollectionUtils.isEmpty(designations))
         		designation = "Citizen";

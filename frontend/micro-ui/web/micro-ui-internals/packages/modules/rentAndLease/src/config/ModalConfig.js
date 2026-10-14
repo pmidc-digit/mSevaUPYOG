@@ -13,6 +13,27 @@ export const ModalConfig = ({
   assigneeLabel,
   businessService,
 }) => {
+  if (action?.action === "ADHOC_PENALTY") {
+    return {
+      label: { heading: "", submit: t("ADHOC_PENALTY"), cancel: t("WF_EMPLOYEE_NEWTL_CANCEL") },
+      form: [{ body: [
+        {
+          label: t("Adhoc Penalty"),
+          type: "number",
+          isMandatory: true,
+          validation: { required: true, min: 0, message: t("CORE_COMMON_REQUIRED_ERRMSG") },
+          populators: { name: "adhocPenalty" },
+        },
+        {
+          label: t("Adhoc Penalty Reason"),
+          type: "textarea",
+          isMandatory: true,
+          validation: { required: true, message: t("CORE_COMMON_REQUIRED_ERRMSG") },
+          populators: { name: "adhocPenaltyReason" },
+        },
+      ] }],
+    };
+  }
   let checkAssigneeVisible =
     // action?.action === "SENDBACKTOOVERIFIER" ||
     // action?.action === "VERIFY" ||

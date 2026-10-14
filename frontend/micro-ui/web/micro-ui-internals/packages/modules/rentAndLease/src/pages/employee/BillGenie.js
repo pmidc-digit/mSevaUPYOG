@@ -105,7 +105,7 @@ const BillGenie = () => {
     Header: t("Action"),
     accessor: "action",
     Cell: ({ row }) => {
-      console.log("row", row?.original);
+
       return (
         <div className="ral-style-463f21217a">
             <SubmitBar label={t("UC_DOWNLOAD_RECEIPT")} onSubmit={() => getReceiptSearch(row.original)} />
@@ -113,7 +113,7 @@ const BillGenie = () => {
           <SubmitBar
             label="Pay"
             onSubmit={() => {
-              console.log("check row", row?.original?.uuid);
+
               const id = row?.original?.consumerCode;
               history.push(`/digit-ui/employee/payment/collect/rl-services/${id}/${tenantId}?tenantId=${tenantId}`);
             }} />

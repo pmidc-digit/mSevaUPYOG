@@ -258,6 +258,13 @@ const RALApplicationDetails = () => {
       documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
     };
 
+    if (filtData.action === "ADHOC_PENALTY") {
+      updatedApplicant.additionalDetails = {
+        ...updatedApplicant?.additionalDetails,
+        adhocPenalty: filtData.adhocPenalty,
+        adhocPenaltyReason: filtData.adhocPenaltyReason,
+      };
+    }
     if (filtData.action === "FORWARD_FOT_SETLEMENT" && filtData?.amountToBeDeducted !== undefined) {
       updatedApplicant.amountToBeDeducted = filtData.amountToBeDeducted;
     }
@@ -277,6 +284,9 @@ const RALApplicationDetails = () => {
     const finalPayload = {
       AllotmentDetails: [updatedApplicant],
     };
+    console.log("finalPayload", finalPayload);
+    // return;
+
     try {
       const response = await Digit.RentAndLeaseService.update({
         // tenantId,
@@ -528,6 +538,10 @@ const RALApplicationDetails = () => {
                 {/* )} */}
                 <Row label={t("Reason")} text={tValue(rawAdditionalDetails?.arrearReason)} />
                 <Row label={t("Remarks")} text={tValue(rawAdditionalDetails?.remarks)} />
+                {rawAdditionalDetails?.adhocPenalty && <Row label={t("Adhoc Penalty")} text={tValue(rawAdditionalDetails?.adhocPenalty)} />}
+                {rawAdditionalDetails?.adhocPenaltyReason && (
+                  <Row label={t("Adhoc Penalty Reason")} text={tValue(rawAdditionalDetails?.adhocPenaltyReason)} />
+                )}
               </StatusTable>
             </React.Fragment>
           )}

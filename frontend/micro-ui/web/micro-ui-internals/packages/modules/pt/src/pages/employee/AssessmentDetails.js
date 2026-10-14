@@ -70,10 +70,13 @@ const AssessmentDetails = () => {
             console.log("res", response)
             setUnitsCharge(response.billingSlab)
           })
+          .catch((error) => {
+            console.error("Error fetching billing slabs:", error);
+          });
       }
     }
-    catch {
-
+    catch (err) {
+      console.error("Error in billingSlabSearch useEffect:", err);
     }
   }, [ptCalculationEstimateData])
   let ptCalculationEstimateDataCopy;

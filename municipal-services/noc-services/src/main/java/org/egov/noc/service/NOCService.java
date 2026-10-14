@@ -319,6 +319,18 @@ public class NOCService {
 						noc.getWorkflow().setAssignes(null);
 				}
 
+				if (CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
+					String createdBy = null;
+					if (searchResult != null && searchResult.getAuditDetails() != null) {
+						createdBy = searchResult.getAuditDetails().getCreatedBy();
+					} else if (noc.getAuditDetails() != null) {
+						createdBy = noc.getAuditDetails().getCreatedBy();
+					}
+					if (!StringUtils.isEmpty(createdBy)) {
+						noc.getWorkflow().setAssignes(Collections.singletonList(createdBy));
+					}
+				}
+
 				wfIntegrator.callWorkFlow(nocRequest,businessServiceName);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),

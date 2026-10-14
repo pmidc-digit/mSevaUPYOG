@@ -49,6 +49,7 @@ const PTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
             i18nKey: "WF_PT_INWORKFLOW"
         },
     ]
+    const isEmployee = window.location.href.includes("employee");
 
     const getaddress = (address) => {
         let newaddr = `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
@@ -63,13 +64,19 @@ const PTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
             accessor: "propertyId",
             Cell: ({ row }) => {
                 return (
-                    <div>
-                        <span className="link">
-                            <Link to={`/digit-ui/employee/pt/property-details/${row.original["propertyId"]}`}>
-                                {row.original["propertyId"]}
-                            </Link>
-                        </span>
-                    </div>
+                  <div>
+                    <span className="link">
+                      <Link
+                        to={
+                          isEmployee
+                            ? `/digit-ui/employee/pt/property-details/${row.original.propertyId}`
+                            : `/digit-ui/citizen/pt/property/my-property/${row.original.propertyId}`
+                        }
+                      >
+                        {row.original["propertyId"]}
+                      </Link>
+                    </span>
+                  </div>
                 );
             },
         },
@@ -79,13 +86,19 @@ const PTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
             disableSortBy: true,
             Cell: ({ row }) => {
                 return (
-                    <div>
-                        <span className="link">
-                            <Link to={`/digit-ui/employee/pt/applicationsearch/application-details/${row.original["propertyId"]}`}>
-                                {row.original["acknowldgementNumber"]}
-                            </Link>
-                        </span>
-                    </div>
+                  <div>
+                    <span className="link">
+                      <Link
+                        to={
+                          isEmployee
+                            ? `/digit-ui/employee/pt/applicationsearch/application-details/${row.original["propertyId"]}`
+                            : `/digit-ui/citizen/pt/property/application/${row.original["acknowldgementNumber"]}/${tenantId}`
+                        }
+                      >
+                        {row.original["acknowldgementNumber"]}
+                      </Link>
+                    </span>
+                  </div>
                 );
             },
         },
@@ -111,7 +124,7 @@ const PTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, se
             accessor: (row) => GetCell(getaddress(row.address) || ""),
         },
 
-    ]), [])
+    ]), [tenantId, isEmployee])
 
     const onSort = useCallback((args) => {
         if (args.length === 0) return

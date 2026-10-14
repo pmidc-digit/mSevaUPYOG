@@ -47,9 +47,9 @@ const FireNOCMyApplications = () => {
   const handlePayment = (application) => {
     const appNo = application?.fireNOCDetails?.applicationNumber;
     const tenantId = application?.tenantId;
-     
-      history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}?tenantId=${tenantId}`);
-    
+
+    history.push(`/digit-ui/citizen/payment/collect/FIRENOC/${appNo}?tenantId=${tenantId}`);
+
   }
   if (isLoading) return <Loader />;
 

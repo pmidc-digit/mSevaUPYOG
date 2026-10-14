@@ -293,21 +293,7 @@ const handleClick=()=>{
             <Row className="border-none" label={t("PT_PROPERTY_PTUID")} text={`${property.propertyId || t("CS_NA")}`} /* textStyle={{ whiteSpace: "pre" }} */ />
             <Row className="border-none" label={t("CS_COMMON_TOTAL_AMOUNT_DUE")} text={`₹${t(getBillAmount(fetchBillData))}`} />
             <LinkLabel
-            onClick={() => {
-              const element = document.getElementById("payment-history");
-              if (element) {
-                const header = element.querySelector(".accordion-header");
-                const body = element.querySelector(".accordion-body");
-                if (header && !body) {
-                  header.click();
-                }
-                setTimeout(() => {
-                  element.scrollIntoView({ behavior: "smooth" });
-                }, 100);
-              } else {
-                history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${property?.propertyId}`, state: { tenantId: property?.tenantId } });
-              }
-            }}
+            onClick={() => history.push({ pathname: `/digit-ui/citizen/pt/payment-details/${property?.propertyId}`})}
             style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
           >
             {t("PT_VIEW_PAYMENT")}

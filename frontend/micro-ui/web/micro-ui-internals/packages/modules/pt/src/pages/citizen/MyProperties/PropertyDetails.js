@@ -7,7 +7,6 @@ import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDeta
 import PropertyOwnerHistory from "./propertyOwnerHistory";
 import { TransferOwnership } from "../../../pageComponents/TransferOwnership";
 import getPTAcknowledgementData from "../../../getPTAcknowledgementData";
-import UpdateSurveyId from "../../employee/updateSurveyId";
 //import usePropertyAPI from "../../../../../libraries/src/hooks/pt/usePropertyAPI"
 
 const Close = () => (
@@ -28,9 +27,26 @@ const CloseBtn = (props) => {
 const PropertyDetails = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
+<<<<<<< HEAD
+<<<<<<< HEAD
+  const { id: applicationNumber } = useParams();
+
+  console.log("application Number", applicationNumber)
+=======
   const { id:applicationNumber } = useParams(); 
+<<<<<<< HEAD
+   const isCitizen = window.location.href.includes("citizen");
+  //console.log("application Number",applicationNumber)
+>>>>>>> MicroUI_PROD_Vite
+=======
+  const { id:applicationNumber } = useParams(); 
+ 
+  console.log("application Number",applicationNumber)
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
 
 
+>>>>>>> MicroUI_UAT_Vite
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
   const [enableAudit, setEnableAudit] = useState(false);
@@ -38,19 +54,20 @@ const PropertyDetails = () => {
   const [showOwnershipModal, setShowOwnershipModal] = useState(false);
   const [showDuesPopup, setShowDuesPopup] = useState(false);
   const [showUpdateNo, setShowUpdateNo] = useState(false);
-  const [showUpdateSurveyId, setShowUpdateSurveyId] = useState(null);
   const PT_CEMP = Digit.UserService.hasAccess(["PT_CEMP"]) || false;
   const [businessService, setBusinessService] = useState("PT.CREATE");
   const history = useHistory();
-  const { data: storeData } = Digit.Hooks.useStore.getInitData();
-  const { tenants } = storeData || {};
   sessionStorage.setItem("propertyIdinPropertyDetail", applicationNumber);
   const isEmployee = window.location.href.includes("employee");
   // const isMobile = window.Digit.Utils.browser.isMobile();
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 780);
 
   let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, 'pb', applicationNumber);
+<<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+>>>>>>> MicroUI_PROD_Vite
   useEffect(() => {
     sessionStorage.removeItem("revalidateddone");
   }, []);
@@ -59,12 +76,22 @@ const PropertyDetails = () => {
     {
       businessService: "PT",
       consumerCode: applicationNumber,
+<<<<<<< HEAD
       tenantId,
+=======
+      tenantId : applicationDetails?.tenantId,
+>>>>>>> MicroUI_PROD_Vite
     },
     {
       refetchOnMount: "always",
     }
   );
+=======
+  const { data: fetchBillData, isLoading: fetchBillLoading, revalidate } = Digit.Hooks.useFetchBillsForBuissnessService({
+    businessService: "PT",
+    consumerCode: applicationNumber,
+  });
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
   // useEffect(()=>{
   //   let consumerCodes=applicationNumber
   //   try{
@@ -80,8 +107,22 @@ const PropertyDetails = () => {
 
   //   }
   // },[])
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+  console.log("fetchBillData", fetchBillData)
+  console.log("applicationDetails", applicationDetails)
+=======
+ 
+>>>>>>> MicroUI_PROD_Vite
+=======
+  console.log("fetchBillData",fetchBillData)
+console.log("applicationDetails",applicationDetails)
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
 
 
+>>>>>>> MicroUI_UAT_Vite
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.pt.usePropertySearch(
     {
       tenantId,
@@ -94,7 +135,18 @@ const PropertyDetails = () => {
     }
   );
   const mutation = Digit.Hooks.pt.usePropertyAPI(tenantId, false);
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+  console.log("mutation", mutation)
+=======
+>>>>>>> MicroUI_PROD_Vite
+=======
+console.log("mutation",mutation)
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
 
+>>>>>>> MicroUI_UAT_Vite
   const { data: UpdateNumberConfig } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["UpdateNumber"], {
     select: (data) => {
       return data?.PropertyTax?.UpdateNumber?.[0];
@@ -102,8 +154,22 @@ const PropertyDetails = () => {
     retry: false,
     enable: false,
   });
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+  console.log("auditData", auditData)
+  console.log("updateNumberConfig", UpdateNumberConfig)
+=======
+
+>>>>>>> MicroUI_PROD_Vite
+=======
+console.log("auditData",auditData)
+console.log("updateNumberConfig",UpdateNumberConfig)
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
 
 
+>>>>>>> MicroUI_UAT_Vite
   React.useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 780);
     window.addEventListener("resize", onResize);
@@ -159,7 +225,19 @@ const PropertyDetails = () => {
     moduleCode: "PT.UPDATE",
     role: "PT_CEMP",
   });
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+  console.log("workflowDetails", workflowDetails)
+=======
 
+>>>>>>> MicroUI_PROD_Vite
+=======
+console.log("workflowDetails",workflowDetails)
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   const closeToast = () => {
     setShowToast(null);
   };
@@ -172,29 +250,6 @@ const PropertyDetails = () => {
 
   if (appDetailsToShow?.applicationDetails) {
     appDetailsToShow.applicationDetails = appDetailsToShow?.applicationDetails?.map((e) => {
-      if (e.title === "PT_PROPERTY_ADDRESS_SUB_HEADER") {
-        if (["ACTIVE", "INWORKFLOW"].includes(applicationDetails?.applicationData?.status)) {
-          e.values.map((value) => {
-            if (value.title === "Survey Id/UID") {
-              value.textStyle = { display: "flex", alignItems: "center", wordBreak: "revert" };
-              value.caption = (
-                <span
-                  onClick={() => {
-                    setShowModal((prev) => !prev);
-                    setShowUpdateSurveyId({
-                      existingSurveyId: appDetailsToShow?.applicationData?.surveyId || "NA",
-                      propertyId: appDetailsToShow?.applicationData?.propertyId,
-                    });
-                  }}
-                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", marginLeft: "8px", verticalAlign: "middle" }}
-                >
-                  <EditIcon style={{ width: "16px", height: "16px" }} />
-                </span>
-              );
-            }
-          });
-        }
-      }
       if (e.title === "PT_OWNERSHIP_INFO_SUB_HEADER") {
         if (applicationDetails?.applicationData?.status === "ACTIVE") {
 
@@ -255,19 +310,53 @@ const PropertyDetails = () => {
   }
   useEffect(() => {
     // if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title !== "PT_TOTAL_DUES") {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    if (fetchBillData && fetchBillData?.Bill?.length > 0 && fetchBillData?.Bill?.[0]?.totalAmount > 0) {
+      let dateString = fetchBillData?.Bill?.[0]?.billDetails?.map(detail => {
+        const fromYear = new Date(detail.fromPeriod).getFullYear();
+        const toYear = new Date(detail.toPeriod).getFullYear();
+        return `${fromYear}-${toYear}(Rs.${detail.amount})`;
+      }).join(',');
+=======
      if (fetchBillData && fetchBillData?.Bill?.length>0 && fetchBillData?.Bill?.[0]?.totalAmount > 0) {
+      // Check if bill section already exists at the beginning
+      if (appDetailsToShow?.applicationDetails?.[0]?.values?.[0]?.title === "PT_TOTAL_DUES") {
+        return;
+      }
+
+=======
+     if (fetchBillData && fetchBillData?.Bill?.length>0) {
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
       let dateString=fetchBillData?.Bill?.[0]?.billDetails?.map(detail => {
     const fromYear = new Date(detail.fromPeriod).getFullYear();
     const toYear = new Date(detail.toPeriod).getFullYear();
     return `${fromYear}-${toYear}(Rs.${detail.amount})`;
   }).join(',');
+<<<<<<< HEAD
+>>>>>>> MicroUI_PROD_Vite
+=======
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
 
       appDetailsToShow?.applicationDetails?.unshift({
        title:" ",
         asSectionHeader: true,
        // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
+<<<<<<< HEAD
+<<<<<<< HEAD
+          <LinkLabel
+            onClick={() => history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`})}
+            style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
+          >
+            {/* {t("PT_VIEW_PAYMENT")} */}
+             {t("PT_PAY_PAYMENT")}
+          </LinkLabel>
+=======
+          <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+=======
           <div style={{ display: "flex", textAlign : "center",  gap: "15px", flexWrap: "wrap" }}>
+>>>>>>> MicroUI_UAT_Vite
             <LinkLabel
               onClick={() => {
                isCitizen ?
@@ -300,6 +389,10 @@ const PropertyDetails = () => {
               {t("PT_VIEW_PAYMENT")}
             </LinkLabel>
           </div>
+<<<<<<< HEAD
+>>>>>>> MicroUI_PROD_Vite
+=======
+>>>>>>> MicroUI_UAT_Vite
         ),
         values: [
           // {
@@ -426,6 +519,25 @@ const PropertyDetails = () => {
   const UpdatePropertyNumberComponent = Digit?.ComponentRegistryService?.getComponent("EmployeeUpdateOwnerNumber");
 
     appDetailsToShow?.applicationData?.owners.sort((item, item2) => { return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence })
+<<<<<<< HEAD
+    
+  console.log("appDetailsToShow",appDetailsToShow)
+  //   const [showOptions, setShowOptions] = useState(false);
+  //   let dowloadOptions = [];
+  //     const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  // const { tenants } = storeData || {};
+  // const getAcknowledgementData = async () => {
+  //   const applications = appDetailsToShow?.applicationDetails || {};
+  //   const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+  //   const acknowldgementDataAPI = await getPTAcknowledgementData({ ...applications }, tenantInfo, t);
+  //   Digit.Utils.pdf.generate(acknowldgementDataAPI);
+  //   //setAcknowldgementData(acknowldgementDataAPI);
+  // };
+  // dowloadOptions.push({
+  //   label: appDetailsToShow?.applicationData?.creationReason === "MUTATION" ? t("MT_APPLICATION") : t("PT_APPLICATION_ACKNOWLEDGMENT"),
+  //   onClick: () => getAcknowledgementData(),
+  // });
+=======
 
 
   const handleDownloadPdf = async () => {
@@ -466,6 +578,7 @@ const PropertyDetails = () => {
     }
   };
 
+>>>>>>> MicroUI_UAT_Vite
   return (
     <div>
       {/* <Header>{t("PT_PROPERTY_INFORMATION")}</Header> */}
@@ -475,9 +588,17 @@ const PropertyDetails = () => {
       <h1 style={{fontSize:'18px',border:'1px solid grey',padding:'8px',backgroundColor:'grey',color:'white'}}>Application No: {applicationNumber}</h1>
      </div>
     <div className="button-group" style={{display:'flex',gap:'10px'}}>
-          <button onClick={handleDownloadPdf} style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white',cursor:'pointer'}} >Download</button>
-          <button onClick={handlePrintPdf} style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px',cursor:'pointer'}}>Print</button>
-        </div>
+          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} >Download</button>
+    {/* {dowloadOptions && dowloadOptions.length > 0 && (
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+            />
+          )} */}
+          <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}>Print</button>
+        </div>
       </div>
 
       <ApplicationDetailsTemplate
@@ -488,7 +609,6 @@ const PropertyDetails = () => {
         mutate={null}
         workflowDetails={appDetailsToShow?.applicationData?.status === "ACTIVE" ? workflowDetails : {}}
         businessService="PT"
-        moduleCode="PT"
         showToast={showToast}
         setShowToast={setShowToast}
         closeToast={closeToast}
@@ -499,27 +619,43 @@ const PropertyDetails = () => {
       />
       {showModal ? (
         <Modal
+<<<<<<< HEAD
           headerBarMain={
             <h1 className="heading-m">
               {showUpdateSurveyId
                 ? `PropertiesId${showUpdateSurveyId.propertyId} Existing Survey Id/UID: ${showUpdateSurveyId.existingSurveyId}`
                 : showUpdateNo
+<<<<<<< HEAD
+                  ? t("PTUPNO_HEADER")
+                  : t("PT_OWNER_HISTORY")}
+=======
                 ? t("PTUPNO_HEADER")
                 : t("PT_OWNER_HISTORY")}
+>>>>>>> MicroUI_PROD_Vite
             </h1>
           }
+=======
+          headerBarMain={<h1 className="heading-m">{showUpdateNo ? t("PTUPNO_HEADER") : t("PT_OWNER_HISTORY")}</h1>}
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
           headerBarEnd={
             <CloseBtn
               onClick={() => {
                 setShowModal(false);
                 setShowUpdateNo(false);
-                setShowUpdateSurveyId(null);
               }}
             />
           }
           hideSubmit={true}
           isDisabled={false}
+<<<<<<< HEAD
+<<<<<<< HEAD
+          popupStyles={showUpdateNo || showUpdateSurveyId ? { width: isMobile ? "473px" : "50%" } : { width: "75%" }}
+=======
           popupStyles={showUpdateNo || showUpdateSurveyId ? { width: isMobile ? "473px" : "50%"} : { width: "75%"}}
+>>>>>>> MicroUI_PROD_Vite
+=======
+          popupStyles={showUpdateNo ? { width: isMobile ? "473px" : "50%"} : { width: "75%"}}
+>>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
         >
           {showUpdateNo && (
             <UpdatePropertyNumberComponent
@@ -560,6 +696,9 @@ const PropertyDetails = () => {
               }}
             ></UpdatePropertyNumberComponent>
           )}
+<<<<<<< HEAD
+          {!showUpdateNo && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
+=======
           {showUpdateSurveyId && (
             <UpdateSurveyId
               t={t}
@@ -596,6 +735,7 @@ const PropertyDetails = () => {
             />
           )}
           {!showUpdateNo && !showUpdateSurveyId && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
+>>>>>>> MicroUI_UAT_Vite
         </Modal>
       ) : null}
 

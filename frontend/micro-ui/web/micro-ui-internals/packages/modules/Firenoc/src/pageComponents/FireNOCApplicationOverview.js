@@ -130,6 +130,10 @@ const FireNOCApplicationOverview = () => {
       return;
     }
     if (action?.action === "PAY") {
+      if(!fireNOC?.fireNOCDetails || Object.keys(fireNOC.fireNOCDetails).length === 0){
+        setShowToast({ key: "true", error: true, message: "No application details found" });
+        return
+      }
       const redirectPath = isEmployee
         ? `/digit-ui/employee/payment/collect/FIRENOC/${applicationNo}/${tenantId}?tenantId=${tenantId}`
         : `/digit-ui/citizen/payment/collect/FIRENOC/${applicationNo}?tenantId=${tenantId}`;

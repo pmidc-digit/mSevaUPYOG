@@ -189,10 +189,16 @@ const Inbox = ({ parentRoute }) => {
 
     return {
       ...memoizedFilters,
+<<<<<<< HEAD
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
   }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
+=======
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+>>>>>>> MicroUI_PROD_Vite
 
   const assignedToMeFilters = useMemo(
     () => ({

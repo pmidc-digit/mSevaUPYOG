@@ -245,7 +245,15 @@ function NOCSummary({ currentStepData: formData, t }) {
               <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={formData?.siteDetails?.specificationBuildingCategory?.name || formData?.siteDetails?.specificationBuildingCategory || "N/A"} />
               <Row label={t("NOC_NOC_TYPE_LABEL")} text={formData?.siteDetails?.specificationNocType?.name || formData?.siteDetails?.specificationNocType || "N/A"} />
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+              {(isFinalNoc || isDigitizationOfManual) && (
+=======
               {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
+>>>>>>> MicroUI_PROD_Vite
+=======
+              {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
+>>>>>>> MicroUI_UAT_Vite
                 <React.Fragment>
                   {isFinalNoc && (
                     <Row
@@ -253,13 +261,29 @@ function NOCSummary({ currentStepData: formData, t }) {
                       text={
                         formData?.siteDetails?.existingNocType?.name ||
                         formData?.siteDetails?.existingNocType?.code ||
+<<<<<<< HEAD
+<<<<<<< HEAD
+                        (typeof formData?.siteDetails?.existingNocType === "string" ? formData?.siteDetails?.existingNocType : "N/A")
+=======
                         (typeof formData?.siteDetails?.existingNocType === "string" && formData?.siteDetails?.existingNocType ? formData?.siteDetails?.existingNocType : "N/A")
+>>>>>>> MicroUI_PROD_Vite
+=======
+                        (typeof formData?.siteDetails?.existingNocType === "string" && formData?.siteDetails?.existingNocType ? formData?.siteDetails?.existingNocType : "N/A")
+>>>>>>> MicroUI_UAT_Vite
                       }
                     />
                   )}
                   <Row label={t("NOC_NUMBER_LABEL")} text={formData?.siteDetails?.existingNocNumber || "N/A"} />
                   {(isOffline || isDigitizationOfManual) && (
+<<<<<<< HEAD
+<<<<<<< HEAD
+                    <Row label={t("NOC_DATE_LABEL")} text={formData?.siteDetails?.existingNocDate || "N/A"} />
+=======
                     <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(formData?.siteDetails?.existingNocDate) || "N/A"} />
+>>>>>>> MicroUI_PROD_Vite
+=======
+                    <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(formData?.siteDetails?.existingNocDate) || "N/A"} />
+>>>>>>> MicroUI_UAT_Vite
                   )}
                   {formData?.siteDetails?.existingNocDocument && (
                     <Row
@@ -269,7 +293,11 @@ function NOCSummary({ currentStepData: formData, t }) {
                       }
                     />
                   )}
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> MicroUI_PROD_Vite
                 </React.Fragment>
               )}
                 <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={formData?.siteDetails?.specificationRestrictedArea?.code || formData?.siteDetails?.specificationRestrictedArea || "N/A"} />

@@ -18,7 +18,15 @@ const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 
 const getOwner = (application, t, customTitle) => {
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+  console.log('application:', application);
+>>>>>>> MicroUI_PROD_Vite
+  
+=======
 
+>>>>>>> MicroUI_UAT_Vite
   let owners = [];
   let ownershipCategory = application?.ownershipCategory;
   if (customTitle?.includes("TRANSFEROR")) {

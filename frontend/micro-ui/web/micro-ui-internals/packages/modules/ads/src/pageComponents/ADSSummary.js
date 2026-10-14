@@ -23,10 +23,10 @@ function ADSSummary({ t }) {
   const docs = Array.isArray(formData?.documents?.documents?.documents)
     ? formData?.documents?.documents?.documents
     : Array.isArray(formData.documents?.documents)
-    ? formData.documents.documents
-    : Array.isArray(formData.documents)
-    ? formData.documents
-    : [];
+      ? formData.documents.documents
+      : Array.isArray(formData.documents)
+        ? formData.documents
+        : [];
   const cartDetails = formData?.ads;
 
   const renderRow = (label, value) => (

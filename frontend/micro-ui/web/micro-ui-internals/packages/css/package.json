@@ -1,6 +1,10 @@
 {
   "name": "@pmidc/upyog-css",
+<<<<<<< HEAD
+  "version": "1.2.36-UAT.16",
+=======
   "version": "1.2.36-UAT.36",
+>>>>>>> MicroUI_UAT_Vite
   "license": "MIT",
   "author": "",
   "type": "commonjs",

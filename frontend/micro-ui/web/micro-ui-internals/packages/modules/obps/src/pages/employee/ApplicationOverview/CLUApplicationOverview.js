@@ -1336,7 +1336,11 @@ const CLUEmployeeApplicationDetails = () => {
           />
         )}
         {hasPayments && (
+<<<<<<< HEAD
           <div className="obps-pages-employee-application-overview-cluapplication-overview--style-10">
+=======
+          <div style={{ marginTop: "16px" }}>
+>>>>>>> MicroUI_PROD_Vite
             <OBPSPaymentHistory payments={combinedPayments} />
           </div>
         )}
@@ -1460,9 +1464,13 @@ const CLUEmployeeApplicationDetails = () => {
         </Modal>
       )}
 
+<<<<<<< HEAD
+      {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} tenantId={tenantId} />}
+=======
       {showZoneModal && (
         <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} tenantId={tenantId} />
       )}
+>>>>>>> MicroUI_UAT_Vite
 
       {showPdfModal && (
         <PdfPreviewModal

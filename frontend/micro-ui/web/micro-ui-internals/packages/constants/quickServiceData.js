@@ -302,6 +302,8 @@ export const quickServiceModules = {
       subHeading: "",
       roles: [],
     },
+<<<<<<< HEAD
+=======
     {
       moduleCode: "KibanaDashboard",
       moduleName: "Dashboard",
@@ -328,5 +330,6 @@ export const quickServiceModules = {
       subHeading: "",
       roles: [],
     },
+>>>>>>> MicroUI_UAT_Vite
   ],
 };

@@ -21,24 +21,39 @@ const NOCBreadCrumbs = ({ location, cameFromOBPS }) => {
     const hasSecondBreadcrumb =
       location.pathname.includes("/noc/new-application") ||
       location.pathname.includes("noc/my-application") ||
+<<<<<<< HEAD
       location.pathname.includes("noc/search/application-overview") ||
       location.pathname.includes("noc/search-application")||
       location.pathname.includes("noc/noc-my-application");
+=======
+      location.pathname.includes("noc/search/application-overview/") ||
+      location.pathname.includes("noc/search-application");
+>>>>>>> MicroUI_PROD_Vite
 
     breadcrumbs.push(
       <span key="home">
         <Link to="/digit-ui/citizen" className="noc-pages-citizen-index--style-1">
           {t("ES_COMMON_HOME")}
         </Link>
+<<<<<<< HEAD
         {(hasSecondBreadcrumb || cameFromOBPS) && <span className="noc-pages-citizen-index--style-2">/</span>}
+=======
+        {hasSecondBreadcrumb && <span className="noc-pages-citizen-index--style-2">/</span>}
+>>>>>>> MicroUI_PROD_Vite
       </span>
     );
     if (cameFromOBPS) {
       // User navigated here from OBPS My Applications
       breadcrumbs.push(
+<<<<<<< HEAD
         <span key="obps-landing-page">
           <Link to="/digit-ui/citizen/obps-home" className="noc-pages-citizen-index--style-3">
             {t("MODULE_OBPS")}
+=======
+        <span key="noc">
+          <Link to={isUserRegistered ? "/digit-ui/citizen/obps/home" : "/digit-ui/citizen/noc-home"} className="noc-pages-citizen-index--style-3">
+            NOC Home
+>>>>>>> MicroUI_PROD_Vite
           </Link>
           <span className="noc-pages-citizen-index--style-2">/</span>
         </span>
@@ -121,7 +136,11 @@ const App = () => {
         <AppContainer>
           {!isResponse ? (
             <div className={window.location.href.includes("application-overview") || isMobile ? "noc-citizen__breadcrumbs--offset" : "noc-citizen__breadcrumbs"}>
+<<<<<<< HEAD
               <NOCBreadCrumbs location={location} cameFromOBPS={cameFromOBPS} />
+=======
+              <NOCBreadCrumbs location={location} />
+>>>>>>> MicroUI_PROD_Vite
             </div>
           ) : null}
           {/* {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""} */}

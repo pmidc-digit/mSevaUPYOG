@@ -178,8 +178,12 @@ const LayoutInbox = ({ parentRoute }) => {
     ];
   }, []);
 
+<<<<<<< HEAD
   // const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
   const effectiveTenantId = tenantId === "pb.punjab" ? tenantId : tenantId;
+=======
+  const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
+>>>>>>> MicroUI_PROD_Vite
 
   useEffect(() => {
     if (tenantId !== "pb.punjab") return;
@@ -198,8 +202,20 @@ const LayoutInbox = ({ parentRoute }) => {
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
       searchForm: formState?.searchForm || searchFormDefaultValues,
+<<<<<<< HEAD
+<<<<<<< HEAD
+      tableForm: {
+        ...tableForm,
+        limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
+        offset: isTopBarSearchActive ? 0 : tableForm.offset,
+      },
+=======
+      tableForm: formState?.tableForm || tableOrderFormDefaultValues,
+>>>>>>> MicroUI_PROD_Vite
+=======
       // Manual text search filters the loaded rows without changing the API query.
       tableForm,
+>>>>>>> MicroUI_UAT_Vite
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -222,16 +238,27 @@ const LayoutInbox = ({ parentRoute }) => {
     },
   });
 
+<<<<<<< HEAD
+=======
+  console.log('inboxData', inboxData)
+
+>>>>>>> MicroUI_PROD_Vite
   const assigneeCountBaseFilters = useMemo(() => {
     const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
     delete countFilterForm.applicationStatus;
 
     return {
       ...memoizedFilters,
+<<<<<<< HEAD
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
       filterForm: countFilterForm,
     };
   }, [formState?.tableForm, memoizedFilters, tableOrderFormDefaultValues]);
+=======
+      filterForm: countFilterForm,
+    };
+  }, [memoizedFilters]);
+>>>>>>> MicroUI_PROD_Vite
 
   const assignedToMeFilters = useMemo(
     () => ({
@@ -517,7 +544,7 @@ const LayoutInbox = ({ parentRoute }) => {
       }
       filterSection={
         <NewFilterFormFieldComponent
-          registerRef={() => {}}
+          registerRef={() => { }}
           controlFilterForm={controlFilterForm}
           setFilterFormValue={setFilterFormValue}
           filterFormState={formState?.filterForm}
@@ -527,7 +554,11 @@ const LayoutInbox = ({ parentRoute }) => {
           isInboxLoading={isInboxLoading}
           assigneeCounts={assigneeCounts}
           handleFilter={handleFilterChange}
+<<<<<<< HEAD
           prefix={prefix}
+=======
+          prefix= {prefix}
+>>>>>>> MicroUI_PROD_Vite
           rawStatuses={inboxData?.statuses || []}
         />
       }

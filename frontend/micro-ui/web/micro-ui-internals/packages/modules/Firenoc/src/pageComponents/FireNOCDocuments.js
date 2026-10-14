@@ -109,6 +109,25 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
     <div className="bpa-doc-required-wrapper">
       {isUploading && <Loader />}
 
+<<<<<<< HEAD
+
+      {doc.hasDropdown && (
+        <CardLabel style={{ fontWeight: "bold", fontSize: "16px", marginBottom: "8px" }}>
+          {t(doc.code.replaceAll(".", "_"))}
+          {doc.required && <span className="requiredField">*</span>}
+        </CardLabel>
+      )}
+
+      <div
+        style={{
+          display: "flex",
+          gap: "24px",
+          flexWrap: "wrap",
+          alignItems: doc.hasDropdown ? "flex-start" : "center"
+        }}
+      >
+
+=======
       
         {doc.hasDropdown && (
           <CardLabel className="noc-doc-label noc-doc-label--with-dropdown">
@@ -119,6 +138,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
 
         <div className={`noc-doc-row${doc.hasDropdown ? " noc-doc-row--has-dropdown" : ""}`}>
         
+>>>>>>> MicroUI_UAT_Vite
         {/* 3. Left Column: Either Dropdown OR the Label (if no dropdown) */}
         <div className="noc-doc-col">
           {doc.hasDropdown ? (
@@ -159,17 +179,28 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
           <p className="noc-doc-hint">
             {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
           </p>
-        </div>
-      </div>
+        </div >
+      </div >
 
-         
 
+<<<<<<< HEAD
+
+      {
+        doc.description && (
+          <p style={{ padding: "0 10px 10px", fontSize: "13px", color: "#717171" }}>
+            {/* {t(doc.description.replaceAll(".", "_"))} */}
+          </p>
+        )
+      }
+    </div >
+=======
       {doc.description && (
         <p className="noc-doc-description">
           {/* {t(doc.description.replaceAll(".", "_"))} */}
         </p>
       )}
     </div>
+>>>>>>> MicroUI_UAT_Vite
   );
 }
 
@@ -180,8 +211,8 @@ const FireNOCDocuments = ({ t, config, onSelect, formData }) => {
 
   /* Seed from Redux so uploads survive back-navigation */
   const persistedDocs = useSelector(
-    (state) => 
-      state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments?.documents || 
+    (state) =>
+      state?.noc?.NOCNewApplicationFormReducer?.formData?.uploadedDocuments?.documents ||
       state?.noc?.NOCNewApplicationFormReducer?.formData?.documents?.documents?.documents || []
   );
   const [documents, setDocuments] = useState(persistedDocs);

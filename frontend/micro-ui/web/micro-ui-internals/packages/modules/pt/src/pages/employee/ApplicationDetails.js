@@ -254,6 +254,10 @@ const ApplicationDetails = () => {
   if (appDetailsToShow?.applicationDetails) {
     appDetailsToShow.applicationDetails = appDetailsToShow.applicationDetails.map((detail) => {
       if (detail.title === "PT_OWNERSHIP_INFO_SUB_HEADER") {
+<<<<<<< HEAD
+=======
+        console.log('detail here:', detail);
+>>>>>>> MicroUI_PROD_Vite
         
         return {
           ...detail,

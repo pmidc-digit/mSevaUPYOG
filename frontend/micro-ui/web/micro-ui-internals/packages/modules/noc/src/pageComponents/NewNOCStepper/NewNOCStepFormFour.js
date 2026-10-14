@@ -209,7 +209,15 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             specificationIsSiteUnderMasterPlan: nocFormData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "",
             existingNocType: nocFormData?.siteDetails?.existingNocType?.name || "",
             existingNocNumber: nocFormData?.siteDetails?.existingNocNumber || "",
+<<<<<<< HEAD
+<<<<<<< HEAD
+            existingNocDate: nocFormData?.siteDetails?.existingNocDate || "",
+=======
             existingNocDate: nocFormData?.siteDetails?.existingNocDate ? convertToDDMMYYYY(nocFormData?.siteDetails?.existingNocDate) : "",
+>>>>>>> MicroUI_PROD_Vite
+=======
+            existingNocDate: nocFormData?.siteDetails?.existingNocDate ? convertToDDMMYYYY(nocFormData?.siteDetails?.existingNocDate) : "",
+>>>>>>> MicroUI_UAT_Vite
             existingNocDocument: nocFormData?.siteDetails?.existingNocDocument || null,
             isNocValidated: nocFormData?.siteDetails?.isNocValidated || false,
           },

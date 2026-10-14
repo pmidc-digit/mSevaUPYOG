@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useGlobalFilter, usePagination, useRowSelect, useSortBy, useTable } from "react-table";
 import { ArrowBack, ArrowForward, ArrowToFirst, ArrowToLast, SortDown, SortUp } from "./svgindex";
 
-const noop = () => {};
+const noop = () => { };
 
 const getStatusClass = (status) => {
   const value = String(status || "").toLowerCase();
@@ -194,8 +194,8 @@ const Table = ({
                           ? t(cell.column.Header)
                           : cell.column.Header
                         : t
-                        ? t(cell.column.id || `Column ${cellIndex + 1}`)
-                        : cell.column.id || `Column ${cellIndex + 1}`;
+                          ? t(cell.column.id || `Column ${cellIndex + 1}`)
+                          : cell.column.id || `Column ${cellIndex + 1}`;
 
                     return (
                       <div key={cell.column.id || cellIndex} className="digit-table-mobile-card-row">
@@ -313,10 +313,10 @@ const Table = ({
                 );
                 const statusValue = String(
                   row?.original?.status ||
-                    row?.original?.applicationStatus ||
-                    extractTextValue(statusCell?.value) ||
-                    extractTextValue(statusCell?.render?.("Cell")) ||
-                    ""
+                  row?.original?.applicationStatus ||
+                  extractTextValue(statusCell?.value) ||
+                  extractTextValue(statusCell?.render?.("Cell")) ||
+                  ""
                 );
                 const normalizedStatusValue = statusValue.toLowerCase();
                 const statusClass = getStatusClass(normalizedStatusValue);
@@ -394,7 +394,7 @@ const Table = ({
                                     ...pillStyle,
                                   }}
                                 >
-                                  {t ? getStatusDisplayText(t(cellValue)) : getStatusDisplayText(cellValue)}
+                                  {getStatusDisplayText(cellValue)}
                                 </span>
                               );
                             })()

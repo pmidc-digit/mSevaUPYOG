@@ -123,9 +123,9 @@ const EditApplication = () => {
     { code: "YES", i18nKey: "YES", }, { code: "NO", i18nKey: "NO", },
   ];
   const existingNocTypeOptions = [
-          { code: "OFFLINE", name: "Offline" },
-          { code: "ONLINE", name: "Online" },
-        ];
+    { code: "OFFLINE", name: "Offline" },
+    { code: "ONLINE", name: "Online" },
+  ];
   const { data: fetchedLocalities, isLoading: isBoundaryLoading } = Digit.Hooks.useBoundaryLocalities(tenantId, "revenue", {}, t);
 
   const ulbListOptions = ulbList?.map((city) => ({
@@ -176,7 +176,11 @@ const EditApplication = () => {
   //   }
   // }, [fetchedLocalities, siteDetails?.zone]);
 
+<<<<<<< HEAD
+  console.log("sitedetails", siteDetails?.existingNocType)
+=======
 
+>>>>>>> MicroUI_UAT_Vite
 
   useEffect(() => {
 

@@ -261,9 +261,17 @@ const TopBar = ({
   return (
     <div className="topbar" style={topbarStyle}>
       {mobileView ? <Hamburger handleClick={toggleSidebar} color="#9E9E9E" /> : null}
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <img className="city" src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/download.png" />
+=======
+      <img alt="mSeva Logo" className= "mseva-logo" src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/download.png" />
+>>>>>>> MicroUI_PROD_Vite
+=======
       <div onClick={() => history.push("/digit-ui/employee")} className="employee-mseva-brand-mark">
         <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
       </div>
+>>>>>>> MicroUI_UAT_Vite
       <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
         {loggedin &&
           (cityDetails?.city?.ulbGrade ? (

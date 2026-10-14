@@ -541,7 +541,14 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
               applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
+>>>>>>> MicroUI_PROD_Vite
+=======
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
+>>>>>>> MicroUI_UAT_Vite
               owners: [
                 {
                   ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
@@ -653,7 +660,14 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             validTo,
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
               applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
+>>>>>>> MicroUI_PROD_Vite
+=======
+              applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
+>>>>>>> MicroUI_UAT_Vite
               owners: [
                 {
                   ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),

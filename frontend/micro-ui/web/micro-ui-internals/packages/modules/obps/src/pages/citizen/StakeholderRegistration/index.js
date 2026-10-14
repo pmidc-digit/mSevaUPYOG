@@ -118,11 +118,21 @@ const StakeholderRegistration = () => {
           documentUid: doc?.documentUid || null,
           active: true,
           tenantId: doc?.tenantId || tenantId,
+<<<<<<< HEAD
+          id: doc?.id || null,
+        }))
+      : [];
+
+    const applicationDocuments = cleanDocs(
+      formattedDocs?.length > 0 ? formattedDocs : finalDocVal?.tradeLicenseDetail?.applicationDocuments
+    );
+=======
           id: finalDocVal?.tradeLicenseDetail?.applicationDocuments?.find((saved) => saved.documentType === doc?.documentType)?.id || doc?.id || null,
         }))
       : [];
 
     const applicationDocuments = cleanDocs(formattedDocs?.length > 0 ? formattedDocs : finalDocVal?.tradeLicenseDetail?.applicationDocuments);
+>>>>>>> MicroUI_UAT_Vite
 
     let setselectedAction = !selectedAction ? "APPLY" : typeof selectedAction === "object" ? selectedAction.action : selectedAction;
 

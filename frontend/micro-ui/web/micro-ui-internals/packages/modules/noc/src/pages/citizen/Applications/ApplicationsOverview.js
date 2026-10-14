@@ -139,8 +139,8 @@ const CitizenApplicationOverview = () => {
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages
       ? {
-          documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
-        }
+        documents: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.siteImages,
+      }
       : {}
   );
 
@@ -541,9 +541,9 @@ const CitizenApplicationOverview = () => {
 
     return conditionText
       ? {
-          ConditionLine: "The above approval is subjected to the following conditions:\n",
-          ConditionText: conditionText,
-        }
+        ConditionLine: "The above approval is subjected to the following conditions:\n",
+        ConditionText: conditionText,
+      }
       : "";
   }, [workflowDetails]);
 
@@ -1038,7 +1038,7 @@ const CitizenApplicationOverview = () => {
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}
-              // style={MenuStyle}
+            // style={MenuStyle}
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

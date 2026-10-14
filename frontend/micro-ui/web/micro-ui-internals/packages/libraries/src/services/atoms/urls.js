@@ -86,6 +86,7 @@ const Urls = {
     search: "/property-services/property/_search",
     update: "/property-services/property/_update",
     pt_calculation_estimate: "/pt-calculator-v2/propertytax/v2/_estimate",
+    billingslab_search: "/pt-calculator-v2/billingslab/_search",
     assessment_create: "/property-services/assessment/_create",
     assessment_update: "/property-services/assessment/_update",
     assessment_cancel: "/property-services/assessment/_cancel",

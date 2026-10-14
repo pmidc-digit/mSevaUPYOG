@@ -70,7 +70,12 @@ public class CustomPreAuthenticatedProvider implements AuthenticationProvider {
             if (domain_roles == null || domain_roles.isEmpty()) {
                 log.error("Login failed: User '{}' of type '{}' in tenant '{}' has no roles assigned in the database.",
                         userName, userType, tenantId);
-                throw new OAuth2Exception("No roles assigned for user: " + userName + ". Please contact administrator.");
+                OAuth2Exception exception = new OAuth2Exception(
+                        "No roles assigned for user: " + userName + ". Your account does not have access permissions configured. Please contact your system administrator.");
+                exception.addAdditionalInformation("roles_missing", "true");
+                exception.addAdditionalInformation("user_name", userName);
+                exception.addAdditionalInformation("user_type", userType);
+                throw exception;
             }
             List<org.egov.common.contract.request.Role> contract_roles = new ArrayList<>();
             for (org.egov.user.domain.model.Role role : domain_roles) {
@@ -91,8 +96,8 @@ public class CustomPreAuthenticatedProvider implements AuthenticationProvider {
 
         }
 
-        if (user.getAccountLocked() == null || user.getAccountLocked()) {
-            throw new OAuth2Exception("Account locked");
+        if (user.getAccountLocked() != null && user.getAccountLocked()) {
+            throw userService.buildAccountLockedException(user);
         }
 
         List<GrantedAuthority> grantedAuths = new ArrayList<>();

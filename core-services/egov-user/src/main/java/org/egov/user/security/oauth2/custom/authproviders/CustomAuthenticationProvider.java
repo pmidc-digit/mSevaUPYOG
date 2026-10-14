@@ -129,14 +129,19 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             if (userService.isAccountUnlockAble(user)) {
                 user = unlockAccount(user, requestInfo);
             } else {
-                throw new OAuth2Exception("Account locked");
+                throw userService.buildAccountLockedException(user);
             }
         }
 
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             log.error("Login failed: User '{}' of type '{}' in tenant '{}' has no roles assigned in the database.",
                     userName, userType, tenantId);
-            throw new OAuth2Exception("No roles assigned for user: " + userName + ". Please contact administrator.");
+            OAuth2Exception exception = new OAuth2Exception(
+                    "No roles assigned for user: " + userName + ". Your account does not have access permissions configured. Please contact your system administrator.");
+            exception.addAdditionalInformation("roles_missing", "true");
+            exception.addAdditionalInformation("user_name", userName);
+            exception.addAdditionalInformation("user_type", userType);
+            throw exception;
         }
 
         boolean isCitizen = user.getType() != null &&
@@ -224,7 +229,28 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 requestInfo
         );
 
-        throw new OAuth2Exception("Invalid login credentials. You have " + attempLeftCount + " login attempts left.");
+        boolean isOtpAttempt = isCitizen ? !loginWithPasswordUsernames.contains(userName) : !isPasswordType;
+
+        String errMsg;
+        if (isOtpAttempt) {
+            if (attempLeftCount == 1) {
+                errMsg = "Invalid OTP. Warning: You have only 1 attempt remaining before your account is locked.";
+            } else {
+                errMsg = "Invalid OTP. Please enter the valid OTP. You have " + attempLeftCount + " attempt(s) remaining.";
+            }
+        } else {
+            if (attempLeftCount == 1) {
+                errMsg = "Invalid password. Warning: You have only 1 attempt remaining before your account is locked.";
+            } else {
+                errMsg = "Invalid password. You have " + attempLeftCount + " attempt(s) remaining.";
+            }
+        }
+
+        OAuth2Exception exception = new OAuth2Exception(errMsg);
+        exception.addAdditionalInformation("auth_type", isOtpAttempt ? "OTP" : "PASSWORD");
+        exception.addAdditionalInformation("attempts_left", String.valueOf(attempLeftCount));
+        exception.addAdditionalInformation("max_attempts", String.valueOf(userService.getMaxInvalidLoginAttempts()));
+        throw exception;
     }
 
     private boolean isPasswordMatch(Boolean isOtpBased,

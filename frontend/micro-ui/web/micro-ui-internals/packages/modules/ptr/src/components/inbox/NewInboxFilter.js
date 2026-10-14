@@ -11,7 +11,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
   const client = useQueryClient();
 
   const [_searchParams, setSearchParams] = useState(() => ({ services: searchParams?.services || ["ptr"] }));
-  console.log("_searchParams", _searchParams);
+
 
   const assignedToOptions = useMemo(
     () => [
@@ -151,8 +151,8 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                 statusMap={statusMap || client.getQueryData(`INBOX_STATUS_MAP_${moduleCode}`)}
                 moduleCode={moduleCode}
                 onAssignmentChange={(e, status) => {
-                  console.log("status", status);
-                  console.log("e", e);
+
+
                   if (e.target.checked) {
                     localParamChange({
                       applicationStatus: [...(_searchParams?.applicationStatus || []), status]

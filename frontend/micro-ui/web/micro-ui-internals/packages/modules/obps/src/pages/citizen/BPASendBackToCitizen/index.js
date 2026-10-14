@@ -102,7 +102,7 @@ const BPASendBackToCitizen = ({ parentRoute }) => {
   // if (isNocLoading || isBpaSearchLoading || isLoading) {
   //   return <Loader />;
   // }
-  console.log("+");
+
   return (
     <Switch>
       {config.map((routeObj, index) => {

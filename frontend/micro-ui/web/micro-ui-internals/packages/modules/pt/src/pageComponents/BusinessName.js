@@ -9,11 +9,11 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
   //let index = window.location.href.charAt(window.location.href.length - 1);
   let index = window.location.href.split("/").pop();
 
-  console.log("formdata testing==", formData);
+
   const isResidentialProperty = 
   (formData?.usageCategoryMajor?.code === "RESIDENTIAL") || 
   (formData?.usageCategoryMajor?.i18nKey === "PROPERTYTAX_BILLING_SLAB_RESIDENTIAL");
-  
+
   const isMandatory = !isResidentialProperty;
   let validation = {};
   const onSkip = () => onSelect();
@@ -35,9 +35,9 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
     [businessName, setBusinessName] = useState(formData?.businessName?.businessName || "");
   }
   const formValue = watch();
-  console.log("businessName",businessName)
+
   const { errors } = localFormState;
-  
+
   const [error, setError] = useState(null);
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
@@ -46,11 +46,11 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
   }, [businessName])
 
   const handleBusinessNameChange = (value) => {
-    console.log("valuehandleBusinessNameChange", value)
+
     setBusinessName(value);
     onSelect(config.key, { ...formData[config.key], businessName: value })
     if (isMandatory) validateBusinessName();
-    
+
   }
 
   //}
@@ -62,10 +62,10 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
 
   useEffect(() => {
     if ( window.location.href.includes("employee")) {
-      //console.log("configkeyEEE", config.key)
+
       //    if (remarks !== "undefined" && remarks?.length === 0) setFormError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
       //    else if (remarks !== "undefined" && remarks?.length < 10 || remarks?.length > 10 || !Number(remarks)) setFormError(config.key, { type: "invalid", message: t("ERR_DEFAULT_INPUT_FIELD_MSG") });
-      
+
       if (isMandatory && businessName !== "undefined" && businessName?.length === 0) {
         setFormError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
       } else {
@@ -138,7 +138,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
       else if (!errorsPresent && formState.errors?.[config.key]) clearErrors(config.key);
     }
   }, [localFormState]);
-  console.log("localFormState",localFormState?.errors)
+
   // const handleBusinessNameChange=(e)=>{
   //   const value=e.target.value;
   //   //   if(new RegExp(/^\d{0,10}$/).test(value)|| value===""){
@@ -266,7 +266,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
 
 
       {/* {window.location.href.includes("/citizen") ? <Timeline currentStep={1} /> : null}
-      
+
       <FormStep
         config={config}
         onChange={handleRemarksChange}

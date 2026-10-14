@@ -59,7 +59,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
    const handleReset = () => {
       reset(searchFormDefaultValues);
     };
-  
+
   function nextPage() {
     setValue("offset", getValues("offset") + getValues("limit"));
     handleSubmit(onSubmit)();
@@ -68,9 +68,9 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
     setValue("offset", getValues("offset") - getValues("limit"));
     handleSubmit(onSubmit)();
   }
- 
 
-    
+
+
 
   // const { data: propertyData, isLoading: propertyDataLoading, error, isSuccess, billData } = Digit.Hooks.pt.usePropertySearchWithDue({
   //   tenantId: searchData?.city,
@@ -272,7 +272,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
   //                   validation: name?.validation,
   //                 },
   //                 isMandatory: false,
-                 
+
   //               },
   //     ],
   //     // body1: [
@@ -463,7 +463,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
     setSearchData({ city: city, filters: tempObject });
     return;
   };
-  
+
   const onFormValueChange = (setValue, data) => {
     if (data?.doorNo && data?.doorNo !== "" && data?.propertyIds !== "") {
       data["propertyIds"] = "";
@@ -486,7 +486,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
       return;
     }
   };
- 
+
 //  const { data: propertyData, isLoading: propertyDataLoading, error, isSuccess, billData } = Digit.Hooks.pt.usePropertySearchWithDue({
 //     tenantId: formValues?.city?.code,
 //     filters: {mobileNumber: formValues?.mobileNumber,
@@ -494,21 +494,21 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
 //        locality:formValues?.locality?.code, 
 //        propertyIds:formValues?.propertyId,
 //        oldpropertyids: formValues?.oldPropertyId,
-       
+
 //       },
 //     auth: true /*  to enable open search set false  */,
 //     configs: { enabled: Object.keys(formValues).length > 0, retry: false, retryOnMount: false, staleTime: Infinity },
 //   });
 
   // const handleChange = (e) => {
-  //   console.log("e",e)
+
   //     const { name, value } = e.target;
   //     setFormState((prevState) => ({
   //       ...prevState,
   //       [name]: value,
   //     }));
   //   };
-    console.log("formState",formValues)
+
   // if (isLoading) {
   //   return <Loader />;
   // }
@@ -557,7 +557,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
 
 
 
- 
+
 
     const GetCell = (value) => <span className="cell-text">{value}</span>;
     const columns = useMemo(
@@ -627,7 +627,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
      if(formValues?.locality!==null){
      filters.locality=formValues.locality?.code
      }
-    
+
      if(formValues?.propertyId!==''){
       filters.propertyIds=formValues.propertyId
      }
@@ -639,9 +639,9 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
      }
      const auth=true
       try{
-         
+
         Digit.PTService.search({tenantId: tenantId,filters:filters,auth:auth}).then((response) => {
-         console.log("response",response)
+
          if(response?.Properties?.length>0){
           setPropertyData(response.Properties)
          }
@@ -652,7 +652,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
       }
       catch(error)
       {
-        console.log(error);
+
       }
     }
     function onPageSizeChange(e) {
@@ -690,12 +690,12 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
             {...register("mobileNumber", { required: "Mobile Number is required", pattern: { value: /^[0-9]{10}$/, message: "Invalid mobile number" } })}
           render={(props) =>
         <TextInput
-         
-        
+
+
           type="text"
           onChange={props.onChange}
           value={formValues?.mobileNumber}
-       
+
         />}
         name="mobileNumber"
         control={control}
@@ -710,7 +710,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
         <Localities
                      selectLocality={(d) => {
                      props.onChange(d);
-                    
+
                      }}
                      tenantId={formValues?.city?.code}
                      boundaryType="revenue"
@@ -719,7 +719,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
                      selected={formValues?.locality ||""}
                  disable={!formValues?.city}
                     disableLoader={true}
-                   
+
                   />}
                   name="locality"
                   {...register("locality")}
@@ -737,7 +737,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
          onChange={props.onChange}
           type="text"
           value={formValues?.propertyId}
-         
+
         />}
         />
         {/* <CardLabelError>{searchFormState?.errors?.["title"]?.message}</CardLabelError> */}
@@ -753,7 +753,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
          onChange={props.onChange}
           type="text"
           value={formValues?.oldPropertyId}
-        
+
         />}
         />
         {/* <CardLabelError>{searchFormState?.errors?.["title"]?.message}</CardLabelError> */}
@@ -769,13 +769,13 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
           onChange={props.onChange}
           type="text"
           value={formValues?.ownerName}
-      
+
         />}
         />
         {/* <CardLabelError>{searchFormState?.errors?.["title"]?.message}</CardLabelError> */}
       </SearchField>
       <div className={`form-field`} style={{marginTop:'40px'}}>  <SubmitBar label="Reset" onSubmit={handleReset} /></div>
-    
+
       <div className={`form-field`} style={{marginTop:'40px'}}>  <SubmitBar label="Search" submit="submit" onSubmit={onSubmit} /></div>
       </form>
       </Card>

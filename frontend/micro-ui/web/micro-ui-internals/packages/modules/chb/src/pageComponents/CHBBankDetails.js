@@ -10,8 +10,8 @@ const CHBBankDetails
   const { pathname: url } = useLocation();
 
   let index =window.location.href.charAt(window.location.href.length - 1);
-  
-   
+
+
   let validation = {};
   const user = Digit.UserService.getUser().info;
   const [accountNumber , setAccountNumber ] = useState((formData.bankdetails && formData.bankdetails[index] && formData.bankdetails[index].accountNumber) || formData?.bankdetails?.accountNumber || value?.existingDataSet?.bankdetails?.accountNumber  || "");
@@ -87,8 +87,8 @@ const CHBBankDetails
     const input = e.target.value.replace(/[^a-zA-Z\s]/g, '');
     setAccountHolderName(input);
   }
-  
-  
+
+
 
   const goNext = () => {
     if (accountNumber !== confirmAccountNumber) {
@@ -101,16 +101,16 @@ const CHBBankDetails
       ownerStep = { ...owner,accountNumber ,confirmAccountNumber,ifscCode,bankName,bankBranchName,accountHolderName};
       onSelect(config.key, { ...formData[config.key], ...ownerStep }, false, index);
     } else {
-      
+
       ownerStep = { ...owner,accountNumber ,confirmAccountNumber,ifscCode,bankName,bankBranchName,accountHolderName };
       onSelect(config.key, ownerStep, false,index);
     }
-    console.log(ownerStep);
+
   };
 
   const onSkip = () => onSelect();
 
-  
+
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => {
@@ -139,9 +139,9 @@ const CHBBankDetails
   };
 
   return (
-   
+
     <React.Fragment>
-      
+
     {
       window.location.href.includes("/citizen") ?
  <Timeline currentStep={4} />
@@ -158,7 +158,7 @@ const CHBBankDetails
         </CardSubHeader>
         <ChbCancellationPolicy slotDetail={value?.bookingSlotDetails}/>
       </Card>
-  
+
     <FormStep
       config={config}
       onSelect={goNext}
@@ -166,7 +166,7 @@ const CHBBankDetails
       t={t}
       isDisabled={!accountNumber || !confirmAccountNumber || !ifscCode || !bankName || !bankBranchName || !accountHolderName }
     >
-      
+
       <div>
         <CardSubHeader>{t(`CHB_BANK_DETAILS_FOR_REFUND`)}</CardSubHeader>
         <CardLabel>{`${t("CHB_ACCOUNT_NUMBER")}`} <span className="check-page-link-button">*</span></CardLabel>
@@ -189,10 +189,10 @@ const CHBBankDetails
             type: "text",
             title: t("CHB_INVALID_ACCOUNT_NUMBER"),
           })}
-       
-         
+
+
         />
-       
+
         <CardLabel>{`${t("CHB_CONFIRM_ACCOUNT_NUMBER")}`} <span className="check-page-link-button">*</span></CardLabel>
         <TextInput
           t={t}
@@ -213,10 +213,10 @@ const CHBBankDetails
             type: "text",
             title: t("CHB_INVALID_CONFIRM_ACCOUNT_NUMBER"),
           })}
-       
-         
+
+
         />
-       
+
         <CardLabel>{`${t("CHB_IFSC_CODE")}`} <span className="check-page-link-button">*</span></CardLabel>
         <TextInput
             t={t}
@@ -236,7 +236,7 @@ const CHBBankDetails
               title: t("CHB_INVALID_IFSC_CODE"),
             })}
           />
-       
+
         <CardLabel>{`${t("CHB_BANK_NAME")}`} <span className="check-page-link-button">*</span></CardLabel>
         <TextInput
             t={t}
@@ -250,7 +250,7 @@ const CHBBankDetails
             onChange={setApplicantBankName}
             disabled={true}
           />
-       
+
         <CardLabel>{`${t("CHB_BANK_BRANCH_NAME")}`} <span className="check-page-link-button">*</span></CardLabel>
         <TextInput
             t={t}
@@ -282,8 +282,8 @@ const CHBBankDetails
             type: "text",
             title: t("CHB_INVALID_ACCOUNT_HOLDER_NAME"),
           })}
-       
-         
+
+
         />
       </div>
     </FormStep>

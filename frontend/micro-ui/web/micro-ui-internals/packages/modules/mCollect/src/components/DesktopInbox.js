@@ -9,7 +9,7 @@ import SearchApplication from "./inbox/search";
 
 const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
   const { data } = props;
-  console.log("data", data);
+
   const { t } = useTranslation();
   const history = useHistory();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));

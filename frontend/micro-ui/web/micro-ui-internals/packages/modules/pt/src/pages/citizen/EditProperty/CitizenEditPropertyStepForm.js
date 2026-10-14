@@ -89,7 +89,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 // });
 
 const CitizenEditPropertyStepForm = ({ applicationData }) => {
-  console.log("applicationData in CitizenEditPropertyStepForm: ", applicationData);
+
   const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -103,7 +103,7 @@ const CitizenEditPropertyStepForm = ({ applicationData }) => {
     dispatch(SET_PTNewApplication_STEP(updatedStepNumber));
   };
   const defaultValues = mapApplicationDataToDefaultValuesForCitizen(applicationData);
-  console.log("default Values in CitizenEditPropertyStepForm are: ", defaultValues);
+
 
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
@@ -113,7 +113,7 @@ const CitizenEditPropertyStepForm = ({ applicationData }) => {
   }, []);
 
   useEffect(() => {
-    console.log("deafult vaules in useEffect: ", defaultValues);
+
 
     Object.entries(defaultValues).forEach(([key, value]) => {
       dispatch(UPDATE_PTNewApplication_FORM(key, value));

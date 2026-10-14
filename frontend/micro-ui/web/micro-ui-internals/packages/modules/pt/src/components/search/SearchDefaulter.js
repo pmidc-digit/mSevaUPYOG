@@ -7,7 +7,7 @@ const GetCell = (value) => <span className="cell-text">{value}</span>;
 
 const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast,ptSearchConfig }) => {
   const history = useHistory();
-  
+
   const [searchQuery, setSearchQuery] = useState({
     /* ...defaultValues,   to enable pagination */
     ...payload,
@@ -18,11 +18,11 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast,ptSearchConf
   const [ownerInvalidMobileNumberIndex, setOwnerInvalidMobileNumberIndex] = useState(0);
 const [showDownloads, setShowDownloads] = useState(false);
 const [groupBillrecords, setGroupBillrecords] = useState([]);
-console.log("payload", payload);
+
 let filters={ ...payload,isDefaulterNoticeSearch:true }
 const args = tenantId ? { tenantId, filters } : { filters };
 const { isLoading, error, data, isSuccess } = useQuery(["propertySearchList", tenantId,filters ], () => Digit.PTService.search(args));
-  
+
 
   const mutation = Digit.Hooks.pt.usePropertyAPI(tenantId, false);
 
@@ -43,7 +43,7 @@ const { isLoading, error, data, isSuccess } = useQuery(["propertySearchList", te
     owners = owners && owners.filter(owner => owner.status == "ACTIVE");
     owners && owners.map((owner, index) => {
       let number = owner.mobileNumber;
-      
+
       if (
           (
             (number == updateNumberConfig?.invalidNumber)
@@ -141,7 +141,7 @@ const { isLoading, error, data, isSuccess } = useQuery(["propertySearchList", te
   );
   const columns2 = useMemo(
     () => [
-   
+
       {
         Header: t("ES_TOTAL_RECORD"),
         disableSortBy: true,
@@ -157,7 +157,7 @@ const { isLoading, error, data, isSuccess } = useQuery(["propertySearchList", te
         disableSortBy: true,
         Cell: ({ row }) => GetCell(t(row.original.status) || ""),
       },
-  
+
       {
         Header: t("ES_SEARCH_ACTION"),
         disableSortBy: true,
@@ -178,7 +178,7 @@ const { isLoading, error, data, isSuccess } = useQuery(["propertySearchList", te
   );
    const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {
     /* Need to enhance this util to return required format*/
-  
+
     let downloadLink = documents[fileStoreId] || "";
     let differentFormats = downloadLink?.split(",") || [];
     let fileURL = "";
@@ -191,10 +191,10 @@ const { isLoading, error, data, isSuccess } = useQuery(["propertySearchList", te
     return fileURL;
   };
 const downloadNotice = async (document) => {
-    console.log("document",document)
+
     let fileStoreIds= [document.filestoreid]
     const res = await Digit.UploadServices.Filefetch([document?.filestoreid], tenantId);
-    console.log("ressss",res)
+
    let documentLink = pdfDownloadLink(res.data, document?.filestoreid);
    window.open(documentLink, "_blank");
   };
@@ -220,7 +220,7 @@ const onViewDownload =async () =>{
     let response = await Digit.PTService.getDefaulterNoticeStatus({offset:0,limit:100});
     setShowDownloads(true)
     setGroupBillrecords(response.groupBillrecords)
-    console.log("response",response)
+
 }
   const PTEmptyResultInbox = memo(Digit.ComponentRegistryService.getComponent("PTEmptyResultInbox"));
   const getData = (tableData = []) => {
@@ -238,7 +238,7 @@ const onViewDownload =async () =>{
     return null;
   }
   const tableData2 = Object.values(groupBillrecords || {}) || [];
- 
+
   return (
     <React.Fragment>
       {data?.Properties?.length === 0 ? (
@@ -248,7 +248,7 @@ const onViewDownload =async () =>{
       ) : (
         <div>
 
-       
+
         <Table
           t={t}
           data={tableData}
@@ -283,7 +283,7 @@ const onViewDownload =async () =>{
             onSubmit={onViewDownload}
           />
         </SearchField></div></div>
-      
+
         {showDownloads &&(
         <Table
           t={t}

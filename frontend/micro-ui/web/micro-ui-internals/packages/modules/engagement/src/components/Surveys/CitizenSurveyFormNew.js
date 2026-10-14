@@ -55,13 +55,13 @@ const CitizenSurveyFormNew = () => {
 
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
-    console.log("date value", event.target);
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
-  console.log("formData", formData);
+
   const handleDropdownChange = (name, event) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -92,7 +92,7 @@ const CitizenSurveyFormNew = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (validateForm()) {
-      console.log("Form submitted:", formData);
+
     }
   };
 
@@ -113,7 +113,7 @@ const CitizenSurveyFormNew = () => {
         type="text"
         name="name"
         value={formData.name}
-      
+
         onChange={handleFieldChange}
         placeholder="Citizen Name"
        // required
@@ -124,7 +124,7 @@ const CitizenSurveyFormNew = () => {
         type="text"
         name="mobile"
         value={formData.mobile}
-      
+
         onChange={handleFieldChange}
         placeholder="Mobile Number"
         //required
@@ -152,7 +152,7 @@ const CitizenSurveyFormNew = () => {
         type="text"
         name="relationName"
         value={formData.relationName}
-      
+
         onChange={handleFieldChange}
         placeholder="Father/Husband Name"
        // required
@@ -176,7 +176,7 @@ const CitizenSurveyFormNew = () => {
         type="text"
         name="address"
         value={formData.address}
-      
+
         onChange={handleFieldChange}
         placeholder="Address"
        // required
@@ -187,7 +187,7 @@ const CitizenSurveyFormNew = () => {
         type="text"
         name="email"
         value={formData.email}
-      
+
         onChange={handleFieldChange}
         placeholder="Email"
       //  required

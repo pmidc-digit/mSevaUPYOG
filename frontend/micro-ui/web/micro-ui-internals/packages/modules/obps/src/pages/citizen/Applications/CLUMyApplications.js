@@ -27,7 +27,7 @@ const CLUMyApplications = ({ view }) => {
 
   const { isLoading, data, isError, error } = Digit.Hooks.obps.useCLUCitizenSearchApplication(params, tenantId);
 
-  console.log("data herein CLU==>", data);
+
 
   useEffect(() => {
     if (data) {

@@ -28,8 +28,8 @@ const NocSitePhotographsBPA = ({ url, documentType, coordinates }) => {
       <div className="obps-components-noc-site-photographs-new--style-2">
         <div className="obps-components-noc-site-photographs-new--style-3">
           <div>
-          <span>{t(documentType?.replaceAll(".", "_"))}</span>
-        </div>
+            <span>{t(documentType?.replaceAll(".", "_"))}</span>
+          </div>
           <img
             src={url}
             alt={t(documentType?.replaceAll(".", "_"))}

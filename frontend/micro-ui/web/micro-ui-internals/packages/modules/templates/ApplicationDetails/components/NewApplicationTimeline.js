@@ -147,10 +147,10 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
 
   const data = useMemo(() => normalizeTimeline(workflowDetails), [workflowDetails]);
 
-  
+
   // Assuming data is latest first, we don't reverse.
   const sortedData = data?.filter((val) => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
-  console.log(sortedData, "sortedData")
+
   const codesArray = sortedData.map((item) => item?.assigner?.userName).filter(Boolean);
 
   const uniqueCodes = [...new Set(codesArray)].join(",");

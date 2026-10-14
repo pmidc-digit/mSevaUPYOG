@@ -19,10 +19,14 @@ const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ")
 
 const getOwner = (application, t, customTitle) => {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   console.log('application:', application);
 >>>>>>> MicroUI_PROD_Vite
   
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   let owners = [];
   let ownershipCategory = application?.ownershipCategory;
   if (customTitle?.includes("TRANSFEROR")) {
@@ -125,7 +129,7 @@ const getAssessmentInfo = (application, t) => {
 
     // { title:  t("PT_FORM2_PROPERTY_TYPE"),value: t(application?.additionalDetails?.structureType.i18nKey) || t("CS_NA")},
     { title:  t("PT_FORM2_PROPERTY_TYPE"),value: t(application?.propertyType) || t("CS_NA")},
-  
+
     {title:  t("PT_FORM2_AGE_OF_PROPERTY"),value: t(application?.landArea)|| t("CS_NA")},
     // {title:  t("PT_FORM2_AGE_OF_PROPERTY"),value: t(application?.additionalDetails?.ageOfProperty.code)|| t("CS_NA")},
   ];
@@ -133,14 +137,14 @@ const getAssessmentInfo = (application, t) => {
   let flrno,
     i = 0;
   flrno = application.units && application.units[0]?.floorNo;
-  console.log("flrno" ,flrno)
+
   application.units.map((unit) => {
-    console.log("unit",unit.floorNo)
-    console.log((flrno !== unit?.floorNo ? (i = 1) : (i = i + 1)) && i === 1 ? t(`PROPERTYTAX_FLOOR_${unit?.floorNo}`) : "")
+
+
     let doc = [
       {
         title: (flrno !== unit?.floorNo ? (i = 1) : (i = i + 1)) && i === 1 ? t(`PROPERTYTAX_FLOOR_${unit?.floorNo}`) : t(`PROPERTYTAX_FLOOR_${unit?.floorNo}`)
-        
+
       },
       // {
       //   title: t("PT_ASSESSMENT_UNIT_USAGE_TYPE"),value: t(unit.usageCategory)||t("CS_NA"),       
@@ -226,7 +230,7 @@ const getAssessmentInfo = (application, t) => {
    }
     values.push(...doc);
   });
-  console.log("values  ",values)
+
   return {
     title: t("PT_ASSESMENT_INFO_SUB_HEADER"),
     values: values,
@@ -317,8 +321,8 @@ const getPTAcknowledgementData = async (application, tenantInfo, t) => {
       ],
     };
   }
-  
-  console.log("application in acknowledgement form",application);
+
+
 
   return {
     t: t,
@@ -370,12 +374,12 @@ const getPTAcknowledgementData = async (application, tenantInfo, t) => {
             ? application.documents.map((document, index) => {
                 let documentLink = pdfDownloadLink(res?.data, document?.fileStoreId);
              //   let documentName= pdfDocumentName(documentLink, index)
-              console.log("doc link",documentLink);
-               
+
+
                 return {
                   title: t(document?.documentType || t("CS_NA")),
                    value: pdfDocumentName(documentLink, index)|| t("CS_NA"),
-                
+
                 };
               })
             : {

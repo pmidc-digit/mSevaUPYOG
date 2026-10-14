@@ -13,7 +13,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const { t } = useTranslation();
 
   const handleUpdateSurveyConfirm = (row) => {
-    console.log("Current row: ", row);
+
     const currentStatus = row?.original?.active ? "Active" : "Inactive";
     const updatedStatus = row?.original?.active ? "Inactive" : "Active";
     setShowToast({

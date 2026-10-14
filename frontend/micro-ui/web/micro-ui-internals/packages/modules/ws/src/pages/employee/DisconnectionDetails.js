@@ -50,7 +50,7 @@ const GetDisconnectionDetails = () => {
     setShowToast(null);
     // setError(null);
   };
-  
+
   // (Redirect handled centrally in ApplicationDetails template on mutation success)
   const closeMenu = () => {
     setShowOptions(false);
@@ -145,7 +145,7 @@ const GetDisconnectionDetails = () => {
       const PDFdata = await getPDFData({ ...result }, { ...applicationDetails?.propertyDetails }, tenantInfo, t);
       await Digit.Utils.pdf.generatev1(PDFdata);
     } catch (error) {
-      console.error("PDF generation failed:", error);
+
       // Show user-friendly error message
       setShowToast({ 
         error: true, 

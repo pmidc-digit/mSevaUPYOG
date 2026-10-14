@@ -17,7 +17,7 @@ export const PropertyApplicationDetails = () => {
       const propertyId = location?.state?.propertyId
       const [appDetailsToShow, setAppDetailsToShow] = useState({});
      const [applicationData, setApplicationData] = useState([])
-      console.log("tenantId",tenantId)
+
       useEffect(() =>{
         try{
        let filters={
@@ -26,7 +26,7 @@ export const PropertyApplicationDetails = () => {
        }
        const auth =true
             Digit.PTService.applicationsearch({filters:filters,auth:auth}).then((response) => {
-             console.log("response",response)
+
              if(response?.Properties?.length>0){
              setApplicationData(response.Properties)
              }
@@ -37,14 +37,14 @@ export const PropertyApplicationDetails = () => {
           }
           catch(error)
           {
-            console.log(error);
+
           }
       },[]
       )
      // let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, "pb.testing", applicationNumber);
-     
+
      let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t,'pb', propertyId);
-     console.log("applicationDetails",applicationDetails)
+
      const getTranslatedValues = (dataValue, isNotTranslated) => {
         if (dataValue) {
           return !isNotTranslated ? t(dataValue) : dataValue;
@@ -57,7 +57,7 @@ export const PropertyApplicationDetails = () => {
         else if (value?.isUnit) return value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}` : t("N/A");
         else return value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated) : t("N/A");
       };
-      console.log("application Data",applicationData)
+
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -109,7 +109,7 @@ export const PropertyApplicationDetails = () => {
                 detail?.values?.map((value, index) => {
                   if (value.map === true && value.value !== "N/A") {
                     return (
-                      
+
                       <Row
                         labelStyle={{ wordBreak: "break-all" }}
                         textStyle={{ wordBreak: "break-all" }}
@@ -119,9 +119,9 @@ export const PropertyApplicationDetails = () => {
                       />
                     );
                   }
-                
-               
-              
+
+
+
                       if(value.title!=="PT_PROPERTY_PTUID" ){
                         return (
                           <div>
@@ -139,13 +139,13 @@ export const PropertyApplicationDetails = () => {
                           labelStyle={{ wordBreak: "break-all" }}
                           textStyle={{ wordBreak: "break-all" }}
                         />
-                      
-                       
+
+
                       {/* {value.title === "PT_TOTAL_DUES" ? <ArrearSummary bill={fetchBillData.Bill?.[0]} /> : ""} */}
                    </div>
                         )
                       }
-                  
+
                  })}
             </StatusTable>
          </div>
@@ -159,7 +159,7 @@ export const PropertyApplicationDetails = () => {
                        )}
        </React.Fragment>
       ))}
-      
+
     </Card> 
     // <ApplicationDetailsTemplate
     //     applicationDetails={appDetailsToShow}

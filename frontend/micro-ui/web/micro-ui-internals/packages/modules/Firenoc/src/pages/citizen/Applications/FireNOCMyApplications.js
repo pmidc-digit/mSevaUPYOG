@@ -54,7 +54,7 @@ const FireNOCMyApplications = () => {
   if (isLoading) return <Loader />;
 
   return (
-    <div>
+    <div className="citizen-my-applications citizen-my-applications--firenoc">
       <Header>
         {t("My FireNOC Applications")} ({applications.length})
       </Header>
@@ -106,7 +106,7 @@ const FireNOCMyApplications = () => {
               <StatusBadge status={status} />
             </div>
 
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div className="firenoc-my-applications__actions" style={{ display: "flex", gap: "10px" }}>
               <SubmitBar
                 label={t("TL_VIEW_DETAILS")}
                 onSubmit={() => history.push(detailUrl)}

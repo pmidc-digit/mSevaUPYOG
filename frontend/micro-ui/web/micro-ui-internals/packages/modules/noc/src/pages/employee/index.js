@@ -18,7 +18,7 @@ const NOCBreadCrumbs = ({ location }) => {
       content: t("ES_COMMON_INBOX"),
       show: (location.pathname.includes("noc/inbox") || location.pathname.includes("noc/new-application")) ? true : false,
     },
-   
+
     {
       path: "/digit-ui/employee/noc/search/application",
       content: t("ES_COMMON_SEARCH_APPLICATION"),
@@ -41,11 +41,11 @@ const NOCBreadCrumbs = ({ location }) => {
       show: location.pathname.includes("/digit-ui/employee/noc/search/application-overview") ? true : false,
     },
   ];
-  return <BreadCrumb crumbs={crumbs} />;
+  return <BreadCrumb crumbs={crumbs.filter((crumb) => crumb.show)} />;
 };
 
 const EmployeeApp = ({ path }) => {
-  console.log('path', path)
+
   const location = useLocation();
   const { t } = useTranslation();
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCApplicationOverview");
@@ -63,14 +63,14 @@ const EmployeeApp = ({ path }) => {
     useEffect(() => {
       if (window.location.pathname.endsWith("/complete")) {
         history.push(`/digit-ui/employee/noc-home`);
-          console.log('useffect called complete')
-  
+
+
       }
-  
+
     }, []);
 
   return (
-    <Fragment>
+    <div className={location.pathname.replace(/\/$/, "") === `${path}/inbox` ? "ground-container" : undefined}>
       {!isResponse ? <div className={window.location.href.includes("application-overview") || isMobile ? "noc-employee__breadcrumbs--offset" : "noc-employee__breadcrumbs"}>
         <NOCBreadCrumbs location={location} />
       </div> : null} 
@@ -86,7 +86,7 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/esign/complete/:id/:file`} component={NOCEsignResponse} />
 
       </Switch>
-    </Fragment>
+    </div>
   );
 };
 

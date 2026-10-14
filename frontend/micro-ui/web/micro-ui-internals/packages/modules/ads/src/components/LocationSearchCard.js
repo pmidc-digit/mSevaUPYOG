@@ -97,7 +97,7 @@ const LocationSearchCard = ({
           onSave(payload);
         } catch (err) {
           // swallow - nothing else to do
-          console.warn("LocationSearchCard: onSave call failed", err);
+
         }
       }
       return;
@@ -110,7 +110,7 @@ const LocationSearchCard = ({
       }
       return;
     }
-    console.warn("LocationSearchCard: no submit callback provided by parent.");
+
   };
 
   return (

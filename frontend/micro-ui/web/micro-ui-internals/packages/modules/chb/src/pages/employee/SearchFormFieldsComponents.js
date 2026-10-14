@@ -6,7 +6,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
   const { t } = useTranslation();
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  console.log("searchFieldComponents", searchFieldComponents);
+
 
   if (!isMobile) {
     return (
@@ -22,7 +22,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
                 <label>{t("CORE_COMMON_PHONE_NUMBER")}</label>
                 <TextInput name="mobileNumber" inputRef={registerRef({})} />
               </SearchField>
-              
+
               <div className="search-action-wrapper" style={{ width: "100%" }}>
                 {searchFieldComponents}
               </div>

@@ -110,7 +110,7 @@ const ApplicationDetails = () => {
           });
           setBillData(result?.Bill?.[0]);
         } catch (err) {
-          console.error("Error fetching bill", err);
+
         }
       }
     };
@@ -564,6 +564,27 @@ const ApplicationDetails = () => {
 
   const getTotalAmount = () => getTLTotalAmount({ billData, paymentsHistory });
 
+  // Helper to calculate applicable penalty and interest from bill account details (excluding previous adhoc penalty so it's not double-counted with modal's penalty input)
+  const getApplicablePenaltyAndInterest = () => {
+    const details = getBillAccountDetails();
+    const applicablePenalty =
+      details
+        ?.filter(
+          (item) =>
+            item?.taxHeadCode &&
+            (item.taxHeadCode === "TL_RENEWAL_PENALTY" || item.taxHeadCode.includes("PENALTY")) &&
+            !item.taxHeadCode.includes("ADHOC")
+        )
+        ?.reduce((sum, item) => sum + (Number(item?.amount) || 0), 0) || 0;
+
+    const applicableInterest =
+      details
+        ?.filter((item) => item?.taxHeadCode && item.taxHeadCode.includes("INTEREST"))
+        ?.reduce((sum, item) => sum + (Number(item?.amount) || 0), 0) || 0;
+
+    return applicablePenalty + applicableInterest;
+  };
+
   // Get summarized fee line items for the fee card
   const getFeeLineItems = () => {
     const details = getBillAccountDetails();
@@ -593,13 +614,24 @@ const ApplicationDetails = () => {
         setAdhocLicenseData(license);
       }
     } catch (err) {
-      console.error("Error fetching license for ADHOC:", err);
+
     }
     setShowAdhocPopup(true);
   };
 
   // Handle ADHOC submit — update license, then refresh bill + breakup
   const handleAdhocSubmit = async ({ adhocPenalty, adhocPenaltyReason, penaltyComments, adhocExemption, adhocExemptionReason, rebateComments }) => {
+    const billPenaltyAndInterest = getApplicablePenaltyAndInterest();
+    const totalAllowed = (Number(billPenaltyAndInterest) || 0) + (Number(adhocPenalty) || 0);
+    const rebateVal = Math.abs(Number(adhocExemption) || 0);
+    if (rebateVal > 0 && rebateVal > totalAllowed) {
+      alert(
+        t("TL_ERROR_REBATE_EXCEEDS_PENALTY_INTEREST") ||
+        `Adhoc Rebate cannot be greater than the total applicable Interest and Penalty amount (₹${totalAllowed})`
+      );
+      return;
+    }
+
     setIsAdhocUpdating(true);
     try {
       // Fetch fresh license data
@@ -639,7 +671,7 @@ const ApplicationDetails = () => {
       setShowAdhocPopup(false);
       setShowToast({ key: "success", label: "Adhoc Penalty/Rebate added successfully" });
     } catch (err) {
-      console.error("Error submitting ADHOC update:", err);
+
       setShowToast({ key: "error", error: true, label: err?.message || "Failed to add Adhoc Penalty/Rebate" });
     } finally {
       setIsAdhocUpdating(false);
@@ -730,7 +762,7 @@ const ApplicationDetails = () => {
         finalAmount: (tradeUnitTotal + accessoryTotal) * validityYears,
       });
     } catch (err) {
-      console.error("Error refreshing after ADHOC update:", err);
+
     }
   };
 
@@ -762,7 +794,7 @@ const ApplicationDetails = () => {
         bill = fetchBillRes?.Bill?.[0];
         billAccDetails = bill?.billDetails?.[0]?.billAccountDetails || [];
       } catch (billErr) {
-        console.warn("fetchBill failed (possibly paid), falling back to payment history", billErr);
+
       }
 
       // Fallback: use payment history bill data for paid applications
@@ -836,7 +868,7 @@ const ApplicationDetails = () => {
       });
       setShowBreakupModal(true);
     } catch (error) {
-      console.error("Error fetching breakup data:", error);
+
     } finally {
       setBreakupLoading(false);
     }
@@ -1038,6 +1070,7 @@ const ApplicationDetails = () => {
         <AdhocRebatePenaltyModal
           t={t}
           licenseData={adhocLicenseData || applicationDetails?.applicationData}
+          billPenaltyAndInterest={getApplicablePenaltyAndInterest()}
           onClose={() => setShowAdhocPopup(false)}
           onSubmit={handleAdhocSubmit}
           isUpdating={isAdhocUpdating}

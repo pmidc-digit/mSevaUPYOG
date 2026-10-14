@@ -7,7 +7,7 @@ import { LOCALE } from "../../constants/Localization";
 import Complaint from "../../components/Complaint";
 
 export const ComplaintsList = (props) => {
-  console.log("cominasdjb aksjd");
+
   const User = Digit.UserService.getUser();
   const mobileNumber = User.mobileNumber || User?.info?.mobileNumber || User?.info?.userInfo?.mobileNumber;
   //const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();

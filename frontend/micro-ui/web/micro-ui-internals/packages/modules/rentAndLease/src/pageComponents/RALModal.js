@@ -117,6 +117,23 @@ const RALModal = ({
   }, [file]);
 
   function submit(data) {
+    if (action?.action === "ADHOC_PENALTY") {
+      const amount = data?.adhocPenalty;
+      const reason = data?.adhocPenaltyReason?.trim();
+      if (amount === undefined || amount === null || String(amount).trim() === "" || !Number.isFinite(Number(amount)) || Number(amount) < 0 || !reason) {
+        setShowToast({ key: true, label: t("Enter a valid penalty amount and reason") });
+        return;
+      }
+      submitAction({ Licenses: [{
+        action: action.action,
+        adhocPenalty: Number(amount),
+        adhocPenaltyReason: reason,
+        assignee: [],
+        comment: "",
+        wfDocuments: null,
+      }] });
+      return;
+    }
     if (action?.action === "RENEWAL" || action?.action === "RAL_RENEWAL") {
       if (!data?.tradeLicenseNumber) {
         setShowToast({ key: true, label: t("Trade License Number is required") });

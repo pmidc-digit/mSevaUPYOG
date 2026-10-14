@@ -140,7 +140,7 @@ const MutationCitizen = (props) => {
     } else {
       delete data.Property.institution;
     }
-    console.log("data",data,params)
+
     setFormData(data);
   };
 

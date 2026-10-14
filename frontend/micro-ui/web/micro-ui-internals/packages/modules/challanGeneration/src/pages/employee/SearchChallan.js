@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 
 const SearchChallan = (props) => {
-  console.log("props", props);
+
 
   const { t } = useTranslation();
   const history = useHistory();
@@ -51,7 +51,7 @@ const SearchChallan = (props) => {
       return;
     }
 
-    console.log("data is here==========", data);
+
     setIsLoading(true);
     const businessServiceData = data?.businessService?.code;
 
@@ -69,17 +69,17 @@ const SearchChallan = (props) => {
       return acc;
     }, {});
 
-    console.log("filters", filters);
+
 
     try {
       const response = await Digit.ChallanGenerationService.search({ tenantId, filters });
-      console.log("✅ recieptSearch response", response?.challans);
+
       setTableData(response?.challans);
       setIsLoading(false);
       // let collectionres = await Digit.PaymentService.recieptSearch(BPA?.tenantId, appBusinessService[i], { consumerCodes: BPA?.applicationNo, isEmployee: true });
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
+
     }
   };
 

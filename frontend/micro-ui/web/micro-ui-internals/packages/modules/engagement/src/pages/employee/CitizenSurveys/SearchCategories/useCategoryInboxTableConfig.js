@@ -9,7 +9,7 @@ const useCategoryInboxTableConfig = ({ parentRoute, onPageSizeChange, formState,
   const { t } = useTranslation();
 
   // const handleDeleteConfirm = (row) => {
-  // console.log("Current row: ", row);
+
   // const currentStatus = row?.original?.isActive;
   // setShowToast({
   //   label: "Are you sure you want to delete this category?",

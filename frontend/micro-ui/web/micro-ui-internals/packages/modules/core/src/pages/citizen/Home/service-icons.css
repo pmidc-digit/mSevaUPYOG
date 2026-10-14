@@ -1,0 +1,73 @@
+/* Bundled with the dashboard so service icons do not depend on a CDN theme release. */
+
+.mseva-citizen-dashboard .mseva-icon.mseva-social-survey {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%226%22%20y%3D%224%22%20width%3D%2214%22%20height%3D%2217%22%20rx%3D%222%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%222%22%20width%3D%226%22%20height%3D%224%22%20rx%3D%221%22%2F%3E%3Cpath%20d%3D%22m3%2010%201%201%202-2m3%202h7m-13%205%201%201%202-2m3%202h7%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #087f8c;
+  --mseva-icon-bg: #e6f6f7;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-pet-registration {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cellipse%20cx%3D%225%22%20cy%3D%229%22%20rx%3D%222%22%20ry%3D%222.5%22%2F%3E%3Cellipse%20cx%3D%2210%22%20cy%3D%225.5%22%20rx%3D%222%22%20ry%3D%222.5%22%2F%3E%3Cellipse%20cx%3D%2215%22%20cy%3D%225.5%22%20rx%3D%222%22%20ry%3D%222.5%22%2F%3E%3Cellipse%20cx%3D%2220%22%20cy%3D%229%22%20rx%3D%222%22%20ry%3D%222.5%22%2F%3E%3Cpath%20d%3D%22M7%2015c2-1%202-5%205-5s3%204%205%205c4%205-1%207-5%204-4%203-9%201-5-4Z%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #b34f7b;
+  --mseva-icon-bg: #fbeaf2;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-building-plan-approval {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2021V4h11v10M3%2021h10M7%208h3m-3%204h3m-3%204h3M17%203v7m-3-4h7%22%2F%3E%3Cpath%20d%3D%22m14%2018%203%203%205-7%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #2264c4;
+  --mseva-icon-bg: #eaf2ff;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-no-dues {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M5%203h12v9M5%203v18h7M8%207h6M8%2011h4%22%2F%3E%3Ccircle%20cx%3D%2217%22%20cy%3D%2217%22%20r%3D%225%22%2F%3E%3Cpath%20d%3D%22m14.5%2017%201.5%201.5%203.5-3.5%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #16845b;
+  --mseva-icon-bg: #e8f7ef;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-plot-regularisation {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m3%206%206-3%206%203%206-3v17l-6%203-6-3-6%203V6Zm6-3v17m6-14v17%22%2F%3E%3Cpath%20d%3D%22m10%2012%202%202%205-5%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #7750bd;
+  --mseva-icon-bg: #f2ecfb;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-street-vending {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%209h17l-2-5H5L3%209Zm2%200v9h14V9M2%2018h20M8%204v5m7-5v5M8%2012h7%22%2F%3E%3Ccircle%20cx%3D%227%22%20cy%3D%2221%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%2217%22%20cy%3D%2221%22%20r%3D%221%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #b56d13;
+  --mseva-icon-bg: #fff3df;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-venue-booking {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%2218%22%20height%3D%2216%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M7%203v4m10-4v4M3%2010h18m-14%205%205-3%205%203m-9%200v4h8v-4m-5%204v-3h2v3%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #a347a1;
+  --mseva-icon-bg: #f8eaf8;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-rent-lease {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m3%2010%207-6%207%206M5%209v11h5M8%2020v-6h4%22%2F%3E%3Ccircle%20cx%3D%2217%22%20cy%3D%2214%22%20r%3D%223%22%2F%3E%3Cpath%20d%3D%22m15%2016-5%205m2-2%202%202%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #95621a;
+  --mseva-icon-bg: #fff4df;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-misc-collections {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%2218%22%20height%3D%2215%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M3%209h18m-5%204h5v4h-5zM6%205V3h12v2%22%2F%3E%3Ccircle%20cx%3D%2217.5%22%20cy%3D%2215%22%20r%3D%22.5%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #087f8c;
+  --mseva-icon-bg: #e6f6f7;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-garbage-collection {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%206h16M9%206V3h6v3M6%206l1%2015h10l1-15M10%2010v7m4-7v7%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #398343;
+  --mseva-icon-bg: #edf7e9;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-fire-noc {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M13%202c1%206-5%206-3%2011%202-1%203-3%203-5%204%203%207%206%206%2010-1%203-4%204-7%204-5%200-8-4-6-8%200%203%202%203%202%203-3-7%205-8%205-15Z%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #d45b23;
+  --mseva-icon-bg: #fff0e6;
+}
+
+.mseva-citizen-dashboard .mseva-icon.mseva-grievance-support {
+  --mseva-mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%229%22%20r%3D%223%22%2F%3E%3Cpath%20d%3D%22M5%2011V9a7%207%200%200%201%2014%200v6c0%202-2%203-4%203M5%209H3v5h3m13-5h2v5h-3M7%2022v-2c0-3%2010-3%2010%200v2M12%2018h3%22%2F%3E%3C%2Fsvg%3E");
+  --mseva-icon: #5261b7;
+  --mseva-icon-bg: #eef0ff;
+}

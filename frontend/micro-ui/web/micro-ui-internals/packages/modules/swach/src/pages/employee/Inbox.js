@@ -34,7 +34,7 @@ const Inbox = ({ initialStates = {} }) => {
         const locality = searchParams?.filters?.pgrQuery?.locality;
         const filteredTenentId = searchParams?.filters?.swachfilters?.tenants;
         const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
-        
+
         if (!filteredTenentId) {
           setIsLoading(false);
           return;
@@ -67,31 +67,31 @@ const Inbox = ({ initialStates = {} }) => {
           }
         });
 
-        console.log("Transformed Data:", transformedData);
+
         setComplaints(transformedData);
       } catch (e) {
-        console.error("Error fetching inbox:", e);
+
         setComplaints({ table: [] });
       } finally {
         setIsLoading(false);
       }
       // Do not remove the below commented code
 
-      // console.log("application Status",applicationStatus)
-      // console.log("assigneeCode", assigneeCode);
-      // console.log("uuid", uuid);
+
+
+
       // //  if (!assigneeCode) return;
       // if (assigneeCode==uuid) {
       //   // let response = await Digit.Hooks.swach.useCount(tenantId, Params_Count,assigneeCode,applicationStatus?.length > 0 ?  applicationStatus : {});
       //   let response = await Digit.Hooks.swach.useCount(tenantId, Params_Count,assigneeCode, applicationStatus);
-      // console.log("useCount response in inbox in  if block", response);
+
       // if (response) {
       //   setTotalRecords(response);
       // }
       // }
       // else{
       //   let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
-      //   console.log("useCount response in inbox else block", response);
+
       // if (response?.count) {
       //   setTotalRecords(response.count);
       // }
@@ -126,7 +126,7 @@ const Inbox = ({ initialStates = {} }) => {
   //   filters: { ...searchParams, ...paginationParams, sortParams },
   //   config: {},
   // });
-console.log("Complaints Data:", complaints);
+
   if (complaints?.table?.length !== null) {
     if (isMobile) {
       return (

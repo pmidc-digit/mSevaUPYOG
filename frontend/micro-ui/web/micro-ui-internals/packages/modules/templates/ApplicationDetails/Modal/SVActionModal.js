@@ -81,7 +81,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     })();
   }, [file]);
 
-  console.log("actyhdesh,jhfsefsef", action, applicationData);
+
 
   function submit(data) {
     let workflow = {

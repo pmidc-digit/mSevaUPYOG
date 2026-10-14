@@ -22,10 +22,12 @@ const Profile = ({ info, stateName, t }) => {
       const uuid = info?.uuid;
       if (uuid) {
         const usersResponse = await Digit.UserService.userSearch(tenantId, { uuid: [uuid] }, {});
-        console.log("coming here 1");
+
         if (usersResponse?.user?.length) {
           const userDetails = usersResponse.user[0];
-          sessionStorage.setItem("userInfoData", JSON.stringify(userDetails));
+          const userInfoString = JSON.stringify(userDetails);
+          sessionStorage.setItem("userInfoData", userInfoString);
+          localStorage.setItem("user-info", userInfoString);
           setProfilePic(userDetails?.photo || null);
           setEmail(userDetails?.emailId || null);
         }
@@ -102,7 +104,7 @@ export const CitizenSideBar = ({
   const redirectToLoginPage = () => {
     // localStorage.clear();
     // sessionStorage.clear();
-    history.push("/digit-ui/citizen/login");
+    history.push("/digit-ui/citizen/select-language");
     closeSidebar();
   };
 

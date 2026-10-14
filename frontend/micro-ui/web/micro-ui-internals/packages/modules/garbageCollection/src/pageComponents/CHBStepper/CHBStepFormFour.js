@@ -45,7 +45,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           history.push("/digit-ui/employee/garbagecollection/response/" + id);
         }
       } else {
-        console.error("Submission failed, not moving to next step.", res?.response);
+
       }
     } catch (error) {
       alert(`Error: ${error?.message}`);
@@ -55,7 +55,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data, actionStatus) => {
     setLoader(true);
-    console.log("data", data);
+
     const apiDocs = data?.apiResponseData?.documents || [];
     const formDocs = data?.documents?.documents?.documents || [];
 
@@ -65,7 +65,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     // Filter out documents that already exist in API
     const newDocuments = formDocs.filter((doc) => !existingFileStoreIds?.includes(doc.fileStoreId));
 
-    console.log("NEW DOCUMENTS TO SEND:", newDocuments);
+
 
     // return;
 
@@ -111,7 +111,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_GarbageApplication_FORM(config.key, data));
     }

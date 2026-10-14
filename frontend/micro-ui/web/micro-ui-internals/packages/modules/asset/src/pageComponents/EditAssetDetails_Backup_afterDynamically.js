@@ -19,14 +19,14 @@ const EditAssetDetails = ({ config, onSelect, formData, setError, clearErrors })
     let comingDataFromAPI = applicationDetails?.applicationData?.applicationData;
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
 
-    
- 
+
+
 
     useEffect(() => {
         onSelect(config?.key, editNewAssetDetails);
     }, [editNewAssetDetails]);
 
-   
+
 
     const { data: warrantyperiod } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "Warranty" }], {
         select: (data) => {
@@ -96,7 +96,7 @@ const OwnerForm = (_props) => {
         },
     });
     let combinedData;
-    console.log('Testing :-', cityResponseObject, stateResponseObject);
+
     // if city level master is not available then fetch  from state-level
     if (cityResponseObject) {
         combinedData = cityResponseObject;
@@ -115,9 +115,9 @@ const OwnerForm = (_props) => {
             .flat() // Flatten the fields array
             .filter((field) => field.active === true); // Filter by active status
     } else {
-        console.log("combinedData.data is not an array or is empty.");
+
     }
-    console.log('Form Json value testing :- ', formJson);
+
 
     const [showToast, setShowToast] = useState(null);
     const { control, formState: localFormState, watch, trigger } = useForm();
@@ -163,7 +163,7 @@ const OwnerForm = (_props) => {
               }));
             },
             (error) => {
-              console.error("Error getting location:", error);
+
               alert("Unable to retrieve your location. Please check your browser settings.");
             }
           );
@@ -172,7 +172,7 @@ const OwnerForm = (_props) => {
         }
       };
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
-console.log('Comming From API:- ', comingDataFromAPI?.additionalDetails);
+
     return (
         <React.Fragment>
             <div style={{ marginBottom: "16px" }}>
@@ -324,7 +324,7 @@ console.log('Comming From API:- ', comingDataFromAPI?.additionalDetails);
                                     }
                                 </div>
                             ))}
-                    
+
                         {/* <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("AST_INVOICE_DATE") + " *"}</CardLabel>
                 <div className="field">

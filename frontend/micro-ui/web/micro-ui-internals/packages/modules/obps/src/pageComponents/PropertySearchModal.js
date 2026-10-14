@@ -35,7 +35,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
     let { pathname, state } = useLocation();
     state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
     const apiDataCheck = useSelector((state) => state?.obps?.OBPSFormReducer?.formData?.createdResponse);
-    console.log("StateInPropertySearch", formData, key);
+
     const isEditScreen = pathname.includes("/modify-application/");
     const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
     const search = useLocation().search;
@@ -140,7 +140,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
         }
     })
 
-    console.log("window.innerWidth", window.innerWidth)
+
 
     useEffect(() => {
         if (menuList && propertyDetails?.Properties?.[0]?.address?.locality
@@ -213,7 +213,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
                     ...(selectedLocality?.code?.length > 0 ? { locality: selectedLocality?.code} : {}), ...(name?.length > 0 ? { name: name} : {})
                 }
             })
-            console.log("fetchedData", fetchedData, propertyId, mobileNumber);
+
             if (fetchedData?.Properties?.length > 0) {
                 setIsLoading(false)
                 setPropertyData(fetchedData?.Properties)
@@ -298,7 +298,7 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
     }, [showToast]);
 
       useEffect(() => {
-        console.log("fetchedLocalities",fetchedLocalities)
+
       },[fetchedLocalities])
 
     if(isBoundaryLoading) return <Loader />

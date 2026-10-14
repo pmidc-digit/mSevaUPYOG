@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 
 const BannerPicker = (props) => {
   const { t } = useTranslation();
-  console.log("props",props)
+
   return (
     <Banner
       message={props.props.message}

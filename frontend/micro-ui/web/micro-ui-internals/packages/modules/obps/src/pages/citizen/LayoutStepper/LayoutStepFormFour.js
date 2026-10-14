@@ -24,7 +24,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setSelectedCheckBox(e.target.checked);
   };
 
-  //console.log("selectedCheckBox", selectedCheckBox);
+
 
   const currentStepData = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.formData || {});
   const coordinates = useSelector((state) => state.obps.LayoutNewApplicationFormReducer.coordinates || {});
@@ -50,7 +50,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const goNext = (action) => {
-    //console.log("formData in parent SummaryPage", currentStepData);
+
 
     onSubmit(currentStepData, action);
   };
@@ -135,7 +135,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           }
         }
       } else {
-        console.error("Submission failed, not moving to next step.", response?.response);
+
         setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
     } catch (error) {
@@ -397,7 +397,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     } else {
       // NEW MODE: Use Redux documents directly (like CLU)
-      //console.log("[v0] NEW MODE - docsArrayFromRedux:", docsArrayFromRedux);
+
 
       docsArrayFromRedux.forEach((doc) => {
         updatedApplication.documents.push({
@@ -435,7 +435,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     //   }
     // });
 
-    //console.log("[v0] final documents array:", updatedApplication.documents);
+
 
     const payload = {
       Layout: updatedApplication,
@@ -454,18 +454,18 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setShowToast(null);
   };
 
-  //console.log("currentStepData in StepFour", currentStepData);
+
 
   // Handle both NEW mode (Layout array) and EDIT mode (Layout object)
   const isEditMode = window.location.pathname.includes("edit");
-  // console.log("isEditMode",isEditMode)
+
   const layoutData = isEditMode
     ? currentStepData?.apiData?.Layout?.[0]
     : currentStepData?.apiData?.Layout;
 
   const applicationNo = layoutData?.applicationNo || "";
   const businessServiceCode = layoutData?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
-  //console.log("applicationNo here==>", applicationNo);
+
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -473,9 +473,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     moduleCode: businessServiceCode,
   });
 
-  //console.log("workflow Details here layout==>", workflowDetails);
 
-    //console.log("workflow Details here==>", workflowDetails)
+
+
 
   if (workflowDetails?.isLoading) {
     return <Loader />
@@ -489,7 +489,7 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     })?.filter((action) => (action?.action !== "EDIT"));
 
-  //console.log("actions here", actions);
+
 
   function onActionSelect(action) {
     goNext(action);

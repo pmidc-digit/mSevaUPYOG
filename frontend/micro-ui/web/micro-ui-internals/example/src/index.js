@@ -96,6 +96,7 @@ const enabledModules = [
   "Layout",
   "GarbageCollection",
   "KibanaDashboard",
+  "OBPSKibanaDashboard",
   "CLU",
 ];
 

@@ -75,9 +75,9 @@ const CitizenApplicationOverview = () => {
 
   const empData = EmployeeData(tenantId, approver);
 
-  console.log("approver for ndc", approver);
 
-  console.log("officerData", empData);
+
+
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -126,7 +126,7 @@ const CitizenApplicationOverview = () => {
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
       setLoader(false);
     } catch (error) {
-      console.error(error);
+
       setLoader(false);
     }
   }
@@ -163,7 +163,7 @@ const CitizenApplicationOverview = () => {
 
   useEffect(() => {
     const ndcObject = applicationDetails?.Applications?.[0];
-    console.log("ndcObject", ndcObject);
+
     if (ndcObject) {
       const primaryOwner = ndcObject?.owners?.find((owner) => owner?.isPrimaryOwner) || ndcObject?.owners?.[0]; // fallback if none marked
 
@@ -220,9 +220,9 @@ const CitizenApplicationOverview = () => {
       Property.propertyOwnerNames = propertyOwnerNames;
       Property.propertyOwnerMobiles = propertyOwnerMobiles;
       const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
-      console.log("propertyOwnerNames", propertyOwnerNames);
+
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
-      console.log("tenantInfo", tenantInfo);
+
       const ulbType = tenantInfo?.city?.ulbType;
       let acknowledgementData;
 
@@ -241,12 +241,12 @@ const CitizenApplicationOverview = () => {
           vasikaNo
         );
       }
-      console.log("acknowledgementData", acknowledgementData);
+
       setTimeout(() => {
         Digit.Utils.pdf.generateNDC(acknowledgementData);
       }, 0);
     } catch (error) {
-      console.error("Error generating acknowledgement:", error);
+
     } finally {
       setLoader(false);
     }
@@ -256,9 +256,9 @@ const CitizenApplicationOverview = () => {
 
   useEffect(() => {
     if (displayData) {
-      console.log("here");
+
       const checkProperty = displayData?.NdcDetails?.filter((item) => item?.businessService == "NDC_PROPERTY_TAX");
-      console.log("checkProperty", checkProperty);
+
       setPropertyId(checkProperty?.[0]?.consumerCode);
     }
   }, [displayData]);
@@ -291,9 +291,9 @@ const CitizenApplicationOverview = () => {
     return <Loader />;
   }
 
-  console.log("propertyDetailsFetch", propertyDetailsFetch);
 
-  console.log("displayData?.applicantData", displayData);
+
+
 
   const ownerForName = propertyDetailsFetch?.Properties?.[0]?.owners || [];
   const ownerNames = ownerForName?.
@@ -301,7 +301,7 @@ const CitizenApplicationOverview = () => {
   filter(Boolean)?.
   join(", ");
 
-  console.log("applicationDetails?.[0]", applicationDetails?.Applications?.[0]);
+
 
   return (
     <div className={"employee-main-application-details"}>
@@ -361,7 +361,7 @@ const CitizenApplicationOverview = () => {
       <Card className="ndc_card_main">
         <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_NDC_DETAILS_OVERVIEW")}</CardSubHeader>
         {displayData?.NdcDetails?.map((detail, index) => {
-          console.log("detail", detail);
+
           const isRed = detail.dueAmount > 0;
           return (
             <div className="ndc-application-overview-table" key={index}>

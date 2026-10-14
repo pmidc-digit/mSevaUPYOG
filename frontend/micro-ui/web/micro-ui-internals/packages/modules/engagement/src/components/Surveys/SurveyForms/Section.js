@@ -14,7 +14,7 @@ const Section = ({ section }) => {
   const handleWeightageChange = (e) => {
     dispatch(updateSectionWeightage(section.id, e.target.value));
   };
-console.log("section in section js",section.categories)
+
   return (
     <div>
       <h2>Section</h2>
@@ -30,7 +30,7 @@ console.log("section in section js",section.categories)
       </span>
       </div>
     </div>
-    
+
   );
 };
 

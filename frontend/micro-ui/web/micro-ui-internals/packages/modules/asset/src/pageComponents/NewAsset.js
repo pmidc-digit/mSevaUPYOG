@@ -52,7 +52,7 @@ const NewAsset = ({ t, config, onSelect, formData }) => {
       combinedData = stateResponseObject.data;
     } else {
       combinedData = []; // Or an appropriate default value for empty data
-      console.log("Both cityResponseObject and stateResponseObject data are unavailable.");
+
     }
     setCategoriesWiseData(combinedData);
   }, [cityResponseObject, stateResponseObject]);
@@ -63,14 +63,14 @@ const NewAsset = ({ t, config, onSelect, formData }) => {
     formJson = categoriesWiseData
       .filter((category) => {
         const isMatch = category.assetParentCategory === formData?.asset?.assettype?.code || category.assetParentCategory === "COMMON";
-        // console.log(`Matching ${category.assetParentCategory} with ${formData?.asset?.assettype?.code}:`, isMatch);
+
         return isMatch;
       })
       .map((category) => category.fields) // Extract the fields array
       .flat() // Flatten the fields array
       .filter((field) => field.active === true); // Filter by active status
   }
-  
+
   const { pathname: url } = useLocation();
   let index = window.location.href.charAt(window.location.href.length - 1);
   let validation = {};
@@ -78,7 +78,7 @@ const NewAsset = ({ t, config, onSelect, formData }) => {
 
   //  regexPattern function is use for validation
   const regexPattern = (columnType) => {
-   
+
     if (!columnType) {
       return "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?),\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$";
     } else if (columnType === "number") {
@@ -120,15 +120,15 @@ const NewAsset = ({ t, config, onSelect, formData }) => {
   };
 
 useEffect(() => {
-  
+
 }, [assetDetails]); // Triggers when purchaseDate changes
 
   // Set State Dynamically!
   const handleInputChange = (e) => {
     // Get the name & value from the input and select field
     const { name, value } = e.target ? e.target : { name: e.name, value: e };
-    
-   
+
+
     if (name === 'lifeOfAsset' && value.length > 3) { // Validation for life of Asset
       alert('Maximum limit is 3 digits only!');
       return false;
@@ -152,7 +152,7 @@ useEffect(() => {
       // if (name === "purchaseDate") {
       //   calculateAssetAge(value);
       // }
-      
+
       return updatedData;
     });
   };
@@ -169,7 +169,7 @@ useEffect(() => {
           }));
         },
         (error) => {
-          console.error("Error getting location:", error);
+
           alert("Unable to retrieve your location. Please check your browser settings.");
         }
       );
@@ -265,7 +265,7 @@ useEffect(() => {
               </span>
             </div>
           </div>
-         
+
           <TextInput
                   t={t}
                   type={"date"}
@@ -280,7 +280,7 @@ useEffect(() => {
                     required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                     validDate: (val) => (/^\d{4}-\d{2}-\d{2}$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
                   }}
-                  
+
                 />
 
           <div>

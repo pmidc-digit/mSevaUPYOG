@@ -36,7 +36,7 @@ const PropertyDetails = () => {
   const [showDuesPopup, setShowDuesPopup] = useState(false);
 
   const [showDocsPopup, setShowDocsPopup] = useState(false);
-  
+
   const stateId = Digit.ULBService.getStateId();
   const { isLoading: docsLoading, data: Documentsob } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", ["MutationDocuments"]);
   const docs = Documentsob?.PropertyTax?.MutationDocuments || [];
@@ -75,24 +75,10 @@ const PropertyDetails = () => {
   });
 
   React.useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth <= 780 && !isMobile) {
-        setIsMobile(true);
-      } else if (window.innerWidth > 780 && isMobile) {
-        setIsMobile(false);
-      }
-    }
-
-    window.addEventListener("resize", () => {
-      onResize();
-    });
-
-    return () => {
-      window.removeEventListener("resize", () => {
-        onResize()
-      });
-    };
-  });
+    const onResize = () => setIsMobile(window.innerWidth <= 780);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
 
   useEffect(() => {
@@ -245,7 +231,7 @@ const PropertyDetails = () => {
     if (appDetailsToShow?.applicationDetails && !appDetailsToShow?.applicationDetails?.some(x => x.isDuesSection)) {
       const amount = fetchBillData?.Bill?.[0]?.totalAmount;
       const billDetails = fetchBillData?.Bill?.[0]?.billDetails || [];
-      
+
       let dateString = billDetails?.map(detail => {
         const fromYear = new Date(detail.fromPeriod).getFullYear();
         const toYear = new Date(detail.toPeriod).getFullYear();
@@ -409,7 +395,7 @@ const PropertyDetails = () => {
                 history.push("/digit-ui/employee/pt/response", { Property: data.Property, key: "UPDATE", action: "SUBMIT" });
                 },
                 // redirectionUrl: {
-                 
+
                 //   state: { workflow: { action: "OPEN", moduleName: "PT", businessService: "PT.CREATE" } },
                 // },
                // AmountDueForPay: fetchBillData?.Bill[0]?.totalAmount,
@@ -448,10 +434,10 @@ const PropertyDetails = () => {
     return <Loader />;
   }
   const UpdatePropertyNumberComponent = Digit?.ComponentRegistryService?.getComponent("EmployeeUpdateOwnerNumber");
- 
+
     appDetailsToShow?.applicationData?.owners.sort((item, item2) => { return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence })
-    
-  
+
+
   return (
     <div>
       <Header>{t("PT_PROPERTY_INFORMATION")}</Header>
@@ -472,7 +458,7 @@ const PropertyDetails = () => {
         forcedActionPrefix={"WF_EMPLOYEE_PT.CREATE"}
         propertyId={applicationNumber}
       />      {showModal ? (
-   
+
           <Modal
             headerBarMain={
               <h1 className="heading-m">
@@ -528,11 +514,11 @@ const PropertyDetails = () => {
                   },
                   {
                     onError: (error) => {
-                      console.error("Property update failed:", error);
+
                       setShowToast({ key: "error", message: "Failed to update property", type: "error" });
                     },
                     onSuccess: async (successRes) => {
-                      console.log("Property updated successfully", successRes);
+
                       showToast();
                       setTimeout(() => {
                         window.location.reload();
@@ -561,11 +547,11 @@ const PropertyDetails = () => {
                   },
                   {
                     onError: (error) => {
-                      console.error("Property update failed:", error);
+
                       setShowToast({ key: "error", message: "Failed to update property survey ID", type: "error" });
                     },
                     onSuccess: async (successRes) => {
-                      console.log("Property updated successfully", successRes);
+
                       setShowToast({ key: "success", message: t("PT_SURVEY_ID_UPDATED_SUCCESS") || "Survey ID updated successfully!", type: "success" });
                       setShowModal(false);
                       setShowUpdateSurveyId(null);
@@ -580,7 +566,7 @@ const PropertyDetails = () => {
           )}
           {!showUpdateNo && !showUpdateSurveyId && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
           </Modal>
-       
+
       ) : null}
       {showDuesPopup && (
         <div style={{
@@ -632,7 +618,7 @@ const PropertyDetails = () => {
               }}>
                 {t("Pending Amount Due")}
               </h2>
-              
+
               <p style={{
                 fontSize: "16px",
                 color: "#505a5f",

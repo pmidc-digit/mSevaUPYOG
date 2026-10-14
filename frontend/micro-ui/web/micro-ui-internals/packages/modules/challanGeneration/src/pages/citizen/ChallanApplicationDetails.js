@@ -86,7 +86,7 @@ const ChallanApplicationDetails = () => {
     setLoader(true);
     try {
       const responseData = await Digit.ChallanGenerationService.search({ tenantId, filters });
-      console.log("search ", responseData);
+
       setChallanData(responseData?.challans?.[0]);
       setLoader(false);
     } catch (error) {
@@ -157,7 +157,7 @@ const ChallanApplicationDetails = () => {
             location = geoLocation;
           }
         } catch (err) {
-          console.warn("Reverse geocoding failed, using address fallback", err);
+
         }
       }
       const challan = {

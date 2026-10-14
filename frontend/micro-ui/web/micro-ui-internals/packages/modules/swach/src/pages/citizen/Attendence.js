@@ -170,10 +170,10 @@ const Attendence = (props) => {
                 key={uploadedImages.length > 0 ? uploadedImages[0] : "empty"}
                 value={{ uploadedImages: uploadedImages.length > 0 ? [uploadedImages[uploadedImages.length - 1]] : [] }}
                 onSelect={(val) => {
-                  console.log("Image selected:", val);
+
                   if (val.uploadedImages && val.uploadedImages.length > 0) {
                     if (uploadedImages.length === 0 || val.uploadedImages[val.uploadedImages.length - 1] !== uploadedImages[0]) {
-                      console.log("Setting loading to true");
+
                       setIsImageLoading(true);
                       setTimeout(() => {
                         setUploadedImages([val.uploadedImages[val.uploadedImages.length - 1]]);

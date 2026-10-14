@@ -36,7 +36,7 @@ const PTRWFApplicationTimeline = (props) => {
     // config: { staleTime: 0, refetchOnMount: "always" },
   });
 
-  console.log("workflowDetails", workflowDetails);
+
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
   workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -48,7 +48,7 @@ const PTRWFApplicationTimeline = (props) => {
 
   const isLoading = false;
 
-  console.log("data ==== ||Asdasdsadbkahjsdb", workflowDetails);
+
 
   const isCitizen = window.location.href.includes("citizen");
 
@@ -106,7 +106,7 @@ const PTRWFApplicationTimeline = (props) => {
     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
   });
 
-  console.log("check actions", actions);
+
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -133,12 +133,12 @@ const PTRWFApplicationTimeline = (props) => {
       action: [action]
     };
 
-    console.log("action", action);
+
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
-    console.log("filterNexState", filterNexState);
+
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
-    console.log("filterRoles", filterRoles);
+
     setEmployees(filterRoles?.[0]?.actions);
 
     if (action?.action == "APPLY") {
@@ -212,7 +212,8 @@ const PTRWFApplicationTimeline = (props) => {
         const WorkflowService = await Digit.WorkflowService.init(tenantId, "ptr");
         setWorkflowService(WorkflowService?.BusinessServices?.[0]?.states || []);
       } catch (error) {
-        console.error("Error fetching workflow service:", error);
+        setWorkflowService([]);
+        setShowToast({ key: "error", message: "Something went wrong" });
       } finally {
         setLoader(false);
       }

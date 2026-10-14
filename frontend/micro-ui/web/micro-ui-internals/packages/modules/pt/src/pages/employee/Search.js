@@ -158,6 +158,10 @@ const PTSearchFields = {
     //   type: "propertyType",
     //   label: "PT_SEARCHPROPERTY_TABEL_PROPERTY_TYPE",
     //   placeHolder: "PT_SEARCH_DOOR_NO_PLACEHOLDER",
+<<<<<<< HEAD
+=======
+
+>>>>>>> MicroUI_UAT_Vite
     // },
   },
 };
@@ -209,11 +213,16 @@ const Search = () => {
     }
   }, [searchBy]);
   const onSubmit = useCallback((_data) => {
+<<<<<<< HEAD
     console.log("_data", _data);
+=======
+
+>>>>>>> MicroUI_UAT_Vite
     const selectedTenantId = _data?.tenantId?.code || tenantId;
 
     if (Object.keys(_data).includes("propertyType")) {
       setFormData(_data);
+<<<<<<< HEAD
       console.log("_data2", payload);
       setPayload({ locality: _data.locality.code, propertyType: _data.propertyType.code });
       setSearchTenantId(selectedTenantId);
@@ -229,6 +238,16 @@ const Search = () => {
       setFormData(_data);
       console.log("_data5", formData);
 >>>>>>> MicroUI_PROD_Vite
+=======
+
+      setPayload({locality:_data.locality.code, propertyType:_data.propertyType.code})
+      setSearchTenantId(selectedTenantId);
+
+    }
+    else {
+      setFormData(_data);   
+
+>>>>>>> MicroUI_UAT_Vite
 
       const hasOwnerName = typeof _data?.name === "string" ? !!_data.name.trim() : !!_data?.name;
       const hasPropertyId = typeof _data?.propertyIds === "string" ? !!_data.propertyIds.trim() : !!_data?.propertyIds;
@@ -298,17 +317,22 @@ const Search = () => {
           );
 >>>>>>> MicroUI_PROD_Vite
 
-        console.log("FINAL PAYLOAD", finalPayload);
+
 
         setPayload(finalPayload);
         setSearchTenantId(selectedTenantId);
         setShowToast(null);
       }
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   });
   return (
     <React.Fragment>
       <Header>{t("SEARCH_PROPERTY")}</Header>
+<<<<<<< HEAD
       <SearchComponent
         t={t}
         payload={formData}
@@ -341,6 +365,24 @@ const Search = () => {
       ) : (
         ""
       )}
+=======
+     <SearchComponent
+  t={t}
+  payload={formData}
+  searchBy={searchBy}
+  setSearchBy={setSearchBy}
+  PTSearchFields={PTSearchFields}
+  tenantId={tenantId}
+  onSubmit={onSubmit}
+  onReset={onReset}
+/>
+
+      {Object.keys(payload).includes("propertyType") ?
+      <SearchPTIDPropComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
+      : Object.keys(payload).length > 0 ? (
+        <SearchResultComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={searchTenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
+      ):""}
+>>>>>>> MicroUI_UAT_Vite
       {showToast && (
         <Toast
           error={showToast.error}

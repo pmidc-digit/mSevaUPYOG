@@ -158,6 +158,7 @@
 // export default InboxTopBar;
 
 import React from "react";
+import "./InboxTopBar.css";
 import { useTranslation } from "react-i18next";
 
 const InboxTopBar = ({

@@ -18,7 +18,7 @@ export const ModalConfig = ({
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 
-  console.log("action=====", action.action);
+
 
   return {
     label: {

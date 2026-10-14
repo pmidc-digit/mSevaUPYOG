@@ -112,7 +112,7 @@ const CHBAddressDetails = ({ t, config, onSelect, userType, formData, value = fo
     let owner = formData.address && formData.address[index];
     let ownerStep = { ...owner, pincode, city, locality, streetName, houseNo, landmark };
     onSelect(config.key, { ...formData[config.key], ...ownerStep }, false, index);
-    console.log(ownerStep);
+
   };
 
   const { control } = useForm();

@@ -55,19 +55,27 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
   const expandNav = () => {
     sidebarRef.current.style.width = "350px";
     sidebarRef.current.style.overflow = "auto";
+    sidebarRef.current.classList.remove("sidebar--collapsed");
     sidebarRef.current.querySelectorAll(".dropdown-link").forEach((el) => {
       el.style.display = "flex";
+    });
+    sidebarRef.current.querySelectorAll(".sidebar-link").forEach((link) => {
+      if (link.children.length > 1) link.lastElementChild.style.display = "block";
     });
   };
 
   const collapseNav = () => {
     sidebarRef.current.style.width = "65px";
     sidebarRef.current.style.overflow = "hidden";
+    sidebarRef.current.classList.add("sidebar--collapsed");
     sidebarRef.current.querySelectorAll(".dropdown-link").forEach((el) => {
       el.style.display = "none";
     });
     sidebarRef.current.querySelectorAll(".actions").forEach((el) => {
       el.style.padding = "0";
+    });
+    sidebarRef.current.querySelectorAll(".sidebar-link").forEach((link) => {
+      if (link.children.length > 1) link.lastElementChild.style.display = "none";
     });
   };
 
@@ -154,7 +162,20 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
     if (!search || currentPath) return [];
 
     const actionList = data?.actions?.filter((e) => e.url === "url") || [];
-    return actionList.filter((item) => item.url && item.displayName.toLowerCase().includes(search.toLowerCase()));
+    return actionList
+      .filter((item) => item.navigationURL && item.displayName?.toLowerCase().includes(search.toLowerCase()))
+      .map((item) => ({
+        path: item.path,
+        url: item.url,
+        queryParams: item.queryParams,
+        orderNumber: item.orderNumber,
+        navigationURL: item.navigationURL,
+        leftIcon: item.leftIcon,
+        displayName: item.displayName,
+        moduleName: item.displayName,
+        type: "single",
+        originalItem: item,
+      }));
   };
 
   const navigateToMenu = (path) => {
@@ -190,7 +211,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
       const iconComponent = getIconComponent(item.leftIcon);
 
       if (!item.url) {
-        const moduleName = item.moduleName?.replace(/[ -]/g, "_").toUpperCase();
+        const moduleName = item.moduleName?.replace(/[ -]/g, "_")?.toUpperCase();
         const appendTranslate = t(`ACTION_TEST_${moduleName}`);
         const trimModuleName = t(appendTranslate);
 
@@ -285,85 +306,6 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
       <React.Fragment>
         <div style={mobileOverlayStyle} onClick={closeSidebar}></div>
         <div style={mobileSidebarStyle} className="employee-mobile-sidebar">
-          <style>
-            {`
-              .employee-mobile-sidebar .submenu-container {
-                padding: 0 !important;
-                margin: 0 !important;
-              }
-              .employee-mobile-sidebar .sidebar-link {
-                padding: 12px 16px !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                border-bottom: 1px solid #f3f4f6 !important;
-                cursor: pointer !important;
-              }
-              .employee-mobile-sidebar .sidebar-link:hover {
-                background-color: #f9fafb !important;
-              }
-              .employee-mobile-sidebar .sidebar-link.active {
-                background-color: #eef2ff !important;
-                border-left: 3px solid #4f46e5 !important;
-              }
-              .employee-mobile-sidebar .actions {
-                display: flex !important;
-                align-items: center !important;
-                gap: 12px !important;
-                padding: 0 !important;
-              }
-              .employee-mobile-sidebar .actions svg {
-                width: 20px !important;
-                height: 20px !important;
-                fill: #6b7280 !important;
-              }
-              .employee-mobile-sidebar .actions span,
-              .employee-mobile-sidebar .actions a,
-              .employee-mobile-sidebar .custom-link {
-                font-size: 14px !important;
-                color: #1f2937 !important;
-                text-decoration: none !important;
-                font-weight: 500 !important;
-              }
-              .employee-mobile-sidebar .dropdown-link {
-                display: flex !important;
-                padding: 10px 16px 10px 48px !important;
-                font-size: 13px !important;
-                color: #4b5563 !important;
-                text-decoration: none !important;
-                border-bottom: 1px solid #f9fafb !important;
-              }
-              .employee-mobile-sidebar .dropdown-link:hover {
-                background-color: #f3f4f6 !important;
-              }
-              .employee-mobile-sidebar .dropdown-link.active {
-                background-color: #eef2ff !important;
-                color: #4f46e5 !important;
-              }
-              .employee-mobile-sidebar .search-icon-wrapper {
-                padding: 8px 16px !important;
-                display: flex !important;
-                align-items: center !important;
-                gap: 8px !important;
-                background-color: #f9fafb !important;
-                margin: 8px 12px !important;
-                border-radius: 6px !important;
-                border: 1px solid #e5e7eb !important;
-              }
-              .employee-mobile-sidebar .employee-search-input {
-                border: none !important;
-                background: transparent !important;
-                outline: none !important;
-                font-size: 14px !important;
-                width: 100% !important;
-              }
-              .employee-mobile-sidebar .employee-search-input:disabled {
-                opacity: 0.5 !important;
-                cursor: not-allowed !important;
-              }
-            `}
-          </style>
-
           <div style={{ padding: "16px", borderBottom: "1px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontWeight: 600, fontSize: "16px", color: "#1f2937" }}>{currentPath ? getBreadcrumbTitle() : t("CORE_COMMON_MENU")}</span>
             <button
@@ -437,116 +379,6 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
         borderRight: "1px solid #e5e7eb",
       }}
     >
-      <style>
-        {`
-          .sidebar .submenu-container {
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-
-          .sidebar .sidebar-link {
-            padding: 12px 16px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            border-bottom: 1px solid #f3f4f6 !important;
-            cursor: pointer !important;
-            transition: all 0.2s ease !important;
-            background-color: transparent !important;
-          }
-
-          .sidebar .sidebar-link:hover {
-            background-color: #f0f2f5 !important;
-            border-left: 3px solid #4f46e5 !important;
-            padding-left: 13px !important;
-          }
-
-          .sidebar .sidebar-link.active {
-            background-color: #eef2ff !important;
-            border-left: 3px solid #4f46e5 !important;
-            padding-left: 13px !important;
-          }
-
-          .sidebar .actions {
-            display: flex !important;
-            align-items: center !important;
-            gap: 12px !important;
-            padding: 0 !important;
-            flex: 1;
-          }
-
-          .sidebar .actions svg {
-            width: 20px !important;
-            height: 20px !important;
-            flex-shrink: 0;
-            color: #6b7280 !important;
-          }
-
-          .sidebar .actions span,
-          .sidebar .actions a,
-          .sidebar .custom-link {
-            font-size: 14px !important;
-            color: #1f2937 !important;
-            text-decoration: none !important;
-            font-weight: 500 !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-          }
-
-          .sidebar .dropdown-link {
-            display: flex !important;
-            padding: 10px 16px 10px 48px !important;
-            font-size: 13px !important;
-            color: #4b5563 !important;
-            text-decoration: none !important;
-            border-bottom: 1px solid #f9fafb !important;
-            transition: all 0.2s ease !important;
-          }
-
-          .sidebar .dropdown-link:hover {
-            background-color: #f3f4f6 !important;
-            color: #4f46e5 !important;
-          }
-
-          .sidebar .dropdown-link.active {
-            background-color: #eef2ff !important;
-            color: #4f46e5 !important;
-            border-left: 3px solid #4f46e5 !important;
-            padding-left: 45px !important;
-          }
-
-          .sidebar .search-icon-wrapper {
-            padding: 8px 12px !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            background-color: #fff !important;
-            margin: 12px !important;
-            border-radius: 6px !important;
-            border: 1px solid #d1d5db !important;
-          }
-
-          .sidebar .employee-search-input {
-            border: none !important;
-            background: transparent !important;
-            outline: none !important;
-            font-size: 13px !important;
-            width: 100% !important;
-            color: #1f2937 !important;
-          }
-
-          .sidebar .employee-search-input::placeholder {
-            color: #9ca3af !important;
-          }
-
-          .sidebar .employee-search-input:disabled {
-            opacity: 0.5 !important;
-            cursor: not-allowed !important;
-          }
-        `}
-      </style>
-
       {renderSearch()}
 
       {currentPath && (

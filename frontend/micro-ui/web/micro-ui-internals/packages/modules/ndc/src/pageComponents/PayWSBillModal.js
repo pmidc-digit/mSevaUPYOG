@@ -18,7 +18,7 @@ export const PayWSBillModal = ({ setShowToast, billData }) => {
   });
 
   const closeModal = () => setShowToast();
-  const setModal = () => console.log("Pay API");
+  const setModal = () => void 0;
 
   const Heading = ({ label }) => <h1 className="heading-m">{label}</h1>;
   const Close = () =>

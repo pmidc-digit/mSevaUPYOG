@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo } from "react";
+import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -7,15 +7,6 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const { t } = useTranslation();
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
-  const GetStatusCell = (value) =>
-    value === "CS_NA" ? (
-      t(value)
-    ) : value === "Active" || value > 0 ? (
-      <span className="sla-cell-success">{value}</span>
-    ) : (
-      <span className="sla-cell-error">{value}</span>
-    );
-
   const tableColumnConfig = useMemo(() => {
     return [
       {
@@ -23,7 +14,6 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "uuid",
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log("row", row);
           return (
             <div>
               <Link to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`}>
@@ -62,15 +52,12 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   });
 
   return {
-    getCellProps: (cellInfo) => {
+    getCellProps: () => {
       return {
-        style: {
-          padding: "20px 18px",
-          fontSize: "16px",
-        },
+        className: "ndc-new-inbox-cell",
       };
     },
-    disableSort: false,
+    disableSort: true,
     autoSort: false,
     manualPagination: true,
     initSortId: "applicationDate",
@@ -101,6 +88,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     // searchQueryForTable,
     data: table,
     columns: tableColumnConfig,
+    customTableWrapperClassName: "ndc-new-inbox-table-wrapper",
   };
 };
 

@@ -37,7 +37,7 @@ import CustomLocationSearch from "../../../components/CustomLocationSearch";
 import NocSitePhotographs from "../../../components/NocSitePhotographs";
 import { decodeURIComponentCustom, EmployeeData } from "../../../utils/index";
 import getNOCSanctionLetter from "../../../utils/getNOCSanctionLetter";
-import { convertToDDMMYYYY, formatDuration, downloadPdfFromURL, getCode } from "../../../utils/index";
+import { convertToDDMMYYYY, formatDuration, downloadPdfFromURL, getCode, amountToWords } from "../../../utils/index";
 import NocUploadedDocument from "../../../components/NocUploadedDocument";
 import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
@@ -69,12 +69,7 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
 
   if (!url) return <span>{t("CS_NA") || "NA"}</span>;
 
-  return (
-    <LinkButton
-      label={t("View") || "View"}
-      onClick={() => window.open(url, "_blank")}
-    />
-  );
+  return <LinkButton label={t("View") || "View"} onClick={() => window.open(url, "_blank")} />;
 };
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -144,7 +139,7 @@ const NOCEmployeeApplicationOverview = () => {
   const [getLoader, setLoader] = useState(false);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [feeAdjustments, setFeeAdjustments] = useState([]);
-  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
+  const { isLoading, data, refetch } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const loading = isLoading || getLoader;
   const applicationDetails = data?.resData;
   console.log("applicationDetails", applicationDetails);
@@ -422,7 +417,35 @@ const NOCEmployeeApplicationOverview = () => {
     }
   };
 
-  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", ...params }) {
+  async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, filestoreId = null, ...params }) {
+      const application = applicationDetails?.Noc?.[0];
+      try {
+        setLoader(true);
+        if (!application) {
+          throw new Error("Noc Application data is missing");
+        }
+        if(!filestoreId){
+          const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
+          const fee = payments?.totalAmountPaid;
+          const amountinwords = amountToWords(fee);
+          const response = await Digit.PaymentService.generatePdf(
+            tenantId,
+            { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] },
+            pdfkey
+          );
+          filestoreId = response?.filestoreIds[0];
+        }
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+        const receiptUrl = fileStore[filestoreId];
+        await downloadPdfFromURL(receiptUrl);
+      } catch (error) {
+        // console.error("Sanction Letter download error:", error);
+      } finally {
+        setLoader(false);
+      }
+    }
+
+  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter",filestoreId, ...params }) {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoader(true);
@@ -475,10 +498,10 @@ const NOCEmployeeApplicationOverview = () => {
       // refetch();
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/noc/esign/complete/${id}`;
-      const authToken = localStorage.getItem('token');
+      const authToken = localStorage.getItem("token");
       // Trigger eSign
       eSignCertificate(
-        { fileStoreId, tenantId, callbackUrl, authToken  },
+        { fileStoreId, tenantId, callbackUrl, authToken },
         {
           onSuccess: () => console.log("✅ eSign initiated successfully"),
           onError: (error) => {
@@ -516,6 +539,39 @@ const NOCEmployeeApplicationOverview = () => {
   //     });
   //   }
   // }
+  if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
+    if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: reciept_data?.Payments[0]?.tenantId,
+            payments: reciept_data?.Payments[0],
+            EmpData,
+            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+          }),
+      });
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData, filestoreId :  reciept_data?.Payments[0]?.fileStoreId}),
+      });
+    } else if (
+      applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.isMigrationTrue &&
+      applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+    ) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: tenantId,
+            payments: {},
+            EmpData,
+            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+          }),
+      });
+    }
+  }
   useEffect(() => {
     const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
     const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
@@ -674,8 +730,8 @@ const NOCEmployeeApplicationOverview = () => {
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`);
       const endTime = Date.now();
 
-      if(submittedOn!== null){
-        setAppDate(Number(submittedOn))
+      if (submittedOn !== null) {
+        setAppDate(Number(submittedOn));
       }
       // console.log(`submiited on , ${submittedOn} , lastModified , ${lastModified}`)
       const totalTime = submittedOn != null ? endTime - submittedOn : null;
@@ -1162,13 +1218,15 @@ const NOCEmployeeApplicationOverview = () => {
   const firmName = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
   const isFirm = applicationDetails?.Noc?.[0]?.nocDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
 
-  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
+    .filter((v, i, arr) => v && arr.indexOf(v) === i)
+    .join(", ");
   const primaryOwner = displayData?.applicantDetails?.[0]?.owners?.[0];
   const propertyId = displayData?.applicantDetails?.[0]?.owners?.[0]?.propertyId;
 
   return (
     <div className={"employee-main-application-details"}>
-      <div className="cardHeaderWithOptions noc-pages-employee-application-overview-application-overview--style-3" >
+      <div className="cardHeaderWithOptions noc-pages-employee-application-overview-application-overview--style-3">
         <Header styles={{ fontSize: "32px" }}>{t("NOC_APP_OVER_VIEW_HEADER")}</Header>
         <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline} />
         {loading && <Loader />}
@@ -1206,6 +1264,7 @@ const NOCEmployeeApplicationOverview = () => {
             <div className="noc-pages-employee-application-overview-application-overview--style-4">
               <StatusTable>
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
+                <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Noc?.[0]?.applicationStatus ? t(`WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.workflowCode}_${applicationDetails?.Noc?.[0]?.applicationStatus}`) : "N/A"} />
               </StatusTable>
             </div>
           </Card>
@@ -1214,9 +1273,9 @@ const NOCEmployeeApplicationOverview = () => {
       {appDate !== null && (
         <React.Fragment>
           <Card>
-          <StatusTable>
-            <Row label={t("Application Date")} text={format(appDate, "dd/MM/yyyy") || "N/A"} />
-          </StatusTable>
+            <StatusTable>
+              <Row label={t("Application Date")} text={format(appDate, "dd/MM/yyyy") || "N/A"} />
+            </StatusTable>
           </Card>
         </React.Fragment>
       )}
@@ -1349,10 +1408,14 @@ const NOCEmployeeApplicationOverview = () => {
 
                 <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
 <<<<<<< HEAD
+<<<<<<< HEAD
                 {(isFinalNoc || isDigitizationOfManual) && (
 =======
                 {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
 >>>>>>> MicroUI_PROD_Vite
+=======
+                {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
+>>>>>>> MicroUI_UAT_Vite
                   <React.Fragment>
                     {isFinalNoc && (
                       <Row
@@ -1361,27 +1424,33 @@ const NOCEmployeeApplicationOverview = () => {
                           detail?.existingNocType?.name ||
                           detail?.existingNocType?.code ||
 <<<<<<< HEAD
+<<<<<<< HEAD
                           (typeof detail?.existingNocType === "string" ? detail?.existingNocType : "N/A")
 =======
                           (typeof detail?.existingNocType === "string" && detail?.existingNocType ? detail?.existingNocType : "N/A")
 >>>>>>> MicroUI_PROD_Vite
+=======
+                          (typeof detail?.existingNocType === "string" && detail?.existingNocType ? detail?.existingNocType : "N/A")
+>>>>>>> MicroUI_UAT_Vite
                         }
                       />
                     )}
                     <Row label={t("NOC_NUMBER_LABEL")} text={detail?.existingNocNumber || "N/A"} />
                     {(isOffline || isDigitizationOfManual) && (
 <<<<<<< HEAD
+<<<<<<< HEAD
                       <Row label={t("NOC_DATE_LABEL")} text={detail?.existingNocDate || "N/A"} />
 =======
                       <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(detail?.existingNocDate) || detail?.existingNocDate || "N/A"} />
 >>>>>>> MicroUI_PROD_Vite
+=======
+                      <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(detail?.existingNocDate) || detail?.existingNocDate || "N/A"} />
+>>>>>>> MicroUI_UAT_Vite
                     )}
                     {detail?.existingNocDocument && (
                       <Row
                         label={t("NOC_UPLOAD_DOCUMENT_LABEL")}
-                        text={
-                          <DocumentLink fileStoreId={detail?.existingNocDocument} stateCode={Digit.ULBService.getStateId()} t={t} />
-                        }
+                        text={<DocumentLink fileStoreId={detail?.existingNocDocument} stateCode={Digit.ULBService.getStateId()} t={t} />}
                       />
                     )}
                   </React.Fragment>
@@ -1402,9 +1471,7 @@ const NOCEmployeeApplicationOverview = () => {
 
       <Card>
         <CardSubHeader>{t("BPA_UPLOADED_SITE_PHOTOGRAPHS_LABEL")}</CardSubHeader>
-        <StatusTable
-          className="noc-pages-employee-application-overview-application-overview--style-9"
-        >
+        <StatusTable className="noc-pages-employee-application-overview-application-overview--style-9">
           {sitePhotos?.length > 0 &&
             [...sitePhotos].map((doc) => (
               <NocSitePhotographs
@@ -1434,9 +1501,7 @@ const NOCEmployeeApplicationOverview = () => {
       {applicationDetails?.Noc?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS" && siteImages?.documents?.length > 0 && (
         <Card>
           <CardSubHeader>{t("BPA_FIELD_INSPECTION_UPLOADED_DOCUMENTS")}</CardSubHeader>
-          <StatusTable
-            className="noc-pages-employee-application-overview-application-overview--style-10"
-          >
+          <StatusTable className="noc-pages-employee-application-overview-application-overview--style-10">
             {documentData?.length > 0 &&
               documentData.map((doc) => (
                 <NocUploadedDocument
@@ -1452,7 +1517,9 @@ const NOCEmployeeApplicationOverview = () => {
 
           {geoLocations?.length > 0 && (
             <>
-              <CardSectionHeader className="noc-pages-employee-application-overview-application-overview--style-11">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CardSectionHeader className="noc-pages-employee-application-overview-application-overview--style-11">
+                {t("SITE_INSPECTION_IMAGES_LOCATIONS")}
+              </CardSectionHeader>
               <CustomLocationSearch position={geoLocations} />
             </>
           )}
@@ -1556,6 +1623,7 @@ const NOCEmployeeApplicationOverview = () => {
             setFeeAdjustments={setFeeAdjustments}
             disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
+            actions={actions}
           />
         )}
       </Card>
@@ -1588,7 +1656,12 @@ const NOCEmployeeApplicationOverview = () => {
         <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />}>
           {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
           {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-            <a className="noc-pages-employee-application-overview-application-overview--style-12" href={imageUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              className="noc-pages-employee-application-overview-application-overview--style-12"
+              href={imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {t("CS_VIEW_DOCUMENT")}
             </a>
           ) : (

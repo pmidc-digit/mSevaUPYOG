@@ -2,17 +2,18 @@ import PropTypes from "prop-types";
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowDown } from "../../../../react-components/src/atoms/svgindex";
 
-// dropdown component for selecting options with a text input field 
+// dropdown component for selecting options with a text input field
 // rest file is same as Dropdown.js in react-components, just made it for styling purpose
 const TextField = (props) => {
   const [value, setValue] = useState(props.selectedVal ? props.selectedVal : "");
 
   useEffect(() => {
     if (!props.keepNull)
-      if( props.selectedVal)
-        setValue(props.selectedVal)
-      else
-      { setValue(""); props.setFilter("") } 
+      if (props.selectedVal) setValue(props.selectedVal);
+      else {
+        setValue("");
+        props.setFilter("");
+      }
     else setValue("");
   }, [props.selectedVal, props.forceSet]);
 
@@ -80,7 +81,7 @@ const TextField = (props) => {
       placeholder={props.placeholder}
       autoComplete={"off"}
       style={{
-        ...props.style, 
+        ...props.style,
         zIndex: "auto",
         borderRadius: "8px",
         border: "none",
@@ -160,19 +161,18 @@ const Dropdown = (props) => {
   // if (props?.option?.[0]?.label == "PropertyType") {
   //   filteredOption = props.option
   // }
-  if(props.isBPAREG && selectedOption)
-  {
+  if (props.isBPAREG && selectedOption) {
     let isSelectedSameAsOptions = props.option?.filter((ob) => ob?.code === selectedOption?.code)?.length > 0;
-    if(!isSelectedSameAsOptions) setSelectedOption(null)
+    if (!isSelectedSameAsOptions) setSelectedOption(null);
   }
 
   return (
     <div
       className={`${user_type === "employee" ? "employee-select-wrap" : "select-wrap"} ${props?.className ? props?.className : ""}`}
-      style={{ 
+      style={{
         ...props.style,
         borderRadius: "8px",
-        width: "44%"
+        width: "44%",
       }}
     >
       {hasCustomSelector && (
@@ -184,14 +184,15 @@ const Dropdown = (props) => {
       {!hasCustomSelector && (
         <div
           className={`${dropdownStatus ? "select-active" : "select"} ${props.disable && "disabled"}`}
-          style={props.errorStyle ? 
-            { border: "1px solid red" } : 
-            { 
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-              transition: "all 0.3s ease"
-            }
+          style={
+            props.errorStyle
+              ? { border: "1px solid red" }
+              : {
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                  transition: "all 0.3s ease",
+                }
           }
         >
           <TextField
@@ -231,10 +232,10 @@ const Dropdown = (props) => {
           <div
             id="jk-dropdown-unique"
             className={`${hasCustomSelector ? "margin-top-10 display: table" : ""} options-card`}
-            style={{ 
+            style={{
               ...props.optionCardStyles,
               borderRadius: "8px",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)"
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
             }}
             ref={optionRef}
           >
@@ -255,16 +256,17 @@ const Dropdown = (props) => {
                     onClick={() => onSelect(option)}
                   >
                     {option.icon && <span className="icon"> {option.icon} </span>}
-                    {props.isPropertyAssess? <div>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</div>:
-                    <span> {props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</span>} 
+                    {props.isPropertyAssess ? (
+                      <div>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</div>
+                    ) : (
+                      <span> {props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</span>
+                    )}
                   </div>
                 );
               })}
             {filteredOption && filteredOption.length === 0 && (
-              <div className={`cp profile-dropdown--item display: flex `} key={"-1"} onClick={()=>{
-                
-              }}>
-                {<span> {props.t ? props.t("CMN_NOOPTION") : "CMN_NOOPTION"}</span>}
+              <div className={`cp profile-dropdown--item display: flex `} key={"-1"} onClick={() => {}}>
+                {<span> {props.t ? props.t("No Option") : "No Option"}</span>}
               </div>
             )}
           </div>

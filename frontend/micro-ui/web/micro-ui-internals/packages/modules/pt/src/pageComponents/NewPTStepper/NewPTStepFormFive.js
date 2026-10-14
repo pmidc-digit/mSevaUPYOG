@@ -27,7 +27,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
     return state.pt.PTNewApplicationFormReducer.formData;
   });
 
-  console.log("checking", currentStepData);
+
 
   // const updatedOwnerDetails = currentStepData?.ownerDetails || {};
   // const updatedPetDetails = currentStepData?.petDetails || {};
@@ -146,7 +146,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
       };
     });
 
-    
+
 
 
     const formData = {
@@ -223,15 +223,15 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     try {
-   
+
       let response;
       if (isEditMode) {
         response = await Digit.PTService.update({ Property: formData }, tenantId);
       } else {
-        console.log("PT create payload", formData);
+
         response = await Digit.PTService.create({ Property: formData }, tenantId);
-      
-    
+
+
       }
       const id = response?.Properties[0]?.propertyId || response?.Properties[0]?.acknowldgementNumber;
       const ackNo = response?.Properties[0]?.acknowldgementNumber;
@@ -256,11 +256,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
         error?.response?.data?.error ||
         error?.message ||
         (isEditMode ? "Error while updating the property" : "Error while creating the property");
-      console.error(isEditMode ? "PT update failed" : "PT create failed", {
-        error,
-        requestPayload: formData,
-        responseData: error?.response?.data,
-      });
+
       setError(message);
       setShowToast({ key: "error" });
     }
@@ -305,7 +301,7 @@ const NewPTStepFormFive = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   // const onFormValueChange = (setValue = true, data) => {
-  //   console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
   //   if (!_.isEqual(data, currentStepData)) {
   //     dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
   //   }

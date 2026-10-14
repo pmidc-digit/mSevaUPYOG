@@ -47,7 +47,7 @@ export const ComplaintCard = ({ data, onFilterChange, onSearch, serviceRequestId
       </Card>
     );
   } else if (data && data?.length > 0) {
-    console.log("DataInDetailsCard", data);
+
     result = <DetailsCard data={data} serviceRequestIdKey={serviceRequestIdKey} linkPrefix={"/digit-ui/employee/swach/complaint/details/"} tenantIdsList={tenantIdsList}/>;
   } else {
     result = (

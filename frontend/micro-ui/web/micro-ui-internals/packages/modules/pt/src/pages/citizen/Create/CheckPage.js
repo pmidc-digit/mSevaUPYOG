@@ -32,7 +32,7 @@ const ActionButton = ({ jumpTo }) => {
 const CheckPage = ({ onSubmit, value = {} }) => {
   const { t } = useTranslation();
   const history = useHistory();
-  console.log("value",value)
+
   const {
     address,
     isResdential,
@@ -246,7 +246,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                         text={`${t(checkForNA(owner?.permanentAddress))}`}
                         actionButton={<ActionButton jumpTo={`${`/digit-ui/citizen/pt/property/${typeOfApplication}/owner-address/`}${index}`} />}
                       />
-                      
+
                       {owner?.ownerType?.code !== "NONE" ? (
                         <Row
                           label={t("PT_SPECIAL_OWNER_CATEGORY_PROOF_HEADER")}

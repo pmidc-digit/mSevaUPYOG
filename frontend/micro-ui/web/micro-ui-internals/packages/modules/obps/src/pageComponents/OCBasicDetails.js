@@ -24,7 +24,7 @@ const OCBasicDetails = ({ formData, onSelect, config }) => {
     // setTimeout(closeToast, 5000);
   }, showToast);
 
-  console.log("basic details data",formData, data, bpaData);
+
 
   const getOCEDCRTotalDetails = async () => {
     setData(null);

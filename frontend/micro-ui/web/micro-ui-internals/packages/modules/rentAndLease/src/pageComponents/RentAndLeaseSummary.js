@@ -5,11 +5,12 @@ import RALDocuments from "../components/RALDocument";
 
 function RentAndLeaseSummary({ t }) {
   const formData = useSelector((state) => state.rentAndLease?.RentAndLeaseNewApplicationFormReducer?.formData || {});
-  const applicantDetails = Array.isArray(formData?.applicantDetails)
+  const savedApplicants = Array.isArray(formData?.applicants)
+    ? formData.applicants
+    : Array.isArray(formData?.applicantDetails)
     ? formData.applicantDetails
-    : formData?.applicantDetails
-    ? [formData.applicantDetails]
-    : [];
+    : formData?.applicantDetails?.applicants || [];
+  const applicantDetails = savedApplicants.filter((owner) => owner?.status !== false && owner?.status !== "false");
 
   const property = formData?.propertyDetails || {};
   const standardDocs = formData?.documents?.documents?.documents || [];
@@ -133,6 +134,10 @@ function RentAndLeaseSummary({ t }) {
               <h3 className="ral-summary-heading">{t("Additional Details")}</h3>
             </div>
             {renderRow(t("Arrears"), property?.arrear)}
+            {renderRow(t("Arrear GST"), property?.arrearGST ?? "-")}
+            {renderRow(t("Arrear Penalty"), property?.arrearPenalty ?? "-")}
+            {renderRow(t("Future Penalty"), property?.futurePenalty ?? "-")}
+
             {property?.lastBillingPeriod && renderRow(t("Last Billing Period"), property.lastBillingPeriod)}
             {property?.lastPaidUpto && renderRow(t("Last Paid Upto"), property.lastPaidUpto)}
             {property?.lastRentRevisedDate && renderRow(t("Last Rent Revised Date"), property.lastRentRevisedDate)}

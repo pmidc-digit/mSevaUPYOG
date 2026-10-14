@@ -20,7 +20,7 @@ const SelectPropertySubtype = ({ config, onSelect, t, userType, formData }) => {
   const [subtype, setSubtype] = useState();
 
   const [subtypeOptions, setSubtypeOptions] = useState([]);
-  console.log("propertyType",formData)
+
   formData.propertyType = property?.usageCategory || formData.propertyType
   const { propertyType } =formData || {};
 

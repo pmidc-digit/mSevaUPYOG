@@ -41,14 +41,10 @@ import {
 } from "../../../constants/razorpayConstants";
 import { gatewayType } from "../../../constants/gatewayTypeConstants";
 
+const createGatewayCallbackUrl = (originalCallbackUrl, gateway) => {
+  const callbackBase = process.env.REACT_APP_GATEWAY_CALLBACK_BASE_URL || window.location.origin;
 
-const createGatewayCallbackUrl = (originalCallbackUrl , gateway) => {
-  const callbackBase = process.env.REACT_APP_GATEWAY_CALLBACK_BASE_URL || window.location.origin
-
-  const callbackUrl = new URL(
-    `/customization/open/punjab-pt/${gateway.toLowerCase()}/confirm`,
-    callbackBase
-  );
+  const callbackUrl = new URL(`/customization/open/punjab-pt/${gateway.toLowerCase()}/confirm`, callbackBase);
 
   callbackUrl.searchParams.set("original_callback", originalCallbackUrl);
 
@@ -58,10 +54,7 @@ const createGatewayCallbackUrl = (originalCallbackUrl , gateway) => {
 const getPaymentGatewayConfig = (mdmsData, businessService) => {
   const gateways = mdmsData?.PAYMENT?.PaymentGateway || [];
 
-  return gateways?.find(
-    ({ active, businessService: services }) =>
-      active === true && services?.includes(businessService)
-  );
+  return gateways?.find(({ active, businessService: services }) => active === true && services?.includes(businessService));
 };
 
 export const SelectPaymentType = (props) => {
@@ -92,8 +85,9 @@ export const SelectPaymentType = (props) => {
   const moduleName = "testing"; //need to change this back to testing -> tenantId?.split(".")?.[1];
   // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
   // const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
-  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [{ name: "PaymentGateway", "filter": `$.*.[?(@.businessService contains '${businessService}')]` }]); // will change back to pb.testing -> tenantId
-
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [
+    { name: "PaymentGateway", filter: `$.*.[?(@.businessService contains '${businessService}')]` },
+  ]); // will change back to pb.testing -> tenantId
 
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
@@ -114,7 +108,6 @@ export const SelectPaymentType = (props) => {
   const { name, mobileNumber } = state;
 
   const billDetails = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
-  console.log(billDetails, "BILL");
 
   const userOptions = ["OWNER", "OTHER"];
 
@@ -141,46 +134,39 @@ export const SelectPaymentType = (props) => {
 
     // const baseURL = process.env.REACT_APP_BASE_URL;
     const baseURL = document.location.origin;
-    console.log("BASEURLINPAYMENT", baseURL);
 
-  const originalCallbackUrl =
-    paymentAmount === 0 || billDetails.totalAmount === 0
-      ? window.location.href.includes("mcollect") || wrkflow === "WNS"
-        ? `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${
-            wrkflow === "WNS" ? consumerCode : consumerCode
-          }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
-        : `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${
+    const originalCallbackUrl =
+      paymentAmount === 0 || billDetails.totalAmount === 0
+        ? window.location.href.includes("mcollect") || wrkflow === "WNS"
+          ? `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS" ? consumerCode : consumerCode}/${tenantId}?workflow=${
+              wrkflow === "WNS" ? wrkflow : "mcollect"
+            }`
+          : `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${
+              wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
+            }/${tenantId}?propertyId=${consumerCode}`
+        : window.location.href.includes("mcollect") || wrkflow === "WNS"
+        ? `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS" ? consumerCode : consumerCode}/${tenantId}?workflow=${
+            wrkflow === "WNS" ? wrkflow : "mcollect"
+          }`
+        : `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${
             wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
-          }/${tenantId}?propertyId=${consumerCode}`
-      : window.location.href.includes("mcollect") || wrkflow === "WNS"
-      ? `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${
-          wrkflow === "WNS" ? consumerCode : consumerCode
-        }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
-      : `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${
-          wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
-        }/${tenantId}?propertyId=${consumerCode}`;
+          }/${tenantId}?propertyId=${consumerCode}`;
 
-  const paymentGatewayConfig = getPaymentGatewayConfig(
-    menuList,
-    businessService
-  );
+    const paymentGatewayConfig = getPaymentGatewayConfig(menuList, businessService);
 
-  if (!paymentGatewayConfig) {
-    setPaymentLoading(false);
-    setShowToast({
-      key: true,
-      label: "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER",
-    });
-    return;
-  }
+    if (!paymentGatewayConfig) {
+      setPaymentLoading(false);
+      setShowToast({
+        key: true,
+        label: "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER",
+      });
+      return;
+    }
 
-  const paymentConfig = {
-    gateway: paymentGatewayConfig.gateway,
-    callbackUrl: createGatewayCallbackUrl(
-    originalCallbackUrl,
-    paymentGatewayConfig?.gateway
-  ),
-  };
+    const paymentConfig = {
+      gateway: paymentGatewayConfig.gateway,
+      callbackUrl: createGatewayCallbackUrl(originalCallbackUrl, paymentGatewayConfig?.gateway),
+    };
 
     const filterData = {
       Transaction: {
@@ -323,17 +309,21 @@ export const SelectPaymentType = (props) => {
       //     makePayment(gatewayParam.txURL,newForm);
 
       //   } catch (e) {
-      //     console.log("Error in payment redirect ", e);
+
       //     //window.location = redirectionUrl;
       //   }
       // }
       // window.location = redirectUrl;
 <<<<<<< HEAD
       const selectedGateway = data?.Transaction?.gateway || paymentConfig.gateway;
-      
-       if (selectedGateway === gatewayType.RAZORPAY || selectedGateway === gatewayType.OBPASRAZORPAY ||selectedGateway?.toUpperCase()?.includes("RAZORPAY")) {
+
+      if (
+        selectedGateway === gatewayType.RAZORPAY ||
+        selectedGateway === gatewayType.OBPASRAZORPAY ||
+        selectedGateway?.toUpperCase()?.includes("RAZORPAY")
+      ) {
         displayRazorpay(data);
-      }else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
+      } else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
         //redirection to non razorpay payment gateway url provided by transaction api response
         const link = document.createElement("a");
         link.href = redirectUrl;
@@ -343,9 +333,10 @@ export const SelectPaymentType = (props) => {
         document.body.appendChild(link);
         link.click();
         link.remove();
-      }else if (redirectUrl) {
+      } else if (redirectUrl) {
         //redirection to non razorpay payment gateway url provided by transaction api response
         window.location.href = redirectUrl;
+<<<<<<< HEAD
 =======
       if (d?.paymentType === gatewayType.RAZORPAY && redirectUrl?.includes("razorpay")) {
         displayRazorpay(data);
@@ -354,6 +345,9 @@ export const SelectPaymentType = (props) => {
         window.location = redirectUrl;
 >>>>>>> MicroUI_PROD_Vite
       }else {
+=======
+      } else {
+>>>>>>> MicroUI_UAT_Vite
         //Do Nothing
         setPaymentLoading(false);
         setShowToast({ key: true, label: t("CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER") });
@@ -444,7 +438,7 @@ export const SelectPaymentType = (props) => {
   if (authorization === "true" && !userInfo.access_token) {
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
+    window.location.href = `/digit-ui/citizen/select-language?from=${encodeURIComponent(pathname + search)}`;
   }
 
   if (paymentLoading || isPaymentLoading || isLoading || isFireNOCLoading) {
@@ -457,107 +451,170 @@ export const SelectPaymentType = (props) => {
 
   return (
     <React.Fragment>
-      {/* <BackButton>{t("CS_COMMON_BACK")}</BackButton> */}
-      <form style={{ padding: "20px" }} onSubmit={handleSubmit(onSubmit)}>
-        <Header>{t("PAYMENT_CS_HEADER")}</Header>
-        <Card>
-          <div className="payment-amount-info" style={{ marginBottom: "26px" }}>
-            <CardLabel className="dark">{t("PAYMENT_CS_TOTAL_AMOUNT_DUE")}</CardLabel>
-            <CardSectionHeader>
-              {" "}
+      <div className="payment-container">
+        <div className="payment-form-wrapper">
+          {/* Page Title */}
+
+          {/* Breadcrumb */}
+
+          {/* Amount Section */}
+          <div className="payment-amount-section">
+            <label className="payment-amount-label">{t("PAYMENT_CS_TOTAL_AMOUNT_DUE")}</label>
+            <div className="payment-amount-value">
               ₹ {paymentAmount !== undefined ? Number(paymentAmount).toFixed(2) : Number(billDetails?.totalAmount).toFixed(2)}
-            </CardSectionHeader>
-          </div>
-          <CardLabel>{t("PAYMENT_CS_SELECT_METHOD")}</CardLabel>
-          {menuList?.PAYMENT?.PaymentGateway?.length && (
-            <Controller
-              name="paymentType"
-              defaultValue={menuList?.PAYMENT?.PaymentGateway?.[0]?.gateway}
-              control={control}
-              render={(props) => (
-                <RadioButtons
-                  selectedOption={props.value}
-                  options={menuList?.PAYMENT?.PaymentGateway?.map((item) => item?.gateway)}
-                  onSelect={props.onChange}
-                />
-              )}
-            />
-          )}
-        </Card>
-        <Card>
-          <div className="payment-amount-info" style={{ marginBottom: "26px" }}>
-            <CardLabel className="dark">{t("PAYMENT_CS_PAYER_DETAILS")}</CardLabel>
-          </div>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAID_BY")} * `}</CardLabel>
-            <Controller
-              name={"paidBy"}
-              defaultValue={userOptions[0]}
-              control={control}
-              render={(props) => (
-                <Dropdown
-                  selected={props.value}
-                  option={userOptions}
-                  select={(val) => {
-                    if (val === "OWNER") {
-                      props.onChange(val);
-                      setValue("name", name || billDetails?.payerName || "");
-                      setValue("mobileNumber", mobileNumber || billDetails?.mobileNumber || "");
-                    } else if (val === "OTHER") {
-                      props.onChange(val);
-                      setValue("name", "");
-                      setValue("mobileNumber", "");
-                    }
-                  }}
-                />
-              )}
-            />
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAYER_NAME")} * `}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"name"}
-                defaultValue={name || billDetails?.payerName || ""}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                    }}
-                  />
-                )}
-              />
             </div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAYER_NUMBER")} * `}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"mobileNumber"}
-                defaultValue={mobileNumber || billDetails?.mobileNumber || ""}
-                render={(props) => (
-                  <MobileNumber
-                    value={props.value}
-                    onChange={(e) => {
-                      props.onChange(e);
-                    }}
-                    componentInFront={<div className="employee-card-input employee-card-input--front numberdisplay">+91</div>}
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Payment Method Card */}
+            <div className="payment-card">
+              <div className="payment-card-title">
+                <div className="payment-card-title-icon">1</div>
+                {t("PAYMENT_CS_SELECT_METHOD")}
+              </div>
+              {menuList?.PAYMENT?.PaymentGateway?.length && (
+                <div className="payment-methods">
+                  <Controller
+                    name="paymentType"
+                    defaultValue={menuList?.PAYMENT?.PaymentGateway?.[0]?.gateway}
+                    control={control}
+                    render={(props) => (
+                      <>
+                        {menuList?.PAYMENT?.PaymentGateway?.map((item) => (
+                          <label key={item?.gateway} className={`payment-method-option ${props.value === item?.gateway ? "selected" : ""}`}>
+                            <input
+                              type="radio"
+                              name="paymentType"
+                              value={item?.gateway}
+                              checked={props.value === item?.gateway}
+                              onChange={() => props.onChange(item?.gateway)}
+                            />
+                            <div className="payment-method-content">
+                              <div className="payment-method-name">{item?.gateway}</div>
+                              <div className="payment-method-desc">Secure payment gateway</div>
+                            </div>
+                          </label>
+                        ))}
+                      </>
+                    )}
                   />
-                )}
-              />
+                </div>
+              )}
             </div>
-          </LabelFieldPair>
-        </Card>
-        {!showToast && (
-          <Card>
-            <SubmitBar label={t("PAYMENT_CS_BUTTON_LABEL")} submit={true} />
-          </Card>
-        )}
-      </form>
-      <InfoBanner label={t("CS_COMMON_INFO")} text={t("CS_PAYMENT_REDIRECT_NOTICE")} />
+
+            {/* Payer Details Card */}
+            <div className="payment-card">
+              <div className="payment-card-title">
+                <div className="payment-card-title-icon">2</div>
+                {t("PAYMENT_CS_PAYER_DETAILS")}
+              </div>
+
+              <div className="payment-form-group">
+                <label className="payment-form-label">
+                  {t("PAYMENT_CS_PAID_BY")} <span className="payment-required">*</span>
+                </label>
+                <Controller
+                  name={"paidBy"}
+                  defaultValue={userOptions[0]}
+                  control={control}
+                  render={(props) => (
+                    <select
+                      className="payment-form-select"
+                      value={props.value}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        props.onChange(val);
+                        if (val === "OWNER") {
+                          setValue("name", name || billDetails?.payerName || "");
+                          setValue("mobileNumber", mobileNumber || billDetails?.mobileNumber || "");
+                        } else if (val === "OTHER") {
+                          setValue("name", "");
+                          setValue("mobileNumber", "");
+                        }
+                      }}
+                    >
+                      {userOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+              </div>
+
+              <div className="payment-form-group">
+                <label className="payment-form-label">
+                  {t("PAYMENT_CS_PAYER_NAME")} <span className="payment-required">*</span>
+                </label>
+                <Controller
+                  control={control}
+                  name={"name"}
+                  defaultValue={name || billDetails?.payerName || ""}
+                  render={(props) => (
+                    <input
+                      type="text"
+                      className="payment-form-input"
+                      value={props.value}
+                      onChange={(e) => {
+                        props.onChange(e.target.value);
+                      }}
+                      placeholder="Enter your full name"
+                      required
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="payment-form-group">
+                <label className="payment-form-label">
+                  {t("PAYMENT_CS_PAYER_NUMBER")} <span className="payment-required">*</span>
+                </label>
+                <div className="payment-mobile-input-wrapper">
+                  <div className="payment-country-code">+91</div>
+                  <Controller
+                    control={control}
+                    name={"mobileNumber"}
+                    defaultValue={mobileNumber || billDetails?.mobileNumber || ""}
+                    render={(props) => (
+                      <input
+                        type="tel"
+                        className="payment-form-input"
+                        value={props.value}
+                        onChange={(e) => {
+                          props.onChange(e.target.value);
+                        }}
+                        placeholder="98765 43210"
+                        inputMode="numeric"
+                        required
+                      />
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Info Banner */}
+            <div className="payment-info-banner">
+              <strong>Secure Payment:</strong> Your payment information is encrypted and secured with industry-standard protocols.
+            </div>
+
+            {/* Submit Button Group */}
+            {!showToast && (
+              <div className="payment-button-group">
+                <button type="button" className="payment-cancel-btn">
+                  Cancel
+                </button>
+                <button type="submit" className="payment-submit-btn">
+                  {t("PAYMENT_CS_BUTTON_LABEL")}
+                </button>
+              </div>
+            )}
+          </form>
+        </div>
+      </div>
+
+      {/* Toasts */}
       {showToast && (
         <Toast
           error={showToast.key}

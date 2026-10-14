@@ -1,6 +1,7 @@
 import React from "react";
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const Background = ({children }) => {
 =======
 const Background = ({ banner, children }) => {
@@ -14,6 +15,13 @@ const Background = ({ banner, children }) => {
         flexDirection: "column",
         width: "100%",
       }}
+=======
+const Background = ({ children, className = "" }) => {
+  return (
+    <div
+      className={`employee-login-page ${className}`}
+      style={{ zIndex: "2" }}
+>>>>>>> MicroUI_UAT_Vite
     >
 <<<<<<< HEAD
 =======

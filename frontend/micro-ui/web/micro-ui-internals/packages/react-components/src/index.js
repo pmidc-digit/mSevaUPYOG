@@ -8,7 +8,6 @@ import Body from "./atoms/Body";
 import BreadCrumb from "./atoms/BreadCrumb";
 import BreakLine from "./atoms/BreakLine";
 import ButtonSelector from "./atoms/ButtonSelector";
-import MarqueeBanner from "./atoms/MarqueeBanner";
 import Card from "./atoms/Card";
 import CardCaption from "./atoms/CardCaption";
 import CardHeader from "./atoms/CardHeader";
@@ -180,7 +179,7 @@ import {
   NOCIcon,
   ADSIcone,
   SVIcon,
-  CHBIcon
+  CHBIcon,
 } from "./atoms/svgindex";
 import Table from "./atoms/Table";
 import TelePhone from "./atoms/TelePhone";
@@ -267,7 +266,6 @@ export {
   CardSectionSubText,
   SubmitBar,
   ButtonSelector,
-  MarqueeBanner,
   LinkButton,
   StatusTable,
   Row,
@@ -472,5 +470,6 @@ export {
   FirenocIcon,
   InfoIcon,
   LoginIcon,
-  CitizenConsentForm
+  CitizenConsentForm,
 };
+export { default as PaymentHistory } from "./atoms/PaymentHistory";

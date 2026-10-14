@@ -30,7 +30,7 @@ export const CollectPayment = (props) => {
   }
 
   const isFireNocPayment = businessService === "FIRENOC";
-  console.log("businessService", businessService);
+
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { isFireNOCLoading, data: fireNOC } = Digit.Hooks.firenoc.useFIRENOCApplicationDetails({
@@ -45,7 +45,7 @@ export const CollectPayment = (props) => {
   const { data: paymentdetails, isLoading } = Digit.Hooks.useFetchPayment({ tenantId: tenantId, consumerCode, businessService });
   const bill = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
 
-  console.log("bill===", bill);
+
 
   const { data: applicationData } = Digit.Hooks.fsm.useSearch(
     tenantId,
@@ -84,7 +84,7 @@ export const CollectPayment = (props) => {
   ];
   const [selectedPaymentAmountType, setSelectedPaymentAmountType] = useState(paymentAmountOptions[0]);
 
-  console.log("isPetService", isPetService);
+
 
   useEffect(() => {
     if (paymentdetails?.Bill && paymentdetails.Bill.length === 0) {
@@ -449,7 +449,7 @@ export const CollectPayment = (props) => {
     payerName: bill?.payerName || formState?.payerName || "",
   });
 
-  console.log("ModuleWorkflow", ModuleWorkflow);
+
 
   const getFormConfig = () => {
     const isGCService = businessService?.startsWith("GC");

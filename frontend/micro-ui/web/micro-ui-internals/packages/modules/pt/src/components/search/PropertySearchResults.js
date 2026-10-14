@@ -105,7 +105,7 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
         Header: t("PT_COMMON_TABLE_COL_PT_ID"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log("row====", row);
+
           return (
             <div>
               <span className="link">
@@ -228,6 +228,11 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     });
   };
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> MicroUI_UAT_Vite
   const tableData = Object.values(data?.Properties || {}) || [];
 
   if (ptSearchConfig?.ptSearchCount && payload.locality && tableData && tableData.length > ptSearchConfig.ptSearchCount) {
@@ -235,6 +240,10 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     return null;
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   return (
     <React.Fragment>
       {data?.Properties?.length === 0 ? (

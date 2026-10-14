@@ -43,7 +43,7 @@ export const AppModules = ({ stateCode, userType, modules, appTenants }) => {
   // window.Digit.SessionStorage.set("User", userDetails);
 
   if (!employeeInfo || !employeeToken) {
-    return <Redirect to={{ pathname: "/digit-ui/employee/user/login", state: { from: location.pathname + location.search } }} />;
+    return <Redirect to={{ pathname: "/digit-ui/select-language", state: { from: location.pathname + location.search, portal: "employee" } }} />;
   }
 
   const appRoutes = modules.map(({ code, tenants }, index) => {
@@ -64,7 +64,7 @@ export const AppModules = ({ stateCode, userType, modules, appTenants }) => {
       <Switch>
         {appRoutes}
         <Route path={`${path}/login`}>
-          <Redirect to={{ pathname: "/digit-ui/employee/user/login", state: { from: location.pathname + location.search } }} />
+          <Redirect to={{ pathname: "/digit-ui/select-language", state: { from: location.pathname + location.search, portal: "employee" } }} />
         </Route>
         <Route path={`${path}/forgot-password`}>
           <ForgotPassword />

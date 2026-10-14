@@ -285,30 +285,36 @@ const App = ({ path }) => {
   const CLUSearchApplication = Digit?.ComponentRegistryService?.getComponent("CLUSearchApplication");
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
+  const useSharedPageContainer = [
+    `${path}/edcr/inbox`,
+    `${path}/bpa/inbox`,
+    `${path}/search/clu-application`,
+    `${path}/layout/search-application`,
+  ].includes(location.pathname.replace(/\/$/, ""));
+  const PageContainer = useSharedPageContainer ? AppContainer : React.Fragment;
   return (
     <span
-      className={"ws-citizen-wrapper"}
+      className={useSharedPageContainer ? "pgr-citizen-wrapper" : "ws-citizen-wrapper"}
       style={{
         width: "100%",
-        paddingRight: "25px",
-        paddingLeft: "25px",
-        ...(window.location.href.includes("inbox") ||
+        paddingRight: useSharedPageContainer ? 0 : "25px",
+        paddingLeft: useSharedPageContainer ? 0 : "25px",
+        ...(!useSharedPageContainer && (window.location.href.includes("inbox") ||
         window.location.href.includes("search/application") ||
-        window.location.href.includes("search/clu-application")
+        window.location.href.includes("search/clu-application"))
           ? { paddingTop: "56px" }
           : {}),
       }}
     >
-      <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop: "20px" } : {}}>
+      <PageContainer>
+      <div className="citizen-breadcrumb-wrapper">
         <OBPSBreadCrumbs location={location} />
       </div>
       <Switch>
         <PrivateRoute
           path={`${path}/layout/search-application`}
           component={(props) => (
-            <AppContainer>
               <LayoutSearchApplication {...props} />
-            </AppContainer>
           )}
         />
         <PrivateRoute
@@ -405,9 +411,7 @@ const App = ({ path }) => {
         <PrivateRoute
           path={`${path}/search/clu-application`}
           component={(props) => (
-            <AppContainer>
               <CLUSearchApplication {...props} />
-            </AppContainer>
           )}
         />
         <PrivateRoute
@@ -530,17 +534,13 @@ const App = ({ path }) => {
         <PrivateRoute
           path={`${path}/bpa/inbox`}
           component={(props) => (
-            <AppContainer>
               <Inbox {...props} parentRoute={path} />
-            </AppContainer>
           )}
         />
         <PrivateRoute
           path={`${path}/edcr/inbox`}
           component={(props) => (
-            <AppContainer>
               <EdcrInbox {...props} parentRoute={path} />
-            </AppContainer>
           )}
         />
         <PrivateRoute
@@ -617,6 +617,7 @@ const App = ({ path }) => {
         />
         <PrivateRoute path={`${path}/filestore/:id/:drawing`} component={BPASanctionEsignResponse} />
       </Switch>
+      </PageContainer>
     </span>
   );
 };

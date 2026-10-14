@@ -17,7 +17,7 @@ import QuestionsSection from "./QuestionsSection";
 
 
 const SurveyForm = ({ t, index, questionStatement, type, uuid, qorder, required, options, disableInputs, dispatch, isPartiallyEnabled, addOption, formDisabled, controlSurveyForm }) => {
-  
+
 
   const dropdownOptions = [
     {
@@ -65,7 +65,7 @@ const SurveyForm = ({ t, index, questionStatement, type, uuid, qorder, required,
 
   const selectedType = dropdownOptions.filter(option => option?.value === (typeof type === "object" ? type.value : type))
   const isInputDisabled = window.location.href.includes("/employee/engagement/")
-  
+
   const [surveyQuestionConfig, setSurveyQuestionConfig] = useState({
     questionStatement, type: type ? selectedType?.[0]  : {
       title: t("SHORT_ANSWER_TYPE"),
@@ -110,11 +110,11 @@ const SurveyForm = ({ t, index, questionStatement, type, uuid, qorder, required,
     dispatch({ type: "updateForm", payload: { index: index, formConfig: surveyQuestionConfig } });
   }, [surveyQuestionConfig]);
 
-   
+
 
   const renderQuestionForm =()=>{
    if(surveyQuestionConfig.Questype!==undefined){
-    console.log("hi")
+
    }
     return surveyQuestionConfig.Questype!==undefined? 
     // <QuestionsSection t={t}  QuestionOptions={QuestionOptions} setSurveyQuestionConfig={setSurveyQuestionConfig} 
@@ -187,8 +187,8 @@ const SurveyForm = ({ t, index, questionStatement, type, uuid, qorder, required,
                 </div>
     </div>
   : null
- 
-    
+
+
   }
 
 
@@ -200,7 +200,7 @@ const SurveyForm = ({ t, index, questionStatement, type, uuid, qorder, required,
     switch (type?.value) {
       case "ADD_QUESTION":
     return(
-      
+
       <div>
       <Dropdown
         t={t}
@@ -431,7 +431,7 @@ const SurveyForm = ({ t, index, questionStatement, type, uuid, qorder, required,
         //       </div>;
     }
   };
-  
+
   return (
     <div className="newSurveyForm_wrapper">
       <span className="newSurveyForm_quesno">
@@ -462,9 +462,9 @@ const SurveyForm = ({ t, index, questionStatement, type, uuid, qorder, required,
               })}
             />
       </span>
-   
-   
-         
+
+
+
       <span className="newSurveyForm_mainsection">
         <div>
       <Dropdown
@@ -576,7 +576,7 @@ const SurveyForm = ({ t, index, questionStatement, type, uuid, qorder, required,
           </div>
           <div className="newSurveyForm_seprator" />
           <div className={`pointer ${disableInputs ? 'disabled-btn':''}`} onClick={() =>{ setSurveyQuestionConfig((prevState) => ({ ...prevState, Questype: {value:"ADD_QUESTION",index:qusIndex+1} })); setQusIndex(qusIndex+1)}}>
-       
+
           <div className="tooltip" /* style={{position:"relative"}} */>
               <div style={{display: "flex", /* alignItems: "center", */ gap: "0 4px"}}>
             <DustbinIcon />

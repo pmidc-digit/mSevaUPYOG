@@ -51,7 +51,7 @@ const SVCard = () => {
 
   const propsForModuleCard = {
     Icon: <PropertyHouse />,
-    moduleName: <div style={{ width: "200px", wordWrap: "break-word" }}>{t("MODULE_SV")}</div>,
+    moduleName: <div style={{ width: "200px", wordWrap: "break-word" }}>{t("Street Vending")}</div>,
     kpis: [
       {
         count: total?.totalCount,

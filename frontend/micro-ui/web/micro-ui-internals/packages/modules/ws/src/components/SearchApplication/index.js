@@ -6,10 +6,10 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import MobileSearchApplication from "./MobileSearchApplication";
 const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, businessService, isLoading }) => {
-  
+
   const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_ADD_REBATE_DATA", {});
   const [sessionBillFormData, setSessionBillFormData, clearBillSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_BILL_ADD_REBATE_DATA", {});
-  
+
   const replaceUnderscore = (str) => {
     str = str.replace(/_/g, " ");
     return str;
@@ -83,7 +83,7 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
               row?.original?.["applicationType"] == "MODIFY_WATER_CONNECTION" ||
               row?.original?.["applicationType"] == "DISCONNECT_WATER_CONNECTION" ||
               row?.original?.["applicationType"] == "WATER_RECONNECTION"
-              
+
             ) {
               service = "WATER"
             } else if (
@@ -94,7 +94,7 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
             ) {
               service = "SEWERAGE"
             }
-          
+
           return (
             <div>
               {row.original["connectionNo"] ? (
@@ -135,7 +135,7 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
           ) {
             service = "SEWERAGE"
           }
-        
+
           if (row.original["applicationType"] === "MODIFY_SEWERAGE_CONNECTION" || row.original["applicationType"] === "MODIFY_WATER_CONNECTION") {
             let application = "application";
             if (row?.original?.["applicationType"]?.toUpperCase()?.includes("DISCONNECT")) {
@@ -212,17 +212,17 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
     ],
     []
   );
-  
-  console.log("Response Data in Search WS applications: \n",data);
-  console.log("count",count)
-  console.log("isResultOk",resultOk)
+
+
+
+
   return (
     <>
       <Header styles={{ fontSize: "32px" }}>{businessService === "WS" ? t("WS_WATER_SEARCH_APPLICATION_SUB_HEADER") : t("WS_SEWERAGE_SEARCH_APPLICATION_SUB_HEADER")}</Header>
       < Card className={"card-search-heading"}>
         <span style={{ color: "#505A5F" }}>{t("WS_INFO_VALIDATION")}</span>
       </Card>
-      
+
       <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit} >
         <SearchFields {...{ register, control, reset, tenantId, t,businessService }} />
       </SearchForm>

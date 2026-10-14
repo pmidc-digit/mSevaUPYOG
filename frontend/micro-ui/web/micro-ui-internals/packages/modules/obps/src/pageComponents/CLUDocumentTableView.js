@@ -42,7 +42,7 @@ const CLUDocumentTableView = ({ documents }) => {
     };
   }, [documents]);
 
-  console.log("documentsOBJ",documents, documentObj)
+
 
   const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj, {
     enabled: documents?.length > 0 ? true : false,
@@ -51,7 +51,13 @@ const CLUDocumentTableView = ({ documents }) => {
   const mappedDocuments = documents?.map((doc) => {
     const docUid = doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || "";
     const { documentType } = doc;
-    const url = urlsList?.pdfFiles?.[docUid];
+    const url =
+      urlsList?.pdfFiles?.[doc?.documentAttachment] ||
+      urlsList?.pdfFiles?.[doc?.filestoreId] ||
+      urlsList?.pdfFiles?.[doc?.fileStoreId] ||
+      urlsList?.pdfFiles?.[docUid] ||
+      urlsList?.pdfFiles?.[doc?.documentUid] ||
+      doc?.fileUrl;
     return {
       documentUid: docUid,
       documentType,
@@ -68,7 +74,7 @@ const CLUDocumentTableView = ({ documents }) => {
     }));
   }, [mappedDocuments]);
 
-  console.log("documents", documents, urlsList)
+
 
   if(urlsListLoading) return <Loader />
 

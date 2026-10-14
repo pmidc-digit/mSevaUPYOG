@@ -41,7 +41,7 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick }) => {
       catArr.push(obj);
     });
 
-    console.log("survey det", surveyDetails);
+
     let startDateObj = new Date(`${surveyDetails.fromDate} ${surveyDetails.fromTime}`);
     let startDate = startDateObj.getTime();
     let endDateObj = new Date(`${surveyDetails.toDate} ${surveyDetails.toTime}`);
@@ -79,10 +79,10 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick }) => {
         }
       });
     } catch (error) {
-      console.log(error);
+
     }
 
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
     onGoNext();
   }
 
@@ -92,7 +92,7 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in SurveryFormSummary: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
 
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateSurveyForm(config.key, data));
@@ -105,7 +105,7 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick }) => {
       : {};
   });
 
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
+
 
   return (
     <React.Fragment>

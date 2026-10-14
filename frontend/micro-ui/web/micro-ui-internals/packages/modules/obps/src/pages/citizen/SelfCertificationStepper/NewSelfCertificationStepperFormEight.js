@@ -51,7 +51,7 @@ const NewSelfCertificationStepFormEight = ({ config, onGoNext, onBackClick }) =>
   });
 
   function goNext(data) {
-    console.log("NewSelfCertificationStepFormFour", data)
+
     dispatch(UPDATE_OBPS_FORM("Timestamp", data));
     // onGoNext();
   }
@@ -65,7 +65,7 @@ const NewSelfCertificationStepFormEight = ({ config, onGoNext, onBackClick }) =>
     setError("");
   };
 
-  console.log("me rendering instead", JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")), currentStepData);
+
 
 
   if(isLoading) return (<Loader />)

@@ -14,7 +14,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log("tenantId", tenantId);
+
 
   const {
     control,
@@ -71,7 +71,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setShowInfo(true);
       return response;
     } catch (error) {
-      console.log("error", error);
+
       setLoader(false);
     }
   };
@@ -115,7 +115,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
     // Calculate final amount safely
     const finalAmount = numericAmount * slotCount;
-    // console.log("purpose", purpose);
+
     const payload = {
       hallsBookingApplication: {
         tenantId,
@@ -146,13 +146,13 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         },
       },
     };
-    console.log("finalpayload", payload);
+
     goNext(payload);
   };
 
   useEffect(() => {
     const formattedData = currentStepData?.ownerDetails?.hallsBookingApplication;
-    console.log("formattedData", formattedData);
+
     // Restore siteId and trigger hall filtering
     if (formattedData) {
       // Clear all errors first

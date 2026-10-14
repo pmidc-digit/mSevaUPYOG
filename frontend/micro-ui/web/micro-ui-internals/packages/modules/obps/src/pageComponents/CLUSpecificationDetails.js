@@ -19,10 +19,10 @@ const CLUSpecificationDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
 
   useEffect(() => {
-    console.log("currentStepData4", currentStepData);
+
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
-      //console.log("coming here", formattedData);
+
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });

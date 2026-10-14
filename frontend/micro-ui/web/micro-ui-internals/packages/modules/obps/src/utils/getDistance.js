@@ -52,14 +52,14 @@ export const getDrivingDistance = async (lat1, lon1, lat2, lon2) => {
             const distanceMeters = response.rows[0].elements[0].distance.value;
             resolve(distanceMeters); // meters
           } else {
-            console.warn("Google API failed, falling back to Haversine:", status);
+
             resolve(haversineDistance(lat1, lon1, lat2, lon2)); // meters
           }
         }
       );
     });
   } catch (err) {
-    console.error("Google Maps not available, using Haversine:", err);
+
     return haversineDistance(lat1, lon1, lat2, lon2); // meters
   }
 };

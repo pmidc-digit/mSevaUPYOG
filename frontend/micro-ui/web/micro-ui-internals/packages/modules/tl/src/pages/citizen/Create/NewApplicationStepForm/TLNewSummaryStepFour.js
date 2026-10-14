@@ -91,11 +91,11 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
       return () => clearTimeout(timer);
     }
   }, [showToast]);
-  
+
 
   // Function to handle the "Next" button click
   // const goNext = (data) => {
-  
+
 
   //   if (!data?.SummaryTL?.consentValue) {
   //     setError(`Please select checkbox`);
@@ -108,7 +108,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   //     // history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
   //     history.replace(`/digit-ui/citizen/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
   //   } else {
-  //     // console.error("Submission failed, not moving to next step.");
+
   //   }
   //   // onGoNext();
   // };
@@ -122,7 +122,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     const res = await onSubmit(formData?.CreatedResponse);
-    
+
     if (res) {
       history.replace(`/digit-ui/citizen/tl/response/${formData?.CreatedResponse?.applicationNumber}`);
     } else {

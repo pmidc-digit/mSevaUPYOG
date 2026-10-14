@@ -39,11 +39,11 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     // (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
     const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
     const nameParts = fullName;
-    //console.log("firstName here", nameParts[0]);
+
     return nameParts.length ? nameParts : "";
   });
 
-  console.log("disable state", disable, userDetails, tenantId);
+
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(true);
@@ -73,9 +73,9 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   });
 
   const status = formData?.result?.Licenses?.[0]?.status;
-  console.log(formData, "EDIT FORMDATA");
+
   const isCitizenEditable = status === "CITIZEN_ACTION_REQUIRED";
-  console.log(isCitizenEditable, "EDIT");
+
 
   // get user info from api
   const getUserInfo = async () => {
@@ -210,10 +210,10 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
 
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
       // let fullName = `${name} ${middleName} ${lastName}`;
-      // console.log("firstName before saving",name);
-      // console.log("middleName before saving", middleName);
-      // console.log("lastName before saving", lastName);
-      // console.log("fullName here", fullName);
+
+
+
+
       let fullName = "";
       if (name?.length > 0) {
         fullName = name;
@@ -315,7 +315,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
               />
               {errorMessage?.dateOfBirth?.length>0 && (
                   <div
-                   
+
                   >
                     {errorMessage?.dateOfBirth}
                   </div>
@@ -357,7 +357,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
 
                 {errorMessage?.gender?.length>0 && (
                   <div
-                  
+
                   >
                     {errorMessage?.gender}
                   </div>
@@ -384,7 +384,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 onChange={selectEmail}
                 // disable={userInfo?.info?.emailId && !isOpenLinkFlow ? true : false}
                  disable={!isEditable && (userInfo?.info?.emailId && !isOpenLinkFlow ? true : false)}
-                
+
                 // disable={editScreen}
                 {...{
                   required: true,
@@ -395,7 +395,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
               />
               {errorMessage?.email?.length>0 && (
                   <div
-                   
+
                   >
                     {errorMessage?.email}
                   </div>

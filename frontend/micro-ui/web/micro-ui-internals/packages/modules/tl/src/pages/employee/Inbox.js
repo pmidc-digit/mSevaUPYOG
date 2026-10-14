@@ -1,8 +1,12 @@
 import { Header, Loader } from "@mseva/digit-ui-react-components";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { InboxPagination, InboxWrapper } from "../../../../templates/Inbox/components";
 import DesktopInbox from "../../components/inbox/DesktopInbox";
 import MobileInbox from "../../components/inbox/MobileInbox";
+import TLNewInboxFilters from "../../components/inbox/TLNewInboxFilters";
+import TLNewInboxSearch from "../../components/inbox/TLNewInboxSearch";
+import useTLNewInboxTableConfig from "../../components/inbox/useTLNewInboxTableConfig";
 
 const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filterComponent, isInbox }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -15,6 +19,7 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
   const [setSearchFieldsBackToOriginalState, setSetSearchFieldsBackToOriginalState] = useState(false);
   const [searchParams, setSearchParams] = useState(initialStates?.searchParams || {});
   const [totalRecords, setTotalRecords] = useState(undefined);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
 
   const ttID = localStorage.getItem("punjab-tenantId");
   const tenantIdCheck = ttID || tenantId;
@@ -32,6 +37,34 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
     filters: { ...searchParams, ...paginationParams, sortParams },
     config: {},
   });
+
+  const selectedStatuses = searchParams?.filters?.tlfilters?.applicationStatus?.map((status) => status?.code).filter(Boolean) || [];
+  const newInboxTableProps = useTLNewInboxTableConfig({ table: data?.table || [], totalCount: data?.totalCount || 0 });
+
+  const updateNewInboxSearch = (search) => {
+    setPageOffset(0);
+    setSearchParams((current) => ({ ...current, search }));
+  };
+
+  const updateNewInboxStatuses = (statusCodes) => {
+    setPageOffset(0);
+    setSearchParams((current) => ({
+      ...current,
+      filters: {
+        ...(current.filters || {}),
+        tlfilters: {
+          ...(current.filters?.tlfilters || {}),
+          applicationStatus: statusCodes.map((code) => ({ code })),
+        },
+      },
+    }));
+  };
+
+  const openNewApplication = () => {
+    sessionStorage.removeItem("tlModalShown");
+    setShowApplicationModal(false);
+    setTimeout(() => setShowApplicationModal(true), 0);
+  };
 
   // useEffect(() => {
   //   (async () => {
@@ -75,6 +108,43 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
     setPageOffset(0);
     setPageSize(Number(e.target.value));
   };
+
+  if (isInbox) {
+    const TLNewApplicationModal = Digit?.ComponentRegistryService?.getComponent("TLNewApplicationModal");
+
+    return (
+      <>
+        <InboxWrapper
+          title={t("ES_COMMON_INBOX")}
+          totalCount={data?.totalCount || 0}
+          isLoading={isLoading || isFetching}
+          tableData={data?.table || []}
+          tableProps={newInboxTableProps}
+          tableHeader="ACTION_TEST_TRADELICENSE"
+          filterSection={
+            <TLNewInboxFilters
+              statuses={data?.statuses || []}
+              selectedStatuses={selectedStatuses}
+              isInboxLoading={isLoading || isFetching}
+              onStatusChange={updateNewInboxStatuses}
+            />
+          }
+          topBar={<TLNewInboxSearch values={searchParams?.search} onSearch={updateNewInboxSearch} onNewApplication={openNewApplication} />}
+          pagination={
+            <InboxPagination
+              offset={pageOffset}
+              limit={pageSize}
+              totalCount={data?.totalCount || 0}
+              onPageSizeChange={handlePageSizeChange}
+              onNextPage={fetchNextPage}
+              onPrevPage={fetchPrevPage}
+            />
+          }
+        />
+        {showApplicationModal && TLNewApplicationModal ? <TLNewApplicationModal /> : null}
+      </>
+    );
+  }
 
   const getSearchFields = () => {
     return [

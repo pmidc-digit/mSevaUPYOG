@@ -14,7 +14,7 @@ const CustomLandingPage = () => {
     const sidebar = document.querySelector('.SideBarStatic');
     const mainContainer = document.querySelector('.main.center-container');
     const citizenContainer = document.querySelector('.citizen-home-container');
-    
+
     if (sidebar) sidebar.style.display = 'none';
     if (mainContainer) {
       mainContainer.style.padding = '0';
@@ -26,7 +26,7 @@ const CustomLandingPage = () => {
     }
 
     setIsArchitect(validateArchitectRole())
-    
+
     return () => {
       if (sidebar) sidebar.style.display = '';
       if (mainContainer) {
@@ -59,7 +59,7 @@ const CustomLandingPage = () => {
 
       return userInfo.roles.some((role) => role.code === "BPA_ARCHITECT")
     } catch (error) {
-      console.error("Error validating architect role:", error)
+
       return false
     }
   }
@@ -80,7 +80,7 @@ const CustomLandingPage = () => {
     });
   }
   }
-  
+
   const links = [
     { title: "Professional Login", url: "/digit-ui/citizen/obps/home", external: false, },
     { title: "Professional Dashboard", url: "/digit-ui/citizen/obps/home", external: true, requiresArchitect: true, },
@@ -187,10 +187,10 @@ const CustomLandingPage = () => {
         alt="Building Plan Approval"
         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }}
       />
-      
+
       {/* Dark Overlay */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.4)', zIndex: 2 }} />
-      
+
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 3, width: '100%', minHeight: '100vh', padding: '0' }}>
         <h1 style={{ color: 'white', fontSize: '3rem', fontWeight: 'bold', textShadow: '2px 2px 8px rgba(0,0,0,0.8)', margin: '0', padding: '80px 20px 0 20px', textAlign: 'center' }}>

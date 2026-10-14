@@ -171,7 +171,7 @@ const OwnerForm = (_props) => {
         if (uploadedFile) {
             setValue("fileStoreId", uploadedFile);
         }
-        console.log('test valie :- ', uploadedFile);
+
     }, [uploadedFile, register, setValue]);
 
     // const reasonDisposal = [
@@ -206,7 +206,7 @@ const OwnerForm = (_props) => {
                 setError(""); // Clear any previous errors
                 Digit.UploadServices.Filestorage("ASSET", file, Digit.ULBService.getStateId())
                     .then(response => {
-                        console.log('Upload Response:', response);
+
                         if (response?.data?.files?.length > 0) {
                             setUploadedFile(response.data.files[0].fileStoreId);
                         } else {
@@ -473,7 +473,7 @@ const OwnerForm = (_props) => {
 
                     <LabelFieldPair>
                         <CardLabel className="card-label-smaller">{t("AST_DISPOSAL_CODE")}
-                      
+
                         </CardLabel>
                         <div className="field" style={{ marginTop: "20px", marginBottom: "20px" }}>
                             <Controller
@@ -503,7 +503,7 @@ const OwnerForm = (_props) => {
 
                     <LabelFieldPair>
                         <CardLabel className="card-label-smaller">{t("AST_DISPOSE_RECIPT")}
-                       
+
                         </CardLabel>
                         <div className="field">
                             <Controller

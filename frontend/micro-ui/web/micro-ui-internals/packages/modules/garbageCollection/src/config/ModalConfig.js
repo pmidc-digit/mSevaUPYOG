@@ -14,8 +14,8 @@ export const ModalConfig = ({
   assigneeLabel,
   businessService,
 }) => {
-  console.log("action=====", action);
-  console.log("uploadedFile=====", uploadedFile);
+
+
   let checkCondtions = true;
   if (
     action?.action == "SEND_BACK_TO_CITIZEN" ||
@@ -30,7 +30,7 @@ export const ModalConfig = ({
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 
-  console.log("action=====", action.action);
+
 
   return {
     label: {

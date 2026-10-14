@@ -23,7 +23,7 @@ const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, use
         code: code,
         module: "REGISTER",
       };
-      console.log("token", code, TokenReq, sessionStorage.getItem("code_verfier_register"));
+
       // const data = await Digit.DigiLockerService.token({TokenReq })
 
       fetch("https://api.digitallocker.gov.in/public/oauth2/1/token", {
@@ -46,12 +46,12 @@ const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, use
         response.json().then((data) => registerUser(data));
       });
 
-      //console.log("datadatadata",data,newData)
+
       //sessionStorage.setItem("DigiLocker.registerToken",data?.TokenRes?.access_token)
     }
   }, []);
   const registerUser = async (response) => {
-    console.log("registerUser", response);
+
     const data = {
       dob: "1998-02-03",
       mobileNumber: response.mobile,
@@ -62,7 +62,7 @@ const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, use
 
     const res = await sendOtp({ otp: { ...data, ...TYPE_REGISTER } });
     if (res?.[1]) {
-      console.log("gggg", res?.[1], typeof res?.[1]);
+
       setErrorRegister(true);
       setTimeout(() => {
         window.location.href = window.location.href.split("/otp")[0];
@@ -75,7 +75,7 @@ const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, use
   };
   const sendOtp = async (data) => {
     try {
-      console.log("sendOtpsendOtp", data);
+
       const res = await Digit.UserService.sendOtp(data, "pg");
       return [res, null];
     } catch (err) {

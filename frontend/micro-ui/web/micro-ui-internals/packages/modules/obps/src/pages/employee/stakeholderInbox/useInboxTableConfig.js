@@ -16,7 +16,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "applicationNo",
         className: "ndc-new-table-app",
         Cell: ({ row }) => {
-          // console.log("row.original", row);
+
           return (
             <div className="ndc-new-cell-stack">
               <Link to={`${parentRoute}/stakeholder-inbox/stakeholder/${row.original["applicationId"]}`} className="ndc-new-app-link">

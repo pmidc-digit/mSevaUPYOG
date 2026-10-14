@@ -1,0 +1,10 @@
+.employee .new-inbox-topbar .new-inbox-tab.new-inbox-tab-active,
+.employee .new-inbox-topbar .new-inbox-tab.new-inbox-tab-active:hover {
+  color: #fff;
+  background: var(--mseva-green-800, #216f17);
+  border-color: var(--mseva-green-800, #216f17);
+}
+
+.employee .new-inbox-topbar .new-inbox-tab-active span {
+  color: #fff;
+}

@@ -88,8 +88,8 @@ export const PropertySearchLudhiana = ({ key = "cpt", onSelect, formData, setApi
 //   }, [ptFromApi]);
 
 useEffect(() => {
-  
-  
+
+
   if (menuList && formData?.cpt?.details?.address?.locality
     //  && !formData?.createdResponse?.additionalDetails
     ) {
@@ -139,15 +139,15 @@ useEffect(() => {
   // }, [propertyDetailsFetch]);
 
   // // useEffect(() => {
-    
+
   //   if (propertyId && (window.location.href.includes("/renew-application-details/") || window.location.href.includes("/edit-application-details/")))
-  
+
   //     setSearchPropertyId(propertyId);
   // }, [propertyId]);
 
   // useEffect(() => 
   //   {
-      
+
   //   if (isLoading == false && error && error == true && propertyDetails?.Properties?.length == 0) {
   //     
   //     setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
@@ -155,9 +155,9 @@ useEffect(() => {
   // }, [error, propertyDetails]);
 
  useEffect(() => {
-   
+
   if (propertyDetails?.propertyId) {
-  
+
     dispatch(
       UPDATE_NOCNewApplication_FORM(key, {
         ...formData[key],
@@ -212,7 +212,7 @@ useEffect(() => {
       setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
     }
   } catch (err) {
-    console.error("Property search failed", err);
+
     setError(err);
     setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
   } finally {
@@ -259,7 +259,7 @@ useEffect(() => {
 
 
   useEffect(() => {
-     
+
     if (showToast) {
       const timer = setTimeout(() => {
         setShowToast(null);

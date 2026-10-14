@@ -54,7 +54,7 @@ const NewBuildingPermit = () => {
     const response = await Digit.OBPSService.scrutinyDetails(data?.tenantId, {
       edcrNumber: data?.edcrNumber,
     });
-    console.log(response, "RESPO");
+
     history.push(`${getPath(match.path, match.params)}/acknowledgement`);
   };
 
@@ -105,7 +105,7 @@ const NewBuildingPermit = () => {
 
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
-    console.log("KeyandDataforSession", key, data, skipStep, isFromCreateApi);
+
     if (isFromCreateApi) {
       try{
       setParams(data);
@@ -144,7 +144,7 @@ const NewBuildingPermit = () => {
   const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
   const currentStepOBJ = newConfig1.find((routeObj) => routeObj.route === pathname.split("/").pop());
   const currentStep = currentStepOBJ?.step ? parseInt(currentStepOBJ?.step) : window.location.href.includes("check") ? 4 : 0;
-console.log("currentStep", currentStep, currentStepOBJ)
+
     const stepperConfig = [
   {
     head: "Applicant Details",

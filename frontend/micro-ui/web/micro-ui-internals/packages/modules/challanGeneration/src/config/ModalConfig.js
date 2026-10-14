@@ -2,9 +2,9 @@ import React from "react";
 import { UploadFile } from "@mseva/digit-ui-react-components";
 
 export const ModalConfig = ({ t, action, setAmount, getChallanData, selectFile, setUploadedFile, uploadedFile }) => {
-  console.log("getChallanData", getChallanData);
+
   const finalAmount = Math.max(getChallanData?.amount?.[0]?.amount || 0, getChallanData?.challanAmount || 0);
-  console.log("finalAmount", finalAmount);
+
   return {
     label: {
       heading: ``,

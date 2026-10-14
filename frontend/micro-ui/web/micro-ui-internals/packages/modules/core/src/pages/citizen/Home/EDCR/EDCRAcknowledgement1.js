@@ -4,7 +4,7 @@ import { Link, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const EDCRAcknowledgement1 = (props) => {
-  console.log("Hii inside core acknowledment")
+
   const { t } = useTranslation();
   const history = useHistory();
   const [showToast, setShowToast] = useState(false);
@@ -34,7 +34,7 @@ const EDCRAcknowledgement1 = (props) => {
       </Card>
     )
   }
-  
+
   sessionStorage.setItem("isPermitApplication", true);
   sessionStorage.setItem("isEDCRDisable", JSON.stringify(true));
   const edcrData = props?.data?.[0];

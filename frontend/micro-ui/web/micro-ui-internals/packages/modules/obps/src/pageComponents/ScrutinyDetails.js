@@ -304,7 +304,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   }, [t]);
 
   const onSkip = () => onSelect();
-  console.log(formData, "F++++++");
+
   const goNext = async () => {
     const userInfo = Digit.UserService.getUser();
     const accountId = userInfo?.info?.uuid;
@@ -372,7 +372,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
               ...currentStepData?.createdResponse?.landInfo,
               unit,
             };
-      console.log("OnSelectScrutiniy", subOccupancyObject, unit);
+
 
       try {
         setApiLoading(true);
@@ -398,9 +398,9 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
           alert(t("BPA_CREATE_APPLICATION_FAILED"));
           setApiLoading(false);
         }
-        console.log("APIResponse", result);
+
       } catch (e) {
-        console.log("error", e);
+
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }

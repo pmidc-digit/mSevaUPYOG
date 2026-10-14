@@ -16,7 +16,7 @@ const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
             setUrl(result.data.fileStoreIds[0].url);
           }
         } catch (error) {
-          console.error("Error fetching document:", error);
+
         }
       }
     };
@@ -45,7 +45,7 @@ function NOCSummary({ currentStepData: formData, t }) {
   const history = useHistory();
   const dispatch = useDispatch();
 
-  console.log("formData in Summary Page", formData);
+
 
   const coordinates = useSelector(function (state) {
     return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
@@ -59,7 +59,7 @@ function NOCSummary({ currentStepData: formData, t }) {
     return state?.noc?.NOCNewApplicationFormReducer?.ownerIds || [];
   });
 
-  console.log("coordinates in summary page", coordinates);
+
 
   const getFloorLabel = (index) => {
     if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
@@ -88,7 +88,7 @@ function NOCSummary({ currentStepData: formData, t }) {
   };
 
   let docs = formData?.documents?.documents?.documents;
-  console.log("documents here in summary", docs);
+
 
   const sitePhotos = formData?.documents?.documents?.documents?.filter(
     (doc) => doc.documentType === "OWNER.SITEPHOTOGRAPHONE" || doc.documentType === "OWNER.SITEPHOTOGRAPHTWO"
@@ -100,9 +100,9 @@ function NOCSummary({ currentStepData: formData, t }) {
   const propertyId = formData?.applicationDetails?.owners?.[0]?.propertyId;
   const applicationNo = formData?.apiData?.Noc?.[0]?.applicationNo;
   const submittedOn = formData?.apiData?.Noc?.[0]?.nocDetails?.additionalDetails?.SubmittedOn || Date.now();
-// console.log('applicationNo, submittedOn', applicationNo, submittedOn)
 
-//   console.log("primaryOwner and propertyId here in summary", primaryOwner, propertyId);
+
+
 
   return (
     <div className="employee-main-application-details">
@@ -246,10 +246,14 @@ function NOCSummary({ currentStepData: formData, t }) {
               <Row label={t("NOC_NOC_TYPE_LABEL")} text={formData?.siteDetails?.specificationNocType?.name || formData?.siteDetails?.specificationNocType || "N/A"} />
 
 <<<<<<< HEAD
+<<<<<<< HEAD
               {(isFinalNoc || isDigitizationOfManual) && (
 =======
               {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
 >>>>>>> MicroUI_PROD_Vite
+=======
+              {((isFinalNoc && existNocCode) || isDigitizationOfManual) && (
+>>>>>>> MicroUI_UAT_Vite
                 <React.Fragment>
                   {isFinalNoc && (
                     <Row
@@ -258,20 +262,28 @@ function NOCSummary({ currentStepData: formData, t }) {
                         formData?.siteDetails?.existingNocType?.name ||
                         formData?.siteDetails?.existingNocType?.code ||
 <<<<<<< HEAD
+<<<<<<< HEAD
                         (typeof formData?.siteDetails?.existingNocType === "string" ? formData?.siteDetails?.existingNocType : "N/A")
 =======
                         (typeof formData?.siteDetails?.existingNocType === "string" && formData?.siteDetails?.existingNocType ? formData?.siteDetails?.existingNocType : "N/A")
 >>>>>>> MicroUI_PROD_Vite
+=======
+                        (typeof formData?.siteDetails?.existingNocType === "string" && formData?.siteDetails?.existingNocType ? formData?.siteDetails?.existingNocType : "N/A")
+>>>>>>> MicroUI_UAT_Vite
                       }
                     />
                   )}
                   <Row label={t("NOC_NUMBER_LABEL")} text={formData?.siteDetails?.existingNocNumber || "N/A"} />
                   {(isOffline || isDigitizationOfManual) && (
 <<<<<<< HEAD
+<<<<<<< HEAD
                     <Row label={t("NOC_DATE_LABEL")} text={formData?.siteDetails?.existingNocDate || "N/A"} />
 =======
                     <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(formData?.siteDetails?.existingNocDate) || "N/A"} />
 >>>>>>> MicroUI_PROD_Vite
+=======
+                    <Row label={t("NOC_DATE_LABEL")} text={convertToDDMMYYYY(formData?.siteDetails?.existingNocDate) || "N/A"} />
+>>>>>>> MicroUI_UAT_Vite
                   )}
                   {formData?.siteDetails?.existingNocDocument && (
                     <Row

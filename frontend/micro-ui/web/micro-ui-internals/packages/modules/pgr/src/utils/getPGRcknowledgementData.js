@@ -43,9 +43,9 @@ const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ")
 const getPGRcknowledgementData = async ({complaintDetails,tenantInfo, t}) => {
       // Extract the service object from the nested structure
       const service = complaintDetails?.complaints?.response?.ServiceWrappers?.[0]?.service;
-      
+
       if (!service) {
-        console.error("Service data not found in complaintDetails");
+
         return null;
       }
 
@@ -116,11 +116,11 @@ const getPGRcknowledgementData = async ({complaintDetails,tenantInfo, t}) => {
               },
             ],
           },
-         
+
         ],
       };
-    
+
 
   };
-  
+
   export default getPGRcknowledgementData;

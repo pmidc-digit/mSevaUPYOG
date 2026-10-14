@@ -92,7 +92,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
   const [getSubUsageData, setSubUsageData] = useState([]);
   const [isRestoring, setIsRestoring] = useState(false);
 
-  console.log("stateDataCheck", stateDataCheck);
+
 
   const { data: UsageCategoryData = [], isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PropertyTax", [{ name: "UsageCategoryMinor" }]);
 
@@ -124,7 +124,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     }
   }, [PropertyTypeData]);
 
-  console.log("location2", location?.state);
+
 
   useEffect(() => {
     // const major = UsageCategoryData?.PropertyTax?.UsageCategoryMajor || [];
@@ -199,8 +199,8 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
   const selectedPropertyType = watch("propertyType")?.code;
   const selectedpropertyUsageType = watch("propertyUsageType")?.code;
-  console.log("selectedpropertyUsageType", watch("propertyUsageType")?.name);
-  console.log("selectedPropertyType", selectedPropertyType);
+
+
   const isBusinessNameRequired = selectedPropertyType && selectedpropertyUsageType && (selectedpropertyUsageType !== "RESIDENTIAL" && selectedPropertyType !== "VACANT")
   const selectedFloors = watch("noOfFloors")?.code;
   const isResidentialFlat = selectedpropertyUsageType === "RESIDENTIAL" && selectedPropertyType === "BUILTUP.SHAREDPROPERTY";
@@ -208,7 +208,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
     isResidentialFlat ||
     (selectedpropertyUsageType === "RESIDENTIAL" &&
       selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY");
-      
+
   const allUsageOptions = useMemo(() => {
       return {
         subMinor: UsageCategoryNewData?.PropertyTax?.UsageCategorySubMinor || [],
@@ -711,12 +711,12 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
                       render={(props) => {
                         var unitUsageVal = watch("unitDetails." + index + ".unitUsageType");
                         var unitCode = unitUsageVal && typeof unitUsageVal === "object" ? unitUsageVal.code : unitUsageVal;
-                        console.log(unitCode, "unitCode");
-                        
+
+
                         var rowOptions = unitCode
                           ? getUsageOptionsByCode(unitCode)
                           : getSubUsageData;
-                        console.log("rowOptions", rowOptions)
+
                         var selectedCode = props.value?.code || props.value;
                         var selectedValue = rowOptions?.find((o) => o.code === selectedCode) || props.value;
                         // Look up full MDMS object so Dropdown can display name correctly
@@ -927,7 +927,7 @@ const PropertyDetails = ({ goNext, onGoBack }) => {
 
             {/* Remove button */}
             <div className="pt-application-download-btn primary-label-btn">
-              
+
               {/* Add Unit Button (For Independent Property) */}
               {selectedPropertyType === "BUILTUP.INDEPENDENTPROPERTY" && watch(`unitDetails.${index}.floor`) && (
                 <button

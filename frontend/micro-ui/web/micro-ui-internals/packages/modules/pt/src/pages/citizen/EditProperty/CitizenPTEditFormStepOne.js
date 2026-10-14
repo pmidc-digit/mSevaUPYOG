@@ -6,7 +6,7 @@ import { UPDATE_PTNewApplication_FORM } from "../../../redux/action/PTNewApplica
 
 const CitizenPTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
 
     const missingFields = validateEmployeeStepOneFields(data);
 
@@ -51,15 +51,15 @@ const CitizenPTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in Property details step one: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
-      console.log("Dispatching UPDATE_PTNewApplication_FORM with key:", config.key, "and data:", data);
+
     }
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step one edit ", state);
+
     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
       ? state.pt.PTNewApplicationForm.formData[config.key]
       : {};
@@ -71,7 +71,7 @@ const CitizenPTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   useEffect(() => {
     setLocalStepData(reduxStepData);
   }, [reduxStepData]);
-  // console.log("reduxStepData in step one: ", localStepData);
+
   const dispatch = useDispatch();
 
   return (

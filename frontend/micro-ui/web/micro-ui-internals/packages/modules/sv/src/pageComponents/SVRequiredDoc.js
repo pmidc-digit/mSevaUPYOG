@@ -17,7 +17,7 @@ const SVRequiredDoc = ({ t, config, onSelect, userType, formData }) => {
   return (
     <React.Fragment>
       <Card>
-        <CardHeader>{t("MODULE_SV")}</CardHeader>
+        <CardHeader>{t("Street Vending")}</CardHeader>
         <div>
           <CardText className={"primaryColor"}>{t("SV_DOC_REQ_SCREEN_SUB_HEADER")}</CardText>
           <CardText className={"primaryColor"}>{t("SV_DOC_REQ_SCREEN_TEXT")}</CardText>

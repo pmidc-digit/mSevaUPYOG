@@ -19,7 +19,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   const [localities, setLocalities] = useState();
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
-console.log("usertype",window.location.href.includes("employee"))
+
   let isEditProperty = formData?.isEditProperty || false;
   if (presentInModifyApplication) isEditProperty = true;
   if (formData?.isUpdateProperty) isEditProperty = true;
@@ -67,7 +67,7 @@ console.log("usertype",window.location.href.includes("employee"))
   }, [formValue?.address?.city]);
 
 const fetchLocality=()=>{
-  console.log("selected city",selectedCity)
+
   let response =  Digit.LocationService.getLocalities(formValue?.address?.city);
   let __localityList = [];
   if (response && response.TenantBoundary.length > 0) {
@@ -76,32 +76,32 @@ const fetchLocality=()=>{
   setLocalities(__localityList);
 }
 
-    
+
 
 
   const [selectedLocality, setSelectedLocality] = useState(formData?.address?.locality);
 
   useEffect(() => {
     if (window.location.href.includes("employee") && presentInModifyApplication && localities?.length) {
-      console.log("coming here");
-      
+
+
       const code = formData?.originalData?.address?.locality?.code;
-      console.log("coming here code",code);
+
       const _locality = localities?.filter((e) => e.code === code)[0];
-      console.log("coming here _locality",_locality);
+
       setValue("locality", _locality);
     }
   }, [localities]);
 
   // useEffect(() => {
   //   if(window.location.href.includes("citizen") && presentInModifyApplication){
-  //     console.log("coming here citizen", formData?.address?.locality);
-      
+
+
   //     setSelectedLocality(formData?.address?.locality);
   //   }
   // }, [formData?.address?.locality]);
 
-  console.log("formData in PTSelectAddress", selectedLocality);
+
 
 
 -
@@ -112,9 +112,9 @@ const fetchLocality=()=>{
     const localityValue = localities?.find((e) => e.code === code)
     setValue("locality", localityValue);
     }
-    
+
   },[formData,localities,isEditProperty])
-  
+
 
   useEffect(() => {
     if (cities) {
@@ -122,7 +122,7 @@ const fetchLocality=()=>{
         setSelectedCity(cities[0]);
       }
     }
-    
+
   }, [cities]);
 
   useEffect(() => {
@@ -163,15 +163,15 @@ const fetchLocality=()=>{
     if (window.location.href.includes("employee")) {
       onSelect(config.key, { ...formData[config.key], locality: locality });
     }
-    
-  console.log("Selected locality being saved:", locality);
+
+
   }
 
   function onSubmit() {
     onSelect(config.key, { city: selectedCity, locality: selectedLocality });
   }
 
- 
+
 //   useEffect(() => {
 //     onSelect(config.key, selectedValue);
 //   }, [selectedValue]);
@@ -253,8 +253,8 @@ const fetchLocality=()=>{
     }
   }, [localFormState]);
 
-  console.log("config",config)
-  console.log("localFormState",localFormState)
+
+
 
   if (window.location.href.includes("employee")) {
     const disableCityDropdown=isEditProperty ? isEditProperty : cities?.length === 1;
@@ -325,7 +325,7 @@ const fetchLocality=()=>{
     );
   }
   if (window.location.href.includes("citizen")) {
-    
+
     return (
       <div>
         <div style={twoColRow}>

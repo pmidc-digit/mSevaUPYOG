@@ -10,15 +10,15 @@ const SearchFields = ({ register, control, reset, tenantId, t ,cityValue,localit
   //   if (isLoading && !false) {
   //     return <Loader />;
   //   }
-  //  console.log("tl",tenantlocalties);
-   
+
+
   function selectLocality(value) {
     setLocality(value)
       }
-     
-     
+
+
        const [selectedCity, setSelectedCity] = useState()
-    
+
        const handleCityChange =(value)=>{
          setCityValue(value)
        }
@@ -91,16 +91,16 @@ const SearchFields = ({ register, control, reset, tenantId, t ,cityValue,localit
               optionCardStyles={{ height: "600px", overflow: "auto", zIndex: "10" }}
               selected={locality}
               name="locality"
-           
+
               disableLoader={false}
             />
              {/* <Dropdown
-                            
+
                             name="locality"
                             selected={locality}
                            // disable={true}
                             option={tenantlocalties}
-                           
+
                            ref={register({})} 
                             select={handleCityChange}
                             optionKey="name"

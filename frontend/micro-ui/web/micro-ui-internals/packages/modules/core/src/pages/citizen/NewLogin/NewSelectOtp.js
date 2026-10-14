@@ -47,7 +47,7 @@ const OtpInput = ({ otp, onOtpChange, onVerifyOtp, onResendOtp, canSubmit, isOtp
           padding: "0",
         }}
       >
-        <OTPInput length={6} onChange={onOtpChange} value={otp} />
+        <OTPInput masked length={6} onChange={onOtpChange} value={otp} />
         {timeLeft > 0 ? (
           <div className="resendIn">
             {t("CS_RESEND_ANOTHER_OTP")} <span>{timeLeft}</span> {t("CS_RESEND_SECONDS")}
@@ -57,7 +57,7 @@ const OtpInput = ({ otp, onOtpChange, onVerifyOtp, onResendOtp, canSubmit, isOtp
             {t("CS_RESEND_OTP")}
           </div>
         )}
-        {!isOtpValid && <CardLabelError>{t("CS_INVALID_OTP")}</CardLabelError>}
+        {/* {!isOtpValid && <CardLabelError>{t("CS_INVALID_OTP")}</CardLabelError>} */}
       </FormStep>
     </div>
   );

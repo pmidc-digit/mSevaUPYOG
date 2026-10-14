@@ -20,7 +20,7 @@ const CloseBtn = (props) => {
 
 
 const RenewPopup = ({ t, closeModal, onSubmit, application }) => {
-    console.log(" ----- Renew POP coming ")
+
     const mutation = Digit.Hooks.sv.useCreateDemand();
     const history = useHistory();
 
@@ -34,12 +34,12 @@ const RenewPopup = ({ t, closeModal, onSubmit, application }) => {
 
 
     const onRedirectedToCheckPage = () => {
-        console.log(' testing coming compilter')
+
         // try {
         //     let formdata = demandPayloadData(application)
         //     mutation.mutate(formdata);
         // } catch (err) {
-        //     console.error("Error in Mutation:", {
+
         //         message: err.message,
         //         stack: err.stack,
         //         name: err.name

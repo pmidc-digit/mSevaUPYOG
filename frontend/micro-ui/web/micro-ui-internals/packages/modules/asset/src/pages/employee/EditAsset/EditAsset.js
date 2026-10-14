@@ -11,7 +11,7 @@ const EditAsset = () => {
   const { t } = useTranslation();
   const [canSubmit, setSubmitValve] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const history = useHistory();
   const { id: applicationNo } = useParams();
   const { data: applicationDetails } = Digit.Hooks.asset.useAssetApplicationDetail(t, tenantId, applicationNo);
@@ -30,13 +30,13 @@ const EditAsset = () => {
       setIsLoading(false);
     }
   }, [applicationDetails]);
-  
+
   if (isLoading) {
     return <Loader />;
   }
 
 
-  
+
 const onFormValueChange = (setValue, formData, formState) => {
     setSubmitValve(!Object.keys(formState.errors).length); 
   };
@@ -57,17 +57,17 @@ const onFormValueChange = (setValue, formData, formState) => {
 const convertStringToFloat = (amountString) => {
   // Remove commas if present and convert to float
   const cleanedString = String(amountString).replace(/,/g, '');
-  
+
   // Convert to float and return
   const floatValue = parseFloat(cleanedString);
-  
+
   // Return the float value, or NaN if conversion fails
   return isNaN(floatValue) ? null : floatValue;
 };
 
 
   const onSubmit = (data) => {
-    
+
     const formData = {
       accountId: applicationDetails?.applicationData?.applicationData?.accountId,
       tenantId: applicationDetails?.applicationData?.applicationData?.tenantId,
@@ -129,23 +129,23 @@ const convertStringToFloat = (amountString) => {
         },
       }, 
     };
-    console.log('Form Data:- ', formData);
+
 
     history.replace("/digit-ui/employee/asset/assetservice/edit-response", { Assets: formData }); 
-    
+
 
   };
-    
+
 const configs = editConfig;    
 
-  
+
   return (
     <FormComposer
       heading={t("AST_EDIT_ASSET")}
       // isDisabled={canSubmit}
       label={t("ES_COMMON_APPLICATION_SUBMIT")}
       config={configs.map((config) => {
-       
+
         return {
           ...config,
           body: config.body.filter((a) => !a.hideInEmployee),

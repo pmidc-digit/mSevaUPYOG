@@ -65,7 +65,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
             }
           }
         } catch (e) {
-          console.error("Error searching CLU for document:", e);
+
         }
       }
 
@@ -82,7 +82,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
             setUrl(typeof fetchedUrl === "string" ? fetchedUrl.split(",")?.[0] : fetchedUrl);
           }
         } catch (error) {
-          console.error("Error fetching document:", error);
+
         }
       }
       setLoading(false);
@@ -216,14 +216,14 @@ const LayoutApplicationOverview = () => {
     return null;
   };
 
-  //console.log("=== LayoutApplicationSummary Debug ===")
-  //console.log("Raw data from hook:", data)
-  //console.log("applicationDetails (data?.resData):", applicationDetails)
-  //console.log("Layout array:", applicationDetails?.Layout)
-  //console.log("First Layout object:", applicationDetails?.Layout?.[0])
-  //console.log("Owners array:", applicationDetails?.Layout?.[0]?.owners)
-  //console.log("Owners count:", applicationDetails?.Layout?.[0]?.owners?.length)
-  //console.log("=== End Debug ===")
+
+
+
+
+
+
+
+
   const usage = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.buildingCategory?.name
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData()
@@ -248,7 +248,7 @@ const LayoutApplicationOverview = () => {
       const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t, combinedPayments);
       await Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     } catch (err) {
-      console.error(err);
+
     } finally {
       setLoading(false);
     }
@@ -264,9 +264,9 @@ const LayoutApplicationOverview = () => {
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0]
 
-    //console.log("=== useEffect for displayData ===")
-    //console.log("layoutObject:", layoutObject)
-    //console.log("layoutObject?.documents:", layoutObject?.documents)
+
+
+
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails
@@ -274,8 +274,8 @@ const LayoutApplicationOverview = () => {
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates
       const Documents = layoutObject?.documents || []
 
-      //console.log("Documents array:", Documents)
-      //console.log("Documents length:", Documents.length)
+
+
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
@@ -284,7 +284,7 @@ const LayoutApplicationOverview = () => {
         Documents: Documents.length > 0 ? Documents : [],
       }
 
-      //console.log("finalDisplayData:", finalDisplayData)
+
       setDisplayData(finalDisplayData)
 
       const submittedOn = layoutObject?.layoutDetails?.additionalDetails?.SubmittedOn;
@@ -333,7 +333,7 @@ const LayoutApplicationOverview = () => {
       //we will add sanctionLetter also
       //await getNOCSanctionLetter(application, t, amountPaid);
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     }
   };
 
@@ -409,8 +409,13 @@ const LayoutApplicationOverview = () => {
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu)
   const businessServiceCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService || "";
+<<<<<<< HEAD
   const prefix = `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
   const Statusprefix = `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
+=======
+  const prefix= `WF_EMPLOYEE_${"LAYOUT"}_${businessServiceCode}`?.toUpperCase();
+  const Statusprefix= `WF_EMPLOYEE_LAYOUT_STATUS_${businessServiceCode}`?.toUpperCase();
+>>>>>>> MicroUI_UAT_Vite
 
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -438,6 +443,7 @@ const LayoutApplicationOverview = () => {
     }
   }, [])
 
+<<<<<<< HEAD
   const hasCMCApproval =
     workflowDetails?.data?.actionState?.timeline?.some(
       (item) =>
@@ -446,6 +452,16 @@ const LayoutApplicationOverview = () => {
           (role) => role?.code === "OBPAS_LAYOUT_CMC"
         )
     );
+=======
+const hasCMCApproval =
+  workflowDetails?.data?.actionState?.timeline?.some(
+    (item) =>
+      item?.performedAction === "APPROVE" &&
+      item?.assigner?.roles?.some(
+        (role) => role?.code === "OBPAS_LAYOUT_CMC"
+      )
+  );
+>>>>>>> MicroUI_UAT_Vite
 
   const isApplicationComplete = () => {
     const layout = applicationDetails?.Layout?.[0];
@@ -584,7 +600,7 @@ const LayoutApplicationOverview = () => {
 
   const submitAction = async (data) => {
     const payloadData = applicationDetails?.Layout?.[0] || {}
-    //console.log("payload data======> ",payloadData);
+
 
 
 
@@ -641,7 +657,7 @@ const LayoutApplicationOverview = () => {
   //     setLoading(true);
   //     let response = null;
   //     const fee = payments?.totalAmountPaid;
-  //     //console.log("fee here here", fee);
+
   //     const amountinwords = amountToWords(fee);
   //     if (payments?.fileStoreId) {
   //       response = { filestoreIds: [payments?.fileStoreId] };
@@ -651,7 +667,7 @@ const LayoutApplicationOverview = () => {
   //     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
   //     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   //   } catch (error) {
-  //     console.error("Sanction Letter download error:", error);
+
   //   } finally {
   //     setLoading(false);
   //   }
@@ -779,6 +795,19 @@ const LayoutApplicationOverview = () => {
     } finally {
       setLoading(false);
     }
+<<<<<<< HEAD
+=======
+    let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+
+    if (!fileStore?.[filestoreId]?.length) {
+      fileStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: filestoreId });
+    }
+    window.open(fileStore[filestoreId], "_blank");
+  } catch (error) {
+
+  } finally {
+    setLoading(false);
+>>>>>>> MicroUI_UAT_Vite
   }
 
   const getTimelineCaptions = (checkpoint, index, arr) => {
@@ -837,6 +866,7 @@ const LayoutApplicationOverview = () => {
   };
 
   // Helper function to render label-value pairs only when value exists
+<<<<<<< HEAD
   const renderLabel = (label, value) => {
     if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
       return null;
@@ -850,6 +880,21 @@ const LayoutApplicationOverview = () => {
 
     return <Row label={label} text={displayValue} />;
   };
+=======
+ const renderLabel = (label, value) => {
+     if (!value || value === "NA" || value === "" || value === null || value === undefined || value === "0.00") {
+       return null;
+     }
+
+     // Extract value from object if it has 'name' property
+     let displayValue = value;
+     if (typeof value === "object" && value !== null) {
+       displayValue = value?.name || value?.code || JSON.stringify(value);
+     }
+
+     return <Row label={label} text={displayValue} />;
+   };
+>>>>>>> MicroUI_UAT_Vite
 
   const RenderRow = ({ label, value }) => {
     if (!value) return null;
@@ -860,7 +905,7 @@ const LayoutApplicationOverview = () => {
     return <LoaderNew page={true} />;
   }
 
-  //console.log("dowloadOptions",dowloadOptions)
+
 
   return (
     <div className={"employee-main-application-details"}>
@@ -923,6 +968,11 @@ const LayoutApplicationOverview = () => {
 
             </StatusTable>
 
+<<<<<<< HEAD
+=======
+              </StatusTable>
+
+>>>>>>> MicroUI_UAT_Vite
           </Card>
         ))}
 
@@ -959,12 +1009,13 @@ const LayoutApplicationOverview = () => {
       
 
 
-      
+
 
       {/* -------------------- SITE DETAILS -------------------- */}
       <Card>
         <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
+<<<<<<< HEAD
 
           <StatusTable key={index}>
             {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
@@ -1017,6 +1068,66 @@ const LayoutApplicationOverview = () => {
             {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
             {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
             {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
+=======
+
+            <StatusTable key={index}>
+              {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
+              {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
+                <React.Fragment>
+                  {renderLabel(t("BPA_CLU_TYPE_LABEL"), detail?.cluType?.code || detail?.cluType)}
+                  {(detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") &&
+                    renderLabel(t("BPA_CLU_NUMBER_LABEL"), detail?.cluNumber)}
+                  {(detail?.cluType?.code === "OFFLINE" || detail?.cluType === "OFFLINE") &&
+                    renderLabel(t("BPA_CLU_NUMBER_OFFLINE_LABEL"), detail?.cluNumberOffline)}
+                  {(Boolean(detail?.cluDocumentUpload) || detail?.cluType?.code === "ONLINE" || detail?.cluType === "ONLINE") && (
+                    <Row className="document-row"
+                      label={t("BPA_CLU_DOCUMENT_LABEL") || t("CLU Document")}
+                      text={
+                        <DocumentLink
+                          fileStoreId={
+                            typeof detail?.cluDocumentUpload === "string"
+                              ? detail?.cluDocumentUpload
+                              : (detail?.cluDocumentUpload?.fileStoreId || detail?.cluDocumentUpload?.filestoreId || detail?.cluDocumentUpload?.uuid)
+                          }
+                          cluNumber={detail?.cluNumber}
+                          stateCode={stateCode}
+                          t={t}
+                        />
+                      }
+                    />
+                  )}
+                  {renderLabel(t("BPA_CLU_APPROVAL_DATE_LABEL"), formatDate(detail?.cluApprovalDate))}
+                </React.Fragment>
+              )}
+              {/* {(detail?.isCluRequired?.code === "YES" || detail?.isCluRequired === "YES") && ( */}
+                <React.Fragment>
+                  {renderLabel(t("Application Applied Under"), detail?.applicationAppliedUnder?.name || detail?.applicationAppliedUnder?.code || detail?.applicationAppliedUnder)}
+                </React.Fragment>
+              {/* )} */}
+              {renderLabel(t("Type Of Application"), detail?.typeOfApplication?.name)}
+
+              {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_LOCATION_LABEL")}</CardLabel> */}
+              {renderLabel(t("BPA_PROPOSED_SITE_ADDRESS"), detail?.proposedSiteAddress)}
+              {renderLabel(t("BPA_ULB_NAME_LABEL"), detail?.ulbName || detail?.ulbName?.name)}
+              {renderLabel(t("BPA_ULB_TYPE_LABEL"), detail?.ulbType)}
+              {renderLabel(t("BPA_DISTRICT_LABEL"), detail?.district?.name)}
+              {renderLabel(t("BPA_ZONE_LABEL"), detail?.zone?.name)}
+              {renderLabel(t("BPA_SITE_VILLAGE_NAME_LABEL"), detail?.villageName)}
+              {renderLabel(t("BPA_SITE_WARD_NO_LABEL"), detail?.wardNo)}
+              {renderLabel(t("Khatuni No."), detail?.khanutiNo)}
+              {renderLabel(t("BPA_KHASRA_NO_LABEL"), detail?.khasraNo)}
+              {renderLabel(t("BPA_HADBAST_NO_LABEL"), detail?.hadbastNo)}
+              {renderLabel(t("BPA_VASIKA_NUMBER_LABEL"), detail?.vasikaNumber)}
+              {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
+              {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
+              {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
+
+
+
+              {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
+
+              {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
+>>>>>>> MicroUI_UAT_Vite
 
 
 
@@ -1065,10 +1176,15 @@ const LayoutApplicationOverview = () => {
           </StatusTable>
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> MicroUI_UAT_Vite
         ))}
       </Card>
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
+<<<<<<< HEAD
       <Card>
         <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
@@ -1080,6 +1196,19 @@ const LayoutApplicationOverview = () => {
 
 
 
+=======
+            <Card>
+              <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
+               {displayData?.siteDetails?.map((detail, index) => (
+                   <StatusTable key={index}>
+                     {renderLabel(t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL"), detail?.specificationPlotArea)}
+                  </StatusTable>
+                        ))}
+            </Card>
+
+
+
+>>>>>>> MicroUI_UAT_Vite
 
       {/* 1️⃣ SITE COORDINATES CARD */}
       {displayData?.coordinates && displayData.coordinates.length > 0 && (
@@ -1118,6 +1247,7 @@ const LayoutApplicationOverview = () => {
         </Card>
       )}
 
+<<<<<<< HEAD
       {/* 3️⃣ FEE DETAILS CARD */}
 
       <Card>
@@ -1171,6 +1301,61 @@ const LayoutApplicationOverview = () => {
         )}
       </Card>
 
+=======
+       {/* 3️⃣ FEE DETAILS CARD */}
+
+        <Card>
+          <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
+  {applicationDetails?.Layout?.[0]?.layoutDetails && (
+    <>
+     <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
+     {/* <StatusTable> */}
+          <LayoutFeeEstimationDetails
+            formData={{
+              apiData: { ...applicationDetails },
+              applicationDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails,
+              },
+              siteDetails: {
+                ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails,
+              },
+            }}
+            feeType="PAY1" feeAdjustments={[]} setFeeAdjustments={() => { }} disable={true}
+            hasPayments={reciept_data?.Payments?.length > 0}
+          />
+          {/* </StatusTable> */}
+          </>
+          )}
+          {hasPayments && (
+                <div style={{ marginTop: "16px" }}>
+                  <OBPSPaymentHistory payments={combinedPayments} />
+                </div>
+              )}
+
+
+       {hasCMCApproval && (
+                <>
+                  <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY2")}</CardSubHeader>
+                  {applicationDetails?.Layout?.[0]?.layoutDetails && (
+                    <LayoutFeeEstimationDetailsTable
+                      formData={{
+                        apiData: { ...applicationDetails },
+                        applicationDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails },
+                        siteDetails: { ...applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails },
+                        calculations: applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.calculations || [],
+                      }}
+                      feeType="PAY2"
+                      feeAdjustments={feeAdjustments}
+                      setFeeAdjustments={setFeeAdjustments}
+                      disable={true}
+                    />
+                  )}
+                  </>
+
+              )}
+               </Card>
+
+>>>>>>> MicroUI_UAT_Vite
 
       {/* -------------------- SPECIFICATIONS -------------------- */}
       {/* <Card>

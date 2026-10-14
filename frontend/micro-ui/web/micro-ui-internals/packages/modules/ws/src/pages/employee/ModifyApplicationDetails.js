@@ -24,8 +24,8 @@ const ModifyApplicationDetails = () => {
   let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSModifyDetailsPage(t, tenantId, applicationNumber, serviceType, userInfo, { privacy: Digit.Utils.getPrivacyObject() });
   const { isServicesMasterLoading, data: servicesMasterData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-masters", ["WSEditApplicationByConfigUser"]);
 
-  console.log("application details in modify application details",applicationDetails)
-  console.log("servicesMasterData in modify application details",servicesMasterData)
+
+
 
   let workflowDetails = Digit.Hooks.useWorkflowDetails(
     {
@@ -38,7 +38,7 @@ const ModifyApplicationDetails = () => {
       }
     },
   );
-console.log("workflow det",workflowDetails)
+
   const {
     isLoading: updatingApplication,
     isError: updateApplicationError,

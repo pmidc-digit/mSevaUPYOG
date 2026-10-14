@@ -198,11 +198,11 @@ const LayoutInbox = ({ parentRoute }) => {
 
   const memoizedFilters = useMemo(() => {
     const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
-    const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
 
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
       searchForm: formState?.searchForm || searchFormDefaultValues,
+<<<<<<< HEAD
 <<<<<<< HEAD
       tableForm: {
         ...tableForm,
@@ -212,6 +212,10 @@ const LayoutInbox = ({ parentRoute }) => {
 =======
       tableForm: formState?.tableForm || tableOrderFormDefaultValues,
 >>>>>>> MicroUI_PROD_Vite
+=======
+      // Manual text search filters the loaded rows without changing the API query.
+      tableForm,
+>>>>>>> MicroUI_UAT_Vite
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
   }, [
@@ -223,8 +227,6 @@ const LayoutInbox = ({ parentRoute }) => {
     filterFormDefaultValues,
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
-    topBarSearch,
-    totalCountData,
   ]);
 
   const { isLoading: isInboxLoading, data: inboxData } = Digit.Hooks.obps.useLayoutInbox({
@@ -397,6 +399,7 @@ const LayoutInbox = ({ parentRoute }) => {
   }, [onApiMobileSearch]);
 
   const propsForInboxTable = useLayoutTableConfig({
+    enableColumnSearch: true,
     parentRoute,
     onPageSizeChange,
     formState,
@@ -405,6 +408,7 @@ const LayoutInbox = ({ parentRoute }) => {
     dispatch,
     onSortingByData,
     globalSearch: topBarSearch,
+    cities,
   });
 
   // Setup form with react-hook-form
@@ -526,9 +530,7 @@ const LayoutInbox = ({ parentRoute }) => {
       tenantSelector={
         tenantId === "pb.punjab" && cities?.length ? (
           <div className="new-inbox-tenant-selector">
-            <div className="filter-label sub-filter-label obps-pages-employee-inbox-layout-inbox--style-1" >
-              {t("BPA_CITIES_DROPDOWN_LABEL")}
-            </div>
+            <div className="filter-label sub-filter-label obps-pages-employee-inbox-layout-inbox--style-1">{t("BPA_CITIES_DROPDOWN_LABEL")}</div>
             <div className="new-inbox-tenant-dropdown">
               <Dropdown
                 option={cities}
@@ -582,18 +584,20 @@ const LayoutInbox = ({ parentRoute }) => {
       }
       isLoading={isInboxLoading}
       tableData={tableData}
-      tableProps={propsForInboxTable}
+      tableProps={{ ...propsForInboxTable, stickyHorizontalScrollbar: true }}
       tableHeader="ES_INBOX_INBOX"
-      pagination={!String(topBarSearch || "").trim() && (
-        <InboxPagination
-          offset={formState.tableForm?.offset || 0}
-          limit={formState.tableForm?.limit || 10}
-          totalCount={totalCountData}
-          onPageSizeChange={onPageSizeChange}
-          onNextPage={onNextPage}
-          onPrevPage={onPrevPage}
-        />
-      )}
+      pagination={
+        !String(topBarSearch || "").trim() && (
+          <InboxPagination
+            offset={formState.tableForm?.offset || 0}
+            limit={formState.tableForm?.limit || 10}
+            totalCount={totalCountData}
+            onPageSizeChange={onPageSizeChange}
+            onNextPage={onNextPage}
+            onPrevPage={onPrevPage}
+          />
+        )
+      }
     />
   );
 };

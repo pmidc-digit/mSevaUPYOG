@@ -1,0 +1,186 @@
+.enaksha-page {
+  background: #f4f8fc;
+  color: #173451;
+  min-height: 100vh;
+  padding: 24px clamp(16px, 4vw, 64px) 40px;
+  font-family: inherit;
+}
+.enaksha-page * {
+  box-sizing: border-box;
+}
+.enaksha-page h1,
+.enaksha-page h2,
+.enaksha-page h3 {
+  position: static !important;
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+  color: inherit;
+  line-height: 1.25;
+}
+.enaksha-page h1 {
+  font-size: clamp(40px, 6vw, 72px);
+}
+.enaksha-page h2 {
+  font-size: 26px;
+  font-weight: 700;
+}
+.enaksha-page h3 {
+  font-size: 20px;
+  font-weight: 700;
+}
+.enaksha-page p {
+  margin: 0 0 16px;
+  line-height: 1.7;
+}
+.enaksha-page a {
+  color: #0758a5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.enaksha-page a:focus-visible,
+.enaksha-page summary:focus-visible,
+.enaksha-page input:focus-visible {
+  outline: 3px solid #16814d;
+  outline-offset: 4px;
+}
+.enaksha-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 8px 0 28px;
+  flex-wrap: wrap;
+}
+.enaksha-top > a {
+  font-size: 32px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.enaksha-top span {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+.enaksha-top nav {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.enaksha-hero {
+  padding: clamp(24px, 5vw, 64px);
+  border-radius: 24px;
+  background: linear-gradient(118deg, #063f84, #0b63ce 62%, #248c45);
+  color: white;
+}
+.enaksha-hero h1 {
+  color: white !important;
+}
+.enaksha-hero p {
+  color: white !important;
+}
+.enaksha-hero > p:first-child {
+  font-size: 13px;
+  letter-spacing: 1.5px;
+}
+.enaksha-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.enaksha-actions a {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid #cdddeb;
+  font-weight: 600;
+  text-decoration: none;
+}
+.enaksha-section {
+  margin-top: 36px;
+  scroll-margin-top: 24px;
+}
+.enaksha-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 20px;
+}
+.enaksha-card,
+.enaksha-notice {
+  border: 1px solid #d8e5f4;
+  border-radius: 16px;
+  padding: 24px;
+  background: white;
+}
+.enaksha-notice {
+  border-top: 4px solid #248c45;
+}
+.enaksha-muted {
+  color: #586e81;
+  font-size: 14px;
+}
+.enaksha-page label {
+  display: block;
+  margin-bottom: 8px;
+}
+.enaksha-page input {
+  display: block;
+  width: 100%;
+  max-width: 650px;
+  background: white;
+  border: 1px solid #a7bfd8;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  color: #173451;
+}
+.enaksha-resources {
+  background: white;
+  border: 1px solid #d8e5f4;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.enaksha-resource {
+  border-bottom: 1px solid #e4edf5;
+}
+.enaksha-resource summary {
+  padding: 18px 22px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.enaksha-resource > div {
+  padding: 0 20px 16px;
+}
+.enaksha-resource-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 22px;
+  border-bottom: 1px solid #edf2f6;
+  flex-wrap: wrap;
+}
+.enaksha-resource-row small {
+  color: #667b8c;
+}
+.enaksha-footer {
+  padding-top: 36px;
+  margin-top: 32px;
+  border-top: 1px solid #d8e5f4;
+  font-size: 14px;
+  line-height: 1.7;
+}
+@media (max-width: 600px) {
+  .enaksha-page h2 {
+    font-size: 23px;
+  }
+  .enaksha-resource > div {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .enaksha-resource-row {
+    padding: 14px;
+  }
+}

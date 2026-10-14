@@ -40,7 +40,7 @@ export const EmployeeData = (tenantId, consumerCode) => {
 
   const codes = officerInstance?.assigner?.userName;
   const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: codes, isActive: true }, { enabled: !!codes && !wfData?.isLoading });
-  console.log("employeeData", employeeData);
+
   const officerRaw = employeeData?.data?.Employees?.[0];
   const officerAssignment = officerRaw?.assignments?.[0];
 
@@ -381,7 +381,7 @@ export const downloadPdfFromURL = async (receiptUrl) => {
     // Use your helper to force download
     downloadPdf(blob, "Document.pdf");
   } catch (err) {
-    console.log(err, "error in receipt download");
+
     window.open(downloadUrl, "_blank");
   }
 };
@@ -419,7 +419,7 @@ export const encodeURIComponentCustom = (text) => {
   const SECRET_KEY = localStorage.getItem("token");
 
   if (!SECRET_KEY) {
-    console.error("SECRET_KEY (token) not found in localStorage");
+
     return null;
   }
 
@@ -437,7 +437,7 @@ export const decodeURIComponentCustom = (cipherText) => {
   try {
     const SECRET_KEY = localStorage.getItem("token");
     if (!SECRET_KEY) {
-      console.error("SECRET_KEY (token) not found in localStorage");
+
       return null;
     }
 
@@ -449,7 +449,7 @@ export const decodeURIComponentCustom = (cipherText) => {
     const bytes = CryptoJS.AES.decrypt(base64, SECRET_KEY);
     return bytes.toString(CryptoJS.enc.Utf8);
   } catch (e) {
-    console.error("Error decrypting ID:", e);
+
     return null;
   }
 };

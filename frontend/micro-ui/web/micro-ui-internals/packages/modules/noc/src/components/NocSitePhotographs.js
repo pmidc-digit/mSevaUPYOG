@@ -28,8 +28,8 @@ const NocSitePhotographs = ({ filestoreId, documentType, coordinates }) => {
       <div className="noc-components-noc-site-photographs--style-2">
         <div className="noc-components-noc-site-photographs--style-3">
           <div>
-          <span>{t(documentType?.replaceAll(".", "_"))}</span>
-        </div>
+            <span>{t(documentType?.replaceAll(".", "_"))}</span>
+          </div>
           <img
             src={imageCitizenZoom}
             alt={t(documentType?.replaceAll(".", "_"))}

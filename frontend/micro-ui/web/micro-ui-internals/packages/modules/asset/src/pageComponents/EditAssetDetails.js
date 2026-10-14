@@ -114,7 +114,7 @@ const OwnerForm = (_props) => {
       .flat() // Flatten the fields array
       .filter((field) => field.active === true); // Filter by active status
   } else {
-    console.log("combinedData.data is not an array or is empty.");
+
   }
 
 
@@ -162,7 +162,7 @@ const OwnerForm = (_props) => {
           }));
         },
         (error) => {
-          console.error("Error getting location:", error);
+
         }
       );
     } else {

@@ -51,7 +51,12 @@
 }
 
 .data-table .last {
+<<<<<<< HEAD
    border: none;
+=======
+  border: none;
+  margin: 0;
+>>>>>>> MicroUI_UAT_Vite
 }
 
 .employee-data-table {
@@ -114,10 +119,4 @@
       justify-content: space-between;
     }
   }
-}
-
-.data-table .row.document-row .value,
-.employee-data-table .row.document-row .value {
-  display: flex;
-  align-items: center;
 }

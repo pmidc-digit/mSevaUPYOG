@@ -47,20 +47,20 @@ const PTRApplicationDetails = () => {
   // decode '%20' → ' ' and any other encoded characters
   applicationNumber = decodeURIComponent(applicationNumber);
 
-  console.log("applicationNumber", applicationNumber);
+
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
   const tenantInfo = tenants?.find((tenant) => tenant?.code === tenantId);
-  console.log("tenantInfo", tenantInfo);
+
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({
     tenantId,
     filters: { applicationNumber }
   });
 
-  console.log("data====", data);
+
 
   const [billData, setBillData] = useState(null);
 
@@ -412,13 +412,13 @@ const PTRApplicationDetails = () => {
   //                     src="${petImageUrl}"
   //                     alt="Pet Photo"
   //                     class="pet-image"
-  //                     onload="console.log('Pet image loaded successfully:', this.src);"
-  //                     onerror="console.log('Pet image failed to load:', this.src); console.log('Trying fallback image...'); this.src='/adorable-golden-retriever.png';"
+
+
   //                   />
   //                   <div class="image-label">Pet Photo</div>
   //                   <script>
-  //                     console.log('Image URL being used:', '${petImageUrl}');
-  //                     console.log('Pet image data:', ${JSON.stringify(petImage)});
+
+
   //                   </script>
   //                 </div>
   //               </div>
@@ -747,7 +747,7 @@ const PTRApplicationDetails = () => {
 
     });
   } else {
-    console.log("Certificate not available. Payment status:", reciept_data?.Payments[0]?.paymentStatus);
+
   }
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {

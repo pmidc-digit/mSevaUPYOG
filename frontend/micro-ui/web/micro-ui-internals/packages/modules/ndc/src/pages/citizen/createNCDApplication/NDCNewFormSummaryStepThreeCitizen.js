@@ -22,7 +22,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
       if (res?.isSuccess) {
         history.push("/digit-ui/citizen/ndc/response/" + res?.response?.Applications?.[0]?.applicationNo);
       } else {
-        console.error("Submission failed, not moving to next step.", res?.response);
+
       }
     } catch (error) {
       alert(`Error: ${error?.message}`);
@@ -36,7 +36,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
       return obj;
     });
 
-    // console.log("formData", formData);
+
 
     const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
 
@@ -96,7 +96,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
   const onSubmit = async (data, actionStatus) => {
     const finalPayload = mapToNDCPayload(data, actionStatus);
-    // console.log("finalPayload", finalPayload);
+
 
     // return;
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });

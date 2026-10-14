@@ -40,10 +40,10 @@ const CLULocalityInfo = (_props) => {
   const colonyTypeOptions = colonyTypeData?.CLU?.SchemeType || [];
 
   useEffect(() => {
-    //console.log("currentStepData4", currentStepData);
+
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
-      //console.log("coming here", formattedData);
+
       Object.entries(formattedData).forEach(([key, value]) => {
         if (key !== "floorArea") setValue(key, value);
       });

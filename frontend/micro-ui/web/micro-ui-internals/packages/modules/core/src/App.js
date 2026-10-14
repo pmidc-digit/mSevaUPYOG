@@ -3,6 +3,8 @@ import { Redirect, Route, Switch, useHistory, useLocation } from "react-router-d
 import EmployeeApp from "./pages/employee";
 import CitizenApp from "./pages/citizen";
 import LandingPage from "./LandingPage";
+import ENaksha from "./pages/ENaksha";
+import NewLoginPage from "./pages/citizen/NewLogin/NewLoginPage";
 
 export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) => {
   const history = useHistory();
@@ -78,6 +80,17 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
 
   return (
     <Switch>
+      <Route exact path="/digit-ui/enaksha" component={ENaksha} />
+      <Route exact path="/digit-ui/select-language">
+        <div className="citizen">
+          <div className="main center-container citizen-home-container mb-25">
+            <NewLoginPage stateCode={stateCode} />
+          </div>
+        </div>
+      </Route>
+      <Route exact path={["/digit-ui/citizen/select-location", "/digit-ui/citizen/select-language", "/digit-ui/citizen/login-page", "/digit-ui/employee/user/login", "/digit-ui/employee/user/language-selection"]}
+        render={({ location }) => <Redirect to={{ pathname: "/digit-ui/select-language", search: location.search, state: { ...location.state, portal: location.pathname.includes("/employee/") ? "employee" : location.state?.portal } }} />}
+      />
       <Route path="/digit-ui/employee">
         <EmployeeApp {...commonProps} />
       </Route>
@@ -88,7 +101,7 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
         <LandingPage />
       </Route>
       <Route>
-        <Redirect to="/digit-ui/landing-page" />
+        <Redirect to="/digit-ui/select-language" />
       </Route>
     </Switch>
   );

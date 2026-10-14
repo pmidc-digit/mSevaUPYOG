@@ -72,7 +72,7 @@ const EmployeeApp = ({ path, url, userType }) => {
     window.location.href.includes("modify-application") ||
     window.location.href.includes("ptr/application-details");
 
-  console.log("path", path);
+
 
   return (
     <Switch>

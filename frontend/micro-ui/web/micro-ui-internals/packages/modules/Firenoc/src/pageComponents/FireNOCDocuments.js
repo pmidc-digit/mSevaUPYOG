@@ -109,6 +109,7 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
     <div className="bpa-doc-required-wrapper">
       {isUploading && <Loader />}
 
+<<<<<<< HEAD
 
       {doc.hasDropdown && (
         <CardLabel style={{ fontWeight: "bold", fontSize: "16px", marginBottom: "8px" }}>
@@ -126,8 +127,20 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
         }}
       >
 
+=======
+      
+        {doc.hasDropdown && (
+          <CardLabel className="noc-doc-label noc-doc-label--with-dropdown">
+            {t(doc.code.replaceAll(".", "_"))}
+            {doc.required && <span className="requiredField">*</span>}
+          </CardLabel>
+        )}
+
+        <div className={`noc-doc-row${doc.hasDropdown ? " noc-doc-row--has-dropdown" : ""}`}>
+        
+>>>>>>> MicroUI_UAT_Vite
         {/* 3. Left Column: Either Dropdown OR the Label (if no dropdown) */}
-        <div style={{ flex: 1, minWidth: "250px" }}>
+        <div className="noc-doc-col">
           {doc.hasDropdown ? (
             <Dropdown
               className="form-field"
@@ -139,14 +152,14 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
               placeholder={t("Select Document Type")}
             />
           ) : (
-            <CardLabel style={{ fontWeight: "bold", fontSize: "16px", margin: 0 }}>
+            <CardLabel className="noc-doc-label">
               {t(doc.code.replaceAll(".", "_"))}
               {doc.required && <span className="requiredField">*</span>}
             </CardLabel>
           )}
         </div>
         {/* 4. Right Column: File Upload */}
-        <div style={{ flex: 1, minWidth: "250px" }}>
+        <div className="noc-doc-col">
           <NOCCustomUploadFile
             id={`firenoc-doc-${doc.code}`}
             onUpload={handleFileSelect}
@@ -163,13 +176,14 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
             textStyles={{ width: "100%" }}
             accept=".pdf, .jpeg, .jpg, .png"
           />
-          <p style={{ paddingTop: "10px", fontSize: "14px", margin: 0 }}>
+          <p className="noc-doc-hint">
             {t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}
           </p>
         </div >
       </div >
 
 
+<<<<<<< HEAD
 
       {
         doc.description && (
@@ -179,6 +193,14 @@ function FireNOCSelectDocument({ doc, t, setDocuments, documents, setError }) {
         )
       }
     </div >
+=======
+      {doc.description && (
+        <p className="noc-doc-description">
+          {/* {t(doc.description.replaceAll(".", "_"))} */}
+        </p>
+      )}
+    </div>
+>>>>>>> MicroUI_UAT_Vite
   );
 }
 

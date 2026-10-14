@@ -6,7 +6,7 @@ import { Link, useParams, useLocation } from "react-router-dom";
 import { transformBookingResponseToBookingData, ChallanData, amountToWords, getLocationName, formatDate, fixAdjustedAmount } from "../../index";
 
 export const SuccessfulPayment = (props) => {
-  console.log("Getting Here 2");
+
   if (localStorage.getItem("BillPaymentEnabled") !== "true") {
     window.history.forward();
     return null;
@@ -38,8 +38,8 @@ const WrapPaymentComponent = (props) => {
 
   const [allowFetchBill, setallowFetchBill] = useState(false);
   const { businessService: business_service, consumerCode, tenantId, receiptNumber } = useParams();
-  console.log("business_service here in citizen payment", business_service);
-  console.log("tenantId here", tenantId);
+
+
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
     {},
@@ -49,15 +49,15 @@ const WrapPaymentComponent = (props) => {
     { enabled: window.location.href.includes("bpa") || window.location.href.includes("BPA") }
   );
 
-  console.log("bpaData rn here", bpaData);
+
   const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: consumerCode, tenantId }, {});
-  console.log("applicationDetails rn here", applicationDetails);
+
 
   const { data: cluapplicationdetails } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: consumerCode }, tenantId, {});
   const { data: layoutapplicationdetails } = Digit.Hooks.obps.useLayoutSearchApplication({ applicationNo: consumerCode }, tenantId);
 
-  console.log("cluapplicationdetails", cluapplicationdetails);
-  console.log("layoutapplicationdetails", layoutapplicationdetails);
+
+
   let challanEmpData = ChallanData(tenantId, consumerCode);
 
   const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
@@ -67,20 +67,20 @@ const WrapPaymentComponent = (props) => {
   });
 
   const cities = Digit.Hooks.useTenants();
-  console.log("cities", cities);
+
   let ulbType,
     districtCode,
     ulbCode = "";
   const loginCity = JSON.parse(sessionStorage.getItem("Digit.CITIZEN.COMMON.HOME.CITY"))?.value?.city?.districtName;
-  console.log("loginCity", loginCity);
+
   if (cities.data !== undefined) {
     const selectedTenantData = cities.data.find((item) => item?.city?.name === loginCity);
-    console.log("selectedTenantData", selectedTenantData);
+
     ulbType = selectedTenantData?.city?.ulbGrade;
     ulbCode = selectedTenantData?.city?.code;
     districtCode = selectedTenantData?.city?.districtCode;
   }
-  console.log("ulbCode & districtCode", ulbCode, districtCode);
+
 
   // const { label } = Digit.Hooks.useApplicationsForBusinessServiceSearch({ businessService: business_service }, { enabled: false });
 
@@ -114,7 +114,7 @@ const WrapPaymentComponent = (props) => {
     }
   );
 
-  console.log('reciept_data in citizen response', reciept_data)
+
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
       business_service === "BPA.NC_SAN_FEE"
@@ -198,7 +198,7 @@ const WrapPaymentComponent = (props) => {
     );
   }
   const paymentData = data?.payments?.Payments[0];
-  console.log("paymentData here here", paymentData);
+
   const amount = reciept_data?.paymentDetails?.[0]?.totalAmountPaid;
   const transactionDate = paymentData?.transactionDate;
   const printCertificate = async () => {
@@ -244,7 +244,7 @@ const WrapPaymentComponent = (props) => {
   //   // const tenantId = Digit.ULBService.getCurrentTenantId();
   //   const state = tenantId;
   //   const applicationDetails = await Digit.PTRService.search({ applicationNumber: consumerCode, tenantId });
-  //   console.log("aplllldetailllin citizen",applicationDetails)
+
   //   const generatePdfKeyForPTR = "petservicecertificate";
 
   //   if (applicationDetails) {
@@ -255,7 +255,7 @@ const WrapPaymentComponent = (props) => {
   // };
 
   const printReciept = async () => {
-    console.log("function is payment receipt");
+
     let generatePdfKeyForWs = "ws-onetime-receipt";
     if (printing) return;
     setPrinting(true);
@@ -469,8 +469,13 @@ const WrapPaymentComponent = (props) => {
         );
         fileStoreId = response?.filestoreIds[0];
       }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      let fileUrl = fileStore[fileStoreId];
+      if (!fileUrl) {
+        const fallbackStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: fileStoreId });
+        fileUrl = fallbackStore[fileStoreId];
+      }
+      window.open(fileUrl, "_blank");
     } finally {
       setPrinting(false);
     }
@@ -501,7 +506,7 @@ const WrapPaymentComponent = (props) => {
   //   id: "PG-BP-2024-09-23-001337",
   //   moduleCode: "OBPS",
   // });
-  // console.log("workflowDetails",workflowDetails)
+
   const getPermitOccupancyOrderSearch = async (order, mode = "download") => {
     let queryObj = { applicationNo: bpaData?.[0]?.applicationNo };
     let bpaResponse = await Digit.OBPSService.BPASearch(bpaData?.[0]?.tenantId, queryObj);
@@ -592,7 +597,7 @@ const WrapPaymentComponent = (props) => {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
+
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -630,14 +635,14 @@ const WrapPaymentComponent = (props) => {
             location = geoLocation;
           }
         } catch (err) {
-          console.warn("Reverse geocoding failed, using address fallback", err);
+
         }
       }
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
+
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -749,8 +754,8 @@ const WrapPaymentComponent = (props) => {
     if (printing) return;
     setPrinting(true);
     try {
-      console.log("consumerCode for ndc", consumerCode);
-      console.log("tenantId for ndc", tenantId);
+
+
       const applicationDetails = await Digit.NDCService.NDCsearch({
         tenantId,
         filters: { applicationNo: consumerCode },
@@ -1563,7 +1568,7 @@ const WrapPaymentZeroComponent = (props) => {
   //         billIds: transactionData?.billId
   //     },
   // );
-  console.log("bpaData , data for zero", bpaData);
+
   const cities = Digit.Hooks.useTenants();
   let ulbType = "";
   const loginCity = JSON.parse(sessionStorage.getItem("Digit.User"))?.value?.info?.permanentCity;
@@ -1701,7 +1706,7 @@ const WrapPaymentZeroComponent = (props) => {
       licenseType = t(licenseSection?.values?.find((val) => val.title === "BPA_LICENSE_TYPE")?.value);
     }
     const fee = paymentData?.totalAmountPaid;
-    console.log("fee here here for zero fee", fee);
+
     const amountinwords = amountToWords(fee);
     const tenantId = paymentData?.tenantId;
     const state = Digit.ULBService.getStateId();
@@ -2050,7 +2055,7 @@ const WrapPaymentZeroComponent = (props) => {
   //New Payment Reciept For PT module with year bifurcations
 
   const printRecieptNew = async (payment) => {
-    console.log("paymentpayment", payment, payment.Payments[0].paymentDetails[0].receiptNumber, payment.Payments[0]);
+
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const state = Digit.ULBService.getStateId();
     let paymentArray = [];

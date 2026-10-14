@@ -63,7 +63,7 @@ const ASSETSearchApplication = ({ isLoading, t, onSubmit, data, count, setShowTo
     },
   });
 
- 
+
 
   const printReport = async (applicationNo) => {
 
@@ -178,7 +178,7 @@ const ASSETSearchApplication = ({ isLoading, t, onSubmit, data, count, setShowTo
       },
       disableSortBy: true,
     },
-   
+
  //later will convert it into the action bar same as i have iused in ApplicationDetailsActionBar.js file in template
     {
       Header: t("AST_ACTIONS"),// take action button
@@ -203,7 +203,7 @@ const ASSETSearchApplication = ({ isLoading, t, onSubmit, data, count, setShowTo
           };
         }, []);
         const actionOptions = collectAction(row);
-     
+
         // const actionOptions = [
         //   {
         //     label: row?.original?.assetAssignment?.isAssigned ? t("AST_RETURN") : t("AST_ASSIGN"),
@@ -332,7 +332,7 @@ const ASSETSearchApplication = ({ isLoading, t, onSubmit, data, count, setShowTo
     const batchSize = 3; // Define batch size to process and add in a page so that QR code generation and PDF creation don't overwhelm the system's memory.
     for (let i = 0; i < data.length; i += batchSize) {
       const batch = data.slice(i, i + batchSize);
-      console.log('comming data:- ', batch);
+
       const qrPromises = batch.map(async (row, index) => {
         // const url = `https://niuatt.niua.in/digit-ui/employee/asset/assetservice/applicationsearch/application-details/${row.applicationNo}`;
         const url = `${base_url}/digit-ui/citizen/assets/services?tenantId=${tenantId}&applicationNo=${row.applicationNo}`;

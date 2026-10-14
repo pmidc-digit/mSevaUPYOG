@@ -70,7 +70,7 @@ const FileComplaint = ({ parentRoute }) => {
     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
   });
 
-  
+
 let newConfig=[ 
         {
           "type": "component",
@@ -123,7 +123,7 @@ let newConfig=[
           "nextStep": 'property-type',
           "hideInEmployee": true,
         },
-        
+
         {
           "head": "FSM_NEW_APPLICATION_PROPERTY",
           "body": [
@@ -136,7 +136,7 @@ let newConfig=[
             }
           ]
         },
-      
+
   {
       "label": "ES_NEW_APPLICATION_PROPERTY_TYPEs",
       "isMandatory": true,
@@ -273,7 +273,7 @@ let newConfig=[
           "header": "CS_FILE_PROPERTY_ROAD_WIDTH",
           "cardText": "CS_FILE_PROPERTY_ROAD_WIDTH_TEXT",
           "submitBarLabel": "CS_COMMON_NEXT"
-          
+
       },
       "nextStep": "tank-size"
   },
@@ -380,7 +380,7 @@ let newConfig=[
 ]
 configs = [...newConfig]
   configs.indexRoute = "select-trip-number";
-console.log("newConfig",newConfig)
+
   return (
     <Switch>
       {configs.map((routeObj, index) => {

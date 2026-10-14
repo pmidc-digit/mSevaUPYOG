@@ -1,0 +1,64 @@
+.citizen .obps-citizen-home {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 24px 64px;
+}
+.obps-citizen-home__banner {
+  padding: 42px 44px;
+  margin-bottom: 32px;
+  border-radius: 20px;
+  background: linear-gradient(118deg, #063f84 0%, #0b63ce 62%, #248c45 100%);
+  box-shadow: 0 16px 34px rgba(7, 75, 152, 0.18);
+}
+.citizen .obps-citizen-home__banner h1 {
+  position: static !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #fff !important;
+  font-size: clamp(1.75rem, 3vw, 2.75rem);
+  line-height: 1.25;
+}
+.obps-citizen-home__section { margin-bottom: 28px; min-width: 0; }
+.obps-citizen-home__inbox-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.obps-citizen-home__inbox-actions:empty { display: none; }
+.citizen .obps-citizen-home__inbox-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  background: #0b63ce;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+.citizen .obps-citizen-home__inbox-button:hover { background: #063f84; }
+.obps-citizen-home__inbox-button:focus-visible { outline: 3px solid #248c45; outline-offset: 3px; }
+.obps-citizen-home .chc-root { padding: 0 !important; margin: 0 !important; }
+.obps-citizen-home .chc-root h2 {
+  color: #063f84 !important;
+  letter-spacing: normal !important;
+  margin: 0 0 20px !important;
+  padding: 0 !important;
+}
+.obps-citizen-home .chc-root h2 > div { display: none; }
+.citizen .obps-citizen-home .chc-card-container {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+.obps-citizen-home .chc-card { min-width: 0; box-sizing: border-box; }
+.obps-citizen-home .chc-card > div:nth-child(2) { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 1100px) {
+  .citizen .obps-citizen-home .chc-card-container { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 640px) {
+  .citizen .obps-citizen-home { padding: 12px 16px 48px; }
+  .obps-citizen-home__banner { padding: 28px 24px; }
+  .citizen .obps-citizen-home .chc-card-container { grid-template-columns: minmax(0, 1fr) !important; }
+}

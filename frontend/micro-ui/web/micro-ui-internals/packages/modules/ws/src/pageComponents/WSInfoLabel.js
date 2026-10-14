@@ -18,7 +18,7 @@ const WSInfoLabel = ({ t, config, onSelect, userType, formData }) => {
   userType = userType || Digit.SessionStorage.get("userType");
   const isMobile = window.Digit.Utils.browser.isMobile();
   let isPrivacyEnabled = sessionStorage.getItem("isPrivacyEnabled");
-  console.log("isPrivacyEnabled in WSInfoLabel:", isPrivacyEnabled);
+
   return (
     <React.Fragment>
       {isPrivacyEnabled === "true" && (

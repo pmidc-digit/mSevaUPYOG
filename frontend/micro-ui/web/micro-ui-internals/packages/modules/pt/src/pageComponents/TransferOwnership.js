@@ -10,7 +10,7 @@ export const TransferOwnership = ({ property: propProperty }) => {
   const history = useHistory();
   const location = useLocation();
   const printRef = useRef();
-  
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: propertyData } = Digit.Hooks.pt.usePropertySearch(
     { tenantId, filters: { propertyIds: id }, auth: true },
@@ -25,7 +25,7 @@ export const TransferOwnership = ({ property: propProperty }) => {
     retry: false,
     enabled: true,
   });
-  console.log("mutation docs",mutationDocuments)
+
 
    const Heading = (props) => {
     return <h1 className="heading-m">{props.label}</h1>;
@@ -46,12 +46,12 @@ export const TransferOwnership = ({ property: propProperty }) => {
     );
   };
    const closeModal =(e) =>{
-      console.log("in Print")
-      
+
+
 const content = printRef.current.innerHTML;
     const printWindow = window.open('','_blank');
     printWindow.document.write(`
-  
+
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" />
   <style>
     /* Add your custom styles here */
@@ -85,7 +85,7 @@ const content = printRef.current.innerHTML;
       history.goBack();
     }
     const [showToast, setShowToast] = useState(true);
-    
+
 
 
 
@@ -126,22 +126,22 @@ const content = printRef.current.innerHTML;
           <CardText className={"primaryColor"}>{t("PT_DOC_REQ_SCREEN_LABEL_TEXT")}</CardText> */}
           <div ref={printRef}>
 
-          
+
             {Array.isArray(mutationDocuments)
               ?
-             
+
                 //  {(isLoading === false)?
 
                 //  (docs?.config?.isMutation) ?
-          
+
                 mutationDocuments.map(({ code, dropdownData,description }, index) => (
-                  
-                
+
+
                   <div key={index}>
                     <CardSubHeader>
                       {index + 1}. {t("PROPERTYTAX_" + stringReplaceAll(code, ".", "_") + "_HEADING")}
                     </CardSubHeader>
-                   
+
                     {dropdownData.map((dropdownData,ind) => (
                       (dropdownData.active===true)?
                       <CardText className={"primaryColor"}>{t("PROPERTYTAX_" + stringReplaceAll(dropdownData?.code, ".", "_") + "_LABEL")}</CardText>
@@ -149,9 +149,9 @@ const content = printRef.current.innerHTML;
                     ))}
                      <CardText className={"primaryColor"}>{t(description)}</CardText>
                   </div>
-                 
+
                 ))
-           
+
            : null}
           </div>
         </div>

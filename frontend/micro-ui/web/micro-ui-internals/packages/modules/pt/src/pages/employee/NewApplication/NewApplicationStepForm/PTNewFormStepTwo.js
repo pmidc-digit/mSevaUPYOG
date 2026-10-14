@@ -6,7 +6,7 @@ import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewAppl
 
 const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
-    console.log("data in step two", data);
+
     const missingFields = validateEmployeeStepTwoFields(data);
     if (missingFields.length > 0) {
       alert(`Please fill the following mandatory fields:\n- ${missingFields.join("\n- ")}`);
@@ -105,14 +105,14 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step two ", state);
+
     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
       ? state.pt.PTNewApplicationForm.formData[config.key]
       : {};
   });
   const dispatch = useDispatch();
 
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
+
 
   return (
     <React.Fragment>

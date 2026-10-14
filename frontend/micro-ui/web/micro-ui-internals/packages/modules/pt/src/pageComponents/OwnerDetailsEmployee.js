@@ -25,7 +25,7 @@ const createOwnerDetails = () => ({
 const PTEmployeeOwnershipDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
 
-console.log("formData tes test",formData);
+
 
 
   const { pathname } = useLocation();
@@ -69,7 +69,7 @@ console.log("formData tes test",formData);
   }, [owners]);
 
   useEffect(() => {
-    console.log("formdata",formData)
+
     if (!formData?.owners) {
       setOwners([createOwnerDetails()]);
     }
@@ -122,7 +122,7 @@ console.log("formData tes test",formData);
       })
 
       setOwners(defaultOwners || []);
-      
+
     }
   },[Menu, isLoading])
 
@@ -191,11 +191,11 @@ const [showToast, setShowToast] = useState(null);
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
-  console.log("institution",institution)
-  console.log("owner",owner)
+
+
 const formState2 = useSelector((state) => state.pt.PTNewApplicationFormReducer.formData);
-console.log('formState2 :>> ', formState2);
-console.log("man",formData?.ownerShipCategory)
+
+
 const [isSamePropAddress,setIsSamePropAddress] = useState(false)
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // owner["institution"] = { name: owner?.institution?.name ? formValue?.institution?.name : institution?.name };
@@ -237,7 +237,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
     ownerTypesMenu.sort(function (a, b) { return a.order - b.order; });
   }
   const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code?.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
-    
+
 
   // const institutionTypeMenu = useMemo(() => {
   //   const code = formData?.ownershipCategory?.code;
@@ -249,7 +249,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
     trigger();
   }, []);
 
-  
+
   const [part, setPart] = React.useState({});
 
   useEffect(() => {    

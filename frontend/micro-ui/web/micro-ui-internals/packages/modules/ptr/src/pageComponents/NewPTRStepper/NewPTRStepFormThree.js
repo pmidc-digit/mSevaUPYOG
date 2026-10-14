@@ -26,10 +26,10 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       const ptrDocumentsType = mdmsDocsData || [];
       const documentsData = documents?.documents?.documents || [];
 
-      console.log("ptrDocumentsType", ptrDocumentsType);
-      console.log("documentsData", documentsData);
-      console.log("mdmsDocsData", mdmsDocsData);
-      console.log("documentsData===", documents);
+
+
+
+
 
       // Step 1: Extract required doc codes
       const requiredDocs = ptrDocumentsType?.filter((doc) => doc.required)?.map((doc) => doc.code);

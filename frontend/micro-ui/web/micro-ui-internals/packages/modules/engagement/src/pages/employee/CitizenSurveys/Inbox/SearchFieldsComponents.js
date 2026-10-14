@@ -17,7 +17,7 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
     .filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code))
     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
 
-  console.log("userUlbs", userUlbs);
+
   if (userUlbs?.length === 0 || tenantId === "pb.punjab") {
     isTenantFound = false;
     //userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}]

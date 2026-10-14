@@ -5,7 +5,7 @@ import { config } from "./config";
 import MyChallanResultsComponent from "./myChallan";
 
 const MyChallans = () => {
-  console.log("here======");
+
   const { t } = useTranslation();
   const { path } = useRouteMatch();
   const params = useMemo(() =>

@@ -42,7 +42,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
   };
 
   const onFormValueChange = (setValue, formData) => {
-    console.log("ProID", formData)
+
     if (
       formData?.pitType!==undefined &&
       formData?.tripData?.vehicleType &&
@@ -56,12 +56,12 @@ export const NewApplication = ({ parentUrl, heading }) => {
       formData?.tripData?.vehicleType &&
       formData?.channel &&
       formData?.pitType &&
-      
-      
+
+
       (formData?.tripData?.amountPerTrip || formData?.tripData?.amountPerTrip === 0 || formData?.tripData?.undefined?.amountPerTrip)
     ) {
       setSubmitValve(true);
-      console.log("cansub", canSubmit)
+
       const pitDetailValues = formData?.pitDetail ? Object.values(formData?.pitDetail).filter((value) => value > 0) : null;
       let max = Digit.SessionStorage.get("total_amount");
       let min = Digit.SessionStorage.get("advance_amount");
@@ -94,7 +94,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
   // }, [propertyType, subType, vehicle]);
 
   const onSubmit = (data) => {
-    console.log("data",data)
+
     const applicationChannel = data.channel;
     const sanitationtype = data?.pitType?.code;
     const pitDimension = data?.pitDetail;
@@ -166,7 +166,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
       },
       workflow: null,
     };
-    console.log("formdataa", formData)
+
 
     window.Digit.SessionStorage.set("propertyType", null);
     window.Digit.SessionStorage.set("subType", null);
@@ -492,7 +492,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
         ]
     }
 ]
-  console.log("configs",configs)
+
   return (
     <React.Fragment>
       <div style={{ marginLeft: "15px" }}>

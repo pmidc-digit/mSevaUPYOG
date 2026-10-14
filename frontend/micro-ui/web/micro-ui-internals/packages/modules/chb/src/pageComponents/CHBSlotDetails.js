@@ -22,10 +22,10 @@ const CHBSlotDetails
     const stateId = Digit.ULBService.getStateId();
     const { data: Category } = Digit.Hooks.chb.useSpecialCategory(tenantId, "CHB", "ChbSpecialCategory");
     const { data: Purposes } = Digit.Hooks.chb.usePurpose(tenantId, "CHB", "ChbPurpose");
-    
+
     let category=[];
     let purposes=[];
-  
+
 
       Category &&
       Category.map((chbDetails) => {
@@ -54,7 +54,7 @@ const CHBSlotDetails
         ownerStep = { ...owner,specialCategory,purpose,purposeDescription};
         onSelect(config.key, ownerStep, false, index);
       }
-      console.log(ownerStep);
+
     };
 
     const onSkip = () => onSelect();

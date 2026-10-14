@@ -9,7 +9,7 @@ const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const categories = useSelector((state) => state.engagement.surveyForm.categories);
   function goNext(data) {
-    console.log("data in go next", categories);
+
     let f = 0;
     let alertMsg = "";
     // let index=1
@@ -34,7 +34,7 @@ const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
     });
 
     const totalWeightage = categories.reduce((sum, category) => sum + parseFloat(category.weightage), 0);
-    console.log("tot weight", Math.round(totalWeightage));
+
     if (Math.round(totalWeightage) > 100) {
       alertMsg += `The total weightage of sections should not exceed 100.\n`;
       f = 1;
@@ -69,7 +69,7 @@ const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
     }
     //  dispatch(nextStep());
     //goNext()
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
     onGoNext();
   }
   //const state = useSelector(state => state.engagement.surveyForm);
@@ -79,7 +79,7 @@ const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in SurveyFormCategoryDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateSurveyForm(config.key, data));
     }
@@ -91,7 +91,7 @@ const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
+
   const lineStyle = {
     border: "1px solid #DFE0E2",
     marginBottom: "20px",

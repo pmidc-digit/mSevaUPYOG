@@ -74,7 +74,7 @@ const NewPTStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
 
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTNewApplication_FORM(config.key, data));

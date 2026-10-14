@@ -28,7 +28,7 @@ const QuestionForm = ({
   noOfQuestions,
   defaultQuestionValues,
 }) => {
-  //console.log("3) Default Values:", defaultQuestionValues);
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // Options for the answer type dropdown
   const { data: AnswerTypeData = {}, isLoading } = Digit.Hooks.engagement.useMDMS(tenantId, "common-masters", "questionType") || {};
@@ -53,14 +53,14 @@ const QuestionForm = ({
     const payload = { tenantId: tenantId };
     Digit.Surveys.searchCategory(payload)
       .then((response) => {
-        //console.log("Category Options: ", response);
+
         const categoryOptions = response?.Categories?.filter((item) => item.isActive)?.map((item) => {
           return { title: t(item.label), i18Key: item.label, value: item.id };
         });
         setCategoryOptions(categoryOptions);
       })
       .catch((error) => {
-        console.error("Failed to fetch categories:", error);
+
       });
   }
 
@@ -80,7 +80,7 @@ const QuestionForm = ({
 
   // const { register, formState } = useFormContext();
   const { errors } = mainFormState;
-  //console.log("mainFormState", mainFormState, "\n index", index, "\n errors:", errors, "\n message:", errors[`questions[${index}]`]);
+
 
   const handleAddOption = () => {
     const newOptions = [
@@ -108,7 +108,7 @@ const QuestionForm = ({
 
   // Dispatch the updated survey question configuration
   useEffect(() => {
-    //console.log("surveyQuestionConfig", surveyQuestionConfig);
+
     dispatch({ type: "updateForm", payload: { index: index, formConfig: surveyQuestionConfig } });
   }, [surveyQuestionConfig]);
 
@@ -277,7 +277,7 @@ const QuestionForm = ({
       type: ev ? { title: ev.title, i18Key: ev.i18Key, value: ev.value } : null,
     }));
   };
-  console.log("surveyQuestionConfig", surveyQuestionConfig.options[0].optionWeightage);
+
   return (
     <div className="newSurveyForm_wrapper">
       <span className="newSurveyForm_quesno">{`${t("CS_COMMON_QUESTION")} ${index + 1} `}</span>

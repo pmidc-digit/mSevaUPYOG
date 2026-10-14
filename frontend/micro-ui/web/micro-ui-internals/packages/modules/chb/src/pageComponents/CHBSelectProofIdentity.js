@@ -9,17 +9,17 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
-  console.log("tenantId", tenantId);
+
 
   const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
 
-  console.log("data=====", data);
+
 
   const handleSubmit = () => {
     let document = formData.documents;
     let documentStep;
     documentStep = { ...document, documents: documents };
-    console.log("documentStep config.key", documentStep);
+
     onSelect(config.key, documentStep);
   };
 
@@ -43,8 +43,8 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
 
   return (
     <React.Fragment>
-     
-     
+
+
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {data?.CHB?.Documents?.map((document, index) => {
@@ -73,7 +73,7 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
 
 function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  // console.log("filetetetetet",filteredDocument, documents, doc);
+
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // const [selectedDocument, setSelectedDocument] = useState(
@@ -112,7 +112,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (selectedDocument?.code) {
-      console.log("selectedDocument", documents);
+
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
@@ -135,7 +135,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (documents?.length > 0) {
-      console.log("documents", documents);
+
       handleSubmit();
     }
   }, [documents]);
@@ -195,7 +195,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   return (
     <React.Fragment>
-     
+
       {doc?.hasDropdown ? (
         <LabelFieldPair style={{ display: "inline" }}>
           <CardLabel style={{ width: "auto" }}>
@@ -235,7 +235,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             buttonType="button"
             error={!uploadedFile}
           />
-        
+
       </LabelFieldPair>
       {getLoading && <Loader page={true} />}
     </React.Fragment>

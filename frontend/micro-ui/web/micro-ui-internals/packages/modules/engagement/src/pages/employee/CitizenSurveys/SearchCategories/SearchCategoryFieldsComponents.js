@@ -51,7 +51,7 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
         setCategoryOptions(categoryOptions);
       })
       .catch((error) => {
-        console.error("Failed to fetch categories:", error);
+
       });
   }
 

@@ -57,15 +57,15 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
   //    return <div>No documents available.</div>;
   //   }
 
-  // console.log("docs in PropertyTax",docs)
-  // console.log("isLoading",isLoading)
+
+
   // if (!config?.isMutation) {
   // docs = docs?.filter((doc) => doc["digit-citizen"]);
   // //setDocs(docs?.filter((doc) => doc["digit-citizen"]))
   // }
 
   useEffect(() => {
-    console.log("docs", docs);
+
 
   }, [docs])
 
@@ -107,7 +107,7 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
   }
   useEffect(() => {
     window.process = { ...window.process }
-    // console.log("enviorement Variable",process.env.NODE_ENV,process.env.REACT_APP_PROXY_API,
+
     // process.env)
 
   }, [])
@@ -116,7 +116,7 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
   const onConcent = async (e) => {
     const data = await Digit.DigiLockerService.authorization({ module: "PT" });
     e.preventDefault()
-    console.log("data", data)
+
     sessionStorage.setItem("code_verfier", data?.codeverifier)
     //let redirectURL=data?.redirectURL.replace("https://upyog-test.niua.org","http://localhost:3000")
     window.location.href = data?.redirectURL
@@ -128,13 +128,13 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
     // generateCodeChallenge(codeVerifier)
     //   .then((codeChallenge) => {
 
-    //     console.log("Code Verifier:", codeVerifier);
-    //     console.log("Code Challenge:", codeChallenge);
+
+
     //       window.location.href =`https://digilocker.meripehchaan.gov.in/public/oauth2/1/authorize?response_type=code&client_id=AT3053EB6D&state=oidc_flow&redirect_uri=http%3A%2F%2Flocalhost:3000%2Fdigit-ui%2Fcitizen%2Fpt%2Fproperty%2Fnew-application%2Finfo&code_challenge=${codeChallenge}&code_challenge_method=S256&dl_flow=signin`;
 
     //   })
     //   .catch((error) => {
-    //     console.error("An error occurred:", error);
+
     //   });
 
 
@@ -156,7 +156,7 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
         code_verifier: sessionStorage.getItem("code_verfier"),
         code: code, module: "PT"
       }
-      console.log("token", code, TokenReq, sessionStorage.getItem("code_verfier"))
+
       const data = await Digit.DigiLockerService.token({ TokenReq })
       sessionStorage.setItem("DigiLocker.token1", data?.TokenRes?.access_token)
       //sessionStorage.setItem("DigiLocker.token1",data?.)
@@ -166,19 +166,19 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
       //   },
       //   {
       //     onError: (error, variables) => {
-      //       console.log("error:123 ",error)
+
       //       //setShowToast({ key: "error", action: error?.response?.data?.Errors[0]?.message || error.message, error : {  message:error?.response?.data?.Errors[0]?.code || error.message } });
       //       setTimeout(closeToast, 5000);
       //     },
       //     onSuccess: (data, variables) => {
       //       //sessionStorage.setItem("IsPTAccessDone", data?.Assessments?.[0]?.auditDetails?.lastModifiedTime);
-      //     console.log("success",data,isSuccess,variables)
+
       //     sessionStorage.setItem("DigiLocker.token1","94e648239a5096773d18774fb97b37f00a413587")
 
       //     },
       //   }
       // );
-      //console.log("tokenData",data)
+
       // fetch('https://api.digitallocker.gov.in/public/oauth2/1/token', {
       //   method: 'POST',
       //   mode: 'cors',
@@ -200,7 +200,7 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
       //     data: data,
 
       //   })).then(res => {
-      //     console.log("step 1",res)
+
       //     //code1 = "Bearer " + res.data.access_token
       //     sessionStorage.setItem('DigiLocker.token1', res.data.access_token)
       //     setItemWithExpiry('DigiLocker.token', res.data.access_token, 60);
@@ -241,19 +241,19 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
     return item.value;
   }
   const closeModal =(e) =>{
-    console.log("in Print")
+
     onConcent(e)
   }
   const setModal=()=>{
-    console.log("in Apply")
+
     onSelect()
-    
+
   }
   const closeModalTwo =() =>{
     setShowToast(false)
   }
   const [showToast, setShowToast] = useState(true);
-  console.log("isarray docs", Array.isArray(docs))
+
   return (
     <>
     { showToast && 
@@ -278,7 +278,7 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
           <CardText className={"primaryColor"}>{t("PT_DOC_REQ_SCREEN_LABEL_TEXT")}</CardText> */}
           <div>
 
-          
+
             {Array.isArray(docs)
               ?
               (config.isMutation) ?
@@ -325,7 +325,7 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
     </Modal>
       }
       </>
-             
+
   );
 };
 

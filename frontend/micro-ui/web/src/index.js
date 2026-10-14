@@ -2,10 +2,9 @@ import { initLibraries } from "@mseva/digit-ui-libraries";
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
+import "./dashboard-backgrounds.css";
 // import "./theme.css";
 import App from "./App";
-// import "../micro-ui-internals/packages/css/dist/index.css";
-
 import { TLCustomisations } from "./Customisations/tl/TLCustomisation";
 // import "../micro-ui-internals/packages/css/dist/index.css";
 

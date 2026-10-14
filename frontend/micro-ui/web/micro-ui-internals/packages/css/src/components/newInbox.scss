@@ -188,6 +188,27 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
+.obps-inbox-table-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+}
+
+.obps-inbox-table-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.obps-inbox-table-scroll .cancel-table {
+  min-width: 2200px;
+  margin-bottom: 0;
+}
+
+.obps-inbox-table-scroll .cancel-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
 .new-inbox-pagination {
   display: flex;
   align-items: center;
@@ -249,6 +270,14 @@
   .new-inbox-search {
     width: 100%;
     min-width: unset;
+  }
+
+  .obps-inbox-table-scroll {
+    scrollbar-width: auto;
+  }
+
+  .obps-inbox-table-scroll::-webkit-scrollbar {
+    display: block;
   }
 
   .new-inbox-search-actions,

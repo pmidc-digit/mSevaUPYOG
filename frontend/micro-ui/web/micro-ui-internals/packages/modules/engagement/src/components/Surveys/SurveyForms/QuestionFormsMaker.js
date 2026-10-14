@@ -15,11 +15,11 @@ const QuestionFormsMaker = ({
 }) => {
   const defaultQuestionValues=defaultQuestionValuesFromFile1();
   const initialSurveyFormState = [defaultQuestionValues];
-  //console.log("2) Default Values:", defaultQuestionValues);
-  //console.log("4) Default Values:", initialSurveyFormState);
+
+
 
   const surveyFormReducer = (state, { type, payload }) => {
-    //console.log("Form state:", state, "\n Type: ", type, "\n Payload: ", payload);
+
     switch (type) {
       case "addNewForm":
         const newSurveyQues = [...state, defaultQuestionValues];
@@ -34,7 +34,7 @@ const QuestionFormsMaker = ({
         if (state.length === 1) return state;
         const copyOfState = state.filter((question) => question.formConfig.uuid !== payload.uuid);
         payload.setSurveyConfig("questions", copyOfState);
-        //console.log("In remove", state, copyOfState, payload);
+
         return copyOfState;
     }
   };
@@ -45,8 +45,8 @@ const QuestionFormsMaker = ({
     dispatch({ type, payload: { ...payload, setSurveyConfig } });
   };
 
-  //console.log("Form State 2:", formState);
-  //console.log("Survey State: ", surveyState);
+
+
   const renderPreviewForms = () => {
     return surveyState.length
       ? surveyState.map((config, index) => {

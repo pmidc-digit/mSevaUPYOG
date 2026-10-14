@@ -255,6 +255,10 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
           title: t("Arrears"),
           value: application?.additionalDetails?.arrear || "NA",
         },
+        { title: t("Arrear GST"), value: application?.additionalDetails?.arrearGST ?? "NA" },
+        { title: t("Arrear Penalty"), value: application?.additionalDetails?.arrearPenalty ?? "NA" },
+        { title: t("Future Penalty"), value: application?.additionalDetails?.futurePenalty ?? "NA" },
+
         {
           title: t("RAL_START_DATE"),
           value: convertEpochToDate(application?.additionalDetails?.arrearStartDate) || "NA",

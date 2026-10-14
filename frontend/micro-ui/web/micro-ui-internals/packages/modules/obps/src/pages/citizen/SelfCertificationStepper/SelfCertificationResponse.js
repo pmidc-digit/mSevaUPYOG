@@ -72,7 +72,7 @@ const SelfCertificationResponse = (props) => {
   if(isLoading) return (<Loader />)
   if(showToast) return (<Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />);
 
-  console.log("GetInThisPage", bpaData)
+
 
   return (
     <div>

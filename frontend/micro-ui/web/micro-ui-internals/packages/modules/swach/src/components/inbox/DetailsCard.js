@@ -18,7 +18,7 @@ const DetailsCard = ({ data, serviceRequestIdKey, linkPrefix, handleSelect, sele
     return (
       <div>
         {data.map((object, itemIndex) => {
-            console.log("ObjectInsideDetailsCard", object);
+
           return (
             <Link
               key={itemIndex}

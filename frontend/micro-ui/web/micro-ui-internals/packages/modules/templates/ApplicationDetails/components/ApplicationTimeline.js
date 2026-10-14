@@ -138,7 +138,7 @@ export const ApplicationTimeline = ({ workflowDetails, t }) => {
     0
   );
 
-  console.log('data of doc hook', data)
+
   // PDF Download handler
   const handleDownloadPDF = useCallback(() => {
     if (!isLoading) {

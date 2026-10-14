@@ -12,7 +12,7 @@ const MutateProperty = () => {
 
   const { isLoading, data: applicationDetails } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, applicationNumber);
   // return applicationDetails && !isLoading ? <MutationForm applicationData={applicationDetails?.applicationData} tenantId={tenantId} /> : null;
-  // console.log("Application Details", applicationDetails);
+
   return applicationDetails && !isLoading ? (
     <OwnerTransfershipStepForm applicationData={applicationDetails?.applicationData} tenantId={tenantId} />
   ) : null;

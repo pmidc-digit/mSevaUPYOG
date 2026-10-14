@@ -13,7 +13,7 @@ const useSearchApplicationTableConfig = () => {
           accessor: "applicationNo",
           disableSortBy: true,
           Cell: ({ row }) => {
-            console.log('row', row)
+
             return (
               <div>
                 <span className="link">

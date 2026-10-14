@@ -189,6 +189,25 @@
   border-radius: 8px !important;
 }
 
+/* The shared Dropdown renders a wrapper and a text input. The wrapper owns the control border. */
+.location-wrapper .select-wrap .select,
+.location-wrapper .select-wrap .select-active {
+  box-sizing: border-box;
+}
+
+.location-wrapper .select-wrap .select input[type="text"],
+.location-wrapper .select-wrap .select-active input[type="text"] {
+  min-height: 0;
+  border: 0 !important;
+  border-radius: 0;
+  box-shadow: none !important;
+}
+
+.location-wrapper .select-wrap .select-active {
+  border: 1px solid #2563eb !important;
+  box-shadow: none !important;
+}
+
 .input-wrapper .submit-bar,
 .input-wrapper .submit-bar-disabled {
   width: 100%;

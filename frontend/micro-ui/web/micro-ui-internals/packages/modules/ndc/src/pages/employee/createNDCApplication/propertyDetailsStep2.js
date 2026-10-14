@@ -8,12 +8,12 @@ const PropertyDetailsStep2 = ({ config, onGoNext, t, onBackClick }) => {
   const dispatch = useDispatch();
 
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
     onGoNext();
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateNDCForm(config.key, data));
     }
@@ -23,7 +23,7 @@ const PropertyDetailsStep2 = ({ config, onGoNext, t, onBackClick }) => {
     return state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {};
   });
 
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
+
 
   return (
     <React.Fragment>

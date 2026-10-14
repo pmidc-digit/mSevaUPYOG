@@ -8,7 +8,7 @@ function PTRSummary({ t }) {
   const formData = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData || {});
   const owner = formData?.ownerDetails || {};
   const pet = formData?.petDetails || {};
-  console.log("pet", pet);
+
   const docs = formData?.documents?.documents?.documents || [];
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")

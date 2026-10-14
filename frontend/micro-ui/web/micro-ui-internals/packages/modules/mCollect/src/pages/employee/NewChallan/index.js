@@ -69,7 +69,7 @@ const NewChallan = ({ ChallanData }) => {
     isEdit = true;
   }
 
-  console.log("here1", ChallanData);
+
 
   const [canSubmit, setSubmitValve] = useState(false);
   const defaultValues = {};
@@ -85,7 +85,7 @@ const NewChallan = ({ ChallanData }) => {
 
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig, isLoading } = Digit.Hooks.mcollect.useMcollectFormConfig.getFormConfig(stateId, {});
-  console.log("newConfig", newConfig);
+
   let lastModTime = ChallanData ? ChallanData[0].auditDetails.lastModifiedTime : null;
 
   const { data: fetchBillData } = ChallanData
@@ -181,7 +181,7 @@ const NewChallan = ({ ChallanData }) => {
     //let mcollectFormValue = isEdit ? mcollectEditObject?.consomerDetails1?.[0] : JSON.parse(sessionStorage.getItem("mcollectFormData"));
     let mcollectFormValue =  JSON.parse(sessionStorage.getItem("mcollectFormData"));
     data = mcollectFormValue ? mcollectFormValue : data?.consomerDetails1?.[0];
-    console.log("form Data ", data)
+
     let TaxHeadMasterKeys = data[`${data?.category?.code?.split(".")[0]}`] ? Object.keys(data[`${data?.category?.code?.split(".")[0]}`]) : [];
     let TaxHeadMasterValues = data[`${data?.category?.code?.split(".")[0]}`] ? Object.values(data[`${data?.category?.code?.split(".")[0]}`]) : [];
     let isvalid = validateForm(data);
@@ -285,7 +285,7 @@ const NewChallan = ({ ChallanData }) => {
                 })
                 .catch((err) => {
                   setLoading(false);
-                  console.log("err", err);
+
                 });
             }
           })

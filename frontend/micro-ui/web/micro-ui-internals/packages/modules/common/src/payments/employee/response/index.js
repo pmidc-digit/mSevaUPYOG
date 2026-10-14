@@ -47,12 +47,12 @@ export const SuccessfulPayment = (props) => {
 
   let { consumerCode, receiptNumber, businessService } = useParams();
 
-  console.log("checkParam", checkParam);
-  console.log("egPgTxnId", egPgTxnId);
-  console.log("businessService", businessService);
+
+
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
   receiptNumber = receiptNumber?.replace(/%2F/g, "/");
-  console.log('receiptNumber in response page', receiptNumber)
+
   const { data = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
     {},
@@ -162,11 +162,11 @@ export const SuccessfulPayment = (props) => {
       businessService === "GC.ONE_TIME_FEE" || businessService === "GC"
         ? "garbage-receipt"
         : businessService === "rl-services"
-        ? "rentandlease-receipt"
+        ? "rl-receipt-employee"
         : data["common-masters"]?.uiCommonPay?.filter(({ code }) => businessService?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
   });
 
-  
+
   const { printReceipt: printBillReceipt } = Digit.Hooks.usePrintBillReceipt({
     tenantId,
     setLoader: setPrinting,
@@ -192,7 +192,7 @@ export const SuccessfulPayment = (props) => {
   //   const tenantId = Digit.ULBService.getCurrentTenantId();
   //   const state = Digit.ULBService.getStateId();
   //   const applicationpetDetails = await Digit.PTRService.search({ tenantId, applicationNumber: consumerCode });
-  //   console.log("aplllldetailll",consumerCode)
+
   //   const generatePdfKeyForPTR = "petservicecertificate";
 
   //   if (applicationpetDetails) {
@@ -286,14 +286,14 @@ export const SuccessfulPayment = (props) => {
             location = geoLocation;
           }
         } catch (err) {
-          console.warn("Reverse geocoding failed, using address fallback", err);
+
         }
       }
       const challan = {
         ...applicationDetails,
         ...challanEmpData,
       };
-      console.log("applicationDetails", applicationDetails);
+
       let application = challan;
       let fileStoreId = applicationDetails?.Applications?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
@@ -440,8 +440,13 @@ export const SuccessfulPayment = (props) => {
         );
         fileStoreId = response?.filestoreIds[0];
       }
-      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-      window.open(fileStore[fileStoreId], "_blank");
+      let fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+      let fileUrl = fileStore[fileStoreId];
+      if (!fileUrl) {
+        const fallbackStore = await Digit.PaymentService.printReciept(Digit.ULBService.getStateId(), { fileStoreIds: fileStoreId });
+        fileUrl = fallbackStore[fileStoreId];
+      }
+      window.open(fileUrl, "_blank");
     } finally {
       setPrinting(false);
     }
@@ -450,8 +455,8 @@ export const SuccessfulPayment = (props) => {
     if (printing) return;
     setPrinting(true);
     try {
-      console.log("consumerCode for ndc", consumerCode);
-      console.log("tenantId for ndc", tenantId);
+
+
       const applicationDetails = await Digit.NDCService.NDCsearch({
         tenantId,
         filters: { applicationNo: consumerCode },
@@ -533,7 +538,7 @@ export const SuccessfulPayment = (props) => {
     for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
       const newDate = new Date(workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime);
       const formattedDate = format(newDate, "dd-MM-yyyy HH:mm:ss");
-      console.log("formatteddate2", formattedDate);
+
       if (
         (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
           workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
@@ -652,7 +657,7 @@ export const SuccessfulPayment = (props) => {
     await Digit.Utils.downloadReceipt(consumercode, businessService, "consolidatedreceipt", tenantid);
   };
   const printRecieptNew = async (payment) => {
-    console.log("paymentpayment", payment, payment.Payments[0].paymentDetails[0].receiptNumber, payment.Payments[0]);
+
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const state = Digit.ULBService.getStateId();
     let paymentArray = [];
@@ -865,9 +870,9 @@ export const SuccessfulPayment = (props) => {
       }
 
       paymentArray[0] = payments.Payments[0];
-      console.log("payments", payments);
+
       response = await Digit.PaymentService.generatePdf(state, { Payments: paymentArray }, generatePdfKey);
-      console.log("responseresponse", response);
+
     }
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response.filestoreIds[0]], "_blank");

@@ -13,7 +13,7 @@ export const ModalConfig = ({
   assigneeLabel,
   businessService,
 }) => {
-  console.log("action=====", action);
+
   let checkCondtions = true;
   if (
     action?.action == "SENDBACKTOCITIZEN" ||
@@ -26,7 +26,7 @@ export const ModalConfig = ({
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 
-  console.log("action=====", action.action);
+
 
   return {
     label: {

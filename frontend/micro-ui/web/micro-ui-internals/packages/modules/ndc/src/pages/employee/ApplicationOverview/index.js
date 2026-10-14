@@ -63,7 +63,7 @@ const ApplicationOverview = () => {
       const updated = { ...prev, [consumerCode]: value === "yes" };
 
       if (updated[consumerCode]) {
-        console.log("✅ Marked dues pending for", consumerCode);
+
         // TODO: Call API to mark as pending
       } else {
         setAmounts((prevAmounts) => ({
@@ -177,7 +177,7 @@ const ApplicationOverview = () => {
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
       setLoader(false);
     } catch (error) {
-      console.error(error);
+
       setLoader(false);
     }
   }
@@ -310,7 +310,7 @@ const ApplicationOverview = () => {
       Property.propertyOwnerNames = propertyOwnerNames;
       Property.propertyOwnerMobiles = propertyOwnerMobiles;
       const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
-      console.log("propertyOwnerNames", propertyOwnerNames);
+
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
       const vasikaNo =
@@ -338,7 +338,7 @@ const ApplicationOverview = () => {
         setLoader(false);
       }, 0);
     } catch (error) {
-      console.error("Error generating acknowledgement:", error);
+
       setLoader(false);
     }
   };

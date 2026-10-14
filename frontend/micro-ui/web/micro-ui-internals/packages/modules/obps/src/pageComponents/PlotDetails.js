@@ -103,12 +103,12 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const data = currentStepData?.BasicDetails?.edcrDetails;
   const { occupancyTypes, subOccupancyTypes, value: heightLimit} = buildingHeightData?.BPA?.BuildingHeight?.find(val => val.name === "SELF_CERTIFICATION") || {};
   const isSelfCertificationCondition = (occupancyTypes?.includes(data?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code)) && (subOccupancyTypes?.includes(data?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.subtype?.code)) && (data?.planDetail?.blocks?.[0]?.building?.buildingHeight < heightLimit);
-  console.log("menuList2",currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding) //buildingHeightData?.BPA?.BuildingHeight?.[0]?.value
+   //buildingHeightData?.BPA?.BuildingHeight?.[0]?.value
 
-console.log("sessionStorageData",currentStepData, userDetails);
+
 
   const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) =>  (
-    
+
     <div>
       <CardLabel>{label} <span className="requiredField">*</span></CardLabel>
       <TextInput value={value} placeholder={t(placeholder)} onChange={(e) => {setErrors((prev) => ({...prev, [errorKey]: null})); setValue(e.target.value)}} disable={isDisabled}/>
@@ -149,7 +149,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
     },
   )
 
-  console.log("commonmasterFields", commonmasterFields, error)
+
 
   async function fetchPropertyDetails(propertyId){
     try {
@@ -169,7 +169,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
                         return false
                     }
                 }));
-                console.log("fetchedData", zone, boundary);
+
                 setPtLoading(false)
                 dispatch(UPDATE_OBPS_FORM("cpt", {  details: fetchedData?.Properties?.[0], id: fetchedData?.Properties?.[0]?.propertyId, zonalMapping: zone ? { zone, ward } : undefined }))
             }else{
@@ -178,7 +178,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
             }
         } catch (err) {
             setPtLoading(false)
-            console.error("Error fetching property details:", err);
+
             return;
         }
   }
@@ -187,12 +187,12 @@ console.log("sessionStorageData",currentStepData, userDetails);
 
   // async function addInPreviousEDCR(oldEdcrNumber){
   //   const isEDCRPresent = oldEDCR?.find((val) => val?.edcrNumber === oldEdcrNumber);
-  //   console.log("oldEDCR", oldEDCR, isEDCRPresent)
+
   //   if(isEDCRPresent?.edcrNumber){
-  //     console.log("oldEDCR 1", oldEDCR, isEDCRPresent)
+
   //     return;
   //   }else{
-  //     console.log("oldEDCR 2", oldEDCR, isEDCRPresent)
+
   //     try{
   //     setedcrLoading(true);
   //     const details = await oldscrutinyDetailsData(oldEdcrNumber, state);
@@ -200,7 +200,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
   //       setedcrLoading(false);
   //     }
   //     if (details?.edcrNumber) {
-  //       console.log("PREVIOUS_EDCR_DATA",details)
+
   //       const newEDCRObject = {
   //         appliactionType: details?.appliactionType,
   //         applicationDate: details?.applicationDate,
@@ -212,13 +212,13 @@ console.log("sessionStorageData",currentStepData, userDetails);
   //       setedcrLoading(false);
   //     }
   //   }catch(e){
-  //     console.error(e);
+
   //     setedcrLoading(false);
   //   }
   //   }
   // }
 
-  console.log("isPropertyAvailable", isPropertyAvailable)
+
 
   async function addInPreviousEDCR(oldEdcrNumber) {
 
@@ -265,7 +265,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
       }
 
     } catch (e) {
-      console.error(e);
+
     } finally {
       setedcrLoading(false);
       // Remove lock after completion
@@ -273,7 +273,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
     }
   }
 
-  
+
   useEffect(() => {
     if (isEditApplication) {
       const newConfig = {
@@ -299,7 +299,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
   }, [LicenseData]);
 
   useEffect(() => {
-      console.log("isPropertAvailableValue", isPropertyAvailable);
+
         if (typeof isPropertyAvailable === "boolean") {
           const plan = common.find((item) => item.value === isPropertyAvailable);
           if (plan) setIsPropertyAvailable(plan);
@@ -314,7 +314,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
           // dispatch(UPDATE_OBPS_FORM("cpt", {}));
         // }
   }, [isPropertyAvailable, currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable]);
-  
+
   useEffect(() => {
         if (typeof isClubbedPlot === "boolean") {
           const plan = common.find((item) => item.value === isClubbedPlot);
@@ -325,7 +325,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
           }
         }
   }, [isClubbedPlot, currentStepData?.createdResponse?.additionalDetails?.isClubbedPlot]);
-  
+
   useEffect(() => {
     if (buildingHeightData?.BPA?.BuildingHeight?.[0]?.value) {
       if (isSelfCertificationCondition) {
@@ -365,7 +365,7 @@ console.log("sessionStorageData",currentStepData, userDetails);
   //         setArchitectId(userInfo.id);
   //       }
   //     } catch (err) {
-  //       console.error("Error parsing user-info from local storage", err);
+
   //     }
   //   }
   // }, []);
@@ -432,7 +432,7 @@ useEffect(()=>{
 // useEffect(() => {
 //   if (menuList && currentStepData?.cpt?.details?.address?.locality && !currentStepData?.createdResponse?.additionalDetails) {
 //     const boundary = menuList?.["egov-location"]?.TenantBoundary?.find(item => item?.hierarchyType?.code === "REVENUE")?.boundary;
-//     console.log("menuList", boundary);
+
 //     let ward = {}
 //     const zone = boundary?.children?.find(item => item?.children?.some((children) => {
 //       if(children?.children?.some(child => child?.code === currentStepData?.cpt?.details?.address?.locality?.code)){
@@ -442,7 +442,7 @@ useEffect(()=>{
 //         return false
 //       }
 //     }));
-//     console.log("menuList zone", zone, ward)
+
 //   }
 // }, [menuList, currentStepData?.cpt?.details?.address?.locality]);
 
@@ -484,7 +484,7 @@ useEffect(() => {
     if(!isPropertyAvailable?.code){
       newErrors.isPropertyAvailable = t("BPA_IS_PROPERTY_AVAILABLE_REQUIRED");
     }
-    
+
     if (!isClubbedPlot?.code) {
       newErrors.isClubbedPlot = t("BPA_IS_CLUBBED_PLOT_REQUIRED");
     }
@@ -605,7 +605,7 @@ useEffect(() => {
     const stakeholderRegistrationNumber= JSON.parse(
         sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"),
       ) || null;
-    
+
     const stakeholderState = userDetails?.user[0]?.correspondenceState
     const stakeholderDistrict = userDetails?.user[0]?.correspondenceDistrict
     const architectMobileNumber = userInfo?.info?.mobileNumber || "";
@@ -744,24 +744,10 @@ useEffect(() => {
     const accountId = userInfo?.info?.uuid
     const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
 
-    console.log("Submitting form:", {BPA: {
-      edcrNumber,
-      riskType,
-      applicationType,
-      serviceType,
-      tenantId,
-      accountId,
-      documents: [],
-      additionalDetails,
-      landInfo: null,
-      workflow: {
-        action: workflowAction,
-        assignes: [accountId],
-      }
-    }});
+
 
     if(formData?.data?.applicationNo){
-      console.log("UpdateAPIFlow") // Change to the update flow
+       // Change to the update flow
       try{
         setApiLoading(true);
         const result = await Digit.OBPSService.update({ BPA: {
@@ -784,12 +770,12 @@ useEffect(() => {
           setApiLoading(false);
         }
       }catch(e){
-        console.log("error", e);
+
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
     }else{
-      console.log("CreateFlow")
+
       try{
         setApiLoading(true);
         const result = await Digit.OBPSService.create({BPA: {
@@ -826,7 +812,7 @@ useEffect(() => {
         setApiLoading(false);
       }
     }catch(e){
-        console.log("error", e);
+
         if(e.response?.data?.Errors?.[0]?.code === "DUPLICATE EDCR"){
           alert(e.response?.data?.Errors?.[0]?.message);
           setApiLoading(false);
@@ -852,12 +838,12 @@ useEffect(() => {
   function setClubbedPlot(option) {
     setIsClubbedPlot(option)
   }
-  
+
   function setSelfCertificationRequired(option) {
     setIsSelfCertification(option)
   }
 
-  console.log("setProperyAvailable option", warningModal);
+
   function setProperyAvailable(option) {
     if(isPropertyAvailable?.value === true && option?.value === false && currentStepData?.createdResponse?.applicationNo){
       setWarningModal({
@@ -911,7 +897,7 @@ useEffect(() => {
       additionalDetails.registrationDetails = "";
       additionalDetails.wardnumber = "";
     }
-    console.log("landInfo on property change", landInfo, additionalDetails);
+
     try {{
       setApiLoading(true);
       const result = await Digit.OBPSService.update({ BPA: {
@@ -937,7 +923,7 @@ useEffect(() => {
         setApiLoading(false);
       }
     }}catch(e){
-      console.log("error", e);
+
       alert(t("BPA_CREATE_APPLICATION_FAILED"));
       setApiLoading(false);
     }    
@@ -950,7 +936,7 @@ useEffect(() => {
 
   function setCost (val) {
     const numberedVal = parseInt(val)
-    console.log("numberedVal",numberedVal)
+
     if((numberedVal &&  numberedVal <= 999999999)){
       setEstimatedCost(`${numberedVal}`)
       setErrors((prev) => ({...prev, estimatedCost: null}))
@@ -967,7 +953,7 @@ useEffect(() => {
     }
   }
 
-  console.log("currentStepData in plot details", currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks?.[0]?.building?.mostRestrictiveFarHelper?.type?.code);
+
 
 
 
@@ -987,7 +973,7 @@ useEffect(() => {
             <Row className="border-none" label={t(`BPA_PLOT_NUMBER_LABEL`)} text={data?.planDetail?.planInformation?.plotNo} />
             <Row className="border-none" label={t(`BPA_KHATHA_NUMBER_LABEL`)} text={data?.planDetail?.planInfoProperties?.KHATA_NO} />
 
-            
+
           </StatusTable>
 
           <div style={{ marginTop: "1rem" }}>
@@ -1069,7 +1055,7 @@ useEffect(() => {
           {errors["isClubbedPlot"] && (
             <CardLabelError>{errors["isClubbedPlot"]}</CardLabelError>
           )}
-          
+
           {occupancyTypes.includes(currentStepData?.BasicDetails?.edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type?.code) &&
             <React.Fragment>
               <CardLabel>{`${t("BPA_IS_SELF_CERTIFICATION_REQUIRED")} `}<span className="requiredField">*</span></CardLabel>
@@ -1088,7 +1074,7 @@ useEffect(() => {
           {errors["isSelfCertification"] && (
             <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors["isSelfCertification"]}</CardLabelError>
           )}
-            
+
           {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL"), registrationDetails, setRegistrationDetails, "registrationDetails", "Enter Proposed Site Address ...", (currentStepData?.cpt?.details?.address && isPropertyAvailable?.value) ? true : false)}
           {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT"), boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)", data?.planDetail?.planInformation?.plotBndryWallLength)}
           {renderField(t("BPA_WARD_NUMBER_LABEL"), wardnumber, setWardNumber, "wardnumber", "Ward Number", (currentStepData?.cpt?.zonalMapping?.ward && isPropertyAvailable?.value) ? true : false)}
@@ -1120,11 +1106,11 @@ useEffect(() => {
           {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS"), materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc")}
           {renderField(t("BPA_ESTIMATED_COST_LABEL"), estimatedCost, setCost, "estimatedCost", "Please Provide Estimated Cost")}
 
-          
+
           <ActionBar>
             <SubmitBar
                       label="Back"
-                     
+
                       onSubmit={onGoBack}
             />
             {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading || ptLoading || isLoading || isLoading2 || isUserLoading || isBuildingHeightLoading || edcrLoading} />}

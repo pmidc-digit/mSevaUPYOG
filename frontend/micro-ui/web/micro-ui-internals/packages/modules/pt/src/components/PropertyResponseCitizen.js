@@ -48,7 +48,7 @@ const PropertyResponseCitizen = (props) => {
       if (!responseData?.Properties?.length) {
         responseData = await Digit.PTService.search({ tenantId, filters: { acknowledgementIds: applicationNumber } });
       }
-      console.log("property search response", responseData);
+
       const property = responseData?.Properties?.[0];
       if (property) {
         if (property.creationReason === "MUTATION") {
@@ -64,7 +64,7 @@ const PropertyResponseCitizen = (props) => {
       }
       setLoader(false);
     } catch (error) {
-      console.error("error fetching property details", error);
+
       setLoader(false);
     }
   };
@@ -73,7 +73,7 @@ const PropertyResponseCitizen = (props) => {
     try {
       setLoader(true);
       const applications = propertyData;
-      console.log("applications for property acknowledgement", applications);
+
       if (!applications) {
         throw new Error("No property details found to generate acknowledgement.");
       }
@@ -84,7 +84,7 @@ const PropertyResponseCitizen = (props) => {
         setLoader(false);
       }, 0);
     } catch (error) {
-      console.error("Error generating acknowledgement:", error);
+
       setLoader(false);
     }
   };

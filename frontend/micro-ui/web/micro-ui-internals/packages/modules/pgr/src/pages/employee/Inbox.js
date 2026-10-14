@@ -49,13 +49,13 @@ const Inbox = ({initialStates={}}) => {
 
 
         setComplaints(transformedData);
-        
+
         // ✅ Use totalCount from the same API response
         if (transformedData?.totalCount !== undefined) {
           setTotalRecords(transformedData.totalCount);
         }
       } catch (e) {
-        console.error("Error fetching inbox:", e);
+
         setComplaints({ table: [] });
       } finally {
         setIsLoading(false);

@@ -39,7 +39,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
             }
           }
         } catch (e) {
-          console.error("Error searching CLU for document:", e);
+
         }
       }
 
@@ -56,7 +56,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
             setUrl(typeof fetchedUrl === "string" ? fetchedUrl.split(",")?.[0] : fetchedUrl);
           }
         } catch (error) {
-          console.error("Error fetching document:", error);
+
         }
       }
       setLoading(false);
@@ -281,7 +281,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
               {renderRow(t("NOC_APPLICANT_GENDER_LABEL"), owners[0]?.gender?.code || owners[0]?.gender?.value || owners[0]?.gender)}
               {renderRow(t("NOC_APPLICANT_ADDRESS_LABEL"), owners[0]?.permanentAddress)}
 
-              
+
               <Row label={t("BPA_APPLICANT_PASSPORT_PHOTO") || "Photo"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "OWNERPHOTO")} stateCode={stateCode} t={t} />} />
               <Row label={t("BPA_APPLICANT_ID_PROOF") || "ID Proof"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "OWNERVALIDID")} stateCode={stateCode} t={t} />} />
               <Row label={t("BPA_PAN_DOCUMENT") || "PAN Document"} text={<DocumentLink fileStoreId={findOwnerDocument(0, "PANDOCUMENT")} stateCode={stateCode} t={t} />} />
@@ -289,7 +289,7 @@ function LayoutSummary({ currentStepData: formData, t }) {
             </StatusTable>
           </Card>
 
-          
+
           {owners.length > 1 && owners.slice(1).map((owner, index) => {
             if (!owner?.status) return null;
             const visibleIndex = activeApplicants.findIndex(a => a === owner);

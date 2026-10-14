@@ -15,7 +15,7 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
   const [vasikaDate, setVasikaDate] = useState(
     formData?.vasikaDetails?.vasikaDate ?  new Date(formData?.vasikaDetails?.vasikaDate).toISOString().slice(0, 10) : null
   );
-  
+
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
   const formValue = watch();
@@ -23,7 +23,7 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
   const checkLocation = window.location.href.includes("pt/new-application") || window.location.href.includes("pt/renew-application-details");
   const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("pt/renew-application-details");
   let validation = {};
- console.log("config.key",config.key)
+
   let inputs = [
     {
       label: "PT_PROPERTY_ADDRESS_VASIKA_NO",
@@ -47,13 +47,13 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
       //   title: t("CORE_COMMON_STREET_INVALID"),
       // },
     },
-    
+
   ];
 
   const convertValidationToRules = ({ validation, name, messages }) => {
     if (validation) {
       let { pattern: valPattern, maxlength, minlength, required: valReq } = validation || {};
-     
+
       let pattern = (value) => {
         if (valPattern) {
           if (valPattern instanceof RegExp) return valPattern.test(value) ? true : messages?.pattern || `${name.toUpperCase()}_PATTERN`;
@@ -81,7 +81,7 @@ const setData = (config, data) => {
   //   vasikaDetails: dataNew, // Save vasika details here
   // });
 };
-// console.log("formData.PropertyDetails.vasikaDetails",formData?.PropertyDetails?.vasikaDetails)
+
 useEffect(() => {
   // Synchronize local state with formData when the component mounts or formData changes
   if (formData?.vasikaDetails) {
@@ -110,11 +110,11 @@ useEffect(() => {
   //   const keys = Object.keys(formValue);
   //   const part = {};
   //   keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
-  //   console.log("key",formValue)
+
   //   if (!_.isEqual(formValue, part)) {
   //     onSelect(config.key, { ...formData[config.key], ...formValue });
   //     for (let key in formValue) {
-      
+
   //       if (!formValue[key] && !localFormState?.errors[key]) {
   //         setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
   //       } else if (formValue[key] && localFormState.errors[key]) {
@@ -123,7 +123,7 @@ useEffect(() => {
   //     }
   //     trigger();
   //   } 
-  //   console.log("formValue",formValue,formData)
+
   // }, [formValue]);
   const handleVasikaNoChange = (value) => {
     setVasikaNo(value);
@@ -131,7 +131,7 @@ useEffect(() => {
       // vasikaDetails: { ...(formData.PropertyDetails?.vasikaDetails || {}), vasikaNo: value },
     );
   };
-  
+
 
   const handleVasikaDateChange = (value) => {
     setVasikaDate(value);
@@ -168,7 +168,7 @@ useEffect(() => {
   //             rules={{ validate: convertValidationToRules(inputs[0]) }}
   //             type={"text"}
   //             render={(_props) => (
-                
+
   //               <TextInput
   //                 id={inputs[0].name}
   //                 key={inputs[0].name}
@@ -183,11 +183,11 @@ useEffect(() => {
   //                 autoFocus={focusIndex?.index == 0}
   //                 {...inputs[0].validation}
   //               />
-                
-         
+
+
   //             )}
   //           />
-           
+
   //         </div>
   //       </LabelFieldPair>
   //       {formState.touched[config.key] ? (
@@ -336,7 +336,7 @@ useEffect(() => {
             value={doorNo}
             errorStyle={false}
             autoFocus={focusIndex?.index == 1}
-           
+
           />
       </FormStep> */}
     </React.Fragment>

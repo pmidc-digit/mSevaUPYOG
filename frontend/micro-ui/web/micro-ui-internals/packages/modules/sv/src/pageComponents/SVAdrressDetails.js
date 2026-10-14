@@ -390,7 +390,7 @@ const SVAdrressDetails = ({ t, config, onSelect, userType, formData, editdata, p
         sessionStorage.setItem("Response", JSON.stringify(response));
       })
       .catch((error) => {
-        console.log("Something Went Wrong", error);
+
       });
   };
 

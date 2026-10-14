@@ -241,7 +241,6 @@ const NavBar = ({
             overflowY: "hidden",
           }}
         >
-          {profileItem}
           <div
             className="drawer-list"
             id="sideBarMenu"
@@ -254,6 +253,7 @@ const NavBar = ({
             }}
           >
             <div style={{ flex: 1 }}>
+              {profileItem}
               {isEmployee ? renderSearch() : null}
               {menuItems?.map((item, index) => (
                 <div

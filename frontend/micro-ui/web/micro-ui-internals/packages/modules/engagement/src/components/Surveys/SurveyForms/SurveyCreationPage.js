@@ -14,10 +14,10 @@ const SurveyCreationPage = ({ config, onSelect, userType, formData, setError, fo
   const categoryWeight = useSelector((state) => state.engagement.surveyForm.autoCalculateCategoriesWeight);
   const dispatch = useDispatch();
   const [checked, setChecked] = useState(categoryWeight);
-  console.log("categories", categories);
+
   const [index, setIndex] = useState(2);
   const handleDeleteCategory = (categoryId) => {
-    console.log("checked", checked);
+
     if (categories.length === 1) {
       alert("Atleast one category must be there");
       return;
@@ -55,7 +55,7 @@ const SurveyCreationPage = ({ config, onSelect, userType, formData, setError, fo
             marginBottom: "10px",
           }}
           onClick={() => {
-            console.log("checked", categoryWeight);
+
             if (categoryWeight === true) {
               dispatch(addCategory(index));
               dispatch(recalculateWeightage());
@@ -96,7 +96,7 @@ const SurveyCreationPage = ({ config, onSelect, userType, formData, setError, fo
             checked={categoryWeight}
             disabled={readOnly}
             onChange={(e) => {
-              console.log("e checked", e.target.checked);
+
               dispatch(autoCalculateCategoriesWeight(e.target.checked));
               setChecked(e.target.checked);
               if (e.target.checked === true) {

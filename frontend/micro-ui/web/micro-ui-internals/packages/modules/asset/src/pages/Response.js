@@ -34,7 +34,7 @@ const BannerPicker = (props) => {
 };
 
 const Response = (props) => {
-  console.log('For coming data from props in response:- ', props)
+
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const history = useHistory();
@@ -48,7 +48,7 @@ const Response = (props) => {
     setShowToast(null);
     setError(null);
   };
-  
+
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { state } = props.location;
@@ -106,7 +106,7 @@ const Response = (props) => {
           isLoading={(mutation.isIdle && !mutationHappened) || mutation?.isLoading}
           isEmployee={props.parentRoute.includes("employee")}
         />
-       
+
       </Card>
       {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
       <ActionBar>

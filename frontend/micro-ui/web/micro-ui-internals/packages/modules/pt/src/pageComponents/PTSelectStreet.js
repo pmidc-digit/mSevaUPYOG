@@ -61,14 +61,14 @@ const PTSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
         //   title: t("CORE_COMMON_STREET_INVALID"),
         // },
       },
-      
+
     ];
   }
 
   const convertValidationToRules = ({ validation, name, messages }) => {
     if (validation) {
       let { pattern: valPattern, maxlength, minlength, required: valReq } = validation || {};
-     
+
       let pattern = (value) => {
         if (valPattern) {
           if (valPattern instanceof RegExp) return valPattern.test(value) ? true : messages?.pattern || `${name.toUpperCase()}_PATTERN`;
@@ -103,11 +103,11 @@ const setData=(config,data)=>{
     const keys = Object.keys(formValue);
     const part = {};
     keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
-    console.log("key",formValue)
+
     if (!_.isEqual(formValue, part)) {
       onSelect(config.key, { ...formData[config.key], ...formValue });
       for (let key in formValue) {
-      
+
         if (!formValue[key] && !localFormState?.errors[key]) {
           setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
         } else if (formValue[key] && localFormState.errors[key]) {
@@ -116,7 +116,7 @@ const setData=(config,data)=>{
       }
       trigger();
     } 
-    console.log("formValue",formValue,formData)
+
   }, [formValue]);
   function selectStreet(e) {
     setFocusIndex({ index:1 });
@@ -149,7 +149,7 @@ const setData=(config,data)=>{
                   rules={{ validate: convertValidationToRules(inputs[0]) }}
                   type={"text"}
                   render={(_props) => (
-                    
+
                     <TextInput
                       id={inputs[0].name}
                       key={inputs[0].name}
@@ -164,11 +164,11 @@ const setData=(config,data)=>{
                       autoFocus={focusIndex?.index == 0}
                       {...inputs[0].validation}
                     />
-                    
-             
+
+
                   )}
                 />
-               
+
               </div>
             </LabelFieldPair>
             {formState.touched[config.key] ? (
@@ -191,7 +191,7 @@ const setData=(config,data)=>{
                   rules={{ validate: convertValidationToRules(inputs[1]) }}
                   type={"text"}
                   render={(_props) => (
-              
+
                     <TextInput
                       id={inputs[1].name}
                       key={inputs[1].name}
@@ -205,13 +205,13 @@ const setData=(config,data)=>{
                       disable={isRenewal}
                       autoFocus={focusIndex?.index == 1}
                       {...inputs[1].validation}
-                      
+
                     />
-                    
-                   
+
+
                   )}
                 />
-               
+
               </div>
             </LabelFieldPair>
             {formState.touched[config.key] ? (
@@ -235,7 +235,7 @@ const setData=(config,data)=>{
               rules={{ validate: convertValidationToRules(inputs[2]) }}
               type={"text"}
               render={(_props) => (
-                
+
                 <TextInput
                   id={inputs[2].name}
                   key={inputs[2].name}
@@ -250,11 +250,11 @@ const setData=(config,data)=>{
                   autoFocus={focusIndex?.index == 2}
                   {...inputs[2].validation}
                 />
-                
-         
+
+
               )}
             />
-           
+
           </div>
         </LabelFieldPair>
         {formState.touched[config.key] ? (
@@ -316,7 +316,7 @@ const setData=(config,data)=>{
             value={doorNo}
             errorStyle={false}
             autoFocus={focusIndex?.index == 1}
-           
+
           />
       </FormStep>
     </React.Fragment>

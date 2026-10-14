@@ -5,13 +5,13 @@ import { useHistory } from "react-router-dom";
 import { stringReplaceAll } from "../utils";
 
 const PTRResponseCitizen = (props) => {
-  console.log("props", props);
+
   const { state } = props.location;
   const { t } = useTranslation();
   const history = useHistory();
   const nocData = state?.applicationData?.Noc?.[0];
-  console.log("state", state);
-  console.log("nocData", nocData);
+
+
   const isCitizen = window.location.href.includes("citizen");
 
   const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");

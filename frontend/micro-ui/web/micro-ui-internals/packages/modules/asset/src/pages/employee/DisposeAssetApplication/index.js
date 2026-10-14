@@ -17,7 +17,7 @@ const DisposeAssetApplication = () => {
 
   const { data: applicationDetails } = Digit.Hooks.asset.useAssetApplicationDetail(t, tenantId, applicationNo);
 
-  
+
    const [_formData, setFormData,_clear] = Digit.Hooks.useSessionStorage("store-data",null);
    const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", { });
@@ -28,7 +28,7 @@ const DisposeAssetApplication = () => {
     return new Date(year, month - 1, day).getTime();
   };
 
- 
+
 
   useEffect(() => {
     setMutationHappened(false);
@@ -41,11 +41,11 @@ const DisposeAssetApplication = () => {
         const timer = setTimeout(() => {
           setShowToast(null);
         }, 2000);
-  
+
         return () => clearTimeout(timer);
       }
     }, [showToast]);
-  
+
 
   const onFormValueChange = (setValue, formData, formState) => {
     //  setSubmitValve(!Object.keys(formState.errors).length); 
@@ -90,13 +90,13 @@ const DisposeAssetApplication = () => {
           }
       ]
     };
-    
+
     try {
           const applicationDetails = await Digit.ASSETService.assetDisposedCreate({
             AssetDisposal: formData
           });
           if(applicationDetails){
-            console.log('success data is coming')
+
             // setShowToast({ error: false, label: 'Asset Dispose Successfully'});
             history.replace("/digit-ui/employee/asset/assetservice/asset-dispose-response", { AssetDisposal: applicationDetails, applicationNo }); 
           }
@@ -105,7 +105,7 @@ const DisposeAssetApplication = () => {
           setShowToast({ error: true, label: t("CS_SOMETHING_WENT_WRONG") });
           }
         };
-    
+
  const configs = disposeConfig;    
   return (
     <div>
@@ -114,7 +114,7 @@ const DisposeAssetApplication = () => {
         isDisabled={!canSubmit}
         label={t("ES_COMMON_APPLICATION_SUBMIT")}
         config={configs.map((config) => {
-        
+
           return {
             ...config,
             body: config.body.filter((a) => !a.hideInEmployee),
@@ -125,7 +125,7 @@ const DisposeAssetApplication = () => {
         onSubmit={onSubmit}
         defaultValues={defaultValues}
         onFormValueChange={onFormValueChange}
-      
+
       />
     {showToast && (
               <Toast

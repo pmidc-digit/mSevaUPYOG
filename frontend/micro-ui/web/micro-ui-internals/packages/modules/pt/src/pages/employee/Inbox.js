@@ -2,9 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
 import { Link } from "react-router-dom";
+import { InboxPagination, InboxWrapper } from "../../../../templates/Inbox/components";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
+import PTNewInboxFilters from "../../components/inbox/PTNewInboxFilters";
+import PTNewInboxSearch from "../../components/inbox/PTNewInboxSearch";
+import { TableConfig as PTInboxTableConfig } from "../../config/inbox-table-config";
 
 const Inbox = ({
   useNewInboxAPI,
@@ -88,7 +92,61 @@ const Inbox = ({
     setPageSize(Number(e.target.value));
   };
 
-  const totalCount = Number(data?.[0]?.totalCount);
+  const totalCount = Number(data?.[0]?.totalCount) || 0;
+
+  const updateNewInboxSearch = (search) => {
+    setSearchParams((current) => ({ ...current, ...search }));
+  };
+
+  const updateNewInboxStatuses = (statusCodes) => {
+    setSearchParams((current) => ({
+      ...current,
+      applicationStatus: statusCodes.map((uuid) => ({ uuid })),
+    }));
+  };
+
+  if (isInbox) {
+    const tableData = data?.filter((row) => !row?.dataEmpty) || [];
+    const statuses = data?.[0]?.statusMap || [];
+    const selectedStatuses = searchParams?.applicationStatus?.map((status) => status?.uuid).filter(Boolean) || [];
+    const tableProps = {
+      data: tableData,
+      columns: PTInboxTableConfig(t).PT.inboxColumns({ parentRoute }),
+      totalRecords: totalCount,
+      disableSort: true,
+      customTableWrapperClassName: "pt-new-inbox-table-wrapper",
+    };
+
+    return (
+      <InboxWrapper
+        title={t("ES_COMMON_INBOX")}
+        totalCount={totalCount}
+        isLoading={hookLoading || isFetching}
+        tableData={tableData}
+        tableProps={tableProps}
+        tableHeader="ACTION_TEST_PROPERTY_TAX"
+        filterSection={
+          <PTNewInboxFilters
+            statuses={statuses}
+            selectedStatuses={selectedStatuses}
+            isInboxLoading={hookLoading || isFetching}
+            onStatusChange={updateNewInboxStatuses}
+          />
+        }
+        topBar={<PTNewInboxSearch values={searchParams} onSearch={updateNewInboxSearch} />}
+        pagination={
+          <InboxPagination
+            offset={pageOffset}
+            limit={pageSize}
+            totalCount={totalCount}
+            onPageSizeChange={handlePageSizeChange}
+            onNextPage={fetchNextPage}
+            onPrevPage={fetchPrevPage}
+          />
+        }
+      />
+    );
+  }
 
   if (rest?.data?.length !== null) {
     if (isMobile) {

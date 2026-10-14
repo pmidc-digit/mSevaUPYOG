@@ -42,8 +42,11 @@ const AssessmentDetails = () => {
   const assessmentQueryKey = ["PT_ASSESSMENT", propertyId, financialYear];
   const submitLabel = location?.state?.submitLabel;
 
+<<<<<<< HEAD
   console.log("location", location);
 
+=======
+>>>>>>> MicroUI_UAT_Vite
   const [showToast, setShowToast] = useState(null);
   const queryClient = useQueryClient();
   const history = useHistory();
@@ -168,36 +171,76 @@ const AssessmentDetails = () => {
     }
     return chosenDateObj;
   };
+<<<<<<< HEAD
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   useEffect(() => {
     if (!financialYear) return;
 
     if (penalityImportantDates?.PropertyTax?.Interest?.length > 0 && penalityObj === null) {
       // let rebateDateObj=rebateImportantDates.filter((item)=>item.fromFY===AssessmentData.financialYear)
+<<<<<<< HEAD
       let penalityObjj = findCorrectDateObjPenaltyIntrest(financialYear, penalityImportantDates?.PropertyTax?.Interest);
       setPenalityObj(penalityObjj);
     }
     if (rebateImportantDates?.PropertyTax?.Rebate?.length > 0 && rebateObj === null) {
       let rebateObjj = findCorrectDateObj(financialYear, rebateImportantDates?.PropertyTax?.Rebate);
       setRebateObj(rebateObjj);
+=======
+      let penalityObjj = findCorrectDateObjPenaltyIntrest(AssessmentData.financialYear, penalityImportantDates?.PropertyTax?.Interest)
+      setPenalityObj(penalityObjj)
+
+
+    }
+    if (rebateImportantDates?.PropertyTax?.Rebate?.length > 0 && rebateObj === null) {
+
+      let rebateObjj = findCorrectDateObj(AssessmentData.financialYear, rebateImportantDates?.PropertyTax?.Rebate)
+      setRebateObj(rebateObjj)
+
+
+>>>>>>> MicroUI_UAT_Vite
     }
     if (interestImportantDates?.PropertyTax?.Interest?.length > 0 && interestObj === null) {
       // let rebateDateObj=rebateImportantDates.filter((item)=>item.fromFY===AssessmentData.financialYear)
+<<<<<<< HEAD
       let interestObjj = findCorrectDateObjPenaltyIntrest(financialYear, interestImportantDates?.PropertyTax?.Interest);
       setInterestObj(interestObjj);
     }
   }, [financialYear, penalityImportantDates, rebateImportantDates, interestImportantDates, penalityObj, rebateObj, interestObj]);
   const fetchBillParams = { consumerCode: propertyId };
+=======
+      let interestObjj = findCorrectDateObjPenaltyIntrest(AssessmentData.financialYear, interestImportantDates?.PropertyTax?.Interest)
+      setInterestObj(interestObjj)
+
+
+    }
+  }, [penalityImportantDates?.PropertyTax?.Interest || rebateImportantDates?.PropertyTax?.Interest || interestImportantDates?.PropertyTax?.Interest])
+
+  const fetchBillParams = { consumerCode: AssessmentData?.propertyId };
+
+>>>>>>> MicroUI_UAT_Vite
 
   useEffect(() => {
     try {
       if (ptCalculationEstimateData?.Calculation?.length > 0) {
         let id = ptCalculationEstimateData?.Calculation[0]?.billingSlabIds.map((item) => item.split("|")[0]).join(",");
         let filters = {
+<<<<<<< HEAD
           id: id,
         };
         Digit.PTService.billingSlabSearch(tenantId, filters).then((response) => {
           setUnitsCharge(response.billingSlab);
         });
+=======
+          id: id
+        }
+        Digit.PTService.billingSlabSearch(tenantId, filters)
+          .then((response) => {
+
+            setUnitsCharge(response.billingSlab)
+          })
+>>>>>>> MicroUI_UAT_Vite
       }
     } catch {}
   }, [ptCalculationEstimateData]);
@@ -255,6 +298,7 @@ const AssessmentDetails = () => {
   const closeToast = () => {
     setShowToast(null);
   };
+<<<<<<< HEAD
   const handleUpdateAssessment = (assessment) => {
     try {
       Digit.PTService.assessmentUpdate({ Assessment: assessment, tenantId: tenantId }).then((response) => {
@@ -275,10 +319,36 @@ const AssessmentDetails = () => {
     }
   };
   const handleReAssessment = () => {
+=======
+  const handleUpdateAssessment = (assessment) =>{
+    try{
+
+    Digit.PTService.assessmentUpdate({Assessment:assessment,tenantId:tenantId})
+    .then
+    (response =>
+    {
+      if(response?.Assessments?.length>0){
+          history.push("/digit-ui/citizen/pt/property/pt-acknowledgement",{message:"PT_PROPERTY_RE_ASSESSMENT_SUCCESS_MSG",response:response?.Assessments[0]?.assessmentNumber,isSuccess:true,labelName:"PT_ASSESSMENT_NUMBER",responseData:response?.Assessments[0],previouspath:location,headerName:t("PT_REASSESS_PROPERTY")})
+
+      }
+    })
+    }
+    catch(error){
+
+    }
+  }
+  const handleReAssessment = ()=>{
+>>>>>>> MicroUI_UAT_Vite
     if (AssessmentData && AssessmentData.assessmentNumber) {
       handleUpdateAssessment(AssessmentData);
       return;
     }
+<<<<<<< HEAD
+=======
+
+     let filters={assessmentNumbers:applicationNo}
+
+>>>>>>> MicroUI_UAT_Vite
 
 <<<<<<< HEAD
     try{
@@ -287,20 +357,20 @@ const AssessmentDetails = () => {
     (response =>
     {
     if(response?.Assessments?.length>0){
-      
+
        handleUpdateAssessment(response.Assessments[0]) 
     }
     })
     }
     catch(error){
-console.log(error)
+
     }
   }
   const handleAssessment = () => {
     if(isCheck){
       if(location?.state?.reAssess===true){
         handleReAssessment()
- 
+
       }
       else{
     if (!queryClient.getQueryData(["PT_ASSESSMENT", AssessmentData?.propertyId, location?.state?.Assessment?.financialYear])) {
@@ -317,7 +387,7 @@ console.log(error)
             let userType = JSON.parse(user)
             setShowToast({ key: "success", action: { action: "ASSESSMENT" } });
             setTimeout(closeToast, 5000);
-            console.log("useType.value.info.type", userType, typeof (userType))
+
             // queryClient.clear();
             // queryClient.setQueryData(["PT_ASSESSMENT", propertyId, location?.state?.Assessment?.financialYear], true);
             if (userType?.value?.info?.type == "CITIZEN") {
@@ -473,7 +543,13 @@ console.log(error)
           AssessmentData.additionalDetails.adhocPenalty = additionalPenality;
           AssessmentData.additionalDetails.adhocPenaltyReason = selectedPenalityReason.value;
           ptCalculationEstimateData.Calculation[0].totalAmount = ptCalculationEstimateData?.Calculation[0]?.taxAmount + first;
+<<<<<<< HEAD
         } else {
+=======
+
+        }
+        else {
+>>>>>>> MicroUI_UAT_Vite
           alert("Penality cannot exceed total amount");
         }
       } else {
@@ -689,6 +765,10 @@ console.log(error)
     }
     return `${key}_${convertedValue}`;
   };
+<<<<<<< HEAD
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   const getCityLocale = (value = "") => {
     let convertedValue = convertDotValues(value);
     if (convertedValue == "NA" || !checkForNotNull(value)) {
@@ -781,8 +861,8 @@ console.log(error)
                     ?.sort?.((a, b) => a.floorNo - b.floorNo)
                     ?.map((unit, index) => {
                       let floorName = `PROPERTYTAX_FLOOR_${unit.floorNo}`;
-                      console.log('unit in assess page:', unit);
-                      
+
+
                       const values = [
                         {
                           title: `${t("ES_APPLICATION_DETAILS_UNIT")} ${index + 1}`,

@@ -13,13 +13,13 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const history = useHistory();
   const tenantId = window.localStorage.getItem("Citizen.tenant-id");
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-  console.log("goNext triggered");
+
 
   const currentStepData = useSelector(function (state) {
     return state.ptr.PTRNewApplicationFormReducer.formData || {};
   });
 
-  console.log("currentStepDatafourstep", currentStepData);
+
 
   function validateStepData(data) {
     const missingFields = [];
@@ -44,13 +44,13 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   //   }
 
   //   const res = await onSubmit(currentStepData);
-  //   console.log("API response: ", res);
+
 
   //   if (res) {
-  //     console.log("Submission successful, moving to next step.");
+
   //     // history.replace("/digit-ui/citizen/ptr-home");
   //   } else {
-  //     console.error("Submission failed, not moving to next step.");
+
   //   }
 
   //   onGoNext();
@@ -78,7 +78,7 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       });
       // onGoNext();
     } else {
-      console.error("Submission failed, not moving to next step.");
+
       setError(res?.Errors?.message || "Update failed");
       setShowToast(true);
     }
@@ -156,7 +156,7 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   //       setShowToast(true);
   //     }
   //   } catch (err) {
-  //     console.error("Update API error:", err);
+
   //     setError(err.message || "Something went wrong");
   //     setShowToast(true);
   //     // return false;
@@ -180,18 +180,18 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   //   try {
   //     const response = await onSubmit(currentStepData, selectedAction);
-  //     console.log("response", response);
+
 
   //     if (response === true) {
-  //       console.log("Submission successful, moving to next step.");
+
   //       onGoNext();
   //     } else {
-  //       console.error("Submission failed due to business logic.");
+
   //       setError(response?.Errors?.message || "Update failed due to invalid data or workflow state.");
   //       setShowToast(true);
   //     }
   //   } catch (err) {
-  //     console.error("API call failed:", err);
+
   //     setError(err.message || "Something went wrong during submission.");
   //     setShowToast(true);
   //   }
@@ -222,7 +222,7 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   //     mobileNumber: ownerDetails?.mobileNumber,
   //   };
 
-  //   console.log("Submitting formData:", formData);
+
 
   //   // Return the full response to let goNext handle it
   //   return await Digit.PTRService.update({ PetRegistrationApplications: [formData] }, tenantId);
@@ -240,7 +240,7 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const menuRef = useRef();
   let user = Digit.UserService.getUser();
   const [displayMenu, setDisplayMenu] = useState(false);
-  console.log("displayMenu", displayMenu);
+
 
   const closeMenu = () => {
     setDisplayMenu(false);
@@ -254,7 +254,7 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     moduleCode: "PTR",
   });
 
-  console.log("workflowDetails", workflowDetails);
+
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
@@ -270,7 +270,7 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   // const onFormValueChange = (setValue = true, data) => {
-  //   console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
   //   if (!_.isEqual(data, currentStepData)) {
   //     dispatch(UPDATE_PTRNewApplication_FORM(config.key, data));
   //   }

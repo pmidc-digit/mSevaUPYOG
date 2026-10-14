@@ -70,7 +70,7 @@ const WSConnectionHolder = ({ t, config, onSelect, userType, formData, ownerInde
               setError(t("PT_FILE_UPLOAD_ERROR"));
             }
           } catch (err) {
-            // console.error("Modal -> err ", err);
+
             setError(t("PT_FILE_UPLOAD_ERROR"));
           }
         }
@@ -115,7 +115,7 @@ const WSConnectionHolder = ({ t, config, onSelect, userType, formData, ownerInde
   function selectfile(e) {
     setFile(e.target.files[0]);
   }
-  
+
 const reversedOwners= Array.isArray(formData?.cpt?.details?.owners) ? formData?.cpt?.details?.owners.slice().reverse():[];
 
   const goNext = () => {

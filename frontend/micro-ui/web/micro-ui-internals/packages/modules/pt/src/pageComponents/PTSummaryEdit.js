@@ -4,7 +4,7 @@ import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
 function PTSummaryEdit({ formData, t }) {
-  console.log("form data in summary component", formData);
+
   const { pathname: url } = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();

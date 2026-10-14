@@ -70,7 +70,7 @@ const LayoutApplicantDetails = (_props) => {
   const [additionalOwnerSearchLoading, setAdditionalOwnerSearchLoading] = useState({});
   const [primaryApplicantType, setPrimaryApplicantType] = useState({});
   const isDataInitialized = useRef(false);
-  //console.log("userInfo here", getValues("aplicantType"), applicants);
+
   const closeToast = () => setShowToast(null);
 
   useEffect(() => {
@@ -99,7 +99,7 @@ const LayoutApplicantDetails = (_props) => {
   // );
 
   useEffect(() => {
-    console.log("LayoutApplicantDetails data restore effect run, isDataInitialized =", isDataInitialized.current, currentStepData);
+
     // Only restore data on mount / first load, not on every change
     if (isDataInitialized.current) return;
 
@@ -119,7 +119,7 @@ const LayoutApplicantDetails = (_props) => {
 
     // Restore additional applicants from currentStepData
     if (currentStepData?.applicants && currentStepData.applicants.length > 0) {
-      //console.log("[v0] Restoring applicants from currentStepData.applicants:", currentStepData.applicants);
+
       setApplicants(currentStepData.applicants);
     }
     // If no applicants in Redux, check if we're in edit mode and have owners from API
@@ -131,7 +131,7 @@ const LayoutApplicantDetails = (_props) => {
         if (!aPrimary && bPrimary) return 1;
         return 0;
       });
-      //console.log("[v0] Mapping owners from API response:", ownersFromApi);
+
 
       // Map additional owners (skip index 0 as it's the primary owner in applicationDetails)
       const additionalApplicants = ownersFromApi.slice(1).map((owner, idx) => {
@@ -169,25 +169,25 @@ const LayoutApplicantDetails = (_props) => {
         };
       });
 
-      //console.log("[v0] Mapped additional applicants:", additionalApplicants);
+
       setApplicants(additionalApplicants);
     }
 
     // Restore document uploaded files from Redux state
     if (currentStepData?.documentUploadedFiles && Object.keys(currentStepData.documentUploadedFiles).length > 0) {
-      //console.log("[v0] Restoring documentUploadedFiles from Redux:", currentStepData.documentUploadedFiles);
+
       setDocumentUploadedFiles(currentStepData.documentUploadedFiles);
     }
 
     // Restore photo uploaded files from Redux state
     if (currentStepData?.photoUploadedFiles && Object.keys(currentStepData.photoUploadedFiles).length > 0) {
-      //console.log("[v0] Restoring photoUploadedFiles from Redux:", currentStepData.photoUploadedFiles);
+
       setPhotoUploadedFiles(currentStepData.photoUploadedFiles);
     }
 
     // Restore PAN document uploaded files from Redux state
     if (currentStepData?.panDocumentUploadedFiles && Object.keys(currentStepData.panDocumentUploadedFiles).length > 0) {
-      //console.log("[v0] Restoring panDocumentUploadedFiles from Redux:", currentStepData.panDocumentUploadedFiles);
+
       setPanDocumentUploadedFiles(currentStepData.panDocumentUploadedFiles);
     }
 
@@ -204,7 +204,7 @@ const LayoutApplicantDetails = (_props) => {
         if (!aPrimary && bPrimary) return 1;
         return 0;
       });
-      //console.log("[v0] Mapping documents from owners additionalDetails");
+
 
       const docFiles = {};
       const photoFiles = {};
@@ -223,9 +223,9 @@ const LayoutApplicantDetails = (_props) => {
         }
       });
 
-      //console.log("[v0] Mapped document files:", docFiles);
-      //console.log("[v0] Mapped photo files:", photoFiles);
-      //console.log("[v0] Mapped PAN document files:", panDocFiles);
+
+
+
 
       if (Object.keys(docFiles).length > 0) {
         setDocumentUploadedFiles(docFiles);
@@ -378,7 +378,7 @@ const LayoutApplicantDetails = (_props) => {
         message: t("Applicant details fetched successfully"),
       });
     } catch (error) {
-      console.error("Error fetching user details:", error);
+
       setShowToast({
         key: "true",
         error: true,

@@ -20,7 +20,7 @@ function ApplicationDetailsActionBar({ workflowDetails, displayMenu, onActionSel
     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
   });
 
-  console.log("ActionsInPayment", workflowDetails)
+
 
     const closeMenu = () => {
           setDisplayMenu(false);

@@ -10,7 +10,7 @@ import SearchApp from "./SearchApp";
  * Contains breadcrumbs for each page
  */
 const EmployeeApp = () => {
-  console.log("coming here");
+
   const { path, url, ...match } = useRouteMatch();
   const { t } = useTranslation();
   const location = useLocation();

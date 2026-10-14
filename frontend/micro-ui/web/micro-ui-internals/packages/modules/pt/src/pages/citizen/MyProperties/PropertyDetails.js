@@ -34,6 +34,7 @@ const PropertyDetails = () => {
   console.log("application Number", applicationNumber)
 =======
   const { id:applicationNumber } = useParams(); 
+<<<<<<< HEAD
    const isCitizen = window.location.href.includes("citizen");
   //console.log("application Number",applicationNumber)
 >>>>>>> MicroUI_PROD_Vite
@@ -42,6 +43,10 @@ const PropertyDetails = () => {
  
   console.log("application Number",applicationNumber)
 >>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
+
+
+>>>>>>> MicroUI_UAT_Vite
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
   const [enableAudit, setEnableAudit] = useState(false);
@@ -53,7 +58,7 @@ const PropertyDetails = () => {
   const [businessService, setBusinessService] = useState("PT.CREATE");
   const history = useHistory();
   sessionStorage.setItem("propertyIdinPropertyDetail", applicationNumber);
-  
+  const isEmployee = window.location.href.includes("employee");
   // const isMobile = window.Digit.Utils.browser.isMobile();
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 780);
 
@@ -94,14 +99,15 @@ const PropertyDetails = () => {
   //   .then(
   //     (response) =>
   //     {
-  //       console.log("response",response)
+
   //     }
   //   )
   //   }
   //   catch(error){
-  //    console.log(error)
+
   //   }
   // },[])
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   console.log("fetchBillData", fetchBillData)
@@ -113,6 +119,10 @@ const PropertyDetails = () => {
   console.log("fetchBillData",fetchBillData)
 console.log("applicationDetails",applicationDetails)
 >>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
+
+
+>>>>>>> MicroUI_UAT_Vite
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.pt.usePropertySearch(
     {
       tenantId,
@@ -127,12 +137,16 @@ console.log("applicationDetails",applicationDetails)
   const mutation = Digit.Hooks.pt.usePropertyAPI(tenantId, false);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   console.log("mutation", mutation)
 =======
 >>>>>>> MicroUI_PROD_Vite
 =======
 console.log("mutation",mutation)
 >>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   const { data: UpdateNumberConfig } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["UpdateNumber"], {
     select: (data) => {
       return data?.PropertyTax?.UpdateNumber?.[0];
@@ -140,6 +154,7 @@ console.log("mutation",mutation)
     retry: false,
     enable: false,
   });
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
   console.log("auditData", auditData)
@@ -151,25 +166,15 @@ console.log("mutation",mutation)
 console.log("auditData",auditData)
 console.log("updateNumberConfig",UpdateNumberConfig)
 >>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
+
+
+>>>>>>> MicroUI_UAT_Vite
   React.useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth <= 780 && !isMobile) {
-        setIsMobile(true);
-      } else if (window.innerWidth > 780 && isMobile) {
-        setIsMobile(false);
-      }
-    }
-
-    window.addEventListener("resize", () => {
-      onResize();
-    });
-
-    return () => {
-      window.removeEventListener("resize", () => {
-        onResize()
-      });
-    };
-  });
+    const onResize = () => setIsMobile(window.innerWidth <= 780);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
 
   useEffect(() => {
@@ -178,7 +183,7 @@ console.log("updateNumberConfig",UpdateNumberConfig)
       {
       if (applicationDetails?.applicationDetails[1].values.length ==4)
       {
-        console.log("hi")
+
         let obj = {
           "title": "PT_ASSESMENT_ELECTRICITY",
           "value": applicationDetails?.additionalDetails?.electricity || "NA"
@@ -206,7 +211,7 @@ console.log("updateNumberConfig",UpdateNumberConfig)
       const lastActiveProperty = auditData?.[0];
       lastActiveProperty.owners = lastActiveProperty?.owners?.filter((owner) => owner.status == "ACTIVE");
       if (lastActiveProperty) {
-        console.log("hello")
+
         let applicationDetails = appDetailsToShow?.transformToAppDetailsForEmployee({ property: lastActiveProperty, t });
 
         setAppDetailsToShow({ ...appDetailsToShow, applicationDetails });
@@ -222,6 +227,7 @@ console.log("updateNumberConfig",UpdateNumberConfig)
   });
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
   console.log("workflowDetails", workflowDetails)
 =======
 
@@ -229,6 +235,9 @@ console.log("updateNumberConfig",UpdateNumberConfig)
 =======
 console.log("workflowDetails",workflowDetails)
 >>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   const closeToast = () => {
     setShowToast(null);
   };
@@ -243,10 +252,10 @@ console.log("workflowDetails",workflowDetails)
     appDetailsToShow.applicationDetails = appDetailsToShow?.applicationDetails?.map((e) => {
       if (e.title === "PT_OWNERSHIP_INFO_SUB_HEADER") {
         if (applicationDetails?.applicationData?.status === "ACTIVE") {
-          console.log("holla")
+
           e.additionalDetails.owners.map((owner, ind) => {
             owner.values.map((value) => {
-              if (value.title == "PT_OWNERSHIP_INFO_MOBILE_NO") {
+              if (value.title == "PT_OWNERSHIP_INFO_MOBILE_NO" && isEmployee) {
                 value.textStyle = { display: "flex", wordBreak:"revert" };
                 value.caption = (
                   <span
@@ -335,6 +344,7 @@ console.log("workflowDetails",workflowDetails)
        // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
 <<<<<<< HEAD
+<<<<<<< HEAD
           <LinkLabel
             onClick={() => history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`})}
             style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
@@ -344,6 +354,9 @@ console.log("workflowDetails",workflowDetails)
           </LinkLabel>
 =======
           <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+=======
+          <div style={{ display: "flex", textAlign : "center",  gap: "15px", flexWrap: "wrap" }}>
+>>>>>>> MicroUI_UAT_Vite
             <LinkLabel
               onClick={() => {
                isCitizen ?
@@ -376,7 +389,10 @@ console.log("workflowDetails",workflowDetails)
               {t("PT_VIEW_PAYMENT")}
             </LinkLabel>
           </div>
+<<<<<<< HEAD
 >>>>>>> MicroUI_PROD_Vite
+=======
+>>>>>>> MicroUI_UAT_Vite
         ),
         values: [
           // {
@@ -400,7 +416,7 @@ console.log("workflowDetails",workflowDetails)
             title:"",
             value:dateString
 
-          
+
           }
 
         ],
@@ -462,7 +478,7 @@ console.log("workflowDetails",workflowDetails)
                 history.push("/digit-ui/employee/pt/response", { Property: data.Property, key: "UPDATE", action: "SUBMIT" });
                 },
                 // redirectionUrl: {
-                 
+
                 //   state: { workflow: { action: "OPEN", moduleName: "PT", businessService: "PT.CREATE" } },
                 // },
                // AmountDueForPay: fetchBillData?.Bill[0]?.totalAmount,
@@ -482,7 +498,7 @@ console.log("workflowDetails",workflowDetails)
       },
     };
   }
-console.log("workflow details",workflowDetails)
+
   if (appDetailsToShow?.applicationData?.status === "ACTIVE" && PT_CEMP) {
     if (businessService == "PT.CREATE") setBusinessService("PT.UPDATE");
     if (!workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "UPDATE")) {
@@ -501,8 +517,9 @@ console.log("workflow details",workflowDetails)
     return <Loader />;
   }
   const UpdatePropertyNumberComponent = Digit?.ComponentRegistryService?.getComponent("EmployeeUpdateOwnerNumber");
- 
+
     appDetailsToShow?.applicationData?.owners.sort((item, item2) => { return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence })
+<<<<<<< HEAD
     
   console.log("appDetailsToShow",appDetailsToShow)
   //   const [showOptions, setShowOptions] = useState(false);
@@ -520,6 +537,48 @@ console.log("workflow details",workflowDetails)
   //   label: appDetailsToShow?.applicationData?.creationReason === "MUTATION" ? t("MT_APPLICATION") : t("PT_APPLICATION_ACKNOWLEDGMENT"),
   //   onClick: () => getAcknowledgementData(),
   // });
+=======
+
+
+  const handleDownloadPdf = async () => {
+    try {
+      const Property = appDetailsToShow?.applicationData || applicationDetails?.applicationData;
+      const tenantInfo = tenants?.find((tenant) => tenant.code === Property?.tenantId);
+
+      if (!Property || !tenantInfo) {
+        setShowToast({ key: "error", error: { message: t("ERR_PDF_GEN_FAILED") } });
+        setTimeout(closeToast, 5000);
+        return;
+      }
+
+      const data = await getPTAcknowledgementData({ ...Property }, tenantInfo, t);
+      Digit.Utils.pdf.generate(data);
+    } catch (error) {
+      setShowToast({ key: "error", error: { message: error?.message || t("ERR_PDF_GEN_FAILED") } });
+      setTimeout(closeToast, 5000);
+    }
+  };
+
+  const handlePrintPdf = async () => {
+    try {
+      const Property = appDetailsToShow?.applicationData || applicationDetails?.applicationData;
+      const tenantInfo = tenants?.find((tenant) => tenant.code === Property?.tenantId);
+
+      if (!Property || !tenantInfo) {
+        setShowToast({ key: "error", error: { message: t("ERR_PDF_GEN_FAILED") } });
+        setTimeout(closeToast, 5000);
+        return;
+      }
+
+      const data = await getPTAcknowledgementData({ ...Property }, tenantInfo, t);
+      Digit.Utils.pdf.generate({ ...data, isPrint: true });
+    } catch (error) {
+      setShowToast({ key: "error", error: { message: error?.message || t("ERR_PDF_GEN_FAILED") } });
+      setTimeout(closeToast, 5000);
+    }
+  };
+
+>>>>>>> MicroUI_UAT_Vite
   return (
     <div>
       {/* <Header>{t("PT_PROPERTY_INFORMATION")}</Header> */}
@@ -541,7 +600,7 @@ console.log("workflow details",workflowDetails)
           <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}>Print</button>
         </div>
       </div>
-   
+
       <ApplicationDetailsTemplate
         applicationDetails={appDetailsToShow}
         isLoading={isLoading}
@@ -637,7 +696,46 @@ console.log("workflow details",workflowDetails)
               }}
             ></UpdatePropertyNumberComponent>
           )}
+<<<<<<< HEAD
           {!showUpdateNo && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
+=======
+          {showUpdateSurveyId && (
+            <UpdateSurveyId
+              t={t}
+              propertyId={showUpdateSurveyId.propertyId}
+              existingSurveyId={showUpdateSurveyId.existingSurveyId}
+              showPopup={setShowModal}
+              onValidation={(data) => {
+                let newProp = { ...appDetailsToShow?.applicationData };
+                newProp.surveyId = data.surveyId;
+                newProp.creationReason = "UPDATE";
+                newProp.tenantId = tenantId;
+                newProp.workflow = null;
+                mutation.mutate(
+                  {
+                    Property: newProp,
+                  },
+                  {
+                    onError: (error) => {
+
+                      setShowToast({ key: "error", message: "Failed to update property survey ID", type: "error" });
+                    },
+                    onSuccess: async (successRes) => {
+
+                      setShowToast({ key: "success", message: t("PT_SURVEY_ID_UPDATED_SUCCESS") || "Survey ID updated successfully!", type: "success" });
+                      setShowModal(false);
+                      setShowUpdateSurveyId(null);
+                      setTimeout(() => {
+                        window.location.reload();
+                      }, 2000);
+                    },
+                  }
+                );
+              }}
+            />
+          )}
+          {!showUpdateNo && !showUpdateSurveyId && <PropertyOwnerHistory propertyId={applicationNumber} userType={"employee"} />}
+>>>>>>> MicroUI_UAT_Vite
         </Modal>
       ) : null}
 
@@ -675,7 +773,7 @@ console.log("workflow details",workflowDetails)
         //     <CloseBtn
         //       onClick={() => {
         //         setShowOwnershipModal(false);
-               
+
         //       }}
         //     />
         //   }

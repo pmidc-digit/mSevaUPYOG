@@ -36,7 +36,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreidADS");
   const DateOnly = new Date();
 
-  console.log('getModalData :>> ', getModalData);
+
   const formatUlbName = (ulbName = "") => {
     if (!ulbName) return "";
     const parts = ulbName.split(".");
@@ -164,7 +164,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
         return "";
       }
     } catch (error) {
-      console.log("error===", error);
+
       setOTPError(t("Error verifying OTP"));
       setSetOtpLoading(false);
       return "";
@@ -250,7 +250,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     if (!userSelected) {
       return;
     }
-    console.log("userSelected===", userSelected);
+
     Digit.SessionStorage.set("citizen.userRequestObject", userSelected);
     Digit.UserService.setUser(userSelected);
     setCitizenDetail(userSelected?.info, userSelected?.access_token, stateCode);

@@ -123,7 +123,7 @@ const InspectionReport = ({ config, onSelect, userType, formData, setError, form
         // <div>
         //     <React.Fragment>
                 //  {FieldReports && FieldReports.map((unit, index) => ( 
-                    
+
                 // ))}
             // </React.Fragment>
             // <LinkButton label={t("BPA_ADD_FIELD_INSPECTION")} onClick={addNewFieldReport} style={{ color: "#a82227", width: "fit-content" }} />
@@ -205,21 +205,21 @@ const InspectionReportForm = (_props) => {
                     if(props?.setError){
                         props?.setError(t("CS_FILE_FETCH_ERROR"));
                     }else{
-                        console.error(t("CS_FILE_FETCH_ERROR"))
+
                     }
                 }
             } else {
                 if (props?.setError) {
                     props?.setError(t("CS_FILE_FETCH_ERROR"));
                 } else {
-                    console.error(t("CS_FILE_FETCH_ERROR"))
+
                 }
             }
         } catch (e) {
             if (props?.setError) {
                 props?.setError(t("CS_FILE_FETCH_ERROR"));
             } else {
-                console.error(t("CS_FILE_FETCH_ERROR"))
+
             }
         }
     }
@@ -297,7 +297,7 @@ const InspectionReportForm = (_props) => {
         // else if (!Object.keys(errors)?.length && formState?.errors?.[config?.key] && isErrors) {
         //     clearErrors(config?.key);
         // }
-        console.error("errors in inspection report" ,{errors})
+
     }, [errors]);
 
     let ckeckingLocation = window.location.href.includes("renew-application-details");
@@ -312,9 +312,9 @@ const InspectionReportForm = (_props) => {
     }
 
     const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
-    
+
     const extendedQuestions = [ ...(questionList || []), { question: t("BPA_ADDITIONAL_REMARKS"), isAdditional: true } ];
-    
+
     return (
       <React.Fragment>
         {/* <div>          */}

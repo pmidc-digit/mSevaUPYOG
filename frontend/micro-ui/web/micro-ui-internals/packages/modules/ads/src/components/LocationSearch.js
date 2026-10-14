@@ -268,14 +268,13 @@ const LocationSearch = (props) => {
     }); // Create the search box and link it to the UI element.
 
     const input = document.getElementById("pac-input");
-    if (input) {
-      input.addEventListener("keydown", (ev) => {
-        if (ev.key === "Enter") {
-          ev.preventDefault();
-          ev.stopPropagation();
-        }
-      });
-    }
+    const preventEnter = (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    input?.addEventListener("keydown", preventEnter);
     updateDefaultBounds(position);
     const options = {
       bounds: defaultBounds,
@@ -325,6 +324,7 @@ const LocationSearch = (props) => {
         else onChange(pincode, geoLocation);
       }
       markers.forEach((marker) => {
+        window.google.maps.event.clearInstanceListeners(marker);
         marker.setMap(null);
       });
       markers = []; // For each place, get the icon, name and location.
@@ -353,14 +353,30 @@ const LocationSearch = (props) => {
 
       map.fitBounds(bounds);
     });
+
+    return () => {
+      input?.removeEventListener("keydown", preventEnter);
+      window.google.maps.event.clearInstanceListeners(map);
+      window.google.maps.event.clearInstanceListeners(searchBox);
+      searchBox.unbindAll();
+      markers.forEach((marker) => {
+        window.google.maps.event.clearInstanceListeners(marker);
+        marker.setMap(null);
+      });
+    };
   };
 
   useEffect(() => {
+    let active = true;
+    let cleanupMap;
     async function mapScriptCall() {
       const getLatLng = (position) => {
-        initAutocomplete(props.onChange, { lat: position.coords.latitude, lng: position.coords.longitude }, props.isPlaceRequired);
+        if (!active) return;
+        cleanupMap?.();
+        cleanupMap = initAutocomplete(props.onChange, { lat: position.coords.latitude, lng: position.coords.longitude }, props.isPlaceRequired);
       };
       const getLatLngError = (error) => {
+        if (!active) return;
         let defaultLatLong = {};
         if (props?.isPTDefault) {
           defaultLatLong = props?.PTdefaultcoord?.defaultConfig || { lat: 31.6160638, lng: 74.8978579 };
@@ -370,10 +386,12 @@ const LocationSearch = (props) => {
             lng: 74.8978579,
           };
         }
-        initAutocomplete(props.onChange, defaultLatLong, props.isPlaceRequired);
+        cleanupMap?.();
+        cleanupMap = initAutocomplete(props.onChange, defaultLatLong, props.isPlaceRequired);
       };
 
       const initMaps = () => {
+        if (!active) return;
         if (props.position?.latitude && props.position?.longitude) {
           getLatLng({ coords: props.position });
         } else if (navigator?.geolocation) {
@@ -386,6 +404,10 @@ const LocationSearch = (props) => {
       loadGoogleMaps(initMaps);
     }
     mapScriptCall();
+    return () => {
+      active = false;
+      cleanupMap?.();
+    };
   }, []);
 
   return (

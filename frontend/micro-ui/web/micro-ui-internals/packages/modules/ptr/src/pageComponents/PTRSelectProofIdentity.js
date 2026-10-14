@@ -15,7 +15,7 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   };
 
   const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
-  console.log("apiDataCheck for here docs:>> ", apiDataCheck);
+
   const validateFile = (file, docCode) => {
     if (!file) return null;
 
@@ -95,7 +95,7 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
           documentUid: fileId
         };
       });
-      console.log("setting documents to", docs);
+
       setDocuments(docs);
     }
   }, [apiDataCheck]);
@@ -129,8 +129,8 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
           {Array.isArray(mdmsDocsData) &&
         mdmsDocsData.map((mdmsDoc, index) => {
           const existing = documents.find((d) => d.documentType === mdmsDoc.code);
-          console.log("existing for", mdmsDoc.code, existing);
-          console.log("document prop", { ...mdmsDoc, ...existing });
+
+
 
           return (
             <PTRSelectDocument
@@ -167,7 +167,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
     setUploadedFile(fileId);
   }, [doc?.filestoreId]);
 
-  console.log("uploadedFile for", doc?.documentType, uploadedFile, "doc prop:", doc);
+
 
   const [fieldError, setFieldError] = useState(null);
   const [loading, setLoading] = useState(false);

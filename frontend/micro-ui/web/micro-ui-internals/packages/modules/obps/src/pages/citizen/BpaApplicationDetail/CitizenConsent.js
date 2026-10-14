@@ -11,7 +11,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   const ownername = user?.info?.name;
-  console.log(user, "OWNER NAME");
+
   const ownermobileNumber = user?.info.mobileNumber;
   const ownerEmail = user?.info?.emailId;
   const { id } = useParams();
@@ -23,8 +23,8 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
     state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
   );
   const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
-console.log('data for ownerconsent', data)
-  console.log(params, "UU");
+
+
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: data?.tenantId,
     id: id,
@@ -131,7 +131,7 @@ console.log('data for ownerconsent', data)
         return "";
       }
     } catch (error) {
-      console.error("Error verifying OTP:", error)
+
       setIsOTPVerified(false)
       setOTPError(t("Error verifying OTP"))
       return "";
@@ -148,14 +148,14 @@ console.log('data for ownerconsent', data)
         setShowOTPInput(true)
       } else {
         // Handle error case if OTP sending fails
-        console.error("Error sending OTP Response is false:", response.error)
+
       }
     } catch (error) {
-      console.error("Error sending OTP:", error)
+
     }
   }
 
-  console.log("TimeStamp", params?.additionalDetails?.TimeStamp, TimeStamp);
+
 
 
   // const selfdeclarationform = `
@@ -372,7 +372,7 @@ console.log('data for ownerconsent', data)
     return (currentLine.trim() === lineToCheck1 && nextLine?.trim() === lineToCheck2) || currentLine.trim() === lineToCheck3;
   };
 
-  console.log("HELLO");
+
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -422,11 +422,11 @@ console.log('data for ownerconsent', data)
         },
       };
 
-      console.log("updatedData", updatedData);
-      console.log(data, "DatA");
+
+
 
       let result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [updatedData] }, "ownerconsent");
-console.log(result, "RESULT");
+
       if (result?.filestoreIds[0]?.length > 0) {
         alert("File Uploaded Successfully");
         sessionStorage.setItem("CitizenConsentdocFilestoreid", result?.filestoreIds[0]);

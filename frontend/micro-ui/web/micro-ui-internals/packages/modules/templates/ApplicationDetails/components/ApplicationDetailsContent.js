@@ -162,7 +162,7 @@ function ApplicationDetailsContent({
     },
   ];
 
-  console.log("TIMELINE", applicationDetails, moduleCode);
+
   // ISSUE 9 FIX: Fetch payment history for WS applications
   useEffect(() => {
     const fetchPaymentHistory = async () => {
@@ -187,7 +187,7 @@ function ApplicationDetailsContent({
             setPayments(paymentData.Payments);
           }
         } catch (error) {
-          console.error("❌ Payment fetch error:", error);
+
         }
       }
     };
@@ -494,6 +494,7 @@ function ApplicationDetailsContent({
         moduleName: "PT",
       },
     };
+<<<<<<< HEAD
     // try {
     const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
     //   const result = await response.json();
@@ -508,6 +509,24 @@ function ApplicationDetailsContent({
     //   console.error("Error inactivating property:", err);
     //   alert(`Something went wrong while making the property ${status}.`);
     // }
+=======
+    try {
+      const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
+      if (response && response.Properties && response.Properties.length > 0) {
+        if (status === "INACTIVE") {
+          alert("Application is in workflow first approve the application");
+        } else {
+          alert(`Property marked as ${status} successfully!`);
+        }
+        window.location.reload();
+      } else {
+        alert("Failed to update property status.");
+      }
+    } catch (err) {
+
+      alert(`Something went wrong while making the property ${status}.`);
+    }
+>>>>>>> MicroUI_UAT_Vite
   };
 
   const applicationData_pt = applicationDetails?.applicationData;
@@ -657,13 +676,13 @@ function ApplicationDetailsContent({
       if (!appNo) return;
       Digit.PaymentService.recieptSearch(tenantId, "TL", { consumerCodes: appNo })
         .then((response) => {
-          console.log("TL Payment History response:", response);
+
           if (response?.Payments?.length > 0) {
             setPayments(response.Payments);
           }
         })
         .catch((error) => {
-          console.error("TL Payment search error:", error);
+
         });
       return;
     }
@@ -689,7 +708,7 @@ function ApplicationDetailsContent({
         });
       }
     } catch (error) {
-      console.error("❌ Payment search error for PT/BPREG:", error);
+
     }
   }, [moduleCode, propertyId, tenantId, applicationData?.applicationNumber]);
   return (
@@ -935,6 +954,7 @@ function ApplicationDetailsContent({
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
+<<<<<<< HEAD
       {showHistory && assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
       {showHistory && <PaymentHistory payments={payments} />}
 <<<<<<< HEAD
@@ -953,6 +973,18 @@ function ApplicationDetailsContent({
 >>>>>>> MicroUI_PROD_Vite
       {isPTLocation && propertyDocuments.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
 =======
+=======
+      {showHistory && assessmentDetails?.length > 0 && (
+        <AssessmentHistory
+          assessmentData={filtered}
+          propertyId={currentPropertyId}
+          tenantId={applicationData?.tenantId || tenantId}
+          propertyStatus={propertyStatus}
+          applicationData={applicationData}
+        />
+      )}
+      {showHistory && <PaymentHistory payments={payments} assessmentData={filtered} applicationData={applicationData} />}
+>>>>>>> MicroUI_UAT_Vite
       {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG"  && moduleCode !== "TL"&& (
         <ApplicationHistory applicationData={applicationDetails?.applicationData} />
       )}
@@ -1026,6 +1058,7 @@ function ApplicationDetailsContent({
         <ActionBar className="clear-search-container">
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           {window.location.href.includes("/employee/") && (
             <PTActionButton label="Make Active" color="#00703C" hoverColor="#005a30" icon={
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1063,6 +1096,8 @@ function ApplicationDetailsContent({
             </svg>
           } onClick={AccessProperty} />
 =======
+=======
+>>>>>>> MicroUI_UAT_Vite
           {window.location.href.includes("employee") && (
             <>
               <PTActionButton
@@ -1151,7 +1186,10 @@ function ApplicationDetailsContent({
             }
             onClick={AccessProperty}
           />
+<<<<<<< HEAD
 >>>>>>> MicroUI_PROD_Vite
+=======
+>>>>>>> MicroUI_UAT_Vite
         </ActionBar>
       ) : null}
       {showAccessModal && (

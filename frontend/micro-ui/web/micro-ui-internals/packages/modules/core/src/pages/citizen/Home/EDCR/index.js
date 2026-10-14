@@ -8,7 +8,7 @@ import { newConfig as newConfigEDCR} from "../../../../config/edcrConfig";
 import EDCRAcknowledgement1 from "./EDCRAcknowledgement1";
 
 const CreateEDCR1 = ({ parentRoute }) => {
-  console.log("hio inside edcr")
+
   const queryClient = useQueryClient();
   const match = useRouteMatch();
   const { t } = useTranslation();
@@ -19,16 +19,16 @@ const CreateEDCR1 = ({ parentRoute }) => {
   const [isShowToast, setIsShowToast] = useState(null);
   const [isSubmitBtnDisable, setIsSubmitBtnDisable] = useState(false);
   Digit.SessionStorage.set("EDCR_BACK", "IS_EDCR_BACK");
-  
+
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(stateId, []);
-console.log("stateId" + stateId)
+
   const generateTransactionNumber = () => {
     return 'TRA' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
   };
   function handleSelect(key, data, skipStep, index) {
     setIsSubmitBtnDisable(true);
-  
+
     const loggedInuserInfo = Digit.UserService.getUser();
     const userInfo = { uuid: "1c79f77e-e847-4663-98a7-5aee31f185c5", tenantId: "pg.citya" };
     const transactionNumber = generateTransactionNumber();
@@ -37,7 +37,7 @@ console.log("stateId" + stateId)
     const tenantId = data?.tenantId?.code;
     const appliactionType = "BUILDING_PLAN_SCRUTINY";
     const applicationSubType = "NEW_CONSTRUCTION";
-  
+
     const edcrRequest = {
       transactionNumber,
       edcrNumber: "",
@@ -60,21 +60,21 @@ console.log("stateId" + stateId)
       applicationSubType
     };
 
-  console.log("edcrRequest:", edcrRequest);
-console.log("file:", file);
+
+
 
     let bodyFormData = new FormData();
     //bodyFormData.set("edcrRequest", JSON.stringify(edcrRequest));
     bodyFormData.append("edcrRequest", JSON.stringify(edcrRequest));
     bodyFormData.append("planFile", file);
-    console.log("FormData size:", bodyFormData.size);
-    console.log("bodyFormData coreeee== " + bodyFormData);
+
+
 
     Digit.EDCRService.anonymousCreate({ data: bodyFormData }, tenantId)
-    
+
       .then((result, err) => {
-        console.log("Result data:", result?.data);
-      
+
+
         setIsSubmitBtnDisable(false);
         if (result?.data?.edcrDetail) {
           setParams(result?.data?.edcrDetail);
@@ -89,13 +89,13 @@ console.log("file:", file);
         setIsSubmitBtnDisable(false);
         history.replace(
           `/digit-ui/citizen/core/edcr/scrutiny/acknowledgement`,
-        
+
         );
         setIsShowToast({ key: true, label: e?.response?.data?.errorCode ? e?.response?.data?.errorCode : "BPA_INTERNAL_SERVER_ERROR" });
       });
-      
+
   }
- 
+
 
   const handleSkip = () => { };
   const handleMultiple = () => { };
@@ -111,8 +111,8 @@ console.log("file:", file);
   config.indexRoute = "home";
 
   //const EDCRAcknowledgement1 = Digit?.ComponentRegistryService?.getComponent('EDCRAcknowledgement1');
- // console.log("EDCRAcknowledgement1" , EDCRAcknowledgement1)
-  console.log("=====" + match.path)
+
+
   return (
     <Switch>
       {config.map((routeObj, index) => {
@@ -125,15 +125,15 @@ console.log("file:", file);
         );
       })}
       <Route path={`${match.path}/acknowledgement`}>
-        
+
         <EDCRAcknowledgement1 data={params} onSuccess={onSuccess} />
-       
+
       </Route>
       <Route>
       <Redirect to={`${match.path}/${config.indexRoute}`} />
-        
+
       </Route>
-      
+
     </Switch>
   );
 };

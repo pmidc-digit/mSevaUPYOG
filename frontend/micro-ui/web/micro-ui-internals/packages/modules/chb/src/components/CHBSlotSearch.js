@@ -28,7 +28,7 @@ const CHBSlotSearch = ({ slotDetail }) => {
 
         setIsSlotBooked(booked);
       } catch (error) {
-        console.error('Error fetching slot data:', error);
+
       } finally {
         setLoading(false);
       }
@@ -40,7 +40,7 @@ const CHBSlotSearch = ({ slotDetail }) => {
   if (loading) {
     return <div>Loading...</div>;
   }
-  console.log("isSlotBooked",isSlotBooked);
+
   return (
     <div>
       {isSlotBooked ? 'Slot is booked' : 'Slot is available'}

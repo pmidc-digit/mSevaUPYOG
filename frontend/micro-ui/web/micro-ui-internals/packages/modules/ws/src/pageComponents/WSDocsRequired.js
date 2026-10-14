@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 
 const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
-  console.log("In WSDocsRequired");
+
   const { t } = useTranslation();
   const history = useHistory();
   const match = useRouteMatch();
@@ -34,8 +34,8 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
   sessionStorage.removeItem("FORMSTATE_ERRORS");
 
   const { isLoading: wsDocsLoading, data: wsDocs } = Digit.Hooks.ws.WSSearchMdmsTypes.useWSServicesMasters(tenantId);
-  console.log("ws /create-application", wsDocs, wsDocsLoading);
-  console.log("In WSDocsRequired Data: ", tenantId, Digit.Hooks.ws.WSSearchMdmsTypes.useWSServicesMasters(tenantId));
+
+
 
   if (userType === "citizen") {
     return (

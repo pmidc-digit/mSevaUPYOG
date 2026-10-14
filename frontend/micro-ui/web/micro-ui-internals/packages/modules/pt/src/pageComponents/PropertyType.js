@@ -15,7 +15,7 @@ import Timeline from "../components/TLTimeline";
 import { Controller, useForm } from "react-hook-form";
 
 const PropertyType = ({ t, config, onSelect, userType, formData, setError, clearErrors, formState, onBlur }) => {
-  // console.log("formData||||||||||||||||||||||?",formData);
+
 
   const [BuildingType, setBuildingType] = useState(formData?.PropertyType);
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -122,8 +122,8 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
     return <Loader />;
   }
 
-  // console.log("getPropertyTypeMenu(proptype)",getPropertyTypeMenu(proptype));
-  console.log("localFormState", localFormState?.errors);
+
+
   if (window.location.href.includes("employee")) {
     return inputs?.map((input, index) => {
       return (

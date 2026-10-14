@@ -63,15 +63,15 @@ const CreateEmployeeStepForm = ({ applicationData, responsePath = "/digit-ui/emp
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const formState = useSelector((state) => state.pt.PTNewApplicationFormReducer);
-  console.log("form state",formState)
+
   const formData = formState?.formData;
   const step = formState?.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [, setMutationHappened] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
   const [, , clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});
-  // console.log("Form data", formData)
-  // console.log("formState: ",formState);
-  console.log("applicationData in ownership transefership", applicationData);
+
+
+
   const defaultValues = OwnertransferMapData(applicationData);
 
   const { data: mutationDocs } = Digit.Hooks.pt.useMDMS(Digit.ULBService.getStateId(), "PropertyTax", "MutationDocuments");
@@ -82,7 +82,7 @@ const CreateEmployeeStepForm = ({ applicationData, responsePath = "/digit-ui/emp
   }, []);
 
   useEffect(() => {
-    console.log("deafult vaules in useEffect ownerTransfer: ", defaultValues);
+
     dispatch(RESET_PT_NEW_APPLICATION_FORM());
     if (defaultValues && Object.keys(defaultValues).length > 0) {
       Object.entries(defaultValues).forEach(([key, value]) => {
@@ -212,7 +212,7 @@ const CreateEmployeeStepForm = ({ applicationData, responsePath = "/digit-ui/emp
       submitData.Property.institution = null;
     }
 
-    console.log("Submitting mutation data:", submitData);
+
 
     // Reset Redux stepper form state
     dispatch(RESET_PT_NEW_APPLICATION_FORM());

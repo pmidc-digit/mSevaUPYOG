@@ -10,9 +10,9 @@ const FillSurvey = ({ stateCode }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const [getUser, setUser] = useState();
-  console.log("loca", location.state.surveyDetails);
+
   const surveyDetails = location.state?.surveyDetails || {};
-  console.log("surv det", surveyDetails);
+
 
   const userInfo = Digit.UserService.getUser()?.info || {};
 
@@ -73,13 +73,13 @@ const FillSurvey = ({ stateCode }) => {
 
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
-    console.log("date value", event.target);
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
-  console.log("formData", formData);
+
   const handleDropdownChange = (name, event) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -164,7 +164,7 @@ const FillSurvey = ({ stateCode }) => {
 
     Digit.Surveys.userSearch(data, filters)
       .then((response) => {
-        console.log("response", response);
+
 
         if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
           setFormData((prevData) => ({
@@ -192,7 +192,7 @@ const FillSurvey = ({ stateCode }) => {
         }
       })
       .catch((error) => {
-        console.log(error);
+
       });
   };
   const handleRegisterNext = () => {
@@ -213,10 +213,10 @@ const FillSurvey = ({ stateCode }) => {
             surveyDetails: surveyDetails,
           });
         }
-        console.log("res", response);
+
       });
     } catch (err) {
-      console.log(err);
+
     }
   };
 
@@ -228,10 +228,10 @@ const FillSurvey = ({ stateCode }) => {
     }
     const proceed = formData.register === true ? validateRegisterForm() : formData.citizenFound === true ? validateForm() : null;
     if (proceed) {
-      console.log("Form submitted:", formData);
-      console.log("reg", formData.register, formData.citizenFound);
 
-      console.log("getUser", getUser);
+
+
+
 
       const existingUser = formData.user;
 
@@ -250,17 +250,17 @@ const FillSurvey = ({ stateCode }) => {
           };
           try {
             const { responseInfo, user } = await Digit.UserService.updateUser(requestData, getUser?.tenantId);
-            console.log("User updated:", user);
+
           } catch (error) {
-            console.error("Error updating user:", error);
+
             setShowToast({ key: true, isError: true, label: "FAILED TO UPDATE USER INFORMATION" });
             return;
           }
         } else {
-          console.log("No user info changed. Skipping API call.");
+
         }
 
-        console.log("formData", formData);
+
 
         history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
           citizenFill: true,

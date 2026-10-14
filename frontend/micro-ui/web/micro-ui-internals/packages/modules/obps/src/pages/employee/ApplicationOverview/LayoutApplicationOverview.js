@@ -48,9 +48,9 @@ import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/comp
 
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
-  //console.log("checkpoint here", checkpoint);
+
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  //console.log("wfDocuments", wfDocuments);
+
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     time: checkpoint?.auditDetails?.timing,
@@ -124,7 +124,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
             }
           }
         } catch (e) {
-          console.error("Error searching CLU for document:", e);
+
         }
       }
 
@@ -141,7 +141,7 @@ const DocumentLink = ({ fileStoreId, cluNumber, stateCode, t, label }) => {
             setUrl(typeof fetchedUrl === "string" ? fetchedUrl.split(",")?.[0] : fetchedUrl);
           }
         } catch (error) {
-          console.error("Error fetching document:", error);
+
         }
       }
       setLoading(false);
@@ -204,7 +204,7 @@ const LayoutEmployeeApplicationOverview = () => {
     cacheTime: 0,
   });
   const applicationDetails = data?.resData;
-  //console.log("applicationDetails here==>", applicationDetails, checklistRemarks);
+
   const currentZoneCode = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.zone?.code;
   const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService?.toUpperCase();
   const prefix= `WF_EMPLOYEE_LAYOUT_${businessService}`?.toUpperCase();
@@ -217,7 +217,7 @@ const LayoutEmployeeApplicationOverview = () => {
   const { data: checklistData, refetch: refetchChecklist } = Digit.Hooks.obps.useLayoutCheckListSearch({ applicationNo: id }, tenantId, {
     enabled: shouldFetchChecklist,
   });
-  //console.log("DEBUG: Checklist data fetched:", checklistData, "Fetch enabled:", shouldFetchChecklist);
+
 
   const isMobile = window?.Digit?.Utils?.browser?.isMobile();
 
@@ -230,7 +230,7 @@ const LayoutEmployeeApplicationOverview = () => {
     const siteInspectionEmp = useMemo(() => {
       return workflowDetails?.data?.processInstances?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")?.assigner;
     }, [workflowDetails]);
-  
+
     const empUserName = siteInspectionEmp?.userName || "";
     const empName = siteInspectionEmp?.name || "";
 
@@ -238,8 +238,8 @@ const LayoutEmployeeApplicationOverview = () => {
     setEmpDesignation(key);
   };
 
-  //console.log("workflowDetails here=>", workflowDetails);
-  //console.log("next employee ======>", data, applicationDetails, applicationDetails?.businessService);
+
+
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -260,8 +260,8 @@ const LayoutEmployeeApplicationOverview = () => {
     let WorkflowService = null;
     const businessService = applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService;
 
-    //console.log("  Business service:", businessService);
-    //console.log("  Tenant ID:", tenantId);
+
+
 
     if (businessService && tenantId) {
       (async () => {
@@ -269,16 +269,16 @@ const LayoutEmployeeApplicationOverview = () => {
         try {
           WorkflowService = await Digit.WorkflowService.init(tenantId, businessService);
           const states = WorkflowService?.BusinessServices?.[0]?.states || [];
-          //console.log("  Setting workflowService state with", states.length, "states");
+
           setWorkflowService(states);
         } catch (error) {
-          console.error("  Error fetching workflow service:", error);
+
         } finally {
           setLoader(false);
         }
       })();
     } else {
-      //console.log("  Skipping workflow load - missing business service or tenant");
+
     }
   }, [tenantId, applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.siteDetails?.businessService]);
   let user = Digit.UserService.getUser();
@@ -320,11 +320,11 @@ const LayoutEmployeeApplicationOverview = () => {
     });
 
 
-  // console.log("actions here", actions);
+
 
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0];
-    //console.log(layoutObject, "layoutObject---in---useEffect");
+
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
@@ -341,7 +341,7 @@ const LayoutEmployeeApplicationOverview = () => {
       const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates;
       const Documents = layoutObject?.documents || [];
 
-      //console.log("DEBUG: Documents array with remarks:", Documents.map(d => ({ documentType: d.documentType, remarks: d.remarks, uuid: d.uuid })));
+
 
       const finalDisplayData = {
         applicantDetails: applicantDetails ? [applicantDetails] : [],
@@ -378,7 +378,7 @@ const LayoutEmployeeApplicationOverview = () => {
       checklistData.checkList.forEach((item) => {
         remarksMap[item.documentUid || item.documentuid] = item.remarks || "";
       });
-      //console.log("DEBUG: Initialized checklistRemarks from API:", remarksMap);
+
       setChecklistRemarks(remarksMap);
     }
   }, [checklistData]);
@@ -386,7 +386,7 @@ const LayoutEmployeeApplicationOverview = () => {
   // Show warning toast if desktop user is on FIELDINSPECTION_INPROGRESS status
   useEffect(() => {
     if (applicationDetails?.Layout?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" && hasRole && !isMobile) {
-      //console.log("Field_Inspection_Only_Available_On_Mobile");
+
     }
   }, [applicationDetails?.Layout?.[0]?.applicationStatus, hasRole, isMobile]);
 
@@ -475,7 +475,7 @@ const LayoutEmployeeApplicationOverview = () => {
       const acknowledgementData = await getLayoutAcknowledgementData(Property, tenantInfo, ulbType, t, combinedPayments);
       await Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
     } catch (err) {
-      console.error(err);
+
     } finally {
       setLoader(false);
     }
@@ -632,7 +632,7 @@ const LayoutEmployeeApplicationOverview = () => {
       }
       window.open(fileStore[filestoreId], "_blank");
     } catch (error) {
-      console.error("receipt download error:", error);
+
     } finally {
       setLoader(false);
     }
@@ -656,7 +656,7 @@ const LayoutEmployeeApplicationOverview = () => {
       setPdfUrl(downloadUrl);
       setShowPdfModal(true);
     } catch (error) {
-      console.error("LOI popup error:", error);
+
     } finally {
       setLoader(false);
     }
@@ -676,7 +676,7 @@ const LayoutEmployeeApplicationOverview = () => {
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
         {
-          onSuccess: () => console.log("✅ LOI eSign initiated successfully"),
+          onSuccess: () => void 0,
           onError: (error) => {
             setShowToast({
               key: "true",
@@ -710,7 +710,7 @@ const LayoutEmployeeApplicationOverview = () => {
         }
       }
     } catch (error) {
-      console.error("Error fetching document:", error);
+
     }
   };
 
@@ -722,7 +722,7 @@ const LayoutEmployeeApplicationOverview = () => {
     });
   }
 
- 
+
   if (
       applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.LOIFilestoreId
     ) {
@@ -762,7 +762,7 @@ const LayoutEmployeeApplicationOverview = () => {
   }, [eSignError]);
 
   useEffect(() => {
-    //console.log(" useEffect triggered - id changed to:", id);
+
 
     if (workflowDetails) {
       workflowDetails.revalidate();
@@ -785,10 +785,10 @@ const LayoutEmployeeApplicationOverview = () => {
   }
 
   const submitAction = async (data) => {
-    //console.log(" submitAction called with data:", data);
+
     setIsSubmitting(true);
 
-    console.log(data ,"data received in submit")
+
     try {
       const filtData = data?.Licenses?.[0];
 
@@ -797,7 +797,7 @@ const LayoutEmployeeApplicationOverview = () => {
       // }
 
       if (!filtData) {
-        console.error(" ERROR: filtData is undefined");
+
         setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
         setIsSubmitting(false);
         return;
@@ -808,10 +808,10 @@ const LayoutEmployeeApplicationOverview = () => {
       }
 
       const layoutObject = applicationDetails?.Layout?.[0];
-      //console.log(" layoutObject:", layoutObject);
+
 
       if (!layoutObject) {
-        console.error(" ERROR: layoutObject is undefined");
+
         setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
         setIsSubmitting(false);
         return;
@@ -852,11 +852,11 @@ const LayoutEmployeeApplicationOverview = () => {
           // Check if all documents have remarks filled
           const allRemarksFilledForDocuments = remainingDocs.every((doc) => {
             const remark = checklistRemarks[doc.documentUid || doc.uuid];
-            //console.log("remarkdoc",remainingDocs,doc,checklistRemarks, checklistRemarks[doc.documentUid || doc.uuid])
+
             return remark && typeof remark === "string" && remark.trim().length > 0;
           });
 
-          //console.log("allRemarksFilledForDocuments",allRemarksFilledForDocuments)
+
 
           if (!allRemarksFilledForDocuments) {
             closeModal();
@@ -927,10 +927,10 @@ const LayoutEmployeeApplicationOverview = () => {
         Layout: updatedApplicant,
       };
 
-      //console.log(" finalPayload:", JSON.stringify(finalPayload, null, 2));
+
 
       const response = await Digit.OBPSService.LayoutUpdate(finalPayload, tenantId);
-      //console.log(" API response:", response);
+
 
       // Also send checklist update/create for document remarks
       // CHECK: If on DM role (shouldFetchChecklist === false), CREATE checklist. Otherwise UPDATE if data exists
@@ -959,9 +959,9 @@ const LayoutEmployeeApplicationOverview = () => {
                 remarks: checklistRemarks[doc.documentUid || doc.uuid] || "",
               })),
             };
-            //console.log("DEBUG: DM ROLE - Sending checklist CREATE payload:", checklistPayload);
+
             const checklistResponse = await Digit.OBPSService.LayoutCheckListCreate({ details: checklistPayload, filters: { tenantId } });
-            //console.log("DEBUG: Checklist create response:", checklistResponse);
+
             // Refetch checklist after creation
             refetchChecklist();
           } else if (checklistData?.checkList?.length > 0) {
@@ -979,14 +979,14 @@ const LayoutEmployeeApplicationOverview = () => {
                 };
               }),
             };
-            //console.log("DEBUG: OTHER ROLES - Sending checklist UPDATE payload:", checklistPayload);
+
             const checklistResponse = await Digit.OBPSService.LayoutCheckListUpdate({ details: checklistPayload, filters: { tenantId } });
-            //console.log("DEBUG: Checklist update response:", checklistResponse);
+
           } else {
-            console.warn("DEBUG: Checklist data not available at non-DM roles - may need to search first");
+
           }
         } catch (checklistErr) {
-          console.error("DEBUG: Error updating/creating checklist:", checklistErr);
+
           // Don't fail the main operation if checklist update fails
         }
       }
@@ -1002,7 +1002,7 @@ const LayoutEmployeeApplicationOverview = () => {
         //   }, 3000);
         // } else
           if (filtData?.action) {
-          //console.log("We are calling employee response page");
+
           history.replace({
             pathname: `/digit-ui/employee/obps/layout/response/${response?.Layout?.[0]?.applicationNo}`,
             state: { data: response },
@@ -1017,14 +1017,14 @@ const LayoutEmployeeApplicationOverview = () => {
           }, 3000);
         }
       } else {
-        console.error(" API response not successful:", response);
+
         setShowToast({ key: "true", warning: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
         setSelectedAction(null);
       }
     } catch (err) {
-      console.error(" ERROR in submitAction:", err);
-      console.error(" Error message:", err?.message);
-      console.error(" Error stack:", err?.stack);
+
+
+
       setShowToast({ key: "true", error: true, message: err?.response?.data?.Errors?.[0]?.message });
     } finally {
       // <CHANGE> Stop loading when submit completes (success or error)
@@ -1040,17 +1040,17 @@ const LayoutEmployeeApplicationOverview = () => {
   // function onActionSelect(action) {
   //   const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
 
-  //   console.log("check action === ", action);
+
 
   //   const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
 
-  //    console.log("check filterNexState=== ", filterNexState[0]?.nextState );
+
 
   //   const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-  //   console.log("check getWorkflowService === ", getWorkflowService);
 
-  //   console.log(filterRoles, "filterRoles");
+
+
 
   //   setEmployees(filterRoles?.[0]?.actions);
 
@@ -1075,19 +1075,19 @@ const LayoutEmployeeApplicationOverview = () => {
   function onActionSelect(action) {
     const appNo = applicationDetails?.Layout?.[0]?.applicationNo;
 
-    //console.log("check action === ", action);
+
 
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
-    //console.log("check filterNexState=== ", filterNexState[0]?.nextState);
+
 
     const filterRoles = getWorkflowService?.filter((item) => item?.uuid == filterNexState[0]?.nextState);
 
-    //console.log("check getWorkflowService === ", getWorkflowService);
-    //console.log(filterRoles, "filterRoles");
+
+
 
     // <CHANGE> Added detailed logging and fallback to empty array
     const nextStateRoles = filterRoles?.[0]?.actions || [];
-    //console.log("  Next state roles to filter employees:", nextStateRoles);
+
     setEmployees(nextStateRoles);
 
     const payload = {
@@ -1118,7 +1118,7 @@ const LayoutEmployeeApplicationOverview = () => {
         return;
       }
       // <CHANGE> Log before opening modal to verify employees are set
-      //console.log("  Opening modal with filtered employees:", nextStateRoles);
+
       setShowModal(true);
       setSelectedAction(action);
     }
@@ -1183,7 +1183,7 @@ const LayoutEmployeeApplicationOverview = () => {
   };
 
   const onChangeReport = (key, value) => {
-    //console.log("key,value", key, value);
+
     setFieldInspectionPending(value);
   };
 
@@ -1274,14 +1274,14 @@ const LayoutEmployeeApplicationOverview = () => {
         </StatusTable>
       </Card>
 
-      
+
 
       {/* -------------------- PROFESSIONAL DETAILS -------------------- */}
 
       {displayData?.applicantDetails?.[0]?.professionalName && (
         <Card>
           <CardSubHeader>{t("LAYOUT_PROFESSIONAL_DETAILS")}</CardSubHeader>
-      
+
             <StatusTable>
               <RenderRow label={t("NOC_PROFESSIONAL_NAME_LABEL")} value={displayData?.applicantDetails?.[0]?.professionalName || "N/A"} />
               <RenderRow label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} value={displayData?.applicantDetails?.[0]?.professionalEmailId || "N/A"} />
@@ -1293,7 +1293,7 @@ const LayoutEmployeeApplicationOverview = () => {
                 value={formatDate(displayData?.applicantDetails?.[0]?.professionalRegistrationValidity || "N/A")}
               />
             </StatusTable>
-          
+
         </Card>
       )}
 
@@ -1304,7 +1304,7 @@ const LayoutEmployeeApplicationOverview = () => {
           <React.Fragment key={index}>
             <Card>
               <CardSubHeader>{index === 0 ? t("PRIMARY_OWNER") : `${t("Owner") || "Owner"} ${index + 1}`}</CardSubHeader>
-         
+
                 <StatusTable>
 
                   {index === 0 && <RenderRow label={t(`CLU_OWNER_TYPE_LABEL`)} value={applicant?.additionalDetails?.aplicantType?.name} />}
@@ -1336,7 +1336,7 @@ const LayoutEmployeeApplicationOverview = () => {
                     text={<DocumentLink fileStoreId={findOwnerDocument(index, "OWNERPAN")} stateCode={stateCode} t={t} />}
                   />
                 </StatusTable>
-             
+
             </Card>
           </React.Fragment>
         ))}
@@ -1345,7 +1345,7 @@ const LayoutEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("LAYOUT_SITE_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-     
+
             <StatusTable key={index}>
               {renderLabel(t("BPA_IS_CLU_REQUIRED_LABEL"), detail?.isCluRequired?.code || detail?.isCluRequired)}
               {(detail?.isCluRequired?.code === "NO" || detail?.isCluRequired === "NO") && (
@@ -1395,10 +1395,10 @@ const LayoutEmployeeApplicationOverview = () => {
               {renderLabel(t("BPA_VASIKA_DATE_LABEL"), formatDate(detail?.vasikaDate))}
               {renderLabel(t("BPA_ROAD_TYPE_LABEL"), detail?.roadType?.name)}
               {renderLabel(t("BPA_IS_AREA_UNDER_MASTER_PLAN_LABEL"), detail?.isAreaUnderMasterPlan?.i18nKey)}
-              
-              
+
+
               {/* {renderLabel(t("BPA_BUILDING_CATEGORY_LABEL"), detail?.buildingCategory?.name)} */}
-              
+
               {/* {renderLabel(t("BPA_PLOT_NO_LABEL"), detail?.plotNo)} */}
 
               {/* <CardLabel style={{...boldLabelStyle, paddingLeft: "18px", fontSize: "20px"}}>{t("BPA_AREA_DISTRIBUTION_LABEL")}</CardLabel> */}
@@ -1442,7 +1442,7 @@ const LayoutEmployeeApplicationOverview = () => {
 
               {/* {renderLabel(t("BPA_BUILDING_STATUS_LABEL"), detail?.buildingStatus?.name || detail?.buildingStatus?.code)} */}
             </StatusTable>
-          
+
         ))}
       </Card>
 
@@ -1450,7 +1450,7 @@ const LayoutEmployeeApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("LAYOUT_SPECIFICATION_DETAILS")}</CardSubHeader>
         {displayData?.siteDetails?.map((detail, index) => (
-         
+
             <StatusTable key={index}>
               <RenderRow label={t("LAYOUT_PLOT_AREA_JAMA_BANDI_LABEL")} value={detail?.specificationPlotArea} />
               {/* <RenderRow
@@ -1467,7 +1467,7 @@ const LayoutEmployeeApplicationOverview = () => {
                 value={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan}
               /> */}
             </StatusTable>
-          
+
         ))}
       </Card>
 
@@ -1643,7 +1643,7 @@ const LayoutEmployeeApplicationOverview = () => {
       {/* FEE DETAILS CARD - CLU STYLE PART 1 */}
       <Card>
         <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL")}</CardSubHeader>
-    
+
         {applicationDetails?.Layout?.[0]?.layoutDetails && (
           <>
               <CardSubHeader>{t("LAYOUT_FEE_DETAILS_LABEL_PAY1")}</CardSubHeader>
@@ -1667,10 +1667,14 @@ const LayoutEmployeeApplicationOverview = () => {
                 )}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     
 =======
       </Card>
 >>>>>>> MicroUI_PROD_Vite
+=======
+
+>>>>>>> MicroUI_UAT_Vite
 
       {/* FEE DETAILS TABLE CARD - CLU STYLE PART 2 */}
       {(applicationDetails?.Layout?.[0]?.applicationStatus !== "FIELDINSPECTION_INPROGRESS") && (
@@ -1737,7 +1741,7 @@ const LayoutEmployeeApplicationOverview = () => {
                 handleSetEmpDesignation={handleSetEmpDesignation}
               />
             </div>
-     
+
       {actions?.length > 0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (

@@ -29,9 +29,11 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
   const { t } = useTranslation();
   const history = useHistory();
   let { pathname, state } = useLocation();
+  const isCitizen = window.location.href.includes("citizen");
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
   const isEditScreen = pathname.includes("/modify-application/");
-  const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
+  const citizenCity =  window.localStorage.getItem("CITIZEN.CITY")
+  const tenantId =  isCitizen ? citizenCity :  Digit.ULBService.getCurrentTenantId();    //Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
   const isEmpNewApplication =
     window.location.href.includes("/employee/tl/new-application") || window.location.href.includes("/citizen/tl/tradelicence/new-application");
   const isEmpRenewLicense =
@@ -78,7 +80,7 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
       clearTimeout(timer);
     };
   });
-
+ 
   const { isLoading, isError, error, data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: searchPropertyId }, tenantId: tenantId },
     {
@@ -176,7 +178,7 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
     type: "text",
     name: "id",
     validation: {},
-    isMandatory: false,
+    isMandatory: true,
     placeholder: "TL_NEW_TRADE_DETAILS_PT_ID_PLACEHOLDER"
   };
 
@@ -220,10 +222,10 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
         : true) && (
         <div>
           <LabelFieldPair>
-            {/* <CardLabel className="card-label-smaller" style={getInputStyles()}>
-              {`${t(propertyIdInput.label)}`} }
+           <CardLabel className="card-label-smaller">
+              {`${t(propertyIdInput.label)}`} 
               {propertyIdInput.isMandatory ? "*" : null}
-            </CardLabel> */}
+            </CardLabel> 
               <div className="form-field TL-property-search-field" ref={myElementRef} id="search-property-field">
               <TextInput
                 key={propertyIdInput.name}

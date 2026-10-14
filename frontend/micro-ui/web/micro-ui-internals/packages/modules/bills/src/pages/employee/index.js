@@ -17,7 +17,7 @@ const BILLSBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
 
   const search = useLocation().search;
-  
+
   const fromScreen = new URLSearchParams(search).get("from") || null;
 
   const crumbs = [
@@ -52,7 +52,7 @@ const BILLSBreadCrumbs = ({ location }) => {
       content: t("ABG_VIEW_DOWNLOADS_HEADER"),
       show: location.pathname.includes("/download-bill-pdf") ? true : false,
     }
-    
+
   ];
 
   return <BreadCrumb crumbs={crumbs} spanStyle={{ maxWidth: "min-content" }} />;
@@ -79,7 +79,7 @@ const EmployeeApp = ({ path, url, userType }) => {
     businessServiceList.push(element.code);
   });
   //const BillInbox = Digit.ComponentRegistryService.getComponent("BillInbox");
-  //console.log("path",path)
+
   return (
     <Switch>
       <React.Fragment>

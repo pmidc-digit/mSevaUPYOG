@@ -15,7 +15,7 @@ export const OCStepperForm = () => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const formState = useSelector((state) => state.obps.OBPSFormReducer);
-  console.log("FORMSTATE-Inital-OBPS", formState);
+
   const step = formState.step;
   const isMobile = window.Digit.Utils.browser.isMobile();
 

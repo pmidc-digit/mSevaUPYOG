@@ -4,18 +4,25 @@ import React, { useState } from 'react'
 const AssessmentHistory = ({ assessmentData, propertyId, tenantId, propertyStatus, applicationData }) => {
     const history = useHistory();
     const isEmployee = window.location.href.includes("employee");
+<<<<<<< HEAD
 =======
 const AssessmentHistory = ({ assessmentData }) => {
 
 
 >>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
+>>>>>>> MicroUI_UAT_Vite
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleAccordion = () => {
         setIsOpen(!isOpen);
     };
+<<<<<<< HEAD
 
 <<<<<<< HEAD
+=======
+    console.log("assessmentData",assessmentData)
+>>>>>>> MicroUI_UAT_Vite
     const handleReassess = (assessment) => {
         if (["INACTIVE", "INWORKFLOW"].includes(propertyStatus?.toUpperCase())) {
             alert("This operation is not allowed as Property is in INWORKFLOW or Inactive.");
@@ -48,12 +55,13 @@ const AssessmentHistory = ({ assessmentData }) => {
             alert("Assessment cancelled successfully.");
             window.location.reload();
         } catch (error) {
-            console.error("Error cancelling assessment:", error);
+
             alert(error?.response?.data?.Errors?.[0]?.message || error?.message || "Failed to cancel assessment.");
         }
     };
 
 
+<<<<<<< HEAD
     function formatAssessmentDate(timestamp) {
         const date = new Date(timestamp);
         const options = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -61,6 +69,8 @@ const AssessmentHistory = ({ assessmentData }) => {
     }
 =======
     
+=======
+>>>>>>> MicroUI_UAT_Vite
 function formatAssessmentDate(timestamp) {
   const date = new Date(timestamp);
   const options = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -98,14 +108,14 @@ function formatAssessmentDate(timestamp) {
             </div>
             {isOpen && (
                 <div className="accordion-body" style={{ padding: " 15px", backgroundColor: "#fff" }}>
-                    {assessmentData.map((assessment, index) => (
+                    {assessmentData.sort((a, b) => b.assessmentDate - a.assessmentDate).map((assessment, index) => (
                         <div key={index} className="assessment-item" style={{ marginBottom: "15px" }}>
                             <div className="assessment-row" style={{
 
                                 display: "flex",
                                 gap: "100px",
                                 marginBottom: "8px",
-                               
+
 
                             }}>
                                 <span style={{ fontWeight: "bold", minWidth: '60px', color:'black' }}>Assessment Date</span>
@@ -129,10 +139,10 @@ function formatAssessmentDate(timestamp) {
                                 display: "flex",
                               //  gap: "100px",
                                 marginBottom: "8px",
-                                
+
                                justifyContent: "space-between",
                                alignItems: "center",
-             
+
 
 
                             }}>
@@ -140,12 +150,13 @@ function formatAssessmentDate(timestamp) {
                                 <span className="label" style={{ fontWeight: "bold", minWidth: '60px', color:'black' }}>Assessment Number</span>
                                 <span className='value' style={{ flex: '1', color:'black' }}>{assessment.assessmentNumber}</span>
                                 </div>
-                           
+
                             {/* <p><strong>Date:</strong> {assessment.assessmentDate}</p>
                             <p><strong>Year:</strong> {assessment.financialYear}</p>
                             <p><strong>Number:</strong> {assessment.assessmentNumber}</p> */}
                             {/* <button onClick={() => alert(`Re-assessing ${assessment.assessmentNumber}`)}>Re-assess</button>
                             <button onClick={() => alert(`Cancelled ${assessment.assessmentNumber}`)}>Cancel</button> */}
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 
@@ -180,6 +191,12 @@ function formatAssessmentDate(timestamp) {
           <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} onClick={() => alert(`Re-assessing ${assessment.number}`)}>Re-assess</button>
           <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}onClick={() => alert(`Cancelled ${assessment.number}`)}>Cancel</button>
 >>>>>>> parent of b0c1288deb (Fixed issues in PT new UI)
+=======
+
+<div className="button-group" style={{display:'flex',gap:'10px'}}>
+          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} onClick={() => handleReassess(assessment)}>Re-assess</button>
+            { isEmployee &&   <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}} onClick={() => handleCancel(assessment)}>Cancel</button> }
+>>>>>>> MicroUI_UAT_Vite
         </div>
 </div>
                           {index!==(assessmentData.length - 1) &&  <hr />}

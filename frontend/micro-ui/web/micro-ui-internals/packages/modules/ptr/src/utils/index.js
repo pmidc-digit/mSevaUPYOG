@@ -209,7 +209,7 @@ export const mapPTRApplicationDataToDefaultValues = (applicationData, t) => {
   const address = applicationData?.address || {};
   const isRenewal = window.location.href.includes("renew-ptr");
 
-  console.log("applicationData", applicationData);
+
 
   return {
     petDetails: {

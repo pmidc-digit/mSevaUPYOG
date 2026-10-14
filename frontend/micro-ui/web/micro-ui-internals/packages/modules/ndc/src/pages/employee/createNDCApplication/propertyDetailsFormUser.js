@@ -46,11 +46,11 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
   });
 
   const onSubmit = async (data) => {
-    console.log("Submitted Data:", data);
+
   };
 
   useEffect(() => {
-    console.log("errors", errors);
+
   }, [errors]);
 
   const closeToast = () => {

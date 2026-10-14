@@ -205,7 +205,7 @@ const CitizenApplicationOverview = () => {
         Digit.Utils.pdf.generateFormattedNOC(acknowledgementData);
       }, 0);
     } catch (error) {
-      // console.error("Error generating acknowledgement:", error);
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     } finally {
       setLoading(false);
     }
@@ -226,7 +226,7 @@ const CitizenApplicationOverview = () => {
       const receiptUrl = fileStore[response.filestoreIds[0]];
       await downloadPdfFromURL(receiptUrl);
     } catch (error) {
-      // console.error("Sanction Letter download error:", error);
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     } finally {
       setLoading(false);
     }
@@ -279,7 +279,7 @@ const CitizenApplicationOverview = () => {
       await downloadPdfFromURL(receiptUrl);
 
     } catch (error) {
-      // console.error("Sanction Letter download error:", error);
+      setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     } finally {
       setLoading(false);
     }

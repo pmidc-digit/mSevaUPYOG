@@ -1,4 +1,4 @@
-import React from "react"
+import React from "react";
 
 const cardColors = [
   { bg: "#EFF6FF", iconBg: "#3B82F6" }, // Blue
@@ -16,114 +16,41 @@ const cardColors = [
   { bg: "#F0FDF4", iconBg: "#16A34A" }, // Green
   { bg: "#EFF6FF", iconBg: "#2563EB" }, // Blue
   { bg: "#FAF5FF", iconBg: "#A855F7" }, // Purple
-]
+];
 
-const cardStyles = {
-  background: "#FFF",
-  borderRadius: "12px",
-  padding: "24px",
-  margin: "8px",
-  minWidth: "240px",
-  flex: "1 1 calc(25% - 16px)",
-  cursor: "pointer",
-  transition: "all 0.2s ease",
-  border: "1px solid #E5E7EB",
-  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
-}
-
-const cardHoverStyles = {
-  transform: "translateY(-4px)",
-  boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)",
-}
-
-const iconWrapperStyles = (bgColor) => ({
-  width: "56px",
-  height: "56px",
-  borderRadius: "50%",
-  background: bgColor,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  marginBottom: "16px",
-  color: "#FFF",
-  fontSize: "24px",
-})
-
-const serviceNameStyles = {
-  fontSize: "18px",
-  fontWeight: "600",
-  color: "#111827",
-  marginBottom: "8px",
-}
-
-const accessServiceStyles = {
-  fontSize: "14px",
-  color: "#6B7280",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-}
-
-const arrowStyles = {
-  color: "#3B82F6",
-  fontSize: "18px",
-}
-
-const Option = ({ name, Icon, onClick, className, colorIndex = 0 }) => {
-  const [isCardHovered, setIsCardHovered] = React.useState(false)
-  // const colors = cardColors[colorIndex % cardColors.length]
-  const colors = cardColors[colorIndex % cardColors.length]
+const Option = ({ name, Icon, iconClass, onClick, className, colorIndex = 0 }) => {
+  const colorClass = `new-card-icon--${colorIndex % cardColors.length}`;
+  const iconClassName = iconClass ? `mseva-icon ${iconClass}` : `new-card-icon ${colorClass}`;
 
   return (
-    <div 
-      className="new-card-option"
-      style={{
-        background: isCardHovered ? colors.bg : "#ffffff",
-        border: isCardHovered ? "2px solid transparent" : "2px solid #e2e8f0",
-        transition: "all 0.25s ease",
-      }}
-      onClick={onClick}
-      onMouseEnter={() => setIsCardHovered(true)}
-      onMouseLeave={() => setIsCardHovered(false)}
-    >
-      <div className="new-card-icon" style={{ background: colors.iconBg, color: colors.icon }}>
-        {Icon}
-      </div>
-      <div className="new-card-service-name" style={{ color: colors.textColor }}>{name}</div>
-      <div className="new-card-access" style={{ color: isCardHovered ? colors.textColor : "#4a5568" }}>
+    <button type="button" className={`new-card-option ${className || ""}`} onClick={onClick}>
+      <span className={iconClassName} aria-hidden="true">{iconClass ? null : Icon}</span>
+      <span className="new-card-service-name">{name}</span>
+      <span className="new-card-access">
         <span>Access service</span>
-        <span className="new-card-arrow">→</span>
-      </div>
-    </div>
-  )
-}
+        <span className="new-card-arrow" aria-hidden="true">→</span>
+      </span>
+    </button>
+  );
+};
 
-const CardBasedOptions = ({ header, sideOption, options, styles = {}, style = {} }) => {
-  const [isHovered, setIsHovered] = React.useState(false)
+const CardBasedOptions = ({ header, options = [], variant = "" }) => {
+  const variantClass = variant ? `new-card-root--${variant}` : "";
 
   return (
-    <div className="new-card-root" style={{ width: "100%", ...style }}>
-
-      <div className="new-card-header-section" >
-        <h2 className="new-card-header-title" >{header}</h2>
-        {/* <button
-          type="button"
-           className="new-card-view-button"
-          onClick={sideOption.onClick}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          {sideOption.name}
-          <span>→</span>
-        </button> */}
-      </div>
-      <div className="new-card-cards-grid" >
+    <div className={`new-card-root ${variantClass}`}>
+      {header && (
+        <div className="new-card-header-section">
+          <h2 className="new-card-header-title">{header}</h2>
+        </div>
+      )}
+      <div className="new-card-cards-grid">
         {options.map((props, index) => (
           <Option key={index} {...props} colorIndex={index} />
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CardBasedOptions
+export default CardBasedOptions;

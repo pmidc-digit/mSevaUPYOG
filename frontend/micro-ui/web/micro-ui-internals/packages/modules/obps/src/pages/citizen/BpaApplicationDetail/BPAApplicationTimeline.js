@@ -37,7 +37,7 @@ const BPAApplicationTimeline = (props) => {
     //}
   };
 
-  console.log("WFData",data)
+
 
   if (isLoading) {
     return <Loader />;

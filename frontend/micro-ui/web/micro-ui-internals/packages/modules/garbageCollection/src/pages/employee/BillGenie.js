@@ -71,7 +71,7 @@ const BillGenie = () => {
     };
     try {
       const response = await Digit.GCService.billGenieSearch(payload);
-      console.log("response", response?.Bills);
+
 
       setLoader(false);
       setBills(response?.Bills);

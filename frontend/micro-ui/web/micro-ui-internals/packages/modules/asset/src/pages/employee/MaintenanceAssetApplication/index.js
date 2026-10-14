@@ -33,14 +33,14 @@ const MaintenanceAssetApplication = () => {
 
 
   const onFormValueChange = (setValue, formData, formState) => {
-    console.log('here ....', !Object.keys(formState.errors).length)
-    console.log('formData ....', formData)
-    console.log('formState ....', formState)
+
+
+
     setCanSubmit(!Object.keys(formState.errors).length); 
   };
 
   const onSubmit = (data) => {
-    
+
     const formData = {
         maintenanceId: "",
         assetId: data?.maintenanceDetails?.[0]?.assetId,
@@ -88,7 +88,7 @@ const MaintenanceAssetApplication = () => {
           lastModifiedTime: ""
       }
     };
-    
+
     history.replace("/digit-ui/employee/asset/assetservice/maintenance", { AssetMaintenance: formData,  applicationNo});
 
   };

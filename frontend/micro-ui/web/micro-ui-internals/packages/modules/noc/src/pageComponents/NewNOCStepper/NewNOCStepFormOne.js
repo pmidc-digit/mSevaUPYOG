@@ -32,8 +32,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   const tenantId = localStorage.getItem("CITIZEN.CITY");
 
-  console.log("ownerIds", ownerIds);
-  console.log("ownerPhotos", ownerPhotos);
+
+
 
   React.useEffect(() => {
     window.scrollTo({
@@ -42,14 +42,14 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     });
   }, [])
   useEffect(() => {
-    console.log("useffect 8");
+
     if (!_.isEqual(ownerIdList, ownerIds)) setOwnerIdList(ownerIds?.ownerIdList);
 
     if (!_.isEqual(ownerPhotoList, ownerPhotos)) setOwnerPhotoList(ownerPhotos?.ownerPhotoList);
   }, [ownerIds, ownerPhotos]);
 
   const userInfo = Digit.UserService.getUser();
-  //console.log("userInfo type here", userInfo?.info?.type);
+
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
@@ -107,17 +107,17 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   };
 
   function checkValidation(data) {
-    console.log("data in check val", data);
+
     const owners = data?.owners || [];
 
-    console.log("ownerPhotoList", ownerPhotoList);
+
     // Filter photos/ids to only those that match current owners by mobileNumber
 
     const ownerPhotoCount = ownerPhotoList?.length || 0;
     const ownerIdCount = ownerIdList?.length || 0;
-    console.log("ownerPhotoCount", ownerPhotoCount);
+
     const ownersCount = owners?.length;
-    console.log("ownersCount", ownersCount);
+
     const uniqueOwnersList = new Set(data?.owners?.map((owner) => owner?.mobileNumber) || []);
     const isDuplicateOwner = uniqueOwnersList.size !== ownersCount;
 
@@ -155,7 +155,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   }
 
   const onSubmit = (data) => {
-    //console.log("data in first step", data);
+
     trigger();
 
     if (!checkValidation(data)) return;
@@ -193,7 +193,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   useEffect(() => {
     if (!stakeHolderDetailsLoading) {
-      console.log("useffect 9");
+
       let roles = [];
       stakeHolderDetails?.StakeholderRegistraition?.TradeTypetoRoleMapping?.map((type) => {
         type?.role?.map((role) => {
@@ -215,7 +215,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   useEffect(() => {
     if (currentStepData?.applicationDetails?.isRegisteredStakeHolder) {
-      console.log("useffect 10");
+
       setValue("isRegisteredStakeHolder", "true");
     }
   }, []);

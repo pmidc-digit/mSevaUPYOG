@@ -41,10 +41,7 @@ import {
 import { gatewayType } from "../../../constants/gatewayTypeConstants";
 
 const createGatewayCallbackUrl = (originalCallbackUrl, gateway) => {
-  const callbackUrl = new URL(
-    `/customization/open/punjab-pt/${gateway.toLowerCase()}/confirm`,
-    window.location.origin
-  );
+  const callbackUrl = new URL(`/customization/open/punjab-pt/${gateway.toLowerCase()}/confirm`, window.location.origin);
 
   callbackUrl.searchParams.set("original_callback", originalCallbackUrl);
 
@@ -54,10 +51,7 @@ const createGatewayCallbackUrl = (originalCallbackUrl, gateway) => {
 const getPaymentGatewayConfig = (mdmsData, businessService) => {
   const gateways = mdmsData?.PAYMENT?.PaymentGateway || [];
 
-  return gateways.find(
-    ({ active, businessService: services }) =>
-      active === true && services?.includes(businessService)
-  );
+  return gateways.find(({ active, businessService: services }) => active === true && services?.includes(businessService));
 };
 
 export const SelectPaymentType = (props) => {
@@ -99,7 +93,7 @@ export const SelectPaymentType = (props) => {
   const { name, mobileNumber } = state;
 
   const billDetails = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
-  console.log(billDetails, "BILL");
+
 
   const userOptions = ["OWNER", "OTHER"];
 
@@ -122,7 +116,7 @@ export const SelectPaymentType = (props) => {
 
     // const baseURL = process.env.REACT_APP_BASE_URL;
     const baseURL = document.location.origin;
-    console.log("BASEURLINPAYMENT", baseURL);
+
 
     const originalCallbackUrl = `${baseURL}/digit-ui/employee/payment/challan/success/${businessService}/${consumerCode}`;
     const paymentGatewayConfig = getPaymentGatewayConfig(menuList, businessService);
@@ -140,8 +134,6 @@ export const SelectPaymentType = (props) => {
       gateway: paymentGatewayConfig.gateway,
       callbackUrl: createGatewayCallbackUrl(originalCallbackUrl, paymentGatewayConfig.gateway),
     };
-
-
 
     const filterData = {
       Transaction: {
@@ -230,7 +222,7 @@ export const SelectPaymentType = (props) => {
         selectedGateway?.toUpperCase()?.includes("RAZORPAY")
       ) {
         displayRazorpay(data);
-      }else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
+      } else if (redirectUrl?.includes("ccavenue") || redirectUrl?.includes("ccavanue")) {
         //redirection to non razorpay payment gateway url provided by transaction api response
         const link = document.createElement("a");
         link.href = redirectUrl;
@@ -254,7 +246,7 @@ export const SelectPaymentType = (props) => {
         setShowToast({ key: true, label: t("CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER") });
       }
     } catch (error) {
-      console.log("error", error);
+
       let messageToShow = "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER";
       if (error.response?.data?.Errors?.[0]) {
         const { code, message } = error.response?.data?.Errors?.[0];
@@ -340,7 +332,7 @@ export const SelectPaymentType = (props) => {
   if (authorization === "true" && !userInfo.access_token) {
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
+    window.location.href = `/digit-ui/citizen/select-language?from=${encodeURIComponent(pathname + search)}`;
   }
 
   if (paymentLoading || isPaymentLoading || isLoading) {

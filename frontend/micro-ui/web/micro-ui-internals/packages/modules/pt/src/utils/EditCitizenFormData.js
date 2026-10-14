@@ -1,38 +1,38 @@
 // exiting property & year of creation is not in the aplication data field
 export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => {
-    console.log("applicationData in mapApplicationDataToDefaultValues: ", applicationData);
+
     // Extract Location Details
     const address = applicationData?.address || {};
     const locality = applicationData?.address?.locality || {};
     const tenantId = applicationData?.tenantId || "";
-    console.log("locality in mapApplicationDataToDefaultValuesForCitizen: ", applicationData?.address?.locality, locality);
+
     const city = address?.city || {};
     const yearOfCreation = {
       code: applicationData?.additionalDetails?.yearConstruction || "",
       i18nKey: applicationData?.additionalDetails?.yearConstruction || "",
       value: applicationData?.additionalDetails?.yearConstruction || "",
     }
-  
+
     const institution = applicationData?.institution;
     // applicationData?.LocationDetails?.yearOfCreation || {};
-  
+
     // Extract Property Details
     const propertyDetails = applicationData?.PropertyDetails || {};
     const vasikaDetails = propertyDetails?.vasikaDetails || {};
     const allotmentDetails = propertyDetails?.allottmentDetails || {};
     let units = applicationData?.units.map((val) => {return {...val, usageCategoryType: val?.usageCategory, RentedMonths: val?.additionalDetails?.rentedformonths, NonRentedMonthsUsage: val?.additionalDetails?.usageForDueMonths }}) || [];
-  
-    
-  
-    console.log("applicationData?.units", applicationData?.units);
-  
+
+
+
+
+
     // Extract Ownership Details
     const ownershipCategory = applicationData?.ownershipCategory || {};
     const owners = applicationData?.owners || [];
-  
+
     // Extract Document Details
     const documents = applicationData?.documents || [];
-  
+
     return {
       LocationDetails: {
         address: {
@@ -148,4 +148,3 @@ export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => 
       applicationData: applicationData || {}
     };
   };
-  

@@ -111,8 +111,11 @@ useEffect(() => {
     let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
 
-    const { TraidDetails, OwnerDetails, Documents, applicationData } = data;
-    const Traid = TraidDetails || data.TraidDetailsRenew; // fallback in case you use different keys
+    const applicationData = data?.applicationData || formData?.applicationData;
+    const TraidDetails = data?.TraidDetails || formData?.TraidDetails;
+    const OwnerDetails = data?.OwnerDetails || formData?.OwnerDetails;
+    const Documents = data?.Documents || formData?.Documents;
+    const Traid = TraidDetails || data?.TraidDetailsRenew || formData?.TraidDetailsRenew; // fallback in case you use different keys
 
     // ─── EDIT PATH (edit-application-details for sent-back applications) ───
     // For edit-application, do NOT call the API here at Step 2.
@@ -199,10 +202,34 @@ useEffect(() => {
         });
       }
 
-      // Backend expects null for empty accessories, not []
-      if (!resubmitPayload.tradeLicenseDetail.accessories?.length) {
-        resubmitPayload.tradeLicenseDetail.accessories = null;
+      // Overlay accessories if form-edited
+      let editAccessories = [];
+      if (Traid?.accessories?.length > 0) {
+        Traid.accessories.forEach((item) => {
+          if (item?.accessoryCategory?.code) {
+            editAccessories.push({
+              id: item?.id || undefined,
+              tenantId: item?.tenantId || tenantId,
+              active: true,
+              accessoryCategory: item.accessoryCategory.code || null,
+              uom: item.accessoryCategory.uom || item.uom || null,
+              count: item.count ? Number(item.count) : null,
+              uomValue: item.uomValue ? Number(item.uomValue) : null,
+            });
+          }
+        });
       }
+      // Include deleted existing accessories as active: false so backend can process deletion
+      const origAccessories = applicationData?.tradeLicenseDetail?.accessories || [];
+      origAccessories.forEach((origAcc) => {
+        if (origAcc?.id && !editAccessories.some((acc) => acc.id === origAcc.id)) {
+          editAccessories.push({
+            ...origAcc,
+            active: false,
+          });
+        }
+      });
+      resubmitPayload.tradeLicenseDetail.accessories = editAccessories.length > 0 ? editAccessories : null;
 
       // Overlay address if form-edited
       const originalAddress = applicationData?.tradeLicenseDetail?.address || {};
@@ -247,6 +274,9 @@ useEffect(() => {
       Traid.accessories.map((item) => {
         if (item?.accessoryCategory?.code) {
           accessories.push({
+            id: item?.id || undefined,
+            tenantId: item?.tenantId || tenantId,
+            active: true,
             accessoryCategory: item.accessoryCategory.code || null,
             uom: item.accessoryCategory.uom || null,
             count: item.count ? Number(item.count) : null,
@@ -255,6 +285,15 @@ useEffect(() => {
         }
       });
     }
+    const origAccessoriesRenewal = applicationData?.tradeLicenseDetail?.accessories || [];
+    origAccessoriesRenewal.forEach((origAcc) => {
+      if (origAcc?.id && !accessories.some((acc) => acc.id === origAcc.id)) {
+        accessories.push({
+          ...origAcc,
+          active: false,
+        });
+      }
+    });
 
     // Prepare tradeUnits (preserve original IDs for renewal)
     let tradeUnits = [];
@@ -379,7 +418,7 @@ useEffect(() => {
         operationalArea: Traid?.tradedetils?.[0]?.operationalArea ? Number(Traid.tradedetils[0].operationalArea) : null,
         noOfEmployees: Traid?.tradedetils?.[0]?.noOfEmployees ? Number(Traid.tradedetils[0].noOfEmployees) : null,
         tradeUnits: tradeUnits,
-        accessories: accessories,
+        accessories: accessories.length > 0 ? accessories : null,
         applicationDocuments: applicationDocuments,
         // verificationDocuments: applicationData?.tradeLicenseDetail?.verificationDocuments || null,
         verificationDocuments: null,

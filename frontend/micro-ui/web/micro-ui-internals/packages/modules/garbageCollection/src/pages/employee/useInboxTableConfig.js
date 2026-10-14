@@ -65,10 +65,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   return {
     getCellProps: (cellInfo) => {
       return {
-        style: {
-          padding: "20px 18px",
-          fontSize: "16px",
-        },
+        className: "gc-new-inbox-cell",
       };
     },
     disableSort: false,
@@ -102,6 +99,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     // searchQueryForTable,
     data: table,
     columns: tableColumnConfig,
+    customTableWrapperClassName: "gc-new-inbox-table-wrapper",
   };
 };
 

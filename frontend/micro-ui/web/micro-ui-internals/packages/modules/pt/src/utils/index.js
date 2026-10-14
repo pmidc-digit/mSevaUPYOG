@@ -297,7 +297,7 @@ export const getusageCategory = (data, i) => {
 };
 
 export const getunits = (data) => {
-  console.log("datadatadatadatadatadatadata", data);
+
   let unit = [];
   if (data?.selfOccupied?.i18nKey === "PT_YES_IT_IS_SELFOCCUPIED" && data?.IsAnyPartOfThisFloorUnOccupied.i18nKey === "PT_COMMON_YES") {
     unit.push({
@@ -370,7 +370,7 @@ export const getunits = (data) => {
 };
 
 export const getunitarray = (i, unitsdata, unit, data) => {
-  console.log("unitsdataunitsdataunitsdata"), unitsdata;
+  void 0, unitsdata;
   if (unitsdata[i].active === true) {
     unit.push(unitsdata[i]);
   } else if (
@@ -537,7 +537,7 @@ export const setPropertyDetails = (data) => {
 
 /*   method to convert collected details to proeprty create object */
 export const convertToProperty = (data = {}) => {
-  console.log("data", data);
+
   // let dataNew = data?.units?.map((value) => {
   //   let additionalDetails = { "structureType": value?.structureType, "ageOfProperty": value?.ageOfProperty }
   //   return { ...value, additionalDetails }
@@ -1139,7 +1139,7 @@ export const getCreationReason = (data = {}) => {
 };
 
 export const getAcknowledgementData = async (application, tenantInfo, t) => {
-  console.log("application in getAcknowledgement", application);
+
 
   const details = [];
 
@@ -1243,7 +1243,7 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
   export const deduplicateUsageOptions = (options) => {
     const uniqueOptions = [];
     const nameMap = new Map();
-    
+
     options?.forEach((item) => {
       if (!nameMap.has(item?.name)) {
         nameMap.set(item.name, item);
@@ -1275,4 +1275,4 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     return uniqueOptions;
   };
 
- 
+

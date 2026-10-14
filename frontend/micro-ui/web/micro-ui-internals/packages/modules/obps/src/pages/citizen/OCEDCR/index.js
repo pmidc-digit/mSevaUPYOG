@@ -92,7 +92,7 @@ const CreateOCEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, coreArea };
     edcrRequest = { ...edcrRequest, additionalDetails };
 
-    console.log("OC_EDCR_Data", data, edcrRequest);
+
 
     let bodyFormData = new FormData();
     bodyFormData.append("edcrRequest", JSON.stringify(edcrRequest));

@@ -328,7 +328,7 @@ const SVSpecialCategory = ({ t, config, onSelect, userType, formData, editdata, 
         sessionStorage.setItem("Response", JSON.stringify(response));
       })
       .catch((error) => {
-        console.log("Something Went Wrong", error);
+
       });
   };
 

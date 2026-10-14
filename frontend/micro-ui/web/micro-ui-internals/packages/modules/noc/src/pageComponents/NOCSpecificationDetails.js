@@ -15,10 +15,14 @@ import {
 } from "@mseva/digit-ui-react-components";
 import NOCCustomUploadFile from "./NOCCustomUploadFile";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { getCode } from "../utils";
 =======
 import { getCode, formatDateForInput } from "../utils";
 >>>>>>> MicroUI_PROD_Vite
+=======
+import { getCode, formatDateForInput } from "../utils";
+>>>>>>> MicroUI_UAT_Vite
 
 const NOCSpecificationDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, watch, trigger, clearErrors } = _props;
@@ -117,14 +121,19 @@ const NOCSpecificationDetails = (_props) => {
   // Restore NOC validation status in edit mode on initial load
   useEffect(() => {
 <<<<<<< HEAD
+<<<<<<< HEAD
     if (isEditMode && existingNocNumber && !isInitialized.current) {
 =======
     if (isEditMode && isFinalNoc && isOnline && existingNocNumber && !isInitialized.current) {
 >>>>>>> MicroUI_PROD_Vite
+=======
+    if (isEditMode && isFinalNoc && isOnline && existingNocNumber && !isInitialized.current) {
+>>>>>>> MicroUI_UAT_Vite
       updateValidatedNocNumber(existingNocNumber);
       updateNocValidated(true);
       isInitialized.current = true;
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
   }, [isEditMode, existingNocNumber]);
 
@@ -136,18 +145,29 @@ const NOCSpecificationDetails = (_props) => {
   useEffect(() => {
     if (isFinalNoc && isOnline && isNocValidated && validatedNocNumberRef.current && existingNocNumber && existingNocNumber !== validatedNocNumberRef.current) {
 >>>>>>> MicroUI_PROD_Vite
+=======
+  }, [isEditMode, isFinalNoc, isOnline, existingNocNumber]);
+
+  useEffect(() => {
+    if (isFinalNoc && isOnline && isNocValidated && validatedNocNumberRef.current && existingNocNumber && existingNocNumber !== validatedNocNumberRef.current) {
+>>>>>>> MicroUI_UAT_Vite
       updateNocValidated(false);
       setRetrievedNocDocs([]);
       setRetrievedNoc(null);
       setRetrievedNocError("");
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
   }, [existingNocNumber, isNocValidated]);
+=======
+  }, [isFinalNoc, isOnline, existingNocNumber, isNocValidated]);
+>>>>>>> MicroUI_UAT_Vite
 
   useEffect(() => {
-    if (isNocValidated && existingNocNumber && retrievedNocDocs.length === 0 && !isRetrieving) {
+    if (isFinalNoc && isOnline && isNocValidated && existingNocNumber && retrievedNocDocs.length === 0 && !isRetrieving) {
       handleRetrieveNoc(existingNocNumber);
     }
+<<<<<<< HEAD
   }, [isNocValidated, existingNocNumber, retrievedNocDocs.length]);
 =======
   }, [isFinalNoc, isOnline, existingNocNumber, isNocValidated]);
@@ -158,11 +178,14 @@ const NOCSpecificationDetails = (_props) => {
     }
   }, [isFinalNoc, isOnline, isNocValidated, existingNocNumber, retrievedNocDocs.length]);
 >>>>>>> MicroUI_PROD_Vite
+=======
+  }, [isFinalNoc, isOnline, isNocValidated, existingNocNumber, retrievedNocDocs.length]);
+>>>>>>> MicroUI_UAT_Vite
 
   const { data: buildingCategory, isLoading: isLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
   const { data: nocType, isLoading: isNocTypeLoading,  } = Digit.Hooks.noc.useNocType(stateId);
 
- // console.log("nocType here", nocType);
+
 
   const options = [
     {
@@ -188,12 +211,18 @@ const NOCSpecificationDetails = (_props) => {
       setRetrievedNoc(null);
       setRetrievedNocDocs([]);
 <<<<<<< HEAD
+<<<<<<< HEAD
       setValue("existingNocDocument", null);
 =======
       if (isFinalNoc && isOnline) {
         setValue("existingNocDocument", null);
       }
 >>>>>>> MicroUI_PROD_Vite
+=======
+      if (isFinalNoc && isOnline) {
+        setValue("existingNocDocument", null);
+      }
+>>>>>>> MicroUI_UAT_Vite
       updateNocValidated(false);
       updateValidatedNocNumber("");
       if (trigger) trigger("existingNocNumber");
@@ -300,7 +329,7 @@ const NOCSpecificationDetails = (_props) => {
         updateValidatedNocNumber("");
       }
     } catch (err) {
-      console.error("Error retrieving NOC: ", err);
+
       if (currentStepData?.siteDetails?.existingNocNumber === numToSearch && currentStepData?.siteDetails?.existingNocDocument) {
         updateValidatedNocNumber(numToSearch);
         updateNocValidated(true);
@@ -316,10 +345,10 @@ const NOCSpecificationDetails = (_props) => {
   };
 
   useEffect(() => {
-    console.log("currentStepData4", currentStepData);
+
     const formattedData = currentStepData?.siteDetails;
     if (formattedData) {
-      //console.log("coming here", formattedData);
+
       Object.entries(formattedData).forEach(([key, value]) => {
         if (key === "existingNocDocument" && typeof value === "object" && value !== null) {
           setValue(key, value.fileStoreId || value.filestoreId || value);
@@ -351,6 +380,7 @@ const NOCSpecificationDetails = (_props) => {
       }
       if (currentStepData?.siteDetails?.existingNocDate) {
 <<<<<<< HEAD
+<<<<<<< HEAD
         setValue("existingNocDate", currentStepData.siteDetails.existingNocDate);
       }
       if (currentStepData?.siteDetails?.existingNocDocument) {
@@ -359,11 +389,19 @@ const NOCSpecificationDetails = (_props) => {
         setValue("existingNocDate", formatDateForInput(currentStepData.siteDetails.existingNocDate));
       }
       if (currentStepData?.siteDetails?.existingNocDocument) {
+=======
+        setValue("existingNocDate", formatDateForInput(currentStepData.siteDetails.existingNocDate));
+      }
+      if (currentStepData?.siteDetails?.existingNocDocument) {
+>>>>>>> MicroUI_UAT_Vite
         const docVal = typeof currentStepData.siteDetails.existingNocDocument === "object"
           ? (currentStepData.siteDetails.existingNocDocument.fileStoreId || currentStepData.siteDetails.existingNocDocument.filestoreId)
           : currentStepData.siteDetails.existingNocDocument;
         setValue("existingNocDocument", docVal);
+<<<<<<< HEAD
 >>>>>>> MicroUI_PROD_Vite
+=======
+>>>>>>> MicroUI_UAT_Vite
       }
     }
     if (isFinalNoc && isOnline) {
@@ -466,21 +504,28 @@ const NOCSpecificationDetails = (_props) => {
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
 <<<<<<< HEAD
+<<<<<<< HEAD
                 {`${t("NOC_EXISTING_NOC_TYPE_LABEL")}`} <span className="requiredField">*</span>
 =======
                 {`${t("NOC_EXISTING_NOC_TYPE_LABEL")}`}
 >>>>>>> MicroUI_PROD_Vite
+=======
+                {`${t("NOC_EXISTING_NOC_TYPE_LABEL")}`}
+>>>>>>> MicroUI_UAT_Vite
               </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
                   name={"existingNocType"}
 <<<<<<< HEAD
+<<<<<<< HEAD
                   rules={{
                     required: isFinalNoc ? t("REQUIRED_FIELD") : false,
                   }}
 =======
 >>>>>>> MicroUI_PROD_Vite
+=======
+>>>>>>> MicroUI_UAT_Vite
                   render={(props) => (
                     <Dropdown
                       className="form-field"

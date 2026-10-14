@@ -14,7 +14,11 @@ import { Link } from "react-router-dom";
 
 const BannerPicker = (props) => {
   const { t } = useTranslation();
+<<<<<<< HEAD
   console.log("props", props);
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   return (
     <Banner
       message={props.props.message}

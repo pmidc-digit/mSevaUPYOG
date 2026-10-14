@@ -1,3 +1,4 @@
+import useLocalColumnSearch from "../../../../../templates/Inbox/components/useLocalColumnSearch";
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
@@ -5,13 +6,33 @@ import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId, globalSearch }) => {
 =======
 const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId }) => {
 >>>>>>> MicroUI_PROD_Vite
+=======
+const useCLUTableConfig = ({ enableColumnSearch = false,
+  parentRoute,
+  onPageSizeChange,
+  formState,
+  totalCount,
+  table,
+  dispatch,
+  onSortingByData,
+  tenantId,
+  globalSearch,
+  cities,
+}) => {
+>>>>>>> MicroUI_UAT_Vite
   const { t } = useTranslation();
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
+
+  const filterCityName = (id, cityNames) => {
+    const fiterData = cityNames?.find((item) => item?.code === id);
+    return fiterData?.ulbName;
+  };
 
   const tableColumnConfig = useMemo(() => {
     return [
@@ -26,7 +47,7 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         accessor: "applicationId",
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log("row-route", row);
+
           const encryptID = encryptId(row.original["applicationId"]);
           return (
             <div>
@@ -82,6 +103,11 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         disableSortBy: true,
       },
       {
+        Header: t("ULB"),
+        accessor: (row) => filterCityName(row?.tenantId, cities),
+        disableSortBy: true,
+      },
+      {
         Header: t("CATEGORY"),
         accessor: (row) => row?.category,
         disableSortBy: true,
@@ -113,7 +139,9 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         disableSortBy: true,
       },
     ];
-  }, []);
+  }, [cities]);
+
+  const localTable = useLocalColumnSearch(tableColumnConfig, table, enableColumnSearch);
 
   return {
     getCellProps: (cellInfo) => {
@@ -160,8 +188,8 @@ const useCLUTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCoun
         },
       }),
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } }),
-    data: table,
-    columns: tableColumnConfig,
+    data: localTable.data,
+    columns: localTable.columns,
   };
 };
 

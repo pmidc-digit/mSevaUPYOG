@@ -15,7 +15,7 @@ const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
   if (Servicecategory) filters.businesService = Servicecategory;
 
   const result = Digit.Hooks.mcollect.useMcollectSearchBill({ tenantId, filters });
-  console.log("result", result);
+
   let bills = result?.data?.Bills;
 
   if (result.isLoading) {

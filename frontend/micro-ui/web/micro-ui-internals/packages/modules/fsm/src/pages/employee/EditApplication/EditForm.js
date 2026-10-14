@@ -22,7 +22,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
     clearSuccessData();
     clearError();
   }, []);
-  
+
   const defaultValues = {
     channel: channelMenu.filter((channel) => channel.code === applicationData.source)[0],
     applicationData: {
@@ -58,7 +58,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
     paymentPreference: applicationData.paymentPreference,
     advancepaymentPreference: { advanceAmount: applicationData?.advanceAmount },
   };
-  console.log("applicationData",defaultValues)
+
   const onFormValueChange = (setValue, formData) => {
     if (
       formData?.propertyType &&

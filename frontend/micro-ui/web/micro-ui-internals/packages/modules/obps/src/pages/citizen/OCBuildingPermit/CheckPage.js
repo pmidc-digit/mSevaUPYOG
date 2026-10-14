@@ -171,7 +171,7 @@ const CheckPage = ({ onSubmit, value }) => {
     return <Loader />
   }
 
-  console.log("DEKHO");
+
 
   return (
     <React.Fragment>

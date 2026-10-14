@@ -14,13 +14,13 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
  const stateId = Digit.ULBService.getStateId();
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
 
-  console.log("tenantId", tenantId);
+
 
   const { data, isLoading } = Digit.Hooks.useCustomMDMS(stateId, "PropertyTax", [{ name: "Documents" }]);
 
   // const { data, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "CHB", [{ name: "Documents" }]);
 
-  console.log("data=====", data);
+
 
   const getIsRequired = (doc) => {
     if (doc?.code === "OWNER.SPECIALCATEGORYPROOF") {
@@ -33,7 +33,7 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
     let document = formData.documents;
     let documentStep;
     documentStep = { ...document, documents: documents };
-    console.log("documentStep config.key", documentStep);
+
     onSelect(config.key, documentStep);
   };
 
@@ -90,7 +90,7 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
 
 function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  // console.log("filetetetetet",filteredDocument, documents, doc);
+
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // const [selectedDocument, setSelectedDocument] = useState(
@@ -129,7 +129,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (selectedDocument?.code) {
-      console.log("selectedDocument", documents);
+
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
@@ -152,7 +152,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (documents?.length > 0) {
-      console.log("documents", documents);
+
       handleSubmit();
     }
   }, [documents]);

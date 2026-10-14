@@ -18,12 +18,12 @@ const RenewPTRStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.ptr.PTRNewApplicationFormReducer.formData;
   });
 
-  console.log("currentStepData", currentStepData);
+
 
   const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.TraidDetails);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
 
-  console.log("reduxStepData", reduxStepData);
+
   useEffect(() => {
     setLocalStepData(reduxStepData);
   }, [reduxStepData]);

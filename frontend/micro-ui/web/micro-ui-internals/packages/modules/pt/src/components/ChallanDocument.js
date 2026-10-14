@@ -15,12 +15,12 @@ function ChallanDocument({ value = {}, Code, index }) {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
-  console.log("value", value);
-  console.log("Code", Code);
+
+
 
   const { isLoading, isError, error, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
 
-  console.log("dataInNDCDocument", data);
+
 
   const documents = value?.documents
     ? value.documents.documents
@@ -28,7 +28,7 @@ function ChallanDocument({ value = {}, Code, index }) {
         .map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }))
     : value.filter((doc) => doc.documentType === Code).map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }));
 
-  console.log("documents", documents);
+
 
   if (isLoading) {
     return <Loader />;
@@ -41,8 +41,8 @@ function ChallanDocument({ value = {}, Code, index }) {
           <div style={{ display: "flex", flexWrap: "wrap" }}>
             {documents?.map((document, index) => {
               let documentLink = pdfDownloadLink(data.pdfFiles, document?.filestoreId);
-              console.log("data.pdfFiles", data.pdfFiles);
-              console.log("document?.fileStoreId", document?.fileStoreId);
+
+
               return (
                 <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
                   <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />

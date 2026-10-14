@@ -104,7 +104,7 @@ const SelectPaymentPreference = ({ config, formData, t, onSelect, userType }) =>
   if (advanceAmount === null) {
     return <Loader />;
   }
-console.log("advance",advanceAmount,totalAmount,MinAmount)
+
   return (
     <React.Fragment>
       <Timeline currentStep={3} flow="APPLY" />

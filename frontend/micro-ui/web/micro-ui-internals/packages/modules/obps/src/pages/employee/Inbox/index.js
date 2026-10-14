@@ -7,19 +7,6 @@ import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templ
 import useInboxTableConfig from "./useInboxTableConfig";
 import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
 
-const getSearchableText = (value, visited = new WeakSet()) => {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
-  if (typeof value !== "object" || visited.has(value)) return "";
-
-  visited.add(value);
-  return Array.isArray(value)
-    ? value.map((item) => getSearchableText(item, visited)).join(" ")
-    : Object.values(value)
-        .map((item) => getSearchableText(item, visited))
-        .join(" ");
-};
-
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
@@ -270,6 +257,7 @@ const Inbox = ({ parentRoute }) => {
     return {
       filterForm: normalizedFilterForm,
       searchForm: formState?.searchForm || searchFormDefaultValues,
+      // Manual text search filters the loaded rows without changing the API query.
       tableForm,
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
@@ -485,22 +473,17 @@ const Inbox = ({ parentRoute }) => {
     onApiMobileSearch("");
   }, [onApiMobileSearch]);
 
-  const locallyFilteredTableData = useMemo(() => {
-    const query = topBarSearch.trim().toLowerCase();
-    if (!query) return tableData;
-
-    return tableData.filter((row) => getSearchableText(row).toLowerCase().includes(query));
-  }, [tableData, topBarSearch]);
-
   const propsForInboxTable = useInboxTableConfig({
+    enableColumnSearch: true,
     parentRoute,
     onPageSizeChange,
     formState,
     totalCount: totalCountData,
-    table: locallyFilteredTableData,
+    table: tableData,
     dispatch,
     onSortingByData,
-    globalSearch: false,
+    globalSearch: topBarSearch,
+    cities
   });
 
   const {
@@ -663,7 +646,7 @@ const Inbox = ({ parentRoute }) => {
     }
   }, [isError, t]);
 
-  console.log("yes coming here");
+
 
   return (
     <>

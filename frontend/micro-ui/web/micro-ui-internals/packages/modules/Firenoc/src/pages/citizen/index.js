@@ -67,7 +67,7 @@ const App = () => {
       <Switch>
         <AppContainer>
            {!isResponse ? (
-            <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px", marginTop:"20px" } : {}}>
+            <div className="citizen-breadcrumb-wrapper">
               <NOCBreadCrumbs location={location} />
             </div>
           ) : null}

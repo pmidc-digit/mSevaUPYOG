@@ -1,6 +1,6 @@
 /** 
  * @author - Shivank Shukla  - NIUA
-  
+
  * Addition of feature of fetching Latitude and Longitude from uploaded photo 
 
     - i have added a function (extractGeoLocation)  to extract latitude and longitude from an uploaded image file.
@@ -38,7 +38,7 @@ const NOCDocumentWithLatLong = ({ t, config, onSelect, userType, formData, setEr
   const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
   // const {data: nocDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
   const { isLoading, data: nocDocuments } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
-  
+
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -155,7 +155,7 @@ const SelectDocument = React.memo(function MyComponent({
   const filteredDocument =
     documents?.filter((item) => item?.documentType?.includes(doc?.code))[0] ||
     beforeUploadDocuments?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-   
+
   const tenantId = Digit.ULBService.getStateId(); //Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
@@ -293,7 +293,7 @@ const SelectDocument = React.memo(function MyComponent({
           });
         })
         .catch((error) => {
-          console.error("Error extracting geo location:", error);
+
           // Handle error if needed
         });
 

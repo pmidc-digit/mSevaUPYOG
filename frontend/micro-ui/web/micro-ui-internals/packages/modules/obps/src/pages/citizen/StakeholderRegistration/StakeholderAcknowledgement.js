@@ -29,7 +29,7 @@ const GetActionMessage = (props) => {
 };
 
 const BannerPicker = (props) => {
-  console.log(props, "BannerPicker Props");
+
   const LicenseType = props?.data?.applicationData?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
   return (
     <Banner
@@ -57,8 +57,8 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
 
   const checkTenant = moduleCode == "ARCHITECT" ? "pb.punjab" : tenantId;
 
-  console.log("dataVal", dataVal);
-  console.log("moduleCode", moduleCode);
+
+
   const { tenants } = storeData || {};
   const { data: applicationDetails, isLoading: isLicenseLoading } =
   Digit.Hooks.obps.useLicenseDetails(
@@ -68,7 +68,7 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
   );
   const isLoading = loader || isLicenseLoading;
 
-  console.log("applicationDetails", applicationDetails);
+
 
   const dataToDisplay = mutationData || mutation.data || applicationDetails;
   const licenseType = dataToDisplay?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
@@ -77,10 +77,10 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
     try {
       setLoader(true);
       const Property = applicationDetails;
-      console.log("applicationDetails in StakeholderAck", applicationDetails);
+
 
       if (!Property) {
-        console.error("No application details found");
+
         setLoader(false);
         return;
       }
@@ -89,7 +89,7 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
         Property?.tenantId || Property?.Licenses?.[0]?.tenantId || Digit.SessionStorage.get("Digit.BUILDING_PERMIT")?.result?.Licenses?.[0]?.tenantId;
 
       if (!propertyTenantId) {
-        console.error("No tenantId found in applicationDetails or sessionStorage");
+
         setLoader(false);
         return;
       }
@@ -97,17 +97,17 @@ const AcknowledgementContent = ({ mutation, applicationNumber, isOpenLinkFlow, m
       const tenantInfo = tenants?.find((tenant) => tenant.code === propertyTenantId);
 
       if (!tenantInfo) {
-        console.error("No tenantInfo found for tenantId:", propertyTenantId);
+
         setLoader(false);
         return;
       }
 
       const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
-      console.log(acknowledgementData, "ACKO");
+
       await Digit.Utils.pdf.generateFormatted(acknowledgementData);
       setLoader(false);
     } catch (err) {
-      console.error("Error generating acknowledgement PDF", err);
+
       setLoader(false);
     }
   };
@@ -169,8 +169,8 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   const finalDataBind = dataVal?.Licenses?.[0];
   // const params = new URLSearchParams(location.search);
   // const getAction = params.get("action");
-  // console.log("params", params);
-  // console.log("getAction", getAction);
+
+
   const isOpenLinkFlow = window.location.href.includes("openlink");
 
   const applicationNumber =
@@ -186,7 +186,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   //   const workflowActionCompleted = sessionStorage.getItem("workflowActionCompleted");
   //   const workflowActionType = sessionStorage.getItem("workflowActionType");
 
-  //   console.log("  Mutation state:", {
+
   //     isLoading: mutation.isLoading,
   //     isSuccess: mutation.isSuccess,
   //     isError: mutation.isError,
@@ -196,15 +196,15 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   //   });
 
   //   if (workflowActionCompleted === "true") {
-  //     console.log("  Workflow action already completed:", workflowActionType);
+
 
   //     setIsAcknowledgementReady(true);
 
   //     const storedMutationData = sessionStorage.getItem("mutationData");
   //     if (storedMutationData) {
-  //       console.log("  Retrieved stored mutation data");
+
   //     } else {
-  //       console.log("  No stored mutation data found, setting acknowledgement ready anyway");
+
   //     }
 
   //     return;
@@ -213,13 +213,13 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   //   // const isStakeholderRegistered = sessionStorage.getItem("isStakeholderRegistered");
 
   //   // if (isStakeholderRegistered === "true" || hasMutated) {
-  //   //   console.log("  Already registered or mutated, skipping");
+
   //   //   return;
   //   // }
 
   //   if (!hasMutated && data) {
   //     try {
-  //       console.log("Starting mutation...");
+
   //       const tenantId = data?.result?.Licenses[0]?.tenantId || window?.localStorage?.getItem("CITIZEN.CITY");
   //       data.tenantId = tenantId;
   //       // const formdata = convertToStakeholderObject(data);
@@ -227,9 +227,9 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   //       const finalDoc = getDocs?.result?.Licenses?.[0];
   //       const checkAction = finalDoc?.action;
 
-  //       console.log("checkAction", checkAction);
-  //       console.log("finalDoc", finalDoc);
-  //       console.log("action", action);
+
+
+
   //       const payload = {
   //         Licenses: [
   //           {
@@ -242,7 +242,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
 
   //       mutation.mutate(payload, {
   //         onSuccess: (responseData, variables, context) => {
-  //           console.log("  Mutation successful:", responseData);
+
   //           sessionStorage.setItem("isStakeholderRegistered", "true");
   //           sessionStorage.setItem("mutationData", JSON.stringify(responseData));
   //           setMutationData(responseData);
@@ -253,11 +253,11 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   //           }
   //         },
   //         onError: (error) => {
-  //           console.error("  Mutation failed:", error);
+
   //         },
   //       });
   //     } catch (err) {
-  //       console.error("  Error in mutation setup:", err);
+
   //     }
   //   }
   // }, []);

@@ -130,9 +130,9 @@ const PropertyAddressDetails = ({ goNext, onGoBack, isEditMode = false }) => {
   });
 
   const onSubmit = async (data) => {
-    
-    console.log("checkFinalData", data);
-    console.log("ownersssss", data.owners);
+
+
+
     goNext(data);
   };
 
@@ -754,12 +754,7 @@ useEffect(() => {
                                 const num = val ? Number(val) : 0;
                                 return sum + (isNaN(num) ? 0 : num);
                               }, 0);
-                              console.log("PT checkPercentage Debug:", {
-                                allOwners,
-                                total,
-                                v,
-                                isValid: total === 100
-                              });
+
                               return total === 100 || `Sum of all ownership percentages must be 100%`;
                             }
                             return true;

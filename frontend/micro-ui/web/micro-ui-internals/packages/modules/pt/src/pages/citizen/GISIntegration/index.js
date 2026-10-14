@@ -14,7 +14,7 @@ export const GISIntegration = () => {
 
     const queryObject = Object.fromEntries(params.entries());
 
-    console.log("GIS Query Params:", queryObject);
+
 
     const state = {
       surveyId: params.get("surveyid"),
@@ -45,7 +45,7 @@ export const GISIntegration = () => {
       propertyId: params.get("propertyid"),
     };
 
-    console.log("Formatted State:", state);
+
 
     history.push({
       pathname: "/digit-ui/citizen/pt/property/create-application?isGIS=true",

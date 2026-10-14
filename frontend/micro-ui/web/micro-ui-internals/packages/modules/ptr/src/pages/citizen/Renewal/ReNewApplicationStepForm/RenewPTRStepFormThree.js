@@ -17,7 +17,7 @@
 //   });
 
 //   function goNext(data) {
-//     console.log("goNext data in NewPTRStepFormThree: ", data);
+
 
 //     const { missingFields, notFormattedFields } = validateStepData(currentStepData);
 
@@ -43,7 +43,7 @@
 //   }
 
 //   const onFormValueChange = (setValue = true, data) => {
-//     console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
 //     if (!_.isEqual(data, currentStepData)) {
 //       dispatch(UPDATE_PTRNewApplication_FORM(config.key, data));
 //     }
@@ -85,7 +85,7 @@ const RenewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   const stateId = Digit.ULBService.getStateId();
   const { isLoading: isDocsLoading, data: mdmsData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", ["Documents"]);
-  console.log('mdmsData', mdmsData)
+
 
   const currentStepData = useSelector(function (state) {
     return state.ptr.PTRNewApplicationFormReducer.formData && state.ptr.PTRNewApplicationFormReducer.formData[config?.key]
@@ -93,7 +93,7 @@ const RenewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
-  console.log('mdms?.NDC?.Documents', mdmsData?.NDC?.Documents)
+
   const makeDocumentsValidator = (mdms) => {
   const requiredCodes = (mdms?.NDC?.Documents || [])
     .filter((d) => d?.required)
@@ -108,7 +108,7 @@ const RenewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
           doc?.documentType?.includes?.(code) &&
           (doc?.filestoreId || doc?.fileStoreId)
       );
-      console.log('satisfied', satisfied)
+
       if (!satisfied) {
         errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
         break;
@@ -118,14 +118,14 @@ const RenewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   };
 };
 
-console.log('currentStepData?.documents?.documents ', currentStepData?.documents?.documents )
+
 
   function goNext(data) {
-    console.log("goNext data in NewPTRStepFormThree: ", data);
+
 
     const validator = makeDocumentsValidator(mdmsData);
     const docErrors = validator(data?.documents?.documents  || []);
-    console.log('docErrors', docErrors)
+
 
     // if (docErrors?.missingRequired) {
     //   setError("Please fill in all required fields");
@@ -140,7 +140,7 @@ console.log('currentStepData?.documents?.documents ', currentStepData?.documents
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTRNewApplication_FORM(config.key, data));
     }

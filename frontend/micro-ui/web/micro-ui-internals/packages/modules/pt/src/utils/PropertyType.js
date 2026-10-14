@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 const PropertyType = ({ selectLocality, keepNull, selected, optionCardStyles, style, disable, disableLoader }) => {
   const { t } = useTranslation();
 
- 
+
   const stateId = Digit.ULBService.getStateId();
   const { data: usageMenu = {}, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", [
     "UsageCategory",
@@ -27,7 +27,7 @@ const PropertyType = ({ selectLocality, keepNull, selected, optionCardStyles, st
         if (arr.length == 2) return {code: item?.code, name:item?.code, i18nKey: "PROPERTYTAX_BILLING_SLAB_" + arr[1],label:"PropertyType"};
         else return {  code: item?.code , name:item?.code, i18nKey: "PROPERTYTAX_BILLING_SLAB_" + item?.code,label:"PropertyType" };
       });
-      console.log("catMenu", catMenu)
+
     return catMenu;
   };
   if (isLoading && !disableLoader) {
@@ -43,7 +43,7 @@ const PropertyType = ({ selectLocality, keepNull, selected, optionCardStyles, st
     //   optionKey="i18nkey"
     //   style={style}
     //   disable={false}
-      
+
     // />
     <Dropdown
     selected={selected}
@@ -51,12 +51,12 @@ const PropertyType = ({ selectLocality, keepNull, selected, optionCardStyles, st
     optionCardStyles={optionCardStyles}
     option={usageCategoryMajorMenu(usagecat)}
     select={selectLocality}
-   
+
     style={style}
     optionKey="i18nKey"
     t={t}
   />
-    
+
   );
   //  <h1>ABCD</h1>
 };

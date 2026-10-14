@@ -22,7 +22,7 @@ const PropertyDetailsForm = ({ onGoNext }) => {
     },
   });
 
-  // console.log("props====", props);
+
 
   const {
     register,
@@ -32,12 +32,12 @@ const PropertyDetailsForm = ({ onGoNext }) => {
   } = methods;
 
   const onSubmit = async (data) => {
-    console.log("data is here==========", data);
+
     onGoNext();
   };
 
   useEffect(() => {
-    console.log("errors", errors);
+
   }, [errors]);
 
   const closeToast = () => {

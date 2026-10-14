@@ -12,7 +12,7 @@ const Search = ({ path }) => {
   // const tenantId = window?.localStorage?.getItem("Citizen.tenant-id");
   const tenantId = window.location.href.includes("citizen") ? window?.localStorage?.getItem("CITIZEN.CITY") : Digit.ULBService.getCurrentTenantId();
 
-  console.log("HWWWW");
+
   const location = useLocation();
   const details = () => {
     if (

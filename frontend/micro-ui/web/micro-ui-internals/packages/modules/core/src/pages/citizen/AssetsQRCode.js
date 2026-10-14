@@ -47,8 +47,8 @@ const AssetsQRCode = ({ path }) => {
     const params = new URLSearchParams(myUrl.search);
     const tenantId = params.get("tenantId")
     const applicationNo = params.get("applicationNo")
-    // console.log(tenantId, " tenantId ")
-    // console.log(applicationNo, " applicationNo ")
+
+
     const { data: PaymentReceipt, isLoading: recieptDataLoading } = Digit.Hooks.useAssetQrCode(
         {
             tenantId: tenantId,
@@ -56,7 +56,7 @@ const AssetsQRCode = ({ path }) => {
 
         },
     );
-    console.log('PaymentReceipt:- ', PaymentReceipt);
+
     return (
         <React.Fragment>
             <div style={{ width: "100%" }}>

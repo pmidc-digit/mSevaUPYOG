@@ -91,7 +91,7 @@ const Urls = {
     assessment_cancel: "/property-services/assessment/_cancel",
     assessment_createUlb: "/pt-calculator-v2/assessment/_jobscheduler",
     assessment_search: "/property-services/assessment/_search",
-    payment_search: "/collection-services/payments/PT/_search",
+    payment_search: "/collection-services/payments/_search",
     pt_calculate_mutation: "/pt-calculator-v2/propertytax/mutation/_calculate",
     cfcreate: "/service-request/service/v1/_create",
     cfdefinitionsearch: "/service-request/service/definition/v1/_search",

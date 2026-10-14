@@ -16,12 +16,12 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { id } = useParams();
   const applicationNo = useQueryParam("applicationNo");
   const isEditApplication = Boolean(id) || Boolean(applicationNo);
-  //console.log("LOOK IN STEER",isEditApplication);
+
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
   const cluValidationRef = useRef({ isCluValidated: false, isCluRequired: false });
-  //console.log("LOOK APPLICATION NUMBER +++++>", isEditApplication);
+
   const history = useHistory();
 
     useEffect(() => {
@@ -35,7 +35,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.obps.LayoutNewApplicationFormReducer.formData;
   });
 
-  // console.log("FFFFFFFFFFF", currentStepData);
+
 
   const {
     control,
@@ -211,19 +211,19 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     if (cluNotRequired && cluType === "ONLINE") {
       // For online CLU, check if it was validated by user
       if (!cluValidationRef.current.isCluValidated) {
-        //console.log("CLU Validation Failed - Not Validated");
+
         setShowToast({ key: "true", error: true, message: "CLU Number must be validated before proceeding. Please click 'Validate CLU' button." })
         return
       }
     } else if (cluNotRequired && cluType === "OFFLINE") {
       // For offline CLU, document must be uploaded (this is handled by form validation)
-      //console.log("Checking OFFLINE CLU document upload...");
-      //console.log("data?.cluDocumentUpload:", data?.cluDocumentUpload);
-      //console.log("data?.cluNumberOffline:", data?.cluNumberOffline);
-      //console.log("data?.cluApprovalDate:", data?.cluApprovalDate);
+
+
+
+
 
       if (!data?.cluDocumentUpload) {
-        //console.log("CLU Validation Failed - Document not uploaded");
+
         setShowToast({ key: "true", error: true, message: "CLU Document is required for Offline CLU. Please upload." })
         return
       }
@@ -381,7 +381,7 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       primaryOwnerDocument: formData?.documentUploadedFiles?.[0]?.fileStoreId || formData?.documentUploadedFiles?.[0] || "",
     };
 
-    //console.log("Checking applicants data: ", applicants)
+
 
     const payload = {
       Layout: {
@@ -406,17 +406,17 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
       },
     };
 
-    //console.log("  Final CREATE payload:", payload);
+
 
     try {
       const response = await Digit.OBPSService.LayoutCreate(payload, tenantId);
 
-      //console.log("  CREATE API Response:", response);
-      //console.log("  Response Layout:", response?.Layout);
-      //console.log("  Response Status:", response?.ResponseInfo?.status);
+
+
+
 
       if (response?.ResponseInfo?.status === "successful") {
-        //console.log("  Success: create api executed successfully!");
+
 
         // Restructure: Convert Layout array to object
         const restructuredResponse = {
@@ -424,21 +424,21 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           Layout: response?.Layout?.[0] || response?.Layout, // Get first element if array
         };
 
-        //console.log("  Restructured response - Layout is now:", restructuredResponse?.Layout);
-        //console.log("  Layout applicationNo:", restructuredResponse?.Layout?.applicationNo);
-        //console.log("  Full restructured response:", restructuredResponse);
+
+
+
 
         // Save API response to Redux
         dispatch(UPDATE_LayoutNewApplication_FORM("apiData", restructuredResponse));
         history.push(`/digit-ui/citizen/obps/layout/apply?applicationNo=${restructuredResponse?.Layout?.applicationNo}`);
-        //console.log("  Dispatched to Redux, calling onGoNext()");
+
         onGoNext();
       } else {
-        console.error("  Error: create api not executed properly!", response);
+
         setShowToast({ key: "true", error: true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
       }
     } catch (error) {
-      console.error("  CREATE API Error:", error);
+
       setShowToast({ key: "true", error: true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     }
   };

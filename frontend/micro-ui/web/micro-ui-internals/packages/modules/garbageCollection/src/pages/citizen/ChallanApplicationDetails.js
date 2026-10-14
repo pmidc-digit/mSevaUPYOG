@@ -99,11 +99,11 @@ const ChallanApplicationDetails = () => {
     setLoader(true);
     try {
       const responseData = await Digit.GCService.search({ tenantId, filters });
-      console.log("search ", responseData);
+
       setChallanData(responseData?.GarbageConnection?.[0]);
       setLoader(false);
     } catch (error) {
-      console.log("error", error);
+
       setLoader(false);
     }
   };
@@ -146,7 +146,7 @@ const ChallanApplicationDetails = () => {
         setLoader(false);
       }, 0);
     } catch (error) {
-      console.error("Error generating acknowledgement:", error);
+
       setLoader(false);
     }
   };
@@ -158,7 +158,7 @@ const ChallanApplicationDetails = () => {
     role: "EMPLOYEE",
   });
 
-  console.log("workflowDetails", workflowDetails);
+
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -187,7 +187,7 @@ const ChallanApplicationDetails = () => {
     });
   }
 
-  console.log("getChallanData", getChallanData);
+
 
   return (
     <React.Fragment>

@@ -223,7 +223,7 @@ const CitizenInbox = ({ parentRoute }) => {
 
   const CheckForPunjab = window.location.href.includes("citizen-stakeholder-inbox");
 
-  console.log("CheckForPunjab", CheckForPunjab);
+
 
   const finalTenantId = CheckForPunjab ? "pb.punjab" : tenantId;
 
@@ -402,8 +402,8 @@ const CitizenInbox = ({ parentRoute }) => {
 
   //   const totalCount = (inboxData?.totalCount || 0) + (assignedToAllInboxDataPunjab?.totalCount || 0);
 
-  //   console.log("assignedToAllInboxDataPunjab", assignedToAllInboxDataPunjab);
-  //   console.log("allTableData", allTableData);
+
+
 
   //   if (allStatuses.length) {
   //     const duplicateStatusCounts = allStatuses.reduce((acc, status) => {
@@ -684,7 +684,7 @@ const CitizenInbox = ({ parentRoute }) => {
     }
   }, [isError, t]);
 
-  console.log("yes coming here");
+
 
   return (
     <>

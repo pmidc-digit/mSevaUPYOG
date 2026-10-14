@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next";
 
-const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo = false, styles }) => {
+const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo = false, styles, className = "" }) => {
   const isMobile = typeof window !== "undefined" ? window.innerWidth <= 768 : false
   const location = useLocation()
   const shouldRemoveGrid = location.pathname.endsWith("all-services")
@@ -267,7 +267,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
   const [hoveredIndices, setHoveredIndices] = React.useState(links.map(() => false))
 
   return (
-    <div style={rootStyle}>
+    <div className={`chc-root ${className}`.trim()} style={rootStyle}>
       {header && (
         <div >
           <h2 style={headerStyle}>
@@ -277,7 +277,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
         </div>
       )}
 
-      <div style={containerStyle}>
+      <div className="chc-card-container" style={containerStyle}>
         {links.map((link, index) => {
           const isHovered = hoveredIndices[index]
           const linkPathname =
@@ -302,6 +302,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
               <a
                 key={index}
                 href={link.link}
+                className={`chc-card chc-card--${index}`}
                 style={getCardStyle(index, isHovered)}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -314,6 +315,7 @@ const CitizenHomeCardSecond = ({ header, links = [], state, Icon, Info, isInfo =
               <Link
                 key={index}
                 to={{ pathname: linkPathname, state: link.state }}
+                className={`chc-card chc-card--${index}`}
                 style={getCardStyle(index, isHovered)}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}

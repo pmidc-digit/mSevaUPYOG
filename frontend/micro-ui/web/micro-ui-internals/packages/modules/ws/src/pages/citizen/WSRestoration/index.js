@@ -54,7 +54,7 @@ let configNew = [{
   "withoutLabel": true,
   "hideInEmployee": true
 }]
-console.log(configNew,config);
+
   return (
     <Switch>
       {configNew.map((routeObj, index) => {

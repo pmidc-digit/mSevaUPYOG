@@ -4,7 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import BillSearchFields from "./BillSearchFields";
 import { useTranslation } from "react-i18next";
 const BillSearch = ({ tenantId, onSubmit, OnresData,onSearch }) => {
-  console.log("Bill Search")
+
   const { t } = useTranslation();
   const { register, control, handleSubmit, setValue, getValues, reset } = useForm({
     defaultValues: {
@@ -19,9 +19,9 @@ const BillSearch = ({ tenantId, onSubmit, OnresData,onSearch }) => {
   });
   const handleResSubmit=(data)=>{
     OnresData(data)
-    console.log("in handle res data")
+
   }
-  console.log("setResData 2", OnresData)
+
   return (
     <Fragment>
       <Header styles={{ fontSize: "32px" }}>

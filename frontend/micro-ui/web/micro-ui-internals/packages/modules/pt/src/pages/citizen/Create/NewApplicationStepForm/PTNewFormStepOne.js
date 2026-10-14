@@ -8,7 +8,7 @@ const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
 
   function goNext(data) {
-    console.log(`Data== in step ${config.currStepNumber} is=======`, data);
+
     // let f = 0;
     // config.currStepConfig[0].body.map((item) => {
     // if(item.isMandatory && (data[item.key]===''||data[item.key]===undefined)){
@@ -66,7 +66,7 @@ const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   });
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("data step 1 ==========", data);
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     }

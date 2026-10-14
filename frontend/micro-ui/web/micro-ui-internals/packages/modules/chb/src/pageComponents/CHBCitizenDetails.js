@@ -62,7 +62,7 @@ const CHBCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
       ownerStep = { ...owner, applicantName, mobileNumber, alternateNumber, emailId };
       onSelect(config.key, ownerStep, false, index);
     }
-    console.log(ownerStep);
+
   };
 
   const onSkip = () => onSelect();

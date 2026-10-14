@@ -20,7 +20,7 @@ const useQuestionsInboxTableConfig = ({
   const { t } = useTranslation();
 
   // const handleDeleteConfirm = (row) => {
-  // console.log("Current row: ", row);
+
   // const currentStatus = row?.original?.isActive;
   // setShowToast({
   //   label: "Are you sure you want to delete this question?",
@@ -33,7 +33,7 @@ const useQuestionsInboxTableConfig = ({
   // };
 
   const handleUpdateQuestionConfirm = (row) => {
-    //console.log("Current row: ", row);
+
     const currentStatus = row?.original?.status;
     const updatedStatus = currentStatus === "ACTIVE" ? "INACTIVE" : currentStatus === "INACTIVE" ? "ACTIVE" : "";
 

@@ -6,7 +6,7 @@ import { UPDATE_PTNewApplication_FORM } from "../../../../redux/action/PTNewAppl
 
 const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
     // if(data.documents.documents?.length!== data.documents.propertyTaxDocumentsLength){
     //   alert("Upload all the documents");
     // }
@@ -20,7 +20,7 @@ const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in document detilas in step 4  ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTNewApplication_FORM(config.key, data));
     }
@@ -33,7 +33,7 @@ const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
   });
   const dispatch = useDispatch();
 
-  // console.log("currentStepData in  Administrative details: ", currentStepData);
+
 
   return (
     <React.Fragment>

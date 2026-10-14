@@ -117,7 +117,7 @@ const MyChallanResult = ({ template, header, actionButtonLabel }) => {
   }, [getChallanData]);
 
   return (
-    <div className="gc-style-d265a6b9b9">
+    <div className="gc-style-d265a6b9b9 citizen-my-applications citizen-my-applications--garbage-collection">
       <div>
         {header && (
           <Header className="gc-style-c937f3b834">

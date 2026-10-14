@@ -331,7 +331,7 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
   const resp = apiResponse || {};
   const apps = Array.isArray(resp.bookingApplication) ? resp.bookingApplication : [];
 
-  const transformedApps = apps.map((app) => {
+  const transformedApps = apps?.map((app) => {
     const out = {};
 
     const copyFields = [
@@ -419,10 +419,10 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
       let amountForDaysChosen = undefined;
       if (hasAmounts) {
         const total = amounts.reduce((acc, v) => acc + v, 0);
-        amountForDaysChosen = total;
-        amount = sorted.length ? Math.round((total / sorted.length) * 100) / 100 : 0;
+        amountForDaysChosen = (total).toFixed(2);
+        amount = sorted.length ? (Math.round((total / sorted.length) * 100) / 100).toFixed(2) : 0;
       } else if (typeof first.amount === "number") {
-        amount = first.amount;
+        amount = (first.amount).toFixed(2);
       }
 
       return {
@@ -449,13 +449,14 @@ export const transformBookingResponseToBookingData = (apiResponse = {}) => {
     return out;
   });
 
-  const totalCount = transformedApps.reduce((acc, app) => {
+  const totalCount = transformedApps?.reduce((acc, app) => {
     const sum = Array.isArray(app.cartDetails) ? app.cartDetails.reduce((s, cd) => s + (cd.numberOfDays || 0), 0) : 0;
     return acc + sum;
   }, 0);
 
   const bookingData = [
     {
+      appdata: apps,
       count: totalCount,
       currentTime: getCurrentEpoch(),
       bookingApplication: transformedApps,

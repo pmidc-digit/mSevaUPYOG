@@ -99,7 +99,7 @@ const WSConnectionDetails = ({ config, onSelect, formData, setError, formState, 
     subUsageType?.forEach((data) => (data.i18nKey = data?.code?.toUpperCase()));
     const parentUsageType = propertyDetails?.usageCategory;
     const subUsageTypeList = subUsageType.filter((item) => item.parentUsageType === parentUsageType);
-    console.log("subUsageTypeList", subUsageType, parentUsageType, propertyDetails);
+
     setSubUsageTypeList(subUsageTypeList);
 
     const groups = mdmsData?.["ws-services-masters"]?.groups || [];
@@ -108,7 +108,7 @@ const WSConnectionDetails = ({ config, onSelect, formData, setError, formState, 
   }, [wsServicesCalculationData, mdmsData]);
 
   useEffect(() => {
-    console.log("connectionDetails in WSConnectionDetails:", connectionDetails);
+
     onSelect(config?.key, connectionDetails);
     //onSelect(config.key, { ...formData[config.key], ...connectionDetails });
   }, [connectionDetails]);
@@ -124,9 +124,9 @@ const WSConnectionDetails = ({ config, onSelect, formData, setError, formState, 
   useEffect(() => {
     const applyingFor = allStepsData.connectionDetails.ApplyingFor;
     const currApplyingFor = { water: connectionDetails?.[0]?.water, sewerage: connectionDetails?.[0]?.sewerage };
-    console.log("1)allStepsData: ", allStepsData, applyingFor, currApplyingFor);
+
     if (!_.isEqual(applyingFor, currApplyingFor)) {
-      console.log("2)allStepsData: ", allStepsData, applyingFor, currApplyingFor);
+
       setConnectionDetails((prevDetails) => {
         const updatedDetails = [...prevDetails];
         updatedDetails[0] = {
@@ -169,7 +169,7 @@ const WSConnectionDetails = ({ config, onSelect, formData, setError, formState, 
     tenantId
   };
 
-  console.log("Billing details translation: ", t("WS_SERV_DETAIL_BILLING_TYPE"));
+
   return (
     <React.Fragment>
       {connectionDetails.map((connectionDetail, index) => (
@@ -282,11 +282,11 @@ const ConnectionDetails = (_props) => {
   const isBillingTypeCustom = getValues("billingType")?.code?.toUpperCase() === constants.WS_BILLING_TYPE_CUSTOM_CODE.toUpperCase();
   const displayBillingAmount = !isConnectionTypeMetered && isBillingTypeCustom;
   const disableBillingType = isConnectionTypeMetered;
-  //console.log(getValues("connectionType"));
+
   useEffect(() => {
-    console.log("Inside useEffect");
+
     if (isConnectionTypeMetered && billingTypeList.length > 0) {
-      console.log("Inside useEffect if condition. Billing Type List: ", billingTypeList);
+
       setValue(
         "billingType",
         billingTypeList.find((item) => item?.code?.toUpperCase() === constants.WS_BILLING_TYPE_STANDARD_CODE.toUpperCase())
@@ -295,9 +295,9 @@ const ConnectionDetails = (_props) => {
   }, [isConnectionTypeMetered, billingTypeList]);
 
   useEffect(() => {
-    console.log("isBillingTypeCustom: ", isBillingTypeCustom);
+
     if (!isBillingTypeCustom) {
-      console.log("!isBillingTypeCustom");
+
       setValue("billingAmount", "");
     }
   }, [isBillingTypeCustom]);

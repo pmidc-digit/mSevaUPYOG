@@ -54,7 +54,7 @@ const NOCModal = ({
   const [error, setError] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
- 
+
   const checkRole = action?.state?.actions;
 
   const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))];
@@ -137,17 +137,17 @@ const NOCModal = ({
   useEffect(()=>{
     if(action?.action === "SENDBACKTOCITIZEN"){
       const uuid= applicationDetails?.Noc?.[0]?.auditDetails?.createdBy || null;
-     // console.log("uuid here", uuid);
+
       setSelectedApprover({uuid});
     }
-   
+
   },[action]);
 
- // console.log("selectedApprover", selectedApprover);
+
 
   function submit(data) {
-   // console.log("data here in Modal", data);
-    
+
+
     const mandatoryActions = [ "APPROVE","VERIFY","REJECT","SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER","FORWARD"];
 
     let checkCommentsMandatory = mandatoryActions.includes(action?.action);

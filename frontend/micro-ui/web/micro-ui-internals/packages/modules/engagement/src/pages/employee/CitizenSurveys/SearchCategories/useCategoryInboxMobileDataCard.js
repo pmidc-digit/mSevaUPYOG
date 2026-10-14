@@ -48,7 +48,7 @@ const useCategoryInboxMobileCardsData = ({ parentRoute, table, setShowToast }) =
   };
 
   const handleUpdateCategoryConfirm = (row) => {
-    //console.log("Current row: ", row);
+
     const currentStatus = row?.isActive?"Active":"Inactive";
     const updatedStatus= row?.isActive?"Inactive":"Active";
     setShowToast({

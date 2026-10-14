@@ -1,15 +1,33 @@
+import useLocalColumnSearch from "../../../../../templates/Inbox/components/useLocalColumnSearch";
 import React, { Fragment, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encodeURIComponentCustom } from "../../../utils";
 
-const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId, globalSearch }) => {
+const useInboxTableConfig = ({ enableColumnSearch = false,
+  parentRoute,
+  onPageSizeChange,
+  formState,
+  totalCount,
+  table,
+  dispatch,
+  onSortingByData,
+  tenantId,
+  globalSearch,
+  cities,
+}) => {
   const { t } = useTranslation();
   const location = useLocation();
   const cameFromOBPS = location.state?.fromOBPS;
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
+
+  const filterCityName = (id, cityNames) => {
+    const fiterData = cityNames?.find((item) => item?.code === id);
+    return fiterData?.ulbName;
+  };
+
   const GetStatusCell = (value) =>
     value === "CS_NA" ? (
       t(value)
@@ -98,6 +116,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         disableSortBy: true,
       },
       {
+        Header: t("ULB"),
+        accessor: (row) => filterCityName(row?.tenantId, cities),
+        disableSortBy: true,
+      },
+      {
         Header: t("CATEGORY"),
         accessor: (row) => row?.category,
         disableSortBy: true,
@@ -137,7 +160,9 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       //   accessor: (row) => GetStatusCell(row?.sla),
       // },
     ];
-  });
+  }, [cities]);
+
+  const localTable = useLocalColumnSearch(tableColumnConfig, table, enableColumnSearch);
 
   return {
     getCellProps: (cellInfo) => {
@@ -178,8 +203,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } }),
     // globalSearch: {searchForItemsInTable},
     // searchQueryForTable,
-    data: table,
-    columns: tableColumnConfig,
+    data: localTable.data,
+    columns: localTable.columns,
   };
 };
 

@@ -54,7 +54,7 @@ const CitizenAndArchitectPhoto = ({data}) => {
     useEffect(async () => {
         if (data) {
             // let approvedLicense = LicenseData?.Licenses?.find(license => license?.status === "APPROVED");
-            // console.log("imageArchitectZoom",approvedLicense);
+
             // if (approvedLicense) {
                 let architectPhotoId = null;
                 const architectMobile = data?.additionalDetails?.architectMobileNumber;
@@ -81,7 +81,7 @@ const CitizenAndArchitectPhoto = ({data}) => {
                             }
                         }
                     } catch (err) {
-                        console.error("Error fetching architect photo from user search:", err);
+
                     }
                 }
 

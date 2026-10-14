@@ -13,7 +13,7 @@ const formatValue = (value, symbol,type) => {
     const Pformatter = new Intl.NumberFormat("en-IN", { maximumSignificantDigits: 3 });
     return `${Pformatter.format(Number(value).toFixed(2))}`;
     */
-   
+
     return `${Number(value).toFixed()}`;
   }
   else if(type =="revenue")
@@ -31,11 +31,11 @@ const formatValue = (value, symbol,type) => {
 let flag= 0
 let flag2=0
 const CustomLabel = ({ x, y, name, stroke, value, maxValue ,data}) => {
-  console.log("hhhhhh",maxValue,data)
+
 
   const currencyFormatter = new Intl.NumberFormat("en-IN", { currency: "INR" });
   const { t } = useTranslation();
-  
+
   let possibleValues = ["pttopPerformingStatesRevenue","ptbottomPerformingStatesRevenue","tltopPerformingStatesRevenue","tlbottomPerformingStatesRevenue","obpstopPerformingStatesRevenue","obpsbottomPerformingStatesRevenue","noctopPerformingStatesRevenue","nocbottomPerformingStatesRevenue","wstopPerformingStatesRevenue","wsbottomPerformingStatesRevenue","OverviewtopPerformingStates","OverviewbottomPerformingStates"]
 if( possibleValues.includes(data?.id) ) 
 {
@@ -61,9 +61,9 @@ if( possibleValues.includes(data?.id) )
 }
 else if(data?.id.includes("GDP") )
 {
-  
+
   Object.keys(maxValue)?.forEach(key => { 
-    console.log("reee123",maxValue[key],name)
+
     maxValue[key] = maxValue[key];
   });
   return (
@@ -162,7 +162,7 @@ const CustomBarChart = ({
   const chartData = useMemo(() => {
     if (!response) return null;
     let possibleValues = ["pttopPerformingStatesRevenue","ptbottomPerformingStatesRevenue","tltopPerformingStatesRevenue","tlbottomPerformingStatesRevenue","obpstopPerformingStatesRevenue","obpsbottomPerformingStatesRevenue","noctopPerformingStatesRevenue","nocbottomPerformingStatesRevenue","wstopPerformingStatesRevenue","wsbottomPerformingStatesRevenue","OverviewtopPerformingStates","OverviewbottomPerformingStates"]
-   
+
     setChartDenomination("number");
     const dd = response?.responseData?.data?.map((bar) => {
       let plotValue = bar?.plots?.[0].value || 0;
@@ -219,7 +219,7 @@ const CustomBarChart = ({
   if (chartData?.length === 0 || !chartData) {
     return <NoData t={t} />;
   }
-  console.log("Loading chart",data)
+
   let url=window.location.href
   return (
     <Fragment>

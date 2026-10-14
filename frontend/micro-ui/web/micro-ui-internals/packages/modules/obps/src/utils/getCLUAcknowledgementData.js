@@ -349,7 +349,7 @@ const getJESiteImages = async (appData, t, stateCode) => {
 
         // // Use your exif function here
         // const exifData = await getExifDataFromUrl(exiflink);
-        // console.log("exifData in siteImages", exifData);
+
         // if ([3, 6, 8].includes(exifData?.Orientation)) {
         //   exifData.Orientation = 1;
         // }
@@ -403,7 +403,7 @@ const getDocuments = async (appData, t) => {
 
   const res = filesArray?.length > 0 && (await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId()));
 
-  console.log("res here==>", res);
+
 
   return {
     title: t("BPA_TITILE_DOCUMENT_UPLOADED"),
@@ -473,7 +473,7 @@ const getSitePhotographs = async (appData, t) => {
 export const getCLUAcknowledgementData = async (applicationDetails, tenantInfo, ulbType, ulbName, t, searchChecklistData) => {
   const stateCode = Digit.ULBService.getStateId();
   const appData = applicationDetails || {};
-  console.log("appData here in DownloadACK", appData);
+
 
   let detailsArr = [],
     imageURL = "";

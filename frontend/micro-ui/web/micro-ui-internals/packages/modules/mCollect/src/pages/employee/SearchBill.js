@@ -52,7 +52,7 @@ const SearchBill = () => {
   );
 
 
- 
+
 
   const { data: ULBData = [], isLoading: ulbLoading } = Digit.Hooks.useCustomMDMS(tenantId, "tenant", [{ name: "tenants" }], {
     select: (data) => {
@@ -60,9 +60,9 @@ const SearchBill = () => {
       return formattedData;
     },
   });
- 
+
   const defaultULB = ULBData&& ULBData.find((item)=> item.code === tenantId)
- //console.log("defaultULB",defaultULB)
+
   const methods = useForm({
     defaultValues: {
       categoryName: "",
@@ -100,7 +100,7 @@ const SearchBill = () => {
     //data["url"] = "egov-searcher/bill-genie/mcollectbills/_get";
     data["url"] = data?.businesService?.billGineiURL ? `/${data?.businesService?.billGineiURL}` : "";
     // Filter out empty strings, null, undefined, and empty arrays
-    //console.log("data",data)
+
     const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
       if (
         value !== null &&
@@ -120,7 +120,7 @@ const SearchBill = () => {
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
+
     }
   };
 
@@ -157,7 +157,7 @@ const SearchBill = () => {
       }
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
+
       setShowToast({ isError: true, label: "ERR_PDF_GEN_FAILED" });
     }
   };
@@ -171,11 +171,11 @@ const SearchBill = () => {
       if (fileUrl) {
         window.open(fileUrl, "_blank");
       } else {
-        console.error("File URL not found in response.");
+
       }
     } catch (error) {
       setIsLoading(false);
-      console.log("error", error);
+
     }
   };
 

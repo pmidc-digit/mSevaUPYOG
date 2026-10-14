@@ -13,7 +13,7 @@ function PTSummaryEmployee({ formData, t }) {
     }
   })();
   const summaryData = { ...storedTransferData, ...reduxFormData, ...formData };
-  console.log("form data in summary component", formData);
+
   const { pathname: url } = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -37,10 +37,14 @@ function PTSummaryEmployee({ formData, t }) {
 
   const isInstitutionalOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INSTITUTIONAL") || formData?.originalData?.ownershipCategory?.includes("INSTITUTION");
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
   console.log('isInstitutionalOwnership:, formData', isInstitutionalOwnership, formData);
 >>>>>>> MicroUI_PROD_Vite
   
+=======
+
+>>>>>>> MicroUI_UAT_Vite
   const isIndividualOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL") || formData?.ownerShipDetails?.ownershipCategory?.code === "SINGLEOWNER";
   return (
     <>
@@ -63,16 +67,20 @@ function PTSummaryEmployee({ formData, t }) {
 
             const transferorDetails = summaryData?.TransferorDetails || summaryData || {};
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             console.log('summaryData:', summaryData);
 >>>>>>> MicroUI_PROD_Vite
             
+=======
+
+>>>>>>> MicroUI_UAT_Vite
             const originalData = summaryData?.originalData || {};
             const originalOwners = originalData?.owners?.filter((e) => e.status === "ACTIVE" || e.status === "active") || [];
             const transfereeOwners = transferorDetails?.owners || [];
             const ownershipCategory = transferorDetails?.ownershipCategory?.code || "";
             const isInstitutional = ownershipCategory.includes("INSTITUTIONAL");
-            
+
             const additionalDetails = transferorDetails?.additionalDetails || {};
             const remarks = transferorDetails?.remarks || additionalDetails?.remarks || "NA";
 

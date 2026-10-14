@@ -41,7 +41,7 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
     return stakeholderServiceTypes?.filter((type) => updatedQualificationTypes?.includes(type.identifier))
   },[updatedQualificationTypes, stakeholderServiceTypesLoading]);
 
-  console.log("updatedStakeholderServiceTypes", updatedStakeholderServiceTypes, stakeholderServiceTypes, updatedQualificationTypes, qualificationTypes);
+
 
 
   const selectedBusinessService = useWatch({control: controlFilterForm, name: "businessService", defaultValue: null});

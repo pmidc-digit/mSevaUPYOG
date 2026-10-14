@@ -105,9 +105,9 @@ export const CreateComplaint = () => {
     let c = JSON.parse(sessionStorage.getItem("complaintType"))
     if(data?.subType)
     {
-      
+
       let data2 ={"complaintType":c}
-      console.log("handleSelect",data,data2)
+
       setParams({ ...params, ...data ,...data2 });
       goNext();
     }

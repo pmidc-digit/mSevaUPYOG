@@ -102,7 +102,7 @@ const formState = useSelector((state) => state.pt.PTNewApplicationFormReducer);
     dispatch(SET_PTNewApplication_STEP(updatedStepNumber));
   };
   const defaultValues = mapApplicationDataToDefaultValues(applicationData);
-  // console.log("default Values in EditPropertyStepForm are: ", defaultValues);
+
 
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
@@ -112,7 +112,7 @@ const formState = useSelector((state) => state.pt.PTNewApplicationFormReducer);
   }, []);
 
   useEffect(() => {
-    console.log("deafult vaules in useEffect: ", defaultValues);
+
 
     Object.entries(defaultValues).forEach(([key, value]) => {
       dispatch(UPDATE_PTNewApplication_FORM(key, value));

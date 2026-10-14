@@ -13,7 +13,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
   const { data: subCategoryData, isLoading: subCategoryLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "SubCategory" }]);
   const { data: OffenceTypeData, isLoading: OffenceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "OffenceType" }]);
 
-  console.log("categoryData====", categoryData, subCategoryData, OffenceTypeData);
+
 
   const {
     control,
@@ -31,7 +31,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const onSubmit = (data) => {
     goNext(data);
-    // console.log("data==||", data);
+
     // const userInfo = Digit.UserService.getUser()?.info || {};
     // const now = Date.now();
 
@@ -81,7 +81,7 @@ const OffenceDetails = ({ onGoBack, goNext, currentStepData, t }) => {
     //     },
     //   },
     // };
-    // console.log("payload", payload);
+
     // // return;
     // goNext(payload);
   };

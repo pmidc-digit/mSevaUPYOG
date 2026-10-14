@@ -14,7 +14,7 @@ const Acknowledgement = (props) => {
   let bpaAction = BPAData?.workflow?.action ? BPAData?.workflow?.action : "VERIFY_FORWARD";
   let typeOfArchitect = BPAData?.additionalDetails?.typeOfArchitect;
   if (bpaBusinessService == "BPA_LOW") bpaBusinessService = "BPA";
-  console.log("HELLO", BPAData);
+
   return (
     <div>
       <Card>

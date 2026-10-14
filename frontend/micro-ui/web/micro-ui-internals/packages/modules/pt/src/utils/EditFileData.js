@@ -1,6 +1,6 @@
 // exiting property & year of creation is not in the aplication data field
 export const mapApplicationDataToDefaultValues = (applicationData) => {
-  console.log("applicationData in mapApplicationDataToDefaultValues: ", applicationData);
+
   // Extract Location Details
   const address = applicationData?.LocationDetails?.address || {};
   const locality = { ...applicationData?.address?.locality };
@@ -21,9 +21,9 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
   const allotmentDetails = propertyDetails?.allottmentDetails || {};
   let units = applicationData?.units?.map((val) => {return {...val, usageCategoryType: val?.usageCategory, RentedMonths: val?.additionalDetails?.rentedformonths, NonRentedMonthsUsage: val?.additionalDetails?.usageForDueMonths }}) || [];
 
-  
 
-  console.log("applicationData?.units", applicationData?.units);
+
+
 
   // Extract Ownership Details
   const ownershipCategory = applicationData?.ownershipCategory || {};

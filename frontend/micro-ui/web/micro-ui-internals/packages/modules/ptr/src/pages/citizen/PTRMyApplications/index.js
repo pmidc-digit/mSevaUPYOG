@@ -50,7 +50,7 @@ export const PTRMyApplications = () => {
   //   { filters: { serviceSearchArgs }, enabled: combinedApplicationNumber?.length > 0 ? true : false, cacheTime: 0 }
   // );
 
-  // console.log("servicedata", servicedata);
+
 
   function getLabelValue(curservice) {
     // let foundValue = servicedata?.Service?.find((ob) => ob?.referenceId?.includes(curservice?.applicationNumber));
@@ -64,7 +64,7 @@ export const PTRMyApplications = () => {
     return <Loader />;
   }
   return (
-    <React.Fragment>
+    <section className="citizen-my-applications citizen-my-applications--ptr">
       <Header>{`${t("CS_TITLE_MY_APPLICATIONS")} ${applicationsList ? `(${applicationsList.length})` : ""}`}</Header>
         <p className="ptr-style-b0288cd4be">
         {t("PTR_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION")}{" "}
@@ -125,6 +125,6 @@ export const PTRMyApplications = () => {
       }
 
 
-    </React.Fragment>);
+    </section>);
 
 };

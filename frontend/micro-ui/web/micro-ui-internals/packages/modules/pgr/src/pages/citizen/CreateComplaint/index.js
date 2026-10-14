@@ -92,7 +92,7 @@ export const CreateComplaint = ({ parentUrl }) => {
   const SelectImages = Digit?.ComponentRegistryService?.getComponent("PGRSelectImages");
 
   const localities = useMemo(() => {
-    console.log("fetchedLocalities", fetchedLocalities);
+
     return fetchedLocalities;
   }, [selectedCity, fetchedLocalities]);
 
@@ -149,7 +149,7 @@ export const CreateComplaint = ({ parentUrl }) => {
         setGeoLocation(newGeoLocation);
       },
       (error) => {
-        console.error("Error getting location:", error.message);
+
       }
     );
   }, []);

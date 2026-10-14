@@ -24,7 +24,7 @@ const CreateSurveyQuestions = () => {
   };
 
   const defaultQuestionValues = () => {
-    //console.log("defaultQuestionValues called");
+
     return {
       category: null,
       questionStatement: "",
@@ -53,7 +53,7 @@ const CreateSurveyQuestions = () => {
   });
 
   function parsePayloadData(data) {
-    console.log("data", data);
+
     const payload = data.questions.map((item) => {
       let obj = {};
 
@@ -86,7 +86,7 @@ const CreateSurveyQuestions = () => {
       return obj;
     });
 
-    console.log("qus payload", payload);
+
     return payload;
   }
 
@@ -94,8 +94,8 @@ const CreateSurveyQuestions = () => {
     setIsLoading(true);
 
     const payload = { Questions: parsePayloadData(data) };
-    //console.log("onSubmit create survey questions: \n", data);
-    //console.log("Payload: ", payload);
+
+
     try {
       const response = await Digit.Surveys.createQuestions(payload);
       if (response?.Questions?.length > 0) {
@@ -112,7 +112,7 @@ const CreateSurveyQuestions = () => {
         setShowToast({ isError: true, label: ERR_MESSAGE });
       }
     } catch (error) {
-      console.log("Error in Digit.Surveys.createQuestions:", error?.response);
+
       setIsLoading(false);
       //setShowToast({ isError: true, label: error?.response?.data?.Errors?.[0]?.message || ERR_MESSAGE }); //Error message from the api response is not user friendly as it is containing the error stack trace. Hence commented this line.
       setShowToast({ isError: true, label: ERR_MESSAGE });
@@ -127,13 +127,13 @@ const CreateSurveyQuestions = () => {
   // const formValues = watch();
 
   // useEffect(() => {
-  //   console.log("Form values:", formValues);
+
   // }, [formValues]);
 
   // useEffect(() => {
   //   // Access the default values
   //   const defaultValues = getValues();
-  //   console.log("1) Default Values:", defaultValues);
+
   // }, [getValues]);
 
   return (

@@ -122,7 +122,7 @@ const CHBApplicationDetails = () => {
   const menuRef = useRef();
   const isCemp = user?.info?.roles.filter((role) => role.code === "CEMP");
 
-  console.log("isCemp", isCemp);
+
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
   let actions =
@@ -274,12 +274,12 @@ const CHBApplicationDetails = () => {
     try {
       setLoading(true);
       const applications = application || {};
-      console.log("applications for chbb", applications);
+
       const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
       const acknowldgementDataAPI = await getChbAcknowledgementData({ ...applications }, tenantInfo, t);
       Digit.Utils.pdf.generate(acknowldgementDataAPI);
     } catch (err) {
-      console.error(err);
+
     } finally {
       setLoading(false);
     }
@@ -293,7 +293,7 @@ const CHBApplicationDetails = () => {
   }
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    console.log("payments", payments);
+
     try {
       setLoading(true);
       let application = {
@@ -310,7 +310,7 @@ const CHBApplicationDetails = () => {
           };
         }),
       };
-      console.log("application", application);
+
       let fileStoreId = data?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
       if (!fileStoreId) {
         const pdfPayments = fixAdjustedAmount(payments);
@@ -328,7 +328,7 @@ const CHBApplicationDetails = () => {
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoading(false);
     }
@@ -353,7 +353,7 @@ const CHBApplicationDetails = () => {
       };
 
       let fileStoreId = data?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
-      console.log("fileStoreId bef create", fileStoreId);
+
       if (!fileStoreId) {
         const pdfPayments = fixAdjustedAmount(payments);
         const response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...pdfPayments, ...application }] }, "chb-permissionletter");
@@ -371,7 +371,7 @@ const CHBApplicationDetails = () => {
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");
     } catch (error) {
-      console.error("Sanction Letter download error:", error);
+
     } finally {
       setLoading(false);
     }

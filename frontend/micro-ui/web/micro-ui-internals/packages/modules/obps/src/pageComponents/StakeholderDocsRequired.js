@@ -13,7 +13,7 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
   const isCitizenUrl = Digit.Utils.browser.isMobile()?true:false;
   if (JSON.parse(sessionStorage.getItem("BPAREGintermediateValue")) !== null) {
     formData = JSON.parse(sessionStorage.getItem("BPAREGintermediateValue"));
-    console.log("formData in DocRequired", formData);
+
     // sessionStorage.setItem("BPAREGintermediateValue", null);
   } else formData = formData;
   const userInfo = Digit.UserService.getUser();
@@ -159,10 +159,10 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
 
   function goNext() {
     if ((formData?.result && formData?.result?.Licenses[0]?.id)){
-      console.log("onSelect going", formData);
+
       onSelect("", formData);
     }else{
-      console.log("onSelect going 2", formData);
+
       onSelect();
     }
   }

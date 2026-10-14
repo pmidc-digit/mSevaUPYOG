@@ -56,18 +56,24 @@ export const ADSMyApplications = () => {
   if (isLoading) return <Loader />;
 
   return (
-    <>
-      <Header>{`${t("ADS_MY_BOOKINGS_HEADER")} ${applications ? `(${applications.length})` : ""}`}</Header>
+    <section className="ads-my-bookings">
+      <div className="ads-my-bookings__heading">
+        <Header>{`${t("ADS_MY_BOOKINGS_HEADER")} ${applications ? `(${applications.length})` : ""}`}</Header>
+      </div>
 
-      <div>
+      <div className="ads-my-bookings__list">
         {currentItems?.length > 0 &&
           currentItems.map((application, index) => (
-            <div key={index}>
+            <div className="ads-my-bookings__item" key={index}>
               <AdsApplication application={application} tenantId={tenantId} buttonLabel={t("ADS_SUMMARY")} refetchBookings={refetch} />
             </div>
           ))}
 
-        {!applications?.length > 0 && <p className="ads-applications-empty">{t("ADS_NO_APPLICATION_FOUND_MSG")}</p>}
+        {!applications?.length > 0 && (
+          <div className="ads-my-bookings__empty">
+            <p className="ads-applications-empty">{t("ADS_NO_APPLICATION_FOUND_MSG")}</p>
+          </div>
+        )}
 
 
 
@@ -115,7 +121,7 @@ export const ADSMyApplications = () => {
           <button className="ads-new-booking-btn">{t("ADS_NEW_BOOKING") + " +"}</button>
         </Link>
       </div>
-    </>
+    </section>
   );
 };
 

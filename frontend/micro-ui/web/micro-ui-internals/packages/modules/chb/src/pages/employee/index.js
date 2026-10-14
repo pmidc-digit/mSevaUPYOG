@@ -41,7 +41,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   sessionStorage.removeItem("revalidateddone");
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  console.log("path", path);
+
 
   const inboxInitialState = {
     searchParams: {

@@ -138,8 +138,8 @@ const CLUEmployeeApplicationDetails = () => {
   const { mutate: eSignCertificate, isLoading: eSignLoading, error: eSignError } = Digit.Hooks.tl.useESign();
   const [distances, setDistances] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
-    const [showPdfModal, setShowPdfModal] = useState(false);
-  const { isLoading, data, refetch } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id});
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const { isLoading, data, refetch } = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails = data?.resData;
   const [siteImages, setSiteImages] = useState(
     applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.siteImages
@@ -247,11 +247,53 @@ const CLUEmployeeApplicationDetails = () => {
   };
 
   const dowloadOptions = [];
+  const sanctionLetterID = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId
   if (applicationDetails?.Clu?.[0]) {
     dowloadOptions.push({
       label: t("Application Form"),
       onClick: handleDownloadPdf,
     });
+  }
+
+  if (applicationDetails?.Clu?.[0]?.applicationStatus === "E-SIGNED") {
+    if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
+      dowloadOptions.push({
+        label: t("CLU_FEE_RECEIPT_1"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey: "clu-receipt", openReceipt: true, fileStoreId: reciept_data1?.Payments[0]?.fileStoreId }),
+      });
+    }
+    if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+      dowloadOptions.push({
+        label: t("CLU_FEE_RECEIPT_2"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "clu-receiptsecond", openReceipt: true }),
+      });
+      if(sanctionLetterID){
+        dowloadOptions.push({
+          label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+          onClick: () =>
+            getRecieptSearch({
+              tenantId: reciept_data2?.Payments[0]?.tenantId,
+              payments: reciept_data2?.Payments[0],
+              fileStoreId : sanctionLetterID,
+              openReceipt: true
+            }),
+        });
+      }
+    }
+  }
+  else if (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.isMigrationTrue && sanctionLetterID) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: tenantId,
+            payments: {},
+            fileStoreId : sanctionLetterID,
+            openReceipt: true
+          }),
+      });
   }
 
   async function openSanctionLetterPopup() {
@@ -263,7 +305,7 @@ const CLUEmployeeApplicationDetails = () => {
         tenantId: reciept_data2?.Payments[0]?.tenantId,
         payments: reciept_data2?.Payments[0],
         pdfkey: "clu-sanctionletter",
-        forcePnLocale: true
+        forcePnLocale: true,
       });
 
       if (!fileStoreId) throw new Error("No filestoreId found for sanction letter");
@@ -286,7 +328,7 @@ const CLUEmployeeApplicationDetails = () => {
     }
   }
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey, forcePnLocale = false, ...params }) {
+  async function getRecieptSearch({ tenantId, payments, pdfkey, forcePnLocale = false, openReceipt= false, fileStoreId = null, ...params }) {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoader(true);
@@ -294,6 +336,10 @@ const CLUEmployeeApplicationDetails = () => {
       const approvecomments = approveComments?.[0];
       const firmName = application?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
       const owners = application?.[0]?.owners || [];
+      if(openReceipt && fileStoreId){
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+        window.open(fileStore[fileStoreId], "_blank");
+      }
       let ownersString = "NA";
       if (!firmName) {
         if (owners?.length > 1) {
@@ -305,7 +351,6 @@ const CLUEmployeeApplicationDetails = () => {
         ownersString = firmName;
       }
       let conditionText = "";
-      let fileStoreId = application?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
       if (approvecomments?.includes("[#?..**]")) {
         conditionText = approvecomments.split("[#?..**]")[1] || "";
       }
@@ -313,20 +358,17 @@ const CLUEmployeeApplicationDetails = () => {
       if (!application) {
         throw new Error("CLU Application data is missing");
       }
-      const hasConditionText =
-      typeof conditionText === "string" && conditionText?.trim().length > 0;
+      const hasConditionText = typeof conditionText === "string" && conditionText?.trim().length > 0;
 
       const conditionData = {
-        conditionLine: hasConditionText
-          ? "The above approval is subjected to the following conditions:"
-          : " ",
+        conditionLine: hasConditionText ? "The above approval is subjected to the following conditions:" : " ",
         conditionText: hasConditionText ? conditionText : " ",
       };
       const usage = displayData?.siteDetails?.[0]?.buildingCategory?.name;
       const fee = payments?.totalAmountPaid;
       const amountinwords = amountToWords(fee);
       if (!fileStoreId) {
-        if(forcePnLocale){
+        if (forcePnLocale) {
           Digit.StoreData.getCurrentLanguage = () => "pn_IN";
         }
         const response = await Digit.PaymentService.generatePdf(
@@ -337,7 +379,7 @@ const CLUEmployeeApplicationDetails = () => {
                 ...payments,
                 Clu: application,
                 ApproverComment: finalComment,
-                conditionData:conditionData,
+                conditionData: conditionData,
                 usage,
                 amountinwords,
                 approvalDate: approvalDate,
@@ -349,13 +391,17 @@ const CLUEmployeeApplicationDetails = () => {
           pdfkey
         );
         fileStoreId = response?.filestoreIds[0];
+        if(openReceipt){
+        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+        window.open(fileStore[fileStoreId], "_blank");
+      }
       }
       return fileStoreId;
     } catch (error) {
       console.error("Sanction Letter download error:", error);
     } finally {
       setLoader(false);
-      if(forcePnLocale){
+      if (forcePnLocale) {
         Digit.StoreData.getCurrentLanguage = prevGetLang;
       }
     }
@@ -366,7 +412,7 @@ const CLUEmployeeApplicationDetails = () => {
         tenantId: reciept_data2?.Payments[0]?.tenantId,
         payments: reciept_data2?.Payments[0],
         pdfkey: "clu-sanctionletter",
-        forcePnLocale: true
+        forcePnLocale: true,
       });
 
       // Update application with sanctionLetterFilestoreId here
@@ -387,7 +433,7 @@ const CLUEmployeeApplicationDetails = () => {
       // refetch();
 
       const callbackUrl = `${window.location.origin}/digit-ui/employee/obps/clu/esign/complete/${encodeURIComponent(id)}`;
-      const authToken = localStorage.getItem('token');
+      const authToken = localStorage.getItem("token");
       // Trigger eSign
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
@@ -432,7 +478,11 @@ const CLUEmployeeApplicationDetails = () => {
       accessor: "fileStoreId",
       Cell: ({ value }) => {
         return value ? (
-          <LinkButton className="obps-pages-employee-application-overview-cluapplication-overview--style-3" label={t("View")} onClick={() => routeToImage(value)} />
+          <LinkButton
+            className="obps-pages-employee-application-overview-cluapplication-overview--style-3"
+            label={t("View")}
+            onClick={() => routeToImage(value)}
+          />
         ) : (
           t("CS_NA")
         );
@@ -957,14 +1007,16 @@ const CLUEmployeeApplicationDetails = () => {
         doc?.documentType?.includes("Owner Id") ||
         doc?.documentType?.includes("Owner Photo")
       )
-  )?.filter((doc) => doc?.documentAttachment)?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
+  )
+    ?.filter((doc) => doc?.documentAttachment)
+    ?.sort((a, b) => (a?.order || 0) - (b?.order || 0));
 
   React.useEffect(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth" // use "auto" for instant scroll
-      });
-  }, [])
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // use "auto" for instant scroll
+    });
+  }, []);
 
   useEffect(() => {
     const fetchDistances = async () => {
@@ -1017,10 +1069,7 @@ const CLUEmployeeApplicationDetails = () => {
   };
 
   const ownersList = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.map((item) => item.ownerOrFirmName);
-  const firmName = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
-
-  const isFirm = applicationDetails?.Clu?.[0]?.cluDetails.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
-  const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])].filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
+  const combinedOwnersName = ownersList?.join(", ");
 
   const siteInspectionEmp = useMemo(() => {
     return workflowDetails?.data?.processInstances?.find((item) => item?.action === "SEND_FOR_INSPECTION_REPORT")?.assigner;
@@ -1071,6 +1120,7 @@ const CLUEmployeeApplicationDetails = () => {
       <Card>
         <StatusTable>
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL")} text={id} />
+          <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Clu?.[0]?.applicationStatus ? t(`BPA_STATUS_${applicationDetails?.Clu?.[0]?.applicationStatus}`) : "N/A"} />
         </StatusTable>
       </Card>
 
@@ -1204,7 +1254,9 @@ const CLUEmployeeApplicationDetails = () => {
           </StatusTable>
           {geoLocations?.length > 0 && (
             <React.Fragment>
-              <CardSectionHeader className="obps-pages-employee-application-overview-cluapplication-overview--style-9">{t("SITE_INSPECTION_IMAGES_LOCATIONS")}</CardSectionHeader>
+              <CardSectionHeader className="obps-pages-employee-application-overview-cluapplication-overview--style-9">
+                {t("SITE_INSPECTION_IMAGES_LOCATIONS")}
+              </CardSectionHeader>
               <CustomLocationSearch position={geoLocations} />
             </React.Fragment>
           )}
@@ -1224,11 +1276,7 @@ const CLUEmployeeApplicationDetails = () => {
       {applicationDetails?.Clu?.[0]?.applicationStatus !== "INSPECTION_REPORT_PENDING" &&
         applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending?.length > 0 && (
           <Card>
-          <CardSubHeader>
-            {empName
-              ? `${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}`
-              : t("BPA_FI_REPORT")}
-          </CardSubHeader>
+            <CardSubHeader>{empName ? `${t("BPA_FI_REPORT")} UPLOADED BY ${empName} - ${empDesignation}` : t("BPA_FI_REPORT")}</CardSubHeader>
             <InspectionReportDisplay fiReport={applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.fieldinspection_pending} />
           </Card>
         )}
@@ -1324,6 +1372,7 @@ const CLUEmployeeApplicationDetails = () => {
               setFeeAdjustments={setFeeAdjustments}
               disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
               applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
+              actions={actions}
             />
           )}
         </div>
@@ -1401,7 +1450,12 @@ const CLUEmployeeApplicationDetails = () => {
         <Modal headerBarEnd={<CloseBtn onClick={closeImageModal} />}>
           {/* <img src={imageUrl} alt="Site Inspection" style={{ width: "100%", height: "100%" }} /> */}
           {imageUrl?.toLowerCase().endsWith(".pdf") ? (
-            <a className="obps-pages-employee-application-overview-cluapplication-overview--style-12" href={imageUrl} target="_blank" rel="noopener noreferrer">
+            <a
+              className="obps-pages-employee-application-overview-cluapplication-overview--style-12"
+              href={imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {t("CS_VIEW_DOCUMENT")}
             </a>
           ) : (
@@ -1410,7 +1464,13 @@ const CLUEmployeeApplicationDetails = () => {
         </Modal>
       )}
 
+<<<<<<< HEAD
       {showZoneModal && <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} tenantId={tenantId} />}
+=======
+      {showZoneModal && (
+        <ZoneModal onClose={() => setShowZoneModal(false)} onSelect={handleZoneSubmit} currentZoneCode={currentZoneCode} tenantId={tenantId} />
+      )}
+>>>>>>> MicroUI_UAT_Vite
 
       {showPdfModal && (
         <PdfPreviewModal

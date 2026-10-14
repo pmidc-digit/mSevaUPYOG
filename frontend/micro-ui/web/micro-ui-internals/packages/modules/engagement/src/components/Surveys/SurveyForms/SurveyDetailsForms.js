@@ -21,7 +21,7 @@ const SurveyDetailsForms = ({
   // const cityName= cityNameSplit[1];
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
 
-  console.log("cities", cities);
+
 
   let cityName = "";
 
@@ -46,13 +46,13 @@ const SurveyDetailsForms = ({
   const dispatch = useDispatch();
   const surveyDetails = useSelector((state) => state.engagement.surveyForm.surveyDetails[0]);
 
-  console.log("surveyDetails====", surveyDetails);
+
 
   const userUlbs = ulbs
     .filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code))
     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
 
-  console.log("userulbs", userUlbs);
+
   const selectedTenat = useMemo(() => {
     const filtered = ulbs.filter((item) => item.code === tenantId);
     return filtered;
@@ -71,14 +71,14 @@ const SurveyDetailsForms = ({
   };
 
   // useEffect(() => {
-  //   console.log("cityName", cityName);
+
   //   dispatch(fieldChange(surveyDetails.id, { ["ulb"]: cityName }));
   // }, []);
 
   const handleULBChange = (e, name) => {
-    console.log("eeee", e, name);
+
     const temp = surveyFormData("tenantIds")?.filter?.((f) => e.code !== f?.code) || [];
-    console.log("temp", temp);
+
     const value = surveyFormData("tenantIds")?.filter?.((f) => e.code !== f?.code) || [];
     dispatch(fieldChange(surveyDetails.id, { [name]: value }));
   };
@@ -92,8 +92,8 @@ const SurveyDetailsForms = ({
     dispatch(fieldChange(surveyDetails.id, { [name]: event }));
   };
 
-  console.log("survey deta", surveyDetails);
-  console.log("bb", surveyFormData, surveyFormState, registerRef, controlSurveyForm);
+
+
   return (
     <div
       //className="surveydetailsform-wrapper"
@@ -124,32 +124,7 @@ const SurveyDetailsForms = ({
           // width:" 45%"}}
         >
           <label>City</label>
-          {/* <Controller
-          name="ulb"
-          control={controlSurveyForm}
-          // defaultValue={selectedTenat}
-          defaultValue={surveyDetails.ulb||[]}
-          rules={{ required: true }}
-          render={(props) => {
-            console.log("props render",props)
-            
-            const renderRemovableTokens = useMemo(
-              () =>
-                props?.value?.map((ulb, index) => {
-                  return (
-                    <RemoveableTag
-                      key={index}
-                      text={ulb.name}
-                      disabled = {checkRemovableTagDisabled(disableInputs,enableDescriptionOnly)}
-                      onClick={() => {
-                        props.onChange(props?.value?.filter((loc) => loc.code !== ulb.code));
-                      }}
-                    />
-                  );
-                }),
-              [props?.value]
-            );
-         console.log("prop",props?.value) */}
+          {}
           {/* return ( */}
           {/* <div style={{ display: "grid", gridAutoFlow: "row" }}> */}
           {/* <Dropdown
@@ -159,13 +134,13 @@ const SurveyDetailsForms = ({
                   placeholder={t("ES_COMMON_USER_ULBS")}
                   select={(e) => {
                     props.onChange([...(surveyFormData("tenantIds")?.filter?.((f) => e.code !== f?.code) || []), e]);
-                  
+
                   }}
                   selected={props?.value}
-                
+
                   keepNull={true}
                   disable={disableInputs}
-                 
+
                   t={t}
                 />  */}
           {/* <MultiSelectDropdown
@@ -180,7 +155,7 @@ const SurveyDetailsForms = ({
                   }}
                   name="ulb"
                  //  selected={props?.value}
-                 
+
                   selected={surveyDetails.ulb?.city?.name||[]}
                   defaultLabel={t("ES_COMMON_USER_ULBS")}
                   defaultUnit={t("CS_SELECTED_TEXT")}
@@ -206,8 +181,8 @@ const SurveyDetailsForms = ({
           type="text"
           inputRef={registerRef({
             required: t("ES_ERROR_REQUIRED"),
-           
-          
+
+
           })}
           readOnly={true}
           value={surveyDetails.ulb}

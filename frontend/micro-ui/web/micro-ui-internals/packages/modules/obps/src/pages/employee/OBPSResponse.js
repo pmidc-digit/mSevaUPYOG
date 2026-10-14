@@ -30,7 +30,7 @@ const OBPSResponse = (props) => {
     });
     setTimeout(async () => {
     const bpaResponse = await Digit.OBPSService.BPASearch(tenantId, { applicationNo: bpaData?.applicationNo });
-    console.log(bpaResponse, "UYTRTYU");
+
     // let businessService = "BPA.LOW_RISK_PERMIT_FEE";
     // if (bpaResponse?.BPA?.[0]?.businessService === "BPA") businessService = "BPA.NC_SAN_FEE";
     // else if (bpaResponse?.BPA?.[0]?.businessService === "BPA_OC") businessService = "BPA.NC_OC_SAN_FEE";
@@ -41,7 +41,7 @@ const OBPSResponse = (props) => {
       businessService: businessService,
     });
 
-    console.log(fetchBill, "FETCHEDBILL");
+
     if (bpaResponse?.BPA?.[0]?.status == "APPROVED" && fetchBill?.Bill?.[0] && fetchBill?.Bill?.[0]?.totalAmount != 0) setSanctionFee("_SAN_FEE");
     setIsLoader(false);
     setApplicationData(bpaResponse?.BPA?.[0]);

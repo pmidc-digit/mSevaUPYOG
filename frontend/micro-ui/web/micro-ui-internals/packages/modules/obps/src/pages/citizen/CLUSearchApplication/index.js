@@ -15,7 +15,7 @@ const Search = () => {
   }else{
    tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }
-  console.log("tenantId here", tenantId);
+
 
   const defaultFilters = {
     offset: 0,
@@ -27,7 +27,7 @@ const Search = () => {
   const [filters, setfilters] = useState(defaultFilters);
 
   function onSubmit(__data, isFromClear = false) {
-    console.log("_data==>", __data);
+
     let details = cloneDeep(__data);
     let __filters = defaultFilters;
 
@@ -36,7 +36,7 @@ const Search = () => {
 
      // If only applicationNo is present, remove mobileNumber
     if (hasApplicationNo && !hasMobileNumber) {
-      console.log("we are deleteing mobileNumber here");
+
      delete details.mobileNumber;
     }
 

@@ -77,11 +77,11 @@ const OBPSBreadCrumbs = ({ location }) => {
     },
   ];
 
-  return <BreadCrumb crumbs={crumbs} />;
+  return <BreadCrumb crumbs={crumbs.filter((crumb) => crumb.show)} />;
 }
 
 const EmployeeApp = ({ path }) => {
-  console.log(path, "PATHHH");
+
   const location = useLocation()
   const { t } = useTranslation();
   const Inbox = Digit.ComponentRegistryService.getComponent("BPAInbox");
@@ -132,9 +132,12 @@ const EmployeeApp = ({ path }) => {
 
           <PrivateRoute path={`${path}/clu/inbox`} component={(props) => <CLUInbox {...props} parentRoute={path} />} />
 <<<<<<< HEAD
+<<<<<<< HEAD
           <PrivateRoute path={`${path}/clu/application-overview/:cluid/:tenant`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />
 =======
 >>>>>>> MicroUI_PROD_Vite
+=======
+>>>>>>> MicroUI_UAT_Vite
           <PrivateRoute path={`${path}/clu/application-overview/:cluid`} component={(props) => <CLUEmployeeApplicationDetails {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/clu/response/:id`} component={(props) => <CLUResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/clu/esign/complete/:id/:file`} component={CLUEsignResponse} />

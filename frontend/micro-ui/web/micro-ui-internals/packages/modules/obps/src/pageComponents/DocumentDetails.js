@@ -81,29 +81,20 @@ const DocumentDetails = ({
   );
 
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["DocTypeMapping"]);
-  console.log(
-    "bpaTaxDocuments",
-    bpaDocs?.BPA?.DocTypeMapping.filter(
-      (data) =>
-        data.WFState == searchObj?.status &&
-        data.RiskType == searchObj?.riskType &&
-        data.ServiceType == searchObj?.additionalDetails?.serviceType &&
-        data.applicationType == searchObj?.additionalDetails?.applicationType
-    )
-  );
 
-  console.log(formData, "FDFDFDF");
-  console.log(bpaTaxDocuments, "bpabpa");
+
+
+
 
   // useEffect(() => {
-  //   console.log("documentInScrutiny", formData, documents);
+
   // }, [documents]);
 
   // const handleSubmit = () => {
   //   let document = formData.documents.documents;
   //   // let documentStep;
 
-  //   console.log("documentInScrutiny", formData, documents);
+
   //   let RealignedDocument = [];
   //   bpaTaxDocuments &&
   //     bpaTaxDocuments.map((ob) => {
@@ -120,12 +111,12 @@ const DocumentDetails = ({
   //   const documentStep = {
   //     documents: RealignedDocument.length > 0 ? RealignedDocument : documents,
   //   };
-  //   console.log("DocumentInCall", documentStep);
+
   //   // onSelect(config.key, documentStep);
   // };
 
   const handleSubmit = async () => {
-    // console.log("documentInScrutiny", formData, documents);
+
     const mandatoryList = bpaTaxDocuments?.filter((document) => ((document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE" && document.code !== "SITEPHOTOGRAPH_TWO") && document?.required))
     const updatedDocuments = documents?.map((item) => {
       const id = currentStepData?.createdResponse?.documents?.find((doc) => doc?.documentType === item?.documentType)?.id || null;
@@ -141,7 +132,7 @@ const DocumentDetails = ({
           (doc) => doc?.documentType === mandatoryDoc?.code // must exist with id
         )
     );
-    // console.log("documentInScrutiny", mandatoryList, missingDocuments, updatedDocuments);
+
 
     if (missingDocuments?.length > 0) {
       setShowToast({
@@ -177,9 +168,9 @@ const DocumentDetails = ({
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
-      console.log("APIResponse", result);
+
     } catch (e) {
-      console.log("error", e);
+
       alert(t("BPA_CREATE_APPLICATION_FAILED"));
       setApiLoading(false);
     }
@@ -452,7 +443,7 @@ function SelectDocument({
   return (
     <div>
       <LabelFieldPair>
-        {/* {console.log("doc", doc)} */}
+        {}
         <CardLabel className="card-label-smaller">
           {t(doc?.code)} {doc?.required && <span className="requiredField">{" *"}</span>}
         </CardLabel>

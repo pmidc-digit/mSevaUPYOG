@@ -17,7 +17,7 @@ const RentAndLeaseSelectProofIdentity = ({ t, config, onSelect, userType, formDa
     allowedExtensions: [".pdf", ".jpeg", ".jpg", ".png"],
   };
 
-  console.log("currentStepData====????", currentStepData?.propertyDetails?.applicationType?.name);
+
 
   const checkLegacy = currentStepData?.propertyDetails?.applicationType?.name == "Legacy";
 

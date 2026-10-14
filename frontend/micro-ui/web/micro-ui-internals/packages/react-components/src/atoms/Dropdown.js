@@ -8,10 +8,11 @@ const TextField = (props) => {
 
   useEffect(() => {
     if (!props.keepNull)
-      if( props.selectedVal)
-        setValue(props.selectedVal)
-      else
-      { setValue(""); props.setFilter("") } 
+      if (props.selectedVal) setValue(props.selectedVal);
+      else {
+        setValue("");
+        props.setFilter("");
+      }
     else setValue("");
   }, [props.selectedVal, props.forceSet]);
 
@@ -78,7 +79,7 @@ const TextField = (props) => {
       autoFocus={props.autoFocus}
       placeholder={props.placeholder}
       autoComplete={"off"}
-      style={{...props.style, zIndex: "auto"}}
+      style={{ ...props.style, zIndex: "auto" }}
     />
   );
 };
@@ -172,12 +173,11 @@ const Dropdown = (props) => {
     onSelect(filteredOption[ind]);
   }
   if (props?.option?.[0]?.label == "PropertyType") {
-    filteredOption = props.option
+    filteredOption = props.option;
   }
-  if(props.isBPAREG && selectedOption)
-  {
+  if (props.isBPAREG && selectedOption) {
     let isSelectedSameAsOptions = props.option?.filter((ob) => ob?.code === selectedOption?.code)?.length > 0;
-    if(!isSelectedSameAsOptions) setSelectedOption(null)
+    if (!isSelectedSameAsOptions) setSelectedOption(null);
   }
 
   const DropdownMenu = ({ children }) => {
@@ -240,70 +240,78 @@ const Dropdown = (props) => {
       {dropdownStatus ? (
         <DropdownMenu>
           {props.optionKey ? (
-          <div
-            id="jk-dropdown-unique"
-            className={`${hasCustomSelector ? "margin-top-10 display: table" : ""} options-card ${props.menuPortal ? "dropdown-options-portal" : ""}`}
-            style={{ ...props.optionCardStyles, ...(props.menuPortal && portalPosition ? portalPosition : {}) }}
-            ref={optionRef}
-          >
-            {filteredOption &&
-              filteredOption.map((option, index) => {
-                return (
-                  <div
-                    className={`cp profile-dropdown--item display: flex `}
-                    style={
-                      index === optionIndex
-                        ? {
-                            opacity: 1,
-                            backgroundColor: "rgba(238, 238, 238, var(--bg-opacity))",
-                          }
-                        : {}
-                    }
-                    key={index}
-                    onClick={() => onSelect(option)}
-                  >
-                    {option.icon && <span className="icon"> {option.icon} </span>}
-                    {props.isPropertyAssess? <div>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</div>:
-                    <span> {props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</span>} 
-                  </div>
-                );
-              })}
-            {filteredOption && filteredOption.length === 0 && (
-              <div className={`cp profile-dropdown--item display: flex `} key={"-1"} onClick={()=>{
-                
-              }}>
-                {<span> {props.t ? props.t("CMN_NOOPTION") : "CMN_NOOPTION"}</span>}
-              </div>
-            )}
-          </div>
+            <div
+              id="jk-dropdown-unique"
+              className={`${hasCustomSelector ? "margin-top-10 display: table" : ""} options-card ${
+                props.menuPortal ? "dropdown-options-portal" : ""
+              }`}
+              style={{ ...props.optionCardStyles, ...(props.menuPortal && portalPosition ? portalPosition : {}) }}
+              ref={optionRef}
+            >
+              {filteredOption &&
+                filteredOption.map((option, index) => {
+                  return (
+                    <div
+                      className={`cp profile-dropdown--item display: flex `}
+                      style={
+                        index === optionIndex
+                          ? {
+                              opacity: 1,
+                              backgroundColor: "rgba(238, 238, 238, var(--bg-opacity))",
+                            }
+                          : {}
+                      }
+                      key={index}
+                      onClick={() => onSelect(option)}
+                    >
+                      {option.icon && <span className="icon"> {option.icon} </span>}
+                      {props.isPropertyAssess ? (
+                        <div>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</div>
+                      ) : (
+                        <span> {props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              {filteredOption && filteredOption.length === 0 && (
+                <div className={`cp profile-dropdown--item display: flex `} key={"-1"} onClick={() => {}}>
+                  {<span> {props.t ? props.t("No Option") : "No Option"}</span>}
+                </div>
+              )}
+            </div>
           ) : (
-          <div
-            className={`options-card ${props.menuPortal ? "dropdown-options-portal" : ""}`}
-            style={{ ...props.optionCardStyles, ...(props.menuPortal && portalPosition ? portalPosition : {}), overflow: "scroll", maxHeight: "350px" }}
-            id="jk-dropdown-unique"
-            ref={optionRef}
-          >
-            {props.option
-              .filter((option) => option?.toUpperCase().indexOf(filterVal?.toUpperCase()) > -1)
-              .map((option, index) => {
-                return (
-                  <p
-                    key={index}
-                    style={
-                      index === optionIndex
-                        ? {
-                            opacity: 1,
-                            backgroundColor: "rgba(238, 238, 238, var(--bg-opacity))",
-                          }
-                        : {}
-                    }
-                    onClick={() => onSelect(option)}
-                  >
-                    {option}
-                  </p>
-                );
-              })}
-          </div>
+            <div
+              className={`options-card ${props.menuPortal ? "dropdown-options-portal" : ""}`}
+              style={{
+                ...props.optionCardStyles,
+                ...(props.menuPortal && portalPosition ? portalPosition : {}),
+                overflow: "scroll",
+                maxHeight: "350px",
+              }}
+              id="jk-dropdown-unique"
+              ref={optionRef}
+            >
+              {props.option
+                .filter((option) => option?.toUpperCase().indexOf(filterVal?.toUpperCase()) > -1)
+                .map((option, index) => {
+                  return (
+                    <p
+                      key={index}
+                      style={
+                        index === optionIndex
+                          ? {
+                              opacity: 1,
+                              backgroundColor: "rgba(238, 238, 238, var(--bg-opacity))",
+                            }
+                          : {}
+                      }
+                      onClick={() => onSelect(option)}
+                    >
+                      {option}
+                    </p>
+                  );
+                })}
+            </div>
           )}
         </DropdownMenu>
       ) : null}

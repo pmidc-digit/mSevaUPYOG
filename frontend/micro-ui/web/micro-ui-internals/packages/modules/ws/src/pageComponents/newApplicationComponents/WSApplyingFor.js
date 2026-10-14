@@ -88,7 +88,7 @@ const WSApplyingFor = (props) => {
               autoFocus={focusIndex.index === applyingFor?.key && focusIndex.type === "water"}
               errorStyle={localFormState.touched.water && errors?.water?.message ? true : false}
               onChange={(e) => {
-                console.log("Clicked water: ", e.target.checked, applyingFor);
+
                 if (e.target.checked || applyingFor?.sewerage) {
                   props.onChange(e.target.checked);
                   setFocusIndex({ index: applyingFor?.key, type: "water" });
@@ -113,7 +113,7 @@ const WSApplyingFor = (props) => {
               autoFocus={focusIndex.index === applyingFor?.key && focusIndex.type === "sewerage"}
               errorStyle={localFormState.touched.sewerage && errors?.sewerage?.message ? true : false}
               onChange={(e) => {
-                console.log("Clicked sewerage: ", e.target.checked, applyingFor);
+
                 if (e.target.checked || applyingFor?.water) {
                   props.onChange(e.target.checked);
                   setFocusIndex({ index: applyingFor?.key, type: "sewerage" });

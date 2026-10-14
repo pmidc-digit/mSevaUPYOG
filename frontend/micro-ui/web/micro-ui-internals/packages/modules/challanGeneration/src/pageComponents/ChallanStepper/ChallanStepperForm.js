@@ -44,8 +44,8 @@ const ChallanStepperForm = () => {
   const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Documents" }]);
   const { data: OffenceActData, isLoading: OffenceActLoading } = Digit.Hooks.useCustomMDMS(tenantId, "Challan", [{ name: "Acts" }]);
 
-  console.log("subCategoryData", subCategoryData);
-  console.log("OffenceTypeData", OffenceTypeData);
+
+
 
   const {
     control,
@@ -68,7 +68,7 @@ const ChallanStepperForm = () => {
   const onSubmit = async (data) => {
     let missingDocs = [];
     const actString = getActs(data?.offenceType, OffenceActData);
-    console.log("Resolved Act(s):", actString);
+
     docData?.Challan?.Documents?.forEach((doc) => {
       if (doc.required) {
         const hasFile = documentsData?.documents?.some((d) => d.documentType.includes(doc.code) && d.filestoreId);

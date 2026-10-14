@@ -91,11 +91,11 @@ const CLUEditApplication = () => {
   }else{
    tenantId = window.localStorage.getItem("CITIZEN.CITY");
   }
-  console.log("tenantId here", tenantId);
+
 
   const { isLoading, data} = Digit.Hooks.obps.useCLUSearchApplication({ applicationNo: id }, tenantId, { enabled: !!id });
   const applicationDetails= data?.resData;
-  console.log("applicationDetails here==>", applicationDetails);
+
 
   const cluObject = applicationDetails?.Clu?.[0] || {};
   const applicantDetails = cluObject?.cluDetails?.additionalDetails?.applicationDetails || {};

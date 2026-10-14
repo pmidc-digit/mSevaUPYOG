@@ -18,7 +18,7 @@ import { stringReplaceAll } from "../../utils";
 
 const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, statutes, ...props }) => {
   const { t } = useTranslation();
-  console.log("no here");
+
   const [_searchParams, setSearchParams] = useState(() => searchParams);
   const [clearCheck, setclearCheck] = useState(false);
   const [selectedCategories, setselectedCategories] = useState([]);
@@ -29,7 +29,7 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
     let _new = { ..._searchParams, ...filterParam };
     if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
     delete filterParam.delete;
-    console.log("nasda", _new);
+
     setSearchParams({ ..._new });
   };
 
@@ -113,7 +113,7 @@ const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, 
                 onAssignmentChange={(e, businessService) => {
                   let filterParam = [];
                   let selectedCategory = [];
-                  console.log("e", e);
+
                   _searchParams["businessService"] = [];
                   e &&
                   e.map((ob) => {

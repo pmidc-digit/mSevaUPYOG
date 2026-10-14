@@ -65,7 +65,7 @@ const FilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTyp
           defaultValue={[]}
           render={(props) => {
             const toggleStatus = (statusCode) => {
-              console.log(statusCode, "statusCode");
+
               if (props.value.includes(statusCode)) {
                 props.onChange(props.value.filter((code) => code !== statusCode));
               } else {

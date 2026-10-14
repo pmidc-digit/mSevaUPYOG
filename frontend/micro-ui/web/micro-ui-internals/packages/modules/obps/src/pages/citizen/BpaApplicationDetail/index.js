@@ -48,6 +48,7 @@ import {
   fetchUrl,
   fetchOnlyFileStore,
   fetchOnlyUrl,
+  EmployeeData
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview";
@@ -103,7 +104,7 @@ const BpaApplicationDetail = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [showPdfModal, setShowPdfModal] = useState(false);
   const stateId = Digit.ULBService.getStateId();
-
+  const [EmpData, setEmpData] = useState(null);
   const user = Digit.UserService.getUser();
 
   const citizenmobilenumber = user?.info?.mobileNumber;
@@ -324,7 +325,7 @@ const BpaApplicationDetail = () => {
 
   const comments = useMemo(() => {
     if (workflowDetails?.data && !workflowDetails?.isLoading && (data?.applicationStatus === "APPROVED" || data?.applicationStatus === "REJECTED")) {
-      return getApproveRejectComments(workflowDetails);
+      return getApproveRejectComments(workflowDetails , true);
     }
     return null;
   }, [workflowDetails?.data, workflowDetails?.isLoading, data?.applicationStatus]);
@@ -409,10 +410,10 @@ const BpaApplicationDetail = () => {
         setShowOTPInput(true);
       } else {
         // Handle error case if OTP sending fails
-        console.error("Error sending OTP Response is false:", response.error);
+
       }
     } catch (error) {
-      console.error("Error sending OTP:", error);
+
     }
   };
 
@@ -837,7 +838,7 @@ const BpaApplicationDetail = () => {
         tenant = tenantId;
       }
     } catch (error) {
-      console.log("err", error);
+
     } finally {
       Digit.StoreData.getCurrentLanguage = prevGetLang;
     }
@@ -846,6 +847,62 @@ const BpaApplicationDetail = () => {
     requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
   }
 
+  async function getRejectionLetter({ tenantId }, order, mode = "download" , EmpData) {
+    let tenant = data?.tenantId || tenantId;
+    const prevGetLang = Digit.StoreData.getCurrentLanguage;
+    let fileStoreId;
+    try {
+        const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
+        Digit.StoreData.getCurrentLanguage = () => "pn_IN";
+
+        const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+        const requestData = {
+          ...data?.applicationData,
+          edcrDetail: [{ ...data?.edcrDetails }],
+          subjectLine,
+          fileno,
+          nowIST,
+          designation,
+          approverComment: comments,
+          EmpData,
+        };
+        if (requestData?.landInfo?.owners) {
+          requestData.landInfo = {
+            ...requestData.landInfo,
+            owners: requestData.landInfo.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
+            })),
+          };
+        }
+        let count = 0;
+        for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+          if (
+            (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+              workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+            workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+            count == 0
+          ) {
+            requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+            count = 1;
+          }
+        }
+        if (stakeholderAddress && requestData && requestData?.additionalDetails) {
+          requestData.additionalDetails.stakeholderAddress = stakeholderAddress;
+        }
+        const response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
+        fileStoreId = response?.filestoreIds[0];
+        tenant = tenantId;
+      }
+     catch (error) {
+      console.log("err", error);
+    } finally {
+      Digit.StoreData.getCurrentLanguage = prevGetLang;
+    }
+    const fileStore = await Digit.PaymentService.printReciept(tenant, { fileStoreIds: fileStoreId });
+    window.open(fileStore[fileStoreId], "_blank");
+    requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
+  }
   async function getPermitOccupancyOrderSearchReturnFilestore({ tenantId }, order, mode = "download") {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
@@ -936,7 +993,7 @@ const BpaApplicationDetail = () => {
         return null;
       }
     } catch (err) {
-      console.log("err", err);
+
       return null;
     } finally {
       Digit.StoreData.getCurrentLanguage = prevGetLang;
@@ -1035,7 +1092,7 @@ const BpaApplicationDetail = () => {
       window.open(fileStore[fileStoreId], "_blank");
       //  requestData["applicationType"] = data?.applicationData?.additionalDetails?.applicationType;
     } catch (error) {
-      console.log("error", error);
+
     } finally {
       Digit.StoreData.getCurrentLanguage = prevGetLang;
       setIsEnableLoader(false);
@@ -1096,7 +1153,7 @@ const BpaApplicationDetail = () => {
           setFileUrls(urls);
         }
       } catch (error) {
-        console.error("Error fetching file URLs", error);
+
       } finally {
         setIsFileLoading(false);
       }
@@ -1153,7 +1210,7 @@ const BpaApplicationDetail = () => {
           setOwnerFileUrls(urls);
         }
       } catch (error) {
-        console.error("Error fetching owner file URLs", error);
+
       } finally {
         setIsOwnerFileLoading(false);
       }
@@ -1192,7 +1249,7 @@ const BpaApplicationDetail = () => {
       eSignCertificate(
         { fileStoreId, tenantId, callbackUrl, authToken },
         {
-          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onSuccess: () => void 0,
           onError: (error) => {
             setShowToast({
               key: "true",
@@ -1223,7 +1280,7 @@ const BpaApplicationDetail = () => {
       eSignCertificate(
         { fileStoreId, tenantId: tenant, callbackUrl, authToken },
         {
-          onSuccess: () => console.log("✅ eSign initiated successfully"),
+          onSuccess: () => void 0,
           onError: (error) => {
             setShowToast({
               key: "true",
@@ -1926,6 +1983,16 @@ const BpaApplicationDetail = () => {
       order: 4,
       label: t("BPA_COMPARISON_REPORT_LABEL"),
       onClick: () => window.open(data?.comparisionReport?.comparisonReport, "_blank"),
+    });
+  }
+  if (data?.applicationData?.status === "REJECTED") {
+    dowloadOptions.push({
+      order: 5,
+      label: t("BPA_REJECTION_LETTER"),
+      onClick: async () => {
+        const empRes = await EmployeeData(tenantId, id, "OBPS");
+        getRejectionLetter({ tenantId: data?.applicationData?.tenantId }, "bpa-rejection-letter", "download", empRes);
+      },
     });
   }
 

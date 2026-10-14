@@ -13,7 +13,7 @@ const ReopenComplaint = ({ match, history, parentRoute }) => {
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
 
   const complaintDetails = Digit.Hooks.swach.useComplaintDetails({ tenantId: tenantId, id: id }).complaintDetails;
-  console.log("complaintDetails in index", complaintDetails);
+
   return (
     // <Switch>
     //   <Route path={`${parentRoute}/reopen/upload-photo/:id*`} component={() => <UploadPhoto match={match} skip={true} {...{ complaintDetails }} />} />

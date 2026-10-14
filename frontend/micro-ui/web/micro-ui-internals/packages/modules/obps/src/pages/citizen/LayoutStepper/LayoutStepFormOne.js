@@ -18,7 +18,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   });
 
   const userInfo = Digit.UserService.getUser();
-  //console.log("userInfo type here", userInfo?.info?.type);
+
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
@@ -65,7 +65,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
   const validateApplicants = (applicants, applicantType) => {
     let hasError = false;
-    //console.log("errorFound: Step 1 validation started for applicants", applicants);
+
 
     // if (applicantType?.code === "INDIVIDUAL") {
     //   if (applicants.length !== 1) {
@@ -110,14 +110,14 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: mobile number error for applicant index", originalIndex);
+
       } else if (!/^[6-9]\d{9}$/.test(applicant.mobileNumber)) {
         setError(`applicants.${originalIndex}.mobileNumber`, {
           type: "manual",
           message: t("INVALID_MOBILE_NUMBER"),
         });
         hasError = true;
-        //console.log("errorFound: mobile number else error for applicant index", originalIndex);
+
       }
 
       /* ---------------- Name ---------------- */
@@ -127,7 +127,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: name error for applicant index", originalIndex);
+
       }
 
       /* ---------------- Email ---------------- */
@@ -137,7 +137,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: email id error for applicant index", originalIndex);
+
       }
 
       /* ---------------- Address ---------------- */
@@ -147,7 +147,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: address error for applicant index", originalIndex);
+
       } else if (applicant.address.length > 100) {
         setError(`applicants.${originalIndex}.address`, {
           type: "manual",
@@ -163,7 +163,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: dob error for applicant index", originalIndex)
+
       } else {
         const dob = new Date(applicant.dob);
         if (isNaN(dob.getTime())) {
@@ -196,7 +196,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: gender error for applicant index", originalIndex)
+
       }
 
       /* ---------------- Passport Photo ---------------- */
@@ -206,7 +206,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: photo error for applicant index", originalIndex)
+
       }
 
       /* ---------------- ID Proof ---------------- */
@@ -216,7 +216,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: id proof error for applicant index", originalIndex)
+
       }
 
       /* ---------------- PAN Document ---------------- */
@@ -226,7 +226,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: panDocument error for applicant index", originalIndex)
+
       }
 
       /* ---------------- PAN Number ---------------- */
@@ -236,18 +236,18 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
           message: t("REQUIRED_FIELD"),
         });
         hasError = true;
-        //console.log("errorFound: panNumber error for applicant index", originalIndex)
+
       } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(applicant.panNumber)) {
         setError(`applicants.${originalIndex}.panNumber`, {
           type: "manual",
           message: t("Invalid PAN Number format. Format should be like AAAAA1234A"),
         });
         hasError = true;
-        //console.log("errorFound: panNumber else error for applicant index", originalIndex)
+
       }
     });
 
-    //console.log("errorFound: Step final validation ends for applicants", applicants);
+
 
     return !hasError;
   };
@@ -339,7 +339,7 @@ const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
     }
   }, [stakeHolderDetailsLoading]);
 
-  console.log("CurrentStepDataInStepOne", currentStepData);
+
 
   useEffect(() => {
     if (currentStepData?.applicationDetails?.isRegisteredStakeHolder) {

@@ -46,7 +46,7 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
         ? getWorkFlow(thumbnailsToShow)
           : complaintDetails?.images?.length
           ? getWorkFlow(fallbackPayload)
-        : console.log("no image present");
+        : void 0;
       }
     }
   }, [workFlowDetails?.data]);
@@ -101,7 +101,7 @@ const ComplaintDetailsPage = (props) => {
 
   const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
   // useEffect(()=>{
-  //   console.log("imageShownBelowComplaintDetails",imageShownBelowComplaintDetails);
+
   // },[imageShownBelowComplaintDetails])
 
   useEffect(() => {

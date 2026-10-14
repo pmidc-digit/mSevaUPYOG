@@ -46,7 +46,7 @@ const useQuestionsInboxMobileCardsData = ({ parentRoute, table, setShowToast }) 
   };
 
   const handleUpdateQuestionConfirm = (row) => {
-    //console.log("Current row: ", row);
+
     const currentStatus = row?.status;
     const updatedStatus = currentStatus === "ACTIVE" ? "INACTIVE" : currentStatus === "INACTIVE" ? "ACTIVE" : "";
 

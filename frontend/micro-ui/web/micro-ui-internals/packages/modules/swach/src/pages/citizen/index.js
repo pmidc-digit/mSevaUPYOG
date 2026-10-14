@@ -33,7 +33,7 @@ const App = () => {
   const { t } = useTranslation();
   const { path, url, ...match } = useRouteMatch();
   const location = useLocation();
-  console.log("path", path);
+
   const CreateComplaint = Digit?.ComponentRegistryService?.getComponent("SWACHCitizenCreateComplaint");
   const ComplaintsList = Digit?.ComponentRegistryService?.getComponent("SWACHComplaintsList");
   const ComplaintDetailsPage = Digit?.ComponentRegistryService?.getComponent("SWACHComplaintDetailsPage");

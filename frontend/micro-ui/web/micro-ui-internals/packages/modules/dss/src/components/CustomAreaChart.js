@@ -181,7 +181,7 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
       </ul>
     )
   }
-  
+
   const tickFormatter = (value) => {
     if (typeof value === "string") {
       return value.replace("-", ", ");
@@ -222,7 +222,7 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
   };
 
   const renderTooltipForLine = ({ payload, label, unit }) => {
-    console.log("payloadpayload",payload)
+
     let payloadObj = payload?.[0] || {};
     let prefix = payloadObj?.payload?.symbol?.toLowerCase() === "amount" && value?.denomination === "Unit" ? " ₹" : " ";
     let postfix =
@@ -237,7 +237,7 @@ const CustomAreaChart = ({ xDataKey = "name", yDataKey = getValue, data, setChar
     delete newPayload?.symbol;
     let newObjArray = [newPayload?.name];
     delete newPayload?.name;
-    console.log("sssssssss",payloadObj)
+
 if(payloadObj?.payload?.["Non Tax Collection"])
 {
   Object.keys(newPayload).map((key) => {
@@ -258,7 +258,7 @@ else {
     );
   });
 }
-     
+
     return (
       <div
         style={{
@@ -320,7 +320,7 @@ else {
             <Area type="monotone" dataKey={renderPlot} stroke="#048BD0" fill="url(#colorUv)" dot={true} />
           </AreaChart>
         ) : id == "pgrCumulativeClosedCompla" ? (
-      
+
               <ComposedChart
             width="100%"
             height="100%"
@@ -360,7 +360,7 @@ else {
                   key={2}
                   dot={{ stroke: getColors(2), strokeWidth: 1, r: 2, fill: getColors(2) }}
                 />
-                
+
             {/* {keysArr?.map((key, i) => {
               return (
                 <Line
@@ -375,7 +375,7 @@ else {
                 />
               );
             })} */}
-          
+
           </ComposedChart>
         ):(
           <LineChart

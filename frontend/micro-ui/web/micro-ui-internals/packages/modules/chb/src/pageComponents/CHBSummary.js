@@ -155,7 +155,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   //     bookingStatus: t(`WF_CHB_${slot?.status}`),
   //   })) || [];
 
-  console.log("docs===", docs);
+
 
   return (
     <div className="bpa-summary-page">

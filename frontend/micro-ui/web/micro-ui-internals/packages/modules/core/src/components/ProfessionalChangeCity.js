@@ -23,7 +23,7 @@ const ProfessionalChangeCity = (prop) => {
         const roles = userInfo?.roles || [];
         const hasBPAArchitect = roles.some(role => role?.code === "BPA_ARCHITECT");
 
-       
+
         if (!hasBPAArchitect) {
             // Get all roles with code starting with "BPA"
             const bpaRoles = roles.filter(role => role?.code?.startsWith("BPA"));
@@ -44,7 +44,7 @@ const ProfessionalChangeCity = (prop) => {
         // onLocationChange && onLocationChange(city);
     }
 
-    console.log("filteredCityOptions", selectedCity);
+
 
     const style = {
         locationWrapper: {

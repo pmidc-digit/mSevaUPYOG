@@ -8,7 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 const Remarks = ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
   //let index = window.location.href.charAt(window.location.href.length - 1);
 
-  console.log("formdata testing==", formData);
+
 
   let index = window.location.href.split("/").pop();
   let validation = {};
@@ -132,7 +132,7 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
       <div>Remarks</div>
 
       {/* {window.location.href.includes("/citizen") ? <Timeline currentStep={1} /> : null}
-      
+
       <FormStep
         config={config}
         onChange={handleRemarksChange}

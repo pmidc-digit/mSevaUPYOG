@@ -22,7 +22,7 @@ export const PropertySearch = ({ key = "cpt", onSelect, formData, setApiLoading,
   let { pathname, state } = useLocation();
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
   const apiDataCheck = useSelector((state) => state?.obps?.OBPSFormReducer?.formData?.createdResponse);
-  console.log("StateInPropertySearch", formData, key);
+
   const isEditScreen = pathname.includes("/modify-application/");
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
   const search = useLocation().search;

@@ -54,8 +54,8 @@ const BillGenerate = () => {
       ...(data?.applicationNumber && { consumerCodes: data.applicationNumber }),
     };
 
-    console.log("filters", filters);
-    console.log("tenantId", tenantId);
+
+
 
     try {
       const response = await Digit.RentAndLeaseService.billGenerate({ tenantId, filters });

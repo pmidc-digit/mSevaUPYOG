@@ -136,16 +136,16 @@ const CLUModal = ({
   useEffect(()=>{
     if(action?.action === "SENDBACKTOPROFESSIONAL"  || action?.action === "SEND_BACK"){
       const uuid= applicationDetails?.Clu?.[0]?.auditDetails?.createdBy || null;
-     // console.log("uuid here", uuid);
+
       setSelectedApprover({uuid});
     }
 
   },[action]);
 
- // console.log("selectedApprover", selectedApprover);
+
 
   function submit(data) {
-   // console.log("data here in Modal", data);
+
 
     const mandatoryActions = [ "APPROVE","REJECT","SENDBACKTOPROFESSIONAL", "SENDBACKTOATP/AME","SENDBACKTOJC","SENDBACKTOMTP/ME","SENDBACKTOJE/BI","SENDBACKTODM","FORWARD_L1","FORWARD_L2", "FORWARD_L3", "FORWARD_L4", "FORWARD_FOR_APPROVAL"];
 

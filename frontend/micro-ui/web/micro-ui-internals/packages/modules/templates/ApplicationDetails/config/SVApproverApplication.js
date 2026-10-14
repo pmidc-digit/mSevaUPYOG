@@ -17,7 +17,7 @@ export const configSVApproverApplication = ({
   isUploading,
 }) => {
   const LoadingSpinner = () => <div className="loading-spinner" />;
-  console.log("isuploading ", isUploading);
+
   return {
     label: {
       heading: `WF_${action?.action}_APPLICATION`,

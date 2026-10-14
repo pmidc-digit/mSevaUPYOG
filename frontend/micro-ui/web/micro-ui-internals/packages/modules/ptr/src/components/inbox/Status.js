@@ -10,7 +10,7 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, statusMap,
 
   const { data: statusData, isLoading } = Digit.Hooks.useApplicationStatusGeneral({ businessServices }, {});
 
-  console.log("statusData", statusData);
+
   const { userRoleStates } = statusData || {};
 
   const translateState = (state, t) => {
@@ -22,7 +22,7 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, statusMap,
     return <Loader />;
   }
 
-  console.log("userRoleStates", userRoleStates);
+
 
   return userRoleStates?.filter((e) => !e.isTerminateState).length || true ?
   <div className="status-container">

@@ -76,7 +76,7 @@ const CreateSurveyStepForm = () => {
 
   const handleSubmit = () => {};
 
-  console.log("formState: ", formState);
+
   return (
     <div class="card">
       {/* <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>

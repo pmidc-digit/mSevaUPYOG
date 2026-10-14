@@ -19,7 +19,7 @@ const MappingTable = ({
         disableSortBy: false,
         Cell: ({ row }) => (
           <Link
-            to={`/digit-ui/employee/hrms/Mapdetails/${filterULB?.code || tenantId}/${row.original.employeeCode}/${row.original.uuid}`}
+            to={`/digit-ui/employee/hrms/Mapdetails/${filterULB?.code || tenantId}/${row.original.employeeCode}/${row.original.uuid}/${row.original.userTenantId || filterULB?.code || tenantId}`}
             className="hrms-emp-mapping__employee-link"
           >
             {row.original.employeeCode}

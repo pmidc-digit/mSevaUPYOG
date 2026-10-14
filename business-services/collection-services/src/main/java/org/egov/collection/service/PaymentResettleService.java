@@ -165,9 +165,28 @@ public class PaymentResettleService {
 		String userUuid = (resettleRequest.getRequestInfo() != null && resettleRequest.getRequestInfo().getUserInfo() != null)
 				? resettleRequest.getRequestInfo().getUserInfo().getUuid()
 				: "SYSTEM";
+		String manualBatchId = "MANUAL-" + UUID.randomUUID().toString().substring(0, 8);
+
+		PaymentResettleBatchAudit manualBatchAudit = PaymentResettleBatchAudit.builder()
+				.id(UUID.randomUUID().toString())
+				.batchId(manualBatchId)
+				.tenantId(payment.getTenantId())
+				.businessService(businessService)
+				.fromTime(System.currentTimeMillis())
+				.toTime(System.currentTimeMillis())
+				.totalFound(1)
+				.totalSettled(1)
+				.totalSkipped(0)
+				.totalFailed(0)
+				.status("COMPLETED")
+				.createdTime(System.currentTimeMillis())
+				.createdBy(userUuid)
+				.build();
+		paymentRepository.saveResettleBatchAudit(manualBatchAudit);
+
 		PaymentResettleDetailAudit manualAudit = PaymentResettleDetailAudit.builder()
 				.id(UUID.randomUUID().toString())
-				.batchId("MANUAL")
+				.batchId(manualBatchId)
 				.paymentId(payment.getId())
 				.consumerCode(consumerCode)
 				.businessService(businessService)

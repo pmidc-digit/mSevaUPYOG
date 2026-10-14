@@ -140,8 +140,47 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
 	@SuppressWarnings("unchecked")
 	private List<Map<String, Object>> fetchPaymentsFromCollectionService(ReconciliationRequest request) {
+		List<Map<String, Object>> allPayments = new ArrayList<>();
+
+		// If offset is explicitly passed, fetch only that single page
+		if (request.getOffset() != null) {
+			int limit = (request.getLimit() != null && request.getLimit() > 0) ? request.getLimit() : 250;
+			return fetchPaymentsPage(request, request.getOffset(), limit);
+		}
+
+		// Otherwise auto-paginate through all records (up to maxTotal or until exhausted)
+		int pageSize = 200; // collection-services default max page size
+		int maxTotal = (request.getLimit() != null && request.getLimit() > 0) ? request.getLimit() : 1000;
+		if (maxTotal < pageSize) {
+			pageSize = maxTotal;
+		}
+
+		int currentOffset = 0;
+		while (allPayments.size() < maxTotal) {
+			int fetchLimit = Math.min(pageSize, maxTotal - allPayments.size());
+			List<Map<String, Object>> page = fetchPaymentsPage(request, currentOffset, fetchLimit);
+			if (page == null || page.isEmpty()) {
+				break;
+			}
+			allPayments.addAll(page);
+			LOGGER.info("Fetched batch of {} payments (total fetched so far: {})", page.size(), allPayments.size());
+			if (page.size() < fetchLimit) {
+				// Last page reached
+				break;
+			}
+			currentOffset += page.size();
+		}
+
+		return allPayments;
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<Map<String, Object>> fetchPaymentsPage(ReconciliationRequest request, int offset, int limit) {
 		StringBuilder urlBuilder = new StringBuilder(collectionServiceHost).append(collectionServiceSearchEndpoint);
-		urlBuilder.append("?tenantId=").append(request.getTenantId() != null ? request.getTenantId() : "pb");
+		// Default to state-level tenant "pb" which searches all ULBs (LIKE 'pb%')
+		String tenant = (request.getTenantId() != null && !request.getTenantId().trim().isEmpty()) 
+				? request.getTenantId().trim() : "pb";
+		urlBuilder.append("?tenantId=").append(tenant);
 
 		if (request.getFromDate() != null) {
 			urlBuilder.append("&fromDate=").append(request.getFromDate());
@@ -165,12 +204,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 			urlBuilder.append("&consumerCodes=").append(request.getConsumerCode());
 		}
 
-		int limit = (request.getLimit() != null && request.getLimit() > 0) ? request.getLimit() : 250;
 		urlBuilder.append("&limit=").append(limit);
-
-		if (request.getOffset() != null) {
-			urlBuilder.append("&offset=").append(request.getOffset());
-		}
+		urlBuilder.append("&offset=").append(offset);
 
 		LOGGER.info("Invoking collection-services search URL: {}", urlBuilder);
 
@@ -205,7 +240,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 			userInfo.put("name", "DSS Reconciliation System");
 			userInfo.put("userName", "SYSTEM");
 			userInfo.put("roles", Collections.emptyList());
-			userInfo.put("tenantId", request.getTenantId() != null ? request.getTenantId() : "pb");
+			userInfo.put("tenantId", tenant);
 			reqInfo.put("userInfo", userInfo);
 		} else {
 			if (!userInfo.containsKey("uuid") || userInfo.get("uuid") == null) {

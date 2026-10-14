@@ -483,7 +483,7 @@ public class GcServiceImpl implements GcService {
 		log.info("isDisconnection" + waterConnectionRequest.getGarbageConnection().getIsDisconnectionTemporary());
 
 
-		if (waterConnectionRequest.getGarbageConnection().getIsworkflowdisabled()) {
+		if (Boolean.TRUE.equals(waterConnectionRequest.getGarbageConnection().getIsworkflowdisabled())) {
 			log.info("Water Request: " + waterConnectionRequest);
 			if (waterConnectionRequest.getGarbageConnection().getConnectionHolders() != null) {
 				SearchCriteria criteriaAppNo = new SearchCriteria();

@@ -119,13 +119,13 @@ function ApplicationDetailsContent({
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
-
+  const isCitizen = window.location.href.includes("citizen");
   const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "egf-master", [
     { name: "FinancialYear", filter: "[?(@.module == 'PT')]" },
   ]);
   const currentPropertyId = applicationDetails?.applicationData?.propertyId || propertyId;
   const isPTLocation = window.location.href.includes("/pt/");
-  const { data: propertySearchData } = Digit.Hooks.pt.usePropertySearch(
+  const { data: propertySearchData, revalidate: revalidatePropertySearch } = Digit.Hooks.pt.usePropertySearch(
     {
       tenantId,
       filters: { propertyIds: currentPropertyId },
@@ -134,6 +134,11 @@ function ApplicationDetailsContent({
       enabled: Boolean(isPTLocation && currentPropertyId),
     }
   );
+
+  // refetch property search on page load (and whenever the property id becomes available)
+  useEffect(() => {
+    if (isPTLocation && currentPropertyId) revalidatePropertySearch();
+  }, [currentPropertyId]);
 
   useEffect(() => {
     if (financialYearsData?.["egf-master"]?.["FinancialYear"]) {
@@ -487,14 +492,18 @@ function ApplicationDetailsContent({
       },
     };
     try {
+      //debugger
       const response = await Digit.PTService.update({ Property: { ...payload } }, tenantId, propertyIds);
       if (response && response.Properties && response.Properties.length > 0) {
+        // refetch the property search so propertyStatus / propertyDocumentValues pick up the new status
+        //await revalidatePropertySearch();
+        //console.log("propertySearchDataafter1",propertySearchData)
         if (status === "INACTIVE") {
           alert("Application is in workflow first approve the application");
         } else {
           alert(`Property marked as ${status} successfully!`);
         }
-        window.location.reload();
+        window.location.href =  window.location.pathname +  "?_t=" + new Date().getTime();
       } else {
         alert("Failed to update property status.");
       }
@@ -503,7 +512,7 @@ function ApplicationDetailsContent({
       alert(`Something went wrong while making the property ${status}.`);
     }
   };
-
+  //console.log("propertySearchDatabefore",propertySearchData)
   const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = currentPropertyId || "";
   const propertyStatus = propertySearchData?.Properties?.[0]?.status || applicationDetails?.applicationData?.status;
@@ -534,6 +543,8 @@ function ApplicationDetailsContent({
   };
 
   const PropertyActive = () => {
+    //debugger
+    //console.log("propertySearchDataafter2",propertySearchData)
     if (window.location.href.includes("employee")) {
       if (propertyStatus === "INWORKFLOW") {
         alert("This operation is not allowed as Property is in INWORKFLOW.");
@@ -655,7 +666,7 @@ function ApplicationDetailsContent({
           setPayments(response?.Payments);
         });
       } else if (moduleCode === "PT") {
-        Digit.PTService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth }).then((response) => {
+        Digit.PTService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth, isCitizen : isCitizen }).then((response) => {
           setPayments(response?.Payments);
         });
       }

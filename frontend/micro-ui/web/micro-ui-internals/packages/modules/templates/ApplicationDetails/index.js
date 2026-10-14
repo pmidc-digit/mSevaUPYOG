@@ -182,8 +182,8 @@ const ApplicationDetails = (props) => {
   console.log("ActionsInPayment2", workflowDetails);
 
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
+    debugger
     if (
-      data?.Property?.workflow?.comment?.length == 0 ||
       (data?.Licenses?.[0]?.action === "INITIATE"
         ? data?.Licenses?.[0]?.additionalDetail?.validityYears?.length == 0
         : data?.Licenses?.[0]?.comment?.length == 0) ||

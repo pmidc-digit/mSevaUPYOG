@@ -6,7 +6,8 @@ export const SearchEmpMap = (tenantId, filters = {}) => {
   const { limit = 10, offset = 0, ...otherFilters } = filters;
   
   return Request({
-    url: Urls.hrms.search,
+    // url: Urls.hrms.search,
+    url: Urls.hrms.empmap_search,
     useCache: false,
     method: "POST",
     auth: true,

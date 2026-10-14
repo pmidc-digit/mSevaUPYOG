@@ -101,7 +101,7 @@ public class FarExtract extends FeatureExtract {
                 layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_BUILT_UP_AREA")
-                + "_DEDUCT(?:_[A-Z]+(?:_\\d+)?)?";
+                + "_DEDUCT(?!_EXISTING(?:_|$))(?:_[A-Z]+(?:_\\d+)?)?";
 
         String stiltLayerRegex =
                 layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "%s" + "_"

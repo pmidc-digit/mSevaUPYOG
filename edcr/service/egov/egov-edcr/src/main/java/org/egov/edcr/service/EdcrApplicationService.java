@@ -22,15 +22,20 @@ import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.Collections;
 import org.egov.common.entity.edcr.Building;
+import org.egov.common.entity.edcr.PageLayoutInfo;
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -169,6 +174,9 @@ public class EdcrApplicationService {
     private static final DateTimeFormatter TS_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
+    private static final Set<String> DEFAULT_ALLOWED_OUTSIDE_LAYERS =
+            new LinkedHashSet<>(Arrays.asList("DUMMY_ALLOWED_LAYER_1", "DUMMY_ALLOWED_LAYER_2"));
+    
     @Autowired
     protected SecurityUtils securityUtils;
 
@@ -213,7 +221,6 @@ public class EdcrApplicationService {
     @Autowired
     private PlanReportServiceV2 planReportServiceV2;
     
-
     public Session getCurrentSession() {
         return entityManager.unwrap(Session.class);
     }
@@ -1432,11 +1439,9 @@ public class EdcrApplicationService {
 
 			tempPdf = File.createTempFile("scrutinized_", ".pdf");
 
+			List<PageLayoutInfo> usedLayouts;
 			try (FileInputStream dxfInput = new FileInputStream(edcrApplication.getSavedDxfFile())) {
-
-				DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false);
-
-				LOG.info("DXF converted successfully.");
+			    usedLayouts = DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false, pl.getPageLayouts());
 			}
 
 			File signatureFile = fetchSignatureFile(pl);
@@ -1444,7 +1449,7 @@ public class EdcrApplicationService {
 			JsonNode additionalDetails = buildJsonNode(pl, signatureFile, patchFields, edcrApplication);
 
 			tempPdf = pdfOverlayTemplateService.impose(tempPdf, tempPdf.getAbsolutePath(), additionalDetails,
-					EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP);
+			        EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP, usedLayouts);
 			validateGeneratedPdf(tempPdf);
 
 			FileStoreMapper fileStoreMapper = fileStoreService.store(tempPdf, newFileName, "application/pdf",
@@ -1553,10 +1558,9 @@ public class EdcrApplicationService {
         try {
             tempPdf = File.createTempFile("scrutinized_", ".pdf");
 
-            try (FileInputStream dxfInput =
-                         new FileInputStream(edcrApplication.getSavedDxfFile())) {
-                DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false); // false = don't save SVG
-                LOG.info("DXF to PDF conversion completed: {} bytes", tempPdf.length());
+            List<PageLayoutInfo> usedLayouts;
+            try (FileInputStream dxfInput = new FileInputStream(edcrApplication.getSavedDxfFile())) {
+                usedLayouts = DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false, pl.getPageLayouts());
             }
 
             String uuid = pl.getEdcrRequest().getRequestInfo().getUserInfo().getUuid();
@@ -1576,14 +1580,8 @@ public class EdcrApplicationService {
             additionalDetails = buildJsonNode(pl, uploadedDiagramFile, patchFields,edcrApplication);
 
             // Overlay the information onto the DXF-converted PDF using template renderer
-            tempPdf = pdfOverlayTemplateService.impose(
-                    tempPdf,
-                    tempPdf.getAbsolutePath(),
-                    additionalDetails,
-                    EXPAND_RIGHT,
-                    EXPAND_BOTTOM,
-                    GAP_DRAWING_TO_TABLES,
-                    GAP_TOP);
+            tempPdf = pdfOverlayTemplateService.impose(tempPdf, tempPdf.getAbsolutePath(), additionalDetails,
+                    EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP, usedLayouts);
 
             validateGeneratedPdf(tempPdf);
 
@@ -2238,6 +2236,12 @@ public class CustomMultipartFile implements MultipartFile {
                 StandardCopyOption.REPLACE_EXISTING);
     }
 }
+
+static Set<String> getAllowedOutsideLayers() {
+    return Collections.emptySet(); // or read from config / request later
+}
+
+
 
 }
 

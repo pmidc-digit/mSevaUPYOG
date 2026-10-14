@@ -80,7 +80,7 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
 
   return (
     <Switch>
-      <Route exact path="/digit-ui/enaksha" component={ENaksha} />
+      <Route exact path="/digit-ui/enaksha"><ENaksha {...commonProps} /></Route>
       <Route exact path="/digit-ui/select-language">
         <div className="citizen">
           <div className="main center-container citizen-home-container mb-25">

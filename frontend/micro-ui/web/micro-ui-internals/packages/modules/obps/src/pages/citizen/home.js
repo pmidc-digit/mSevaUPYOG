@@ -1,3 +1,4 @@
+import ENakshaContent from "@mseva/digit-ui-module-core/src/pages/ENaksha/ENakshaContent";
 import { BPAHomeIcon, BPAIcon, CitizenHomeCard, EDCRIcon, Loader, Toast } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import "./home.css";
@@ -305,6 +306,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           </section>
         );
       })}
+      <ENakshaContent embedded />
       {showModal && <ProfessionalSignUpdate closeModal={closeModal} userDetails={userDetails} refetch={refetch}/>}
     </div>
   );

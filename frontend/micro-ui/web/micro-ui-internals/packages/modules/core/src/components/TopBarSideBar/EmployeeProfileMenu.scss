@@ -49,3 +49,25 @@
     }
   }
 }
+
+.employee-topbar-greeting {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #174f9e;
+  font-size: 18px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  strong { font-weight: 600; }
+}
+
+.topbar .employee-topbar-greeting ~ .right {
+  width: auto;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .employee-topbar-greeting { font-size: 14px; }
+}

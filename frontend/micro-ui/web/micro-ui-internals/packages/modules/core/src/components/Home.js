@@ -214,10 +214,7 @@ const EmployeeHome = ({ modules }) => {
       {userName?.info?.tenantId === "pb.punjab" && !hasConfirmedEmployeeTenant(userName) && <EmployeeTenantSelection />}
       <section className="employee-dashboard-hero" aria-labelledby="employee-dashboard-welcome">
         <div className="employee-dashboard-hero__content">
-          <p className="employee-dashboard-hero__eyebrow">mSeva Employee Portal</p>
-          <h1 id="employee-dashboard-welcome">
-            Hi, <span>{userName?.info?.name || "User"}</span>
-          </h1>
+          <h1 id="employee-dashboard-welcome">mSeva Employee Portal</h1>
         </div>
       </section>
 

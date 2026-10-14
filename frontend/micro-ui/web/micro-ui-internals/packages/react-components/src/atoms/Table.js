@@ -1,3 +1,4 @@
+import TableHorizontalScrollbar from "./TableHorizontalScrollbar";
 import React, { useEffect, useRef, useState } from "react";
 import { useGlobalFilter, usePagination, useRowSelect, useSortBy, useTable } from "react-table";
 import { ArrowBack, ArrowForward, ArrowToFirst, ArrowToLast, SortDown, SortUp } from "./svgindex";
@@ -152,7 +153,9 @@ const Table = ({
 
   const tref = useRef();
   const tableClassName = `${className || "table"} ndc-new-table`.trim();
-  const tableWrapperClassName = `${customTableWrapperClassName} ndc-new-table-wrapper`.trim();
+  const hasExternalScrollbars = customTableWrapperClassName.includes("inbox-table-top-scroll");
+  const useInboxScrollbars = !hasExternalScrollbars && /inbox/i.test(window.location.pathname);
+  const tableWrapperClassName = `${customTableWrapperClassName} ndc-new-table-wrapper${useInboxScrollbars ? " inbox-table-top-scroll" : ""}`.trim();
   const tableStyles = {
     width: "100%",
     borderCollapse: "collapse",
@@ -257,6 +260,7 @@ const Table = ({
   return (
     <React.Fragment>
       <div ref={tref} style={tref.current && tref.current.offsetWidth < tref.current.scrollWidth ? { ...inboxStyles } : {}}>
+        <TableHorizontalScrollbar containerRef={tref} enabled={useInboxScrollbars} tableData={page} />
         <div className={tableWrapperClassName}>
           {tableTopComponent ? tableTopComponent : null}
           <table className={tableClassName} {...getTableProps()} style={tableStyles} ref={tableRef}>
@@ -408,6 +412,7 @@ const Table = ({
             </tbody>
           </table>
         </div>
+        <TableHorizontalScrollbar containerRef={tref} enabled={useInboxScrollbars} tableData={page} position="bottom" />
       </div>
       {isPaginationRequired && (
         <div className="pagination dss-white-pre">

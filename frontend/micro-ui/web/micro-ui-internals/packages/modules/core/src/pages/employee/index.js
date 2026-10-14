@@ -1,3 +1,4 @@
+import "./InboxLayout.scss";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Redirect, Route, Switch, useLocation, useRouteMatch, useHistory } from "react-router-dom";
@@ -52,7 +53,7 @@ const EmployeeApp = ({
         script.async = true;document.body.appendChild(script);
       }, []);
   return (
-    <div className="employee">
+    <div className={`employee${/(?:^|\/)[^/]*inbox\/?$/i.test(location.pathname) ? " employee-compact-inbox" : ""}`}>
        <div className='language-plugin'>
         <div className="bhashini-plugin-container"></div>
       </div>

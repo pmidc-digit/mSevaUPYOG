@@ -1,0 +1,9 @@
+.inbox-sticky-breadcrumbs {
+  position: relative;
+  box-sizing: border-box;
+  z-index: 999;
+  background: #f4f8fc;
+  padding: 8px 0;
+  &.is-pinned { position: fixed; border-bottom: 1px solid #d8e5f2; }
+  .bread-crumb { margin: 0; padding: 0; }
+}

@@ -44,27 +44,15 @@
   outline: 3px solid #16814d;
   outline-offset: 4px;
 }
-.enaksha-top {
+/* Keep the shared header in document flow above this standalone public page. */
+.enaksha-shell > .navbar {
+  position: relative;
+}
+.enaksha-section-links {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 24px;
-  padding: 8px 0 28px;
-  flex-wrap: wrap;
-}
-.enaksha-top > a {
-  font-size: 32px;
-  font-weight: 800;
-  text-decoration: none;
-}
-.enaksha-top span {
-  display: block;
-  font-size: 13px;
-  font-weight: 500;
-}
-.enaksha-top nav {
-  display: flex;
-  gap: 24px;
+  padding-bottom: 24px;
   flex-wrap: wrap;
 }
 .enaksha-hero {
@@ -183,4 +171,18 @@
   .enaksha-resource-row {
     padding: 14px;
   }
+}
+
+.enaksha-page.enaksha-page--embedded {
+  min-height: 0;
+  padding: 24px 0 0;
+  margin-top: 32px;
+  border-top: 1px solid #d8e5f4;
+  background: transparent;
+}
+.enaksha-page--embedded .enaksha-hero {
+  padding: 28px 32px;
+}
+.enaksha-page--embedded .enaksha-hero h2 {
+  color: white !important;
 }

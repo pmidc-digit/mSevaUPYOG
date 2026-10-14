@@ -1,0 +1,43 @@
+.employee.employee-compact-inbox {
+  .new-inbox-wrapper { margin-top: 8px; padding: 12px; }
+  .new-inbox-header { margin-bottom: 8px; font-size: 24px; }
+  .new-inbox-top-filters { margin: 8px 0; padding: 10px 14px; }
+  .new-inbox-tenant-selector { display: flex; flex-direction: row; align-items: center; gap: 16px; }
+  .new-inbox-tenant-selector .filter-label { margin: 0; }
+  .new-inbox-tenant-dropdown { width: min(100%, 340px); }
+  .new-inbox-tenant-dropdown .select-wrap { margin-bottom: 0; }
+  .ndc-new-inbox-filter-card { margin: 0 !important; padding: 0; }
+  .filter-form-field { margin: 0; padding: 0; }
+  .ndc-new-filter-status-grid { gap: 8px; }
+  .ndc-new-filter-status-card {
+    min-height: 64px;
+    padding: 10px 34px 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .ndc-new-filter-card-check {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    font-size: 12px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ndc-new-filter-status-title { font-size: 13px; line-height: 1.35; }
+  .ndc-new-filter-status-count { margin: 0; flex-shrink: 0; padding: 3px 8px; }
+  .ndc-new-filter-card-icon { display: none; }
+  .ndc-new-filter-show-more { margin: 0; padding: 0; min-height: 28px; }
+  .ndc-new-filter-show-more-icon { width: 28px; height: 28px; }
+  @media (max-width: 640px) {
+    .new-inbox-wrapper { padding: 8px; }
+    .new-inbox-tenant-selector { gap: 8px; }
+    .ndc-new-filter-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+}

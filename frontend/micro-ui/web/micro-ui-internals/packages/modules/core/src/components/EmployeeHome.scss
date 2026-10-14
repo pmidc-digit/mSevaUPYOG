@@ -35,3 +35,19 @@
     }
   }
 }
+
+.employee .employee-dashboard-container .employee-dashboard-hero {
+  box-sizing: border-box;
+  min-height: 160px;
+  padding: 24px 36px;
+
+  h1 {
+    position: static;
+    font-size: clamp(1.25rem, 2vw, 1.75rem);
+  }
+
+  @media (max-width: 768px) {
+    min-height: 120px;
+    padding: 20px 24px;
+  }
+}

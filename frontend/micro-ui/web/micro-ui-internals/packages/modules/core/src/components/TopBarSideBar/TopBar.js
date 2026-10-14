@@ -264,16 +264,12 @@ const TopBar = ({
       <div onClick={() => history.push("/digit-ui/employee")} className="employee-mseva-brand-mark">
         <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
       </div>
-      <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
-        {loggedin &&
-          (cityDetails?.city?.ulbGrade ? (
-            <p className="ulb" style={mobileView ? { fontSize: "14px", display: "inline-block" } : {}}>
-              {/* {t(cityDetails?.i18nKey).toUpperCase()}{" "}
-              {t(`ULBGRADE_${cityDetails?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`).toUpperCase()} */}
-            </p>
-          ) : (
-            <img className="state" src={logoUrl || "/placeholder.svg"} />
-          ))}
+      <span style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", minWidth: 0 }}>
+        {loggedin && (
+          <span className="employee-topbar-greeting" title={userDetails?.info?.name || userDetails?.info?.userInfo?.name || "Employee"}>
+            {t("Hi")}, <strong>{userDetails?.info?.name || userDetails?.info?.userInfo?.name || "Employee"}</strong>
+          </span>
+        )}
         {!loggedin && (
           <p className="ulb" style={mobileView ? { fontSize: "14px", display: "inline-block" } : {}}>
             {t(`MYCITY_${stateInfo?.code?.toUpperCase()}_LABEL`)} {t(`MYCITY_STATECODE_LABEL`)}

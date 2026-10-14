@@ -8,6 +8,8 @@ const statusOptions = [
   { code: "APPLIED", i18nKey: "APPLIED" },
   { code: "APPROVED", i18nKey: "APPROVED" },
   { code: "PENDINGPAYMENT", i18nKey: "PENDINGPAYMENT" },
+  { code: "DOCUMENTVERIFY", i18nKey: "DOCUMENTVERIFY" },
+  { code: "FIELDINSPECTION", i18nKey: "FIELDINSPECTION" },
   { code: "PENDINGAPPROVAL", i18nKey: "PENDINGAPPROVAL" },
   { code: "REJECTED", i18nKey: "REJECTED" },
   { code: "CANCELLED", i18nKey: "CANCELLED" },

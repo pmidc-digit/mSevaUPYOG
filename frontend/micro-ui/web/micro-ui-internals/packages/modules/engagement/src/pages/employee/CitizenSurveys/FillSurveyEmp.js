@@ -325,7 +325,7 @@ const FillSurvey = ({ stateCode }) => {
           </div>
         </form>
       </div>
-      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn="true" />}
+      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={true} />}
     </div>
   );
 };

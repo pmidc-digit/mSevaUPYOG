@@ -300,7 +300,7 @@ const NewRegistration = ({ stateCode, embedded = false, onBackToLogin, initialCi
               </div>
             )}
 
-            {error && <Toast error={true} label={error} onClose={() => setError(null)} isDleteBtn={true} />}
+            {error && <Toast error={true} label={"error"} onClose={() => setError(null)} isDleteBtn={true} />}
           </div>
         </div>
       </div>

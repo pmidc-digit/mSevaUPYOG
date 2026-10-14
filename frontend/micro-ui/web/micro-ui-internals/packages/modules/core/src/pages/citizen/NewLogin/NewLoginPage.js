@@ -251,6 +251,8 @@ const NewLogin = ({ stateCode }) => {
       Digit.UserService.setUser(employeeSession);
       window.location.href = "/digit-ui/employee";
     } catch (err) {
+      setIsError(true);
+      setError(err?.response?.data?.error_description || "Invalid login credentials.");
       setCanSubmit(true);
       setIsOtpValid(false);
     }

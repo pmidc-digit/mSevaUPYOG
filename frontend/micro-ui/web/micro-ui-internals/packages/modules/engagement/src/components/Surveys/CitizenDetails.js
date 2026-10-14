@@ -354,7 +354,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
 
       />
       {errors.email && <span className="error">{errors.email}</span>} */}
-      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn="true" />}
+      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={true} />}
     </div>
   );
 };

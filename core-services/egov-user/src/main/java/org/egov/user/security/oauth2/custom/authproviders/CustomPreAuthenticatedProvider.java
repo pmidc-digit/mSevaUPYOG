@@ -67,9 +67,16 @@ public class CustomPreAuthenticatedProvider implements AuthenticationProvider {
             user = userService.getUniqueUser(userName, tenantId, UserType.fromValue(userType));
             /* decrypt here */
             Set<org.egov.user.domain.model.Role> domain_roles = user.getRoles();
+            if (domain_roles == null || domain_roles.isEmpty()) {
+                log.error("Login failed: User '{}' of type '{}' in tenant '{}' has no roles assigned in the database.",
+                        userName, userType, tenantId);
+                throw new OAuth2Exception("No roles assigned for user: " + userName + ". Please contact administrator.");
+            }
             List<org.egov.common.contract.request.Role> contract_roles = new ArrayList<>();
             for (org.egov.user.domain.model.Role role : domain_roles) {
-                contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode()).name(role.getName()).build());
+                if (role != null) {
+                    contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode()).name(role.getName()).build());
+                }
             }
             org.egov.common.contract.request.User userInfo = org.egov.common.contract.request.User.builder().uuid(user.getUuid())
                     .type(user.getType() != null ? user.getType().name() : null).roles(contract_roles).build();

@@ -83,7 +83,7 @@ public class UserService {
     @Value("${create.user.validate.name}")
     private boolean createUserValidateName;
 
-    @Value("${max.invalid.login.attempts}")
+    @Value("${max.invalid.login.attempts:7}")
     private Long maxInvalidLoginAttempts;
 
     @Value("${egov.user.pwd.pattern}")
@@ -620,7 +620,9 @@ public class UserService {
             List<FailedLoginAttempt> failedLoginAttempts = userRepository.fetchFailedAttemptsByUserAndTime(
                     user.getUuid(),
                     System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(maxInvalidLoginAttemptsPeriod));
-            attempCount = failedLoginAttempts.size() +1;
+            attempCount = failedLoginAttempts.size() + 1;
+            long attemptsLeft = Math.max(0, maxInvalidLoginAttempts - attempCount);
+
             if (failedLoginAttempts.size() + 1 >= maxInvalidLoginAttempts) {
                 User userToBeUpdated = user.toBuilder()
                         .accountLocked(true)
@@ -630,13 +632,15 @@ public class UserService {
 
                 user = updateWithoutOtpValidation(userToBeUpdated, requestInfo);
                 removeTokensByUser(user);
-                log.info(
-                        "Locked account with uuid {} for {} minutes as exceeded max allowed attempts of {} within {} " +
-                                "minutes",
-                        user.getUuid(), accountUnlockCoolDownPeriod, maxInvalidLoginAttempts,
+                log.warn(
+                        "Account locked for user '{}' (uuid: {}) for {} minutes. Exceeded max allowed attempts of {} within {} minutes",
+                        user.getUserName(), user.getUuid(), accountUnlockCoolDownPeriod, maxInvalidLoginAttempts,
                         maxInvalidLoginAttemptsPeriod);
                 throw new OAuth2Exception("Account locked");
             }
+
+            log.warn("Failed login attempt {}/{} for user '{}', type: {}, tenant: {}. {} attempt(s) remaining.",
+                    attempCount, maxInvalidLoginAttempts, user.getUserName(), user.getType(), user.getTenantId(), attemptsLeft);
 
             userRepository.insertFailedLoginAttempt(new FailedLoginAttempt(user.getUuid(), ipAddress,
                     System.currentTimeMillis(), true));
@@ -658,6 +662,11 @@ public class UserService {
 
         if (user == null) {
             throw new UserNotFoundException(null);
+        }
+
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            log.error("Login failed: User '{}' in tenant '{}' has no roles assigned in the database.", userName, tenantId);
+            throw new OAuth2Exception("No roles assigned for user: " + userName + ". Please contact administrator.");
         }
 
         if (user.getAccountLocked() != null && user.getAccountLocked()) {

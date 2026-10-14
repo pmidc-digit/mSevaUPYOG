@@ -119,9 +119,13 @@ public class UserRepository {
             Map<Long, List<Role>> userRoles = jdbcTemplate.query(roleQueryStr, preparedStatementValuesForRole.toArray(), extractor);
             for(User user : users) {
             	Set<Role> roles = new HashSet<>();
-            	if(userRoles.get(user.getId()) != null) {
+            	if(userRoles != null && userRoles.get(user.getId()) != null) {
             		roles.addAll(userRoles.get(user.getId()));
-            		user.setRoles(roles);
+            	}
+            	user.setRoles(roles);
+            	if(roles.isEmpty()) {
+            		log.warn("No roles found in database for user id: {}, username: '{}', tenant: {}",
+            				user.getId(), user.getUserName(), user.getTenantId());
             	}
             }
         }
@@ -213,7 +217,7 @@ public class UserRepository {
         user.setCreatedBy(user.getLoggedInUserId());
         user.setLastModifiedBy(user.getLoggedInUserId());
         final User savedUser = save(user);
-        if (user.getRoles().size() > 0) {
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
             saveUserRoles(user);
         }
         final Address savedCorrespondenceAddress = saveAddress(user.getCorrespondenceAddress(), savedUser.getId(),
@@ -574,6 +578,9 @@ public class UserRepository {
      * @param entityUser
      */
     private void saveUserRoles(User entityUser) {
+        if (entityUser.getRoles() == null || entityUser.getRoles().isEmpty()) {
+            return;
+        }
         List<Map<String, Object>> batchValues = new ArrayList<>(entityUser.getRoles().size());
         for (Role role : entityUser.getRoles()) {
             batchValues.add(
@@ -721,6 +728,9 @@ public class UserRepository {
      * @param user
      */
     private void updateRoles(User user) {
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            return;
+        }
         Map<String, Object> roleInputs = new HashMap<String, Object>();
 		List<String> roleCodes = user.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
 		List<String> tenantIds = user.getRoles().stream().map(Role::getTenantId).distinct().collect(Collectors.toList());
@@ -744,6 +754,9 @@ public class UserRepository {
 	 * @author Roshan Chaudhary
 	 */
 	private void updateCitizenRoles(User user) {
+		if (user.getRoles() == null || user.getRoles().isEmpty()) {
+			return;
+		}
 		Map<String, Object> roleInputs = new HashMap<String, Object>();
 		List<String> roleCodesWithTenantid = user.getRoles().stream()
 				.map(role -> role.getCode() + ":" + role.getTenantId()).collect(Collectors.toList());

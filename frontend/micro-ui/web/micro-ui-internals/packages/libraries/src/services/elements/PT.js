@@ -53,6 +53,15 @@ export const PTService = {
       params: { tenantId },
       auth: true,
     }),
+  billingSlabSearch: (tenantId, filters) =>
+    Request({
+      url: Urls.pt.billingslab_search,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: true,
+      params: { tenantId, ...filters },
+    }),
   assessmentCreate: (details, tenantId) =>
     Request({
       url: Urls.pt.assessment_create,

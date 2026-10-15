@@ -45,13 +45,12 @@ const EmpMaping = () => {
 
   // Data States
   const [loading, setLoading] = useState(false);
-  const [mappingData, setMappingData] = useState([]);
+  const [rawEmployees, setRawEmployees] = useState([]);
   const [searchEmployeeList, setSearchEmployeeList] = useState([]);
 
   // Pagination States
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [totalRecords, setTotalRecords] = useState(0);
 
   // UI States
   const [showToast, setShowToast] = useState(null);
@@ -64,7 +63,8 @@ const EmpMaping = () => {
   // Custom Hooks from HRMS
   const { obpsRoles } = Digit.Hooks.hrms.useOBPSRoles(stateId);
   const { employeeList: modalEmployeeList } = Digit.Hooks.hrms.useEmployeeList(selectedULB, obpsRoles.codes);
-  const { zones: modalZones } = Digit.Hooks.hrms.useZones(stateId, selectedULB);
+  const { zones: filterZones } = Digit.Hooks.hrms.useZones(stateId, filterULB);
+  const { zones: modalZones } = Digit.Hooks.hrms.useZones(stateId, selectedULB || filterULB);
 
   // modules
   const { data: moduleNames = [], isLoading: moduleLoading } = Digit.Hooks.useCustomMDMS("pb", "common-masters", [{ name: "obpasmodules" }]);
@@ -93,7 +93,7 @@ const EmpMaping = () => {
         if (response?.Employees) {
           const employeeOptions = response.Employees.map((emp) => ({
             code: emp.code,
-            name: `${emp.user?.name || emp.code} (${emp.assignments?.[0]?.designation || "N/A"})`,
+            name: `${emp.user?.name || emp.code} (${emp.code}) (${emp.assignments?.[0]?.designation || "N/A"})`,
             uuid: emp.uuid,
             department: emp.assignments?.[0]?.department || "N/A",
             employeeObj: emp,
@@ -107,6 +107,18 @@ const EmpMaping = () => {
 
     fetchEmployees();
   }, [filterULB, obpsRoles.codes]);
+
+  // Sync filterEmployee reference when searchEmployeeList updates
+  useEffect(() => {
+    if (filterEmployee && searchEmployeeList.length > 0) {
+      const match = searchEmployeeList.find(
+        (e) => e.code === filterEmployee.code || e.uuid === filterEmployee.uuid
+      );
+      if (match && match !== filterEmployee) {
+        setFilterEmployee(match);
+      }
+    }
+  }, [searchEmployeeList]);
 
   // Process categories with sorting
   const categories = useMemo(() => {
@@ -160,6 +172,59 @@ const EmpMaping = () => {
       return { ...prev, role: nextRoles };
     });
   }, [filteredRoles]);
+  // Lookup maps for human-readable names and grouping
+  const categoryMap = useMemo(() => {
+    if (!mdmsDataBPA?.BPA?.Category) return {};
+    const map = {};
+    mdmsDataBPA.BPA.Category.forEach((cat) => {
+      map[cat.categoryId] = cat.categoryName;
+      if (cat.code) map[cat.code] = cat.categoryName;
+    });
+    return map;
+  }, [mdmsDataBPA]);
+
+  const subCategoryMap = useMemo(() => {
+    if (!mdmsDataBPA?.BPA?.SubCategory) return {};
+    const map = {};
+    mdmsDataBPA.BPA.SubCategory.forEach((sub) => {
+      map[sub.subCategoryId] = sub.subCategoryName;
+      if (sub.code) map[sub.code] = sub.subCategoryName;
+    });
+    return map;
+  }, [mdmsDataBPA]);
+
+  const zoneMap = useMemo(() => {
+    const map = {};
+    (filterZones || []).forEach((z) => {
+      if (z.code) map[z.code] = z.name;
+    });
+    (modalZones || []).forEach((z) => {
+      if (z.code) map[z.code] = z.name;
+    });
+    return map;
+  }, [filterZones, modalZones]);
+
+  const employeeMap = useMemo(() => {
+    const map = {};
+    (searchEmployeeList || []).forEach((emp) => {
+      if (emp.uuid) map[emp.uuid] = emp;
+      if (emp.code) map[emp.code] = emp;
+    });
+    (modalEmployeeList || []).forEach((emp) => {
+      if (emp.uuid) map[emp.uuid] = emp;
+      if (emp.code) map[emp.code] = emp;
+    });
+    return map;
+  }, [searchEmployeeList, modalEmployeeList]);
+
+  // Derived mapping table data and pagination
+  const mappingData = useMemo(() => {
+    return transformMappingData(rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap);
+  }, [rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap]);
+
+  const { totalRecords, currentPage, totalPages } = useMemo(() => {
+    return calculatePagination(mappingData.length, pageSize, pageOffset);
+  }, [mappingData.length, pageSize, pageOffset]);
 
   // Add "Select All" to all dropdown options
   const categoriesWithSelectAll = useMemo(() => addSelectAllOption(categories), [categories]);
@@ -204,8 +269,14 @@ const EmpMaping = () => {
   }, [formData.category]);
 
   // Fetch employee mappings with pagination and filters
-  const fetchMappingData = async () => {
-    if (!filterULB) {
+  const fetchMappingData = async (overrideParams = {}) => {
+    const activeULB = overrideParams.filterULB || filterULB;
+    const activeEmployee = overrideParams.hasOwnProperty("filterEmployee") ? overrideParams.filterEmployee : filterEmployee;
+    const activeCategory = overrideParams.hasOwnProperty("filterCategory") ? overrideParams.filterCategory : filterCategory;
+    const activeOffset = typeof overrideParams.pageOffset === "number" ? overrideParams.pageOffset : pageOffset;
+    const activePageSize = typeof overrideParams.pageSize === "number" ? overrideParams.pageSize : pageSize;
+
+    if (!activeULB) {
       setShowToast({ key: true, label: "Please select a ULB to search", error: true });
       return;
     }
@@ -213,24 +284,26 @@ const EmpMaping = () => {
     try {
       setLoading(true);
 
-      const filters = { limit: pageSize, offset: pageOffset };
-      if (filterEmployee) filters.codes = filterEmployee.code;
-      if (filterCategory) filters.categories = filterCategory.name;
+      const searchTenantId = activeEmployee?.employeeObj?.user?.tenantId || activeULB.code;
+      const filters = { limit: activePageSize, offset: activeOffset, assignedTenantId: activeULB.code };
+      if (activeEmployee) {
+        const empUUID = activeEmployee.uuid || activeEmployee.userUUID;
+        if (empUUID) filters.userUUID = empUUID;
+      }
+      if (activeCategory) {
+        filters.category = activeCategory.categoryId || activeCategory.code;
+      }
 
-      const response = await Digit.HRMSService.SearchEmpMap(filterULB.code, filters);
+      const response = await Digit.HRMSService.SearchEmpMap(searchTenantId, filters);
 
       if (response?.Employees) {
-        const transformedData = transformMappingData(response.Employees, pageOffset);
-        const { totalRecords: calculatedTotal } = calculatePagination(transformedData.length, pageSize, pageOffset);
-
-        setMappingData(transformedData);
-        setTotalRecords(calculatedTotal);
+        setRawEmployees(response.Employees);
       } else {
-        setMappingData([]);
-        setTotalRecords(0);
+        setRawEmployees([]);
       }
     } catch (error) {
       setShowToast({ key: true, label: "Failed to load employee data", error: true });
+      setRawEmployees([]);
     } finally {
       setLoading(false);
     }
@@ -258,7 +331,7 @@ const EmpMaping = () => {
     }
     setPageOffset(0);
     setHasSearched(true);
-    await fetchMappingData();
+    await fetchMappingData({ pageOffset: 0 });
   };
 
   // Clear filters handler
@@ -267,15 +340,26 @@ const EmpMaping = () => {
     setFilterEmployee(null);
     setFilterCategory(null);
     setSearchEmployeeList([]);
-    setMappingData([]);
-    setTotalRecords(0);
+    setRawEmployees([]);
     setPageOffset(0);
     setHasSearched(false);
   };
 
   // Modal handlers
   const handleAddNew = () => {
-    setFormData({ employeeCode: null, category: [], subCategory: [], zone: [], module: [], role: [] });
+    if (filterULB && !selectedULB) {
+      setSelectedULB(filterULB);
+    }
+    setFormData({
+      employeeCode: null,
+      designationCode: null,
+      roleNames: "",
+      category: [],
+      subCategory: [],
+      zone: [],
+      module: [],
+      role: [],
+    });
     setFormErrors({});
     setMappingsToCreate([]);
     setShowAddModal(true);
@@ -283,7 +367,16 @@ const EmpMaping = () => {
 
   const closeAddModal = () => {
     setShowAddModal(false);
-    setFormData({ employeeCode: null, category: [], subCategory: [], zone: [], module: [], role: [] });
+    setFormData({
+      employeeCode: null,
+      designationCode: null,
+      roleNames: "",
+      category: [],
+      subCategory: [],
+      zone: [],
+      module: [],
+      role: [],
+    });
     setFormErrors({});
     setMappingsToCreate([]);
     setModalToast(null);
@@ -404,7 +497,7 @@ const EmpMaping = () => {
 
       const payload = {
         Employees: mappingsToCreate?.map((mapping) => ({
-          tenantId: mapping?.employeeInfo?.employeeObj?.user?.tenantId,
+          tenantId: mapping?.employeeInfo?.employeeObj?.user?.tenantId || selectedULB.code,
           userUUID: mapping.employeeUUID,
           category: mapping.category.categoryId,
           subcategory: mapping.subCategory.subCategoryId,
@@ -418,9 +511,25 @@ const EmpMaping = () => {
       const response = await Digit.HRMSService.CreateEmpMapping(selectedULB.code, payload);
 
       if (response?.ResponseInfo?.status === "successful" || response?.Employees?.length > 0) {
+        const mappedULB = selectedULB;
+        const mappedEmployee = formData.employeeCode || mappingsToCreate[0]?.employeeInfo;
+        const count = mappingsToCreate.length;
+
         closeAddModal();
-        setShowToast({ key: true, label: `${mappingsToCreate.length} mapping(s) created successfully!` });
-        if (hasSearched) await fetchMappingData();
+        setShowToast({ key: true, label: `${count} mapping(s) created successfully!` });
+
+        setFilterULB(mappedULB);
+        setFilterEmployee(mappedEmployee || null);
+        setFilterCategory(null);
+        setPageOffset(0);
+        setHasSearched(true);
+
+        await fetchMappingData({
+          filterULB: mappedULB,
+          filterEmployee: mappedEmployee || null,
+          filterCategory: null,
+          pageOffset: 0,
+        });
       } else {
         setModalToast({ key: true, label: "Failed to create employee mappings", error: true });
       }
@@ -452,8 +561,6 @@ const EmpMaping = () => {
     setPageOffset(0);
   };
 
-  const { currentPage, totalPages } = calculatePagination(mappingData.length, pageSize, pageOffset);
-
   if (isBPALoading || loading) return <Loader />;
 
   return (
@@ -474,7 +581,10 @@ const EmpMaping = () => {
                 option={ulbList}
                 optionKey="name"
                 selected={filterULB}
-                select={setFilterULB}
+                select={(ulb) => {
+                  setFilterULB(ulb);
+                  setFilterEmployee(null);
+                }}
                 placeholder={t("COMMON_SELECT_ULB") || "Select ULB"}
               />
             </div>

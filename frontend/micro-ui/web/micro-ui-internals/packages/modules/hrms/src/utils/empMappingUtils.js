@@ -130,18 +130,103 @@ export const createMappingCombinations = (employeeData, categories, subCategorie
 };
 
 // Utility: Transform API response to table data
-export const transformMappingData = (employees, pageOffset) => {
-  return employees.map((emp, index) => ({
-    id: String(pageOffset + index + 1),
-    employeeCode: emp.code,
-    uuid: emp.uuid,
-    category: emp.categories || [],
-    categoryName: (emp.categories || []).join(", "),
-    subCategory: emp.subcategories || [],
-    subCategoryName: (emp.subcategories || []).join(", "),
-    zone: emp.zones || [],
-    zoneName: (emp.zones || []).join(", "),
-  }));
+export const transformMappingData = (
+  employees = [],
+  pageOffset = 0,
+  categoryMap = {},
+  subCategoryMap = {},
+  zoneMap = {},
+  employeeMap = {}
+) => {
+  if (!Array.isArray(employees) || employees.length === 0) return [];
+
+  // Check if response is flat mapping records from /egov-hrms/obpass/employees/_search
+  const isFlatRecord = employees.some((emp) => emp.userUUID && (emp.category || emp.zone));
+
+  if (isFlatRecord) {
+    // Group mappings by employee (userUUID)
+    const groupedByEmployee = {};
+
+    employees.forEach((item) => {
+      const userUUID = item.userUUID || item.uuid;
+      if (!userUUID) return;
+
+      if (!groupedByEmployee[userUUID]) {
+        const empInfo = employeeMap[userUUID];
+        groupedByEmployee[userUUID] = {
+          userUUID,
+          employeeCode: item.employeeCode || item.code || empInfo?.code || userUUID,
+          // Capture the tenant the employee's record lives in (e.g. pb.punjab for state-level employees)
+          userTenantId: item.tenantId || empInfo?.employeeObj?.user?.tenantId || null,
+          categories: new Set(),
+          subCategories: new Set(),
+          zones: new Set(),
+        };
+      }
+
+      if (item.category) {
+        const catName = categoryMap[item.category] || item.category;
+        groupedByEmployee[userUUID].categories.add(catName);
+      }
+      if (item.subcategory) {
+        const subCatName = subCategoryMap[item.subcategory] || item.subcategory;
+        groupedByEmployee[userUUID].subCategories.add(subCatName);
+      }
+      if (item.zone) {
+        const zoneName = zoneMap[item.zone] || item.zone;
+        groupedByEmployee[userUUID].zones.add(zoneName);
+      }
+    });
+
+    return Object.values(groupedByEmployee).map((emp, index) => ({
+      id: String(pageOffset + index + 1),
+      employeeCode: emp.employeeCode,
+      uuid: emp.userUUID,
+      userTenantId: emp.userTenantId,
+      category: Array.from(emp.categories),
+      categoryName: Array.from(emp.categories).join(", ") || "N/A",
+      subCategory: Array.from(emp.subCategories),
+      subCategoryName: Array.from(emp.subCategories).join(", ") || "N/A",
+      zone: Array.from(emp.zones),
+      zoneName: Array.from(emp.zones).join(", ") || "N/A",
+    }));
+  }
+
+  // Already grouped or standard format
+  return employees.map((emp, index) => {
+    const empInfo = employeeMap[emp.uuid] || employeeMap[emp.userUUID];
+    const rawCategories = Array.isArray(emp.categories)
+      ? emp.categories
+      : emp.category
+      ? [emp.category]
+      : [];
+    const rawSubCategories = Array.isArray(emp.subcategories)
+      ? emp.subcategories
+      : emp.subcategory
+      ? [emp.subcategory]
+      : [];
+    const rawZones = Array.isArray(emp.zones)
+      ? emp.zones
+      : emp.zone
+      ? [emp.zone]
+      : [];
+
+    const categoryNames = rawCategories.map((c) => categoryMap[c] || c);
+    const subCategoryNames = rawSubCategories.map((s) => subCategoryMap[s] || s);
+    const zoneNames = rawZones.map((z) => zoneMap[z] || z);
+
+    return {
+      id: String(pageOffset + index + 1),
+      employeeCode: emp.code || emp.employeeCode || empInfo?.code || emp.uuid,
+      uuid: emp.userUUID || emp.uuid,
+      category: categoryNames,
+      categoryName: categoryNames.join(", ") || "N/A",
+      subCategory: subCategoryNames,
+      subCategoryName: subCategoryNames.join(", ") || "N/A",
+      zone: zoneNames,
+      zoneName: zoneNames.join(", ") || "N/A",
+    };
+  });
 };
 
 // Utility: Calculate pagination values

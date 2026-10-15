@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -94,18 +93,14 @@ public class StorageService {
 		
 	}
 
-	public List<String> save(List<MultipartFile> filesToStore, String module, String tag, String tenantId, RequestInfo requestInfo, Long expiryDate) {
+	public List<String> save(List<MultipartFile> filesToStore, String module, String tag, String tenantId, RequestInfo requestInfo) {
 
 		log.info(UPLOAD_MESSAGE, module, tag, filesToStore.size());
-		List<Artifact> artifacts = mapFilesToArtifact(filesToStore, module, tag, tenantId, expiryDate);
+		List<Artifact> artifacts = mapFilesToArtifact(filesToStore, module, tag, tenantId);
 		return this.artifactRepository.save(artifacts, requestInfo);
 	}
 
-	public List<String> save(List<MultipartFile> filesToStore, String module, String tag, String tenantId, RequestInfo requestInfo) {
-		return save(filesToStore, module, tag, tenantId, requestInfo, null);
-	}
-
-	private List<Artifact> mapFilesToArtifact(List<MultipartFile> files, String module, String tag, String tenantId, Long expiryDate) {
+	private List<Artifact> mapFilesToArtifact(List<MultipartFile> files, String module, String tag, String tenantId) {
 
 		final String folderName = "ticket".equals(tenantId) ? getTicketFolderName(module, tenantId) : getFolderName(module, tenantId);
 		String inputStreamAsString = null;
@@ -129,32 +124,10 @@ public class StorageService {
 			String fileName = folderName + System.currentTimeMillis() + randomString + "." +imagetype;
 			String id = this.idGeneratorService.getId();
 			FileLocation fileLocation = new FileLocation(id, module, tag, tenantId, fileName, null);
-
-			boolean isBatchBill = module != null && 
-					(module.equalsIgnoreCase("bulk-bill") || module.equalsIgnoreCase("batch-bill") || 
-					(module.toLowerCase().contains("bill") && (module.toLowerCase().contains("bulk") || module.toLowerCase().contains("batch"))));
-
-			boolean isSingleBill = module != null && !isBatchBill && 
-					(module.toLowerCase().contains("bill") || module.equalsIgnoreCase("billing-service"));
-
-			Long effectiveExpiryDate = null;
-			if (isBatchBill || isSingleBill) {
-				effectiveExpiryDate = expiryDate;
-				if (effectiveExpiryDate == null && tag != null && tag.startsWith("expiryDate:")) {
-					try {
-						effectiveExpiryDate = Long.parseLong(tag.substring("expiryDate:".length()).trim());
-					} catch (Exception ignored) {}
-				}
-				if (effectiveExpiryDate == null && isBatchBill) {
-					int days = fileStoreConfig.getBatchExpirationDays() != null ? fileStoreConfig.getBatchExpirationDays() : 15;
-					effectiveExpiryDate = System.currentTimeMillis() + (days * 24L * 60 * 60 * 1000);
-				}
-			}
-
 			try {
 				inputStreamAsString = IOUtils.toString(file.getInputStream(), fileStoreConfig.getImageCharsetType());
 				artifact = Artifact.builder().fileContentInString(inputStreamAsString).multipartFile(file)
-						.fileLocation(fileLocation).expiryDate(effectiveExpiryDate).build();
+						.fileLocation(fileLocation).build();
 				artifacts.add(artifact);
 
 			} catch (IOException e) {
@@ -266,26 +239,5 @@ public class StorageService {
 	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 	        }
 	    }
-
-	public Map<String, Object> delete(List<String> fileStoreIds, String tenantId) {
-		Map<String, Object> response = new HashMap<>();
-		response.put("tenantId", tenantId);
-		response.put("fileStoreIds", fileStoreIds);
-		response.put("isAutoDeleteEnabled", fileStoreConfig.getIsBillAutoDeleteEnabled());
-
-		if (!Boolean.TRUE.equals(fileStoreConfig.getIsBillAutoDeleteEnabled())) {
-			log.info("Bill auto-deletion switch is disabled (bill.auto.delete.enabled=false). Skipping deletion for tenantId: {}, fileStoreIds: {}",
-					tenantId, fileStoreIds);
-			response.put("status", "SKIPPED");
-			response.put("message", "Auto-deletion is disabled; files were not deleted.");
-			return response;
-		}
-
-		log.info("Processing deletion for tenantId: {}, fileStoreIds: {}", tenantId, fileStoreIds);
-		artifactRepository.delete(fileStoreIds, tenantId);
-		response.put("status", "SUCCESS");
-		response.put("message", "Files deleted successfully from storage and database.");
-		return response;
-	}
 	
 }

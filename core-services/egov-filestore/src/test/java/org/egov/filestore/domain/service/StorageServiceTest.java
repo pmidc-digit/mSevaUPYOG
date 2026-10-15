@@ -316,45 +316,5 @@ class StorageServiceTest {
         assertTrue(actualRetrieveByTagResult.isEmpty());
         verify(artifactRepository).findByTag((String) any(), (String) any());
     }
-
-    @Test
-    void testDeleteWhenSwitchDisabled() {
-        ArtifactRepository artifactRepository = mock(ArtifactRepository.class);
-        IdGeneratorService idGeneratorService = new IdGeneratorService();
-        FileStoreConfig fileStoreConfig = mock(FileStoreConfig.class);
-        when(fileStoreConfig.getIsBillAutoDeleteEnabled()).thenReturn(false);
-        StorageValidator storageValidator = new StorageValidator(fileStoreConfig);
-
-        StorageService storageService = new StorageService(artifactRepository, idGeneratorService,
-                fileStoreConfig, storageValidator, fileStoreConfig, new MinioConfig());
-
-        List<String> ids = new ArrayList<>();
-        ids.add("id1");
-        java.util.Map<String, Object> result = storageService.delete(ids, "pb.amritsar");
-
-        assertEquals("SKIPPED", result.get("status"));
-        assertEquals(false, result.get("isAutoDeleteEnabled"));
-        verify(artifactRepository, never()).delete((List<String>) any(), (String) any());
-    }
-
-    @Test
-    void testDeleteWhenSwitchEnabled() {
-        ArtifactRepository artifactRepository = mock(ArtifactRepository.class);
-        IdGeneratorService idGeneratorService = new IdGeneratorService();
-        FileStoreConfig fileStoreConfig = mock(FileStoreConfig.class);
-        when(fileStoreConfig.getIsBillAutoDeleteEnabled()).thenReturn(true);
-        StorageValidator storageValidator = new StorageValidator(fileStoreConfig);
-
-        StorageService storageService = new StorageService(artifactRepository, idGeneratorService,
-                fileStoreConfig, storageValidator, fileStoreConfig, new MinioConfig());
-
-        List<String> ids = new ArrayList<>();
-        ids.add("id1");
-        java.util.Map<String, Object> result = storageService.delete(ids, "pb.amritsar");
-
-        assertEquals("SUCCESS", result.get("status"));
-        assertEquals(true, result.get("isAutoDeleteEnabled"));
-        verify(artifactRepository, times(1)).delete(eq(ids), eq("pb.amritsar"));
-    }
 }
 

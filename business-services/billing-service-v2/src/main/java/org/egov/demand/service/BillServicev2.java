@@ -265,15 +265,6 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 
 		
 		if (!duplicateConsumerCodes.isEmpty()) {
-			List<String> duplicateFileStoreIds = new ArrayList<>();
-			for (String cCode : duplicateConsumerCodes) {
-				List<BillV2> dupBills = byConsumer.get(cCode);
-				if (dupBills != null) {
-					for (BillV2 b : dupBills) {
-						addFileStoreIdIfPresent(duplicateFileStoreIds, b);
-					}
-				}
-			}
 
 		    billRepository.updateBillStatus(
 		        UpdateBillCriteria.builder()
@@ -284,7 +275,6 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		            .build()
 		    );
 		    
-		    triggerFileStoreDelete(billCriteria.getTenantId(), duplicateFileStoreIds, requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);   
 		}
 
@@ -329,7 +319,6 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		 */
  		List<String> cosnumerCodesNotFoundInBill = new ArrayList<>(billCriteria.getConsumerCode());
 		Set<String> cosnumerCodesToBeExpired = new HashSet<>();
-		List<String> fileStoreIdsToBeDeleted = new ArrayList<>();
 		List<BillV2> billsToBeReturned = new ArrayList<>();
 		Boolean isBillExpired = false;
 		
@@ -344,10 +333,8 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			}
 			if (!isBillExpired)
 				billsToBeReturned.add(bill);
-			else {
+			else
 				cosnumerCodesToBeExpired.add(bill.getConsumerCode());
-				addFileStoreIdIfPresent(fileStoreIdsToBeDeleted, bill);
-			}
 			cosnumerCodesNotFoundInBill.remove(entry.getKey());
 			isBillExpired = false;
 		}
@@ -378,7 +365,6 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 					.tenantId(billCriteria.getTenantId())
 					.build()
 					);
-			triggerFileStoreDelete(billCriteria.getTenantId(), fileStoreIdsToBeDeleted, requestInfoWrapper);
 			BillResponseV2 finalResponse = generateBill(billCriteria, requestInfo);
 			// gen bill returns immutable empty list incase of zero bills
 			billsToBeReturned.addAll(finalResponse.getBill());
@@ -971,52 +957,6 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 			throw new CustomException("EGBS_CANCEL_BILL_ERROR", e.getMessage());
 		}
 		
-	}
-
-	private void addFileStoreIdIfPresent(List<String> fileStoreIds, BillV2 bill) {
-		if (bill == null)
-			return;
-		if (!StringUtils.isEmpty(bill.getFileStoreId())) {
-			for (String id : bill.getFileStoreId().split(",")) {
-				if (!StringUtils.isEmpty(id.trim())) {
-					fileStoreIds.add(id.trim());
-				}
-			}
-		}
-		if (bill.getAdditionalDetails() != null) {
-			if (bill.getAdditionalDetails().has("fileStoreId") && !bill.getAdditionalDetails().get("fileStoreId").isNull()) {
-				String id = bill.getAdditionalDetails().get("fileStoreId").asText();
-				if (!StringUtils.isEmpty(id)) {
-					fileStoreIds.add(id.trim());
-				}
-			} else if (bill.getAdditionalDetails().has("filestoreId") && !bill.getAdditionalDetails().get("filestoreId").isNull()) {
-				String id = bill.getAdditionalDetails().get("filestoreId").asText();
-				if (!StringUtils.isEmpty(id)) {
-					fileStoreIds.add(id.trim());
-				}
-			}
-		}
-	}
-
-	private void triggerFileStoreDelete(String tenantId, List<String> fileStoreIds, RequestInfoWrapper requestInfoWrapper) {
-		if (CollectionUtils.isEmpty(fileStoreIds) || StringUtils.isEmpty(tenantId)) {
-			return;
-		}
-		try {
-			StringBuilder url = new StringBuilder();
-			url.append(appProps.getFileStoreHost());
-			if (!appProps.getFileStoreHost().endsWith("/")) {
-				url.append("/");
-			}
-			url.append(appProps.getFileStoreDeleteEndpoint());
-			url.append("?tenantId=").append(tenantId);
-			url.append("&fileStoreIds=").append(String.join(",", fileStoreIds));
-
-			log.info("Triggering filestore deletion for expired bill files: {}", url);
-			restRepository.fetchResult(url.toString(), requestInfoWrapper != null ? requestInfoWrapper : new HashMap<>());
-		} catch (Exception e) {
-			log.error("Failed to trigger filestore deletion for fileStoreIds: " + fileStoreIds, e);
-		}
 	}
 	
 }

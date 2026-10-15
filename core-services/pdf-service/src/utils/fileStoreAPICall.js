@@ -10,39 +10,24 @@ let externalHost = envVariables.EGOV_EXTERNAL_HOST;
 
 /**
  *
- * @param {*} filename - name of locally stored temporary file
+ * @param {*} filename -name of localy stored temporary file
  * @param {*} tenantId - tenantID
- * @param {*} fileData - buffer data
- * @param {*} module - module name
- * @param {*} tag - tag (e.g. consumerCode)
- * @param {*} expiryDate - expiry date in epoch milliseconds
  */
-export const fileStoreAPICall = async function(filename, tenantId, fileData, module, tag, expiryDate) {
-  var moduleParam = module || "pdfgen";
-  var tagParam = tag || "00040-2017-QR";
-  var url = `${egovFileHost}/filestore/v1/files?tenantId=${tenantId}&module=${encodeURIComponent(moduleParam)}&tag=${encodeURIComponent(tagParam)}`;
-  if (expiryDate) {
-    url += `&expiryDate=${expiryDate}`;
-  }
-  var form = new FormData({ maxDataSize: 80 * 1024 * 1024 });
+export const fileStoreAPICall = async function(filename, tenantId, fileData) {
+  var url = `${egovFileHost}/filestore/v1/files?tenantId=${tenantId}&module=pdfgen&tag=00040-2017-QR`;
+  var form = new FormData();
   form.append("file", fileData, {
     filename: filename,
     contentType: "application/pdf"
   });
-  try {
-    let response = await axios.post(url, form, {
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-      headers: {
-        ...form.getHeaders()
-      }
-    });
-    console.log(response.data, "files[0].fileStoreId");
-    return get(response.data, "files[0].fileStoreId");
-  } catch (error) {
-    console.error("File upload failed:", error.response);
-    throw error;
-  }
+  let response = await axios.post(url, form, {
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
+    headers: {
+      ...form.getHeaders()
+    }
+  });
+  return get(response.data, "files[0].fileStoreId");
 };
 
 export async function getFilestoreUrl(filestoreid, tenantId){

@@ -30,7 +30,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.util.IOUtils;
@@ -75,7 +74,7 @@ public class MinioRepository implements CloudFilesManager {
 			String completeName = fileLocation.getFileName();
 			int index = completeName.indexOf('/');
 			String fileNameWithPath = completeName.substring(index + 1, completeName.length());
-			push(artifact.getMultipartFile(), fileNameWithPath, artifact.getExpiryDate(), fileLocation.getModule(), fileLocation.getTag());
+			push(artifact.getMultipartFile(), fileNameWithPath);
 
 			if (artifact.getThumbnailImages() != null && !artifact.getThumbnailImages().isEmpty())
 				pushThumbnailImages(artifact);
@@ -88,39 +87,12 @@ public class MinioRepository implements CloudFilesManager {
 
 	
 
-	private void push(MultipartFile multipartFile, String fileNameWithPath, Long expiryDate, String module, String tag) {
+	private void push(MultipartFile multipartFile, String fileNameWithPath) {
 		try {
 			InputStream is = multipartFile.getInputStream();
 			long contentLength = multipartFile.getSize();
 			PutObjectOptions putObjectOptions = new PutObjectOptions(contentLength, PutObjectOptions.MAX_PART_SIZE);
 			putObjectOptions.setContentType(multipartFile.getContentType());
-
-			// Only attach custom expiry/bill metadata if the auto-delete switch is enabled AND the document is a bill (single or batch)
-			if (Boolean.TRUE.equals(fileStoreConfig.getIsBillAutoDeleteEnabled())) {
-				boolean isBatchBill = module != null && 
-						(module.equalsIgnoreCase("bulk-bill") || module.equalsIgnoreCase("batch-bill") || 
-						(module.toLowerCase().contains("bill") && (module.toLowerCase().contains("bulk") || module.toLowerCase().contains("batch"))));
-
-				boolean isSingleBill = module != null && !isBatchBill && 
-						(module.toLowerCase().contains("bill") || module.equalsIgnoreCase("billing-service"));
-
-				if (isBatchBill || isSingleBill) {
-					Map<String, String> headers = new HashMap<>();
-					if (expiryDate != null) {
-						headers.put("X-Amz-Meta-Expirydate", String.valueOf(expiryDate));
-					}
-					if (tag != null && !tag.isEmpty() && !tag.equals("00040-2017-QR")) {
-						headers.put("X-Amz-Meta-Consumercode", tag);
-					}
-					if (isBatchBill) {
-						headers.put("X-Amz-Meta-Doctype", "batch-bill");
-					} else {
-						headers.put("X-Amz-Meta-Doctype", "bill");
-					}
-					putObjectOptions.setHeaders(headers);
-				}
-			}
-
 			minioClient.putObject(minioConfig.getBucketName(), fileNameWithPath, is, putObjectOptions);
 			log.debug("Upload Successful");
 
@@ -271,73 +243,6 @@ public class MinioRepository implements CloudFilesManager {
 				.contentType(artifact.getMultipartFile().getContentType()).module(fileLocation.getModule())
 				.tag(fileLocation.getTag()).tenantId(fileLocation.getTenantId())
 				.fileSource(fileLocation.getFileSource()).build();
-	}
-
-	@Override
-	public void deleteFiles(List<org.egov.filestore.persistence.entity.Artifact> artifacts) {
-		if (!Boolean.TRUE.equals(fileStoreConfig.getIsBillAutoDeleteEnabled())) {
-			log.info("Bill auto-deletion switch is disabled (bill.auto.delete.enabled=false). Skipping deletion from MinIO for {} artifacts.",
-					artifacts.size());
-			return;
-		}
-
-		if (CollectionUtils.isEmpty(artifacts)) {
-			log.warn("No artifacts provided for deletion from MinIO.");
-			return;
-		}
-
-		for (org.egov.filestore.persistence.entity.Artifact artifact : artifacts) {
-			if (!isBillModule(artifact.getModule())) {
-				log.warn("Artifact {} belongs to non-bill module {}. Skipping MinIO deletion.", artifact.getFileStoreId(), artifact.getModule());
-				continue;
-			}
-			try {
-				String completeName = artifact.getFileName();
-				if (completeName != null && completeName.contains("/")) {
-					int index = completeName.indexOf('/');
-					String bucketName = completeName.substring(0, index);
-					if (bucketName == null || bucketName.trim().isEmpty()) {
-						bucketName = minioConfig.getBucketName();
-					}
-					String fileNameWithPath = completeName.substring(index + 1);
-
-					minioClient.removeObject(bucketName, fileNameWithPath);
-					log.info("Successfully deleted object from MinIO: bucket={}, object={}", bucketName, fileNameWithPath);
-
-					String ext = FilenameUtils.getExtension(fileNameWithPath);
-					if (fileStoreConfig.getImageFormats() != null && fileStoreConfig.getImageFormats().contains(ext)) {
-						deleteThumbnails(bucketName, fileNameWithPath);
-					}
-				}
-			} catch (Exception e) {
-				log.error("Failed to delete object from MinIO for fileStoreId: {}", artifact.getFileStoreId(), e);
-			}
-		}
-	}
-
-	private boolean isBillModule(String module) {
-		if (module == null) {
-			return false;
-		}
-		String lower = module.toLowerCase();
-		return lower.contains("bill") || lower.equalsIgnoreCase("billing-service");
-	}
-
-	private void deleteThumbnails(String bucketName, String fileNameWithPath) {
-		String[] imageFormats = { fileStoreConfig.get_large(), fileStoreConfig.get_medium(), fileStoreConfig.get_small() };
-		for (String format : imageFormats) {
-			try {
-				int extIndex = fileNameWithPath.lastIndexOf('.');
-				if (extIndex > -1) {
-					String ext = fileNameWithPath.substring(extIndex);
-					String thumbnailPath = fileNameWithPath.substring(0, extIndex) + format + ext;
-					minioClient.removeObject(bucketName, thumbnailPath);
-					log.debug("Deleted thumbnail from MinIO: {}", thumbnailPath);
-				}
-			} catch (Exception e) {
-				log.debug("Thumbnail not found or could not be deleted: {}", e.getMessage());
-			}
-		}
 	}
 
 }

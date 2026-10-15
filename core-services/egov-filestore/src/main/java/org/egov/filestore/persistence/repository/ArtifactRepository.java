@@ -12,10 +12,12 @@ import org.egov.filestore.domain.model.Resource;
 import org.egov.filestore.persistence.entity.Artifact;
 import org.egov.filestore.repository.CloudFilesManager;
 import org.egov.filestore.repository.impl.minio.MinioRepository;
+import org.egov.filestore.config.FileStoreConfig;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 public class ArtifactRepository {
@@ -24,6 +26,9 @@ public class ArtifactRepository {
 	
 	@Autowired
 	private CloudFilesManager cloudFilesManager;
+
+	@Autowired
+	private FileStoreConfig fileStoreConfig;
 
 	@Value("${isAzureStorageEnabled}")
 	private Boolean isAzureStorageEnabled;
@@ -133,5 +138,27 @@ public class ArtifactRepository {
 
 	public List<Artifact> getByTenantIdAndFileStoreIdList(String tenantId, List<String> fileStoreIds) {
 		return fileStoreJpaRepository.findByTenantIdAndFileStoreIdList(tenantId, fileStoreIds);
+	}
+
+	public void delete(List<String> fileStoreIds, String tenantId) {
+		List<Artifact> allArtifacts = fileStoreJpaRepository.findByTenantIdAndFileStoreIdList(tenantId, fileStoreIds);
+		if (!CollectionUtils.isEmpty(allArtifacts)) {
+			List<Artifact> billArtifacts = allArtifacts.stream().filter(this::isBillArtifact).collect(Collectors.toList());
+			if (!billArtifacts.isEmpty()) {
+				cloudFilesManager.deleteFiles(billArtifacts);
+				if (Boolean.TRUE.equals(fileStoreConfig.getIsBillAutoDeleteEnabled())) {
+					fileStoreJpaRepository.deleteAll(billArtifacts);
+				}
+			}
+		}
+	}
+
+	private boolean isBillArtifact(Artifact artifact) {
+		String module = artifact.getModule();
+		if (module == null) {
+			return false;
+		}
+		String lower = module.toLowerCase();
+		return lower.contains("bill") || lower.equalsIgnoreCase("billing-service");
 	}
 }

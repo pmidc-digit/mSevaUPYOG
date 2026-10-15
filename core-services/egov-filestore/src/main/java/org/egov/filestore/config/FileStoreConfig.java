@@ -56,6 +56,12 @@ public class FileStoreConfig {
 	
 	@Value("#{'${allowed.to.make.zip.extensions}'.split(',')}") 
 	private List<String> allowedToMakeZipExtensions;
+
+	@Value("${bill.auto.delete.enabled:false}")
+	private Boolean isBillAutoDeleteEnabled;
+
+	@Value("${batch.expiration.days:15}")
+	private Integer batchExpirationDays;
 	
 	@PostConstruct
 	private void enrichKeysetForFormats() {

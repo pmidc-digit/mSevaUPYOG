@@ -18,6 +18,7 @@ import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.UserSearchCriteria;
 import org.egov.user.domain.model.enums.UserType;
 import org.egov.user.domain.service.utils.EncryptionDecryptionUtil;
+import org.egov.user.domain.service.utils.IpAddressUtil;
 import org.egov.user.domain.service.utils.NotificationUtil;
 import org.egov.user.persistence.dto.FailedLoginAttempt;
 import org.egov.user.persistence.repository.FileStoreRepository;
@@ -25,6 +26,7 @@ import org.egov.user.persistence.repository.OtpRepository;
 import org.egov.user.persistence.repository.UserRepository;
 import org.egov.user.web.contract.Otp;
 import org.egov.user.web.contract.OtpValidateRequest;
+import org.egov.user.web.contract.UserUnlockRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -39,10 +41,17 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -78,7 +87,7 @@ public class UserService {
     @Value("${create.user.validate.name}")
     private boolean createUserValidateName;
 
-    @Value("${max.invalid.login.attempts}")
+    @Value("${max.invalid.login.attempts:7}")
     private Long maxInvalidLoginAttempts;
 
     @Value("${egov.user.pwd.pattern}")
@@ -308,6 +317,22 @@ public class UserService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             headers.set("Authorization", "Basic ZWdvdi11c2VyLWNsaWVudDplZ292LXVzZXItc2VjcmV0");
+
+            ServletRequestAttributes attr =
+                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attr != null) {
+                HttpServletRequest currentRequest = attr.getRequest();
+                String clientIp = IpAddressUtil.getClientIp(currentRequest);
+                if (!isEmpty(clientIp)) {
+                    headers.set("X-Forwarded-For", clientIp);
+                    headers.set("x-real-ip", clientIp);
+                }
+                String userAgent = currentRequest.getHeader("User-Agent");
+                if (!isEmpty(userAgent)) {
+                    headers.set("User-Agent", userAgent);
+                }
+            }
+
             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
             map.add("username", user.getUserName());
             if (!isEmpty(password))
@@ -569,16 +594,83 @@ public class UserService {
      * @return if unlock able
      */
     public boolean isAccountUnlockAble(User user) {
-        if (user.getAccountLocked()) {
-            boolean unlockAble = System.currentTimeMillis() - user.getAccountLockedDate() > TimeUnit.MINUTES
-                    .toMillis(accountUnlockCoolDownPeriod);
+        if (user != null && Boolean.TRUE.equals(user.getAccountLocked())) {
+            if (user.getAccountLockedDate() == null) {
+                log.warn("User '{}' account is marked locked but accountLockedDate is null. Treating as eligible for unlock.", user.getUserName());
+                return true;
+            }
+            long coolDownMillis = TimeUnit.MINUTES.toMillis(accountUnlockCoolDownPeriod != null ? accountUnlockCoolDownPeriod : 60L);
+            boolean unlockAble = System.currentTimeMillis() - user.getAccountLockedDate() > coolDownMillis;
 
             log.info("Account eligible for unlock - " + unlockAble);
             log.info("Current time {}, last lock time {} , cool down period {} ", System.currentTimeMillis(),
-                    user.getAccountLockedDate(), TimeUnit.MINUTES.toMillis(accountUnlockCoolDownPeriod));
+                    user.getAccountLockedDate(), coolDownMillis);
             return unlockAble;
-        } else
+        } else {
             return true;
+        }
+    }
+
+    /**
+     * Builds a detailed OAuth2Exception when an account is locked, including:
+     * - Last locked time
+     * - Expected unlock time
+     * - Remaining cool-down time in minutes/seconds
+     * - Configured cool down period
+     *
+     * @param user user whose account is locked
+     * @return OAuth2Exception with detailed error message and additional attributes
+     */
+    public OAuth2Exception buildAccountLockedException(User user) {
+        Long lockTime = user != null ? user.getAccountLockedDate() : null;
+        long coolDownMins = accountUnlockCoolDownPeriod != null ? accountUnlockCoolDownPeriod : 60L;
+        long coolDownMillis = TimeUnit.MINUTES.toMillis(coolDownMins);
+        long now = System.currentTimeMillis();
+
+        ZoneId istZone = ZoneId.of("Asia/Kolkata");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a z");
+
+        String msg;
+        String lockTimeStr;
+        String unlockTimeStr;
+        long remainingMinutes = coolDownMins;
+
+        if (lockTime != null && lockTime > 0) {
+            long unlockTimeMillis = lockTime + coolDownMillis;
+            long remainingMillis = Math.max(0, unlockTimeMillis - now);
+            remainingMinutes = TimeUnit.MILLISECONDS.toMinutes(remainingMillis);
+            long remainingSeconds = TimeUnit.MILLISECONDS.toSeconds(remainingMillis) % 60;
+
+            String remainingTimeStr;
+            if (remainingMinutes > 0) {
+                remainingTimeStr = remainingMinutes + " minute(s)";
+            } else if (remainingSeconds > 0) {
+                remainingTimeStr = remainingSeconds + " second(s)";
+            } else {
+                remainingTimeStr = "a few seconds";
+            }
+
+            lockTimeStr = Instant.ofEpochMilli(lockTime).atZone(istZone).format(formatter);
+            unlockTimeStr = Instant.ofEpochMilli(unlockTimeMillis).atZone(istZone).format(formatter);
+
+            msg = String.format(
+                "Account is locked due to multiple failed login attempts. Locked at: %s. It will unlock at: %s (%s remaining).",
+                lockTimeStr, unlockTimeStr, remainingTimeStr
+            );
+        } else {
+            lockTimeStr = "N/A";
+            unlockTimeStr = "later";
+            msg = "Account is locked due to multiple failed login attempts. Please try again later or contact administrator.";
+        }
+
+        OAuth2Exception exception = new OAuth2Exception(msg);
+        exception.addAdditionalInformation("account_locked", "true");
+        if (lockTime != null && lockTime > 0) {
+            exception.addAdditionalInformation("locked_at", lockTimeStr);
+            exception.addAdditionalInformation("unlock_at", unlockTimeStr);
+            exception.addAdditionalInformation("remaining_minutes", String.valueOf(remainingMinutes));
+        }
+        return exception;
     }
 
     /**
@@ -593,11 +685,19 @@ public class UserService {
      * @param user      user whose failed login attempt to be handled
      * @param ipAddress IP address of remote
      */
-    public void handleFailedLogin(User user, String ipAddress, RequestInfo requestInfo) {
+    public long handleFailedLogin(User user, String ipAddress, RequestInfo requestInfo) {
+    	int attempCount = 0;
         if (!Objects.isNull(user.getUuid())) {
+            if (isEmpty(ipAddress) || "unknown".equalsIgnoreCase(ipAddress)) {
+                ipAddress = IpAddressUtil.getClientIp();
+            } else {
+                ipAddress = IpAddressUtil.sanitizeIp(ipAddress);
+            }
             List<FailedLoginAttempt> failedLoginAttempts = userRepository.fetchFailedAttemptsByUserAndTime(
                     user.getUuid(),
                     System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(maxInvalidLoginAttemptsPeriod));
+            attempCount = failedLoginAttempts.size() + 1;
+            long attemptsLeft = Math.max(0, maxInvalidLoginAttempts - attempCount);
 
             if (failedLoginAttempts.size() + 1 >= maxInvalidLoginAttempts) {
                 User userToBeUpdated = user.toBuilder()
@@ -608,17 +708,20 @@ public class UserService {
 
                 user = updateWithoutOtpValidation(userToBeUpdated, requestInfo);
                 removeTokensByUser(user);
-                log.info(
-                        "Locked account with uuid {} for {} minutes as exceeded max allowed attempts of {} within {} " +
-                                "minutes",
-                        user.getUuid(), accountUnlockCoolDownPeriod, maxInvalidLoginAttempts,
+                log.warn(
+                        "Account locked for user '{}' (uuid: {}) for {} minutes. Exceeded max allowed attempts of {} within {} minutes",
+                        user.getUserName(), user.getUuid(), accountUnlockCoolDownPeriod, maxInvalidLoginAttempts,
                         maxInvalidLoginAttemptsPeriod);
-                throw new OAuth2Exception("Account locked");
+                throw buildAccountLockedException(userToBeUpdated);
             }
+
+            log.warn("Failed login attempt {}/{} for user '{}', type: {}, tenant: {}. {} attempt(s) remaining.",
+                    attempCount, maxInvalidLoginAttempts, user.getUserName(), user.getType(), user.getTenantId(), attemptsLeft);
 
             userRepository.insertFailedLoginAttempt(new FailedLoginAttempt(user.getUuid(), ipAddress,
                     System.currentTimeMillis(), true));
         }
+        return maxInvalidLoginAttempts-attempCount;
     }
 
     /**
@@ -637,12 +740,21 @@ public class UserService {
             throw new UserNotFoundException(null);
         }
 
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            log.error("Login failed: User '{}' in tenant '{}' has no roles assigned in the database.", userName, tenantId);
+            OAuth2Exception exception = new OAuth2Exception(
+                    "No roles assigned for user: " + userName + ". Your account does not have access permissions configured. Please contact your system administrator.");
+            exception.addAdditionalInformation("roles_missing", "true");
+            exception.addAdditionalInformation("user_name", userName);
+            throw exception;
+        }
+
         if (user.getAccountLocked() != null && user.getAccountLocked()) {
             if (isAccountUnlockAble(user)) {
                 resetFailedLoginAttempts(user);
                 user = user.toBuilder().accountLocked(false).build();
             } else {
-                throw new OAuth2Exception("Account locked");
+                throw buildAccountLockedException(user);
             }
         }
 
@@ -743,6 +855,101 @@ public class UserService {
         }
         if (!CollectionUtils.isEmpty(errorMap.keySet())) {
             throw new CustomException(errorMap);
+        }
+    }
+
+    public Long getMaxInvalidLoginAttempts() {
+        return maxInvalidLoginAttempts != null ? maxInvalidLoginAttempts : 7L;
+    }
+
+    /**
+     * Unlocks a locked/blocked user account and resets failed login attempts.
+     *
+     * @param unlockRequest Request containing user identifiers (uuid, id, or userName + tenantId)
+     * @return Decrypted unlocked user details
+     */
+    public User unlockUser(UserUnlockRequest unlockRequest) {
+        if (unlockRequest == null) {
+            throw new CustomException("INVALID_UNLOCK_REQUEST", "Unlock request cannot be null");
+        }
+
+        validateUnlockAuthorization(unlockRequest.getRequestInfo());
+
+        User user = null;
+        if (!isEmpty(unlockRequest.getUuid())) {
+            user = getUserByUuid(unlockRequest.getUuid());
+        } else if (unlockRequest.getId() != null) {
+            UserSearchCriteria criteria = UserSearchCriteria.builder()
+                    .id(Collections.singletonList(unlockRequest.getId()))
+                    .build();
+            List<User> users = userRepository.findAll(criteria);
+            if (users.isEmpty()) {
+                throw new UserNotFoundException(criteria);
+            }
+            user = users.get(0);
+        } else if (!isEmpty(unlockRequest.getUserName()) && !isEmpty(unlockRequest.getTenantId())) {
+            if (unlockRequest.getUserType() != null) {
+                user = getUniqueUser(unlockRequest.getUserName(), unlockRequest.getTenantId(), unlockRequest.getUserType());
+            } else {
+                try {
+                    user = getUniqueUser(unlockRequest.getUserName(), unlockRequest.getTenantId(), UserType.EMPLOYEE);
+                } catch (UserNotFoundException e) {
+                    user = getUniqueUser(unlockRequest.getUserName(), unlockRequest.getTenantId(), UserType.CITIZEN);
+                }
+            }
+        } else {
+            throw new CustomException("INVALID_UNLOCK_REQUEST", "Either uuid, id, or (userName and tenantId) must be provided to unlock a user");
+        }
+
+        RequestInfo requestInfo = unlockRequest.getRequestInfo() != null ? unlockRequest.getRequestInfo() : new RequestInfo();
+        Long modifiedBy = (requestInfo.getUserInfo() != null && requestInfo.getUserInfo().getId() != null)
+                ? requestInfo.getUserInfo().getId()
+                : 0L;
+
+        userRepository.unlockUser(user.getUuid(), modifiedBy);
+
+        log.info("User '{}' (uuid: {}, tenant: {}) successfully unlocked by user id: {}",
+                user.getUserName(), user.getUuid(), user.getTenantId(), modifiedBy);
+
+        User updatedUserFromDb = getUserByUuid(user.getUuid());
+        return encryptionDecryptionUtil.decryptObject(updatedUserFromDb, "User", User.class, requestInfo);
+    }
+
+    private void validateUnlockAuthorization(RequestInfo requestInfo) {
+        if (requestInfo == null || requestInfo.getUserInfo() == null) {
+            throw new CustomException("ACCESS_DENIED", "User info is mandatory to unblock user. Caller must contain SYSTEM or SUPERUSER.");
+        }
+
+        org.egov.common.contract.request.User userInfo = requestInfo.getUserInfo();
+        boolean isAuthorized = false;
+
+        // Check user type
+        if (!isEmpty(userInfo.getType()) &&
+                ("SYSTEM".equalsIgnoreCase(userInfo.getType().trim()) || "SUPERUSER".equalsIgnoreCase(userInfo.getType().trim()))) {
+            isAuthorized = true;
+        }
+
+        // Check roles
+        if (!isAuthorized && !CollectionUtils.isEmpty(userInfo.getRoles())) {
+            for (org.egov.common.contract.request.Role role : userInfo.getRoles()) {
+                if (role != null) {
+                    if (!isEmpty(role.getCode()) &&
+                            ("SYSTEM".equalsIgnoreCase(role.getCode().trim()) || "SUPERUSER".equalsIgnoreCase(role.getCode().trim()))) {
+                        isAuthorized = true;
+                        break;
+                    }
+                    if (!isEmpty(role.getName()) &&
+                            ("SYSTEM".equalsIgnoreCase(role.getName().trim()) || "SUPERUSER".equalsIgnoreCase(role.getName().trim()))) {
+                        isAuthorized = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!isAuthorized) {
+            log.warn("Unauthorized attempt to unlock user by caller id: {}, type: {}", userInfo.getId(), userInfo.getType());
+            throw new CustomException("ACCESS_DENIED", "User info must contain SYSTEM or SUPERUSER to unblock user.");
         }
     }
 

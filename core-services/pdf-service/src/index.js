@@ -45,7 +45,8 @@ import {
   mergePdfForDN,
   getBulkPdfRecordsDetails,
   getDefaulterPdfRecordsDetails,
-  cancelBulkPdfProcess
+  cancelBulkPdfProcess,
+  updateBillFileStoreId
 } from "./queries";
 import {
   listenConsumer
@@ -344,6 +345,11 @@ const uploadFiles = async (
               documentType,
               moduleName,
             });
+
+            if (isBill) {
+              let meta = (recordsMetadata && recordsMetadata[i]) || {};
+              updateBillFileStoreId(meta.billId, meta.billNumber, meta.consumerCode, tenantId, result, userid);
+            }
 
             // insertStoreIds(jobid,entityIds[i],[result],tenantId,starttime,successCallback,errorCallback,1,false);
           } else if (
@@ -1323,7 +1329,15 @@ const prepareBulk = async (
 
       let consumerCode = null;
       let expiryDate = null;
+      let billId = null;
+      let billNumber = null;
       if (isBill) {
+        billId = moduleObject.id ||
+          (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].billId) ||
+          null;
+        billNumber = moduleObject.billNumber ||
+          (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].billNo) ||
+          null;
         consumerCode = moduleObject.consumerCode ||
           (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].consumerCode) ||
           moduleObject.connectionNo ||
@@ -1333,6 +1347,8 @@ const prepareBulk = async (
           null;
       }
       recordsMetadata.push({
+        billId,
+        billNumber,
         consumerCode,
         expiryDate,
         entityId: entityKey[0]

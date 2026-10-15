@@ -505,3 +505,43 @@ export async function mergePdfForDN(bulkPdfJobId, tenantId, userid, numberOfFile
   }
   
 }
+export async function updateBillFileStoreId(billId, billNumber, consumerCode, tenantId, fileStoreId, userId) {
+  try {
+    const currentTime = new Date().getTime();
+    const modifiedBy = userId ? String(userId) : 'pdf-service';
+
+    // 1. Try updating by bill id directly
+    if (billId) {
+      const updateByIdQuery = 'UPDATE egbs_bill_v1 SET filestoreid = $1, lastmodifiedby = $2, lastmodifieddate = $3 WHERE id = $4 AND tenantid = $5';
+      const result = await pool.query(updateByIdQuery, [fileStoreId, modifiedBy, currentTime, billId, tenantId]);
+      if (result && result.rowCount > 0) {
+        logger.info(`Updated filestoreid ${fileStoreId} for bill id: ${billId} in egbs_bill_v1`);
+        return;
+      }
+    }
+
+    // 2. Try updating by bill number via egbs_billdetail_v1
+    if (billNumber && tenantId) {
+      const updateByBillNoQuery = 'UPDATE egbs_bill_v1 SET filestoreid = $1, lastmodifiedby = $2, lastmodifieddate = $3 WHERE id IN (SELECT billid FROM egbs_billdetail_v1 WHERE billno = $4 AND tenantid = $5) AND tenantid = $5';
+      const result = await pool.query(updateByBillNoQuery, [fileStoreId, modifiedBy, currentTime, billNumber, tenantId]);
+      if (result && result.rowCount > 0) {
+        logger.info(`Updated filestoreid ${fileStoreId} for billno: ${billNumber} in egbs_bill_v1`);
+        return;
+      }
+    }
+
+    // 3. Fallback: update active bill for consumerCode
+    if (consumerCode && tenantId) {
+      const updateByConsumerCodeQuery = "UPDATE egbs_bill_v1 SET filestoreid = $1, lastmodifiedby = $2, lastmodifieddate = $3 WHERE consumercode = $4 AND tenantid = $5 AND status = 'ACTIVE'";
+      const result = await pool.query(updateByConsumerCodeQuery, [fileStoreId, modifiedBy, currentTime, consumerCode, tenantId]);
+      if (result && result.rowCount > 0) {
+        logger.info(`Updated filestoreid ${fileStoreId} for active bill with consumerCode: ${consumerCode} in egbs_bill_v1`);
+        return;
+      }
+    }
+
+    logger.warn(`Could not find bill in egbs_bill_v1 to update filestoreid ${fileStoreId}. billId: ${billId}, billNumber: ${billNumber}, consumerCode: ${consumerCode}, tenantId: ${tenantId}`);
+  } catch (err) {
+    logger.error(`Error updating filestoreid in egbs_bill_v1: ${err.stack || err.message}`);
+  }
+}

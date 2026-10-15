@@ -8,7 +8,9 @@ export const getFloorData = (block, t) => {
   let totalBuiltUpArea = 0
   let totalFloorArea = 0
   let totalDeduction = 0
-  block?.building?.floors.map((ob) => {
+  block?.building?.floors.forEach((ob) => {
+      if (!ob?.occupancies?.[0]?.type) return;
+
     const builtUp = Number(Number(ob.occupancies?.[0]?.builtUpArea || 0).toFixed(2))
     const floor = Number(Number(ob.occupancies?.[0]?.floorArea || 0).toFixed(2))
     const deduction = Number(Number(ob.occupancies?.[0]?.deduction || 0).toFixed(2))

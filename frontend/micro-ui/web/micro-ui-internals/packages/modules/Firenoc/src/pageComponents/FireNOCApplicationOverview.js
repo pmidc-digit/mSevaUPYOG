@@ -6,6 +6,7 @@ import { getNOCAcknowledgementData } from "../utils/getNOCAcknowledgementData";
 import getNOCSanctionLetter from "../utils/getNOCSanctionLetter"
 import NOCModal from "./NOCModal";
 import NOCDocumentTableView from "./NOCDocumentTableView";
+import NewApplicationTimeline from "../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const formatDate = (epoch) => {
   if (!epoch) return "-";
@@ -90,7 +91,7 @@ const FireNOCApplicationOverview = () => {
   const user = Digit.UserService.getUser();
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
-  const { isLoading: iswfLoading, data: wfdata } = Digit.Hooks.useWorkflowDetails(
+  /* const { isLoading: iswfLoading, data: wfdata } = Digit.Hooks.useWorkflowDetails(
     {
       tenantId: tenantId,
       id: applicationNo,
@@ -99,7 +100,21 @@ const FireNOCApplicationOverview = () => {
     {
       enabled: !!fireNOC,
     }
+  ); */
+
+  const workflowDetails = Digit.Hooks.useWorkflowDetails(
+    {
+      tenantId: fireNOC?.fireNOCDetails?.tenantId || tenantId,
+      id: applicationNo,
+      moduleCode: fireNOC?.fireNOCDetails?.additionalDetails?.businessService || "FIRENOC",
+      role: isEmployee ? "EMPLOYEE" : "CITIZEN",
+    },
+    {
+      enabled: !!fireNOC,
+    }
   );
+
+  const { isLoading: iswfLoading, data: wfdata } = workflowDetails;
 
   const actions =
     wfdata?.actionState?.nextActions?.filter((e) => {
@@ -525,7 +540,8 @@ const FireNOCApplicationOverview = () => {
           </Card>
         )}
         {/* Application Timeline */}
-        {workflow.length > 0 && (
+        <NewApplicationTimeline workflowDetails={workflowDetails} tenantId={fireNOC?.fireNOCDetails?.tenantId || tenantId} t={t} />
+        {/* {workflow.length > 0 && (
           <Card style={{ marginTop: "16px" }}>
             <CardSectionHeader>{t("NOC_APPLICATION_TIMELINE")}</CardSectionHeader>
             <div style={{ paddingTop: "8px" }}>
@@ -572,7 +588,7 @@ const FireNOCApplicationOverview = () => {
               })}
             </div>
           </Card>
-        )}
+        )} */}
       </div>
       {isPendingPayment && (
         <ActionBar>

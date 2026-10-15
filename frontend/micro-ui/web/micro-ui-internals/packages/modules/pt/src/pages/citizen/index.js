@@ -6,6 +6,7 @@ import Search from "../employee/Search";
 import { useTranslation } from "react-i18next";
 import { PTMyPayments } from "./MyPayments";
 import PaymentDetails from "../../utils/PaymentDetails";
+import SearchApp from "../employee/SearchApp";
 
 const PropertyBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
@@ -34,6 +35,20 @@ const PropertyBreadCrumbs = ({ location }) => {
       path: "/digit-ui/citizen/pt-home",
       content: t("PET_SERVICE"),
       show: pathname.includes("pt/property/test"),
+    },
+     {
+      path: "/digit-ui/citizen/pt-home",
+      content: `${t("Property")} Home`,
+    },
+    {
+      path: "/digit-ui/citizen/pt/search",
+      content: t("UC_SEARCH_AND_PAY"),
+      show: pathname.includes("pt/search"),
+    },
+    {
+      path: "",
+      content: "Property Details",
+      show: pathname.includes("pt/search/property-details"),
     },
   ];
   return <BreadCrumb crumbs={crumbs} />;
@@ -97,7 +112,7 @@ const App = () => {
           <PrivateRoute path={`${path}/property/owner-history/:tenantId/:propertyIds`} component={PropertyOwnerHistory}></PrivateRoute>
           {/* <Redirect to={`/`}></Redirect> */}
           <PrivateRoute path={`${path}/property/assessment-details/:id`} component={() => <AssessmentDetails parentRoute={path} />} />
-          <PrivateRoute path={`${path}/property/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
           <PrivateRoute
             path={`${path}/property/application-preview/:id`}
             component={(props) => <PropertyApplicationDetails {...props} t={t} parentRoute={path} />}
@@ -108,6 +123,7 @@ const App = () => {
           <PrivateRoute path={`${path}/property/transfer-ownership/:id`} component={PTTransferOwnership} />
           <PrivateRoute path={`${path}/property/transfer-ownership-response`} component={(props) => <PTResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/response/:id`} component={PropertyResponseCitizen} />
+          <PrivateRoute path={`${path}/application-search`} component={(props) => <SearchApp {...props} parentRoute={path} />} />
           {/* <PrivateRoute path={`${path}/property/create-application`} component={CreateEmployeeStepForm} /> */}
         </AppContainer>
       </Switch>

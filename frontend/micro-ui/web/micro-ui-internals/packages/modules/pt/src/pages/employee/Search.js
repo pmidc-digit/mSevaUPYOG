@@ -186,7 +186,10 @@ const PTSearchFields = {
 
 const Search = () => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isCitizen = window.location.pathname.includes("/citizen");
+  const tenantId = isCitizen
+    ? Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || localStorage.getItem("CITIZEN.CITY") || Digit.ULBService.getCurrentTenantId()
+    : Digit.ULBService.getCurrentTenantId();
     const defaultValues = {
  tenantId: {
   code: tenantId,

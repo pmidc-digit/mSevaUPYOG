@@ -354,10 +354,22 @@ public class PlanService {
                 LOG.error("Error while fetching ULB Type and District from MDMS", e);
             }
 
-            plan.getPlanInformation().setUlbType(ulbType);
-            plan.getPlanInformation().setDistrict(districtName);
-            plan.getPlanInformation().setUlbName(cityName);
-            LOG.info("ULB Name value from edcr Request : {}", plan.getPlanInformation().getUlbName());
+            if (plan.getPlanInformation() != null) {
+                plan.getPlanInformation().setUlbType(ulbType);
+                plan.getPlanInformation().setDistrict(districtName);
+                
+                if (cityName != null && !cityName.isEmpty()) {
+                    plan.getPlanInformation().setUlbName(capitalizeFirstLetter(cityName));
+                }
+                
+                String city = plan.getPlanInformation().getCity();
+                if (city != null && !city.isEmpty()) {
+                    plan.getPlanInformation().setCity(capitalizeFirstLetter(city));
+                }
+                
+                LOG.info("ULB Name value from edcr Request : {}", plan.getPlanInformation().getUlbName());
+            }
+
             LOG.info("ULB Type value from MDMS : {}", ulbType);
             LOG.info("District value from MDMS : {}", districtName);
             
@@ -1088,6 +1100,15 @@ public class PlanService {
 		}
 
 		return (String) source;
+	}
+	
+	public static String capitalizeFirstLetter(String str) {
+	    if (str == null || str.isEmpty()) {
+	        return str;
+	    }
+
+	    return str.substring(0, 1).toUpperCase()
+	            + str.substring(1).toLowerCase();
 	}
 	
 }

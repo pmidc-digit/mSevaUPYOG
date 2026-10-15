@@ -13,7 +13,6 @@ export const CLUFeeTable = ({
   onAdjustedAmountBlur,
   feeHistory,
   t,
-  enabledEmployee,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -62,7 +61,7 @@ export const CLUFeeTable = ({
               }
               handleAdjustedAmountChange(row.index, val);
             }}
-            disable={readOnly || enabledEmployee}
+            disable={readOnly}
             step={1}
             onBlur={onAdjustedAmountBlur}
           />
@@ -93,7 +92,7 @@ export const CLUFeeTable = ({
               e.target.style.height = e.target.scrollHeight + "px";
               handleRemarkChange(row.index, e.target.value, row.amount);
             }}
-            disabled={enabledEmployee}
+            disabled={false}
             className="custom-fee-table-textarea obps-page-components-clufee-table--style-3"
             placeholder="Enter remarks..."
           />

@@ -95,7 +95,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                 pincode: formData?.LicneseDetails?.Pincode,
               },
               institution: null,
-              applicationDocuments: null,
+              applicationDocuments: [],
             },
             licenseType: "PERMANENT",
             businessService: "BPAREG",

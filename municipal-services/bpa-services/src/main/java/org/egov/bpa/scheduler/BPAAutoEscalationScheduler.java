@@ -19,8 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Quartz Job that performs BPA Auto Escalation.
- * Quartz instantiates this via reflection (no-arg constructor required).
- * Spring DI (@Autowired) is handled by AutowiringSpringBeanJobFactory.
+ * Quartz instantiates this via reflection.
  */
 @Component
 @Slf4j

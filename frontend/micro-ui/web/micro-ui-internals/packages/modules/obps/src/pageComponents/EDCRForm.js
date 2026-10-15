@@ -22,6 +22,7 @@ const EDCRForm = ({
 }) => {
   const { pathname: url } = useLocation();
   const [nameError, setNameError] = useState("");
+  const [dxfFileSizeError, setDxfFileSizeError] = useState("");
   const history = useHistory();
   const containerRef = useRef(null);
   //actual state up side
@@ -101,6 +102,22 @@ const EDCRForm = ({
 
   const onSkip = () => {
     setUploadMessage("NEED TO DELETE");
+  };
+
+  const handleDXFFileUpload = (event) => {
+    const selectedFile = event?.target?.files?.[0];
+    if (selectedFile?.size > 30 * 1024 * 1024) {
+      setDxfFileSizeError("DXF file size must not exceed 30 MB.");
+      setUploadedFile(null);
+      setFile("");
+      setDxfFile(null);
+      setDxfFileStoreId(null);
+      event.target.value = "";
+      return;
+    }
+
+    setDxfFileSizeError("");
+    handleDXFUpload(event);
   };
 
   const common = [
@@ -357,9 +374,10 @@ const EDCRForm = ({
             <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
             <UploadFile
               id={"edcr-doc"}
-              onUpload={handleDXFUpload}
+              onUpload={handleDXFFileUpload}
               accept=".dxf"
               onDelete={() => {
+                setDxfFileSizeError("");
                 setUploadedFile(null);
                 setFile("");
                 setDxfFile(null);
@@ -367,6 +385,7 @@ const EDCRForm = ({
               }}
               message={dxfFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={error}
+              iserror={dxfFileSizeError}
               uploadMessage={uploadMessage}
             />
             {/* <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p> */}

@@ -188,12 +188,14 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
           }
       
           var mergePdfData = fs.createReadStream(baseFolder+'output.pdf');
-          await fileStoreAPICall('output.pdf', tenantId, mergePdfData).then((filestoreid) => {
+          let batchDays = envVariables.BATCH_EXPIRATION_DAYS || 15;
+          let batchExpiryDate = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
+          await fileStoreAPICall('output.pdf', tenantId, mergePdfData, "bulk-bill", bulkPdfJobId, batchExpiryDate).then((filestoreid) => {
             const updateQuery = 'UPDATE egov_bulk_pdf_info SET filestoreid = $1, lastmodifiedby = $2, lastmodifiedtime = $3, status = $5 WHERE jobid = $4';
             const curentTimeStamp = new Date().getTime();
             const status = 'DONE';
             pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status]);
-            sendNoitification(filestoreid, mobileNumber, tenantId);
+            sendNoitification(filestoreid, mobileNumber, tenantId, batchDays);
         
           }).catch((err) => {
             logger.error(err.stack || err);
@@ -239,12 +241,16 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
   
 }
 
-export async function sendNoitification(filestoreid, mobileNumber, tenantId){
+export async function sendNoitification(filestoreid, mobileNumber, tenantId, expiryDays){
   const topic = envVariables.KAFKA_TOPICS_NOTIFICATION;
   var pdfLink = await getFilestoreUrl(filestoreid, tenantId);
   let smsRequest = {};
   smsRequest['mobileNumber'] = mobileNumber;
-  smsRequest['message'] = "Your download is ready. It will expire in 24 hours. Please click on the link below to download the pdf.\n"+pdfLink;
+  if (expiryDays) {
+    smsRequest['message'] = `Your download is ready. It will expire in ${expiryDays} days. Please click on the link below to download the pdf.\n`+pdfLink;
+  } else {
+    smsRequest['message'] = `Your download is ready. Please click on the link below to download the pdf.\n`+pdfLink;
+  }
   let payloads = [];
   payloads.push({
     topic,
@@ -277,7 +283,7 @@ export async function getBulkPdfRecordsDetails(userid, offset, limit, jobId){
       param = userid;
     }
 
-    query = query + 'limit $2 offset $3';
+    query = query + 'order by lastmodifiedtime DESC limit $2 offset $3';
 
     const result = await pool.query(query, [param, limit, offset]);
     if(result.rowCount>=1){
@@ -297,6 +303,7 @@ export async function getBulkPdfRecordsDetails(userid, offset, limit, jobId){
           bussinessService: row.businessservice,
           consumercode: row.consumercode,
           isConsolidated: row.isconsolidated,
+          group: row.group_name,
           status: row.status
         };
         data.push(value);
@@ -453,7 +460,7 @@ export async function mergePdfForDN(bulkPdfJobId, tenantId, userid, numberOfFile
             const curentTimeStamp = new Date().getTime();
             const status = 'DONE';
             pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status]);
-            sendNoitification(filestoreid, mobileNumber, tenantId);
+            sendNoitification(filestoreid, mobileNumber, tenantId, null);
         
           }).catch((err) => {
             logger.error(err.stack || err);

@@ -31,6 +31,7 @@ const envVariables = {
     DEFAULT_LOCALISATION_TENANT:
     process.env.DEFAULT_LOCALISATION_TENANT || "pg",
     DATA_CONFIG_URLS: process.env.DATA_CONFIG_URLS,
-    FORMAT_CONFIG_URLS: process.env.FORMAT_CONFIG_URLS
+    FORMAT_CONFIG_URLS: process.env.FORMAT_CONFIG_URLS,
+    BATCH_EXPIRATION_DAYS: parseInt(process.env.BATCH_EXPIRATION_DAYS || "15", 10)
 };
 export default envVariables;

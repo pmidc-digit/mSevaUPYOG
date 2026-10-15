@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Quartz Scheduler configuration for rl-calculator.
+ * Quartz Scheduler configuration for bpa-services.
  * Uses JDBC JobStore (PostgreSQL) so jobs survive restarts and support clustering.
  */
 @Configuration

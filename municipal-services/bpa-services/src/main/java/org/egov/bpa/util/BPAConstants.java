@@ -5,6 +5,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class BPAConstants {
 
+	// Timezone
+	public static final String TIME_ZONE = "Asia/Kolkata";
+
 	// MDMS
 
 	public static final String BPA_MODULE = "BPA";

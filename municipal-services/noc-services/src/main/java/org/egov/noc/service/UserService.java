@@ -13,6 +13,7 @@ import org.egov.common.contract.request.Role;
 import org.egov.noc.config.NOCConfiguration;
 import org.egov.noc.repository.ServiceRequestRepository;
 import org.egov.noc.util.NOCConstants;
+import org.egov.noc.util.NOCUtil;
 import org.egov.noc.web.model.*;
 import org.egov.tracer.model.CustomException;
 import org.json.JSONObject;
@@ -29,6 +30,9 @@ public class UserService {
 
 	@Autowired
 	private NOCConfiguration config;
+
+	@Autowired
+	private NOCUtil nocUtil;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
@@ -168,6 +172,19 @@ public class UserService {
 			uri.append("&assignedtenattids=").append(tenantId);
 			if(!org.springframework.util.StringUtils.isEmpty(zones))
 				uri.append("&zones=").append(zones);
+
+			String specificationBuildingCategory = JsonPath.read(additionalDetails, "$.siteDetails.specificationBuildingCategory");
+			if (!org.springframework.util.StringUtils.isEmpty(specificationBuildingCategory)) {
+				Object mdmsData = nocUtil.mDMSCall(new RequestInfo(), tenantId.split("\\.")[0]);
+				List<String> categories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].category");
+				List<List<String>> subCategories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].subCategory");
+
+				if (!CollectionUtils.isEmpty(categories))
+					uri.append("&categories=").append(categories.get(0));
+				if (!CollectionUtils.isEmpty(subCategories))
+					uri.append("&subcategories=").append(String.join(",", subCategories.get(0)));
+			}
+
 			uri.append("&modulename=").append(NOCConstants.MODULENAME);
 		}
 

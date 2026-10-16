@@ -20,9 +20,7 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
     };
   };
 
-  const isEmployee = window.location.href.includes("employee");
-
-  const enabledEmployee = isEmployee ? actions?.length > 0 : true;
+  
 
   const handleAdjustedAmountChange = (index, value) => {
     const normalizedValue = value === "" ? null : Number(value);
@@ -264,7 +262,6 @@ const CLUFeeEstimationDetailsTable = ({ formData, feeType, feeAdjustments, setFe
             t={t}
             onAdjustedAmountBlur={onAdjustedAmountBlur}
             feeHistory={feeHistory}
-            enabledEmployee
           />
         </div>
       )}

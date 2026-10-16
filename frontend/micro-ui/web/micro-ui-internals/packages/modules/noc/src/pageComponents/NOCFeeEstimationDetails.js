@@ -37,9 +37,6 @@ const NOCFeeEstimationDetails = ({
       originalRemark: (apiTax && apiTax.remarks) || (savedCalc && savedCalc.remarks) || "",
     };
   };
-  const isEmployee = window.location.href.includes("employee");
-
-  const enabledEmployee = isEmployee ? actions?.length > 0 : true;
 
   const handleAdjustedAmountChange = (index, value) => {
     const normalizedValue = value === "" ? 0 : Number(value);
@@ -315,7 +312,6 @@ const NOCFeeEstimationDetails = ({
             onAdjustedAmountBlur={onAdjustedAmountBlur}
             feeHistory={feeHistory}
             timeObj={timeObj}
-            enabledEmployee
           />
           {showToast && (
             <Toast

@@ -12,7 +12,6 @@ export const NOCFeeTable = ({
   handleRemarkChange,
   onAdjustedAmountBlur,
   feeHistory,
-  enabledEmployee,
   t,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
@@ -68,7 +67,7 @@ export const NOCFeeTable = ({
               }
               handleAdjustedAmountChange(row.index, val);
             }}
-            disable={disable || enabledEmployee}
+            disable={disable}
             step={1}
             onBlur={onAdjustedAmountBlur}
           />
@@ -95,7 +94,7 @@ export const NOCFeeTable = ({
           <TextArea
             value={feeData[row.index]?.remark || ""}
             onChange={(e) => handleRemarkChange(row.index, e.target.value, row.amount)}
-            disabled={enabledEmployee}
+            disabled={false}
             className="custom-fee-table-textarea"
             placeholder="Enter remarks..."
           />

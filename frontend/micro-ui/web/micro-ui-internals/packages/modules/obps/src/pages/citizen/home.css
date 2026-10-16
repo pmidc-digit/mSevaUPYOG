@@ -62,3 +62,23 @@
   .obps-citizen-home__banner { padding: 28px 24px; }
   .citizen .obps-citizen-home .chc-card-container { grid-template-columns: minmax(0, 1fr) !important; }
 }
+
+/* Match the OBPAS services and documents overview. */
+.obps-citizen-home .obps-citizen-home__banner {
+  padding: 20px 28px;
+  margin-bottom: 20px;
+}
+.citizen .obps-citizen-home .obpas-services-documents .chc-card-container {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+.obps-citizen-home .obpas-services-documents .chc-card {
+  min-height: 100px;
+  padding: 18px !important;
+}
+.obps-citizen-home #enaksha-resources { scroll-margin-top: 150px; }
+@media (max-width: 600px) {
+  .citizen .obps-citizen-home .obpas-services-documents .chc-card-container {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}

@@ -1,3 +1,4 @@
+import OBPASDocumentsPanel from "@mseva/digit-ui-module-core/src/pages/ENaksha/OBPASDocumentsPanel";
 import ENakshaContent from "@mseva/digit-ui-module-core/src/pages/ENaksha/ENakshaContent";
 import { BPAHomeIcon, BPAIcon, CitizenHomeCard, EDCRIcon, Loader, Toast } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
@@ -10,6 +11,7 @@ import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../../constants/constants";
 import { LoaderNew } from "../../components/LoaderNew";
 
 const BPACitizenHomeScreen = ({ parentRoute }) => {
+  const [documentSearch, setDocumentSearch] = useState(null);
   const userInfo = Digit.UserService.getUser();
   const userRoles = userInfo?.info?.roles?.map((roleData) => roleData.code);
   const stateCode = Digit.ULBService.getStateId();
@@ -299,6 +301,8 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           </Link>
         ))}
       </nav>
+      <div className="obpas-services-documents">
+      <div className="obps-citizen-home__services">
       {homeDetails.filter((data) => data.name !== "employeeCard").map((data, index) => {
         return (
           <section className="obps-citizen-home__section" key={data.title || data.moduleName || index}>
@@ -306,7 +310,10 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           </section>
         );
       })}
-      <ENakshaContent embedded />
+      </div>
+      <OBPASDocumentsPanel onSearch={(query) => setDocumentSearch({ query })} />
+      </div>
+      <ENakshaContent embedded documentsFirst searchRequest={documentSearch} />
       {showModal && <ProfessionalSignUpdate closeModal={closeModal} userDetails={userDetails} refetch={refetch}/>}
     </div>
   );

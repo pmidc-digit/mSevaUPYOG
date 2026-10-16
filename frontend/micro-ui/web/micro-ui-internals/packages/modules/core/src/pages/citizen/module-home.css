@@ -20,3 +20,30 @@
   text-align: left !important;
   overflow-wrap: anywhere;
 }
+
+.citizen .moduleLinkHomePage--obps .moduleLinkHomePageBanner { padding: 20px 28px !important; min-height: 0 !important; margin-bottom: 20px !important; }
+.obpas-services-documents { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; }
+.obpas-services-documents > * { min-width: 0; }
+.obpas-services-documents .chcwe-root { padding: 0 !important; margin: 0 !important; }
+.obpas-services-documents .chcwe-card-container { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 14px !important; }
+.obpas-services-documents .chcwe-card { min-height: 100px; padding: 18px !important; }
+.obpas-documents-panel { background: #fff; border: 1px solid #d8e5f4; border-radius: 16px; padding: 20px; color: #173451; }
+.obpas-documents-panel h2 { position: static !important; margin: 0 0 8px !important; font-size: 21px; color: #063f84; }
+.obpas-documents-panel p { font-size: 14px; line-height: 1.5; margin: 0 0 14px; }
+.obpas-documents-panel label { display: block; font-size: 13px; margin-bottom: 6px; }
+.obpas-document-search { display: flex; gap: 6px; margin-bottom: 14px; }
+.obpas-document-search input { min-width: 0; width: 100%; border: 1px solid #b5c9df; padding: 10px; border-radius: 8px; }
+.obpas-document-search button { background: #0758a5; color: white; border-radius: 8px; padding: 10px; }
+.obpas-document-categories { display: grid; gap: 8px; }
+.obpas-document-categories button { text-align: left; border: 1px solid #e1eaf3; border-radius: 8px; background: #f6f9fc; padding: 10px 12px; }
+.obpas-document-categories strong, .obpas-document-categories span { display: block; }
+.obpas-document-categories strong { color: #0758a5; font-size: 14px; }
+.obpas-document-categories span { font-size: 12px; line-height: 1.4; margin-top: 3px; }
+.obpas-browse-documents { color: #0758a5; font-weight: 600; margin-top: 14px; padding: 8px 0; }
+.obpas-documents-panel button { cursor: pointer; }
+.obpas-documents-panel button:focus-visible { outline: 3px solid #248c45; outline-offset: 2px; }
+.enaksha-secondary { margin-top: 28px; border: 1px solid #d8e5f4; border-radius: 12px; padding: 18px; background: white; }
+.enaksha-secondary > summary { cursor: pointer; font-weight: 600; }
+.moduleLinkHomePage--obps #enaksha-resources { scroll-margin-top: 150px; }
+@media (max-width: 1000px) { .obpas-services-documents { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) { .obpas-services-documents .chcwe-card-container { grid-template-columns: minmax(0, 1fr) !important; } }

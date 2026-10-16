@@ -59,32 +59,34 @@ public class SewerageRowMapper implements ResultSetExtractor<List<SewerageConnec
 
                 // get property id and get property object
                 PGobject pgObj = (PGobject) rs.getObject("additionaldetails");
-				ObjectNode addtionalDetails = null;
+//				ObjectNode addtionalDetails = null;
+				Map<String, Object> additionalDetails;
 				if (pgObj != null) {
 
 					try {
-						addtionalDetails = mapper.readValue(pgObj.getValue(), ObjectNode.class);
+						additionalDetails = mapper.readValue(
+					            pgObj.getValue(),new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
 					} catch (IOException ex) {
 						// TODO Auto-generated catch block
 						throw new CustomException("PARSING ERROR", "The additionalDetail json cannot be parsed");
 					}
 				} else {
-					addtionalDetails = mapper.createObjectNode();
+					additionalDetails = new HashMap<>();
 				}
                // HashMap<String, Object> addtionalDetails = new HashMap<>();
-                addtionalDetails.put(SWConstants.ADHOC_PENALTY, rs.getBigDecimal("adhocpenalty"));
-                addtionalDetails.put(SWConstants.ADHOC_REBATE, rs.getBigDecimal("adhocrebate"));
-                addtionalDetails.put(SWConstants.ADHOC_PENALTY_REASON, rs.getString("adhocpenaltyreason"));
-                addtionalDetails.put(SWConstants.ADHOC_PENALTY_COMMENT, rs.getString("adhocpenaltycomment"));
-                addtionalDetails.put(SWConstants.ADHOC_REBATE_REASON, rs.getString("adhocrebatereason"));
-                addtionalDetails.put(SWConstants.ADHOC_REBATE_COMMENT, rs.getString("adhocrebatecomment"));
-                addtionalDetails.put(SWConstants.APP_CREATED_DATE, rs.getBigDecimal("appCreatedDate"));
-                addtionalDetails.put(SWConstants.DETAILS_PROVIDED_BY, rs.getString("detailsprovidedby"));
-                addtionalDetails.put(SWConstants.ESTIMATION_FILESTORE_ID, rs.getString("estimationfileStoreId"));
-                addtionalDetails.put(SWConstants.SANCTION_LETTER_FILESTORE_ID, rs.getString("sanctionfileStoreId"));
-                addtionalDetails.put(SWConstants.ESTIMATION_DATE_CONST, rs.getBigDecimal("estimationLetterDate"));
-                addtionalDetails.put(SWConstants.LOCALITY, rs.getString("locality"));
-                sewarageConnection.setAdditionalDetails(addtionalDetails);
+                additionalDetails.put(SWConstants.ADHOC_PENALTY, rs.getBigDecimal("adhocpenalty"));
+                additionalDetails.put(SWConstants.ADHOC_REBATE, rs.getBigDecimal("adhocrebate"));
+                additionalDetails.put(SWConstants.ADHOC_PENALTY_REASON, rs.getString("adhocpenaltyreason"));
+                additionalDetails.put(SWConstants.ADHOC_PENALTY_COMMENT, rs.getString("adhocpenaltycomment"));
+                additionalDetails.put(SWConstants.ADHOC_REBATE_REASON, rs.getString("adhocrebatereason"));
+                additionalDetails.put(SWConstants.ADHOC_REBATE_COMMENT, rs.getString("adhocrebatecomment"));
+                additionalDetails.put(SWConstants.APP_CREATED_DATE, rs.getBigDecimal("appCreatedDate"));
+                additionalDetails.put(SWConstants.DETAILS_PROVIDED_BY, rs.getString("detailsprovidedby"));
+                additionalDetails.put(SWConstants.ESTIMATION_FILESTORE_ID, rs.getString("estimationfileStoreId"));
+                additionalDetails.put(SWConstants.SANCTION_LETTER_FILESTORE_ID, rs.getString("sanctionfileStoreId"));
+                additionalDetails.put(SWConstants.ESTIMATION_DATE_CONST, rs.getBigDecimal("estimationLetterDate"));
+                additionalDetails.put(SWConstants.LOCALITY, rs.getString("locality"));
+                sewarageConnection.setAdditionalDetails(additionalDetails);
                 sewarageConnection.processInstance(ProcessInstance.builder().action((rs.getString("action"))).build());
                 sewarageConnection.setApplicationType(rs.getString("applicationType"));
                 sewarageConnection.setChannel(rs.getString("channel"));

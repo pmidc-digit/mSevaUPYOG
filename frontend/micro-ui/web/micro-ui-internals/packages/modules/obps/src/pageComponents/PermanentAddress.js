@@ -326,7 +326,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   // };
 
   const cleanDocs = (docs) => {
-    if (!Array.isArray(docs)) return docs;
+      if (!Array.isArray(docs)) return [];
     const seen = new Set();
     const cleaned = [];
     for (let i = docs.length - 1; i >= 0; i--) {

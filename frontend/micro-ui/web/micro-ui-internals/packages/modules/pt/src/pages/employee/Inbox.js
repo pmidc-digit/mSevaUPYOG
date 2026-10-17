@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Header } from "@mseva/digit-ui-react-components";
-import { Link } from "react-router-dom";
+import { ActionButton, Header } from "@mseva/digit-ui-react-components";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
@@ -122,21 +121,9 @@ const Inbox = ({
                 {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
               </Header>
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "12px", marginLeft: "auto" }}>
-                <Link to="/digit-ui/employee/pt/new-application" style={{ textDecoration: "none" }}>
-                  <button className="TL-new-application-btn" type="button">
-                    <span className="TL-plus-icon">+</span> {t("ES_TITLE_NEW_REGISTRATION")}
-                  </button>
-                </Link>
-                <Link to="/digit-ui/employee/pt/search" style={{ textDecoration: "none" }}>
-                  <button className="TL-new-application-btn" type="button">
-                    {t("PT_SEARCH_PROPERTY")}
-                  </button>
-                </Link>
-                <Link to="/digit-ui/employee/pt/application-search" style={{ textDecoration: "none" }}>
-                  <button className="TL-new-application-btn" type="button">
-                    {t("ES_COMMON_APPLICATION_SEARCH")}
-                  </button>
-                </Link>
+                <ActionButton to="/digit-ui/employee/pt/new-application" label={t("ES_TITLE_NEW_REGISTRATION")} primary showPlusIcon />
+                <ActionButton to="/digit-ui/employee/pt/search" label={t("PT_SEARCH_PROPERTY")} />
+                <ActionButton to="/digit-ui/employee/pt/application-search" label={t("ES_COMMON_APPLICATION_SEARCH")} />
               </div>
             </div>
           )}

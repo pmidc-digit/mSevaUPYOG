@@ -47,7 +47,7 @@ const PaymentHistory = ({ payments, assessmentData = null, applicationData = nul
 
       // Use receiptPTData for PT, otherwise use searchResponse
       const latestPayment = businessService === "PT"
-        ? (receiptPTData || searchResponse?.Payments?.[0] || payment)
+        ? (receiptPTData || payment)
         : (searchResponse?.Payments?.[0] || payment);
 
       // 2. Generate PDF using the fetched payment object

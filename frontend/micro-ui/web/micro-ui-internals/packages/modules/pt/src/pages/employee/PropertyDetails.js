@@ -242,7 +242,9 @@ const PropertyDetails = () => {
 
 
   useEffect(() => {
+    debugger
     if (appDetailsToShow?.applicationDetails && !appDetailsToShow?.applicationDetails?.some(x => x.isDuesSection)) {
+      
       const amount = fetchBillData?.Bill?.[0]?.totalAmount;
       const billDetails = fetchBillData?.Bill?.[0]?.billDetails || [];
       
@@ -340,7 +342,7 @@ const PropertyDetails = () => {
                   history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`});
                 }
               }}
-              style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
+               style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' }}
             >
               {t("PT_VIEW_PAYMENT")}
             </LinkLabel>
@@ -349,11 +351,7 @@ const PropertyDetails = () => {
             {
               title: "PT_PROPERTY_PTUID",
               value: applicationNumber,
-            },
-            {
-              title: "PT_TOTAL_DUES",
-              value: fetchBillData?.Bill?.[0]?.totalAmount ? `₹ ${fetchBillData?.Bill[0]?.totalAmount}` : "N/A",
-            },
+            }
           ],
         });
       }

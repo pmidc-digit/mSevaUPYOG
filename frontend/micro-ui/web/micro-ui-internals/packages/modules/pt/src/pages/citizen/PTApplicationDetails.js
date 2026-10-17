@@ -11,6 +11,7 @@ import PTCitizenFeedbackPopUp from "../../pageComponents/PTCitizenFeedbackPopUp"
 
 import get from "lodash/get";
 import { size } from "lodash";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const PTApplicationDetails = () => {
   const { t } = useTranslation();
@@ -222,7 +223,8 @@ const PTApplicationDetails = () => {
       window.open(fileStore[response?.filestoreIds[0]], "_blank");
     }   
   }
-  
+ 
+
   const handleViewTimeline=()=>{ 
     const timelineSection=document.getElementById('timeline');
       if(timelineSection){
@@ -585,9 +587,10 @@ const PTApplicationDetails = () => {
               </StatusTable>
             )}
           </div>
-          <div id="timeline">
+           {/* <div id="timeline">
           <PTWFApplicationTimeline application={application} id={acknowledgementIds} userType={"citizen"} />
-          </div>
+          </div>  */}
+          
           {showToast && (
           <Toast
             error={showToast.key}

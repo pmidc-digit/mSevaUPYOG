@@ -1,7 +1,23 @@
-import { Header, Localities, Toast } from "@mseva/digit-ui-react-components";
+import { ActionButton, Localities, Toast } from "@mseva/digit-ui-react-components";
 import PropertyType from "../../utils/PropertyType";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+const styles = {
+ 
+  heroTitle: { margin: "1rem", fontSize: "24px", fontWeight: 700, color: "#0b0c0c", lineHeight: 1.3 },
+  formCard: {
+    padding: "20px",
+    borderRadius: "12px",
+    backgroundColor: "#ffffff",
+    border: "1px solid #e0e3eb",
+    boxShadow: "0 2px 8px rgba(15, 23, 42, 0.06)",
+    boxSizing: "border-box",
+    width: "100%",
+    minWidth: 0,
+  },
+  resultsWrap: { marginTop: "20px", width: "100%", minWidth: 0, boxSizing: "border-box" },
+};
 
 const PTSearchFields = {
   searchId: {
@@ -264,18 +280,28 @@ const Search = () => {
   });
   return (
     <React.Fragment>
-      <Header>{t("SEARCH_PROPERTY")}</Header>
-      <SearchComponent
-        t={t}
-        payload={formData}
-        searchBy={searchBy}
-        setSearchBy={setSearchBy}
-        PTSearchFields={PTSearchFields}
-        tenantId={tenantId}
-        onSubmit={onSubmit}
-        onReset={onReset}
-      />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+          <h1 style={styles.heroTitle}>{t("SEARCH_PROPERTY")}</h1>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "12px", marginLeft: "auto" }}>
+            <ActionButton to="/digit-ui/employee/pt/new-application" label={t("ES_TITLE_NEW_REGISTRATION")} showPlusIcon />
+            <ActionButton to="/digit-ui/employee/pt/search" label={t("PT_SEARCH_PROPERTY")} primary />
+            <ActionButton to="/digit-ui/employee/pt/application-search" label={t("ES_COMMON_APPLICATION_SEARCH")} />
+          </div>
+        </div>
+      <div style={styles.formCard}>
+        <SearchComponent
+          t={t}
+          payload={formData}
+          searchBy={searchBy}
+          setSearchBy={setSearchBy}
+          PTSearchFields={PTSearchFields}
+          tenantId={tenantId}
+          onSubmit={onSubmit}
+          onReset={onReset}
+        />
+      </div>
 
+      <div style={styles.resultsWrap}>
       {Object.keys(payload).includes("propertyType") ? (
         <SearchPTIDPropComponent
           t={t}
@@ -297,6 +323,7 @@ const Search = () => {
       ) : (
         ""
       )}
+      </div>
       {showToast && (
         <Toast
           error={showToast.error}

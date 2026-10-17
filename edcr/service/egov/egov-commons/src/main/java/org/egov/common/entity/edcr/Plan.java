@@ -199,9 +199,19 @@ public class Plan implements Serializable {
     
     private List<PageLayoutInfo> pageLayouts = new ArrayList<>();
     
-    private static volatile boolean workSheetValidationEnabled;    
+    private static volatile boolean workSheetValidationEnabled;
     
-    public static boolean isWorkSheetValidationEnabled() {
+    private static volatile boolean pagesizeValidationEnabled;
+          
+    public static boolean isPagesizeValidationEnabled() {
+		return pagesizeValidationEnabled;
+	}
+
+	public static void setPagesizeValidationEnabled(boolean pagesizeValidationEnabled) {
+		Plan.pagesizeValidationEnabled = pagesizeValidationEnabled;
+	}
+
+	public static boolean isWorkSheetValidationEnabled() {
 		return workSheetValidationEnabled;
 	}
 

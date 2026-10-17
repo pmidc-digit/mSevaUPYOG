@@ -188,29 +188,119 @@ const PropertyDetails = () => {
     });
   }
   useEffect(() => {
-    if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title !== "PT_TOTAL_DUES") {
-      appDetailsToShow?.applicationDetails?.unshift({
-        title: " ",
-        asSectionHeader: true,
-        belowComponent: () => (
-          <LinkLabel
-            onClick={() => history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`})}
-            style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
-          >
-            {t("PT_VIEW_PAYMENT")}
-          </LinkLabel>
-        ),
-        values: [
-          {
-            title: "PT_PROPERTY_PTUID",
-            value: applicationNumber,
-          },
-          {
-            title: "PT_TOTAL_DUES",
-            value: fetchBillData?.Bill[0]?.totalAmount ? `₹ ${fetchBillData?.Bill[0]?.totalAmount}` : "N/A",
-          },
-        ],
-      });
+    debugger
+    if (appDetailsToShow?.applicationDetails && !appDetailsToShow?.applicationDetails?.some(x => x.isDuesSection)) {
+      
+      const amount = fetchBillData?.Bill?.[0]?.totalAmount;
+      const billDetails = fetchBillData?.Bill?.[0]?.billDetails || [];
+      
+      let dateString = billDetails?.map(detail => {
+        const fromYear = new Date(detail.fromPeriod).getFullYear();
+        const toYear = new Date(detail.toPeriod).getFullYear();
+        return `${fromYear}-${toYear}(Rs.${detail.amount})`;
+      }).join(', ') || "";
+
+      if (amount > 0) {
+        appDetailsToShow?.applicationDetails?.unshift({
+          title: " ",
+          asSectionHeader: true,
+          isDuesSection: true,
+          belowComponent: () => (
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              background: "#ffffff",
+              padding: "16px 20px",
+              borderRadius: "8px",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+              marginBottom: "20px",
+              border: "1px solid #f0f0f0",
+              fontFamily: "Roboto, sans-serif"
+            }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#656565", fontSize: "15px", fontWeight: "500" }}>
+                  <span>{t("Total Dues")}</span>
+                  <span style={{ cursor: "pointer", color: "#656565", display: "inline-flex" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                  </span>
+                  <span style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "#a6a6a6", display: "inline-block" }}></span>
+                </div>
+                <div style={{ fontSize: "22px", fontWeight: "700", color: "#0b0c0c", marginTop: "4px" }}>
+                  Rs {amount}
+                </div>
+                {dateString && (
+                  <div style={{ fontSize: "14px", color: "#505a5f", marginTop: "4px" }}>
+                    {dateString}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => history.push(`/digit-ui/employee/payment/collect/pt/${applicationNumber}/${tenantId}`)}
+                style={{
+                  background: "#003C71",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "10px 32px",
+                  fontSize: "15px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.15)",
+                  transition: "background 0.2s ease"
+                }}
+                onMouseEnter={(e) => e.target.style.background = "#002554"}
+                onMouseLeave={(e) => e.target.style.background = "#003C71"}
+              >
+                {t("PAY")}
+              </button>
+            </div>
+          ),
+          values: [
+            {
+              title: "PT_PROPERTY_PTUID",
+              value: applicationNumber,
+            }
+          ]
+        });
+      } else {
+        appDetailsToShow?.applicationDetails?.unshift({
+          title: " ",
+          asSectionHeader: true,
+          isDuesSection: true,
+          belowComponent: () => (
+            <LinkLabel
+              onClick={() => {
+                const element = document.getElementById("payment-history");
+                if (element) {
+                  const header = element.querySelector(".accordion-header");
+                  const body = element.querySelector(".accordion-body");
+                  if (header && !body) {
+                    header.click();
+                  }
+                  setTimeout(() => {
+                    element.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                } else {
+                  history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`});
+                }
+              }}
+               style={isMobile ? { marginTop: "15px", marginLeft: "0px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' } : { marginTop: "15px", border: '1px solid', padding: '8px', minWidth: '150px', borderRadius: '8px' }}
+            >
+              {t("PT_VIEW_PAYMENT")}
+            </LinkLabel>
+          ),
+          values: [
+            {
+              title: "PT_PROPERTY_PTUID",
+              value: applicationNumber,
+            }
+          ],
+        });
+      }
     }
     return () => {
       if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title == "PT_TOTAL_DUES" && !(sessionStorage.getItem("revalidateddone") === "done")) {

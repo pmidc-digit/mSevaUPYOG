@@ -1,4 +1,5 @@
 import ActionBar from "./atoms/ActionBar";
+import ActionButton from "./atoms/ActionButton";
 import ActionLinks from "./atoms/ActionLinks";
 import AppContainer from "./atoms/AppContainer";
 import ApplyFilterBar from "./atoms/ApplyFilterBar";
@@ -236,6 +237,7 @@ export {
   EmployeeAppContainer,
   Header,
   ActionBar,
+  ActionButton,
   Menu,
   LinkLabel,
   BackButton,

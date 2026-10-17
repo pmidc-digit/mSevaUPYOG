@@ -1,5 +1,29 @@
 import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
+import { UserService } from "./User";
+
+const formatTransactionNumber = (txnId) => {
+  if (!txnId || typeof txnId !== "string") return txnId;
+  if (txnId.includes("order_")) {
+    const match = txnId.match(/\((order_[^)]+)\)/i) || txnId.match(/\(([^)]+)\)/) || txnId.match(/(order_[^\s)]+)/i);
+    if (match) return match[1].trim();
+  }
+  return txnId;
+};
+
+const transformPayments = (response) => {
+  if (response?.Payments && Array.isArray(response.Payments)) {
+    return {
+      ...response,
+      Payments: response.Payments.map((payment) => ({
+        ...payment,
+        rawTransactionNumber: payment?.transactionNumber,
+        transactionNumber: formatTransactionNumber(payment?.transactionNumber),
+      })),
+    };
+  }
+  return response;
+};
 
 export const PaymentService = {
   fetchBill: (tenantId, filters = {}) =>
@@ -49,10 +73,11 @@ export const PaymentService = {
       data: { ...details },
     }),
 
-  getReciept: (tenantId, businessservice, filters = {}) =>
-    Request({
+  getReciept: (tenantId, businessservice, filters = {}) => {
+    const isEmployee = UserService.getType() === "employee";
+    return Request({
       url:
-        businessservice && businessservice !== "BPAREG"
+        businessservice && businessservice !== "BPAREG" && businessservice !== "TL" && (businessservice !== "PT" || isEmployee)
           ? `${Urls.payment.print_reciept}/${businessservice}/_search`
           : `${Urls.payment.print_reciept}/_search`,
       useCache: false,

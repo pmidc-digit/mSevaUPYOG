@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Header } from "@egovernments/digit-ui-react-components";
+import { ActionButton, Header } from "@mseva/digit-ui-react-components";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
@@ -112,7 +112,19 @@ const Inbox = ({
     } else {
       return (
         <div>
-          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
+          {isInbox && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "16px" }}>
+              <Header>
+                {t("ES_COMMON_INBOX")}
+                {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+              </Header>
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "12px", marginLeft: "auto" }}>
+                <ActionButton to="/digit-ui/employee/pt/new-application" label={t("ES_TITLE_NEW_REGISTRATION")} primary showPlusIcon />
+                <ActionButton to="/digit-ui/employee/pt/search" label={t("PT_SEARCH_PROPERTY")} />
+                <ActionButton to="/digit-ui/employee/pt/application-search" label={t("ES_COMMON_APPLICATION_SEARCH")} />
+              </div>
+            </div>
+          )}
           {!isInbox && <Header>{t("SEARCH_PROPERTY")}</Header>}
           
           <DesktopInbox

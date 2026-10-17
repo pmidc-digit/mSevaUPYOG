@@ -196,27 +196,62 @@ function ApplicationDetailsContent({
       };
       return <TLCaption data={caption} />;
     } else if (window.location.href.includes("/obps/") || window.location.href.includes("/noc/") || window.location.href.includes("/ws/")) {
-      //From BE side assigneeMobileNumber is masked/unmasked with connectionHoldersMobileNumber and not assigneeMobileNumber
-      const privacy = { uuid: checkpoint?.assignes?.[0]?.uuid, fieldName: "mobileNumber", model: "User",showValue: false,
-      loadData: {
-        serviceName: "/egov-workflow-v2/egov-wf/process/_search",
-        requestBody: {},
-        requestParam: { tenantId : applicationDetails?.tenantId, businessIds : applicationDetails?.applicationNo, history:true },
-        jsonPath: "ProcessInstances[0].assignes[0].mobileNumber",
-        isArray: false,
-        d: (res) => {
-          let resultstring = "";
-          resultstring = `+91 ${_.get(res,`ProcessInstances[${index}].assignes[0].mobileNumber`)}`;
-          return resultstring;
-        }
-      }, }
+      // const privacy = {
+      //   uuid: checkpoint?.assignes?.[0]?.uuid,
+      //   fieldName: "mobileNumber",
+      //   model: "User",
+      //   showValue: false,
+      //   loadData: {
+      //     serviceName: "/egov-workflow-v2/egov-wf/process/_search",
+      //     requestBody: {},
+      //     requestParam: { tenantId: applicationDetails?.tenantId, businessIds: applicationDetails?.applicationNo, history: true },
+      //     jsonPath: "ProcessInstances[0].assignes[0].mobileNumber",
+      //     isArray: false,
+      //     d: (res) => {
+      //       let resultstring = "";
+      //       resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)}`;
+      //       return resultstring;
+      //     },
+      //   },
+      // };
+      // Issue 18 Fix: Safe access to timeline array with proper bounds checking
+
+      const privacy = {
+        // <CHANGE> Use checkpoint.assigner.uuid instead of checkpoint.assignes[0].uuid
+        uuid: checkpoint?.assigner?.uuid || checkpoint?.assignes?.[0]?.uuid,
+        fieldName: "mobileNumber",
+        model: "User",
+        showValue: false,
+        loadData: {
+          serviceName: "/egov-workflow-v2/egov-wf/process/_search",
+          requestBody: {},
+          requestParam: { tenantId: applicationDetails?.tenantId, businessIds: applicationDetails?.applicationNo, history: true },
+          jsonPath: "ProcessInstances[0].assignes[0].mobileNumber",
+          isArray: false,
+          d: (res) => {
+            let resultstring = "";
+            // <CHANGE> Try both assigner and assignes paths
+            resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assigner.mobileNumber`) || _.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)
+              }`;
+            return resultstring;
+          },
+        },
+      };
+
+      const previousCheckpoint = timeline && Array.isArray(timeline) && index > 0 && index - 1 < timeline.length ? timeline[index - 1] : null;
+
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
-        name: checkpoint?.assignes?.[0]?.name,
-        mobileNumber:applicationData?.processInstance?.assignes?.[0]?.uuid===checkpoint?.assignes?.[0]?.uuid && applicationData?.processInstance?.assignes?.[0]?.mobileNumber ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
-        comment: t(checkpoint?.comment),
-        wfComment: checkpoint.wfComment,
-        thumbnailsToShow: checkpoint?.thumbnailsToShow,
+        // <CHANGE> Use checkpoint.assigner instead of checkpoint.assignes[0]
+        name: checkpoint?.assigner?.name || checkpoint?.assignes?.[0]?.name || "N/A",
+        mobileNumber:
+          applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assigner?.uuid &&
+            applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            : checkpoint?.assigner?.mobileNumber || checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
+        comment: checkpoint?.comment ? t(checkpoint.comment) : "",
+        wfComment: previousCheckpoint ? previousCheckpoint.wfComment || [] : [],
+        thumbnailsToShow: checkpoint?.thumbnailsToShow || [],
       };
       return <TLCaption data={caption} OpenImage={OpenImage} privacy={privacy} />;
     } else {
@@ -353,7 +388,7 @@ function ApplicationDetailsContent({
         } else {
           alert(`Property marked as ${status} successfully!`);
         }
-        window.location.href =  window.location.pathname +  "?_t=" + new Date().getTime();
+        window.location.href = window.location.pathname + "?_t=" + new Date().getTime();
       } else {
         alert("Failed to update property status.");
       }
@@ -370,14 +405,14 @@ function ApplicationDetailsContent({
 
   const propertyDocuments = propertyDocumentValues.length
     ? [
-        {
-          title: "PT_PROPERTY_DOCUMENTS",
-          values: propertyDocumentValues.map((doc) => ({
-            ...doc,
-            title: doc.documentType,
-          })),
-        },
-      ]
+      {
+        title: "PT_PROPERTY_DOCUMENTS",
+        values: propertyDocumentValues.map((doc) => ({
+          ...doc,
+          title: doc.documentType,
+        })),
+      },
+    ]
     : [];
   const PropertyInActive = () => {
     if (window.location.href.includes("employee")) {
@@ -516,7 +551,7 @@ function ApplicationDetailsContent({
           setPayments(response?.Payments);
         });
       } else if (moduleCode === "PT") {
-        Digit.PTService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth, isCitizen : isCitizen }).then((response) => {
+        Digit.PTService.paymentsearch({ tenantId: actualQueryTenantId, filters: filters, auth: auth, isCitizen: isCitizen }).then((response) => {
           setPayments(response?.Payments);
         });
       }
@@ -726,57 +761,303 @@ function ApplicationDetailsContent({
           
         </React.Fragment>
       ))}
-      {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
+      {showHistory && assessmentDetails?.length > 0 && (
+        <AssessmentHistory
+          assessmentData={filtered}
+          propertyId={currentPropertyId}
+          tenantId={applicationData?.tenantId || tenantId}
+          propertyStatus={propertyStatus}
+          applicationData={applicationData}
+        />
+      )}
+      {showHistory && <PaymentHistory payments={payments} assessmentData={filtered} applicationData={applicationData} />}
+      {showHistory && moduleCode !== "WS" && moduleCode !== "SW" && moduleCode !== "OBPS" && moduleCode !== "BPAStakeholder" && moduleCode !== "BPAREG" && moduleCode !== "TL" && (
+        <ApplicationHistory applicationData={applicationDetails?.applicationData} />
+      )}
+      {isPTLocation && propertyDocuments.length > 0 && <PropertyDocuments documents={propertyDocuments} />}
+
+      {/* {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
           <BreakLine />
           {(workflowDetails?.isLoading || isDataLoading) && <Loader />}
-          {!workflowDetails?.isLoading && !isDataLoading && (
-            <Fragment>
+          {!workflowDetails?.isLoading && !isDataLoading && moduleCode !== "BPAREG" && (
+            <div id="timeline">
               <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
                 {t("ES_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
               </CardSectionHeader>
-              {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
-                <CheckPoint
-                  isCompleted={true}
-                   label={t(`${timelineStatusPrefix}${workflowDetails?.data?.timeline[0]?.state}`)}
-                  customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0])}
-                />
-              ) : (
-                <ConnectingCheckPoints>
-                  {workflowDetails?.data?.timeline &&
-                    workflowDetails?.data?.timeline.map((checkpoint, index, arr) => {
-                      let timelineStatusPostfix = "";
-                      if (window.location.href.includes("/obps/")) {
-                        if(workflowDetails?.data?.timeline[index-1]?.state?.includes("BACK_FROM") || workflowDetails?.data?.timeline[index-1]?.state?.includes("SEND_TO_CITIZEN"))
-                        timelineStatusPostfix = `_NOT_DONE`
-                        else if(checkpoint?.performedAction === "SEND_TO_ARCHITECT")
-                        timelineStatusPostfix = `_BY_ARCHITECT_DONE`
-                        else
-                        timelineStatusPostfix = index == 0 ? "" : `_DONE`;
-                      }
-                      
-                      return (
-                        <React.Fragment key={index}>
-                          <CheckPoint
-                            keyValue={index}
-                            isCompleted={index === 0}
-                            info={checkpoint.comment}
-                            label={t(
-                              `${timelineStatusPrefix}${
-                                checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
-                              }${timelineStatusPostfix}`
-                            )}
-                            customChild={getTimelineCaptions(checkpoint,index)}
-                          />
-                        </React.Fragment>
-                      );
-                    })}
-                </ConnectingCheckPoints>
-              )}
-            </Fragment>
+                {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
+                  <CheckPoint
+                    isCompleted={true}
+                    label={t(`${timelineStatusPrefix}${workflowDetails?.data?.timeline[0]?.state}`)}
+                    customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0], 0, workflowDetails?.data?.timeline)}
+                  />
+                ) : (
+                  <ConnectingCheckPoints>
+                    {workflowDetails?.data?.timeline &&
+                      workflowDetails?.data?.timeline
+                        .slice(0, showAllTimeline ? workflowDetails?.data.timeline.length : 2)
+                        .map((checkpoint, index) => {
+                          let timelineStatusPostfix = "";
+                          if (window.location.href.includes("/obps/")) {
+                            if (
+                              workflowDetails?.data?.timeline[index - 1]?.state?.includes("BACK_FROM") ||
+                              workflowDetails?.data?.timeline[index - 1]?.state?.includes("SEND_TO_CITIZEN")
+                            )
+                              timelineStatusPostfix = `_NOT_DONE`;
+                            else if (checkpoint?.performedAction === "SEND_TO_ARCHITECT") timelineStatusPostfix = `_BY_ARCHITECT_DONE`;
+                            else timelineStatusPostfix = index === 0 ? "" : `_DONE`;
+                          }
+
+                          return (
+                            <React.Fragment key={index}>
+                              <CheckPoint
+                                keyValue={index}
+                                isCompleted={index === 0}
+                                info={checkpoint.comment}
+                                label={t(
+                                  `${timelineStatusPrefix}${
+                                    checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
+                                  }${timelineStatusPostfix}`
+                                )}
+                                customChild={getTimelineCaptions(checkpoint, index, workflowDetails?.data?.timeline)}
+                              />
+                            </React.Fragment>
+                          );
+                        })}
+                  </ConnectingCheckPoints>
+                )}
+                {workflowDetails?.data?.timeline?.length > 2 && (
+                  <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
+                )}
+            </div>
           )}
         </React.Fragment>
+      )} */}
+      { console.log("showTimeLine", showTimeLine) }
+      {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
+        
+        <React.Fragment>
+          <BreakLine />
+
+          {(workflowDetails?.isLoading || isDataLoading) && <Loader />}
+
+          {(!workflowDetails?.isLoading &&
+            !isDataLoading &&
+            moduleCode !== "BPAREG") || (!workflowDetails?.isLoading &&
+            !isDataLoading &&
+            moduleCode !== "PT") && (
+              <div id="timeline">
+                <CardSectionHeader
+                  style={{ marginBottom: "16px", marginTop: "32px" }}
+                >
+                  {t("ES_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
+                </CardSectionHeader>
+
+                {workflowDetails.data.timeline.length === 1 ? (
+                  <CheckPoint
+                    isCompleted={true}
+                    label={t(
+                      `${timelineStatusPrefix}${workflowDetails.data.timeline[0]?.state}`
+                    )}
+                    customChild={getTimelineCaptions(
+                      workflowDetails.data.timeline[0],
+                      0,
+                      workflowDetails.data.timeline
+                    )}
+                  />
+                ) : (
+                  <ConnectingCheckPoints>
+                    {workflowDetails.data.timeline
+                      .slice(
+                        0,
+                        showAllTimeline
+                          ? workflowDetails.data.timeline.length
+                          : 2
+                      )
+                      .map((checkpoint, index) => {
+                        let timelineStatusPostfix = "";
+
+                        if (window.location.href.includes("/obps/")) {
+                          if (
+                            workflowDetails.data.timeline[index - 1]?.state?.includes(
+                              "BACK_FROM"
+                            ) ||
+                            workflowDetails.data.timeline[index - 1]?.state?.includes(
+                              "SEND_TO_CITIZEN"
+                            )
+                          ) {
+                            timelineStatusPostfix = "_NOT_DONE";
+                          } else if (
+                            checkpoint?.performedAction === "SEND_TO_ARCHITECT"
+                          ) {
+                            timelineStatusPostfix = "_BY_ARCHITECT_DONE";
+                          } else {
+                            timelineStatusPostfix = index === 0 ? "" : "_DONE";
+                          }
+                        }
+
+                        return (
+                          <React.Fragment key={index}>
+                            <CheckPoint
+                              keyValue={index}
+                              isCompleted={index === 0}
+                              info={checkpoint.comment}
+                              label={t(
+                                `${timelineStatusPrefix}${checkpoint?.performedAction === "REOPEN"
+                                  ? checkpoint?.performedAction
+                                  : checkpoint?.[statusAttribute]
+                                }${timelineStatusPostfix}`
+                              )}
+                              customChild={getTimelineCaptions(
+                                checkpoint,
+                                index,
+                                workflowDetails.data.timeline
+                              )}
+                            />
+                          </React.Fragment>
+                        );
+                      })}
+                  </ConnectingCheckPoints>
+                )}
+
+                {workflowDetails.data.timeline.length > 2 && (
+                  <LinkButton
+                    label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")}
+                    onClick={toggleTimeline}
+                  />
+                )}
+              </div>
+            )}
+
+          {(!workflowDetails?.isLoading &&
+            !isDataLoading &&
+            moduleCode === "BPAREG") || (!workflowDetails?.isLoading &&
+            !isDataLoading &&
+            moduleCode === "PT") && (
+              <NewApplicationTimeline workflowDetails={workflowDetails} t={t} />
+            )}
+        </React.Fragment>
       )}
+
+
+      {window.location.href.includes("/pt/") ? (
+        <ActionBar className="clear-search-container">
+          {window.location.href.includes("employee") && (
+            <>
+              <PTActionButton
+                label="Make Active"
+                color="#00703C"
+                hoverColor="#005a30"
+                icon={
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                }
+                onClick={PropertyActive}
+              />
+              <PTActionButton
+                label="Make Inactive"
+                color="#B5451B"
+                hoverColor="#8f3415"
+                icon={
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                  </svg>
+                }
+                onClick={PropertyInActive}
+              />
+            </>
+          )}
+          <PTActionButton
+            label="Edit Property"
+            color="#1A5CA8"
+            hoverColor="#134a8a"
+            icon={
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            }
+            onClick={EditProperty}
+          />
+          <PTActionButton
+            label="Assess Property"
+            color="#003C71"
+            hoverColor="#002554"
+            icon={
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            }
+            onClick={AccessProperty}
+          />
+        </ActionBar>
+      ) : null}
+      {showAccessModal && (
+        <Modal
+          headerBarMain={<h1 className="heading-m">{t("PT_SELECT_FINANCIAL_YEAR")}</h1>}
+          headerBarEnd={<CloseBtn onClick={() => setShowAccessModal(false)} />}
+          actionCancelLabel={t("CORE_COMMON_CANCEL")}
+          actionCancelOnSubmit={() => setShowAccessModal(false)}
+          actionSaveLabel={t("PT_SELECT")}
+          actionSaveOnSubmit={handleAccessPropertySubmit}
+          isDisabled={!selectedFinancialYear}
+        >
+          {financialYearsLoading ? (
+            <Loader />
+          ) : (
+            <div style={{ padding: "8px 0" }}>
+              <Dropdown
+                option={financialYears}
+                optionKey="code"
+                selected={selectedFinancialYear}
+                select={setSelectedFinancialYear}
+                placeholder={t("PT_SELECT_FINANCIAL_YEAR")}
+              />
+            </div>
+          )}
+        </Modal>
+      )}
+      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </Card>
   );
 }

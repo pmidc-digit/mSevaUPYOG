@@ -11,6 +11,7 @@ import PTCitizenFeedbackPopUp from "../../pageComponents/PTCitizenFeedbackPopUp"
 
 import get from "lodash/get";
 import { size } from "lodash";
+import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 
 const PTApplicationDetails = () => {
   const { t } = useTranslation();
@@ -210,7 +211,15 @@ const PTApplicationDetails = () => {
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
+ 
 
+  const handleViewTimeline=()=>{ 
+    const timelineSection=document.getElementById('timeline');
+      if(timelineSection){
+        timelineSection.scrollIntoView({behavior: 'smooth'});
+      } 
+      setViewTimeline(true);   
+  };
   const handleDownload = async (document, tenantid) => {
     let tenantId = tenantid ? tenantid : tenantId;
     const res = await Digit.UploadServices.Filefetch([document?.fileStoreId], tenantId);
@@ -559,7 +568,10 @@ const PTApplicationDetails = () => {
               </StatusTable>
             )}
           </div>
+           {/* <div id="timeline">
           <PTWFApplicationTimeline application={application} id={acknowledgementIds} userType={"citizen"} />
+          </div>  */}
+          
           {showToast && (
           <Toast
             error={showToast.key}

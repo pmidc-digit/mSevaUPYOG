@@ -26,8 +26,11 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
 import org.egov.common.entity.edcr.PageLayoutInfo;
+import org.egov.common.entity.edcr.Plan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -87,6 +90,14 @@ public class PdfOverlayTemplateService {
 	private static final float TARGET_DRAWING_TO_TABLE_HEIGHT_RATIO = 1.00f;
 	private static final float LAYOUT_PANEL_WIDTH = 360f;   // 5 inch table in paged mode
 	private static final float LAYOUT_MARGIN = 28.35f;      // 10 mm
+
+	/*
+	 * Note shown as the last block of the table panel when WORK_SHEET validation is enabled.
+	 * ASCII only (Helvetica / WinAnsi safe).
+	 */
+	private static final String WORK_SHEET_NOTE = "NOTE: Only the drawing content inside the WORK_SHEET boundary has been "
+	        + "scrutinized. Objects placed outside the WORK_SHEET layer are not displayed in this drawing "
+	        + "and have not been considered in the scrutiny.";
 	
 
 	@Autowired
@@ -163,7 +174,10 @@ public class PdfOverlayTemplateService {
                     float drawingW = origW * drawingScale;
                     float drawingH = origH * drawingScale;
 
-                    float contentHeight = Math.max(drawingH, renderedPanelH);
+                    // Blank strip above the drawing frame (page margin of the converted PDF).
+                    // It is cut off so the drawing frame and the table start at the same top line.
+                    float topBlank = detectTopBlank(baseDoc, i) * drawingScale;
+                    float contentHeight = Math.max(drawingH - topBlank, renderedPanelH);
                     float targetX = drawingW + gapDrawingToTables;
 
                     // Page size comes from the content, not from the temporary DXF PDF canvas.
@@ -172,7 +186,7 @@ public class PdfOverlayTemplateService {
 
                     // Drawing and table share the same top line.
                     float topY = newH - gapTop;
-                    float drawingY = topY - drawingH;
+                    float drawingY = topY - drawingH + topBlank;
                     float panelY = topY - renderedPanelH;
 
                     LOG.info("Page {} -> drawing {}x{} (scale {}), table {}x{}, final page {}x{}",
@@ -361,6 +375,7 @@ public class PdfOverlayTemplateService {
 		Context context = new Context();
 
 		context.setVariable("sections", buildSections(additionalDetails));
+		context.setVariable("workSheetNote", Plan.isWorkSheetValidationEnabled() ? WORK_SHEET_NOTE : null);
 
 		String html = templateEngine.process("imposePdfInto", context);
 
@@ -1222,6 +1237,36 @@ public class PdfOverlayTemplateService {
 		return (pt * 25.4f) / 72f;
 	}
 	
+	/**
+	 * Height (pt) of the blank strip above the first visible mark of a drawing page.
+	 * The converted DXF page has a margin on top; without cutting it the table starts
+	 * higher than the drawing frame. Returns 0 if it cannot be measured.
+	 */
+	private float detectTopBlank(PDDocument doc, int pageIndex) {
+	    try {
+	        PDPage page = doc.getPage(pageIndex);
+	        float w = page.getMediaBox().getWidth(), h = page.getMediaBox().getHeight();
+	        float dpi = Math.max(10f, Math.min(36f, 1800f * 72f / Math.max(w, h)));
+	        BufferedImage img = new PDFRenderer(doc).renderImageWithDPI(pageIndex, dpi, ImageType.GRAY);
+	        int width = img.getWidth(), height = img.getHeight();
+	        int[] px = new int[width];
+	        for (int y = 0; y < height; y++) {
+	            img.getRaster().getSamples(0, y, width, 1, 0, px);
+	            for (int x = 0; x < width; x++) {
+	                if (px[x] < 250) {
+	                    int safeRow = Math.max(0, y - 1);               // one pixel of safety, never cut content
+	                    float blank = safeRow * 72f / dpi;
+	                    LOG.info("Page {} top blank strip = {} pt", pageIndex + 1, blank);
+	                    return Math.min(blank, h * 0.5f);
+	                }
+	            }
+	        }
+	    } catch (Exception | Error e) {
+	        LOG.warn("Could not measure top blank strip on page {}: {}", pageIndex + 1, e.toString());
+	    }
+	    return 0f;
+	}
+
 	private void drawLayoutPage(PDDocument outputDoc, LayerUtility lu, PDDocument baseDoc, int i,
 	        PDFormXObject panelForm, float panelW, float panelH, PageLayoutInfo layout, float gapTop) throws IOException {
 	    PDPage src = baseDoc.getPage(i);
@@ -1231,14 +1276,17 @@ public class PdfOverlayTemplateService {
 
 	    float availW = newW - LAYOUT_MARGIN - LAYOUT_PANEL_WIDTH - LAYOUT_MARGIN;
 	    float availH = newH - gapTop - LAYOUT_MARGIN;
-	    float scale = Math.min(availW / origW, availH / origH);
+	    float topBlank = detectTopBlank(baseDoc, i);                // unscaled blank strip above the frame
+	    float visH = Math.max(1f, origH - topBlank);
+	    float scale = Math.min(availW / origW, availH / visH);
 	    if (!(scale > 0f)) scale = 1f;
 	    float drawW = origW * scale, drawH = origH * scale;
-	    float drawX = LAYOUT_MARGIN, drawY = newH - gapTop - drawH;
+	    float topLine = newH - gapTop;                              // drawing frame and table both start here
+	    float drawX = LAYOUT_MARGIN, drawY = topLine - drawH + topBlank * scale;
 
 	    float tableX = drawX + drawW - 0.75f;                       // small overlap hides the stroke seam
 	    float panelScale = Math.min(LAYOUT_PANEL_WIDTH / panelW, availH / panelH);
-	    float panelY = drawY + drawH - panelH * panelScale;
+	    float panelY = topLine - panelH * panelScale;
 
 	    PDPage outPage = new PDPage(new PDRectangle(newW, newH));
 	    outputDoc.addPage(outPage);

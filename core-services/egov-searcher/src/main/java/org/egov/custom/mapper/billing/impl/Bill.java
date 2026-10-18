@@ -3,11 +3,10 @@ package org.egov.custom.mapper.billing.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.validation.Valid;
 
-import org.egov.search.model.IntegratedBillDetail;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -20,7 +19,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Bill {
 
 	@JsonProperty("id")
@@ -69,14 +67,9 @@ public class Bill {
 	@JsonProperty("additionalDetails")
 	private Object additionalDetails;
 
-	// Legacy field - will be null/omitted in your new integrated view
 	@JsonProperty("billDetails")
 	@Valid
 	private List<BillDetail> billDetails;
-	
-	// NEW FIELD: Flattened integrated view
-	@JsonProperty("integratedBillDetails")
-	private List<IntegratedBillDetail> integratedBillDetails;
 
 	@JsonProperty("tenantId")
 	private String tenantId;
@@ -98,30 +91,20 @@ public class Bill {
 
 	@JsonProperty("auditDetails")
 	private AuditDetails auditDetails;
-
-	@JsonProperty("collectedAmount")
-	private BigDecimal collectedAmount;	
 	
-	@JsonProperty("address")
-	private Address address;	
-	
-	@JsonProperty("user")
-	private User user;	
-	
-	@JsonProperty("connection")
-	private Connection connection;	
-	
-	@JsonProperty("meterReading")
-	private MeterReading meterReading;
-
 	/**
-	 * Status of the bill.
+	 * status of the bill .
 	 */
 	public enum StatusEnum {
+		
 		ACTIVE("ACTIVE"),
+
 		CANCELLED("CANCELLED"),
+
 		PAID("PAID"),
+		
 		PARTIALLY_PAID("PARTIALLY_PAID"),
+
 		EXPIRED("EXPIRED");
 
 		private String value;
@@ -147,7 +130,6 @@ public class Bill {
 		}
 	}
 
-	// Helper for legacy detail list
 	public Bill addBillDetailsItem(BillDetail billDetailsItem) {
 		if (this.billDetails == null) {
 			this.billDetails = new ArrayList<>();
@@ -155,13 +137,23 @@ public class Bill {
 		this.billDetails.add(billDetailsItem);
 		return this;
 	}
+	
+	
+	//These field is not available in the Bill Contract.
+	
+	@JsonProperty("collectedAmount")
+	private BigDecimal collectedAmount;	
+	
+	@JsonProperty("address")
+	private Address address;	
+	
+	@JsonProperty("user")
+	private User user;	
+	
+	@JsonProperty("connection")
+	private Connection connection;	
+	
+	@JsonProperty("meterReading")
+	private MeterReading meterReading;
 
-	// Helper for new integrated detail list
-	public Bill addIntegratedBillDetailsItem(IntegratedBillDetail item) {
-		if (this.integratedBillDetails == null) {
-			this.integratedBillDetails = new ArrayList<>();
-		}
-		this.integratedBillDetails.add(item);
-		return this;
-	}
 }

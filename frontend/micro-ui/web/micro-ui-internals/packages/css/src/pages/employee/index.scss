@@ -7,7 +7,7 @@
   .ground-container {
     margin-bottom: 56px;
     margin-left: 0px;
-    margin-top: 5rem !important;
+    margin-top: calc(var(--mseva-header-h) + 16px) !important;
     @apply flex flex-col;
   }
   .card-home {
@@ -525,7 +525,7 @@
     .main {
       display: flex;
       flex-direction: column;
-      margin-left: 64px;
+      margin-left: var(--mseva-rail-w);
       width: calc(100%-83px);
     }
     .citizen-home-container {

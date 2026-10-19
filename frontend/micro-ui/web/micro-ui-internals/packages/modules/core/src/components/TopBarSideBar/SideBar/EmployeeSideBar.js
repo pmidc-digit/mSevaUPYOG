@@ -53,16 +53,14 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
   }, [isLoading, mobileView]);
 
   const expandNav = () => {
-    sidebarRef.current.style.width = "350px";
-    sidebarRef.current.style.overflow = "auto";
+    sidebarRef.current.classList.add("is-expanded");
     sidebarRef.current.querySelectorAll(".dropdown-link").forEach((el) => {
       el.style.display = "flex";
     });
   };
 
   const collapseNav = () => {
-    sidebarRef.current.style.width = "65px";
-    sidebarRef.current.style.overflow = "hidden";
+    sidebarRef.current.classList.remove("is-expanded");
     sidebarRef.current.querySelectorAll(".dropdown-link").forEach((el) => {
       el.style.display = "none";
     });
@@ -427,145 +425,20 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
 
   return (
     <div
-      className="sidebar"
+      className="sidebar mseva-rail"
       ref={sidebarRef}
       onMouseOver={expandNav}
       onMouseLeave={collapseNav}
-      style={{
-        display: window.location.href.includes("main-dashboard-landing") ? "none" : "",
-        backgroundColor: "#f8f9fa",
-        borderRight: "1px solid #e5e7eb",
-      }}
+      style={{ display: window.location.href.includes("main-dashboard-landing") ? "none" : "" }}
     >
-      <style>
-        {`
-          .sidebar .submenu-container {
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-
-          .sidebar .sidebar-link {
-            padding: 12px 16px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            border-bottom: 1px solid #f3f4f6 !important;
-            cursor: pointer !important;
-            transition: all 0.2s ease !important;
-            background-color: transparent !important;
-          }
-
-          .sidebar .sidebar-link:hover {
-            background-color: #f0f2f5 !important;
-            border-left: 3px solid #4f46e5 !important;
-            padding-left: 13px !important;
-          }
-
-          .sidebar .sidebar-link.active {
-            background-color: #eef2ff !important;
-            border-left: 3px solid #4f46e5 !important;
-            padding-left: 13px !important;
-          }
-
-          .sidebar .actions {
-            display: flex !important;
-            align-items: center !important;
-            gap: 12px !important;
-            padding: 0 !important;
-            flex: 1;
-          }
-
-          .sidebar .actions svg {
-            width: 20px !important;
-            height: 20px !important;
-            flex-shrink: 0;
-            color: #6b7280 !important;
-          }
-
-          .sidebar .actions span,
-          .sidebar .actions a,
-          .sidebar .custom-link {
-            font-size: 14px !important;
-            color: #1f2937 !important;
-            text-decoration: none !important;
-            font-weight: 500 !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-          }
-
-          .sidebar .dropdown-link {
-            display: flex !important;
-            padding: 10px 16px 10px 48px !important;
-            font-size: 13px !important;
-            color: #4b5563 !important;
-            text-decoration: none !important;
-            border-bottom: 1px solid #f9fafb !important;
-            transition: all 0.2s ease !important;
-          }
-
-          .sidebar .dropdown-link:hover {
-            background-color: #f3f4f6 !important;
-            color: #4f46e5 !important;
-          }
-
-          .sidebar .dropdown-link.active {
-            background-color: #eef2ff !important;
-            color: #4f46e5 !important;
-            border-left: 3px solid #4f46e5 !important;
-            padding-left: 45px !important;
-          }
-
-          .sidebar .search-icon-wrapper {
-            padding: 8px 12px !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
-            background-color: #fff !important;
-            margin: 12px !important;
-            border-radius: 6px !important;
-            border: 1px solid #d1d5db !important;
-          }
-
-          .sidebar .employee-search-input {
-            border: none !important;
-            background: transparent !important;
-            outline: none !important;
-            font-size: 13px !important;
-            width: 100% !important;
-            color: #1f2937 !important;
-          }
-
-          .sidebar .employee-search-input::placeholder {
-            color: #9ca3af !important;
-          }
-
-          .sidebar .employee-search-input:disabled {
-            opacity: 0.5 !important;
-            cursor: not-allowed !important;
-          }
-        `}
-      </style>
-
       {renderSearch()}
 
       {currentPath && (
-        <div
-          onClick={navigateBack}
-          style={{
-            padding: "12px 16px",
-            cursor: "pointer",
-            color: "#4f46e5",
-            fontSize: "13px",
-            borderBottom: "1px solid #e5e7eb",
-            fontWeight: 600,
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            backgroundColor: "#f0f2f5",
-          }}
-        >
-          ← Back
+        <div onClick={navigateBack} className="sidebar-link back-link">
+          <div className="actions">
+            <span className="back-arrow">←</span>
+            <span className="back-label">Back</span>
+          </div>
         </div>
       )}
 

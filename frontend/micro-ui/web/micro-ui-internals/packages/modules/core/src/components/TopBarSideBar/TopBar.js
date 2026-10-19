@@ -1,15 +1,9 @@
-import { Dropdown, Hamburger, NotificationBell, TopBar as TopBarComponent } from "@mseva/digit-ui-react-components";
+import { Hamburger, NotificationBell, TopBar as TopBarComponent } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useHistory, useLocation } from "react-router-dom";
-import ChangeCity from "../ChangeCity";
 import ChangeLanguage from "../ChangeLanguage";
 import ProfessionalChangeCity from "../ProfessionalChangeCity";
-
-const TextToImg = (props) => (
-  <span className="user-img-txt" onClick={props.toggleMenu} title={props.name}>
-    {props?.name?.[0]?.toUpperCase()}
-  </span>
-);
+import EmployeeTopBar from "./EmployeeTopBar";
 
 
 const TopBar = ({
@@ -63,28 +57,16 @@ const TopBar = ({
   const history = useHistory()
   const { pathname } = useLocation()
 
-  const topbarStyle = mobileView
-    ? {
-        display: "flex",
-        alignItems: "center",
-        padding: "10px 12px",
-        gap: "12px",
-        background: "linear-gradient(90deg, rgba(255,255,255,0.98), rgba(250,255,250,0.98))",
-        boxShadow: "0 6px 18px rgba(15, 23, 42, 0.06)",
-        borderBottom: "1px solid rgba(15, 23, 42, 0.06)",
-        backdropFilter: "blur(6px)",
-      }
-    : {
-        display: "flex",
-        alignItems: "center",
-        padding: "12px 24px",
-        gap: "16px",
-        background: "linear-gradient(90deg, rgba(255,255,255,0.98), rgba(250,255,250,0.98))",
-        boxShadow: "0 8px 26px rgba(15, 23, 42, 0.06)",
-        borderBottom: "1px solid rgba(15, 23, 42, 0.06)",
-        backdropFilter: "blur(6px)",
-
-      }
+  const topbarStyle = {
+    display: "flex",
+    alignItems: "center",
+    padding: "10px 12px",
+    gap: "12px",
+    background: "linear-gradient(90deg, rgba(255,255,255,0.98), rgba(250,255,250,0.98))",
+    boxShadow: "0 6px 18px rgba(15, 23, 42, 0.06)",
+    borderBottom: "1px solid rgba(15, 23, 42, 0.06)",
+    backdropFilter: "blur(6px)",
+  }
 
   const conditionsToDisableNotificationCountTrigger = () => {
     if (Digit.UserService?.getUser()?.info?.type === "EMPLOYEE") return false
@@ -240,6 +222,23 @@ const TopBar = ({
     )
   }
 
+  if (!mobileView) {
+    return (
+      <EmployeeTopBar
+        t={t}
+        stateInfo={stateInfo}
+        cityDetails={cityDetails}
+        logoUrl={logoUrl}
+        loggedin={loggedin}
+        userDetails={userDetails}
+        profilePic={profilePic}
+        userOptions={userOptions}
+        handleUserDropdownSelection={handleUserDropdownSelection}
+        showLanguageChange={showLanguageChange}
+      />
+    );
+  }
+
   return (
     <div className="topbar" style={topbarStyle}>
       {mobileView ? <Hamburger handleClick={toggleSidebar} color="#9E9E9E" /> : null}
@@ -260,47 +259,6 @@ const TopBar = ({
           <p className="ulb" style={mobileView ? { fontSize: "14px", display: "inline-block" } : {}}>
             {t(`MYCITY_${stateInfo?.code?.toUpperCase()}_LABEL`)} {t(`MYCITY_STATECODE_LABEL`)}
           </p>
-        )}
-        {!mobileView && (
-          <div
-            className={mobileView ? "right" : "flex-right right w-80 column-gap-15 margin-right-50"}
-            style={!loggedin ? { width: "80%" } : {}}
-          >
-            <div className="left">
-              {!window.location.href.includes("employee/user/login") &&
-                !window.location.href.includes("employee/user/language-selection") && (
-                  <ChangeCity dropdown={true} t={t} />
-                )}
-            </div>
-            {/* <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div> */}
-
-           
-
-            {userDetails?.access_token && (
-              <div className="left">
-                <Dropdown
-                  option={userOptions}
-                  optionKey={"name"}
-                  select={handleUserDropdownSelection}
-                  showArrow={true}
-                  freeze={true}
-                  style={mobileView ? { right: 0} : {}}
-                  optionCardStyles={{ overflow: "revert", left:"-56px"   }}
-                  customSelector={
-                    profilePic == null ? (
-                      <TextToImg name={userDetails?.info?.name || userDetails?.info?.userInfo?.name || "Employee"} />
-                    ) : (
-                      <img
-                        src={profilePic || "/placeholder.svg"}
-                        style={{ height: "48px", width: "48px", borderRadius: "50%" }}
-                      />
-                    )
-                  }
-                />
-              </div>
-            )}
-            <div className="left"></div>
-          </div>
         )}
       </span>
     </div>

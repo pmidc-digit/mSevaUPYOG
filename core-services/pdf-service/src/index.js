@@ -761,6 +761,7 @@ app.post(
         message: "Error while clearing the Bulk PDF records details",
       });
     }
+  })
 );
 
 app.post(

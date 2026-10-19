@@ -18,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class ArtifactRepository {
 
@@ -141,9 +143,19 @@ public class ArtifactRepository {
 	}
 
 	public void delete(List<String> fileStoreIds, String tenantId) {
+		if (CollectionUtils.isEmpty(fileStoreIds)) {
+			return;
+		}
 		List<Artifact> allArtifacts = fileStoreJpaRepository.findByTenantIdAndFileStoreIdList(tenantId, fileStoreIds);
 		if (!CollectionUtils.isEmpty(allArtifacts)) {
 			List<Artifact> billArtifacts = allArtifacts.stream().filter(this::isBillArtifact).collect(Collectors.toList());
+			List<Artifact> nonBillArtifacts = allArtifacts.stream().filter(a -> !isBillArtifact(a)).collect(Collectors.toList());
+			if (!nonBillArtifacts.isEmpty()) {
+				for (Artifact nonBill : nonBillArtifacts) {
+					log.warn("SAFETY LOCK: Refusing to delete non-bill fileStoreId: {} (module: '{}'). Only bill/bulk-bill documents are permitted for deletion.",
+							nonBill.getFileStoreId(), nonBill.getModule());
+				}
+			}
 			if (!billArtifacts.isEmpty()) {
 				cloudFilesManager.deleteFiles(billArtifacts);
 				if (Boolean.TRUE.equals(fileStoreConfig.getIsBillAutoDeleteEnabled())) {

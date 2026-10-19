@@ -8,6 +8,7 @@ import logger from "../config/logger";
 
 let egovFileHost = envVariables.EGOV_FILESTORE_SERVICE_HOST;
 let externalHost = envVariables.EGOV_EXTERNAL_HOST;
+let urlShorteningHost = envVariables.EGOV_URL_SHORTENING_HOST || "http://egov-url-shortening:8080";
 
 /**
  *
@@ -44,29 +45,39 @@ export const fileStoreAPICall = async function(filename, tenantId, fileData, mod
 };
 
 export async function getFilestoreUrl(filestoreid, tenantId){
-  var url = `${egovFileHost}/filestore/v1/files/url?tenantId=${tenantId}&fileStoreIds=${filestoreid}`;
-  let response = await axios.get(url);
-  let data = response.data;
-  var fileURL = data['fileStoreIds'][0]['url'].split(",");
-  var shorteningUrl = getShortneningUrl(fileURL[0]);
-  return shorteningUrl;
+  try {
+    var url = `${egovFileHost}/filestore/v1/files/url?tenantId=${tenantId}&fileStoreIds=${filestoreid}`;
+    let response = await axios.get(url);
+    let data = response.data;
+    if (data && data['fileStoreIds'] && data['fileStoreIds'][0] && data['fileStoreIds'][0]['url']) {
+      var fileURL = data['fileStoreIds'][0]['url'].split(",");
+      var shorteningUrl = await getShortneningUrl(fileURL[0]);
+      return shorteningUrl;
+    }
+    return "";
+  } catch (err) {
+    logger.error(`Error in getFilestoreUrl for fileStoreId ${filestoreid}: ${err.message || err}`);
+    return "";
+  }
 }
 
 export async function getShortneningUrl(actualUrl){
-  var url = `${externalHost}egov-url-shortening/shortener`;
-  var request = {
-    "url": actualUrl
-  };
+  try {
+    var url = `${urlShorteningHost.replace(/\/+$/, '')}/egov-url-shortening/shortener`;
+    var request = {
+      "url": actualUrl
+    };
 
-  let headers = {
-    headers:{
-      'Content-Type': 'application/json'
-    }
-  };
-
-  let response = await axios.post(url,request, headers);
-  let shortUrl = response.data;
-  return shortUrl;
+    let response = await axios.post(url, request, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (err) {
+    logger.warn(`Could not shorten URL (${err.message || err}). Falling back to actual URL.`);
+    return actualUrl;
+  }
 }
 
 export const deleteFileStoreFile = async function(fileStoreId, tenantId) {

@@ -208,7 +208,9 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
             const curentTimeStamp = new Date().getTime();
             const status = 'DONE';
             pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status, batchExpiryDate]);
-            sendNoitification(filestoreid, mobileNumber, tenantId, batchExpiryText);
+            sendNoitification(filestoreid, mobileNumber, tenantId, batchExpiryText).catch(err => {
+              logger.error("Error sending notification: " + (err.stack || err));
+            });
         
           }).catch((err) => {
             logger.error(err.stack || err);
@@ -255,29 +257,33 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
 }
 
 export async function sendNoitification(filestoreid, mobileNumber, tenantId, expiryInfo){
-  const topic = envVariables.KAFKA_TOPICS_NOTIFICATION;
-  var pdfLink = await getFilestoreUrl(filestoreid, tenantId);
-  let smsRequest = {};
-  smsRequest['mobileNumber'] = mobileNumber;
-  if (expiryInfo) {
-    let suffix = String(expiryInfo).includes("day") || String(expiryInfo).includes("minute") || String(expiryInfo).includes("second") ? "" : " days";
-    smsRequest['message'] = `Your download is ready. It will expire in ${expiryInfo}${suffix}. Please click on the link below to download the pdf.\n`+pdfLink;
-  } else {
-    smsRequest['message'] = `Your download is ready. Please click on the link below to download the pdf.\n`+pdfLink;
-  }
-  let payloads = [];
-  payloads.push({
-    topic,
-    messages: JSON.stringify(smsRequest)
-  });
-
-  producer.send(payloads, function(err, data) {
-    if (!err) {
-      console.log(data);
+  try {
+    const topic = envVariables.KAFKA_TOPICS_NOTIFICATION;
+    var pdfLink = await getFilestoreUrl(filestoreid, tenantId);
+    let smsRequest = {};
+    smsRequest['mobileNumber'] = mobileNumber;
+    if (expiryInfo) {
+      let suffix = String(expiryInfo).includes("day") || String(expiryInfo).includes("minute") || String(expiryInfo).includes("second") ? "" : " days";
+      smsRequest['message'] = `Your download is ready. It will expire in ${expiryInfo}${suffix}. Please click on the link below to download the pdf.\n`+pdfLink;
     } else {
-      console.log(err);
+      smsRequest['message'] = `Your download is ready. Please click on the link below to download the pdf.\n`+pdfLink;
     }
-  });
+    let payloads = [];
+    payloads.push({
+      topic,
+      messages: JSON.stringify(smsRequest)
+    });
+
+    producer.send(payloads, function(err, data) {
+      if (!err) {
+        console.log(data);
+      } else {
+        console.log(err);
+      }
+    });
+  } catch (err) {
+    logger.error("Error in sendNoitification: " + (err.stack || err.message));
+  }
 }
 
 

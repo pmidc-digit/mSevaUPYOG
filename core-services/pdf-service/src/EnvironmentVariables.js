@@ -25,6 +25,7 @@ const envVariables = {
   DB_NAME: process.env.DB_NAME || "PdfGen",
   DB_PORT: process.env.DB_PORT || 5432,
   EGOV_EXTERNAL_HOST: process.env.EGOV_EXTERNAL_HOST || "https://dev.digit.org/" ,
+  EGOV_URL_SHORTENING_HOST: process.env.EGOV_URL_SHORTENING_HOST || process.env.EGOV_URL_SHORTNER_HOST || "http://egov-url-shortening:8080",
   SAVE_PDF_DIR: process.env.SAVE_PDF_DIR || '/mnt/pdf/',
   DEFAULT_LOCALISATION_LOCALE:
     process.env.DEFAULT_LOCALISATION_LOCALE || "en_IN",

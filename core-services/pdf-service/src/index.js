@@ -1358,6 +1358,7 @@ const prepareBulk = async (
       let expiryDate = null;
       let billId = null;
       let billNumber = null;
+      let billTenantId = null;
       if (isBill) {
         billId = moduleObject.id ||
           (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].billId) ||

@@ -591,6 +591,7 @@ export async function cleanupExpiredBulkPdfs() {
       SELECT jobid, filestoreid, tenantid, expirydate, createdtime
       FROM egov_bulk_pdf_info
       WHERE status = 'DONE'
+        AND status NOT IN ('EXPIRED')
         AND filestoreid IS NOT NULL
         AND trim(filestoreid) != ''
         AND lower(trim(filestoreid)) NOT IN ('null', 'undefined')

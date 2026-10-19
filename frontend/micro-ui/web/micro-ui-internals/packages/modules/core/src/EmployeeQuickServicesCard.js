@@ -117,6 +117,16 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
 
   const route = updatedModuleData[0]?.routes;
 
+  // Routes outside /digit-ui/ belong to another application, so they need a full-page navigation
+  const isExternalRoute = Boolean(route) && !route.startsWith("/digit-ui/");
+  const getExternalHref = (path) => {
+    if (/^https?:\/\//.test(path)) return path;
+    const baseUrl = window?.globalConfigs?.getConfig?.("EXTERNAL_MODULE_BASE_URL") || window.location.origin;
+    return `${baseUrl}${path}`;
+  };
+  const LinkComponent = isExternalRoute ? "a" : Link;
+  const linkProps = isExternalRoute ? { href: getExternalHref(route) } : { to: route };
+
   const handleCardClick = (e) => {
     if (route?.includes("kibana-v2")) {
       e.preventDefault();
@@ -124,13 +134,13 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
       return;
     }
   };
-
+  console.log("route",route)
   const requiredRole = updatedModuleData[0]?.Access;
   const hasCardAccess = Boolean(requiredRole) && userRoles.some((role) => role?.code === requiredRole);
 
   return hasCardAccess ? (
-    <Link
-      to={route}
+    <LinkComponent
+      {...linkProps}
       onClick={handleCardClick}
       // to={`${updatedModuleData[0]?.routes}`}
       className="employee-quick-service-link"
@@ -176,7 +186,7 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         {/* Shine Effect on Hover */}
         {isHovered && <div className="card-shine-effect" />}
       </div>
-    </Link>
+    </LinkComponent>
   ) : null;
 };
 

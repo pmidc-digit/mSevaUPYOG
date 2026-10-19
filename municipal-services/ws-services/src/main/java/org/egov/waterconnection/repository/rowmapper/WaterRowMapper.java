@@ -71,17 +71,19 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 
 				PGobject pgObj = (PGobject) rs.getObject("additionaldetails");
 				this.setFull_count(rs.getInt("full_count"));
-				ObjectNode additionalDetails = null;
+//				ObjectNode additionalDetails = null;
+				Map<String, Object> additionalDetails;
 				if (pgObj != null) {
 
 					try {
-						additionalDetails = mapper.readValue(pgObj.getValue(), ObjectNode.class);
+						additionalDetails = mapper.readValue(
+					            pgObj.getValue(),new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
 					} catch (IOException ex) {
 						// TODO Auto-generated catch block
 						throw new CustomException("PARSING ERROR", "The additionalDetail json cannot be parsed");
 					}
 				} else {
-					additionalDetails = mapper.createObjectNode();
+					additionalDetails = new HashMap<>();
 				}
 				// HashMap<String, Object> additionalDetails = new HashMap<>();
 				additionalDetails.put(WCConstants.ADHOC_PENALTY, rs.getBigDecimal("adhocpenalty"));

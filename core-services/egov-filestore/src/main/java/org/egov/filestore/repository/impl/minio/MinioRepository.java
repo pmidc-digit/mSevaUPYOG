@@ -106,9 +106,6 @@ public class MinioRepository implements CloudFilesManager {
 
 				if (isBatchBill || isSingleBill) {
 					Map<String, String> headers = new HashMap<>();
-					if (expiryDate != null) {
-						headers.put("X-Amz-Meta-Expirydate", String.valueOf(expiryDate));
-					}
 					if (tag != null && !tag.isEmpty() && !tag.equals("00040-2017-QR")) {
 						headers.put("X-Amz-Meta-Consumercode", tag);
 					}

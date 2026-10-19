@@ -4,6 +4,7 @@ import get from "lodash/get";
 import axios, { post } from "axios";
 var FormData = require("form-data");
 import envVariables from "../EnvironmentVariables";
+import logger from "../config/logger";
 
 let egovFileHost = envVariables.EGOV_FILESTORE_SERVICE_HOST;
 let externalHost = envVariables.EGOV_EXTERNAL_HOST;
@@ -21,9 +22,6 @@ export const fileStoreAPICall = async function(filename, tenantId, fileData, mod
   var moduleParam = module || "pdfgen";
   var tagParam = tag || "00040-2017-QR";
   var url = `${egovFileHost}/filestore/v1/files?tenantId=${tenantId}&module=${encodeURIComponent(moduleParam)}&tag=${encodeURIComponent(tagParam)}`;
-  if (expiryDate) {
-    url += `&expiryDate=${expiryDate}`;
-  }
   var form = new FormData({ maxDataSize: 80 * 1024 * 1024 });
   form.append("file", fileData, {
     filename: filename,
@@ -70,3 +68,45 @@ export async function getShortneningUrl(actualUrl){
   let shortUrl = response.data;
   return shortUrl;
 }
+
+export const deleteFileStoreFile = async function(fileStoreId, tenantId) {
+  if (!fileStoreId || typeof fileStoreId !== 'string' || fileStoreId.trim() === '') {
+    logger.warn(`[deleteFileStoreFile] Skipping delete call because fileStoreId is empty or invalid: '${fileStoreId}'`);
+    return null;
+  }
+  var url = `${egovFileHost}/filestore/v1/files/_delete`;
+  var payload = {
+    RequestInfo: {
+      apiId: "Rainmaker",
+      ver: ".01",
+      action: "_delete",
+      did: "1",
+      key: "",
+      msgId: `${Date.now()}|en_IN`,
+      authToken: "",
+      userInfo: {
+        id: envVariables.DELETE_AUTHORIZED_USER_ID,
+        uuid: envVariables.DELETE_AUTHORIZED_USER_UUID,
+        roles: [
+          {
+            code: envVariables.DELETE_AUTHORIZED_ROLE_CODE,
+            name: "System"
+          }
+        ]
+      }
+    },
+    tenantId: tenantId,
+    fileStoreIds: [fileStoreId]
+  };
+  try {
+    let response = await axios.post(url, payload, {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+    logger.info(`Successfully deleted fileStoreId: ${fileStoreId} from filestore: ${JSON.stringify(response.data)}`);
+    return response.data;
+  } catch (error) {
+    logger.error(`Failed to delete fileStoreId: ${fileStoreId} from filestore: ${error && error.response ? JSON.stringify(error.response.data) : error}`);
+  }
+};

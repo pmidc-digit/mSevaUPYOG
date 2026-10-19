@@ -277,6 +277,13 @@ public class StorageService {
 			return response;
 		}
 
+		if (fileStoreIds == null || fileStoreIds.isEmpty()) {
+			log.info("No fileStoreIds provided for deletion. Skipping.");
+			response.put("status", "SKIPPED");
+			response.put("message", "No fileStoreIds provided for deletion.");
+			return response;
+		}
+
 		log.info("Processing deletion for tenantId: {}, fileStoreIds: {}", tenantId, fileStoreIds);
 		artifactRepository.delete(fileStoreIds, tenantId);
 		response.put("status", "SUCCESS");

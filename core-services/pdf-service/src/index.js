@@ -46,7 +46,8 @@ import {
   getBulkPdfRecordsDetails,
   getDefaulterPdfRecordsDetails,
   cancelBulkPdfProcess,
-  updateBillFileStoreId
+  updateBillFileStoreId,
+  cleanupExpiredBulkPdfs
 } from "./queries";
 import {
   listenConsumer
@@ -352,7 +353,8 @@ const uploadFiles = async (
 
             if (isBill) {
               let meta = (recordsMetadata && recordsMetadata[i]) || {};
-              updateBillFileStoreId(meta.billId, meta.billNumber, meta.consumerCode, tenantId, result, userid);
+              let effectiveTenantId = meta.billTenantId || tenantId;
+              updateBillFileStoreId(meta.billId, meta.billNumber, meta.consumerCode, effectiveTenantId, result, userid);
             }
 
             // insertStoreIds(jobid,entityIds[i],[result],tenantId,starttime,successCallback,errorCallback,1,false);
@@ -759,8 +761,28 @@ app.post(
         message: "Error while clearing the Bulk PDF records details",
       });
     }
-  })
+);
 
+app.post(
+  "/pdf-service/v1/_cleanupExpiredBulkPdfs",
+  asyncHandler(async (req, res) => {
+    let requestInfo = get(req.body, "RequestInfo");
+    try {
+      let deletedJobs = await cleanupExpiredBulkPdfs();
+      res.status(200).json({
+        ResponseInfo: requestInfo,
+        totalCleaned: deletedJobs.length,
+        cleanedJobs: deletedJobs,
+        message: `Successfully cleaned up ${deletedJobs.length} expired bulk PDF(s)`
+      });
+    } catch (error) {
+      logger.error(error.stack || error);
+      res.status(500).json({
+        ResponseInfo: requestInfo,
+        message: "Error while cleaning up expired bulk PDF records"
+      });
+    }
+  })
 );
 
 app.post(
@@ -1349,13 +1371,17 @@ const prepareBulk = async (
         expiryDate = moduleObject.expiryDate ||
           (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].expiryDate) ||
           null;
+        billTenantId = moduleObject.tenantId ||
+          (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].tenantId) ||
+          null;
       }
       recordsMetadata.push({
         billId,
         billNumber,
         consumerCode,
         expiryDate,
-        entityId: entityKey[0]
+        entityId: entityKey[0],
+        billTenantId
       });
 
       let formatObject = JSON.parse(JSON.stringify(formatconfig));

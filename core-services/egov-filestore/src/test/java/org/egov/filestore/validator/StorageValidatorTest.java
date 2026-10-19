@@ -24,8 +24,8 @@ class StorageValidatorTest {
     private StorageValidator storageValidator;
     private ObjectMapper objectMapper;
 
-    private static final String AUTH_UUID = "42cc442b-6734-4c26-8f1f-cccc995661ee";
-    private static final String AUTH_ID = "1111111";
+    private static final String AUTH_UUID = "4e33-2355311-11222";
+    private static final String AUTH_ID = "11111111";
     private static final String AUTH_ROLE = "SYSTEM";
 
     @BeforeEach
@@ -45,7 +45,7 @@ class StorageValidatorTest {
         Map<String, Object> userInfo = new HashMap<>();
 
         userInfo.put("uuid", AUTH_UUID);
-        userInfo.put("id", 111L);
+        userInfo.put("id", Long.parseLong(AUTH_ID));
 
         Map<String, Object> role = new HashMap<>();
         role.put("code", "SYSTEM");
@@ -73,7 +73,7 @@ class StorageValidatorTest {
         Map<String, Object> userInfo = new HashMap<>();
 
         userInfo.put("uuid", AUTH_UUID.toUpperCase());
-        userInfo.put("id", "1111111");
+        userInfo.put("id", AUTH_ID);
 
         Map<String, Object> role = new HashMap<>();
         role.put("code", "system");
@@ -91,7 +91,7 @@ class StorageValidatorTest {
         Map<String, Object> userInfo = new HashMap<>();
 
         userInfo.put("uuid", AUTH_UUID);
-        userInfo.put("id", 1111111L);
+        userInfo.put("id", Long.parseLong(AUTH_ID));
 
         Map<String, Object> role = new HashMap<>();
         role.put("code", "SYSTEM");

@@ -124,11 +124,11 @@ public class BulkMeterReading {
 	@JsonProperty("groups")
 	private String groups = null;
 	
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("createdByName")
 	private String createdByName = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("lastModifiedByName")
 	private String lastModifiedByName = null;
 

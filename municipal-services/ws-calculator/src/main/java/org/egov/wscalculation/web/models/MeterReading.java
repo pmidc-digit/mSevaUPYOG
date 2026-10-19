@@ -114,11 +114,11 @@ public class MeterReading {
 		return this;
 	}
 	
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("createdByName")
 	private String createdByName = null;
 
-	@SafeHtml
+	@SanitizeHtml
 	@JsonProperty("lastModifiedByName")
 	private String lastModifiedByName = null;
 

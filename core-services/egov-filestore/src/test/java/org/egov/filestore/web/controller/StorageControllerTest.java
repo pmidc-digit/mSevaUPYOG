@@ -40,6 +40,9 @@ class StorageControllerTest {
     @MockBean
     private StorageUtil storageUtil;
 
+    @MockBean
+    private org.egov.filestore.validator.StorageValidator storageValidator;
+
     @Test
     void testGetFile() throws Exception {
         when(storageService.retrieve((String) any(), (String) any())).thenReturn(

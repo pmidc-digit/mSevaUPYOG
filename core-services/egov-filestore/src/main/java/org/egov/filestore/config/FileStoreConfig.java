@@ -60,8 +60,14 @@ public class FileStoreConfig {
 	@Value("${bill.auto.delete.enabled:false}")
 	private Boolean isBillAutoDeleteEnabled;
 
-	@Value("${batch.expiration.days:15}")
-	private Integer batchExpirationDays;
+	@Value("${delete.authorized.user.uuid:4ee}")
+	private String deleteAuthorizedUserUuid;
+
+	@Value("${delete.authorized.user.id:111111}")
+	private String deleteAuthorizedUserId;
+
+	@Value("${delete.authorized.role.code:SYSTEM}")
+	private String deleteAuthorizedRoleCode;
 	
 	@PostConstruct
 	private void enrichKeysetForFormats() {

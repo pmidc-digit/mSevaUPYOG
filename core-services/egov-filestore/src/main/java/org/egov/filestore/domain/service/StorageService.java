@@ -145,10 +145,6 @@ public class StorageService {
 						effectiveExpiryDate = Long.parseLong(tag.substring("expiryDate:".length()).trim());
 					} catch (Exception ignored) {}
 				}
-				if (effectiveExpiryDate == null && isBatchBill) {
-					int days = fileStoreConfig.getBatchExpirationDays() != null ? fileStoreConfig.getBatchExpirationDays() : 15;
-					effectiveExpiryDate = System.currentTimeMillis() + (days * 24L * 60 * 60 * 1000);
-				}
 			}
 
 			try {

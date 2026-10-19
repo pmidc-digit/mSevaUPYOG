@@ -189,13 +189,21 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
       
           var mergePdfData = fs.createReadStream(baseFolder+'output.pdf');
           let batchDays = envVariables.BATCH_EXPIRATION_DAYS || 15;
-          let batchExpiryDate = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
+          let batchExpiryText = `${batchDays} days`;
+          let batchExpiryDate;
+          if (envVariables.BATCH_EXPIRATION_SECONDS && envVariables.BATCH_EXPIRATION_SECONDS > 0) {
+            batchExpiryDate = new Date().getTime() + (envVariables.BATCH_EXPIRATION_SECONDS * 1000);
+            let mins = Math.round(envVariables.BATCH_EXPIRATION_SECONDS / 60);
+            batchExpiryText = mins > 0 ? `${mins} minutes` : `${envVariables.BATCH_EXPIRATION_SECONDS} seconds`;
+          } else {
+            batchExpiryDate = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
+          }
           await fileStoreAPICall('output.pdf', tenantId, mergePdfData, "bulk-bill", bulkPdfJobId, batchExpiryDate).then((filestoreid) => {
             const updateQuery = 'UPDATE egov_bulk_pdf_info SET filestoreid = $1, lastmodifiedby = $2, lastmodifiedtime = $3, status = $5 WHERE jobid = $4';
             const curentTimeStamp = new Date().getTime();
             const status = 'DONE';
             pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status]);
-            sendNoitification(filestoreid, mobileNumber, tenantId, batchDays);
+            sendNoitification(filestoreid, mobileNumber, tenantId, batchExpiryText);
         
           }).catch((err) => {
             logger.error(err.stack || err);
@@ -241,13 +249,14 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
   
 }
 
-export async function sendNoitification(filestoreid, mobileNumber, tenantId, expiryDays){
+export async function sendNoitification(filestoreid, mobileNumber, tenantId, expiryInfo){
   const topic = envVariables.KAFKA_TOPICS_NOTIFICATION;
   var pdfLink = await getFilestoreUrl(filestoreid, tenantId);
   let smsRequest = {};
   smsRequest['mobileNumber'] = mobileNumber;
-  if (expiryDays) {
-    smsRequest['message'] = `Your download is ready. It will expire in ${expiryDays} days. Please click on the link below to download the pdf.\n`+pdfLink;
+  if (expiryInfo) {
+    let suffix = String(expiryInfo).includes("day") || String(expiryInfo).includes("minute") || String(expiryInfo).includes("second") ? "" : " days";
+    smsRequest['message'] = `Your download is ready. It will expire in ${expiryInfo}${suffix}. Please click on the link below to download the pdf.\n`+pdfLink;
   } else {
     smsRequest['message'] = `Your download is ready. Please click on the link below to download the pdf.\n`+pdfLink;
   }

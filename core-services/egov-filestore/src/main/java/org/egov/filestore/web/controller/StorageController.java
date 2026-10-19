@@ -19,6 +19,7 @@ import org.egov.filestore.domain.service.StorageService;
 import org.egov.filestore.repository.impl.minio.MinioConfig;
 import org.egov.filestore.repository.impl.minio.MinioRepository;
 import org.egov.filestore.utils.StorageUtil;
+import org.egov.filestore.validator.StorageValidator;
 import org.egov.filestore.web.contract.File;
 import org.egov.filestore.web.contract.FileStoreResponse;
 import org.egov.filestore.web.contract.GetFilesByTagResponse;
@@ -56,15 +57,21 @@ public class StorageController {
 	private StorageService storageService;
 	private ResponseFactory responseFactory;
 	private StorageUtil storageUtil;
+	private StorageValidator storageValidator;
 	public static final Logger logger = LoggerFactory.getLogger(StorageController.class);
 	
 	@Autowired
 	public StorageController(StorageService storageService, ResponseFactory responseFactory,
-			StorageUtil storageUtil) {
+			StorageUtil storageUtil, StorageValidator storageValidator) {
 		this.storageService = storageService;
 		this.responseFactory = responseFactory;
 		this.storageUtil = storageUtil;
-		//this.fileStoreConfig = fileStoreConfig;
+		this.storageValidator = storageValidator;
+	}
+
+	public StorageController(StorageService storageService, ResponseFactory responseFactory,
+			StorageUtil storageUtil) {
+		this(storageService, responseFactory, storageUtil, null);
 	}
 
 	@GetMapping("/id")
@@ -163,7 +170,12 @@ public class StorageController {
 	public ResponseEntity<Map<String, Object>> deleteFilesPost(
 			@RequestParam(value = "tenantId", required = false) String tenantId,
 			@RequestParam(value = "fileStoreIds", required = false) List<String> fileStoreIds,
+			@RequestParam(value = "requestInfo", required = false) String requestInfo,
 			@RequestBody(required = false) Map<String, Object> requestBody) {
+		if (storageValidator != null) {
+			storageValidator.validateDeleteRequest(requestBody, requestInfo);
+		}
+
 		String finalTenantId = tenantId;
 		List<String> finalFileStoreIds = fileStoreIds != null ? new ArrayList<>(fileStoreIds) : new ArrayList<>();
 
@@ -196,10 +208,11 @@ public class StorageController {
 	@DeleteMapping(produces = APPLICATION_JSON_UTF8_VALUE)
 	@ResponseBody
 	public ResponseEntity<Map<String, Object>> deleteFiles(
-			@RequestParam(value = "tenantId") String tenantId,
-			@RequestParam("fileStoreIds") List<String> fileStoreIds) {
-		Map<String, Object> response = storageService.delete(fileStoreIds, tenantId);
-		return new ResponseEntity<>(response, HttpStatus.OK);
+			@RequestParam(value = "tenantId", required = false) String tenantId,
+			@RequestParam(value = "fileStoreIds", required = false) List<String> fileStoreIds,
+			@RequestParam(value = "requestInfo", required = false) String requestInfo,
+			@RequestBody(required = false) Map<String, Object> requestBody) {
+		return deleteFilesPost(tenantId, fileStoreIds, requestInfo, requestBody);
 	}
 	
 }

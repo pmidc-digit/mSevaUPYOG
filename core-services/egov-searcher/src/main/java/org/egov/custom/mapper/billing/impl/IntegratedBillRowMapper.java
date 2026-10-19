@@ -4,165 +4,400 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import org.egov.custom.mapper.billing.impl.Bill.StatusEnum;
 import org.egov.search.model.PropertyBasedBill;
-import org.egov.search.model.Connection;
-import org.egov.search.model.IntegratedBillDetail; // Using the new class
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class IntegratedBillRowMapper implements ResultSetExtractor<List<PropertyBasedBill>> {
 
+    @Autowired
+    private RestTemplate rest;
+
+    @Value("${egov.user.contextpath}")
+    private String userContext;
+
+    @Value("${egov.user.searchpath}")
+    private String userSearchPath;
+
     @Override
+    @SuppressWarnings("unchecked")
     public List<PropertyBasedBill> extractData(ResultSet rs) throws SQLException {
-        Map<String, PropertyBasedBill> propertyMap = new LinkedHashMap<>();
-        Map<String, Bill> billMap = new HashMap<>();
-        
-        // Map to hold temp lists of IntegratedBillDetail before consolidation
-        Map<String, List<IntegratedBillDetail>> detailTempMap = new HashMap<>();
+
+        Map<String, PropertyBasedBill> propertyBillMap = new LinkedHashMap<>();
+        Map<String, Bill> billMap = new LinkedHashMap<>();
+        Map<String, BillDetail> billDetailMap = new LinkedHashMap<>();
+        Set<String> accountDetailIds = new HashSet<>();
+        Set<String> userIds = new HashSet<>();
 
         while (rs.next()) {
-            String propId = rs.getString("propertyId");
-            String billId = rs.getString("b_id");
-            String detailId = rs.getString("bd_id");
+            String propertyId = getPropertyId(rs);
+            if (propertyId == null || propertyId.trim().isEmpty()) {
+                continue;
+            }
 
-            PropertyBasedBill pBill = propertyMap.computeIfAbsent(propId, id -> {
-                try { return mapProperty(rs, id); } 
-                catch (SQLException e) { throw new RuntimeException(e); }
-            });
+            // 1. Get or create PropertyBasedBill for the propertyId
+            PropertyBasedBill propertyBill = propertyBillMap.get(propertyId);
+            if (propertyBill == null) {
+                // Pre-populate both keys with empty map so they always appear in response
+                Map<String, Object> billsMap = new LinkedHashMap<>();
+                billsMap.put("waterBill", new LinkedHashMap<>());
+                billsMap.put("sewerageBill", new LinkedHashMap<>());
+
+                propertyBill = PropertyBasedBill.builder()
+                    .propertyId(propertyId)
+                    .tenantId(getStringSafely(rs, "b_tenantid"))
+                    .mobileNumber(getStringSafely(rs, "mobilenumber"))
+                    .bills(billsMap)
+                    .build();
+                propertyBillMap.put(propertyId, propertyBill);
+            }
+
+            // 2. Get or create Bill
+            String billId = getStringSafely(rs, "b_id");
+            if (billId == null || billId.trim().isEmpty()) {
+                continue;
+            }
 
             Bill bill = billMap.get(billId);
-            if (bill == null && billId != null) {
-                bill = mapBill(rs);
+            if (bill == null) {
+                bill = createBill(rs, propertyId, userIds);
                 billMap.put(billId, bill);
-                
+
+                // Determine key: waterBill or sewerageBill
                 String service = bill.getBusinessService();
-                if ("WS".equalsIgnoreCase(service)) pBill.getConnection().getWaterDetails().add(bill);
-                else if ("SW".equalsIgnoreCase(service)) pBill.getConnection().getSewerageDetails().add(bill);
-                
-                detailTempMap.put(billId, new ArrayList<>());
-            }
-
-            if (bill != null && detailId != null) {
-                List<IntegratedBillDetail> tempDetails = detailTempMap.get(billId);
-                
-                // Find or create the detail for this specific period
-                long from = rs.getLong("fromperiod");
-                IntegratedBillDetail currentDetail = tempDetails.stream()
-                        .filter(d -> d.getFromPeriod().equals(from))
-                        .findFirst()
-                        .orElse(null);
-
-                if (currentDetail == null) {
-                    currentDetail = IntegratedBillDetail.builder()
-                            .fromPeriod(from)
-                            .toPeriod(rs.getLong("toperiod"))
-                            .build();
-                    tempDetails.add(currentDetail);
+                String billTypeKey;
+                if ("SW".equalsIgnoreCase(service) || (service != null && service.toUpperCase().contains("SW"))) {
+                    billTypeKey = "sewerageBill";
+                } else {
+                    billTypeKey = "waterBill";
                 }
-                
-                accumulateTax(rs, currentDetail);
+
+                // Replace the pre-populated empty map with the actual Bill object
+                propertyBill.getBills().put(billTypeKey, bill);
+            }
+
+            // 3. Get or create BillDetail
+            String detailId = getStringSafely(rs, "bd_id");
+            if (detailId != null && !detailId.trim().isEmpty()) {
+                BillDetail billDetail = billDetailMap.get(detailId);
+                if (billDetail == null) {
+                    billDetail = createBillDetail(rs, detailId);
+                    billDetailMap.put(detailId, billDetail);
+                    bill.addBillDetailsItem(billDetail);
+                    if (billDetail.getAmount() != null) {
+                        bill.setTotalAmount(bill.getTotalAmount().add(billDetail.getAmount()));
+                    }
+                }
+
+                // 4. Create and add BillAccountDetail
+                String adId = getStringSafely(rs, "ad_id");
+                if (adId != null && !adId.trim().isEmpty() && !"NA".equalsIgnoreCase(adId.trim())) {
+                    if (accountDetailIds.add(adId)) {
+                        BillAccountDetail billAccDetail = createBillAccountDetail(rs, adId);
+                        billDetail.addBillAccountDetailsItem(billAccDetail);
+                    }
+                }
             }
         }
 
-        // Consolidation: Sort and separate Charge from Arrears
-        propertyMap.values().forEach(p -> {
-            consolidateBills(p.getConnection().getWaterDetails(), detailTempMap);
-            consolidateBills(p.getConnection().getSewerageDetails(), detailTempMap);
-            
-            // Re-calculate connection totals
-            Connection c = p.getConnection();
-            c.setTotalWaterAmount(sum(c.getWaterDetails()));
-            c.setTotalSewerageAmount(sum(c.getSewerageDetails()));
-            c.setPropertyTotalAmount(c.getTotalWaterAmount().add(c.getTotalSewerageAmount()));
-        });
-
-        return new ArrayList<>(propertyMap.values());
-    }
-
-    private void consolidateBills(List<Bill> bills, Map<String, List<IntegratedBillDetail>> tempMap) {
-        for (Bill bill : bills) {
-            List<IntegratedBillDetail> details = tempMap.get(bill.getId());
-            if (details == null || details.isEmpty()) continue;
-
-            // Sort: Newest Period First
-            details.sort(Comparator.comparing(IntegratedBillDetail::getFromPeriod).reversed());
-
-            BigDecimal arrearsSum = BigDecimal.ZERO;
-            BigDecimal chargeLatest = BigDecimal.ZERO;
-            BigDecimal penaltySum = BigDecimal.ZERO;
-            BigDecimal interestSum = BigDecimal.ZERO;
-            BigDecimal advanceSum = BigDecimal.ZERO;
-
-            for (int i = 0; i < details.size(); i++) {
-                IntegratedBillDetail d = details.get(i);
-                if (i == 0) chargeLatest = d.getCharge();
-                else arrearsSum = arrearsSum.add(d.getCharge());
-
-                penaltySum = penaltySum.add(d.getPenalty());
-                interestSum = interestSum.add(d.getInterest());
-                advanceSum = advanceSum.add(d.getAdvance());
+        // Sort billDetails by fromPeriod desc and billAccountDetails by order asc
+        for (Bill bill : billMap.values()) {
+            if (bill.getBillDetails() != null && bill.getBillDetails().size() > 1) {
+                bill.getBillDetails().sort((b1, b2) -> {
+                    if (b1.getFromPeriod() == null && b2.getFromPeriod() == null) return 0;
+                    if (b1.getFromPeriod() == null) return 1;
+                    if (b2.getFromPeriod() == null) return -1;
+                    return b2.getFromPeriod().compareTo(b1.getFromPeriod());
+                });
             }
-
-            // Create the final flat summary detail
-            IntegratedBillDetail summary = IntegratedBillDetail.builder()
-                    .fromPeriod(details.get(0).getFromPeriod())
-                    .toPeriod(details.get(0).getToPeriod())
-                    .charge(chargeLatest)
-                    .arrears(arrearsSum)
-                    .penalty(penaltySum)
-                    .interest(interestSum)
-                    .advance(advanceSum)
-                    .totalAmount(chargeLatest.add(arrearsSum).add(penaltySum).add(interestSum).subtract(advanceSum))
-                    .build();
-
-            // Set the new detail (Assuming you update your Bill class to accept List<IntegratedBillDetail>)
-            bill.setIntegratedBillDetails(Collections.singletonList(summary));
-            bill.setTotalAmount(summary.getTotalAmount());
+            if (bill.getBillDetails() != null) {
+                for (BillDetail bd : bill.getBillDetails()) {
+                    if (bd.getBillAccountDetails() != null && bd.getBillAccountDetails().size() > 1) {
+                        bd.getBillAccountDetails().sort((a1, a2) -> {
+                            if (a1.getOrder() == null && a2.getOrder() == null) return 0;
+                            if (a1.getOrder() == null) return 1;
+                            if (a2.getOrder() == null) return -1;
+                            return a1.getOrder().compareTo(a2.getOrder());
+                        });
+                    }
+                }
+            }
         }
+
+        // Populate user information
+        List<PropertyBasedBill> propertyBills = new ArrayList<>(propertyBillMap.values());
+        if (!CollectionUtils.isEmpty(userIds)) {
+            assignUsersToBills(propertyBills, userIds);
+        }
+
+        return propertyBills;
     }
 
-    private void accumulateTax(ResultSet rs, IntegratedBillDetail detail) throws SQLException {
-        String taxHead = rs.getString("ad_taxheadcode");
-        BigDecimal amt = rs.getBigDecimal("ad_amount");
-        if (amt == null) amt = BigDecimal.ZERO;
+    private Bill createBill(ResultSet rs, String propertyId, Set<String> userIds) throws SQLException {
+        AuditDetails auditDetails = new AuditDetails();
+        auditDetails.setCreatedBy(getStringSafely(rs, "b_createdby"));
+        auditDetails.setCreatedTime(getLongSafely(rs, "b_createddate"));
+        auditDetails.setLastModifiedBy(getStringSafely(rs, "b_lastmodifiedby"));
+        auditDetails.setLastModifiedTime(getLongSafely(rs, "b_lastmodifieddate"));
 
-        if (taxHead.contains("_CHARGE")) detail.setCharge(detail.getCharge().add(amt));
-        else if (taxHead.contains("_PENALTY")) detail.setPenalty(detail.getPenalty().add(amt));
-        else if (taxHead.contains("_INTEREST")) detail.setInterest(detail.getInterest().add(amt));
-        else if (taxHead.contains("_ADVANCE")) detail.setAdvance(detail.getAdvance().add(amt));
-    }
+        Address address = Address.builder()
+            .doorNo(getStringSafely(rs, "ptadd_doorno"))
+            .landmark(getStringSafely(rs, "ptadd_landmark"))
+            .city(getStringSafely(rs, "ptadd_city"))
+            .pincode(getStringSafely(rs, "ptadd_pincode"))
+            .locality(getStringSafely(rs, "ptadd_locality"))
+            .street(getStringSafely(rs, "ptadd_street"))
+            .region(getStringSafely(rs, "ptadd_region"))
+            .plotno(getStringSafely(rs, "ptadd_plotno"))
+            .buildingname(getStringSafely(rs, "ptadd_buildingname"))
+            .district(getStringSafely(rs, "ptadd_district"))
+            .state(getStringSafely(rs, "ptadd_state"))
+            .latitude(getStringSafely(rs, "ptadd_latitude"))
+            .longitude(getStringSafely(rs, "ptadd_longitude"))
+            .build();
 
-    private PropertyBasedBill mapProperty(ResultSet rs, String id) throws SQLException {
-        return PropertyBasedBill.builder()
-                .propertyId(id)
-                .tenantId(rs.getString("b_tenantid"))
-                .ledgerNo(rs.getString("ledger_no")) 
-                .plotSize(rs.getString("pt_plotsize"))
-                .usageType(rs.getString("pt_usage"))
-                .mobileNo(rs.getString("mobilenumber"))
-                .locality(rs.getString("ptadd_locality"))
-                .address(rs.getString("ptadd_doorNo") + ", " + rs.getString("ptadd_city"))
-                .connection(Connection.builder()
-                        .waterDetails(new ArrayList<>()).sewerageDetails(new ArrayList<>())
-                        .totalWaterAmount(BigDecimal.ZERO).totalSewerageAmount(BigDecimal.ZERO)
-                        .propertyTotalAmount(BigDecimal.ZERO).build())
+        String userId = getStringSafely(rs, "ptown_userid");
+        User user = User.builder().id(userId).build();
+        if (userId != null && !userId.trim().isEmpty()) {
+            userIds.add(userId.trim());
+        }
+
+        String oldPropertyId = getOldPropertyId(rs);
+
+        Connection connection = new Connection();
+        try {
+            connection.setPropertyId(propertyId);
+            connection.setOldConnectionNo(oldPropertyId);
+            connection.setStatus(getStringSafely(rs, "conn_status"));
+            connection.setAdditionalDetails(getObjectSafely(rs, "conn_add"));
+        } catch (Exception ex) {
+            log.info("Exception in connection mapping: ", ex);
+        }
+
+        MeterReading meterReading = null;
+        String mrConnectionNo = getStringSafely(rs, "mr_connectionno");
+        if (mrConnectionNo != null && !mrConnectionNo.trim().isEmpty()) {
+            meterReading = MeterReading.builder()
+                .connectionno(mrConnectionNo)
+                .lastReading(getBigDecimalSafely(rs, "mr_lastreading"))
+                .lastReadingDate(getLongSafely(rs, "mr_lastreadingdate"))
+                .currentReading(getBigDecimalSafely(rs, "mr_currentreading"))
+                .currentReadingDate(getLongSafely(rs, "mr_currentreadingdate"))
+                .consumption(getBigDecimalSafely(rs, "mr_consumption"))
+                .meterStatus(getStringSafely(rs, "mr_meterstatus"))
+                .billingPeriod(getStringSafely(rs, "mr_billingperiod"))
                 .build();
-    }
+        } else {
+            meterReading = new MeterReading();
+        }
 
-    private Bill mapBill(ResultSet rs) throws SQLException {
+        String statusStr = getStringSafely(rs, "b_status");
+        StatusEnum status = null;
+        if (statusStr != null) {
+            status = StatusEnum.fromValue(statusStr.trim().toUpperCase());
+        }
+
         return Bill.builder()
-                .id(rs.getString("b_id"))
-                .businessService(rs.getString("bd_businessservice"))
-                .consumerCode(rs.getString("bd_consumercode"))
-                .billNumber(rs.getString("bd_billno"))
-                .billDate(rs.getLong("bd_billdate"))
-                .payerName(rs.getString("b_payername"))
-                .build();
+            .id(getStringSafely(rs, "b_id"))
+            .propertyId(propertyId)
+            .pid(propertyId)
+            .oldPropertyId(oldPropertyId)
+            .oldpid(oldPropertyId)
+            .totalAmount(BigDecimal.ZERO)
+            .tenantId(getStringSafely(rs, "b_tenantid"))
+            .payerName(getStringSafely(rs, "b_payername"))
+            .payerAddress(getStringSafely(rs, "b_payeraddress"))
+            .payerEmail(getStringSafely(rs, "b_payeremail"))
+            .mobileNumber(getStringSafely(rs, "mobilenumber"))
+            .status(status)
+            .businessService(getStringSafely(rs, "bd_businessservice"))
+            .billNumber(getStringSafely(rs, "bd_billno"))
+            .billDate(getLongSafely(rs, "bd_billdate"))
+            .consumerCode(getStringSafely(rs, "bd_consumercode"))
+            .partPaymentAllowed(getBooleanSafely(rs, "bd_partpaymentallowed"))
+            .isAdvanceAllowed(getBooleanSafely(rs, "bd_isadvanceallowed"))
+            .additionalDetails(getObjectSafely(rs, "b_additionaldetails"))
+            .auditDetails(auditDetails)
+            .fileStoreId(getStringSafely(rs, "b_filestoreid"))
+            .address(address)
+            .user(user)
+            .connection(connection)
+            .meterReading(meterReading)
+            .billDetails(new ArrayList<>())
+            .build();
     }
 
-    private BigDecimal sum(List<Bill> bills) {
-        return bills.stream().map(Bill::getTotalAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+    private BillDetail createBillDetail(ResultSet rs, String detailId) throws SQLException {
+        return BillDetail.builder()
+            .id(detailId)
+            .tenantId(getStringSafely(rs, "bd_tenantid"))
+            .billId(getStringSafely(rs, "bd_billid"))
+            .demandId(getStringSafely(rs, "demandid"))
+            .fromPeriod(getLongSafely(rs, "fromperiod"))
+            .toPeriod(getLongSafely(rs, "toperiod"))
+            .amount(getBigDecimalSafely(rs, "bd_totalamount"))
+            .expiryDate(getLongSafely(rs, "bd_expirydate"))
+            .additionalDetails(getObjectSafely(rs, "bd_additionaldetails"))
+            .billAccountDetails(new ArrayList<>())
+            .build();
+    }
+
+    private BillAccountDetail createBillAccountDetail(ResultSet rs, String adId) throws SQLException {
+        return BillAccountDetail.builder()
+            .id(adId)
+            .tenantId(getStringSafely(rs, "ad_tenantid"))
+            .billDetailId(getStringSafely(rs, "ad_billdetail"))
+            .order(getIntSafely(rs, "ad_orderno"))
+            .amount(getBigDecimalSafely(rs, "ad_amount"))
+            .adjustedAmount(getBigDecimalSafely(rs, "ad_adjustedamount"))
+            .taxHeadCode(getStringSafely(rs, "ad_taxheadcode"))
+            .demandDetailId(getStringSafely(rs, "demanddetailid"))
+            .additionalDetails(getObjectSafely(rs, "ad_additionaldetails"))
+            .build();
+    }
+
+    private void assignUsersToBills(List<PropertyBasedBill> propertyBills, Set<String> userIds) {
+        if (CollectionUtils.isEmpty(userIds)) {
+            return;
+        }
+        try {
+            UserSearchCriteria userCriteria = UserSearchCriteria.builder().uuid(userIds).build();
+            UserResponse res = rest.postForObject(userContext.concat(userSearchPath), userCriteria, UserResponse.class);
+            if (res != null && !CollectionUtils.isEmpty(res.getUsers())) {
+                Map<String, String> users = res.getUsers().stream()
+                    .filter(u -> u.getUuid() != null && u.getName() != null)
+                    .collect(Collectors.toMap(User::getUuid, User::getName, (u1, u2) -> u1));
+
+                propertyBills.forEach(propertyBill -> {
+                    if (propertyBill.getBills() != null) {
+                        propertyBill.getBills().forEach((key, value) -> {
+                            if (value instanceof Bill) {
+                                Bill bill = (Bill) value;
+                                if (bill.getUser() != null && bill.getUser().getId() != null) {
+                                    String name = users.get(bill.getUser().getId());
+                                    if (name != null) {
+                                        bill.getUser().setName(name);
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        } catch (Exception e) {
+            log.error("Error fetching user details from user service: ", e);
+        }
+    }
+
+    private String getPropertyId(ResultSet rs) {
+        String propertyId = getStringSafely(rs, "propertyId");
+        if (propertyId == null || propertyId.trim().isEmpty()) {
+            propertyId = getStringSafely(rs, "pid");
+        }
+        return propertyId != null ? propertyId.trim() : null;
+    }
+
+    private String getOldPropertyId(ResultSet rs) {
+        String oldPid = getStringSafely(rs, "oldPropertyId");
+        if (oldPid == null || oldPid.trim().isEmpty()) {
+            oldPid = getStringSafely(rs, "oldpid");
+        }
+        return oldPid != null ? oldPid.trim() : null;
+    }
+
+    private String getStringSafely(ResultSet rs, String column) {
+        try {
+            return rs.getString(column);
+        } catch (SQLException e1) {
+            try {
+                return rs.getString(column.toLowerCase());
+            } catch (SQLException e2) {
+                try {
+                    return rs.getString(column.toUpperCase());
+                } catch (SQLException e3) {
+                    return null;
+                }
+            }
+        }
+    }
+
+    private Long getLongSafely(ResultSet rs, String column) {
+        try {
+            Object val = rs.getObject(column);
+            if (val instanceof Number) return ((Number) val).longValue();
+            return null;
+        } catch (SQLException e1) {
+            try {
+                Object val = rs.getObject(column.toLowerCase());
+                if (val instanceof Number) return ((Number) val).longValue();
+                return null;
+            } catch (SQLException e2) {
+                return null;
+            }
+        }
+    }
+
+    private BigDecimal getBigDecimalSafely(ResultSet rs, String column) {
+        try {
+            return rs.getBigDecimal(column);
+        } catch (SQLException e1) {
+            try {
+                return rs.getBigDecimal(column.toLowerCase());
+            } catch (SQLException e2) {
+                return null;
+            }
+        }
+    }
+
+    private Boolean getBooleanSafely(ResultSet rs, String column) {
+        try {
+            return rs.getBoolean(column);
+        } catch (SQLException e1) {
+            try {
+                return rs.getBoolean(column.toLowerCase());
+            } catch (SQLException e2) {
+                return null;
+            }
+        }
+    }
+
+    private Integer getIntSafely(ResultSet rs, String column) {
+        try {
+            Object val = rs.getObject(column);
+            if (val instanceof Number) return ((Number) val).intValue();
+            return null;
+        } catch (SQLException e1) {
+            try {
+                Object val = rs.getObject(column.toLowerCase());
+                if (val instanceof Number) return ((Number) val).intValue();
+                return null;
+            } catch (SQLException e2) {
+                return null;
+            }
+        }
+    }
+
+    private Object getObjectSafely(ResultSet rs, String column) {
+        try {
+            return rs.getObject(column);
+        } catch (SQLException e1) {
+            try {
+                return rs.getObject(column.toLowerCase());
+            } catch (SQLException e2) {
+                return null;
+            }
+        }
     }
 }
+

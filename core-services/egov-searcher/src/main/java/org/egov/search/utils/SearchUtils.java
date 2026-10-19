@@ -94,15 +94,19 @@ public class SearchUtils {
 			    Map<String, Object> criteriaMap = (Map<String, Object>) criteriaObj;
 			    Object url = criteriaMap.get("url");
 			    if (url != null && url.toString().contains("inboxswachsearchall")) {
-			        whereClause = buildWhereClauseForSwachSearchAll(searchRequest, searchParam, preparedStatementValues); // custom logic
+			        whereClause = buildWhereClauseForSwachSearchAll(searchRequest, searchParam, baseQuery, preparedStatementValues); // custom logic
 			    } else {
-			        whereClause = buildWhereClause(searchRequest, searchParam, preparedStatementValues); // default logic
+			        whereClause = buildWhereClause(searchRequest, searchParam, baseQuery, preparedStatementValues); // default logic
 			    }
 			} else {
-			    whereClause = buildWhereClause(searchRequest, searchParam, preparedStatementValues); // fallback
+			    whereClause = buildWhereClause(searchRequest, searchParam, baseQuery, preparedStatementValues); // fallback
 			}
 			String paginationClause = getPaginationClause(searchRequest, searchParam.getPagination());
-			where.append(" WHERE ").append(whereClause + " ");
+			if (whereClause != null && whereClause.trim().length() > 0) {
+				where.append(" WHERE ").append(whereClause + " ");
+			} else {
+				where.append(" WHERE 1=1 ");
+			}
 			if (null != query.getGroupBy()) {
 				queryString.append(" GROUP BY ").append(query.getGroupBy() + " ");
 			}
@@ -130,7 +134,11 @@ public class SearchUtils {
 	 * @return
 	 */
 	
-	public String buildWhereClauseForSwachSearchAll(SearchRequest searchRequest, SearchParams searchParam,  Map<String, Object> preparedStatementValues) {
+	public String buildWhereClauseForSwachSearchAll(SearchRequest searchRequest, SearchParams searchParam, Map<String, Object> preparedStatementValues) {
+		return buildWhereClauseForSwachSearchAll(searchRequest, searchParam, null, preparedStatementValues);
+	}
+
+	public String buildWhereClauseForSwachSearchAll(SearchRequest searchRequest, SearchParams searchParam, String baseQuery, Map<String, Object> preparedStatementValues) {
 	    StringBuilder whereClause = new StringBuilder();
 	    String condition = searchParam.getCondition();
 	    Pattern p = Pattern.compile("->>");
@@ -152,6 +160,34 @@ public class SearchUtils {
 	                    paramValue = JsonPath.read(request, param.getJsonPath());
 	            } catch (Exception e) {
 	                log.error("Error while building where clause: " + e.getMessage());
+	            }
+
+	            boolean isExplicitInQuery = baseQuery != null && (
+	                baseQuery.contains(":" + param.getName()) || 
+	                (param.getName().contains(".") && baseQuery.contains(":" + param.getName().substring(param.getName().indexOf(".") + 1)))
+	            );
+
+	            if (paramValue != null) {
+	                preparedStatementValues.put(param.getName(), paramValue);
+	                if (param.getName().contains(".")) {
+	                    String simpleName = param.getName().substring(param.getName().indexOf(".") + 1);
+	                    if (!preparedStatementValues.containsKey(simpleName)) {
+	                        preparedStatementValues.put(simpleName, paramValue);
+	                    }
+	                }
+	                if (isExplicitInQuery) {
+	                    continue;
+	                }
+	            } else {
+	                if (isExplicitInQuery) {
+	                    preparedStatementValues.put(param.getName(), null);
+	                    if (param.getName().contains(".")) {
+	                        String simpleName = param.getName().substring(param.getName().indexOf(".") + 1);
+	                        if (!preparedStatementValues.containsKey(simpleName)) {
+	                            preparedStatementValues.put(simpleName, null);
+	                        }
+	                    }
+	                }
 	                continue;
 	            }
 
@@ -243,7 +279,11 @@ public class SearchUtils {
 	}
 
 	
-	public String buildWhereClause(SearchRequest searchRequest, SearchParams searchParam,  Map<String, Object> preparedStatementValues) {
+	public String buildWhereClause(SearchRequest searchRequest, SearchParams searchParam, Map<String, Object> preparedStatementValues) {
+		return buildWhereClause(searchRequest, searchParam, null, preparedStatementValues);
+	}
+
+	public String buildWhereClause(SearchRequest searchRequest, SearchParams searchParam, String baseQuery, Map<String, Object> preparedStatementValues) {
 		StringBuilder whereClause = new StringBuilder();
 		String condition = searchParam.getCondition();
 		Pattern p = Pattern.compile("->>");
@@ -266,11 +306,36 @@ public class SearchUtils {
 					} else
 						paramValue = JsonPath.read(request, param.getJsonPath());
 
-					if (null == paramValue)
-						continue;
-
 				} catch (Exception e) {
 					log.debug("Optional param not found in request: " + e.getMessage());
+				}
+
+				boolean isExplicitInQuery = baseQuery != null && (
+					baseQuery.contains(":" + param.getName()) || 
+					(param.getName().contains(".") && baseQuery.contains(":" + param.getName().substring(param.getName().indexOf(".") + 1)))
+				);
+
+				if (paramValue != null) {
+					preparedStatementValues.put(param.getName(), paramValue);
+					if (param.getName().contains(".")) {
+						String simpleName = param.getName().substring(param.getName().indexOf(".") + 1);
+						if (!preparedStatementValues.containsKey(simpleName)) {
+							preparedStatementValues.put(simpleName, paramValue);
+						}
+					}
+					if (isExplicitInQuery) {
+						continue;
+					}
+				} else {
+					if (isExplicitInQuery) {
+						preparedStatementValues.put(param.getName(), null);
+						if (param.getName().contains(".")) {
+							String simpleName = param.getName().substring(param.getName().indexOf(".") + 1);
+							if (!preparedStatementValues.containsKey(simpleName)) {
+								preparedStatementValues.put(simpleName, null);
+							}
+						}
+					}
 					continue;
 				}
 				
@@ -645,6 +710,44 @@ public class SearchUtils {
 		ri.setKey("key");
 		ri.setMsgId("msgId");
 		return ri;
+	}
+
+	public static String getExecutableQuery(String query, Map<String, Object> preparedStatementValues) {
+		if (query == null || preparedStatementValues == null || preparedStatementValues.isEmpty()) {
+			return query;
+		}
+		String formattedQuery = query;
+		List<String> sortedKeys = new ArrayList<>(preparedStatementValues.keySet());
+		sortedKeys.sort((a, b) -> Integer.compare(b.length(), a.length()));
+
+		for (String key : sortedKeys) {
+			Object val = preparedStatementValues.get(key);
+			String replacement;
+			if (val == null) {
+				replacement = "NULL";
+			} else if (val instanceof Number || val instanceof Boolean) {
+				replacement = val.toString();
+			} else if (val instanceof Collection) {
+				Collection<?> col = (Collection<?>) val;
+				List<String> items = new ArrayList<>();
+				for (Object item : col) {
+					if (item == null) {
+						items.add("NULL");
+					} else if (item instanceof Number || item instanceof Boolean) {
+						items.add(item.toString());
+					} else {
+						items.add("'" + item.toString().replace("'", "''") + "'");
+					}
+				}
+				replacement = String.join(", ", items);
+			} else {
+				replacement = "'" + val.toString().replace("'", "''") + "'";
+			}
+
+			String regex = ":" + Pattern.quote(key) + "(?![a-zA-Z0-9_])";
+			formattedQuery = formattedQuery.replaceAll(regex, Matcher.quoteReplacement(replacement));
+		}
+		return formattedQuery;
 	}
 
 }

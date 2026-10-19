@@ -316,14 +316,13 @@ const uploadFiles = async (
       let itemModule = moduleName || key || "pdfgen";
 
       if (isconsolidated && isBill) {
+        let batchDays = envVariables.BATCH_EXPIRATION_DAYS || 15;
         if (envVariables.BATCH_EXPIRATION_SECONDS && envVariables.BATCH_EXPIRATION_SECONDS > 0) {
           itemExpiry = new Date().getTime() + (envVariables.BATCH_EXPIRATION_SECONDS * 1000);
         } else {
-          let batchDays = envVariables.BATCH_EXPIRATION_DAYS || 15;
           itemExpiry = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
         }
         itemTag = jobid;
-        itemExpiry = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
         itemModule = "bulk-bill";
       }
 

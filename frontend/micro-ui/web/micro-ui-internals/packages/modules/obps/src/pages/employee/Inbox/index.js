@@ -29,10 +29,10 @@ const Inbox = ({ parentRoute }) => {
   const { data: cities } = Digit.Hooks.useTenants();
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
-  const [topBarSearch, setTopBarSearch] = useState("");
-  const [apiMobileSearch, setApiMobileSearch] = useState("");
+  const [topBarSearch, setTopBarSearch] = useState(() => Digit.SessionStorage.get("OBPS.INBOX")?.searchForm?.applicationNo || "");
+  const [apiMobileSearch, setApiMobileSearch] = useState(() => Digit.SessionStorage.get("OBPS.INBOX")?.searchForm?.mobileNumber || "");
 
-  const searchFormDefaultValues = useMemo(() => ({ mobileNumber: "" }), []);
+  const searchFormDefaultValues = useMemo(() => ({ mobileNumber: "", applicationNo: "" }), []);
 
   const filterFormDefaultValues = useMemo(
     () => ({
@@ -68,6 +68,15 @@ const Inbox = ({ parentRoute }) => {
 
   function formReducer(state, payload) {
     switch (payload.action) {
+      case "submitApiSearch": {
+        const updatedState = {
+          ...state,
+          searchForm: { ...state.searchForm, ...payload.data },
+          tableForm: { ...state.tableForm, offset: 0 },
+        };
+        Digit.SessionStorage.set("OBPS.INBOX", updatedState);
+        return updatedState;
+      }
       case "mutateSearchForm":
         Digit.SessionStorage.set("OBPS.INBOX", { ...state, searchForm: payload.data });
         return { ...state, searchForm: payload.data };
@@ -411,18 +420,15 @@ const Inbox = ({ parentRoute }) => {
     [formState.tableForm, formState.filterForm]
   );
 
-  const onApiMobileSearch = useCallback(
-    (mobileNumber) => {
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({ action: "mutateSearchForm", data: { mobileNumber: mobileNumber?.trim() || "" } });
-    },
-    [formState.searchForm, formState.tableForm]
-  );
+  const onApiMobileSearch = useCallback(() => {
+    dispatch({ action: "submitApiSearch", data: { mobileNumber: apiMobileSearch.trim(), applicationNo: topBarSearch.trim() } });
+  }, [apiMobileSearch, topBarSearch]);
 
   const onApiMobileClear = useCallback(() => {
     setApiMobileSearch("");
-    onApiMobileSearch("");
-  }, [onApiMobileSearch]);
+    setTopBarSearch("");
+    dispatch({ action: "submitApiSearch", data: { mobileNumber: "", applicationNo: "" } });
+  }, []);
 
   const propsForInboxTable = useInboxTableConfig({
     parentRoute,
@@ -432,7 +438,7 @@ const Inbox = ({ parentRoute }) => {
     table: tableData,
     dispatch,
     onSortingByData,
-    globalSearch: topBarSearch,
+    globalSearch: "",
     cities,
     enableColumnSearch: true,
   });
@@ -635,9 +641,10 @@ const Inbox = ({ parentRoute }) => {
               statuses={filteredTopBarStatuses}
               activeTab={activeStatusTab}
               onTabClick={onStatusTabClick}
+              submitSearchTogether
               searchValue={topBarSearch}
               onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search applications, names, mobile numbers, or status..."
+              searchPlaceholder="Search by application number..."
               apiMobileValue={apiMobileSearch}
               onApiMobileChange={(e) => setApiMobileSearch(e.target.value)}
               onApiMobileSearch={onApiMobileSearch}
@@ -652,7 +659,7 @@ const Inbox = ({ parentRoute }) => {
           tableData={tableData}
           tableProps={propsForInboxTable}
           tableHeader="ES_INBOX_INBOX"
-          pagination={!String(topBarSearch || "").trim() && (
+          pagination={(
             <InboxPagination
               offset={formState.tableForm?.offset || 0}
               limit={formState.tableForm?.limit || 10}

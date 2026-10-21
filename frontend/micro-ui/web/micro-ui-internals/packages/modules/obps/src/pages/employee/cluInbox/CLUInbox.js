@@ -30,8 +30,8 @@ const CLUInbox = ({ parentRoute }) => {
   const defaultAssignee = isEmployee && !hasViewOBPSCardRole ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL";
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
-  const [topBarSearch, setTopBarSearch] = useState("");
-  const [apiMobileSearch, setApiMobileSearch] = useState("");
+  const [topBarSearch, setTopBarSearch] = useState(() => Digit.SessionStorage.get("CLU.INBOX")?.searchForm?.applicationNumber || "");
+  const [apiMobileSearch, setApiMobileSearch] = useState(() => Digit.SessionStorage.get("CLU.INBOX")?.searchForm?.mobileNumber || "");
 
   const searchFormDefaultValues = useMemo(
     () => ({
@@ -74,6 +74,11 @@ const CLUInbox = ({ parentRoute }) => {
 
   function formReducer(state, payload) {
     switch (payload.action) {
+      case "submitApiSearch": {
+        const updatedState = { ...state, searchForm: { ...state.searchForm, ...payload.data }, tableForm: { ...state.tableForm, offset: 0 } };
+        Digit.SessionStorage.set("CLU.INBOX", updatedState);
+        return updatedState;
+      }
       case "mutateSearchForm":
         Digit.SessionStorage.set("CLU.INBOX", { ...state, searchForm: payload.data });
         return { ...state, searchForm: payload.data };
@@ -160,7 +165,6 @@ const CLUInbox = ({ parentRoute }) => {
 
   const memoizedFilters = useMemo(() => {
     const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
-    const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
     const normalizedFilterForm = {
       ...(formState?.filterForm || filterFormDefaultValues),
     };
@@ -174,8 +178,8 @@ const CLUInbox = ({ parentRoute }) => {
       searchForm: formState?.searchForm || searchFormDefaultValues,
       tableForm: {
         ...tableForm,
-        limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
-        offset: isTopBarSearchActive ? 0 : tableForm.offset,
+        limit: tableForm.limit,
+        offset: tableForm.offset,
       },
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
@@ -188,8 +192,6 @@ const CLUInbox = ({ parentRoute }) => {
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
     selectedTenantIdDefaultValues,
-    topBarSearch,
-    totalCountData,
   ]);
 
   // const effectiveTenantId = tenantId === "pb.punjab" ? formState?.selectedTenantId?.tenantId || cities?.[0]?.code || tenantId : tenantId;
@@ -371,18 +373,15 @@ const CLUInbox = ({ parentRoute }) => {
     [formState.tableForm, formState.filterForm]
   );
 
-  const onApiMobileSearch = useCallback(
-    (mobileNumber) => {
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({ action: "mutateSearchForm", data: { mobileNumber: mobileNumber?.trim() || "", applicationNumber: "" } });
-    },
-    [formState.searchForm, formState.tableForm]
-  );
+  const onApiMobileSearch = useCallback(() => {
+    dispatch({ action: "submitApiSearch", data: { mobileNumber: apiMobileSearch.trim(), applicationNumber: topBarSearch.trim() } });
+  }, [apiMobileSearch, topBarSearch]);
 
   const onApiMobileClear = useCallback(() => {
     setApiMobileSearch("");
-    onApiMobileSearch("");
-  }, [onApiMobileSearch]);
+    setTopBarSearch("");
+    dispatch({ action: "submitApiSearch", data: { mobileNumber: "", applicationNumber: "" } });
+  }, []);
 
   const propsForInboxTable = useCLUTableConfig({
     enableColumnSearch: true,
@@ -394,7 +393,7 @@ const CLUInbox = ({ parentRoute }) => {
     dispatch,
     onSortingByData,
     tenantId,
-    globalSearch: topBarSearch,
+    globalSearch: "",
     cities,
   });
 
@@ -573,9 +572,10 @@ const CLUInbox = ({ parentRoute }) => {
               statuses={[]}
               activeTab={activeStatusTab}
               onTabClick={onStatusTabClick}
+              submitSearchTogether
               searchValue={topBarSearch}
               onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search applications, names, mobile numbers, or status..."
+              searchPlaceholder="Search by application number..."
               apiMobileValue={apiMobileSearch}
               onApiMobileChange={(e) => setApiMobileSearch(e.target.value)}
               onApiMobileSearch={onApiMobileSearch}
@@ -593,7 +593,7 @@ const CLUInbox = ({ parentRoute }) => {
           tableProps={{ ...propsForInboxTable, stickyHorizontalScrollbar: true }}
           tableHeader="ES_INBOX_INBOX"
           pagination={
-            !String(topBarSearch || "").trim() && (
+            (
               <InboxPagination
                 offset={formState.tableForm?.offset || 0}
                 limit={formState.tableForm?.limit || 10}

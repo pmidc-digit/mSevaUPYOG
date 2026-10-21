@@ -122,7 +122,9 @@ public class PageSizeExtract extends FeatureExtract {
 		Measurement measurement = new MeasurementDetail(sheet, true);
 		planDetail.setPageSize(Collections.singletonList(measurement));
 
-		validate(planDetail);
+		if (Plan.isPagesizeValidationEnabled()) {
+			validate(planDetail);
+		}
 
 		return planDetail;
 	}
@@ -161,13 +163,11 @@ public class PageSizeExtract extends FeatureExtract {
 			}
 		}
 
-		if (Plan.isWorkSheetValidationEnabled()) {
-			planDetail.addError("WORK_SHEET",
-					"Invalid WORK_SHEET size: " + measurement.getHeight() + " x " + measurement.getWidth()
+		
+		planDetail.addError("WORK_SHEET", "Invalid WORK_SHEET size: " + 
+				measurement.getHeight() + " x " + measurement.getWidth()
 							+ ". It must correspond to one of the supported paper sizes "
-							+ "(A3, A2, A1, A0, 2A0 or 4A0) at a valid drawing scale.");
-		}
-
+							+ "(A3, A2, A1, A0, 2A0 or 4A0) at a valid drawing scale.");	
 		return null;
 	}
 

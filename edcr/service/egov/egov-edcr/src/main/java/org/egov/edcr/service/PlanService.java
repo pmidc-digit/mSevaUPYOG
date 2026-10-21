@@ -147,11 +147,16 @@ public class PlanService {
 
 	@Value("${edcr.worksheet.validation.enabled:false}")
 	private boolean workSheetValidationEnabled;
+	
+	@Value("${edcr.pagesize.validation.enabled:false}")
+	private boolean pageSizeValidationEnabled;
 
 	@javax.annotation.PostConstruct
 	public void initWorkSheetValidationFlag() {
 	    Plan.setWorkSheetValidationEnabled(workSheetValidationEnabled);
+	    Plan.setPagesizeValidationEnabled(pageSizeValidationEnabled);
 	    LOG.info("WORK_SHEET validation enabled = {}", workSheetValidationEnabled);
+	    LOG.info("Page Size validation enabled = {}", pageSizeValidationEnabled);
 	}
 	
 	

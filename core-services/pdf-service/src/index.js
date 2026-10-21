@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 import http from "http";
 import request from "request";
 import express from "express";
@@ -45,7 +45,9 @@ import {
   mergePdfForDN,
   getBulkPdfRecordsDetails,
   getDefaulterPdfRecordsDetails,
-  cancelBulkPdfProcess
+  cancelBulkPdfProcess,
+  updateBillFileStoreId,
+  cleanupExpiredBulkPdfs
 } from "./queries";
 import {
   listenConsumer
@@ -174,7 +176,8 @@ const createPdfBinary = async (
   totalobjectcount,
   userid,
   documentType,
-  moduleName
+  moduleName,
+  recordsMetadata = []
 ) => {
   try {
     let noOfDefinitions = listDocDefinition.length;
@@ -208,7 +211,8 @@ const createPdfBinary = async (
             totalobjectcount,
             userid,
             documentType,
-            moduleName
+            moduleName,
+            recordsMetadata
           ),
           uploadFiles(
             dbInsertSingleRecords,
@@ -227,7 +231,8 @@ const createPdfBinary = async (
             totalobjectcount,
             userid,
             documentType,
-            moduleName
+            moduleName,
+            recordsMetadata
           )
       });
     }
@@ -258,7 +263,8 @@ const uploadFiles = async (
   totalobjectcount,
   userid,
   documentType,
-  moduleName
+  moduleName,
+  recordsMetadata = []
 ) => {
   let convertedListDocDefinition = [];
   let listOfFilestoreIds = [];
@@ -301,7 +307,27 @@ const uploadFiles = async (
     doc.on("end", function () {
       // console.log("enddddd "+cr++);
       var data = Buffer.concat(chunks);
-      fileStoreAPICall(filename, tenantId, data)
+      let isBill = (key && key.toLowerCase().includes("bill")) || 
+                   (moduleName && moduleName.toLowerCase().includes("bill")) || 
+                   (documentType && documentType.toLowerCase().includes("bill"));
+
+      let meta = (recordsMetadata && recordsMetadata[i]) || {};
+      let itemTag = (isBill && meta.consumerCode) ? meta.consumerCode : (entityIds[i] || "00040-2017-QR");
+      let itemExpiry = isBill ? (meta.expiryDate || null) : null;
+      let itemModule = moduleName || key || "pdfgen";
+
+      if (isconsolidated && isBill) {
+        let batchDays = envVariables.BATCH_EXPIRATION_DAYS || 15;
+        if (envVariables.BATCH_EXPIRATION_SECONDS && envVariables.BATCH_EXPIRATION_SECONDS > 0) {
+          itemExpiry = new Date().getTime() + (envVariables.BATCH_EXPIRATION_SECONDS * 1000);
+        } else {
+          itemExpiry = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
+        }
+        itemTag = jobid;
+        itemModule = "bulk-bill";
+      }
+
+      fileStoreAPICall(filename, tenantId, data, itemModule, itemTag, itemExpiry)
         .then((result) => {
           listOfFilestoreIds.push(result);
           logger.info("listOfFilestoreIds size :" + listOfFilestoreIds.length)
@@ -324,6 +350,12 @@ const uploadFiles = async (
               documentType,
               moduleName,
             });
+
+            if (isBill) {
+              let meta = (recordsMetadata && recordsMetadata[i]) || {};
+              let effectiveTenantId = meta.billTenantId || tenantId;
+              updateBillFileStoreId(meta.billId, meta.billNumber, meta.consumerCode, effectiveTenantId, result, userid);
+            }
 
             // insertStoreIds(jobid,entityIds[i],[result],tenantId,starttime,successCallback,errorCallback,1,false);
           } else if (
@@ -730,7 +762,28 @@ app.post(
       });
     }
   })
+);
 
+app.post(
+  "/pdf-service/v1/_cleanupExpiredBulkPdfs",
+  asyncHandler(async (req, res) => {
+    let requestInfo = get(req.body, "RequestInfo");
+    try {
+      let deletedJobs = await cleanupExpiredBulkPdfs();
+      res.status(200).json({
+        ResponseInfo: requestInfo,
+        totalCleaned: deletedJobs.length,
+        cleanedJobs: deletedJobs,
+        message: `Successfully cleaned up ${deletedJobs.length} expired bulk PDF(s)`
+      });
+    } catch (error) {
+      logger.error(error.stack || error);
+      res.status(500).json({
+        ResponseInfo: requestInfo,
+        message: "Error while cleaning up expired bulk PDF records"
+      });
+    }
+  })
 );
 
 app.post(
@@ -896,7 +949,7 @@ export const createAndSave = async (
 
   var valid = validateRequest(req, res, key, tenantId, requestInfo);
   if (valid) {
-    let [formatConfigByFile, totalobjectcount, entityIds] = await prepareBegin(
+    let [formatConfigByFile, totalobjectcount, entityIds, recordsMetadata] = await prepareBegin(
       key,
       req,
       requestInfo,
@@ -934,7 +987,8 @@ export const createAndSave = async (
       totalobjectcount,
       userid,
       documentType,
-      moduleName
+      moduleName,
+      recordsMetadata
     ).catch((err) => {
       logger.error(err.stack || err);
       errorCallback({
@@ -1277,6 +1331,7 @@ const prepareBulk = async (
   let formatConfigByFile = [];
   let totalobjectcount = 0;
   let entityIds = [];
+  let recordsMetadata = [];
   let countOfObjectsInCurrentFile = 0;
   let moduleObjectsArray = getValue(
     jp.query(req.body || req, baseKeyPath),
@@ -1294,6 +1349,42 @@ const prepareBulk = async (
         entityIdPath
       );
       entityIds.push(entityKey[0]);
+
+      let isBill = (key && key.toLowerCase().includes("bill")) ||
+                   (moduleName && moduleName.toLowerCase().includes("bill")) ||
+                   (documentType && documentType.toLowerCase().includes("bill"));
+
+      let consumerCode = null;
+      let expiryDate = null;
+      let billId = null;
+      let billNumber = null;
+      let billTenantId = null;
+      if (isBill) {
+        billId = moduleObject.id ||
+          (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].billId) ||
+          null;
+        billNumber = moduleObject.billNumber ||
+          (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].billNo) ||
+          null;
+        consumerCode = moduleObject.consumerCode ||
+          (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].consumerCode) ||
+          moduleObject.connectionNo ||
+          entityKey[0] || "";
+        expiryDate = moduleObject.expiryDate ||
+          (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].expiryDate) ||
+          null;
+        billTenantId = moduleObject.tenantId ||
+          (moduleObject.billDetails && moduleObject.billDetails[0] && moduleObject.billDetails[0].tenantId) ||
+          null;
+      }
+      recordsMetadata.push({
+        billId,
+        billNumber,
+        consumerCode,
+        expiryDate,
+        entityId: entityKey[0],
+        billTenantId
+      });
 
       let formatObject = JSON.parse(JSON.stringify(formatconfig));
 
@@ -1339,7 +1430,7 @@ const prepareBulk = async (
         countOfObjectsInCurrentFile = 0;
       }
     }
-    return [formatConfigByFile, totalobjectcount, entityIds];
+    return [formatConfigByFile, totalobjectcount, entityIds, recordsMetadata];
   } else {
     logger.error(
       `could not find property of type array in request body with name ${baseKeyPath}`

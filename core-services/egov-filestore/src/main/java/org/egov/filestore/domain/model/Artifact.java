@@ -1,4 +1,4 @@
-package org.egov.filestore.domain.model;
+﻿package org.egov.filestore.domain.model;
 
 import lombok.*;
 
@@ -29,6 +29,22 @@ public class Artifact {
 
     private Long createdTime;
 
-    private Long lastModifiedTime; 
+    private Long lastModifiedTime;
+
+    private Long expiryDate;
+
+    public Artifact(String fileContentInString, MultipartFile multipartFile, FileLocation fileLocation,
+            Map<String, BufferedImage> thumbnailImages, String createdBy, String lastModifiedBy, Long createdTime,
+            Long lastModifiedTime) {
+        this.fileContentInString = fileContentInString;
+        this.multipartFile = multipartFile;
+        this.fileLocation = fileLocation;
+        this.thumbnailImages = thumbnailImages;
+        this.createdBy = createdBy;
+        this.lastModifiedBy = lastModifiedBy;
+        this.createdTime = createdTime;
+        this.lastModifiedTime = lastModifiedTime;
+        this.expiryDate = null;
+    }
 }
 

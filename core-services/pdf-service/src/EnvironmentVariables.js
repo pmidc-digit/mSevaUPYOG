@@ -1,4 +1,4 @@
-const envVariables = {
+﻿const envVariables = {
   MAX_NUMBER_PAGES: process.env.MAX_NUMBER_PAGES || 80,
   EGOV_HOST: process.env.EGOV_HOST || "https://upyog-test.niua.org",
   EGOV_LOCALISATION_HOST:
@@ -25,12 +25,18 @@ const envVariables = {
   DB_NAME: process.env.DB_NAME || "PdfGen",
   DB_PORT: process.env.DB_PORT || 5432,
   EGOV_EXTERNAL_HOST: process.env.EGOV_EXTERNAL_HOST || "https://dev.digit.org/" ,
+  EGOV_URL_SHORTENING_HOST: process.env.EGOV_URL_SHORTENING_HOST || process.env.EGOV_URL_SHORTNER_HOST || "http://egov-url-shortening:8080",
   SAVE_PDF_DIR: process.env.SAVE_PDF_DIR || '/mnt/pdf/',
   DEFAULT_LOCALISATION_LOCALE:
     process.env.DEFAULT_LOCALISATION_LOCALE || "en_IN",
     DEFAULT_LOCALISATION_TENANT:
     process.env.DEFAULT_LOCALISATION_TENANT || "pg",
     DATA_CONFIG_URLS: process.env.DATA_CONFIG_URLS,
-    FORMAT_CONFIG_URLS: process.env.FORMAT_CONFIG_URLS
+    FORMAT_CONFIG_URLS: process.env.FORMAT_CONFIG_URLS,
+    BATCH_EXPIRATION_DAYS: parseInt(process.env.BATCH_EXPIRATION_DAYS || "15", 10),
+    BATCH_EXPIRATION_SECONDS: parseInt(process.env.BATCH_EXPIRATION_SECONDS || "0", 10),
+    DELETE_AUTHORIZED_USER_UUID: process.env.DELETE_AUTHORIZED_USER_UUID || "UUIID",
+    DELETE_AUTHORIZED_USER_ID: process.env.DELETE_AUTHORIZED_USER_ID || "111111",
+    DELETE_AUTHORIZED_ROLE_CODE: process.env.DELETE_AUTHORIZED_ROLE_CODE || "NULL"
 };
 export default envVariables;

@@ -221,7 +221,7 @@ public class ElasticService implements IESService {
 		try {
 			ResponseEntity<Object> response = retryTemplate.postForEntity(url.toString(), requestEntity);
 			LOGGER.info("Status code on pushing to collection index : {}",  response.getStatusCode());
-			if (response.getStatusCode().value() == HttpStatus.CREATED.value())
+			if (response.getStatusCode().is2xxSuccessful())
 				return Boolean.TRUE;
 
 		} catch (HttpClientErrorException e) {
@@ -230,6 +230,54 @@ public class ElasticService implements IESService {
 			//caughtFailedRequests.put(dataObjectId.toString(), request);
 			LOGGER.error("client error while pushing ES collection index : {}, {}" ,e.getMessage(), requestEntity.getBody());
 
+		}
+		return Boolean.FALSE;
+	}
+
+	@Override
+	public Boolean bulkPush(List<Map> requestBodies) throws Exception {
+		if (requestBodies == null || requestBodies.isEmpty()) {
+			return Boolean.TRUE;
+		}
+		StringBuilder url = new StringBuilder().append(indexerServiceHost).append(collectionIndexName).append(SLASH_SEPERATOR).append("_bulk");
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.valueOf("application/x-ndjson"));
+
+		StringBuilder ndjson = new StringBuilder();
+		ObjectMapper mapper = new ObjectMapper();
+
+		for (Map doc : requestBodies) {
+			Object id = doc.get(Constants.IDENTIFIER);
+			Object trxid = null;
+			if (doc.get(Constants.DATA_OBJECT) instanceof Map) {
+				trxid = ((Map) doc.get(Constants.DATA_OBJECT)).get(Constants.TRANSACTION_ID);
+			}
+			String docId = (id != null) ? id.toString() : (trxid != null ? trxid.toString() : null);
+
+			Map<String, Object> action = new HashMap<>();
+			Map<String, Object> actionDetails = new HashMap<>();
+			actionDetails.put("_index", collectionIndexName);
+			if (DOC_PATH != null && !DOC_PATH.isEmpty()) {
+				actionDetails.put("_type", DOC_PATH);
+			}
+			if (docId != null) {
+				actionDetails.put("_id", docId);
+			}
+			action.put("index", actionDetails);
+
+			ndjson.append(mapper.writeValueAsString(action)).append("\r\n");
+			ndjson.append(mapper.writeValueAsString(doc)).append("\r\n");
+		}
+
+		HttpEntity<String> requestEntity = new HttpEntity<>(ndjson.toString(), headers);
+		try {
+			ResponseEntity<Object> response = retryTemplate.postForEntity(url.toString(), requestEntity);
+			LOGGER.info("Status code on bulk push to ES: {}", response.getStatusCode());
+			if (response.getStatusCode().is2xxSuccessful()) {
+				return Boolean.TRUE;
+			}
+		} catch (Exception e) {
+			LOGGER.error("client error while pushing ES bulk: {}", e.getMessage());
 		}
 		return Boolean.FALSE;
 	}

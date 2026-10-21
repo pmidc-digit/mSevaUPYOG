@@ -1,4 +1,4 @@
-package org.egov.filestore.persistence.repository;
+﻿package org.egov.filestore.persistence.repository;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,11 +12,15 @@ import org.egov.filestore.domain.model.Resource;
 import org.egov.filestore.persistence.entity.Artifact;
 import org.egov.filestore.repository.CloudFilesManager;
 import org.egov.filestore.repository.impl.minio.MinioRepository;
+import org.egov.filestore.config.FileStoreConfig;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class ArtifactRepository {
 
@@ -24,6 +28,9 @@ public class ArtifactRepository {
 	
 	@Autowired
 	private CloudFilesManager cloudFilesManager;
+
+	@Autowired
+	private FileStoreConfig fileStoreConfig;
 
 	@Value("${isAzureStorageEnabled}")
 	private Boolean isAzureStorageEnabled;
@@ -133,5 +140,37 @@ public class ArtifactRepository {
 
 	public List<Artifact> getByTenantIdAndFileStoreIdList(String tenantId, List<String> fileStoreIds) {
 		return fileStoreJpaRepository.findByTenantIdAndFileStoreIdList(tenantId, fileStoreIds);
+	}
+
+	public void delete(List<String> fileStoreIds, String tenantId) {
+		if (CollectionUtils.isEmpty(fileStoreIds)) {
+			return;
+		}
+		List<Artifact> allArtifacts = fileStoreJpaRepository.findByTenantIdAndFileStoreIdList(tenantId, fileStoreIds);
+		if (!CollectionUtils.isEmpty(allArtifacts)) {
+			List<Artifact> billArtifacts = allArtifacts.stream().filter(this::isBillArtifact).collect(Collectors.toList());
+			List<Artifact> nonBillArtifacts = allArtifacts.stream().filter(a -> !isBillArtifact(a)).collect(Collectors.toList());
+			if (!nonBillArtifacts.isEmpty()) {
+				for (Artifact nonBill : nonBillArtifacts) {
+					log.warn("SAFETY LOCK: Refusing to delete non-bill fileStoreId: {} (module: '{}'). Only bill/bulk-bill documents are permitted for deletion.",
+							nonBill.getFileStoreId(), nonBill.getModule());
+				}
+			}
+			if (!billArtifacts.isEmpty()) {
+				cloudFilesManager.deleteFiles(billArtifacts);
+				if (Boolean.TRUE.equals(fileStoreConfig.getIsBillAutoDeleteEnabled())) {
+					fileStoreJpaRepository.deleteAll(billArtifacts);
+				}
+			}
+		}
+	}
+
+	private boolean isBillArtifact(Artifact artifact) {
+		String module = artifact.getModule();
+		if (module == null) {
+			return false;
+		}
+		String lower = module.toLowerCase();
+		return lower.contains("bill") || lower.equalsIgnoreCase("billing-service");
 	}
 }

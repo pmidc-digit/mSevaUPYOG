@@ -1,4 +1,4 @@
-package org.egov.filestore.repository;
+﻿package org.egov.filestore.repository;
 
 import java.util.List;
 import java.util.Map;
@@ -27,5 +27,12 @@ public interface CloudFilesManager {
 	 * @return
 	 */
 	public Map<String, String> getFiles(List<org.egov.filestore.persistence.entity.Artifact> artifacts);
+
+	/**
+	 * Interface to delete the files from cloud storage (MinIO / Azure).
+	 *
+	 * @param artifacts list of persistent artifact entities to delete
+	 */
+	public void deleteFiles(List<org.egov.filestore.persistence.entity.Artifact> artifacts);
 
 }

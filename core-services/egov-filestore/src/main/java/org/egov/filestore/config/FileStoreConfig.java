@@ -1,4 +1,4 @@
-package org.egov.filestore.config;
+﻿package org.egov.filestore.config;
 
 import java.util.List;
 import java.util.Map;
@@ -56,6 +56,18 @@ public class FileStoreConfig {
 	
 	@Value("#{'${allowed.to.make.zip.extensions}'.split(',')}") 
 	private List<String> allowedToMakeZipExtensions;
+
+	@Value("${bill.auto.delete.enabled:false}")
+	private Boolean isBillAutoDeleteEnabled;
+
+	@Value("${delete.authorized.user.uuid:4ee}")
+	private String deleteAuthorizedUserUuid;
+
+	@Value("${delete.authorized.user.id:111111}")
+	private String deleteAuthorizedUserId;
+
+	@Value("${delete.authorized.role.code:SYSTEM}")
+	private String deleteAuthorizedRoleCode;
 	
 	@PostConstruct
 	private void enrichKeysetForFormats() {

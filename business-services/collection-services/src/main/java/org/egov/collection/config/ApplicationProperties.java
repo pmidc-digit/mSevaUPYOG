@@ -125,6 +125,12 @@ public class ApplicationProperties {
     @Value("${egov.services.billing_service.search}")
     private String searchBill;
 
+    @Value("${egov.services.billing_service.cancelbill}")
+    private String billingServiceCancelBill;
+
+    @Value("${egov.services.billing_service.reactivatebill}")
+    private String billingServiceReactivateBill;
+
     @Value("${kafka.topics.update.receipt.workflowdetails}")
     private String kafkaUpdateWorkFlowDetailsTopic;
 

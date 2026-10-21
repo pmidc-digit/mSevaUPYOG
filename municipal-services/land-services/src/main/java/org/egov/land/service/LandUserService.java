@@ -117,13 +117,7 @@ public class LandUserService {
 
 		UserSearchRequest userSearchRequest = new UserSearchRequest();
 		userSearchRequest.setTenantId(owner.getTenantId().split("\\.")[0]);
-		userSearchRequest.setMobileNumber(owner.getMobileNumber());
 		userSearchRequest.setUserName(StringUtils.isEmpty(owner.getUserName()) ? owner.getMobileNumber() : owner.getUserName() );
-		if(!StringUtils.isEmpty(owner.getUuid())) {
-			List<String> uuids = new ArrayList<String>();
-			uuids.add(owner.getUuid());
-			userSearchRequest.setUuid(uuids);
-		}
 
 		StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
 		return userCall(userSearchRequest, uri);

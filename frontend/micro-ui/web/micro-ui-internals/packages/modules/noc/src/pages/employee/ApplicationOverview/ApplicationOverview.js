@@ -541,23 +541,7 @@ const NOCEmployeeApplicationOverview = () => {
   //   }
   // }
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
-    if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
-        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-        onClick: () =>
-          getRecieptSearch({
-            tenantId: reciept_data?.Payments[0]?.tenantId,
-            payments: reciept_data?.Payments[0],
-            EmpData,
-            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
-          }),
-      });
-      dowloadOptions.push({
-        label: t("CHB_FEE_RECEIPT"),
-        onClick: () =>
-          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData, filestoreId :  reciept_data?.Payments[0]?.fileStoreId}),
-      });
-    } else if (
+    if (
       applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.isMigrationTrue &&
       applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
     ) {
@@ -573,6 +557,23 @@ const NOCEmployeeApplicationOverview = () => {
       });
     }
   }
+  if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: reciept_data?.Payments[0]?.tenantId,
+            payments: reciept_data?.Payments[0],
+            EmpData,
+            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+          }),
+      });
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData, filestoreId :  reciept_data?.Payments[0]?.fileStoreId}),
+      });
+    }
   useEffect(() => {
     const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
     const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
@@ -684,6 +685,7 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
+  const isNocReadOnly = userRoles?.some((role) => (role || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("READONLY"));
 
   useEffect(() => {
     // if (workflowDetails) {
@@ -1600,7 +1602,7 @@ const NOCEmployeeApplicationOverview = () => {
             }}
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" || isNocReadOnly}
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
             actions={actions}
           />

@@ -133,6 +133,9 @@ const BpaApplicationDetail = () => {
     }
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
+  const isBpaReadOnly =
+    userRoles?.some((r) => (r || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("READONLY")) &&
+    !userRoles?.some((r) => (r || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("CTP"));
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -2699,6 +2702,7 @@ const BpaApplicationDetail = () => {
           ) : (
             <FeeEstimation
               data={data}
+              disable={isBpaReadOnly}
               currentStepData={{
                 createdResponse: {
                   ...(data?.applicationData || {}),

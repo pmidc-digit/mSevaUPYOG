@@ -460,50 +460,77 @@ const NOCApplicantDetails = (_props) => {
         // }
       }
 
-      // Get current form values to preserve user-filled data
-      const currentOwners = watch("owners");
+      if (currentIndex !== null && property?.propertyId) {
+        const propOwners = Array.isArray(property?.owners) && property.owners.length > 0 ? property.owners : [];
+        const allOwnerNames = propOwners.map((o) => o?.name).filter(Boolean).join(", ");
+        const allOwnerMobiles = propOwners.map((o) => o?.mobileNumber).filter(Boolean).join(", ");
+        const plotArea = convertSquareYardsToMeters(property?.landArea);
+        const vasikaNo = property?.additionalDetails?.vasikaNo || null;
+        const vasikaDate = property?.additionalDetails?.vasikaDate || null;
+        const locality = property?.address?.locality || null;
+        const proposedAddress = propOwners[0]?.permanentAddress || property?.address?.doorNo || "";
 
-      // Update Redux applicationDetails
-      dispatch(
-        UPDATE_NOCNewApplication_FORM("applicationDetails", {
-          ...currentStepData?.applicationDetails,
-          isPropertyAvailable: isPropertyAvailable, // Ensure flag persists
-          owners: currentOwners?.map((o, i) =>
-            i === currentIndex
-              ? {
-                  ...o,
-                  propertyId: property?.propertyId,
-                  PropertyOwnerName: property?.owners?.[0]?.name,
-                  PropertyOwnerMobileNumber: property?.owners?.[0]?.mobileNumber,
-                  PropertyOwnerAddress: property?.owners?.[0]?.permanentAddress,
-                  PropertyOwnerPlotArea: convertSquareYardsToMeters(property?.landArea),
-                  propertyVasikaNo: property?.additionalDetails?.vasikaNo,
-                  propertyVasikaDate: property?.additionalDetails?.vasikaDate,
-                  localityAreaType: property?.address?.locality,
-                  ...(currentIndex === 0 && {
-                    ownerOrFirmName: property?.owners?.[0]?.name || o.ownerOrFirmName,
-                    mobileNumber: property?.owners?.[0]?.mobileNumber || o.mobileNumber,
-                    address: o.address,
-                  }),
-                }
-              : o
-          ),
-        })
-      );
+        // 1. Map ALL owners from the property into the form owners structure
+        const mappedOwners = propOwners.length > 0
+          ? propOwners.map((propOwner, idx) => ({
+              ...defaultOwner(),
+              mobileNumber: propOwner?.mobileNumber || "",
+              ownerOrFirmName: propOwner?.name || "",
+              fatherOrHusbandName: propOwner?.fatherOrHusbandName || "",
+              emailId: propOwner?.emailId || "",
+              gender: findGenderOption(propOwner?.gender),
+              address: propOwner?.permanentAddress || "",
+              propertyId: property.propertyId,
+              PropertyOwnerName: allOwnerNames || propOwner?.name || "",
+              PropertyOwnerMobileNumber: allOwnerMobiles || propOwner?.mobileNumber || "",
+              PropertyOwnerAddress: propOwner?.permanentAddress || proposedAddress,
+              PropertyOwnerPlotArea: plotArea,
+              propertyVasikaNo: vasikaNo,
+              propertyVasikaDate: vasikaDate,
+              localityAreaType: locality,
+              ownerType: idx === 0 ? watch("owners[0].ownerType") || null : null,
+              firmName: idx === 0 ? watch("owners[0].firmName") || "" : "",
+            }))
+          : [
+              {
+                ...defaultOwner(),
+                propertyId: property.propertyId,
+                PropertyOwnerPlotArea: plotArea,
+                propertyVasikaNo: vasikaNo,
+                propertyVasikaDate: vasikaDate,
+                localityAreaType: locality,
+              },
+            ];
 
-      // Update Redux siteDetails
-      dispatch(
-        UPDATE_NOCNewApplication_FORM("siteDetails", {
-          ...currentStepData?.siteDetails,
-          vasikaNumber: property?.additionalDetails?.vasikaNo,
-          vasikaDate: formatDateForInput(property?.additionalDetails?.vasikaDate),
-          netTotalArea: convertSquareYardsToMeters(property?.landArea),
-          proposedSiteAddress: property?.owners?.[0]?.permanentAddress,
-          localityAreaType: property?.address?.locality,
-        })
-      );
-    }
+        // 2. Update React Hook Form state so all owner cards render
+        reset({
+          ...getValues(),
+          owners: mappedOwners,
+        });
+
+        // 3. Dispatch ALL owners to Redux applicationDetails
+        dispatch(
+          UPDATE_NOCNewApplication_FORM("applicationDetails", {
+            ...currentStepData?.applicationDetails,
+            isPropertyAvailable: isPropertyAvailable,
+            owners: mappedOwners,
+          })
+        );
+
+        // 4. Update Redux siteDetails
+        dispatch(
+          UPDATE_NOCNewApplication_FORM("siteDetails", {
+            ...currentStepData?.siteDetails,
+            vasikaNumber: vasikaNo,
+            vasikaDate: formatDateForInput(vasikaDate),
+            netTotalArea: plotArea,
+            proposedSiteAddress: proposedAddress,
+            localityAreaType: locality,
+          })
+        );
+      }
   };
+
 
   const isEdit = window.location.pathname.includes("edit");
 

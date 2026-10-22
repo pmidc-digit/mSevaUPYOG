@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 import CitizenHomeCardSecond from "@mseva/digit-ui-module-core/src/pages/citizen/CitizenHomeCardSecond";
 import { ProfessionalSignUpdate } from "../../pageComponents/ProfessionalSignUpdate";
+import { ScrutinyManualNoticeModal } from "../../pageComponents/ScrutinyManualNoticeModal";
 import { OBPS_BPA_BUSINESS_SERVICES } from "../../../../../constants/constants";
 import { LoaderNew } from "../../components/LoaderNew";
 
@@ -26,6 +27,11 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
   const { data: homePageUrlLinks, isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(state, "BPA", ["homePageUrlLinks"]);
   const [showToast, setShowToast] = useState(null);
   const [showModal, setShowModal] = useState(false)
+  const [showNoticeModal, setShowNoticeModal] = useState(true);
+
+  const closeNoticeModal = () => {
+    setShowNoticeModal(false);
+  };
   // const [totalCount, setTotalCount] = useState("-");
   const user = Digit.UserService?.getUser()
   const tenantId = localStorage.getItem("CITIZEN.CITY");
@@ -306,6 +312,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
         );
       })}
       {showModal && <ProfessionalSignUpdate closeModal={closeModal} userDetails={userDetails} refetch={refetch}/>}
+      {showNoticeModal && <ScrutinyManualNoticeModal closeModal={closeNoticeModal} />}
     </div>
   );
   sessionStorage.setItem("isPermitApplication", true);

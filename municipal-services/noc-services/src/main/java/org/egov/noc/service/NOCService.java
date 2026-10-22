@@ -319,7 +319,7 @@ public class NOCService {
 						noc.getWorkflow().setAssignes(null);
 				}
 
-				if (CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
+				if ("SENDBACKTOCITIZEN".equalsIgnoreCase(action) && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
 					String createdBy = null;
 					if (searchResult != null && searchResult.getAuditDetails() != null) {
 						createdBy = searchResult.getAuditDetails().getCreatedBy();

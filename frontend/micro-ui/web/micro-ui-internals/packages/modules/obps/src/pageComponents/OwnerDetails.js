@@ -688,7 +688,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         newErrors[`name_${index}`] = t("Name is required");
         isValid = false;
       }
-      if(owner?.isPrimaryOwner && owner?.name && !(owner?.name?.trim() === currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.applicantName?.trim())){
+      if (
+        owner?.isPrimaryOwner &&
+        owner?.name &&
+        owner.name.trim().toLowerCase() !==
+          currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.applicantName?.trim()?.toLowerCase()
+      ) {
         newErrors[`name_${index}`] = t("PRIMARY_OWNER_APPLICANT_NAME_VALIDATION_MESSAGE");
         isValid = false;
       }

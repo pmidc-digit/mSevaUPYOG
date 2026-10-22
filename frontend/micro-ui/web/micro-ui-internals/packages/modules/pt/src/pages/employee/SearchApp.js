@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { TextInput, Label, SubmitBar, LinkLabel, ActionBar, CloseSvg, DatePicker, CardLabelError, SearchForm, SearchField, Dropdown, Toast } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
-import { useParams } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import { useTranslation } from "react-i18next";
 import PTSearchApplication from "../../components/SearchApplication";
 
@@ -45,6 +45,11 @@ const SearchApp = ({path}) => {
        config,
       );
     return <React.Fragment>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "12px", marginBottom: "16px" }}>
+          <Link to="/digit-ui/employee/pt/new-application" className="pt-new-inbox-application-button">{t("ES_TITLE_NEW_REGISTRATION")}</Link>
+          <Link to="/digit-ui/employee/pt/search" className="pt-new-inbox-secondary-link">{t("PT_SEARCH_PROPERTY")}</Link>
+          <Link to="/digit-ui/employee/pt/application-search" className="pt-new-inbox-secondary-link">{t("ES_COMMON_APPLICATION_SEARCH")}</Link>
+        </div>
         <PTSearchApplication t={t} isLoading={isLoading} tenantId={tenantId} setShowToast={setShowToast} onSubmit={onSubmit} data={  isSuccess && !isLoading ? (searchReult.length>0? searchReult : { display: "ES_COMMON_NO_DATA" } ):""} count={count} /> 
         {showToast && (
         <Toast

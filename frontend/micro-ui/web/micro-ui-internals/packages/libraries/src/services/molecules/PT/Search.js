@@ -1,4 +1,4 @@
-import { getPropertySubtypeLocale, getPropertyTypeLocale } from "../../../utils/pt";
+import { formatVasikaDate, getPropertySubtypeLocale, getPropertyTypeLocale } from "../../../utils/pt";
 import { PTService } from "../../elements/PT";
 
 const getBooleanDisplayValue = (value) => (value === true ? "Yes" : "No");
@@ -263,7 +263,7 @@ export const PTSearch = {
 
 
           { title: "Vasika No", value: response?.additionalDetails?.vasikaNo },
-          { title: "Vasika Date", value: response?.additionalDetails?.vasikaDate },
+          { title: "Vasika Date", value: formatVasikaDate(response?.additionalDetails?.vasikaDate) },
           { title: "Allotment No", value: response?.additionalDetails?.allotmentNo },
           { title: "Allotment Date", value: response?.additionalDetails?.allotmentDate },
           { title: "Business Name", value: response?.additionalDetails?.businessName },

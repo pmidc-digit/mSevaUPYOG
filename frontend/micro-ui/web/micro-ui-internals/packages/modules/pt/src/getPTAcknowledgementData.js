@@ -10,6 +10,7 @@ import {
   pdfDocumentName,
   pdfDownloadLink,
   getCityLocale,
+  formatVasikaDate,
 } from "./utils";
 import { LinkLabel } from "@mseva/digit-ui-react-components";
 
@@ -113,7 +114,7 @@ const getAssessmentInfo = (application, t) => {
     { title: t("PT_ASSESMENT_INFO_ELECTRICITY_UID"), value: t(application?.additionalDetails?.uid) || t("CS_NA") },
 
     { title: t("PT_ASSESMENT_INFO_VASIKA_NO"), value: t(application?.additionalDetails?.vasikaNo) || t("CS_NA") },
-    { title: t("PT_ASSESMENT_INFO_VASIKA_DATE"), value: t(application?.additionalDetails?.vasikaDate) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_VASIKA_DATE"), value: formatVasikaDate(application?.additionalDetails?.vasikaDate) || t("CS_NA") },
     { title: t("PT_ASSESMENT_INFO_ALLOTMENT_NO"), value: t(application?.additionalDetails?.allotmentNo) || t("CS_NA") },
     { title: t("PT_ASSESMENT_INFO_ALLOTMENT_DATE"), value: t(application?.additionalDetails?.allotmentDate) || t("CS_NA") },
     { title: t("PT_ASSESMENT_INFO_REMARKS"), value: t(application?.additionalDetails?.remarks) || t("CS_NA") },

@@ -2,6 +2,7 @@ import React, { Fragment } from "react";
 import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { pdfDownloadLink, formatVasikaDate } from "../utils";
 
 function PTSummaryEmployee({ formData, t }) {
   const reduxFormData = useSelector((state) => state.pt.PTNewApplicationFormReducer?.formData || {});
@@ -34,6 +35,20 @@ function PTSummaryEmployee({ formData, t }) {
 
     return unitFloors.length ? String(Math.max(...unitFloors)) : "NA";
   };
+
+  const handleDocumentDownload = async (doc) => {
+    if (!doc?.fileStoreId) return;
+    try {
+      const tenantId = 'pb';
+      const res = await Digit.UploadServices.Filefetch([doc.fileStoreId], tenantId);
+      const documentLink = pdfDownloadLink(res?.data, doc.fileStoreId);
+      if (documentLink) window.open(documentLink, "_blank");
+    } catch (error) {
+      console.error("Document download failed", error);
+    }
+  };
+
+  const downloadLinkStyle = { marginLeft: "8px", fontSize: "13px", fontWeight: "600", color: "#A52A2A", cursor: "pointer", textDecoration: "underline", background: "none", border: "none", padding: 0 };
 
   const isInstitutionalOwnership = formData?.ownerShipDetails?.ownershipCategory?.code?.includes("INSTITUTIONAL") || formData?.originalData?.ownershipCategory?.includes("INSTITUTION");
   console.log('isInstitutionalOwnership:, formData', isInstitutionalOwnership, formData);
@@ -205,6 +220,11 @@ function PTSummaryEmployee({ formData, t }) {
                           <span style={{ marginLeft: "auto", fontSize: "12px", fontWeight: "600", color: "#00875A", background: "#E3FCEF", padding: "2px 8px", borderRadius: "9999px" }}>
                             {t("Uploaded") || "Uploaded"}
                           </span>
+                          {doc?.fileStoreId && (
+                            <button type="button" onClick={() => handleDocumentDownload(doc)} style={downloadLinkStyle}>
+                              {t("CS_COMMON_DOWNLOAD")}
+                            </button>
+                          )}
                         </div>
                       ))
                     ) : (
@@ -290,7 +310,7 @@ function PTSummaryEmployee({ formData, t }) {
               {window.location.href.includes("/citizen") ? null : (
                 <LabelFieldPair>
                   <CardLabel>{t("Vasika Date")}</CardLabel>
-                  <div>{formData?.PropertyDetails?.vasikaDetails?.vasikaDate || "NA"}</div>
+                  <div>{formatVasikaDate(formData?.PropertyDetails?.vasikaDetails?.vasikaDate) || "NA"}</div>
                 </LabelFieldPair>
               )}
               {window.location.href.includes("/citizen") ? null : (
@@ -445,7 +465,14 @@ function PTSummaryEmployee({ formData, t }) {
               {formData?.DocummentDetails?.documents?.documents?.map((doc, index) => (
                 <LabelFieldPair key={index}>
                   <CardLabel>{t("Document")}</CardLabel>
-                  <div>{doc.documentType || "NA"}</div>
+                  <div>
+                    {doc.documentType || "NA"}
+                    {doc?.fileStoreId && (
+                      <button type="button" onClick={() => handleDocumentDownload(doc)} style={downloadLinkStyle}>
+                        {t("CS_COMMON_DOWNLOAD")}
+                      </button>
+                    )}
+                  </div>
                 </LabelFieldPair>
               ))}
             </div>

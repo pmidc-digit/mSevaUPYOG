@@ -2,9 +2,10 @@ import { ActionButton, Localities, Toast } from "@mseva/digit-ui-react-component
 import PropertyType from "../../utils/PropertyType";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 const styles = {
- 
+
   heroTitle: { margin: "1rem", fontSize: "24px", fontWeight: 700, color: "#0b0c0c", lineHeight: 1.3 },
   formCard: {
     padding: "20px",
@@ -280,14 +281,14 @@ const Search = () => {
   });
   return (
     <React.Fragment>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
-          <h1 style={styles.heroTitle}>{t("SEARCH_PROPERTY")}</h1>
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "12px", marginLeft: "auto" }}>
-            <ActionButton to="/digit-ui/employee/pt/new-application" label={t("ES_TITLE_NEW_REGISTRATION")} showPlusIcon />
-            <ActionButton to="/digit-ui/employee/pt/search" label={t("PT_SEARCH_PROPERTY")} primary />
-            <ActionButton to="/digit-ui/employee/pt/application-search" label={t("ES_COMMON_APPLICATION_SEARCH")} />
-          </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+        <h1 style={styles.heroTitle}>{t("SEARCH_PROPERTY")}</h1>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "12px", marginLeft: "auto" }}>
+          <Link to="/digit-ui/employee/pt/new-application" className="pt-new-inbox-application-button">{t("ES_TITLE_NEW_REGISTRATION")}</Link>
+          <Link to="/digit-ui/employee/pt/search" className="pt-new-inbox-secondary-link">{t("PT_SEARCH_PROPERTY")}</Link>
+          <Link to="/digit-ui/employee/pt/application-search" className="pt-new-inbox-secondary-link">{t("ES_COMMON_APPLICATION_SEARCH")}</Link>
         </div>
+      </div>
       <div style={styles.formCard}>
         <SearchComponent
           t={t}
@@ -302,27 +303,27 @@ const Search = () => {
       </div>
 
       <div style={styles.resultsWrap}>
-      {Object.keys(payload).includes("propertyType") ? (
-        <SearchPTIDPropComponent
-          t={t}
-          showToast={showToast}
-          setShowToast={setShowToast}
-          tenantId={searchTenantId}
-          payload={payload}
-          ptSearchConfig={{ ...ptSearchConfig }}
-        />
-      ) : Object.keys(payload).length > 0 ? (
-        <SearchResultComponent
-          t={t}
-          showToast={showToast}
-          setShowToast={setShowToast}
-          tenantId={searchTenantId}
-          payload={payload}
-          ptSearchConfig={{ ...ptSearchConfig }}
-        />
-      ) : (
-        ""
-      )}
+        {Object.keys(payload).includes("propertyType") ? (
+          <SearchPTIDPropComponent
+            t={t}
+            showToast={showToast}
+            setShowToast={setShowToast}
+            tenantId={searchTenantId}
+            payload={payload}
+            ptSearchConfig={{ ...ptSearchConfig }}
+          />
+        ) : Object.keys(payload).length > 0 ? (
+          <SearchResultComponent
+            t={t}
+            showToast={showToast}
+            setShowToast={setShowToast}
+            tenantId={searchTenantId}
+            payload={payload}
+            ptSearchConfig={{ ...ptSearchConfig }}
+          />
+        ) : (
+          ""
+        )}
       </div>
       {showToast && (
         <Toast

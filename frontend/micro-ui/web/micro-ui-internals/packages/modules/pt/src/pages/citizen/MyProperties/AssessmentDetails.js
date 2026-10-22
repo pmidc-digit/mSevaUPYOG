@@ -20,7 +20,7 @@ import {
 import { useQueryClient } from "react-query";
 import _, { first, update, values } from "lodash";
 import { Modal, Dropdown, Row, StatusTable } from "@mseva/digit-ui-react-components";
-import { convertEpochToDate } from "../../../utils/index";
+import { convertEpochToDate, formatVasikaDate } from "../../../utils/index";
 import PTImportantDates from "../../../pageComponents/PTImportantDates";
 
 const getBooleanDisplayValue = (value) => (value === true ? "Yes" : "No");
@@ -720,7 +720,7 @@ const AssessmentDetails = () => {
                 { title: t("PT_ASSESMENT_INFO_VASIKA_NO"), value: t(applicationDetails?.applicationData?.additionalDetails?.vasikaNo) || t("CS_NA") },
                 {
                   title: t("PT_ASSESMENT_INFO_VASIKA_DATE"),
-                  value: t(applicationDetails?.applicationData?.additionalDetails?.vasikaDate) || t("CS_NA"),
+                  value: formatVasikaDate(applicationDetails?.applicationData?.additionalDetails?.vasikaDate) || t("CS_NA"),
                 },
                 {
                   title: t("PT_ASSESMENT_INFO_ALLOTMENT_NO"),

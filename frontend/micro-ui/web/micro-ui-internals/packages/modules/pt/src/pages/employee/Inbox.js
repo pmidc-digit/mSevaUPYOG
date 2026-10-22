@@ -1,9 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActionButton, Header } from "@mseva/digit-ui-react-components";
+import { Header } from "@mseva/digit-ui-react-components";
+import { Link } from "react-router-dom";
+import { InboxPagination, InboxWrapper } from "../../../../templates/Inbox/components";
 
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
+import PTNewInboxFilters from "../../components/inbox/PTNewInboxFilters";
+import PTNewInboxSearch from "../../components/inbox/PTNewInboxSearch";
+import { TableConfig as PTInboxTableConfig } from "../../config/inbox-table-config";
 
 const Inbox = ({
   useNewInboxAPI,
@@ -87,7 +92,61 @@ const Inbox = ({
     setPageSize(Number(e.target.value));
   };
 
-  const totalCount = Number(data?.[0]?.totalCount);
+  const totalCount = Number(data?.[0]?.totalCount) || 0;
+
+  const updateNewInboxSearch = (search) => {
+    setSearchParams((current) => ({ ...current, ...search }));
+  };
+
+  const updateNewInboxStatuses = (statusCodes) => {
+    setSearchParams((current) => ({
+      ...current,
+      applicationStatus: statusCodes.map((uuid) => ({ uuid })),
+    }));
+  };
+
+  if (isInbox) {
+    const tableData = data?.filter((row) => !row?.dataEmpty) || [];
+    const statuses = data?.[0]?.statusMap || [];
+    const selectedStatuses = searchParams?.applicationStatus?.map((status) => status?.uuid).filter(Boolean) || [];
+    const tableProps = {
+      data: tableData,
+      columns: PTInboxTableConfig(t).PT.inboxColumns({ parentRoute }),
+      totalRecords: totalCount,
+      disableSort: true,
+      customTableWrapperClassName: "pt-new-inbox-table-wrapper",
+    };
+
+    return (
+      <InboxWrapper
+        title={t("ES_COMMON_INBOX")}
+        totalCount={totalCount}
+        isLoading={hookLoading || isFetching}
+        tableData={tableData}
+        tableProps={tableProps}
+        tableHeader="ACTION_TEST_PROPERTY_TAX"
+        filterSection={
+          <PTNewInboxFilters
+            statuses={statuses}
+            selectedStatuses={selectedStatuses}
+            isInboxLoading={hookLoading || isFetching}
+            onStatusChange={updateNewInboxStatuses}
+          />
+        }
+        topBar={<PTNewInboxSearch values={searchParams} onSearch={updateNewInboxSearch} />}
+        pagination={
+          <InboxPagination
+            offset={pageOffset}
+            limit={pageSize}
+            totalCount={totalCount}
+            onPageSizeChange={handlePageSizeChange}
+            onNextPage={fetchNextPage}
+            onPrevPage={fetchPrevPage}
+          />
+        }
+      />
+    );
+  }
 
   if (rest?.data?.length !== null) {
     if (isMobile) {
@@ -121,9 +180,21 @@ const Inbox = ({
                 {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
               </Header>
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "12px", marginLeft: "auto" }}>
-                <ActionButton to="/digit-ui/employee/pt/new-application" label={t("ES_TITLE_NEW_REGISTRATION")} primary showPlusIcon />
-                <ActionButton to="/digit-ui/employee/pt/search" label={t("PT_SEARCH_PROPERTY")} />
-                <ActionButton to="/digit-ui/employee/pt/application-search" label={t("ES_COMMON_APPLICATION_SEARCH")} />
+                <Link to="/digit-ui/employee/pt/new-application" style={{ textDecoration: "none" }}>
+                  <button className="TL-new-application-btn" type="button">
+                    <span className="TL-plus-icon">+</span> {t("ES_TITLE_NEW_REGISTRATION")}
+                  </button>
+                </Link>
+                <Link to="/digit-ui/employee/pt/search" style={{ textDecoration: "none" }}>
+                  <button className="TL-new-application-btn" type="button">
+                    {t("PT_SEARCH_PROPERTY")}
+                  </button>
+                </Link>
+                <Link to="/digit-ui/employee/pt/application-search" style={{ textDecoration: "none" }}>
+                  <button className="TL-new-application-btn" type="button">
+                    {t("ES_COMMON_APPLICATION_SEARCH")}
+                  </button>
+                </Link>
               </div>
             </div>
           )}

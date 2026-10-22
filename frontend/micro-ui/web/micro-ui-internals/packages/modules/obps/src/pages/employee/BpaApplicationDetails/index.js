@@ -73,6 +73,7 @@ import NocSitePhotographsBPA from "../../../components/NocSitePhotographsNew";
 import BPADocumentChecklist from "../../../pageComponents/BPADocumentChecklist";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import getBPAAcknowledgement from "../../../../getBPAAcknowledgement";
+import { useEmployeeZoneAccess } from "../../../../../core/src/hooks/useEmployeeZoneAccess";
 
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -133,6 +134,9 @@ const BpaApplicationDetail = () => {
     }
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
+  const isBpaReadOnly =
+    userRoles?.some((r) => (r || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("READONLY")) &&
+    !userRoles?.some((r) => (r || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("CTP"));
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -164,6 +168,12 @@ const BpaApplicationDetail = () => {
   const { data = {}, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
     enabled: !!id, // 👈 only runs when valid
   });
+  const { isZoneMismatch } = useEmployeeZoneAccess(
+    user?.info?.tenantId || tenantId,
+    tenantId,
+    user?.info?.uuid,
+    data?.applicationData?.additionalDetails?.zonenumber
+  );
 
   const addressPincode = data?.applicationData?.landInfo?.address?.pincode;
   const isSelfCertification = data?.applicationData?.additionalDetails?.isSelfCertification || null;
@@ -2949,6 +2959,7 @@ const BpaApplicationDetail = () => {
           ) : (
             <FeeEstimation
               data={data}
+              disable={isBpaReadOnly}
               currentStepData={{
                 createdResponse: {
                   ...(data?.applicationData || {}),
@@ -3104,7 +3115,12 @@ const BpaApplicationDetail = () => {
                 // style={MenuStyle}
               />
             ) : null}
-            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            <SubmitBar
+              ref={menuRef}
+              label={t("WF_TAKE_ACTION")}
+              disabled={isZoneMismatch}
+              onSubmit={() => setDisplayMenu(!displayMenu)}
+            />
           </ActionBar>
         )}
 

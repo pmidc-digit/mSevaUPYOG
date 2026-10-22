@@ -300,6 +300,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         let totalDeduction = 0
 
         block?.building?.floors?.forEach((ob) => {
+            if (!ob?.occupancies?.[0]?.type) return;
             const builtUp = Number(Number(ob.occupancies?.[0]?.builtUpArea || 0).toFixed(2))
             const floor = Number(Number(ob.occupancies?.[0]?.floorArea || 0).toFixed(2))
             const deduction = Number(Number(ob.occupancies?.[0]?.deduction || 0).toFixed(2))

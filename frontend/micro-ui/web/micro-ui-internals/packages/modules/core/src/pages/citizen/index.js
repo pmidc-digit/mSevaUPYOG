@@ -1,5 +1,7 @@
+import OBPASDocumentsPanel from "../ENaksha/OBPASDocumentsPanel";
+import ENakshaContent from "../ENaksha/ENakshaContent";
 import { BackButton, WhatsappIcon, Card, CitizenInfoLabel, PrivateRoute } from "@mseva/digit-ui-react-components";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./module-home.css";
 import { useTranslation } from "react-i18next";
 import { Route, Switch, useRouteMatch, useHistory, Link } from "react-router-dom";
@@ -67,6 +69,7 @@ const Home = ({
   pathname,
   initData,
 }) => {
+  const [documentSearch, setDocumentSearch] = useState(null);
   const { isLoading: islinkDataLoading, data: linkData, isFetched: isLinkDataFetched } = Digit.Hooks.useCustomMDMS(
     Digit.ULBService.getStateId(),
     "ACCESSCONTROL-ACTIONS-TEST",
@@ -241,6 +244,7 @@ const Home = ({
               </h2>
 
               {/* Service Cards */}
+              <div className={code === "OBPS" ? "obpas-services-documents" : undefined}>
               <div className="moduleLinkHomePageModuleLinks">
                 {mdmsDataObj && code != "OBPS" && (
                   <CitizenHomeCardSecond
@@ -283,6 +287,10 @@ const Home = ({
                   />
                 )}
               </div>
+
+              {code === "OBPS" && <OBPASDocumentsPanel onSearch={(query) => setDocumentSearch({ query })} />}
+              </div>
+              {code === "OBPS" && <ENakshaContent embedded documentsFirst searchRequest={documentSearch} />}
 
               {/* Statistics and Info Section */}
               {/* <StaticDynamicCard moduleCode={code?.toUpperCase()} /> */}

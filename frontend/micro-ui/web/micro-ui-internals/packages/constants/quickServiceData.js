@@ -128,7 +128,7 @@ export const quickServiceModules = {
       bgColor: "#ffab2d",
       labelKey: "",
       icon: "",
-      routes: "/digit-ui/employee/ws/water/inbox",
+      routes: "/employee/wns/search",
       isCitizen: false,
       description: "",
       subHeading: "",

@@ -89,6 +89,25 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
       if (!path) {
         const splitArray = item.path.split(".");
         const topLevel = splitArray[0];
+        const hasChildren = actionList.some((a) => a.path?.startsWith(topLevel + "."));
+
+        // Top-level module with no child actions: render as a direct link, not a submenu
+        if (splitArray.length === 1 && !hasChildren) {
+          menuItems.push({
+            path: item.path,
+            name: item.displayName || topLevel,
+            url: item.url,
+            queryParams: item.queryParams,
+            orderNumber: item.orderNumber,
+            navigationURL: item.navigationURL,
+            leftIcon: item.leftIcon ? item.leftIcon.split(".")[0] : null,
+            displayName: item.displayName || topLevel,
+            moduleName: item.displayName || topLevel,
+            type: "single",
+            originalItem: item,
+          });
+          return;
+        }
 
         if (!some(menuItems, { path: topLevel })) {
           const leftIcon = item.leftIcon ? item.leftIcon.split(".")[0] : null;
@@ -154,7 +173,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
         }
       }
     });
-
+    console.log("menuItems",menuItems)
     return orderBy(menuItems, ["orderNumber"], ["asc"]);
   };
 

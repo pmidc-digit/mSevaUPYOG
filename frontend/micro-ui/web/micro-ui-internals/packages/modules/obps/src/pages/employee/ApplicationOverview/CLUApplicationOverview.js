@@ -44,6 +44,7 @@ import { amountToWords, decryptId, formatDuration } from "../../../utils";
 import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 import { getDrivingDistance } from "../../../utils/getDistance";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
+import { useEmployeeZoneAccess } from "../../../../../core/src/hooks/useEmployeeZoneAccess";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -255,7 +256,7 @@ const CLUEmployeeApplicationDetails = () => {
     });
   }
 
-  if (applicationDetails?.Clu?.[0]?.applicationStatus === "E-SIGNED") {
+  
     if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
       dowloadOptions.push({
         label: t("CLU_FEE_RECEIPT_1"),
@@ -269,7 +270,8 @@ const CLUEmployeeApplicationDetails = () => {
         onClick: () =>
           getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "clu-receiptsecond", openReceipt: true }),
       });
-      if(sanctionLetterID){
+    }
+    if(sanctionLetterID){
         dowloadOptions.push({
           label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
           onClick: () =>
@@ -281,8 +283,7 @@ const CLUEmployeeApplicationDetails = () => {
             }),
         });
       }
-    }
-  }
+  
   else if (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.isMigrationTrue && sanctionLetterID) {
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
@@ -567,11 +568,27 @@ const CLUEmployeeApplicationDetails = () => {
   };
 
   let user = Digit.UserService.getUser();
+  if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
+    const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
+    const userInfo = userInfos ? JSON.parse(userInfos) : {};
+    if (userInfo?.value) {
+      user = userInfo.value;
+    }
+  }
+  const { isZoneMismatch } = useEmployeeZoneAccess(
+    user?.info?.tenantId || tenantId,
+    tenantId,
+    user?.info?.uuid,
+    applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone
+  );
   const menuRef = useRef();
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
-  const userRoles = user?.info?.roles?.map((e) => e.code);
+  const userRoles = user?.info?.roles?.map((e) => (typeof e === "string" ? e : e?.code || "")) || [];
+  const isCluReadOnly =
+    userRoles?.some((r) => (r || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("READONLY")) &&
+    !userRoles?.some((r) => (r || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("CTP"));
 
   useEffect(() => {
     // if (workflowDetails) {
@@ -1366,7 +1383,7 @@ const CLUEmployeeApplicationDetails = () => {
               feeType="PAY2"
               feeAdjustments={feeAdjustments}
               setFeeAdjustments={setFeeAdjustments}
-              disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+              disable={applicationDetails?.Clu?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" || isCluReadOnly}
               applicationStatus={applicationDetails?.Clu?.[0]?.applicationStatus}
               actions={actions}
             />
@@ -1438,7 +1455,12 @@ const CLUEmployeeApplicationDetails = () => {
               // style={MenuStyle}
             />
           ) : null}
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          <SubmitBar
+            ref={menuRef}
+            label={t("WF_TAKE_ACTION")}
+            disabled={isZoneMismatch}
+            onSubmit={() => setDisplayMenu(!displayMenu)}
+          />
         </ActionBar>
       )}
 

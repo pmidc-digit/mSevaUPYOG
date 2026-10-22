@@ -26,6 +26,11 @@ const SubMenu = ({ item, onLinkClick }) => {
   const { pathname } = location;
   const { t } = useTranslation();
   const showSubnav = () => setSubnav(!subnav);
+  // Empty or "/" navigationURL (the Home item) points to the employee root under /digit-ui
+  const employeeHref = (url) => {
+    const path = url?.replace(/^\/+/, "") || "";
+    return path ? `${window.location.origin}/employee/${path}` : `${window.location.origin}/digit-ui/employee/`;
+  };
   const IconsObject = {
     home: <HomeIcon />,
     announcement: <ComplaintIcon />,
@@ -49,8 +54,6 @@ const SubMenu = ({ item, onLinkClick }) => {
   // const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
 
   if (item.type === "single") {
-    const getOrigin = window.location.origin;
-
     return (
       <div className="submenu-container">
         <div className={`sidebar-link  ${pathname === item?.navigationURL ? "active" : ""}`}>
@@ -80,7 +83,7 @@ const SubMenu = ({ item, onLinkClick }) => {
                 data-tip="React-tooltip"
                 data-for={`jk-side-${getModuleName}`}
                 className="custom-link"
-                href={getOrigin + "/employee/" + item.navigationURL}
+                href={employeeHref(item.navigationURL)}
                 onClick={onLinkClick}
               >
                 <span> {trimModuleName} </span>
@@ -154,12 +157,11 @@ const SubMenu = ({ item, onLinkClick }) => {
               // const trimModuleName = t(appendTranslate?.length > 20 ? appendTranslate.substring(0, 20) + "..." : appendTranslate);
 
               if (item.navigationURL.indexOf("/digit-ui") === -1) {
-                const getOrigin = window.location.origin;
                 return (
                   <a
                     key={index}
                     className={`dropdown-link ${pathname === item.link ? "active" : ""}`}
-                    href={getOrigin + "/employee/" + item.navigationURL}
+                    href={employeeHref(item.navigationURL)}
                     onClick={onLinkClick}
                   >
                     <div className="actions" data-tip="React-tooltip" data-for={`jk-side-${index}`}>

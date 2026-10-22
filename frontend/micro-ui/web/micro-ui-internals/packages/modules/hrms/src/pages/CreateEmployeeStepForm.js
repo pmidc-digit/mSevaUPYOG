@@ -65,6 +65,16 @@ const CreateEmployeeStepForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const [, setMutationHappened] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_HAPPENED", false);
+  const [, , clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_SUCCESS_DATA", false);
+  const [, , clearError] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_ERROR_DATA", false);
+
+  // Reset the create-mutation flags left over from a previous employee, otherwise the Response page skips the create API call
+  useEffect(() => {
+    setMutationHappened(false);
+    clearSuccessData();
+    clearError();
+  }, []);
 
   const setStep = (updatedStepNumber) => {
     dispatch(setEmployeeStep(updatedStepNumber));

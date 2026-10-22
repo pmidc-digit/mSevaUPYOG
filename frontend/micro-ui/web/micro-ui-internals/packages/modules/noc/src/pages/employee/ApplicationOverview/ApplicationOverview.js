@@ -47,6 +47,7 @@ import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import { format } from "date-fns";
+import { useEmployeeZoneAccess } from "../../../../../core/src/hooks/useEmployeeZoneAccess";
 
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
   const [url, setUrl] = useState(null);
@@ -540,23 +541,7 @@ const NOCEmployeeApplicationOverview = () => {
   //   }
   // }
   if (applicationDetails?.Noc?.[0]?.applicationStatus === "E-SIGNED") {
-    if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
-        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-        onClick: () =>
-          getRecieptSearch({
-            tenantId: reciept_data?.Payments[0]?.tenantId,
-            payments: reciept_data?.Payments[0],
-            EmpData,
-            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
-          }),
-      });
-      dowloadOptions.push({
-        label: t("CHB_FEE_RECEIPT"),
-        onClick: () =>
-          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData, filestoreId :  reciept_data?.Payments[0]?.fileStoreId}),
-      });
-    } else if (
+    if (
       applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.isMigrationTrue &&
       applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
     ) {
@@ -572,6 +557,23 @@ const NOCEmployeeApplicationOverview = () => {
       });
     }
   }
+  if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
+      dowloadOptions.push({
+        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+        onClick: () =>
+          getRecieptSearch({
+            tenantId: reciept_data?.Payments[0]?.tenantId,
+            payments: reciept_data?.Payments[0],
+            EmpData,
+            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+          }),
+      });
+      dowloadOptions.push({
+        label: t("CHB_FEE_RECEIPT"),
+        onClick: () =>
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData, filestoreId :  reciept_data?.Payments[0]?.fileStoreId}),
+      });
+    }
   useEffect(() => {
     const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
     const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
@@ -637,6 +639,12 @@ const NOCEmployeeApplicationOverview = () => {
   //   const { tenants } = storeData || {};
 
   let user = Digit.UserService.getUser();
+  const { isZoneMismatch } = useEmployeeZoneAccess(
+    user?.info?.tenantId || tenantId,
+    tenantId,
+    user?.info?.uuid,
+    currentZoneCode
+  );
   const menuRef = useRef();
 
   // console.log('user', user)
@@ -677,6 +685,7 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
+  const isNocReadOnly = userRoles?.some((role) => (role || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("READONLY"));
 
   useEffect(() => {
     // if (workflowDetails) {
@@ -1593,7 +1602,7 @@ const NOCEmployeeApplicationOverview = () => {
             }}
             feeAdjustments={feeAdjustments}
             setFeeAdjustments={setFeeAdjustments}
-            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"}
+            disable={applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" || isNocReadOnly}
             applicationStatus={applicationDetails?.Noc?.[0]?.applicationStatus}
             actions={actions}
           />
@@ -1620,7 +1629,12 @@ const NOCEmployeeApplicationOverview = () => {
               // style={MenuStyle}
             />
           ) : null}
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          <SubmitBar
+            ref={menuRef}
+            label={t("WF_TAKE_ACTION")}
+            disabled={isZoneMismatch}
+            onSubmit={() => setDisplayMenu(!displayMenu)}
+          />
         </ActionBar>
       )}
 

@@ -16,12 +16,23 @@ const OCUploadPlanDiagram = ({ t, config, onSelect, userType, formData, ownerInd
     const [file, setFile] = useState(formData?.uploadData?.file);
     const [roadType, setRoadType] = useState(null);
     const [uploadMessage, setUploadMessage] = useState("");
+    const [dxfFileSizeError, setDxfFileSizeError] = useState("");
     const history = useHistory();
     const { data: roadTypeOptions, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
 
     function selectfile(e) {
-        setUploadedFile(e.target.files[0]);
-        setFile(e.target.files[0]);
+        const selectedFile = e.target.files[0];
+        if (selectedFile?.size > 30 * 1024 * 1024) {
+            setDxfFileSizeError("DXF file size must not exceed 30 MB.");
+            setUploadedFile(null);
+            setFile("");
+            e.target.value = "";
+            return;
+        }
+
+        setDxfFileSizeError("");
+        setUploadedFile(selectedFile);
+        setFile(selectedFile);
     }
 
     function selectRoadType(type) {
@@ -85,11 +96,13 @@ const OCUploadPlanDiagram = ({ t, config, onSelect, userType, formData, ownerInd
                 accept=".dxf"
                 onUpload={selectfile}
                 onDelete={() => {
+                    setDxfFileSizeError("");
                     setUploadedFile(null);
                     setFile("");
                 }}
                 message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
                 uploadMessage={uploadMessage}
+                iserror={dxfFileSizeError}
             />
             <div className="obps-page-components-ocupload-plan-diagram--style-1"></div>
             {isShowToast && <Toast error={isShowToast.key} label={t(isShowToast.label)} onClose={() => setIsShowToast(null)} isDleteBtn={true} />}

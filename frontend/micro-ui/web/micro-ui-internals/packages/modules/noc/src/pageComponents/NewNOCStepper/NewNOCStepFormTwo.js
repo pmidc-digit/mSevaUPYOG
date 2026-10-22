@@ -155,7 +155,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
       const applications = searchResponse?.Noc || [];
       const currentAppNo = currentStepData?.apiData?.Noc?.[0]?.applicationNo;
-      const activeApp = applications.find((app) => app?.applicationNo && (app?.status !== "REJECTED" || app?.status !== "CANCELLED") && app?.applicationNo !== currentAppNo);
+      const activeApp = applications.find((app) => app?.applicationNo && ( app?.status !== "REJECTED" && app?.status !== "CANCELLED" ) && app?.applicationNo !== currentAppNo);
 
       if (activeApp) {
         setShowToast({ key: "true", error: true, message: "Active application already exists..." });

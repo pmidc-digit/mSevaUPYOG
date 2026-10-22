@@ -175,7 +175,7 @@ const Home = () => {
       sessionStorage.setItem("survey_modal_shown", "true");
     }
 
-    // Clean up session storage on component mount
+  // Clean up session storage on component mount
     sessionStorage.removeItem("type");
     sessionStorage.removeItem("pincode");
     sessionStorage.removeItem("tenantId");
@@ -273,10 +273,30 @@ const Home = () => {
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
 
+  // Listen for global search events from GIGWHeader
+  useEffect(() => {
+    const handleGlobalSearch = (e) => {
+      const q = e?.detail?.query || "";
+      setSearchQuery(q);
+      if (q.trim() === "") {
+        setFilteredServices([]);
+      } else {
+        const allServices = allCitizenServicesProps.options || [];
+        const normalizedQuery = q.trim().toLowerCase();
+        const filtered = allServices.filter((service) => service.name?.toLowerCase().includes(normalizedQuery));
+        setFilteredServices(filtered);
+      }
+    };
+    window.addEventListener("mseva-global-search", handleGlobalSearch);
+    return () => window.removeEventListener("mseva-global-search", handleGlobalSearch);
+  }, [allCitizenServicesProps.options]);
+
   const quickActions = allCitizenServicesProps.options?.slice(0, 4) || [];
   const visibleServices = showAllCards ? allCitizenServicesProps.options : allCitizenServicesProps.options?.slice(0, 12);
   const displayedServices = searchQuery.trim() ? filteredServices : visibleServices;
-  const citizenName = citizenInfo?.name || citizenInfoMain?.name || "Citizen";
+    const rawUserName = citizenInfo?.name || citizenInfoMain?.name || (citizenToken ? "Binit Rana" : "");
+  const firstName = rawUserName ? rawUserName.trim().split(" ")[0] : "Binit";
+  const userGreeting = citizenToken ? `Welcome back, ${firstName}` : "Welcome to Citizen Portal";
 
   return isLoading ? (
     <Loader />
@@ -285,35 +305,66 @@ const Home = () => {
       <SurveyModal isOpen={showSurveyModal} onClose={() => setShowSurveyModal(false)} />
       <main className="HomePageContainer mseva-citizen-dashboard">
         <div className="HomePageWrapper">
-          <section className="hero-banner-styles" aria-labelledby="mseva-dashboard-welcome">
-            <div className="mseva-dashboard__hero-content">
-              <h1 id="mseva-dashboard-welcome" className="hero-title-styles">
-                Welcome, <span>{citizenName}</span>
-              </h1>
-              <p className="heroSubtitleStyles">Access all municipal services in one place</p>
-              <label className="mseva-dashboard__search-label" htmlFor="mseva-service-search">
-                Search municipal services
-              </label>
-              <div className="searchBarStyles">
-                <input
-                  id="mseva-service-search"
-                  type="text"
-                  placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER") || "Search for services..."}
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="searchInputStyles"
-                />
-                <button
-                  type="button"
-                  className="mseva-dashboard__search-action"
-                  aria-label="Search municipal services"
-                  onClick={() => document.getElementById("mseva-service-search")?.focus()}
+          <section className="mseva-slim-hero-banner" aria-label="mSeva Punjab Hero Banner">
+            <div className="mseva-slim-hero-content flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+              {/* Left Side: Personalized Welcome & Civic Subtitle */}
+              <div className="mseva-hero-welcome-left flex flex-col justify-center">
+                <h1 className="mseva-hero-greeting text-xl sm:text-2xl font-bold text-white tracking-tight">
+                  {userGreeting}
+                </h1>
+                <p className="mseva-hero-tagline text-xs sm:text-sm text-blue-100/80 font-normal mt-0.5">
+                  {t("Access citizen services digitally with ease and transparency")}
+                </p>
+              </div>
+
+              {/* Right Side: Embedded Search Box */}
+              <div className="mseva-hero-search-right w-full sm:w-80 md:w-96 relative">
+                <form
+                  className="w-full relative"
+                  onSubmit={(e) => e.preventDefault()}
+                  role="search"
                 >
-                  <SearchIconSvg />
-                </button>
+                  <label htmlFor="mseva-hero-search-input" className="sr-only">
+                    Search citizen services
+                  </label>
+                  <div className="relative w-full flex items-center">
+                    <input
+                      id="mseva-hero-search-input"
+                      type="text"
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      placeholder="Search citizen services, tax, NOC..."
+                      className="mseva-hero-search-input w-full bg-white/95 text-slate-800 placeholder-slate-400 text-xs sm:text-sm pl-4 pr-11 py-2.5 rounded-xl shadow-inner focus:bg-white focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        className="mseva-hero-search-clear absolute right-10 text-slate-400 hover:text-slate-600 text-sm p-1 cursor-pointer transition-colors"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setFilteredServices([]);
+                        }}
+                        aria-label="Clear search"
+                        title="Clear search"
+                      >
+                        ✕
+                      </button>
+                    )}
+                    <button
+                      type="submit"
+                      className="mseva-hero-search-btn w-8 h-8 rounded-lg bg-[#184474] text-white flex items-center justify-center hover:bg-[#0f2d4e] transition-colors absolute right-1.5 top-1/2 -translate-y-1/2 cursor-pointer shadow-xs"
+                      aria-label="Search"
+                      title="Search"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-
           </section>
 
           {/* {quickActions.length > 0 && (
@@ -328,7 +379,7 @@ const Home = () => {
           <section className="ServicesSection mseva-dashboard__services" aria-label="Municipal services">
             <CardBasedOptions
               {...allCitizenServicesProps}
-              header={allCitizenServicesProps.header || "Our Services"}
+              header={allCitizenServicesProps.header || "Citizen Services"}
               options={displayedServices}
               variant="services"
             />
@@ -340,17 +391,25 @@ const Home = () => {
               </div>
             )}
             {!searchQuery.trim() && allCitizenServicesProps.options?.length > 4 && (
-              <div className="mseva-dashboard__show-more">
+              <div className="mseva-dashboard__show-more flex justify-center items-center mt-6 mb-2">
                 <button
                   type="button"
-                  className="mseva-dashboard__show-more-button"
+                  className="mseva-dashboard__show-more-button inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-[#184474] hover:text-white hover:border-[#184474] transition-all duration-200 shadow-xs active:scale-95 cursor-pointer"
                   onClick={() => {
                     const newValue = !showAllCards;
                     setShowAllCards(newValue);
                     sessionStorage.setItem("citizen.home.showAllCards", newValue.toString());
                   }}
                 >
-                  {showAllCards ? "Show Less" : "Show More"}
+                  <span>{showAllCards ? "Show Less" : "Show More"}</span>
+                  <svg
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${showAllCards ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
               </div>
             )}

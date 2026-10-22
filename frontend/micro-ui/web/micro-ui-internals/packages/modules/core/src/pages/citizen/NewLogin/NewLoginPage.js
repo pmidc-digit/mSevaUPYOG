@@ -295,7 +295,7 @@ const NewLogin = ({ stateCode }) => {
       {isLanguageEntryPage && (
         <header className="mseva-entry-header">
           <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/citizen")}>
-            <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
+            <img src="/digit-ui/mseva-punjab-logo-cropped.jpeg" alt="mSeva Punjab Local Government" />
           </button>
           <div className="mseva-entry-civic-title" aria-label="mSeva"></div>
           <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">

@@ -9,7 +9,7 @@ const Redircter = () => {
     process.env.NODE_ENV === "development"
   ) {
     //do nothing
-  }else{
+  } else {
     window.location.href = path;
   }
   return <span></span>;
@@ -22,31 +22,30 @@ class ErrorBoundary extends React.Component {
   }
 
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI.
     return { error: error?.message, hasError: true, errorStack: error?.stack };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Catch errors in any components below and re-render with error message
+    console.error("ErrorBoundary caught:", error, errorInfo);
     this.setState({ error: error?.message, hasError: true, errorStack: error?.stack });
-    // You can also log error messages to an error reporting service here
   }
 
   render() {
     if (this.state.hasError) {
-      // ("UI-errorInfo", this.state?.errorStack);
-      // ("UI-component-details", this.props);
-      // You can render any custom fallback UI
       return (
         <div className="error-boundary">
           <Redircter />
+          <details style={{ whiteSpace: "pre-wrap", margin: "16px auto", maxWidth: "800px", background: "#fef2f2", border: "1px solid #f87171", borderRadius: 8, padding: 16, color: "#991b1b" }}>
+            <summary style={{ fontWeight: "bold", cursor: "pointer" }}>View Technical Error Details</summary>
+            <div style={{ marginTop: 8, fontSize: 13, fontFamily: "monospace" }}>
+              <strong>Error:</strong> {this.state?.error}
+              <br /><br />
+              <strong>Stack Trace:</strong>
+              <br />
+              {this.state?.errorStack}
+            </div>
+          </details>
           <ErrorComponent initData={this.props.initData} />
-
-          {/* <summary>Something went wrong</summary>
-          <details style={{ whiteSpace: "pre-wrap" }}>
-            {this.state?.errorStack && this.state.errorStack.toString().substring(0, 600)}
-            {this.state?.error}
-          </details> */}
         </div>
       );
     }

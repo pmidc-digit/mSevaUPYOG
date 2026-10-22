@@ -290,7 +290,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
     <Background className="mseva-employee-login-background">
       <header className="mseva-entry-header">
         <button type="button" className="mseva-entry-brand" onClick={() => history.push("/digit-ui/employee")}>
-          <img src="/digit-ui/mseva-punjab-logo.jpeg" alt="mSeva Punjab Local Government" />
+          <img src="/digit-ui/mseva-punjab-logo-cropped.jpeg" alt="mSeva Punjab Local Government" />
         </button>
         <div className="mseva-entry-civic-title" aria-label="mSeva"></div>
         <nav className="mseva-entry-nav mseva-entry-nav--home" aria-label="Portal navigation">

@@ -118,3 +118,2185 @@
   font-size: 13px;
   color: #505a5f;
 }
+
+
+/* ==========================================================================
+   mSeva Punjab — GIGW 3.0 Accessible Header & Modern UI Design System
+   ========================================================================== */
+
+/* Design System Tokens */
+:root {
+  --mseva-primary-navy: #184474;
+  --mseva-secondary-blue: #0284C7;
+  --mseva-vivid-blue: #1D4ED8;
+  --mseva-surface-panel: #FFFFFF;
+  --mseva-surface-bg: #F8FAFC;
+  --mseva-surface-active: #EFF6FF;
+  --mseva-text-primary: #0F172A;
+  --mseva-text-muted: #64748B;
+  --mseva-text-navy: #1E293B;
+  --mseva-border: #E2E8F0;
+  --mseva-border-strong: #CBD5E1;
+  --mseva-verified-green: #10B981;
+}
+
+/* Eliminate Redundant Sub-Navbar for Citizens */
+.citizen .navbar,
+.citizen .topbar {
+  display: none !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* GIGW 3.0 Global Header Container */
+.mseva-gigw-global-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* 1. Accessibility Utility Bar (Top) */
+.mseva-accessibility-bar {
+  background-color: #0F243E;
+  color: #E2E8F0;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4px 16px;
+}
+
+.mseva-acc-container {
+  max-width: 1380px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mseva-acc-left,
+.mseva-acc-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mseva-skip-link {
+  color: #E2E8F0;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.mseva-skip-link:focus {
+  background-color: #FFFF00;
+  color: #000000;
+  outline: 2px solid #000000;
+}
+
+.mseva-acc-divider {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 11px;
+}
+
+.mseva-acc-btn {
+  background: transparent;
+  border: none;
+  color: #E2E8F0;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.mseva-acc-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.mseva-font-resizer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.mseva-acc-label {
+  color: #94A3B8;
+  font-size: 11px;
+  margin-right: 2px;
+}
+
+.mseva-font-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #E2E8F0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  min-width: 24px;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+}
+
+.mseva-font-btn:hover,
+.mseva-font-btn.active {
+  background-color: #184474;
+  border-color: #0284C7;
+  color: #ffffff;
+}
+
+.mseva-contrast-btn {
+  font-weight: 500;
+}
+
+.mseva-contrast-icon {
+  font-size: 14px;
+}
+
+.mseva-contrast-btn.active {
+  background-color: #FFFF00;
+  color: #000000;
+  font-weight: 700;
+}
+
+.mseva-lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mseva-lang-btn {
+  background: transparent;
+  border: none;
+  color: #CBD5E1;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.mseva-lang-btn:hover,
+.mseva-lang-btn.active {
+  color: #ffffff;
+  font-weight: 700;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.mseva-lang-sep {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 10px;
+}
+
+/* 2. Integrated Branding Header (Middle) */
+.mseva-main-header {
+  background: #ffffff;
+  padding: 10px 16px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.mseva-header-container {
+  max-width: 1380px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.mseva-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Hamburger button */
+.mseva-header-hamburger {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mseva-header-hamburger:hover {
+  background-color: #EFF6FF;
+  border-color: #0284C7;
+}
+
+.mseva-hamburger-line {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background-color: #184474;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+/* mSeva brand logo */
+.mseva-brand-logo-link {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mseva-primary-logo {
+  max-height: 44px;
+  width: auto;
+  object-fit: contain;
+}
+
+.mseva-crest-divider {
+  width: 1px;
+  height: 40px;
+  background-color: #CBD5E1;
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Crest logo */
+.mseva-crest-wrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.mseva-crest-img {
+  max-height: 42px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Department titles */
+.mseva-department-titles {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.mseva-punjabi-dept-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #184474;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mseva-english-dept-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1E293B;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mseva-portal-badge-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0284C7;
+  line-height: 1.2;
+}
+
+.mseva-sub-tag {
+  font-weight: 400;
+  color: #64748B;
+}
+
+/* Header Right - Search & Profile */
+.mseva-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.mseva-header-search-form {
+  margin: 0;
+}
+
+.mseva-header-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 9999px;
+  padding: 4px 8px 4px 14px;
+  width: 280px;
+  transition: all 0.2s ease;
+}
+
+.mseva-header-search-box:focus-within {
+  background: #ffffff;
+  border-color: #0284C7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+  width: 320px;
+}
+
+.mseva-header-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: #0F172A;
+  width: 100%;
+  padding-right: 24px;
+}
+
+.mseva-header-search-input::placeholder {
+  color: #94A3B8;
+}
+
+.mseva-search-clear-btn {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 12px;
+}
+
+.mseva-header-search-submit {
+  background: #184474;
+  border: none;
+  border-radius: 9999px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.mseva-header-search-submit:hover {
+  background-color: #0284C7;
+}
+
+/* Header User Profile Badge */
+.mseva-header-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 6px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mseva-header-user-badge:hover {
+  background: #EFF6FF;
+  border-color: #0284C7;
+}
+
+.mseva-header-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: #184474;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+.mseva-header-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mseva-header-user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.mseva-header-greeting {
+  font-size: 10px;
+  color: #64748B;
+}
+
+.mseva-header-username {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F172A;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mseva-header-login-btn {
+  background: #184474;
+  color: #ffffff;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mseva-header-login-btn:hover {
+  background-color: #0284C7;
+}
+
+/* Screen Reader Modal Dialog */
+.mseva-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.mseva-modal-card {
+  background: #ffffff;
+  border-radius: 12px;
+  max-width: 540px;
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+  animation: msevaModalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes msevaModalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.mseva-modal-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F8FAFC;
+}
+
+.mseva-modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.mseva-modal-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #64748B;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.mseva-modal-content {
+  padding: 20px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.mseva-modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: flex-end;
+  background: #F8FAFC;
+}
+
+.mseva-modal-btn {
+  background: #184474;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+/* ==========================================================================
+   PHASE 2: DUAL-STATE WORLD-CLASS FLYOUT NAVIGATION (ICON RAIL -> DRAWER)
+   ========================================================================== */
+
+/* Main Rail / Flyout Sidebar Container */
+.mseva-rail-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: linear-gradient(180deg, #09192C 0%, #0F243E 45%, #112B4A 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: inherit;
+  transition: width 320ms cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1), 
+              transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Collapsed Icon Rail (Always visible on desktop) */
+.mseva-rail-sidebar.collapsed {
+  width: 60px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.22);
+}
+
+/* Expanded Flyout Drawer (On hover, scroll left, or pinned) */
+.mseva-rail-sidebar.expanded,
+.mseva-rail-sidebar.pinned {
+  width: 290px;
+  box-shadow: 16px 0 45px -4px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+/* Desktop Body Page Margins */
+@media (min-width: 769px) {
+  body.has-icon-rail {
+    margin-left: 60px !important;
+    transition: margin-left 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  body.has-icon-rail.sidebar-pinned {
+    margin-left: 290px !important;
+  }
+}
+
+/* Mobile Responsive Drawer Mode */
+@media (max-width: 768px) {
+  .mseva-rail-sidebar.collapsed {
+    transform: translateX(-100%);
+    width: 285px;
+  }
+
+  .mseva-rail-sidebar.expanded {
+    transform: translateX(0);
+    width: 285px;
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* 1. Header Block: Mini Avatar in Rail -> Full User Card in Drawer */
+.mseva-rail-header {
+  padding: 12px 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.mseva-user-card-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mseva-avatar-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 9999px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mseva-avatar-badge {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #0284C7 0%, #1D4ED8 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+
+.mseva-avatar-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.mseva-online-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 9999px;
+  background-color: #10B981;
+  border: 2px solid #09192C;
+  box-shadow: 0 0 6px #10B981;
+}
+
+/* User Info Expanded Details */
+.mseva-rail-sidebar.collapsed .mseva-user-info-expanded {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+.mseva-rail-sidebar.expanded .mseva-user-info-expanded,
+.mseva-rail-sidebar.pinned .mseva-user-info-expanded {
+  opacity: 1;
+  width: auto;
+  flex: 1;
+  min-width: 0;
+  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1) 90ms;
+}
+
+.mseva-user-primary-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mseva-user-display-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.mseva-verified-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(16, 185, 129, 0.16);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 9999px;
+}
+
+.mseva-user-contact {
+  font-size: 11.5px;
+  color: #94A3B8;
+  margin-top: 1px;
+}
+
+.mseva-mobile-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #ffffff;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+/* Account Options Dropdown */
+.mseva-rail-sidebar.collapsed .mseva-account-dropdown-wrapper {
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  margin: 0;
+}
+
+.mseva-rail-sidebar.expanded .mseva-account-dropdown-wrapper,
+.mseva-rail-sidebar.pinned .mseva-account-dropdown-wrapper {
+  opacity: 1;
+  height: auto;
+  margin-top: 8px;
+  transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1) 110ms;
+}
+
+.mseva-account-dropdown-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #E2E8F0;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.mseva-account-dropdown-trigger:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.mseva-account-dropdown-panel {
+  margin-top: 4px;
+  background: #09192C;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.mseva-dropdown-action-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: #CBD5E1;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+}
+
+.mseva-dropdown-action-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* 2. Scrollable Navigation Rail Body */
+.mseva-rail-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
+}
+
+/* Custom Sleek Scrollbar */
+.custom-mseva-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-mseva-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-mseva-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.custom-mseva-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.mseva-nav-group {
+  margin-bottom: 4px;
+}
+
+.mseva-rail-sidebar.collapsed .mseva-group-header {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.mseva-rail-sidebar.expanded .mseva-group-header,
+.mseva-rail-sidebar.pinned .mseva-group-header {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7DD3FC;
+  padding: 10px 16px 4px;
+  opacity: 1;
+  white-space: nowrap;
+  transition: opacity 250ms ease 80ms;
+}
+
+.mseva-nav-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 6px 10px;
+}
+
+.mseva-group-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mseva-nav-item-li {
+  margin: 2px 6px;
+  position: relative;
+}
+
+.mseva-nav-item-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  color: #94A3B8;
+  position: relative;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+/* Collapsed button: centered icon only */
+.mseva-rail-sidebar.collapsed .mseva-nav-item-btn {
+  height: 42px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Expanded button: icon + label + badge */
+.mseva-rail-sidebar.expanded .mseva-nav-item-btn,
+.mseva-rail-sidebar.pinned .mseva-nav-item-btn {
+  height: 42px;
+  padding: 0 12px;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.mseva-nav-item-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.mseva-nav-item-btn.active {
+  background: rgba(2, 132, 199, 0.22);
+  color: #38BDF8;
+  font-weight: 600;
+}
+
+/* Active glowing left indicator bar */
+.mseva-nav-item-btn.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: #38BDF8;
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 0 8px #38BDF8;
+}
+
+.mseva-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  flex-shrink: 0;
+}
+
+.mseva-rail-sidebar.collapsed .mseva-item-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.mseva-rail-sidebar.expanded .mseva-item-label,
+.mseva-rail-sidebar.pinned .mseva-item-label {
+  opacity: 1;
+  width: auto;
+  flex: 1;
+  text-align: left;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: inherit;
+  transition: opacity 280ms ease 90ms;
+}
+
+.mseva-rail-sidebar.collapsed .mseva-item-badge {
+  display: none;
+}
+
+.mseva-rail-sidebar.expanded .mseva-item-badge,
+.mseva-rail-sidebar.pinned .mseva-item-badge {
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34D399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  margin-left: auto;
+}
+
+/* Tooltip Bubble (Collapsed Mode Only) */
+.mseva-rail-tooltip {
+  display: none;
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #09192C;
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10005;
+}
+
+.mseva-rail-tooltip::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 4px;
+  border-style: solid;
+  border-color: transparent #09192C transparent transparent;
+}
+
+/* Reveal tooltip on hover in collapsed mode */
+.mseva-rail-sidebar.collapsed .mseva-nav-item-btn:hover .mseva-rail-tooltip,
+.mseva-rail-sidebar.collapsed .mseva-helpline-action:hover .mseva-rail-tooltip,
+.mseva-rail-sidebar.collapsed .mseva-pin-action-btn:hover .mseva-rail-tooltip {
+  display: block;
+  animation: msevaTooltipFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes msevaTooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/* 3. Footer Utility Rail */
+.mseva-rail-footer {
+  padding: 10px 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.mseva-rail-sidebar.collapsed .mseva-rail-footer {
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.mseva-rail-sidebar.expanded .mseva-rail-footer,
+.mseva-rail-sidebar.pinned .mseva-rail-footer {
+  flex-direction: row;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.mseva-helpline-action {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34D399;
+  font-size: 11.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.mseva-rail-sidebar.collapsed .mseva-helpline-action {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  justify-content: center;
+}
+
+.mseva-rail-sidebar.expanded .mseva-helpline-action,
+.mseva-rail-sidebar.pinned .mseva-helpline-action {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.mseva-helpline-action:hover {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: #34D399;
+  color: #ffffff;
+}
+
+.mseva-live-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background-color: #10B981;
+  box-shadow: 0 0 6px #10B981;
+  flex-shrink: 0;
+}
+
+.mseva-rail-sidebar.collapsed .mseva-helpline-title {
+  display: none;
+}
+
+.mseva-rail-sidebar.expanded .mseva-helpline-title,
+.mseva-rail-sidebar.pinned .mseva-helpline-title {
+  display: inline;
+  white-space: nowrap;
+}
+
+/* Language selector pills */
+.mseva-rail-sidebar.collapsed .mseva-footer-lang-switcher {
+  display: none;
+}
+
+.mseva-rail-sidebar.expanded .mseva-footer-lang-switcher,
+.mseva-rail-sidebar.pinned .mseva-footer-lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.mseva-lang-pill-btn {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 4px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.mseva-lang-pill-btn:hover {
+  color: #ffffff;
+}
+
+.mseva-lang-sep-char {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 10px;
+}
+
+/* Pin Action Button */
+.mseva-pin-action-btn {
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.mseva-rail-sidebar.collapsed .mseva-pin-action-btn {
+  width: 40px;
+  height: 40px;
+}
+
+.mseva-rail-sidebar.expanded .mseva-pin-action-btn,
+.mseva-rail-sidebar.pinned .mseva-pin-action-btn {
+  width: 32px;
+  height: 32px;
+}
+
+.mseva-pin-action-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.mseva-pin-action-btn.is-pinned {
+  background: rgba(2, 132, 199, 0.25);
+  border-color: #0284C7;
+  color: #38BDF8;
+}
+
+/* Mobile backdrop */
+.mseva-sidebar-backdrop {
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   PHASE 3: Landing Page Slim Banner & Citizen Services Spacing
+   ========================================================================== */
+
+/* Slim Hero Banner Strip (~72px - 88px) */
+.mseva-slim-hero-banner {
+  background: linear-gradient(to right, #0F3A66, #184474, #1E548F);
+  border-radius: 12px;
+  padding: 12px 24px;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  margin-top: 14px;
+  margin-bottom: 12px;
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .mseva-slim-hero-banner {
+    padding: 14px 28px;
+    min-height: 80px;
+  }
+}
+
+.mseva-slim-hero-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.mseva-slim-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mseva-slim-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #93C5FD;
+}
+
+.mseva-slim-hero-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: #38BDF8;
+}
+
+.mseva-slim-hero-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.mseva-slim-hero-tagline {
+  margin: 0;
+  font-size: 13px;
+  color: #E2E8F0;
+  line-height: 1.3;
+}
+
+.mseva-slim-hero-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mseva-slim-track-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mseva-slim-track-btn:hover {
+  background: #ffffff;
+  color: #184474;
+  border-color: #ffffff;
+}
+
+.mseva-slim-helpline-chip {
+  background: rgba(16, 185, 129, 0.18);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: #E6FFFA;
+  padding: 7px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.mseva-slim-helpline-chip:hover {
+  background: rgba(16, 185, 129, 0.3);
+}
+
+/* Eliminate Extra White Space between Header and Slim Hero Banner */
+.citizen .main,
+.citizen .main.citizen-home-container,
+.citizen-home-container,
+.citizen-home-container.mb-25,
+.citizen #main-portal-content,
+#main-portal-content {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.mseva-citizen-dashboard.HomePageContainer,
+.HomePageContainer {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.mseva-citizen-dashboard .HomePageWrapper,
+.HomePageWrapper {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.mseva-slim-hero-banner {
+  margin-top: 10px !important;
+  margin-bottom: 12px !important;
+}
+
+/* Above-The-Fold Optimization */
+.mseva-citizen-dashboard .HomePageWrapper {
+  padding-top: 0 !important;
+}
+
+.mseva-citizen-dashboard .hero-banner-styles {
+  display: none !important;
+}
+
+.mseva-citizen-dashboard .ServicesSection {
+  margin-top: 14px !important;
+  margin-bottom: 12px !important;
+  padding: 0 !important;
+}
+
+.mseva-citizen-dashboard .new-card-header-section {
+  margin-bottom: 12px !important;
+  padding: 0 0 4px 0 !important;
+  border: none !important;
+  display: block !important;
+}
+
+.mseva-citizen-dashboard .new-card-header-title {
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  color: #0F172A !important;
+  border-bottom: 2px solid #2563EB !important;
+  padding-bottom: 3px !important;
+  display: inline-block !important;
+  margin: 0 !important;
+}
+
+@media (min-width: 768px) {
+  .mseva-citizen-dashboard .new-card-header-title {
+    font-size: 1.25rem !important;
+  }
+}
+
+.mseva-citizen-dashboard .new-card-cards-grid {
+  gap: 12px !important;
+}
+
+.mseva-citizen-dashboard .new-card-option {
+  min-height: 100px !important;
+  padding: 14px 16px !important;
+}
+
+
+/* ==========================================================================
+   BHASHINI INLINE TRANSLATION WIDGET (ACCESSIBILITY BAR - IN BETWEEN)
+   ========================================================================== */
+.mseva-bhashini-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  vertical-align: middle;
+}
+
+.mseva-bhashini-container .bhashini-plugin-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+/* Neutralize library default fixed positioning and floating styles */
+.mseva-bhashini-container .bhashini-dropdown,
+.mseva-bhashini-container #bhashini-translation,
+.mseva-acc-right .bhashini-dropdown,
+.mseva-acc-right #bhashini-translation {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 10001 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Style Bhashini trigger button as a sleek 24px pill matching GIGW bar */
+.mseva-bhashini-container .bhashini-dropdown-btn,
+.mseva-acc-right .bhashini-dropdown-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  padding: 2px 8px !important;
+  background: linear-gradient(135deg, rgb(37, 99, 235), rgb(124, 58, 237)) !important;
+  color: #ffffff !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+  line-height: 1 !important;
+}
+
+.mseva-bhashini-container .bhashini-dropdown-btn:hover,
+.mseva-acc-right .bhashini-dropdown-btn:hover {
+  transform: translateY(-1px) scale(1.02) !important;
+  box-shadow: 0 3px 8px rgba(124, 58, 237, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.mseva-bhashini-container .bhashini-dropdown-btn-icon,
+.mseva-acc-right .bhashini-dropdown-btn-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+}
+
+.mseva-bhashini-container .bhashini-dropdown-btn-icon svg,
+.mseva-acc-right .bhashini-dropdown-btn-icon svg {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  display: block !important;
+}
+
+.mseva-bhashini-container .bhashini-dropdown-btn-icon svg path,
+.mseva-acc-right .bhashini-dropdown-btn-icon svg path {
+  fill: #ffffff !important;
+}
+
+/* Bhashini dropdown language selection panel */
+.mseva-bhashini-container .bhashini-dropdown-content,
+.mseva-acc-right .bhashini-dropdown-content {
+  position: absolute !important;
+  top: 100% !important;
+  right: 0 !important;
+  left: auto !important;
+  margin-top: 6px !important;
+  z-index: 100000 !important;
+  background: #ffffff !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15) !important;
+  min-width: 170px !important;
+  max-height: 320px !important;
+  overflow-y: auto !important;
+  list-style: none !important;
+  padding: 4px 0 !important;
+}
+
+.mseva-bhashini-container .bhashini-dropdown-content li,
+.mseva-acc-right .bhashini-dropdown-content li {
+  color: #0F172A !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 8px 14px !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease !important;
+  text-align: left !important;
+}
+
+.mseva-bhashini-container .bhashini-dropdown-content li:hover,
+.mseva-acc-right .bhashini-dropdown-content li:hover {
+  background-color: #EFF6FF !important;
+  color: #1D4ED8 !important;
+}
+
+/* Hide old floating language-plugin styles globally */
+.language-plugin {
+  display: none !important;
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+
+/* High Contrast Mode for Navigation Rail & Flyout */
+.high-contrast-mode .mseva-rail-sidebar {
+  background: #000000 !important;
+  border-color: #FFFF00 !important;
+}
+
+.high-contrast-mode .mseva-rail-sidebar * {
+  border-color: #FFFF00 !important;
+}
+
+.high-contrast-mode .mseva-nav-item-btn {
+  color: #FFFF00 !important;
+}
+
+.high-contrast-mode .mseva-nav-item-btn:hover,
+.high-contrast-mode .mseva-nav-item-btn.active {
+  background: #FFFF00 !important;
+  color: #000000 !important;
+}
+
+.high-contrast-mode .mseva-nav-item-btn.active::before {
+  background: #FFFF00 !important;
+}
+
+.high-contrast-mode .mseva-rail-tooltip {
+  background: #000000 !important;
+  color: #FFFF00 !important;
+  border-color: #FFFF00 !important;
+}
+
+
+/* ==========================================================================
+   APP SHELL: PINNED HEADER & FOOTER, CENTRAL SCROLL WINDOW ONLY
+   ========================================================================== */
+
+/* Prevent full-page / body window scrollbars */
+html,
+body {
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Full Viewport App Shell */
+.citizen {
+  height: 100vh !important;
+  height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* 1. HEADER: Always Visible at Top with Luminous Shining Golden Bottom Line */
+.mseva-gigw-global-header {
+  flex-shrink: 0 !important;
+  position: relative !important;
+  z-index: 1000 !important;
+  width: 100% !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Shining Golden / Yellow Bottom Line on Header */
+.mseva-gigw-global-header::after {
+  content: "" !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, 
+    #B45309 0%, 
+    #D97706 15%, 
+    #F59E0B 30%, 
+    #FDE047 50%, 
+    #FFFFFF 52%, 
+    #FDE047 54%, 
+    #F59E0B 70%, 
+    #D97706 85%, 
+    #B45309 100%
+  ) !important;
+  box-shadow: 0 1px 10px rgba(245, 158, 11, 0.7), 0 0 5px rgba(253, 224, 71, 0.95) !important;
+  z-index: 25 !important;
+}
+
+.mseva-main-header {
+  border-bottom: none !important;
+}
+
+/* 2. CENTRAL CONTENT WINDOW: The Only Scrollable Area (Side & Bottom Scrolls Inside Window Only) */
+#main-portal-content,
+.citizen .main,
+.citizen .center-container,
+.citizen-home-container {
+  flex: 1 1 auto !important;
+  min-height: 0 !important; /* Essential in flex column to enable inner scrolling */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+  padding-bottom: 24px !important;
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Sleek modern scrollbar for the central content window */
+#main-portal-content::-webkit-scrollbar,
+.citizen .main::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+#main-portal-content::-webkit-scrollbar-track,
+.citizen .main::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+#main-portal-content::-webkit-scrollbar-thumb,
+.citizen .main::-webkit-scrollbar-thumb {
+  background: rgba(24, 68, 116, 0.25) !important;
+  border-radius: 4px !important;
+}
+
+#main-portal-content::-webkit-scrollbar-thumb:hover,
+.citizen .main::-webkit-scrollbar-thumb:hover {
+  background: rgba(24, 68, 116, 0.55) !important;
+}
+
+/* 3. FOOTER: Always Visible at Bottom with Reduced Height & Shining Golden Top Line */
+.mseva-app-footer-wrapper,
+.citizen > div:last-child {
+  flex-shrink: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 998 !important;
+}
+
+.new-df-footer {
+  background: #09192C !important;
+  color: #ffffff !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+  z-index: 998 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Shining Golden / Yellow Top Line on Footer */
+.new-df-footer::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, 
+    #B45309 0%, 
+    #D97706 15%, 
+    #F59E0B 30%, 
+    #FDE047 50%, 
+    #FFFFFF 52%, 
+    #FDE047 54%, 
+    #F59E0B 70%, 
+    #D97706 85%, 
+    #B45309 100%
+  ) !important;
+  box-shadow: 0 -1px 10px rgba(245, 158, 11, 0.7), 0 0 5px rgba(253, 224, 71, 0.95) !important;
+  z-index: 25 !important;
+}
+
+.new-df-container {
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+  padding: 0 16px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+}
+
+.new-df-grid {
+  display: none !important;
+}
+
+.new-df-bottom {
+  border-top: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-align: center !important;
+  width: 100% !important;
+}
+
+.new-df-copyright {
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+  color: #94A3B8 !important;
+  margin: 0 !important;
+  letter-spacing: 0.04em !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+
+/* === MSEVA CITIZEN SERVICES REDESIGNED GRID & CARDS === */
+/* ==========================================================================
+   MSEVA CITIZEN SERVICES REDESIGNED GRID (7-COL XL, 6-COL LG, 4-COL MD, 3-COL SM, 2-COL MOB)
+   ========================================================================== */
+.mseva-citizen-services-grid,
+.mseva-citizen-dashboard .new-card-cards-grid.mseva-citizen-services-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+@media (min-width: 640px) {
+  .mseva-citizen-services-grid,
+  .mseva-citizen-dashboard .new-card-cards-grid.mseva-citizen-services-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .mseva-citizen-services-grid,
+  .mseva-citizen-dashboard .new-card-cards-grid.mseva-citizen-services-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mseva-citizen-services-grid,
+  .mseva-citizen-dashboard .new-card-cards-grid.mseva-citizen-services-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .mseva-citizen-services-grid,
+  .mseva-citizen-dashboard .new-card-cards-grid.mseva-citizen-services-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+  }
+}
+
+/* ==========================================================================
+   MSEVA SERVICE CARD BASE & HOVER SURFACES
+   ========================================================================== */
+.mseva-service-card {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: stretch !important;
+  min-height: 135px !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  padding: 16px !important;
+  background-color: #ffffff !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(226, 232, 240, 0.85) !important;
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  outline: none !important;
+  overflow: hidden !important;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-sizing: border-box !important;
+  text-decoration: none !important;
+  font-family: inherit !important;
+}
+
+/* Hover State: Smooth lift (-6px), glowing shadow, border highlight */
+.mseva-service-card:hover {
+  transform: translateY(-6px) !important;
+  border-color: rgba(96, 165, 250, 0.65) !important;
+  box-shadow: 0 16px 28px -6px rgba(24, 68, 116, 0.14),
+              0 6px 14px -3px rgba(24, 68, 116, 0.08),
+              0 0 0 1px rgba(96, 165, 250, 0.2) !important;
+}
+
+/* Active / Tap State: Gentle compression */
+.mseva-service-card:active {
+  transform: translateY(-2px) scale(0.98) !important;
+  transition-duration: 0.08s !important;
+}
+
+/* Focus State for accessibility */
+.mseva-service-card:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.35) !important;
+  border-color: #0284C7 !important;
+}
+
+/* Top Row */
+.mseva-card-top-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  margin-bottom: 12px !important;
+}
+
+/* Squircle Vector Icon Container */
+.mseva-card-squircle {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-sizing: border-box !important;
+}
+
+.mseva-card-squircle svg {
+  display: block !important;
+  width: 24px !important;
+  height: 24px !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.24s ease !important;
+}
+
+/* Icon Micro-Motion on Hover */
+.mseva-service-card:hover .mseva-card-squircle {
+  transform: scale(1.10) rotate(1.5deg) !important;
+}
+
+/* Subtle Thematic Category Fills */
+/* 1. Tax & Finance: Soft Amber/Emerald */
+.mseva-cat-tax-finance {
+  background-color: #ECFDF5 !important;
+  color: #059669 !important;
+  border: 1px solid #A7F3D0 !important;
+}
+.mseva-cat-tax-finance svg {
+  stroke: #059669 !important;
+}
+
+/* 2. Approvals, NOC & Civic: Soft Blue/Navy */
+.mseva-cat-civic-approvals {
+  background-color: #EFF6FF !important;
+  color: #184474 !important;
+  border: 1px solid #BFDBFE !important;
+}
+.mseva-cat-civic-approvals svg {
+  stroke: #184474 !important;
+}
+
+/* 3. Public Utilities & Water: Soft Cyan */
+.mseva-cat-utilities {
+  background-color: #ECFEFF !important;
+  color: #0891B2 !important;
+  border: 1px solid #A5F3FC !important;
+}
+.mseva-cat-utilities svg {
+  stroke: #0891B2 !important;
+}
+
+/* 4. Grievances & Pet: Soft Violet/Rose */
+.mseva-cat-grievances {
+  background-color: #FAF5FF !important;
+  color: #9333EA !important;
+  border: 1px solid #E9D5FF !important;
+}
+.mseva-cat-grievances svg {
+  stroke: #9333EA !important;
+}
+
+/* Diagonal Hover Arrow Indicator */
+.mseva-card-arrow-indicator {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 24px !important;
+  height: 24px !important;
+  color: #0284C7 !important;
+  opacity: 0 !important;
+  transform: translate(-3px, 3px) !important;
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.mseva-service-card:hover .mseva-card-arrow-indicator {
+  opacity: 1 !important;
+  transform: translate(0, 0) !important;
+}
+
+/* Card Typography & Micro-copy */
+.mseva-card-title-text {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #1E293B !important;
+  line-height: 1.35 !important;
+  text-align: left !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  transition: color 0.16s ease !important;
+  margin: 0 !important;
+}
+
+@media (min-width: 640px) {
+  .mseva-card-title-text {
+    font-size: 13.5px !important;
+  }
+}
+
+.mseva-service-card:hover .mseva-card-title-text {
+  color: #184474 !important;
+}
+
+/* ==========================================================================
+   "SHOW LESS / SHOW MORE" PILL TOGGLE BUTTON
+   ========================================================================== */
+.mseva-dashboard__show-more {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-top: 24px !important;
+  margin-bottom: 12px !important;
+  width: 100% !important;
+}
+
+.mseva-dashboard__show-more-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 24px !important;
+  border-radius: 9999px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  background-color: #ffffff !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #334155 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  user-select: none !important;
+}
+
+.mseva-dashboard__show-more-button:hover {
+  background-color: #184474 !important;
+  color: #ffffff !important;
+  border-color: #184474 !important;
+  box-shadow: 0 4px 14px rgba(24, 68, 116, 0.22) !important;
+  transform: translateY(-1px) !important;
+}
+
+.mseva-dashboard__show-more-button:hover svg {
+  stroke: #ffffff !important;
+}
+
+.mseva-dashboard__show-more-button:active {
+  transform: scale(0.97) !important;
+}
+
+.mseva-dashboard__show-more-button svg {
+  width: 14px !important;
+  height: 14px !important;
+  stroke: currentColor !important;
+  transition: transform 0.22s ease !important;
+}
+
+
+/* === MSEVA DARK BLUE HERO & WELCOME DASHBOARD STYLES === */
+/* ==========================================================================
+   MSEVA DARK BLUE HERO BANNER (~72px - 84px on Desktop, Space-Optimized)
+   ========================================================================== */
+.mseva-slim-hero-banner {
+  background: linear-gradient(90deg, #0d2f53 0%, #184474 50%, #1e528d 100%) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(96, 165, 250, 0.22) !important;
+  box-shadow: 0 4px 20px -2px rgba(13, 47, 83, 0.25), 0 2px 6px -1px rgba(13, 47, 83, 0.15) !important;
+  padding: 14px 24px !important;
+  min-height: 74px !important;
+  display: flex !important;
+  align-items: center !important;
+  margin-top: 10px !important;
+  margin-bottom: 14px !important;
+  color: #ffffff !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+@media (min-width: 768px) {
+  .mseva-slim-hero-banner {
+    padding: 16px 28px !important;
+    min-height: 80px !important;
+  }
+}
+
+.mseva-slim-hero-content {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+@media (min-width: 768px) {
+  .mseva-slim-hero-content {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 24px !important;
+  }
+}
+
+/* Left Side: Personalized Greeting & Tagline */
+.mseva-hero-welcome-left {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+}
+
+.mseva-hero-greeting {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.25 !important;
+  margin: 0 !important;
+}
+
+@media (min-width: 640px) {
+  .mseva-hero-greeting {
+    font-size: 23px !important;
+  }
+}
+
+.mseva-hero-tagline {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: rgba(219, 234, 254, 0.85) !important;
+  margin: 3px 0 0 0 !important;
+  line-height: 1.35 !important;
+}
+
+/* Right Side: Search Box */
+.mseva-hero-search-right {
+  width: 100% !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+}
+
+@media (min-width: 640px) {
+  .mseva-hero-search-right {
+    width: 320px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .mseva-hero-search-right {
+    width: 380px !important;
+  }
+}
+
+.mseva-hero-search-input {
+  width: 100% !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  color: #0F172A !important;
+  font-size: 13px !important;
+  padding: 10px 44px 10px 16px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.06) !important;
+  outline: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-sizing: border-box !important;
+}
+
+.mseva-hero-search-input::placeholder {
+  color: #94A3B8 !important;
+}
+
+.mseva-hero-search-input:focus {
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.55), inset 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  border-color: #38BDF8 !important;
+}
+
+.mseva-hero-search-btn {
+  position: absolute !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  background-color: #184474 !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: background-color 0.18s ease !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2) !important;
+}
+
+.mseva-hero-search-btn:hover {
+  background-color: #0d2f53 !important;
+}
+
+.mseva-hero-search-clear {
+  position: absolute !important;
+  right: 42px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: #94A3B8 !important;
+  background: none !important;
+  border: none !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  line-height: 1 !important;
+}
+
+.mseva-hero-search-clear:hover {
+  color: #475569 !important;
+}
+
+/* Top White Header Helpline Pill */
+.mseva-header-helpline-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 6px 14px !important;
+  border-radius: 9999px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  background-color: #ECFDF5 !important;
+  color: #047857 !important;
+  border: 1px solid #A7F3D0 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.mseva-header-helpline-pill:hover {
+  background-color: #D1FAE5 !important;
+  border-color: #6EE7B7 !important;
+  transform: translateY(-1px) !important;
+}

@@ -4,6 +4,8 @@ import TopBar from "./TopBar";
 import { useHistory } from "react-router-dom";
 import SideBar from "./SideBar";
 import LogoutDialog from "../Dialog/LogoutDialog";
+import GIGWHeader from "../GIGWHeader";
+
 const TopBarSideBar = ({
   t,
   stateInfo,
@@ -40,9 +42,9 @@ const TopBarSideBar = ({
     { name: t("EDIT_PROFILE"), icon: <EditPencilIcon className="icon" />, func: userProfile },
     { name: t("CORE_COMMON_LOGOUT"), icon: <LogoutIcon className="icon" />, func: handleLogout },
   ];
-  const userOptionsBeforeLogin = [];
   return (
     <React.Fragment>
+      {CITIZEN && <GIGWHeader t={t} stateInfo={stateInfo} userDetails={userDetails} />}
       <TopBar
         t={t}
         stateInfo={stateInfo}

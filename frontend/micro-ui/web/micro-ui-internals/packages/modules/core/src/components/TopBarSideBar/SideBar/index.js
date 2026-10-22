@@ -2,16 +2,17 @@ import React from "react";
 import { CitizenSideBar } from "./CitizenSideBar";
 import EmployeeSideBar from "./EmployeeSideBar";
 
-const SideBar = ({ t, CITIZEN, isSidebarOpen, toggleSidebar, handleLogout, mobileView, userDetails, modules, linkData, islinkDataLoading, isSideBarScroll,setSideBarScrollTop  }) => {
+const SideBar = ({ t, CITIZEN, isSidebarOpen, toggleSidebar, handleLogout, mobileView, userDetails, modules, linkData, islinkDataLoading, isSideBarScroll, setSideBarScrollTop }) => {
   if (CITIZEN)
     return (
       <CitizenSideBar
         isOpen={isSidebarOpen}
         isSideBarScroll={isSideBarScroll}
         setSideBarScrollTop={setSideBarScrollTop}
-        isMobile={true}
+        isMobile={mobileView}
         toggleSidebar={toggleSidebar}
         onLogout={handleLogout}
+        userDetails={userDetails}
         linkData={linkData}
         islinkDataLoading={islinkDataLoading}
       />

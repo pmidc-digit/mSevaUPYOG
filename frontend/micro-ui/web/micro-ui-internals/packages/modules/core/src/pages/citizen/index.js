@@ -293,12 +293,7 @@ const Home = ({
       </React.Fragment>
     );
   });
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://translation-plugin.bhashini.co.in/v3/website_translation_utility.js ";
-    script.async = true;
-    document.body.appendChild(script);
-  }, []);
+
   return (
     <div className={classname}>
       {hideTopSidebar ? null : (
@@ -316,10 +311,8 @@ const Home = ({
           islinkDataLoading={islinkDataLoading}
         />
       )}
-      <div className="language-plugin">
-        <div className="bhashini-plugin-container"></div>
-      </div>
-      <div className={`main center-container citizen-home-container mb-25`}>
+
+      <div id="main-portal-content" tabIndex="-1" className={`main center-container citizen-home-container mb-25`}>
         {/* {hideSidebar ? null : (
           <div className="SideBarStatic">
             <StaticCitizenSideBar linkData={linkData} islinkDataLoading={islinkDataLoading} />
@@ -423,7 +416,7 @@ const Home = ({
           </ErrorBoundary>
         </Switch>
       </div>
-      <div>
+      <div className="mseva-app-footer-wrapper">
         <DashboardFooter />
       </div>
     </div>

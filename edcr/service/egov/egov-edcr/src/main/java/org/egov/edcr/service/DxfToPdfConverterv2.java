@@ -20,7 +20,7 @@ import org.egov.common.entity.edcr.PageLayoutInfo;
  * Full-featured DXF Parser and SVG/PDF Converter.
  *
  * Handles:
- *  - LINE, CIRCLE, ARC, POLYLINE, LWPOLYLINE, SPLINE, ELLIPSE, HATCH
+ *  - LINE, CIRCLE, ARC, POLYLINE, LWPOLYLINE, SPLINE, ELLIPSE, HATCH, MLINE
  *  - TEXT, MTEXT (with full RTF-style formatting codes)
  *  - INSERT (block references) -> SVG <use>
  *  - DIMENSION entities
@@ -130,12 +130,20 @@ public class DxfToPdfConverterv2 {
     static class Block {
         String name = "";
         double baseX = 0, baseY = 0, baseZ = 0;
+        // Optional rendering-only local origin. DXF files can contain blocks
+        // whose geometry is authored at very large coordinates and then
+        // inserted back onto the sheet with a tiny scale and a compensating
+        // offset. Recentering those coordinates avoids precision/clipping
+        // problems in SVG/PDF renderers without changing the plotted position.
+        double renderOffsetX = 0, renderOffsetY = 0;
+        double renderStrokeCompensation = 1.0;
         List<Entity> entities = new ArrayList<>();
     }
 
     // Base entity
     static abstract class Entity {
         String layer = "0";
+        String handle = "";
         int colorIndex = -1; // -1 = bylayer, 0 = byblock
         int trueColor = -1;
         String lineType = "";
@@ -500,12 +508,200 @@ public class DxfToPdfConverterv2 {
         String patternName = "SOLID";
         boolean solid = false;
         List<List<double[]>> boundaryLoops = new ArrayList<>();
+        List<HatchPatternLine> patternLines = new ArrayList<>();
         double angle = 0;
         double scale = 1.0;
 
         @Override
         String toSvg(DxfDocument doc, double[] t) {
-            return "";
+            if (boundaryLoops == null || boundaryLoops.isEmpty()) return "";
+
+            StringBuilder d = new StringBuilder();
+            for (List<double[]> loop : boundaryLoops) {
+                if (loop == null || loop.size() < 3) continue;
+                for (int i = 0; i < loop.size(); i++) {
+                    double[] p = loop.get(i);
+                    if (p == null || p.length < 2 || !Double.isFinite(p[0]) || !Double.isFinite(p[1])) continue;
+                    d.append(String.format(Locale.US, "%s %.4f %.4f", i == 0 ? "M" : "L", tx(p[0], t), ty(p[1], t)));
+                    d.append(' ');
+                }
+                d.append("Z ");
+            }
+            if (d.length() == 0) return "";
+
+            String path = d.toString().trim();
+            String color = resolveColor(doc, this);
+            if (solid || "SOLID".equalsIgnoreCase(patternName)) {
+                return String.format(Locale.US,
+                        "<path d=\"%s\" fill=\"%s\" fill-rule=\"evenodd\" stroke=\"none\"/>",
+                        path, color);
+            }
+
+            if (!patternLines.isEmpty()) {
+                String hatchId = "hatch_clip_" + (handle == null || handle.isEmpty()
+                        ? Integer.toHexString(System.identityHashCode(this))
+                        : handle.replaceAll("[^A-Za-z0-9_.-]", "_"));
+                String hatchGeometry = createPatternLineGeometry(doc, t);
+                if (hatchGeometry.isEmpty()) return "";
+                double hatchLineWidth = resolveLineWeight(doc, layer, lineWeight);
+                return String.format(Locale.US,
+                        "<defs><clipPath id=\"%s\"><path d=\"%s\" fill-rule=\"evenodd\"/></clipPath></defs>"
+                                + "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\" clip-path=\"url(#%s)\"/>",
+                        hatchId, path, hatchGeometry, color, hatchLineWidth, hatchId);
+            }
+
+            double spacing = Math.max(2.0, Math.abs(scale * t[0] * 4.0));
+            double patternAngle = Double.isFinite(angle) ? -angle : 0.0;
+            String id = "hatch_" + (handle == null || handle.isEmpty()
+                    ? Integer.toHexString(System.identityHashCode(this)) : handle.replaceAll("[^A-Za-z0-9_.-]", "_"));
+            String hatchLines = "M 0 0 L 0 " + String.format(Locale.US, "%.4f", spacing);
+            if (patternName != null && (patternName.toUpperCase(Locale.ROOT).contains("37")
+                    || patternName.toUpperCase(Locale.ROOT).contains("CROSS"))) {
+                hatchLines += " M 0 0 L " + String.format(Locale.US, "%.4f", spacing) + " 0";
+            }
+            return String.format(Locale.US,
+                    "<defs><pattern id=\"%s\" patternUnits=\"userSpaceOnUse\" width=\"%.4f\" height=\"%.4f\" patternTransform=\"rotate(%.4f)\"><path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\"/></pattern></defs>"
+                    + "<path d=\"%s\" fill=\"url(#%s)\" fill-rule=\"evenodd\" stroke=\"none\"/>",
+                    id, spacing, spacing, patternAngle, hatchLines, color, Math.max(0.35, t[0] * 0.12), path, id);
+        }
+
+        private String createPatternLineGeometry(DxfDocument doc, double[] t) {
+            double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY;
+            double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
+            for (List<double[]> loop : boundaryLoops) {
+                if (loop == null) continue;
+                for (double[] point : loop) {
+                    if (point == null || point.length < 2 || !isValidCoordinate(point[0]) || !isValidCoordinate(point[1])) continue;
+                    minX = Math.min(minX, point[0]); maxX = Math.max(maxX, point[0]);
+                    minY = Math.min(minY, point[1]); maxY = Math.max(maxY, point[1]);
+                }
+            }
+            if (!Double.isFinite(minX) || !Double.isFinite(minY)) return "";
+            double diagonal = Math.hypot(maxX - minX, maxY - minY) + 10.0;
+            StringBuilder d = new StringBuilder();
+            double hatchRotation = Math.toRadians(angle);
+            double hatchCos = Math.cos(hatchRotation), hatchSin = Math.sin(hatchRotation);
+            for (HatchPatternLine line : patternLines) {
+                double radians = Math.toRadians(line.angle + angle);
+                double ux = Math.cos(radians), uy = Math.sin(radians);
+                double nx = -uy, ny = ux;
+                double originX = line.originX * hatchCos - line.originY * hatchSin;
+                double originY = line.originX * hatchSin + line.originY * hatchCos;
+                double offsetX = scale * (line.offsetX * hatchCos - line.offsetY * hatchSin);
+                double offsetY = scale * (line.offsetX * hatchSin + line.offsetY * hatchCos);
+                double normalStep = nx * offsetX + ny * offsetY;
+                if (Math.abs(normalStep) < 1e-8) continue;
+
+                double minNormal = Double.POSITIVE_INFINITY, maxNormal = Double.NEGATIVE_INFINITY;
+                double minAlong = Double.POSITIVE_INFINITY, maxAlong = Double.NEGATIVE_INFINITY;
+                double[][] corners = {{minX,minY},{minX,maxY},{maxX,minY},{maxX,maxY}};
+                for (double[] corner : corners) {
+                    double dx = corner[0] - originX, dy = corner[1] - originY;
+                    double normal = nx * dx + ny * dy;
+                    double along = ux * dx + uy * dy;
+                    minNormal = Math.min(minNormal, normal); maxNormal = Math.max(maxNormal, normal);
+                    minAlong = Math.min(minAlong, along); maxAlong = Math.max(maxAlong, along);
+                }
+                double firstOffset = minNormal / normalStep;
+                double lastOffset = maxNormal / normalStep;
+                int kMin = (int) Math.floor(Math.min(firstOffset, lastOffset)) - 1;
+                int kMax = (int) Math.ceil(Math.max(firstOffset, lastOffset)) + 1;
+                if (kMax - kMin > 10000) continue;
+                double[] dashes = line.dashes.stream().mapToDouble(v -> v * scale).toArray();
+                double period = 0;
+                for (double dash : dashes) period += Math.abs(dash);
+                if (period < 1e-8) period = diagonal * 2.0;
+                double alongStep = ux * offsetX + uy * offsetY;
+                for (int k = kMin; k <= kMax; k++) {
+                    double baseX = originX + k * offsetX;
+                    double baseY = originY + k * offsetY;
+                    double lineMinAlong = minAlong - k * alongStep;
+                    double lineMaxAlong = maxAlong - k * alongStep;
+                    if (dashes.length == 0) {
+                        appendHatchSegment(d, baseX + ux * lineMinAlong, baseY + uy * lineMinAlong,
+                                baseX + ux * lineMaxAlong, baseY + uy * lineMaxAlong, t);
+                        continue;
+                    }
+                    long phaseMin = (long) Math.floor(lineMinAlong / period) - 1;
+                    long phaseMax = (long) Math.ceil(lineMaxAlong / period) + 1;
+                    for (long phase = phaseMin; phase <= phaseMax; phase++) {
+                        double along = phase * period;
+                        for (double dash : dashes) {
+                            if (dash > 1e-8) {
+                                double start = Math.max(lineMinAlong, along);
+                                double end = Math.min(lineMaxAlong, along + dash);
+                                if (end > start) appendHatchSegment(d, baseX + ux * start, baseY + uy * start,
+                                        baseX + ux * end, baseY + uy * end, t);
+                            } else if (Math.abs(dash) < 1e-8 && along >= lineMinAlong && along <= lineMaxAlong) {
+                                appendHatchSegment(d, baseX + ux * along, baseY + uy * along,
+                                        baseX + ux * (along + 0.01), baseY + uy * (along + 0.01), t);
+                            }
+                            along += Math.abs(dash);
+                        }
+                    }
+                }
+            }
+            return d.toString().trim();
+        }
+
+        private static void appendHatchSegment(StringBuilder d, double x1, double y1, double x2, double y2, double[] t) {
+            d.append(String.format(Locale.US, "M %.4f %.4f L %.4f %.4f ",
+                    tx(x1, t), ty(y1, t), tx(x2, t), ty(y2, t)));
+        }
+    }
+
+    static class HatchPatternLine {
+        double angle, originX, originY, offsetX, offsetY;
+        final List<Double> dashes = new ArrayList<>();
+    }
+
+    /** A DXF multiline stores one center vertex plus per-style-element offsets at each vertex. */
+    static class MlineVertex {
+        double x, y, directionX, directionY, miterX, miterY;
+        final List<double[]> elementParameters = new ArrayList<>();
+
+        double[] pointForElement(int elementIndex) {
+            if (elementIndex < 0 || elementIndex >= elementParameters.size()) return new double[]{x, y};
+            double[] params = elementParameters.get(elementIndex);
+            double miterOffset = params.length > 0 ? params[0] : 0;
+            double alongOffset = params.length > 1 ? params[1] : 0;
+            return new double[]{x + miterX * miterOffset + directionX * alongOffset,
+                    y + miterY * miterOffset + directionY * alongOffset};
+        }
+    }
+
+    static class MlineEntity extends Entity {
+        String styleName = "STANDARD";
+        double scale = 1.0;
+        int flags;
+        int elementCount;
+        List<MlineVertex> vertices = new ArrayList<>();
+
+        boolean isClosed() { return (flags & 2) != 0; }
+
+        @Override
+        String toSvg(DxfDocument doc, double[] t) {
+            if (vertices.size() < 2 || elementCount < 1) return "";
+            String color = resolveColor(doc, this);
+            double lw = resolveLineWeight(doc, layer, lineWeight);
+            StringBuilder svg = new StringBuilder();
+            int count = Math.min(elementCount, vertices.stream()
+                    .mapToInt(v -> v.elementParameters.size()).min().orElse(0));
+            for (int element = 0; element < count; element++) {
+                StringBuilder d = new StringBuilder();
+                for (int i = 0; i < vertices.size(); i++) {
+                    double[] p = vertices.get(i).pointForElement(element);
+                    d.append(String.format(Locale.US, "%s %.4f %.4f", i == 0 ? "M" : "L",
+                            tx(p[0], t), ty(p[1], t)));
+                    d.append(' ');
+                }
+                if (isClosed()) d.append("Z");
+                String path = validatePathData(d.toString().trim());
+                if (path != null) svg.append(String.format(Locale.US,
+                        "<path d=\"%s\" stroke=\"%s\" stroke-width=\"%.4f\" fill=\"none\"/>",
+                        path, color, lw));
+            }
+            return svg.toString();
         }
     }
 
@@ -553,6 +749,13 @@ public class DxfToPdfConverterv2 {
             if (isDimensionPlaceholderText(cleanText)) {
                 return "";
             }
+
+            boolean aligned = (hJustify == 3 || hJustify == 5)
+                    && Double.isFinite(secondX) && Double.isFinite(secondY)
+                    && Math.hypot(secondX - x, secondY - y) > 1e-9;
+            double renderRotation = aligned
+                    ? Math.toDegrees(Math.atan2(secondY - y, secondX - x)) : rotation;
+            double alignedLength = aligned ? Math.hypot(secondX - x, secondY - y) * scale : 0;
             
             // Build SVG text element - NO transforms, simple and clean
             StringBuilder svg = new StringBuilder();
@@ -560,11 +763,16 @@ public class DxfToPdfConverterv2 {
                     "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" stroke=\"none\" stroke-width=\"0\" " +
                     "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"%s\" xml:space=\"preserve\">",
                     px, py, svgHeight, color, fontFamily, anchor, dominantBaseline));
+
+            if (aligned) {
+                svg.insert(svg.length() - 1, String.format(Locale.US,
+                        " textLength=\"%.6f\" lengthAdjust=\"spacingAndGlyphs\"", alignedLength));
+            }
             
             // Apply rotation if needed (use transform attribute)
-            if (Math.abs(rotation) > 0.01) {
+            if (Math.abs(renderRotation) > 0.01) {
                 svg.insert(svg.length() - 1, String.format(Locale.US, 
-                    " transform=\"rotate(%.6f %.6f %.6f)\"", -rotation, px, py));
+                    " transform=\"rotate(%.6f %.6f %.6f)\"", -renderRotation, px, py));
             }
             
             svg.append(escapeXml(cleanText));
@@ -971,6 +1179,7 @@ public class DxfToPdfConverterv2 {
 			// Attachment
 			// ---------------------------------------------------------
 			String anchor = "start";
+			double textX = 0.0;
 
 			if (attachment == 2 || attachment == 5 || attachment == 8) {
 
@@ -979,6 +1188,33 @@ public class DxfToPdfConverterv2 {
 			} else if (attachment == 3 || attachment == 6 || attachment == 9) {
 
 				anchor = "end";
+			}
+
+			/*
+			 * AutoCAD paragraph justification (for example \\pxqc;) is separate
+			 * from the MTEXT attachment point. DXF table cells commonly use a
+			 * top-left attachment with center-justified paragraph text; ignoring
+			 * this code places each value at the cell's left edge and can make it
+			 * appear outside its column.
+			 */
+			int paragraphAlignment = mtextParagraphAlignment(text);
+			if (paragraphAlignment >= 0 && width > 0.0) {
+				double boxWidth = width * scale;
+				double boxLeft = 0.0;
+				int attachmentColumn = (attachment - 1) % 3;
+				if (attachmentColumn == 1) boxLeft = -boxWidth / 2.0;
+				else if (attachmentColumn == 2) boxLeft = -boxWidth;
+
+				if (paragraphAlignment == 1) {
+					anchor = "middle";
+					textX = boxLeft + boxWidth / 2.0;
+				} else if (paragraphAlignment == 2) {
+					anchor = "end";
+					textX = boxLeft + boxWidth;
+				} else if (paragraphAlignment == 0) {
+					anchor = "start";
+					textX = boxLeft;
+				}
 			}
 
 			StringBuilder sb = new StringBuilder();
@@ -1084,7 +1320,7 @@ public class DxfToPdfConverterv2 {
 								+ "stroke=\"none\" stroke-width=\"0\" " + "font-family=\"%s\" " + "text-anchor=\"%s\" "
 								+ "dominant-baseline=\"alphabetic\" " + "xml:space=\"preserve\">%s</text>",
 
-						0.0, localBaselineY, fontSize, resolveColor(doc, this), fontFamily, anchor,
+						textX, localBaselineY, fontSize, resolveColor(doc, this), fontFamily, anchor,
 
 						renderMTextRuns(lines.get(0), resolveColor(doc, this), fontSize, fontFamily)));
 
@@ -1098,7 +1334,7 @@ public class DxfToPdfConverterv2 {
 								+ "stroke=\"none\" stroke-width=\"0\" " + "font-family=\"%s\" " + "text-anchor=\"%s\" "
 								+ "dominant-baseline=\"alphabetic\" " + "xml:space=\"preserve\">",
 
-						0.0, localBaselineY, fontSize, resolveColor(doc, this), fontFamily, anchor));
+						textX, localBaselineY, fontSize, resolveColor(doc, this), fontFamily, anchor));
 
 				for (int i = 0; i < lines.size(); i++) {
 
@@ -1106,7 +1342,7 @@ public class DxfToPdfConverterv2 {
 
 						sb.append(String.format("<tspan x=\"%.6f\" dy=\"0\">%s</tspan>",
 
-								0.0,
+								textX,
 
 								renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize, fontFamily)));
 
@@ -1114,7 +1350,7 @@ public class DxfToPdfConverterv2 {
 
 						sb.append(String.format("<tspan x=\"%.6f\" dy=\"%.6f\">%s</tspan>",
 
-								0.0,
+								textX,
 
 								lineFontSizes.get(i - 1) * lineSpacingFactor,
 
@@ -1388,12 +1624,21 @@ public class DxfToPdfConverterv2 {
             // Insertion point in SVG coords
             double px = tx(x, t);
             double py = ty(y, t);
+            double rotationRadians = Math.toRadians(rotation);
+            double cos = Math.cos(rotationRadians), sin = Math.sin(rotationRadians);
 
             StringBuilder sb = new StringBuilder();
             for (int r = 0; r < Math.max(1, rows); r++) {
                 for (int c = 0; c < Math.max(1, cols); c++) {
-                    double ox = px + c * colSpacing * t[0];
-                    double oy = py - r * rowSpacing * t[0];
+                    // DXF array spacing is in the INSERT's local axes. Apply the
+                    // insert scale and rotation before converting it to SVG space.
+                    Block referencedBlock = doc.blocks.get(blockName.toUpperCase(Locale.ROOT));
+                    double offsetX = referencedBlock == null ? 0 : referencedBlock.renderOffsetX;
+                    double offsetY = referencedBlock == null ? 0 : referencedBlock.renderOffsetY;
+                    double localX = (offsetX + c * colSpacing) * scaleX;
+                    double localY = (offsetY + r * rowSpacing) * scaleY;
+                    double ox = px + (localX * cos - localY * sin) * t[0];
+                    double oy = py - (localX * sin + localY * cos) * t[0];
 
                     // Build transform: translate to insertion point, then scale and rotate
                     // Scale and rotation are applied around the symbol's own origin (base point)
@@ -1409,9 +1654,14 @@ public class DxfToPdfConverterv2 {
                                 "translate(%.4f,%.4f)", ox, oy);
                     }
 
+                    String useColor = resolveColor(doc, this);
+                    // currentColor is valid for a child path's stroke/fill,
+                    // but Batik rejects it as the value of SVG's `color`
+                    // property. Let nested uses inherit the parent color.
+                    if ("currentColor".equalsIgnoreCase(useColor)) useColor = "inherit";
                     sb.append(String.format(
                             "<use xlink:href=\"#block_%s\" transform=\"%s\" color=\"%s\"/>\n",
-                            escapeXml(sanitizeId(blockName)), transform, resolveColor(doc, this)));
+                            escapeXml(sanitizeId(blockName)), transform, useColor));
                 }
             }
             return sb.toString();
@@ -1657,7 +1907,11 @@ public class DxfToPdfConverterv2 {
     	if (!isSystemLayer(layerName)) return UNDEFINED_LAYER_COLOR;
         if (trueColor >= 0) return trueColorToHex(trueColor);
         if (colorIndex == -1 || colorIndex == 256) { // BYLAYER
-            // Only use currentColor inside a block symbol definition (for ByBlock inheritance)
+            // SVG's currentColor keyword is valid for paint properties such as
+            // stroke, but Batik rejects it when used as the value of the color
+            // presentation attribute (for example on a nested <use>). Use the
+            // CSS inheritance keyword here so nested block references retain
+            // the INSERT's ByBlock color without invalidating the whole symbol.
             if (RENDERING_BLOCK_DEFINITION.get() && "0".equalsIgnoreCase(layerName)) {
                 return "currentColor";
             }
@@ -1669,7 +1923,8 @@ public class DxfToPdfConverterv2 {
                 colorIndex = 7; // default black
             }
         } else if (colorIndex == 0) {
-            // ByBlock: inside symbol → currentColor, outside → black
+            // ByBlock: inherit the color from the parent INSERT while inside
+            // a symbol; outside a symbol there is no parent block context.
             if (RENDERING_BLOCK_DEFINITION.get()) {
                 return "currentColor";
             }
@@ -1689,15 +1944,29 @@ public class DxfToPdfConverterv2 {
     }
 
     static double resolveLineWeight(DxfDocument doc, String layerName, double lw) {
-        if (lw < 0) {
+        boolean useDefault = lw == -3;
+        if (lw == -1 || lw == -2) {
             Layer layer = doc.layers.get(layerName.toUpperCase());
             if (layer != null && layer.lineWeight >= 0) lw = layer.lineWeight;
+            else useDefault = true;
         }
-        if (lw < 0) return 0.35;
-        double resolved = lw * 0.01; // lineweight in hundredths of mm
-        // Enforce a minimum visible stroke width — very thin lines disappear at scale
-        // DXF lineweight 0 = "default" which should render visibly
-        return Math.max(0.35, resolved);
+        if (lw < 0 && !useDefault) useDefault = true;
+
+        // SVG coordinates are pixels and the PDF transcoder maps them at 300 DPI.
+        // DXF lineweights are physical hundredths of a millimeter, so convert them
+        // to SVG pixels instead of treating millimeters as pixels (which made all
+        // plotted linework much thinner than the source CAD PDF).
+        double lineWeightMm;
+        if (useDefault || lw < 0) {
+            double[] defaultWeight = doc.headerVars.get("$LWDEFAULT");
+            lineWeightMm = defaultWeight != null && defaultWeight.length > 0 && defaultWeight[0] >= 0
+                    ? defaultWeight[0] * 0.01 : 0.25;
+        } else {
+            lineWeightMm = lw * 0.01;
+        }
+        double resolvedPixels = lineWeightMm * SvgToPdfConverter.DXF_RENDER_DPI / 25.4;
+        // ACI lineweight zero is a hairline; keep it visible at rasterized preview sizes.
+        return Math.max(0.35, resolvedPixels);
     }
 
     static String resolveFontFamily(
@@ -1789,7 +2058,21 @@ public class DxfToPdfConverterv2 {
      *        \\A0=bottom \\A1=center \\A2=top = alignment
      *        { } = group (save/restore)
      */
-    static List<MTextSegment> parseMText(String raw, DxfDocument doc, String baseStyle, double baseHeight) {
+	static int mtextParagraphAlignment(String raw) {
+		if (raw == null || raw.isEmpty()) return -1;
+		Matcher matcher = Pattern.compile("\\\\p[^;]*?q([lrcjd])", Pattern.CASE_INSENSITIVE).matcher(raw);
+		if (!matcher.find()) return -1;
+		switch (Character.toLowerCase(matcher.group(1).charAt(0))) {
+			case 'l': return 0;
+			case 'c': return 1;
+			case 'r': return 2;
+			case 'j': return 3;
+			case 'd': return 4;
+			default: return -1;
+		}
+	}
+
+	static List<MTextSegment> parseMText(String raw, DxfDocument doc, String baseStyle, double baseHeight) {
         return parseMText(raw, doc, baseStyle, baseHeight, 0);
     }
 
@@ -3047,6 +3330,7 @@ public class DxfToPdfConverterv2 {
                     if (c == 10) { arr[0] = v; }
                     else if (c == 20) { arr[1] = v; }
                     else if (c == 30) { arr[2] = v; }
+                    else { arr[0] = v; }
                     doc.headerVars.put(currentVar, arr);
                 } catch (NumberFormatException ignored) {}
             }
@@ -3185,6 +3469,7 @@ public class DxfToPdfConverterv2 {
                     case "LWPOLYLINE": { PolylineEntity e = new PolylineEntity(); idx = parseLwPolyline(tokens, idx, e);   entityList.add(e); break; }
                     case "SPLINE":     { SplineEntity e = new SplineEntity();   idx = parseSplineEntity(tokens, idx, e);    entityList.add(e); break; }
                     case "HATCH":      { HatchEntity e = new HatchEntity();     idx = parseHatchEntity(tokens, idx, e);     entityList.add(e); break; }
+                    case "MLINE":      { MlineEntity e = new MlineEntity();     idx = parseMlineEntity(tokens, idx, e);     entityList.add(e); break; }
                     case "TEXT":       { TextEntity e = new TextEntity();       idx = parseTextEntity(tokens, idx, e);      entityList.add(e); break; }
                     case "MTEXT":      { MTextEntity e = new MTextEntity();     idx = parseMTextEntity(tokens, idx, e);     entityList.add(e); break; }
                     case "INSERT":     { InsertEntity e = new InsertEntity();   idx = parseInsertEntity(tokens, idx, e);    entityList.add(e); break; }
@@ -3209,7 +3494,8 @@ public class DxfToPdfConverterv2 {
     static void applyCommonCode(String[] tok, Entity e) {
         try {
             int c = Integer.parseInt(tok[0].trim());
-            if (c == 8) e.layer = tok[1].trim();
+            if (c == 5) e.handle = tok[1].trim();
+            else if (c == 8) e.layer = tok[1].trim();
             else if (c == 62) e.colorIndex = Integer.parseInt(tok[1].trim());
             else if (c == 420) e.trueColor = Integer.parseInt(tok[1].trim());
             else if (c == 6) e.lineType = tok[1].trim();
@@ -3396,7 +3682,9 @@ public class DxfToPdfConverterv2 {
         double pendingX = 0;
         boolean waitingForY = false;
         boolean inBoundaryData = false;
+        boolean inPatternData = false;
         List<double[]> currentLoop = null;
+        HatchPatternLine currentPatternLine = null;
         while (idx < tokens.size() && !tokens.get(idx)[0].equals("0")) {
             String[] tok = tokens.get(idx);
             applyCommonCode(tok, e);
@@ -3407,6 +3695,10 @@ public class DxfToPdfConverterv2 {
                 else if (c == 52) e.angle = Double.parseDouble(tok[1].trim());
                 else if (c == 41) e.scale = Double.parseDouble(tok[1].trim());
                 else if (c == 91) inBoundaryData = Integer.parseInt(tok[1].trim()) > 0;
+                else if (c == 78) inPatternData = Integer.parseInt(tok[1].trim()) > 0;
+                // Boundary paths end before the hatch style/pattern-definition fields.
+                // Do not mistake pattern-line origins for additional boundary vertices.
+                else if (c == 75 || c == 76 || c == 78 || c == 98) inBoundaryData = false;
                 else if (c == 92 && inBoundaryData) {
                     if (currentLoop != null && !currentLoop.isEmpty()) {
                         e.boundaryLoops.add(currentLoop);
@@ -3418,12 +3710,72 @@ public class DxfToPdfConverterv2 {
                 } else if ((c == 20 || c == 21) && waitingForY && currentLoop != null) {
                     currentLoop.add(new double[]{pendingX, Double.parseDouble(tok[1].trim())});
                     waitingForY = false;
+                } else if (inPatternData && c == 53) {
+                    currentPatternLine = new HatchPatternLine();
+                    currentPatternLine.angle = Double.parseDouble(tok[1].trim());
+                    e.patternLines.add(currentPatternLine);
+                } else if (inPatternData && currentPatternLine != null && c == 43) {
+                    currentPatternLine.originX = Double.parseDouble(tok[1].trim());
+                } else if (inPatternData && currentPatternLine != null && c == 44) {
+                    currentPatternLine.originY = Double.parseDouble(tok[1].trim());
+                } else if (inPatternData && currentPatternLine != null && c == 45) {
+                    currentPatternLine.offsetX = Double.parseDouble(tok[1].trim());
+                } else if (inPatternData && currentPatternLine != null && c == 46) {
+                    currentPatternLine.offsetY = Double.parseDouble(tok[1].trim());
+                } else if (inPatternData && currentPatternLine != null && c == 49) {
+                    currentPatternLine.dashes.add(Double.parseDouble(tok[1].trim()));
                 }
             } catch (NumberFormatException ignored) {}
             idx++;
         }
         if (currentLoop != null && !currentLoop.isEmpty()) {
             e.boundaryLoops.add(currentLoop);
+        }
+        return idx;
+    }
+
+    static int parseMlineEntity(List<String[]> tokens, int idx, MlineEntity e) {
+        MlineVertex currentVertex = null;
+        List<Double> currentParameters = null;
+        int parametersRemaining = 0;
+        while (idx < tokens.size() && !tokens.get(idx)[0].equals("0")) {
+            String[] tok = tokens.get(idx);
+            applyCommonCode(tok, e);
+            try {
+                int code = Integer.parseInt(tok[0].trim());
+                if (code == 2) {
+                    e.styleName = tok[1].trim();
+                    idx++;
+                    continue;
+                }
+                double value = Double.parseDouble(tok[1].trim());
+                if (code == 40) e.scale = value;
+                else if (code == 70) e.flags = (int) value;
+                else if (code == 73) e.elementCount = (int) value;
+                else if (code == 11) {
+                    currentVertex = new MlineVertex();
+                    currentVertex.x = value;
+                    e.vertices.add(currentVertex);
+                    currentParameters = null;
+                    parametersRemaining = 0;
+                } else if (currentVertex != null && code == 21) currentVertex.y = value;
+                else if (currentVertex != null && code == 12) currentVertex.directionX = value;
+                else if (currentVertex != null && code == 22) currentVertex.directionY = value;
+                else if (currentVertex != null && code == 13) currentVertex.miterX = value;
+                else if (currentVertex != null && code == 23) currentVertex.miterY = value;
+                else if (currentVertex != null && code == 74) {
+                    currentParameters = new ArrayList<>();
+                    currentVertex.elementParameters.add(new double[0]);
+                    parametersRemaining = (int) value;
+                } else if (currentVertex != null && code == 41 && currentParameters != null
+                        && parametersRemaining > 0) {
+                    currentParameters.add(value);
+                    currentVertex.elementParameters.set(currentVertex.elementParameters.size() - 1,
+                            currentParameters.stream().mapToDouble(Double::doubleValue).toArray());
+                    if (--parametersRemaining == 0) currentParameters = null;
+                }
+            } catch (NumberFormatException ignored) {}
+            idx++;
         }
         return idx;
     }
@@ -3452,7 +3804,8 @@ public class DxfToPdfConverterv2 {
             idx++;
         }
         // Use alignment point if specified
-        if (!Double.isNaN(e.secondX) && !Double.isNaN(e.secondY)
+        if (e.hJustify != 3 && e.hJustify != 5
+                && !Double.isNaN(e.secondX) && !Double.isNaN(e.secondY)
                 && (e.hJustify > 0 || e.vJustify > 0)
                 && (Math.abs(e.secondX - e.x) > 1e-6 || Math.abs(e.secondY - e.y) > 1e-6)) {
             e.x = e.secondX;
@@ -4087,6 +4440,27 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                     }
                 }
             }
+        } else if (e instanceof HatchEntity) {
+            for (List<double[]> loop : ((HatchEntity) e).boundaryLoops) {
+                if (loop == null) continue;
+                for (double[] p : loop) {
+                    if (p == null || p.length < 2 || !isValidCoordinate(p[0]) || !isValidCoordinate(p[1])) continue;
+                    minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+                    minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+                    valid = true;
+                }
+            }
+        } else if (e instanceof MlineEntity) {
+            MlineEntity mline = (MlineEntity) e;
+            for (MlineVertex vertex : mline.vertices) {
+                for (int element = 0; element < Math.min(mline.elementCount, vertex.elementParameters.size()); element++) {
+                    double[] p = vertex.pointForElement(element);
+                    if (!isValidCoordinate(p[0]) || !isValidCoordinate(p[1])) continue;
+                    minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+                    minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+                    valid = true;
+                }
+            }
         } else if (e instanceof SplineEntity) {
             SplineEntity s = (SplineEntity) e;
             List<double[]> pts = s.controlPoints.isEmpty() ? s.fitPoints : s.controlPoints;
@@ -4535,6 +4909,9 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
      * scaled the blank page instead of the visible drawing.
      */
     private static int[] calculateDynamicRenderCanvas(DxfDocument doc) {
+        // Preserve the established fit-to-extents canvas used by the prior
+        // DXF-to-PDF path. The overlay service uniformly scales this page next
+        // to the report panel; changing the canvas edge alters that scale.
         final int LONG_EDGE_PX = 3508;
         final int MIN_SHORT_EDGE_PX = 900;
         final int MAX_SHORT_EDGE_PX = 3508;
@@ -4649,6 +5026,9 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
             LOG.info("Generating SVG...");
             String svg;
             try {
+                // Render the complete drawing extents on the established
+                // dynamic canvas. Worksheet-only cropping changes the relative
+                // scale and placement of details against the scrutiny table.
                 svg = generateSvg(doc, width, height);
             } catch (Exception e) {
                 LOG.error("Failed to generate SVG from DXF: {}", e.getMessage(), e);
@@ -4724,7 +5104,7 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
             LOG.info("Generating SVG...");
             String svg;
             try {
-                svg = generateSvg(doc, width, height);
+                svg = generateSvgForWorksheet(doc, width, height);
             } catch (Exception e) {
                 LOG.error("Failed to generate SVG from DXF: {}", e.getMessage(), e);
                 throw new Exception("SVG generation failed: " + e.getMessage(), e);
@@ -4930,6 +5310,15 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
     static double[] textCorners(TextEntity t) {
         String txt = processTextCodes(t.text);
         double h = t.height > 0 ? t.height : 2.5;
+        if ((t.hJustify == 3 || t.hJustify == 5)
+                && Double.isFinite(t.secondX) && Double.isFinite(t.secondY)) {
+            double dx = t.secondX - t.x, dy = t.secondY - t.y;
+            double length = Math.hypot(dx, dy);
+            if (length > 1e-9) {
+                double angle = Math.toDegrees(Math.atan2(dy, dx));
+                return localRectCorners(t.x, t.y, 0, 0, length, h, angle);
+            }
+        }
         double w = Math.max(1, txt.length()) * TEXT_CHAR_W * h * (t.widthFactor > 0 ? t.widthFactor : 1.0);
         double x0 = 0, x1 = w;
         if (t.hJustify == 1 || t.hJustify == 4) { x0 = -w / 2; x1 = w / 2; }
@@ -5152,15 +5541,17 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
     }
 
     static int[] getPageDimensions(String paperSize) {
-        if (paperSize == null) return new int[]{3370, 2384};
+        // SVG dimensions are pixels at 300 DPI. Keep the paper size physical
+        // so PDFBox/Batik emits the same sheet size as the CAD plot.
+        if (paperSize == null) return new int[]{4961, 3508};
         switch (paperSize) {
-            case "A3":  return new int[]{1094, 814};
-            case "A2":  return new int[]{1588, 1162};
-            case "A1":  return new int[]{2356, 1588};
-            case "A0":  return new int[]{3274, 2356};
-            case "2A0": return new int[]{4764, 3370};
-            case "4A0": return new int[]{6741, 4764};
-            default:    return new int[]{3370, 2384};
+            case "A3":  return new int[]{4961, 3508};
+            case "A2":  return new int[]{7016, 4961};
+            case "A1":  return new int[]{9933, 7016};
+            case "A0":  return new int[]{14043, 9933};
+            case "2A0": return new int[]{19843, 14043};
+            case "4A0": return new int[]{28063, 19843};
+            default:    return new int[]{4961, 3508};
         }
     }
 
@@ -5206,6 +5597,26 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         return pages;
     }
 
+    /**
+     * When no PAGE_LAYOUT metadata is supplied, use WORK_SHEET as the plot
+     * window instead of fitting to whatever entity happens to be farthest out.
+     * This keeps detail blocks and annotations registered to the same sheet
+     * coordinates as the CAD model plot.
+     */
+    private static String generateSvgForWorksheet(DxfDocument doc, int fallbackWidth, int fallbackHeight) {
+        List<PageInfo> pages = getOrderedPages(doc);
+        if (pages.isEmpty()) return generateSvg(doc, fallbackWidth, fallbackHeight);
+
+        double[] sheet = pages.get(0).bounds;
+        double margin = 0.0444;
+        double padX = (sheet[2] - sheet[0]) * margin;
+        double padY = (sheet[3] - sheet[1]) * margin;
+        double[] paperBounds = new double[]{sheet[0] - padX, sheet[1] - padY,
+                sheet[2] + padX, sheet[3] + padY};
+        int[] paper = getPageDimensions("A3");
+        return generateSvg(doc, paperBounds, paper[0], paper[1]);
+    }
+
     /** Match by rectangle geometry first, then by page order, then by position. */
     private static PageLayoutInfo findLayout(PageInfo p, List<PageLayoutInfo> layouts, int idx) {
         double[] b = p.bounds;
@@ -5236,7 +5647,13 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         try {
             for (int i = 0; i < pages.size(); i++) {
                 int[] dim = getPageDimensions(ordered.get(i).getPaperSize());
-                String svg = sanitizeSvgPaths(generateSvg(doc, pages.get(i).bounds, dim[0], dim[1]));
+                double[] sheet = pages.get(i).bounds;
+                double margin = 0.0444;
+                double padX = (sheet[2] - sheet[0]) * margin;
+                double padY = (sheet[3] - sheet[1]) * margin;
+                double[] paperBounds = new double[]{sheet[0] - padX, sheet[1] - padY,
+                        sheet[2] + padX, sheet[3] + padY};
+                String svg = sanitizeSvgPaths(generateSvg(doc, paperBounds, dim[0], dim[1]));
                 File f = File.createTempFile("page_" + (i + 1) + "_", ".pdf");
                 temps.add(f);
                 convertSvgToPdf(svg, f, false);
@@ -5257,7 +5674,7 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
     
 
     
-    /** pageBounds == null -> single page fitted to extents (2% margin). Otherwise exact WORK_SHEET rectangle, no margin. */
+    /** pageBounds == null -> single page fitted to extents. Otherwise fitted to the supplied paper bounds. */
     public static String generateSvg(DxfDocument doc, double[] pageBounds, int targetWidthPx, int targetHeightPx) {
         boolean pageMode = pageBounds != null;
         if (targetWidthPx <= 0) targetWidthPx = 3508;
@@ -5269,6 +5686,7 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         if (!Double.isFinite(dxfW) || dxfW <= 0.001) dxfW = 1.0;
         if (!Double.isFinite(dxfH) || dxfH <= 0.001) dxfH = 1.0;
 
+        // Keep the same small fit-to-extents margin as the previous renderer.
         double margin = pageMode ? 0.0 : 0.02;
         double adjMinX = bMinX - dxfW * margin, adjMinY = bMinY - dxfH * margin;
         double adjMaxX = bMaxX + dxfW * margin, adjMaxY = bMaxY + dxfH * margin;
@@ -5282,6 +5700,8 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         double canvasH = pageMode ? drawnH : targetHeightPx;
         double offsetX = (canvasW - drawnW) / 2.0, offsetY = (canvasH - drawnH) / 2.0;
         double[] t = new double[]{scale, offsetX - adjMinX * scale, -adjMinY * scale, offsetY + drawnH};
+
+        normalizeLargeBlockCoordinates(doc);
 
         StringBuilder sb = new StringBuilder();
         sb.append(String.format(Locale.US,
@@ -5338,14 +5758,17 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
             if (block.name.equalsIgnoreCase("*Model_Space") || block.name.equalsIgnoreCase("*Paper_Space")
                     || block.name.toLowerCase().startsWith("*paper_space")) continue;
             sb.append(String.format("<symbol id=\"block_%s\" overflow=\"visible\">\n", sanitizeId(block.name)));
-            double[] blockT = new double[]{t[0], -block.baseX * t[0], -block.baseY * t[0], 0};
+            double[] blockT = new double[]{t[0], -(block.baseX + block.renderOffsetX) * t[0],
+                    -(block.baseY + block.renderOffsetY) * t[0], 0};
             RENDERING_BLOCK_DEFINITION.set(true);
             try {
                 for (Entity e : block.entities) {
                     if (!e.visible) continue;
                     try {
                         String svg = e.toSvg(doc, blockT);
-                        if (!svg.isEmpty()) sb.append("  ").append(svg).append("\n");
+                        if (!svg.isEmpty()) {
+                            sb.append("  ").append(preserveBlockLineweights(svg, block.renderStrokeCompensation)).append("\n");
+                        }
                     } catch (Exception ex) {
                         System.err.println("Block entity error in " + block.name + ": " + ex.getMessage());
                     }
@@ -5355,6 +5778,91 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
             }
             sb.append("</symbol>\n");
         }
+    }
+
+    /**
+     * DXF lineweights are plot widths and do not shrink when a block insert is
+     * scaled. SVG normally scales stroke widths with the transformed symbol,
+     * which made details inside small-scale inserts almost disappear. Keep the
+     * stroke width in device space while the block geometry follows its insert.
+     */
+    private static String preserveBlockLineweights(String svg, double compensation) {
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("stroke-width=\"((?:[0-9]*\\.)?[0-9]+)\"")
+                .matcher(svg);
+        StringBuffer adjusted = new StringBuffer();
+        while (matcher.find()) {
+            double width = Double.parseDouble(matcher.group(1)) * compensation;
+            matcher.appendReplacement(adjusted, java.util.regex.Matcher.quoteReplacement(
+                    String.format(Locale.US, "stroke-width=\"%.4f\"", width)));
+        }
+        matcher.appendTail(adjusted);
+        return adjusted.toString();
+    }
+
+    /**
+     * Rebase blocks with very large local coordinates before writing SVG.
+     * The INSERT writer adds the inverse offset to the insertion transform,
+     * keeping the final geometry at its original sheet coordinates.
+     */
+    private static void normalizeLargeBlockCoordinates(DxfDocument doc) {
+        Map<String, List<Double>> blockScales = new HashMap<>();
+        for (Entity entity : doc.entities) {
+            if (entity instanceof InsertEntity) {
+                collectBlockScales(doc, (InsertEntity) entity, 1.0, blockScales, 0);
+            }
+        }
+        for (Block block : doc.blocks.values()) {
+            block.renderOffsetX = 0;
+            block.renderOffsetY = 0;
+            block.renderStrokeCompensation = representativeStrokeCompensation(
+                    blockScales.get(block.name.toUpperCase(Locale.ROOT)));
+            if (block.entities == null || block.entities.isEmpty()) continue;
+
+            List<double[]> boxes = new ArrayList<>();
+            List<String> labels = new ArrayList<>();
+            for (Entity entity : block.entities) {
+                if (entity.visible) addEntityBox(doc, entity, boxes, labels, 0);
+            }
+            if (boxes.isEmpty()) continue;
+
+            double[] bounds = unionBoxes(boxes);
+            double centerX = (bounds[0] + bounds[2]) / 2.0;
+            double centerY = (bounds[1] + bounds[3]) / 2.0;
+            double relativeX = centerX - block.baseX;
+            double relativeY = centerY - block.baseY;
+            if (Math.abs(relativeX) > 10000.0) block.renderOffsetX = relativeX;
+            if (Math.abs(relativeY) > 10000.0) block.renderOffsetY = relativeY;
+        }
+    }
+
+    private static void collectBlockScales(DxfDocument doc, InsertEntity insert, double parentScale,
+            Map<String, List<Double>> blockScales, int depth) {
+        if (insert == null || insert.blockName == null || depth > 12) return;
+        Block block = doc.blocks.get(insert.blockName.toUpperCase(Locale.ROOT));
+        if (block == null) return;
+        double insertScale = Math.sqrt(Math.abs(insert.scaleX * insert.scaleY));
+        if (!Double.isFinite(insertScale) || insertScale < 1e-9) return;
+        double totalScale = parentScale * insertScale;
+        blockScales.computeIfAbsent(block.name.toUpperCase(Locale.ROOT), ignored -> new ArrayList<>())
+                .add(totalScale);
+        for (Entity entity : block.entities) {
+            if (entity instanceof InsertEntity) {
+                collectBlockScales(doc, (InsertEntity) entity, totalScale, blockScales, depth + 1);
+            }
+        }
+    }
+
+    private static double representativeStrokeCompensation(List<Double> scales) {
+        if (scales == null || scales.isEmpty()) return 1.0;
+        List<Double> sorted = new ArrayList<>();
+        for (Double scale : scales) {
+            if (scale != null && Double.isFinite(scale) && scale > 1e-9) sorted.add(scale);
+        }
+        if (sorted.isEmpty()) return 1.0;
+        Collections.sort(sorted);
+        double medianScale = sorted.get(sorted.size() / 2);
+        return Math.max(0.01, Math.min(100.0, 1.0 / medianScale));
     }
     
     

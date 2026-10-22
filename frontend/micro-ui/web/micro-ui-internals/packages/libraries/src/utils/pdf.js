@@ -2728,6 +2728,8 @@ async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumbe
   const ulb = ulbName? ulbName : tenantId.split(".")[1].replace(/^./, (c) => c.toUpperCase());
   let headerData = [];
   const tenantDetails = await getMDMSDetails(tenantId);
+  const tenantAddress = tenantDetails?.address?.trim();
+  const hasTenantAddress = tenantAddress && !/^(?:N\/?A|NOT AVAILABLE)$/i.test(tenantAddress);
   headerData.push({
     style: "tableExample",
     layout: "noBorders",
@@ -2767,8 +2769,8 @@ async function createHeaderFormattedNOC(details, name, qrCodeDataUrl, phoneNumbe
                 fontSize: 11,
                 alignment: "center",
               },
-              {
-                text: tenantDetails?.address,
+              hasTenantAddress && {
+                text: tenantAddress,
                 fontSize: 10,
                 alignment: "center",
               },

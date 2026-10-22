@@ -2,6 +2,7 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const createProxy = createProxyMiddleware({
   target: process.env.REACT_APP_PROXY_URL,
   changeOrigin: true,
+  secure: false,
 });
 module.exports = function (app) {
   [

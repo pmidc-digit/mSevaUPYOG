@@ -299,48 +299,39 @@ const Home = () => {
       <div className="HomePageContainer">
         <div className="HomePageWrapper">
           <div className="hero-banner-styles">
-            <h1 className="hero-title-styles">mSeva Punjab</h1>
-            <p className="heroSubtitleStyles">Access citizen services digitally with ease and transparency</p>
-            <div className="searchBarStyles">
-              <span className="searchIconStyles">
-                <SearchIconSvg />
-              </span>
-              <input
-                type="text"
-                placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER") || "Search for services..."}
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="searchInputStyles"
-              />
+            <div className="hero-banner-left">
+              <h1 className="hero-title-styles">mSeva Punjab</h1>
+              <p className="heroSubtitleStyles">{t("Access citizen services digitally with ease and transparency")}</p>
             </div>
-
-            {/* Display filtered services when user is typing */}
-            {searchQuery.trim() !== "" && filteredServices.length > 0 && (
-              <div style={{ marginTop: "24px" }}>
-                <div style={{ color: "#ffffff", fontSize: "18px", fontWeight: "600", marginBottom: "16px" }}>{t("Search Results")}</div>
-                <CardBasedOptions
-                  header=""
-                  sideOption={{
-                    name: t(citizenServicesObj?.sideOption?.name),
-                    onClick: () => history.push(citizenServicesObj?.sideOption?.navigationUrl),
-                  }}
-                  options={filteredServices}
-                  styles={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" }}
-                />
-              </div>
-            )}
-
-            {/* Show no results message */}
-            {searchQuery.trim() !== "" && filteredServices.length === 0 && (
-              <div style={{ marginTop: "24px", padding: "20px", textAlign: "center", color: "#999" }}>
-                <p>
-                  {t("No services found matching") || "No services found matching"} "{searchQuery}"
-                </p>
-              </div>
-            )}
+            <div className="hero-banner-right">
+              <button
+                type="button"
+                className="hero-action-pill"
+                onClick={() => history.push("/digit-ui/citizen/pt/property/citizen-search")}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>{t("Track Application Status")}</span>
+              </button>
+              <a
+                href="tel:1100"
+                className="hero-help-link"
+                title={t("Call 1100 for Citizen Helpline")}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                <span>{t("Helpline 1100")}</span>
+              </a>
+            </div>
           </div>
 
-          <div className="ServicesSection" style={{ marginTop: "40px" }}>
+          <div className="ServicesSection">
             <CardBasedOptions
               {...allCitizenServicesProps}
               options={showAllCards ? allCitizenServicesProps.options : allCitizenServicesProps.options?.slice(0, 4)}

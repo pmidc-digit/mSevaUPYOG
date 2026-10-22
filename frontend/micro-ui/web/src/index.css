@@ -1,20 +1,3338 @@
-.employee-card-input {
-    padding-left: 8px;
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    display: block;
-    width: 100%;
-    height: 2.2rem !important;
-    --border-opacity: 1;
-    border: 1px solid #464646;
-    border-color: rgba(70, 70, 70, var(--border-opacity));
-    --bg-opacity: 1;
-    background-color: #fff;
-    background-color: rgba(255, 255, 255, var(--bg-opacity));
-    line-height: 2.5rem;
-    font-size: 16px;
-    line-height: 20px;
-    --text-opacity: 1;
-    color: #0b0c0c;
-    color: rgba(11, 12, 12, var(--text-opacity));
+/* ==========================================================================
+   mSeva Punjab — Official Government Design System (GIGW 3.0 & WCAG 2.1 AA)
+   Visual Design, Spacing & Layout, Accessibility & High-Contrast Support
+   ========================================================================== */
+
+/* ── 1. DESIGN TOKENS (REUSED GLOBALLY) ─────────────────────────────────── */
+:root {
+  /* Government Colour Palette (Authoritative, Trustworthy, High Contrast) */
+  --gov-navy-950: #051322;
+  --gov-navy-900: #0A1C30;
+  --gov-navy-800: #0F2942;
+  --gov-navy-700: #173B60;
+  --gov-blue-600: #1F5188;
+  --gov-blue-500: #2563EB;
+  --gov-blue-100: #EFF6FF;
+  --gov-blue-50:  #F0F7FF;
+
+  --gov-saffron-600: #D97706;
+  --gov-saffron-500: #F59E0B;
+  --gov-saffron-100: #FEF3C7;
+
+  --gov-green-700: #047857;
+  --gov-green-600: #059669;
+  --gov-green-50:  #ECFDF5;
+
+  --gov-red-700: #B91C1C;
+  --gov-red-600: #DC2626;
+  --gov-red-50:  #FEF2F2;
+
+  --gov-slate-900: #0F172A;
+  --gov-slate-800: #1E293B;
+  --gov-slate-700: #334155;
+  --gov-slate-600: #475569;
+  --gov-slate-500: #64748B;
+  --gov-slate-400: #94A3B8;
+  --gov-slate-300: #CBD5E1;
+  --gov-slate-200: #E2E8F0;
+  --gov-slate-100: #F1F5F9;
+  --gov-slate-50:  #F8FAFC;
+  --gov-white:     #FFFFFF;
+
+  /* Strict 8-Point Spacing Scale (Nothing outside it) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Fluid Section Vertical Rhythm */
+  --section-pad-desktop: clamp(48px, 6vw, 96px);
+  --section-pad-tablet:  clamp(32px, 4vw, 56px);
+  --section-pad-mobile:  clamp(24px, 3vw, 40px);
+
+  /* Layout Containers & Grids */
+  --container-max-width: 1400px;
+  --reading-max-width:   760px;
+  --gutter-desktop:      24px;
+  --gutter-tablet:       20px;
+  --gutter-mobile:       16px;
+
+  /* Border Radii */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Elevation & Shadows */
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+  --shadow-hover: 0 14px 28px rgba(15, 23, 42, 0.12), 0 10px 10px rgba(15, 23, 42, 0.04);
+
+  /* Focus & Accessibility Indicators */
+  --focus-outline-color: #1F5188;
+  --focus-outline-width: 3px;
+  --focus-outline-offset: 2px;
+
+  /* Motion & Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography Stacks */
+  --font-family-base: "Roboto", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --font-family-heading: "Roboto", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+/* ── 2. GLOBAL RESET & ACCESSIBILITY BASELINE ───────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 100%;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: visible !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-base);
+  color: var(--gov-slate-900);
+  background-color: var(--gov-slate-50);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: visible !important;
+}
+
+/* Accessible Global Focus Indicator (WCAG 2.1 AA 2.4.7) */
+:focus-visible {
+  outline: var(--focus-outline-width) solid var(--focus-outline-color) !important;
+  outline-offset: var(--focus-outline-offset) !important;
+  box-shadow: 0 0 0 2px var(--gov-white) !important;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── 3. GIGW 3.0 SKIP LINK ──────────────────────────────────────────────── */
+.gov-skip-link,
+.gigw-quick-skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  background-color: var(--gov-navy-900);
+  color: var(--gov-white) !important;
+  padding: var(--space-3) var(--space-6);
+  font-weight: 700;
+  font-size: 0.95rem;
+  z-index: 99999;
+  border-radius: var(--radius-sm);
+  text-decoration: underline;
+  transition: top var(--transition-fast);
+}
+
+.gov-skip-link:focus,
+.gigw-quick-skip-link:focus {
+  top: 12px;
+  outline: 3px solid var(--gov-saffron-500) !important;
+  outline-offset: 2px;
+}
+
+/* ── 4. GIGW 3.0 ACCESSIBILITY TOP UTILITY BAR ──────────────────────────── */
+.gigw-header-container {
+  width: 100%;
+  background-color: var(--gov-white);
+  border-bottom: 1px solid var(--gov-slate-200);
+  position: relative;
+  z-index: 1000;
+}
+
+.gigw-top-utility-bar {
+  background-color: var(--gov-navy-950);
+  color: var(--gov-slate-100);
+  font-size: 0.8125rem;
+  border-bottom: 2px solid var(--gov-saffron-500);
+}
+
+.gigw-utility-inner {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: var(--space-2) var(--gutter-desktop);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.gigw-govt-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.gigw-tricolour-strip {
+  display: inline-block;
+  width: 18px;
+  height: 12px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, #FF9933 33.3%, #FFFFFF 33.3%, #FFFFFF 66.6%, #138808 66.6%);
+  box-shadow: 0 0 1px rgba(0,0,0,0.5);
+}
+
+.gigw-govt-text {
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: var(--gov-slate-200);
+}
+
+.gigw-accessibility-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.gigw-font-controls {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--gov-navy-800);
+  border: 1px solid var(--gov-navy-700);
+  border-radius: var(--radius-sm);
+  padding: 1px;
+}
+
+.gigw-tool-btn {
+  background: transparent;
+  color: var(--gov-slate-200);
+  border: none;
+  padding: 4px 10px;
+  min-height: 32px;
+  min-width: 32px;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+  transition: all var(--transition-fast);
+}
+
+.gigw-tool-btn:hover,
+.gigw-tool-btn.active {
+  background-color: var(--gov-blue-600);
+  color: var(--gov-white);
+}
+
+.gigw-contrast-btn,
+.gigw-screen-reader-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background-color: var(--gov-navy-800);
+  color: var(--gov-slate-200);
+  border: 1px solid var(--gov-navy-700);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  min-height: 32px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.gigw-contrast-btn:hover,
+.gigw-screen-reader-btn:hover {
+  background-color: var(--gov-blue-600);
+  color: var(--gov-white);
+  border-color: var(--gov-blue-500);
+}
+
+.gigw-language-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.gigw-lang-btn {
+  background: none;
+  border: none;
+  color: var(--gov-slate-300);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  padding: 4px 6px;
+  min-height: 32px;
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+}
+
+.gigw-lang-btn:hover,
+.gigw-lang-btn.active {
+  color: var(--gov-saffron-500);
+  font-weight: 700;
+}
+
+.lang-sep {
+  color: var(--gov-slate-600);
+  font-size: 0.75rem;
+}
+
+/* ── 5. GIGW 3.0 MAIN BRAND HEADER & UNIVERSAL SEARCH ───────────────────── */
+.gigw-main-header {
+  padding: var(--space-4) 0;
+  background-color: var(--gov-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.gigw-header-inner {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter-desktop);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.gigw-brand-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.gigw-brand-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  text-decoration: none;
+  color: inherit;
+}
+
+.gigw-emblem-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gigw-title-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.gigw-dept-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gov-blue-600);
+  line-height: 1.2;
+}
+
+.gigw-portal-heading {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  font-weight: 800;
+  color: var(--gov-navy-900);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.gigw-portal-tag {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gov-saffron-600);
+  background-color: var(--gov-saffron-100);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gov-saffron-500);
+  letter-spacing: 0.2px;
+}
+
+.gigw-sub-dept {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gov-slate-600);
+  line-height: 1.3;
+}
+
+/* Universal Search Form */
+.gigw-search-wrapper {
+  flex: 1;
+  max-width: 480px;
+  min-width: 260px;
+}
+
+.gigw-search-form {
+  display: flex;
+  align-items: stretch;
+  border: 2px solid var(--gov-slate-300);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--gov-white);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.gigw-search-form:focus-within {
+  border-color: var(--gov-blue-500);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.gigw-search-input {
+  flex: 1;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  font-size: 0.9375rem;
+  color: var(--gov-slate-900);
+  outline: none;
+  min-height: 44px;
+}
+
+.gigw-search-input::placeholder {
+  color: var(--gov-slate-500);
+  font-size: 0.875rem;
+}
+
+.gigw-search-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--gov-blue-600);
+  color: var(--gov-white);
+  border: none;
+  padding: 0 var(--space-4);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background-color var(--transition-fast);
+}
+
+.gigw-search-submit:hover {
+  background-color: var(--gov-navy-800);
+}
+
+/* Helpline Badge */
+.gigw-helpline-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--gov-blue-50);
+  border: 1px solid var(--gov-blue-100);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.helpline-icon {
+  font-size: 1.25rem;
+}
+
+.helpline-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.helpline-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gov-blue-600);
+  letter-spacing: 0.5px;
+}
+
+.helpline-number {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--gov-navy-900);
+  text-decoration: none;
+}
+
+.helpline-number:hover {
+  color: var(--gov-blue-500);
+  text-decoration: underline;
+}
+
+/* ── 6. GIGW 3.0 SCREEN READER MODAL ────────────────────────────────────── */
+.gigw-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  padding: var(--space-4);
+}
+
+.gigw-modal-card {
+  background-color: var(--gov-white);
+  padding: var(--space-8);
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  border-top: 4px solid var(--gov-blue-600);
+}
+
+.gigw-modal-card h2 {
+  margin-top: 0;
+  color: var(--gov-navy-900);
+  font-size: 1.35rem;
+}
+
+.gigw-modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-4) 0;
+}
+
+.gigw-modal-table th,
+.gigw-modal-table td {
+  border: 1px solid var(--gov-slate-200);
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.gigw-modal-table th {
+  background-color: var(--gov-slate-100);
+  color: var(--gov-navy-900);
+  font-weight: 700;
+}
+
+.gigw-modal-close-btn {
+  background-color: var(--gov-navy-800);
+  color: var(--gov-white);
+  border: none;
+  padding: var(--space-3) var(--space-6);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.gigw-modal-close-btn:hover {
+  background-color: var(--gov-blue-600);
+}
+
+/* ── 7. MAIN LAYOUT CONTAINER & SPACING SYSTEM ──────────────────────────── */
+.gov-portal-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: visible !important;
+  overflow-x: visible !important;
+}
+
+.gov-app-wrapper {
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: visible !important;
+  overflow-x: visible !important;
+}
+
+/* ── 8. WORLD-CLASS GOVERNMENT CARD SYSTEM & EQUAL HEIGHTS ──────────────── */
+/* Override and modernize UPYOG baseline cards */
+.card,
+.citizen-card,
+.employee-card,
+.moduleCard {
+  background-color: var(--gov-white) !important;
+  border: 1px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: var(--space-6) !important;
+  margin-bottom: var(--space-6) !important;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast) !important;
+  overflow: visible !important;
+}
+
+.card:hover,
+.moduleCard:hover {
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--gov-blue-500) !important;
+}
+
+/* Card Row Grids - Equal Heights and Proximity grouping */
+.card-grid,
+.modules-container,
+.citizen-home-grid,
+.employee-home-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: var(--space-6) !important;
+  margin: var(--space-6) 0 !important;
+  align-items: stretch !important;
+}
+
+.card-grid > *,
+.modules-container > * {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+/* Card Headers and Labels */
+.card-header,
+.card-title,
+.heading-xl,
+.heading-l {
+  color: var(--gov-navy-900) !important;
+  font-family: var(--font-family-heading) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.3 !important;
+  margin-top: 0 !important;
+  margin-bottom: var(--space-3) !important;
+}
+
+.card-caption,
+.card-sub-header {
+  color: var(--gov-slate-600) !important;
+  font-size: 0.9375rem !important;
+  line-height: 1.5 !important;
+  margin-bottom: var(--space-4) !important;
+}
+
+/* ── 9. FORM FIELDS & TOUCH TARGET SYSTEM (>= 44x44px) ─────────────────── */
+.employee-card-input,
+.citizen-card-input,
+.form-field > input,
+.form-field > select,
+.custom-input,
+.text-input > input,
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="password"],
+input[type="date"],
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 48px !important;
+  padding: var(--space-2) var(--space-4) !important;
+  font-size: 0.9375rem !important;
+  line-height: 1.5 !important;
+  color: var(--gov-slate-900) !important;
+  background-color: var(--gov-white) !important;
+  border: 1.5px solid var(--gov-slate-300) !important;
+  border-radius: var(--radius-md) !important;
+  box-sizing: border-box !important;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+input:not(.employee-select-wrap--elipses):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--gov-blue-500) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+  outline: none !important;
+}
+
+/* Form labels */
+.card-label,
+label {
+  display: inline-block !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  color: var(--gov-slate-800) !important;
+  margin-bottom: var(--space-2) !important;
+}
+
+/* Form Error States */
+.card-label-error,
+.error-message,
+.field-error {
+  color: var(--gov-red-600) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  margin-top: var(--space-1) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-1) !important;
+}
+
+/* ── 10. BUTTONS & ACTIONS (MIN 44px TOUCH TARGETS) ─────────────────────── */
+.button,
+.submit-bar,
+.selector-button,
+.button-primary,
+button[type="submit"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 44px !important;
+  min-width: 44px !important;
+  padding: var(--space-2) var(--space-6) !important;
+  font-size: 0.9375rem !important;
+  font-weight: 700 !important;
+  color: var(--gov-white) !important;
+  background-color: var(--gov-blue-600) !important;
+  border: 2px solid var(--gov-blue-600) !important;
+  border-radius: var(--radius-md) !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: background-color var(--transition-fast), transform var(--transition-fast) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.button:hover,
+.submit-bar:hover,
+button[type="submit"]:hover {
+  background-color: var(--gov-navy-900) !important;
+  border-color: var(--gov-navy-900) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.button-secondary {
+  background-color: var(--gov-white) !important;
+  color: var(--gov-blue-600) !important;
+  border: 2px solid var(--gov-blue-600) !important;
+}
+
+.button-secondary:hover {
+  background-color: var(--gov-blue-50) !important;
+  color: var(--gov-navy-900) !important;
+}
+
+/* ── 11. GIGW 3.0 ACCESSIBLE FOOTER ─────────────────────────────────────── */
+.gigw-footer-container {
+  width: 100%;
+  background-color: var(--gov-navy-950);
+  color: var(--gov-slate-200);
+  margin-top: auto;
+  border-top: 4px solid var(--gov-saffron-500);
+}
+
+.gigw-footer-links-section {
+  padding: var(--space-12) 0 var(--space-8) 0;
+  border-bottom: 1px solid var(--gov-navy-800);
+}
+
+.gigw-footer-inner {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter-desktop);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-8);
+}
+
+.gigw-footer-col-title {
+  color: var(--gov-white);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: var(--space-4);
+  position: relative;
+  padding-bottom: var(--space-2);
+}
+
+.gigw-footer-col-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 32px;
+  height: 2px;
+  background-color: var(--gov-saffron-500);
+}
+
+.gigw-footer-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gigw-footer-nav-list li {
+  margin-bottom: var(--space-2);
+}
+
+.gigw-footer-nav-list a {
+  color: var(--gov-slate-300);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color var(--transition-fast), padding-left var(--transition-fast);
+  display: inline-block;
+  min-height: 28px;
+  line-height: 28px;
+}
+
+.gigw-footer-nav-list a:hover {
+  color: var(--gov-saffron-500);
+  padding-left: var(--space-1);
+  text-decoration: underline;
+}
+
+/* Bottom Compliance Bar */
+.gigw-footer-bottom-bar {
+  padding: var(--space-6) 0;
+  background-color: #030b14;
+}
+
+.gigw-bottom-inner {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter-desktop);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+}
+
+.gigw-compliance-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.compliance-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background-color: var(--gov-navy-800);
+  border: 1px solid var(--gov-navy-700);
+  color: var(--gov-slate-200);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-check {
+  color: var(--gov-green-600);
+  font-weight: 800;
+}
+
+.gigw-copyright-text {
+  font-size: 0.8125rem;
+  color: var(--gov-slate-400);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.gigw-copyright-text strong {
+  color: var(--gov-slate-200);
+}
+
+.gigw-tech-credit {
+  margin: var(--space-1) 0 0 0;
+  font-size: 0.75rem;
+  color: var(--gov-slate-500);
+}
+
+.gigw-meta-info {
+  display: flex;
+  gap: var(--space-4);
+  font-size: 0.75rem;
+  color: var(--gov-slate-500);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── 12. HIGH CONTRAST THEME (IS 17802 / WCAG AAA CONTRAST) ─────────────── */
+body.high-contrast-mode,
+html.high-contrast-mode {
+  background-color: #000000 !important;
+  color: #FFFF00 !important;
+}
+
+body.high-contrast-mode * {
+  background-color: #000000 !important;
+  color: #FFFF00 !important;
+  border-color: #FFFFFF !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+body.high-contrast-mode a,
+body.high-contrast-mode .button,
+body.high-contrast-mode .submit-bar,
+body.high-contrast-mode button {
+  color: #00FFFF !important;
+  border: 2px solid #FFFFFF !important;
+  text-decoration: underline !important;
+}
+
+body.high-contrast-mode input,
+body.high-contrast-mode select,
+body.high-contrast-mode textarea {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #FFFFFF !important;
+}
+
+body.high-contrast-mode :focus-visible {
+  outline: 4px solid #FFFF00 !important;
+  outline-offset: 3px !important;
+}
+
+/* ── 13. RESPONSIVE MEDIA QUERIES (320px to 3840px 4K) ──────────────────── */
+
+/* Small Mobile (320px - 374px): Prevent horizontal scroll & reflow */
+@media screen and (max-width: 374px) {
+  :root {
+    --gutter-desktop: 12px;
   }
+  .gigw-portal-heading {
+    font-size: 1.15rem;
+  }
+  .card-grid,
+  .modules-container {
+    grid-template-columns: 1fr !important;
+  }
+  .gigw-accessibility-toolbar {
+    gap: var(--space-2);
+  }
+}
+
+/* Mobile (375px - 767px) */
+@media screen and (max-width: 767px) {
+  .gigw-utility-inner,
+  .gigw-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .gigw-search-wrapper {
+    max-width: 100%;
+  }
+  .gigw-helpline-badge {
+    justify-content: center;
+  }
+  .gov-main-container {
+    padding: var(--space-4) var(--gutter-mobile);
+  }
+  .card, .citizen-card, .employee-card {
+    padding: var(--space-4) !important;
+  }
+}
+
+/* Tablet (768px - 1023px) */
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .card-grid,
+  .modules-container {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .gov-main-container {
+    padding: var(--space-6) var(--gutter-tablet);
+  }
+}
+
+/* Desktop (1024px - 1439px) */
+@media screen and (min-width: 1024px) {
+  .card-grid,
+  .modules-container {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  }
+}
+
+/* Ultrawide (1920px - 2559px) */
+@media screen and (min-width: 1920px) {
+  :root {
+    --container-max-width: 1600px;
+  }
+}
+
+/* 4K UHD (2560px - 3840px+) */
+@media screen and (min-width: 2560px) {
+  :root {
+    --container-max-width: 2000px;
+  }
+  html {
+    font-size: 120%;
+  }
+}
+
+/* Reflow & Zoom Support (WCAG 1.4.10 up to 400%) */
+@media (max-width: 1280px) and (min-resolution: 2dppx) {
+  .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── 14. SEAMLESS DIGITUI COMPONENT INTEGRATION ──────────────────────────── */
+/* The main body-container wrapper rendered by DIGIT UI Body */
+.body-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  overflow-x: visible !important;
+  position: static !important;
+}
+
+/* Ensure citizen/employee app wrappers don't constrain or clip sticky elements */
+.citizen,
+.employee {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  overflow-x: visible !important;
+  position: static !important;
+}
+
+/* Full-Width Sticky Navigation Bar (Remains pinned at the very top when scrolled) */
+.topbar,
+.navbar {
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  z-index: 1000 !important;
+  background-color: var(--gov-white) !important;
+  background: var(--gov-white) !important;
+  border-bottom: 2px solid var(--gov-slate-200) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 24px !important;
+  box-sizing: border-box !important;
+  transition: box-shadow var(--transition-fast);
+}
+
+.navbar {
+  color: var(--gov-slate-900) !important;
+}
+
+.center-container_navbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+}
+
+.left-wrapper_navbar {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.right-wrapper_navbar {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.navbar .ulb-name {
+  color: var(--gov-slate-900) !important;
+  font-weight: 600 !important;
+}
+
+/* Constrain only the inner main content area (page body) with tight, smooth spacing */
+.citizen-home-container,
+.employee-app-container,
+.main,
+.citizen .main,
+.employee .main {
+  max-width: var(--container-max-width) !important;
+  margin: 0 auto !important;
+  padding: var(--space-4) var(--gutter-desktop) var(--space-8) !important;
+  min-height: auto !important;
+  box-sizing: border-box !important;
+}
+
+/* Eliminate excessive stacked margins & paddings from upyog-css on app containers */
+.app-container,
+.citizen .app-container,
+.employee .app-container,
+.chb-citizen .app-container {
+  margin-top: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.chb-citizen {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+/* ── 15. SIDEBAR DRAWER & BACKDROP ELEVATION FIX ─────────────────────────── */
+/* Ensure the sidebar drawer and its modal overlay sit cleanly ABOVE all headers and bars */
+div[style*="zIndex: 1250"],
+div[style*="z-index: 1250"],
+div[style*="1250"],
+.citizen .drawer-list,
+.drawer-desktop,
+.employee-mobile-sidebar {
+  z-index: 100001 !important;
+}
+
+div[style*="zIndex: 1200"],
+div[style*="z-index: 1200"],
+div[style*="1200"],
+div[style*="zIndex: 9998"],
+div[style*="z-index: 9998"],
+div[style*="9998"] {
+  z-index: 100000 !important;
+}
+
+/* ── 16. CITIZEN HOME & MODULE SERVICE CARDS (WORLD-CLASS GOVT UI) ────────── */
+
+/* Container & Vertical Spacing */
+.HomePageContainer {
+  width: 100% !important;
+  max-width: var(--container-max-width) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  display: block !important;
+  height: auto !important;
+}
+
+.HomePageWrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+/* Slim Compact Modern Government Hero Banner (72px - 88px vertical footprint) */
+.HomePageWrapper .hero-banner-styles {
+  background: linear-gradient(to right, #0F3A66 0%, #184474 50%, #1e548f 100%) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 14px 0 rgba(15, 58, 102, 0.18), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  padding: 16px 32px !important;
+  margin: 16px 0 20px 0 !important;
+  min-height: 72px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  color: #ffffff !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Subtle ambient decorative gradient flare */
+.HomePageWrapper .hero-banner-styles::before {
+  content: "" !important;
+  position: absolute !important;
+  top: -60% !important;
+  right: -10% !important;
+  width: 320px !important;
+  height: 320px !important;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(30, 84, 143, 0) 70%) !important;
+  pointer-events: none !important;
+}
+
+/* Left Section: Title & Subtitle */
+.HomePageWrapper .hero-banner-left {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  text-align: left !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.HomePageWrapper .hero-title-styles {
+  font-size: clamp(1.25rem, 2vw, 1.5rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  line-height: 1.25 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+.HomePageWrapper .heroSubtitleStyles {
+  font-size: clamp(0.75rem, 1.2vw, 0.875rem) !important;
+  font-weight: 400 !important;
+  color: #E2E8F0 !important;
+  margin: 4px 0 0 0 !important;
+  line-height: 1.4 !important;
+  opacity: 0.95 !important;
+}
+
+/* Right Section: Utility Pill Actions */
+.HomePageWrapper .hero-banner-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-shrink: 0 !important;
+}
+
+.HomePageWrapper .hero-action-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.75) !important;
+  border-radius: 9999px !important;
+  padding: 8px 18px !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+}
+
+.HomePageWrapper .hero-action-pill svg {
+  width: 15px !important;
+  height: 15px !important;
+  stroke: currentColor !important;
+}
+
+.HomePageWrapper .hero-action-pill:hover {
+  background: #ffffff !important;
+  color: #0F3A66 !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+.HomePageWrapper .hero-help-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  padding: 6px 14px !important;
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  transition: all 150ms ease !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+}
+
+.HomePageWrapper .hero-help-link svg {
+  width: 14px !important;
+  height: 14px !important;
+  stroke: currentColor !important;
+}
+
+.HomePageWrapper .hero-help-link:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  text-decoration: none !important;
+}
+
+/* Services Section Wrapper — Tightened Vertical Spacing */
+.HomePageWrapper .ServicesSection {
+  width: 100% !important;
+  margin-top: 16px !important;
+  margin-bottom: 12px !important;
+  padding: 0 !important;
+  display: block !important;
+}
+
+@media screen and (min-width: 768px) {
+  .HomePageWrapper .ServicesSection {
+    margin-top: 20px !important;
+    margin-bottom: 16px !important;
+  }
+}
+
+/* CardBasedOptions Container */
+.new-card-root {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Services Section Header (Clean, Modern, No Box Highlights) */
+.new-card-header-section {
+  display: block !important;
+  margin-bottom: 16px !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+  position: static !important;
+}
+
+.new-card-header-section::after {
+  display: none !important;
+}
+
+.new-card-header-title {
+  font-size: clamp(1.125rem, 1.8vw, 1.25rem) !important; /* text-lg md:text-xl */
+  font-weight: 700 !important; /* font-bold */
+  color: #0F172A !important; /* text-slate-900 */
+  letter-spacing: -0.01em !important;
+  margin: 0 !important;
+  padding-bottom: 4px !important; /* pb-1 */
+  border-bottom: 2px solid #2563EB !important; /* border-b-2 border-blue-600 */
+  display: inline-block !important; /* inline-block */
+  background: transparent !important;
+  box-shadow: none !important;
+  user-select: none !important;
+}
+
+/* 12-Column Responsive Grid System for Service Cards */
+.new-card-cards-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: var(--space-6) !important;
+  margin: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Modern Compact Equal-Height Service Card (Fully Above The Fold) */
+.new-card-option {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  height: 100% !important;
+  min-height: 165px !important;
+  padding: 16px 18px !important;
+  margin: 0 !important;
+  flex: none !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  background: var(--gov-white) !important;
+  border: 1.5px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+/* Subtle Government Top Accent Stripe that reveals on hover */
+.new-card-option::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 4px !important;
+  background: linear-gradient(90deg, var(--gov-blue-600) 0%, var(--gov-saffron-500) 100%) !important;
+  opacity: 0 !important;
+  transition: opacity var(--transition-fast) !important;
+}
+
+.new-card-option:hover::before {
+  opacity: 1 !important;
+}
+
+.new-card-option:hover {
+  transform: translateY(-4px) !important;
+  border-color: var(--gov-blue-500) !important;
+  box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Focus indicator for keyboard accessibility */
+.new-card-option:focus-visible {
+  outline: 3px solid var(--gov-blue-600) !important;
+  outline-offset: 3px !important;
+}
+
+/* Card Icon Box */
+.new-card-icon {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+  border-radius: var(--radius-md) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: var(--space-4) !important;
+  background-color: var(--gov-blue-50) !important;
+  border: 1px solid var(--gov-blue-100) !important;
+  transition: transform var(--transition-fast), background-color var(--transition-fast) !important;
+}
+
+.new-card-option:hover .new-card-icon {
+  transform: scale(1.08) !important;
+  background-color: var(--gov-blue-600) !important;
+}
+
+.new-card-icon svg {
+  width: 26px !important;
+  height: 26px !important;
+  fill: var(--gov-blue-600) !important;
+  transition: fill var(--transition-fast) !important;
+}
+
+.new-card-option:hover .new-card-icon svg {
+  fill: var(--gov-white) !important;
+}
+
+/* Card Service Title */
+.new-card-service-name {
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  color: var(--gov-slate-900) !important;
+  margin-bottom: var(--space-4) !important;
+  line-height: 1.35 !important;
+  flex: 1 0 auto !important;
+  display: block !important;
+}
+
+/* Card Footer Action Link */
+.new-card-access {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding-top: var(--space-3) !important;
+  border-top: 1px solid var(--gov-slate-100) !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--gov-blue-600) !important;
+  margin-top: auto !important;
+}
+
+.new-card-arrow {
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  color: var(--gov-blue-600) !important;
+  transition: transform var(--transition-fast) !important;
+  display: inline-block !important;
+}
+
+.new-card-option:hover .new-card-arrow {
+  transform: translateX(4px) !important;
+  color: var(--gov-saffron-600) !important;
+}
+
+/* "Show More" / "Show Less" Action Button */
+.ServicesSection button {
+  min-height: 44px !important;
+  padding: 12px 32px !important;
+  background-color: var(--gov-blue-600) !important;
+  color: var(--gov-white) !important;
+  border: 1px solid var(--gov-blue-600) !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all var(--transition-fast) !important;
+  box-shadow: var(--shadow-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ServicesSection button:hover {
+  background-color: var(--gov-navy-800) !important;
+  border-color: var(--gov-navy-800) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.ServicesSection button:focus-visible {
+  outline: 3px solid var(--gov-saffron-500) !important;
+  outline-offset: 3px !important;
+}
+
+/* ── 17. MODULE LANDING CARDS (PT, TL, WS, PGR, OBPS) ────────────────────── */
+.CitizenHomeCard {
+  background: var(--gov-white) !important;
+  border: 1.5px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: var(--space-6) !important;
+  margin: 0 0 var(--space-6) 0 !important;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal) !important;
+}
+
+.CitizenHomeCard:hover {
+  border-color: var(--gov-blue-500) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.CitizenHomeCard .header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding-bottom: var(--space-4) !important;
+  margin-bottom: var(--space-4) !important;
+  border-bottom: 2px solid var(--gov-slate-100) !important;
+}
+
+.CitizenHomeCard .header h2 {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: var(--gov-slate-900) !important;
+  margin: 0 !important;
+}
+
+.CitizenHomeCard .header svg {
+  width: 28px !important;
+  height: 28px !important;
+  fill: var(--gov-blue-600) !important;
+}
+
+.CitizenHomeCard .links .linksWrapper {
+  padding: var(--space-2) 0 !important;
+}
+
+.CitizenHomeCard .links a {
+  color: var(--gov-blue-600) !important;
+  font-size: 0.9375rem !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: var(--space-1) 0 !important;
+  transition: color var(--transition-fast) !important;
+  min-height: 36px !important;
+}
+
+.CitizenHomeCard .links a:hover {
+  color: var(--gov-navy-900) !important;
+  text-decoration: underline !important;
+}
+
+/* ── 18. RESPONSIVE GRID BREAKPOINTS (320px to 3840px 4K) ─────────────────── */
+
+/* Desktop & Laptop (1024px - 1279px): 3 Columns */
+@media screen and (min-width: 1024px) and (max-width: 1279px) {
+  .new-card-cards-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: var(--space-4) !important;
+  }
+}
+
+/* Tablet (640px - 1023px): 2 Columns */
+@media screen and (min-width: 640px) and (max-width: 1023px) {
+  .new-card-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+  .HomePageWrapper .hero-banner-styles {
+    padding: 14px 24px !important;
+  }
+}
+
+/* Mobile (< 768px): Stacking, Minimal Height & 100% Width */
+@media screen and (max-width: 767px) {
+  .HomePageWrapper .hero-banner-styles {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 12px 16px !important; /* py-3 px-4 */
+    gap: 12px !important;
+    min-height: auto !important;
+    border-radius: 12px !important;
+    margin: 10px 0 14px 0 !important;
+  }
+
+  .HomePageWrapper .hero-banner-left {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  .HomePageWrapper .hero-title-styles {
+    font-size: 1.25rem !important;
+  }
+
+  .HomePageWrapper .heroSubtitleStyles {
+    font-size: 0.75rem !important;
+    margin-top: 2px !important;
+  }
+
+  .HomePageWrapper .hero-banner-right {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+
+  .HomePageWrapper .hero-action-pill {
+    padding: 6px 14px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .HomePageWrapper .hero-help-link {
+    padding: 5px 10px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .new-card-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .new-card-option {
+    min-height: 140px !important;
+    padding: 14px !important;
+  }
+}
+
+/* Ultrawide (1920px - 2559px) */
+@media screen and (min-width: 1920px) {
+  .new-card-cards-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: var(--space-8) !important;
+  }
+  .new-card-option {
+    min-height: 240px !important;
+  }
+}
+
+/* 4K UHD (2560px - 3840px+) */
+@media screen and (min-width: 2560px) {
+  .new-card-cards-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: var(--space-8) !important;
+  }
+  .new-card-service-name {
+    font-size: 1.35rem !important;
+  }
+  .new-card-option {
+    min-height: 260px !important;
+    padding: var(--space-8) !important;
+  }
+}
+
+/* High Contrast Mode for Cards */
+body.high-contrast-mode .new-card-option,
+html.high-contrast-mode .new-card-option,
+body.high-contrast-mode .CitizenHomeCard,
+html.high-contrast-mode .CitizenHomeCard {
+  background: #000000 !important;
+  border: 2px solid #ffffff !important;
+  color: #ffff00 !important;
+}
+
+body.high-contrast-mode .new-card-service-name,
+html.high-contrast-mode .new-card-service-name,
+body.high-contrast-mode .new-card-access,
+html.high-contrast-mode .new-card-access,
+body.high-contrast-mode .CitizenHomeCard .header h2,
+html.high-contrast-mode .CitizenHomeCard .header h2 {
+  color: #ffff00 !important;
+}
+
+body.high-contrast-mode .new-card-icon,
+html.high-contrast-mode .new-card-icon {
+  background: #000000 !important;
+  border: 2px solid #ffff00 !important;
+}
+
+body.high-contrast-mode .new-card-icon svg,
+html.high-contrast-mode .new-card-icon svg {
+  fill: #ffff00 !important;
+}
+
+/* ── 19. MODERN GOVERNMENT FORM SYSTEM (STEPPERS, INPUTS, DROPDOWNS, VALIDATIONS) ── */
+
+/* Form & Stepper Container Constraint (Tight, Well-Utilized Grid) */
+.stepper {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: var(--space-6) !important;
+  align-items: flex-start !important;
+  box-sizing: border-box !important;
+}
+
+/* Outer Form Card (Single crisp elevation & border) */
+.card,
+.employeeCard {
+  background: var(--gov-white) !important;
+  border: 1.5px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: var(--space-6) !important;
+  margin: 0 auto var(--space-6) auto !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+/* Constrain citizen application card dynamically up to max-w-7xl (1380px) to maximize screen utilization */
+.citizen .card,
+.chb-citizen .card {
+  max-width: 1380px !important;
+  width: 100% !important;
+}
+
+/* Form Container Inside Stepper: Subtle elevated card filling remaining space */
+.stepper-body form,
+.employeeCard form,
+form.card {
+  background-color: var(--gov-white) !important;
+  border: 1px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+  padding: clamp(var(--space-4), 3vw, var(--space-6)) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+/* When a card is nested directly inside form or stepper-body, eliminate double outer box */
+.stepper-body .card:not(form),
+.stepper .card:not(form),
+.card .card:not(form) {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Form Card Headers */
+.card-header,
+.card-section-header,
+.employeeCard .card-header,
+.employeeCard .card-section-header {
+  font-size: clamp(1.25rem, 1.8vw, 1.45rem) !important;
+  font-weight: 700 !important;
+  color: var(--gov-slate-900) !important;
+  letter-spacing: -0.01em !important;
+  margin: 0 0 var(--space-4) 0 !important;
+  padding-bottom: var(--space-3) !important;
+  border-bottom: 2px solid var(--gov-slate-100) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* Stepper Navigation Sidebar (Desktop: Persistent 240px wide sidebar) */
+.stepper-navigation-bar {
+  flex: 0 0 240px !important;
+  width: 240px !important;
+  min-width: 240px !important;
+  max-width: 240px !important;
+  margin: 0 !important;
+  padding: var(--space-4) var(--space-2) !important;
+  background: var(--gov-slate-50) !important;
+  border: 1px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+
+.stepper-body {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Stepper step items */
+.stepper-navigation-bar .step-content {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  padding: var(--space-2) var(--space-2) !important;
+  margin-bottom: var(--space-2) !important;
+  border-radius: var(--radius-md) !important;
+  transition: background-color var(--transition-fast) !important;
+  box-sizing: border-box !important;
+}
+
+.stepper-navigation-bar .step-circle {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 50% !important;
+  font-size: 0.8125rem !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-bottom: 0 !important;
+  margin-right: var(--space-2) !important;
+  box-shadow: none !important;
+  border: 1.5px solid var(--gov-slate-300) !important;
+  background: var(--gov-white) !important;
+  color: var(--gov-slate-600) !important;
+  position: relative !important;
+}
+
+.stepper-navigation-bar .step-circle > div {
+  display: none !important;
+}
+
+.stepper-navigation-bar .step-sub-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  margin: 0 !important;
+}
+
+.stepper-navigation-bar .step-label {
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  color: var(--gov-slate-700) !important;
+  text-align: left !important;
+  line-height: 1.3 !important;
+}
+
+/* Active / Completed Step Tint */
+.stepper-navigation-bar .step-content[style*="#0D43A7"],
+.stepper-navigation-bar .step-content[style*="rgb(13, 67, 167)"] {
+  background: var(--gov-blue-50) !important;
+}
+
+.stepper-navigation-bar .step-content[style*="#0D43A7"] .step-circle,
+.stepper-navigation-bar .step-content[style*="rgb(13, 67, 167)"] .step-circle {
+  background: var(--gov-blue-600) !important;
+  border-color: var(--gov-blue-600) !important;
+  color: #ffffff !important;
+}
+
+.stepper-navigation-bar .step-content[style*="#0D43A7"] .step-label,
+.stepper-navigation-bar .step-content[style*="rgb(13, 67, 167)"] .step-label {
+  color: var(--gov-blue-700) !important;
+  font-weight: 700 !important;
+}
+
+/* Clean Accessible Breadcrumbs */
+.bread-crumb,
+.breadcrumb {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  margin: 0 0 var(--space-3) 0 !important;
+  padding: 0 !important;
+  font-size: 0.875rem !important;
+  list-style: none !important;
+}
+
+.bread-crumb--item,
+.breadcrumb li {
+  display: inline-flex !important;
+  align-items: center !important;
+  color: var(--gov-slate-500) !important;
+}
+
+.bread-crumb--item a,
+.bread-crumb--item button,
+.breadcrumb a {
+  color: var(--gov-blue-600) !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+}
+
+.bread-crumb--item a:hover,
+.bread-crumb--item button:hover,
+.breadcrumb a:hover {
+  text-decoration: underline !important;
+  color: var(--gov-navy-900) !important;
+}
+
+.bread-crumb--item:not(:last-child)::after,
+.breadcrumb li:not(:last-child)::after {
+  content: "/" !important;
+  margin: 0 var(--space-2) !important;
+  color: var(--gov-slate-400) !important;
+}
+
+/* ── 2-Column Responsive CSS Grid (Tablet & Desktop >= 768px) ── */
+@media screen and (min-width: 768px) {
+  .stepper-body form,
+  .employeeCard form,
+  form.card,
+  form > .card,
+  .card.form-grid,
+  .card.employeeCard,
+  .employee-card,
+  .form-grid-2col {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: var(--space-6) !important;
+    row-gap: var(--space-4) !important;
+    align-items: start !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Full-width elements spanning both columns */
+  .stepper-body form > .action-bar,
+  .stepper-body form > .action-bar-wrap,
+  .stepper-body form > .card-header,
+  .stepper-body form > .card-section-header,
+  .stepper-body form > .card-sub-header,
+  .stepper-body form > hr,
+  .stepper-body form > .break-line,
+  .stepper-body form > .card-text,
+  .stepper-body form > .card-label-desc,
+  .stepper-body form > .descStyle,
+  .stepper-body form > .headerStyle,
+  form.card > .action-bar,
+  form.card > .action-bar-wrap,
+  form.card > .card-header,
+  form.card > .card-section-header,
+  form.card > .card-sub-header,
+  form.card > hr,
+  form.card > .break-line,
+  form.card > .card-text,
+  form.card > .card-label-desc,
+  form.card > .descStyle,
+  form.card > .headerStyle,
+  form > .card > .action-bar,
+  form > .card > .action-bar-wrap,
+  form > .card > .card-header,
+  form > .card > .card-section-header,
+  form > .card > .card-sub-header,
+  form > .card > hr,
+  form > .card > .break-line,
+  form > .card > .card-text,
+  form > .card > .card-label-desc,
+  form > .card > .descStyle,
+  form > .card > .headerStyle,
+  .col-span-full,
+  .grid-full-width {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* Nested multi-unit & multi-owner cards inside forms */
+  .stepper-body form > div[style*="border"],
+  form.card > div[style*="border"],
+  .employeeCard form > div[style*="border"],
+  form > .card > div[style*="border"] {
+    grid-column: 1 / -1 !important;
+    background: var(--gov-white) !important;
+    border: 1.5px solid var(--gov-slate-200) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: var(--space-6) !important;
+    margin-bottom: var(--space-4) !important;
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: var(--space-6) !important;
+    row-gap: var(--space-4) !important;
+    align-items: start !important;
+  }
+
+  .stepper-body form > div[style*="border"] > .card-section-header,
+  form.card > div[style*="border"] > .card-section-header,
+  form > .card > div[style*="border"] > .card-section-header,
+  .stepper-body form > div[style*="border"] > div[style*="text-align: right"],
+  form.card > div[style*="border"] > div[style*="text-align: right"],
+  .stepper-body form > div[style*="border"] > div[style*="cursor: pointer"],
+  form.card > div[style*="border"] > div[style*="cursor: pointer"] {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* ── Top-Aligned Labels Placed Strictly Above Input Fields ── */
+.label-field-pair,
+.employeeCard .label-field-pair,
+.employee .employeeCard .label-field-pair {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+  margin-bottom: var(--space-4) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.label-field-pair .card-label,
+.label-field-pair .card-label-smaller,
+.employeeCard .card-label,
+.employeeCard .card-label-smaller {
+  flex: 0 0 auto !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  color: var(--gov-slate-700) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+.label-field-pair .form-field,
+.label-field-pair .field,
+.employeeCard .form-field,
+.employeeCard .field {
+  flex: 0 0 auto !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+/* Mandatory Asterisk Styling */
+.card-label span,
+.card-label-smaller span,
+.card-label-mandatory {
+  color: var(--gov-red-600) !important;
+  font-weight: 700 !important;
+  margin-left: 2px !important;
+}
+
+/* Integrated Survey ID Map Button */
+.survey-map-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background-color: var(--gov-blue-50) !important;
+  color: var(--gov-blue-700) !important;
+  border: 1px solid rgba(37, 99, 235, 0.3) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 2px 8px !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all var(--transition-fast) !important;
+  line-height: 1.4 !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+}
+
+.survey-map-btn:hover {
+  background-color: var(--gov-blue-600) !important;
+  color: #ffffff !important;
+  border-color: var(--gov-blue-600) !important;
+}
+
+/* Modern Bordered Inputs (h-10 px-3 text-sm bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600) */
+.employee-card-input,
+.citizen-card-input,
+.form-field > input,
+.form-field > select,
+.custom-input,
+.text-input > input,
+.text-input input,
+input[type="text"]:not(.employee-select-wrap--elipses),
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="password"],
+input[type="date"],
+select {
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 12px !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  color: var(--gov-slate-900) !important;
+  background-color: var(--gov-white) !important;
+  border: 1.5px solid var(--gov-slate-300) !important;
+  border-radius: var(--radius-md) !important;
+  box-sizing: border-box !important;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+}
+
+.employee-card-input:focus,
+.citizen-card-input:focus,
+.form-field > input:focus,
+.text-input input:focus,
+input:not(.employee-select-wrap--elipses):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--gov-blue-600) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+  outline: none !important;
+}
+
+.employee-card-input:disabled,
+.citizen-card-input:disabled,
+.form-field > input:disabled,
+input.disabled {
+  background-color: var(--gov-slate-100) !important;
+  border-color: var(--gov-slate-200) !important;
+  color: var(--gov-slate-500) !important;
+  cursor: not-allowed !important;
+  opacity: 0.8 !important;
+}
+
+/* Accessible Radio & Checkbox Controls */
+.radio-wrap,
+.checkbox-wrap {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: var(--space-4) !important;
+  align-items: center !important;
+}
+
+.radio-wrap input[type="radio"],
+.radio-btn-wrap input[type="radio"],
+input.radio-btn,
+.checkbox-wrap input[type="checkbox"] {
+  width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1.5px solid var(--gov-slate-400) !important;
+  accent-color: var(--gov-blue-600) !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* ── CRITICAL FIX: Eliminate Dropdown Overlap & Double Borders ── */
+/* Reset inner text input inside dropdown wrappers so outer .select controls borders, height & shape */
+.select-wrap input,
+.employee-select-wrap input,
+.select input,
+.select-active input,
+input.employee-select-wrap--elipses,
+.form-field .select-wrap input,
+.form-field .employee-select-wrap input,
+.form-field .select input,
+.form-field .select-active input,
+.employeeCard .select-wrap input,
+.employeeCard .select input {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border-radius: 0 !important;
+  height: 100% !important;
+  min-height: auto !important;
+  max-height: none !important;
+  padding: 0 8px 0 0 !important;
+  margin: 0 !important;
+  font-size: 0.875rem !important;
+  font-family: inherit !important;
+  color: var(--gov-slate-900) !important;
+  width: 100% !important;
+  flex: 1 1 auto !important;
+  line-height: normal !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+}
+
+.select-wrap input:focus,
+.employee-select-wrap input:focus,
+.select input:focus,
+.select-active input:focus,
+input.employee-select-wrap--elipses:focus,
+.form-field .select-wrap input:focus,
+.form-field .employee-select-wrap input:focus,
+.form-field .select input:focus,
+.form-field .select-active input:focus,
+.employeeCard .select-wrap input:focus,
+.employeeCard .select input:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Modern Government Dropdowns & Selects Container */
+.select-wrap,
+.employee-select-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+.select-wrap .select,
+.select-wrap .select-active,
+.employee-select-wrap .select,
+.employee-select-wrap .select-active {
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  background-color: var(--gov-white) !important;
+  border: 1.5px solid var(--gov-slate-300) !important;
+  border-radius: var(--radius-md) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 12px !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+  cursor: pointer !important;
+}
+
+.select-wrap .select:hover,
+.employee-select-wrap .select:hover {
+  border-color: var(--gov-blue-600) !important;
+}
+
+.select-wrap .select-active,
+.employee-select-wrap .select-active,
+.select-wrap .select:focus-within,
+.employee-select-wrap .select:focus-within {
+  border-color: var(--gov-blue-600) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Dropdown arrow icon alignment */
+.select-wrap .select svg,
+.select-wrap .select-active svg,
+.employee-select-wrap .select svg,
+.employee-select-wrap .select-active svg {
+  flex-shrink: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
+  fill: var(--gov-slate-600) !important;
+  cursor: pointer !important;
+  margin-left: var(--space-2) !important;
+}
+
+/* Dropdown Options Popup Card */
+.select-wrap .options-card,
+.employee-select-wrap .options-card,
+#jk-dropdown-unique {
+  position: absolute !important;
+  top: calc(100% + 4px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  background-color: var(--gov-white) !important;
+  background: var(--gov-white) !important;
+  border: 1.5px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  z-index: 1050 !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  margin: 0 !important;
+  padding: 4px 0 !important;
+  box-sizing: border-box !important;
+}
+
+.select-wrap .options-card .profile-dropdown--item,
+.employee-select-wrap .options-card .profile-dropdown--item,
+.select-wrap .options-card p,
+.employee-select-wrap .options-card p {
+  padding: 10px 16px !important;
+  font-size: 0.875rem !important;
+  color: var(--gov-slate-800) !important;
+  min-height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  transition: background-color var(--transition-fast) !important;
+}
+
+.select-wrap .options-card .profile-dropdown--item:hover,
+.employee-select-wrap .options-card .profile-dropdown--item:hover,
+.select-wrap .options-card p:hover,
+.employee-select-wrap .options-card p:hover {
+  background-color: var(--gov-blue-50) !important;
+  color: var(--gov-blue-600) !important;
+}
+
+/* Form Validation & Error States */
+.card-input-error,
+.employee-card-input-error,
+.form-field input.card-input-error {
+  border-color: var(--gov-red-600) !important;
+  background-color: #FEF2F2 !important;
+}
+
+.card-input-error:focus,
+.employee-card-input-error:focus {
+  border-color: var(--gov-red-700) !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
+}
+
+.card-label-error,
+.validation-error,
+.form-field p[style*="color: red"],
+.form-field p[style*="color:red"] {
+  width: 100% !important;
+  margin-left: 0 !important;
+  color: var(--gov-red-700) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  margin-top: 4px !important;
+  margin-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.card-label-error::before,
+.form-field p[style*="color: red"]::before {
+  content: "⚠ " !important;
+  font-size: 0.8125rem !important;
+  color: var(--gov-red-600) !important;
+}
+
+/* Action Bar & Submit Buttons */
+.action-bar,
+.action-bar-wrap {
+  background: var(--gov-white) !important;
+  border-top: 1px solid var(--gov-slate-200) !important;
+  padding: var(--space-3) var(--space-6) !important;
+  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.08) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: var(--space-4) !important;
+  z-index: 990 !important;
+  box-sizing: border-box !important;
+}
+
+.submit-bar,
+.bpa-owner-submit-back {
+  min-height: 48px !important;
+  height: 48px !important;
+  min-width: 140px !important;
+  background: var(--gov-blue-600) !important;
+  border: 2px solid var(--gov-blue-600) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--gov-white) !important;
+  font-weight: 700 !important;
+  font-size: 0.9375rem !important;
+  cursor: pointer !important;
+  transition: all var(--transition-fast) !important;
+  box-shadow: var(--shadow-sm) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 var(--space-6) !important;
+}
+
+.submit-bar:hover,
+.bpa-owner-submit-back:hover {
+  background: var(--gov-navy-900) !important;
+  border-color: var(--gov-navy-900) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.submit-bar:focus-visible,
+.bpa-owner-submit-back:focus-visible {
+  outline: 3px solid var(--gov-saffron-500) !important;
+  outline-offset: 3px !important;
+}
+
+.submit-bar header {
+  color: var(--gov-white) !important;
+  font-weight: 700 !important;
+  font-size: 0.9375rem !important;
+  line-height: normal !important;
+}
+
+.submit-bar.submit-bar-back {
+  background: var(--gov-white) !important;
+  border-color: var(--gov-slate-300) !important;
+  color: var(--gov-slate-700) !important;
+}
+
+.submit-bar.submit-bar-back:hover {
+  background: var(--gov-slate-100) !important;
+  border-color: var(--gov-slate-400) !important;
+  color: var(--gov-slate-900) !important;
+}
+
+.submit-bar-disabled,
+.submit-bar:disabled {
+  min-height: 48px !important;
+  height: 48px !important;
+  background: var(--gov-slate-300) !important;
+  border-color: var(--gov-slate-300) !important;
+  color: var(--gov-slate-600) !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ── 20. RESPONSIVE FORM BREAKPOINTS (< 768px STACKED LAYOUT) ────────────── */
+@media screen and (max-width: 767px) {
+  .stepper {
+    flex-direction: column !important;
+    gap: var(--space-4) !important;
+  }
+
+  .stepper-navigation-bar {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding: var(--space-2) !important;
+    gap: var(--space-2) !important;
+  }
+
+  .stepper-navigation-bar .step-content {
+    width: auto !important;
+    min-width: 110px !important;
+    padding: var(--space-2) !important;
+    margin-bottom: 0 !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .stepper-navigation-bar .step-circle {
+    margin-right: 0 !important;
+    margin-bottom: var(--space-1) !important;
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .stepper-navigation-bar .step-label {
+    font-size: 0.75rem !important;
+    text-align: center !important;
+  }
+
+  .label-field-pair,
+  .employeeCard .label-field-pair,
+  .employee .employeeCard .label-field-pair {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--space-1) !important;
+    margin-bottom: var(--space-4) !important;
+  }
+
+  .label-field-pair .card-label,
+  .label-field-pair .card-label-smaller,
+  .employeeCard .card-label,
+  .employeeCard .card-label-smaller {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    padding-top: 0 !important;
+    margin-bottom: var(--space-1) !important;
+  }
+
+  .label-field-pair .form-field,
+  .label-field-pair .field,
+  .employeeCard .form-field,
+  .employeeCard .field {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+    width: 100% !important;
+  }
+
+  .citizen .employeeCard .label-field-pair + .card-label-error,
+  .citizen .employeeCard .label-field-pair .card-label-error {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+
+  .action-bar,
+  .action-bar-wrap {
+    justify-content: stretch !important;
+    padding: var(--space-3) var(--space-4) !important;
+  }
+
+  .action-bar .submit-bar,
+  .action-bar-wrap .submit-bar,
+  .submit-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* High Contrast Theme for Forms */
+body.high-contrast-mode .employeeCard,
+html.high-contrast-mode .employeeCard,
+body.high-contrast-mode form.card,
+html.high-contrast-mode form.card,
+body.high-contrast-mode .card,
+html.high-contrast-mode .card,
+body.high-contrast-mode .select-wrap .select,
+html.high-contrast-mode .select-wrap .select {
+  background: #000000 !important;
+  border: 2px solid #ffffff !important;
+  color: #ffff00 !important;
+}
+
+body.high-contrast-mode .card-label,
+html.high-contrast-mode .card-label,
+body.high-contrast-mode .card-label-smaller,
+html.high-contrast-mode .card-label-smaller {
+  color: #ffff00 !important;
+}
+
+body.high-contrast-mode .submit-bar,
+html.high-contrast-mode .submit-bar {
+  background: #000000 !important;
+  border: 2px solid #ffffff !important;
+  color: #00ffff !important;
+}
+
+/* ── 21. DATA DISPLAY, TABLES, STATUS BADGES, DETAILS & TIMELINE SYSTEM ── */
+
+/* ── 21.1 Accessible Government Data Tables ── */
+.table-wrapper,
+div:has(> table.table),
+div:has(> .table) {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  background: var(--gov-white) !important;
+  border: 1px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  margin-bottom: var(--space-6) !important;
+  box-sizing: border-box !important;
+}
+
+table.table,
+.table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  text-align: left !important;
+  font-family: inherit !important;
+}
+
+table.table thead,
+.table thead {
+  background-color: var(--gov-slate-100) !important;
+  border-bottom: 2px solid var(--gov-slate-200) !important;
+}
+
+table.table thead th,
+.table thead th {
+  padding: var(--space-3) var(--space-4) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--gov-slate-700) !important;
+  white-space: nowrap !important;
+  border: none !important;
+  vertical-align: middle !important;
+}
+
+table.table thead th svg,
+.table thead th svg {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  margin-left: 6px !important;
+  fill: var(--gov-slate-600) !important;
+}
+
+table.table tbody tr,
+.table tbody tr {
+  border-bottom: 1px solid var(--gov-slate-200) !important;
+  transition: background-color var(--transition-fast) !important;
+}
+
+table.table tbody tr:hover,
+.table tbody tr:hover {
+  background-color: var(--gov-blue-50) !important;
+}
+
+table.table tbody td,
+.table tbody td {
+  padding: var(--space-3) var(--space-4) !important;
+  font-size: 0.9375rem !important;
+  color: var(--gov-slate-800) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--gov-slate-100) !important;
+  vertical-align: middle !important;
+}
+
+table.table tbody td .link,
+table.table tbody td a,
+.table tbody td a {
+  color: var(--gov-blue-600) !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+
+table.table tbody td .link:hover,
+table.table tbody td a:hover,
+.table tbody td a:hover {
+  color: var(--gov-navy-900) !important;
+  text-decoration: underline !important;
+}
+
+/* ── 21.2 Status Badges & Chips ── */
+.cell-text[style*="color: green"],
+.cell-text[style*="color:green"],
+span:has(> .cell-text[style*="color: green"]) {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 4px 10px !important;
+  background-color: var(--gov-green-50) !important;
+  color: var(--gov-green-700) !important;
+  border: 1px solid #A7F3D0 !important;
+  border-radius: 9999px !important;
+  font-size: 0.8125rem !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+/* ── 21.3 Table Pagination ── */
+.pagination {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: var(--space-3) !important;
+  padding: var(--space-3) var(--space-4) !important;
+  background: var(--gov-white) !important;
+  border-top: 1px solid var(--gov-slate-200) !important;
+  font-size: 0.875rem !important;
+  color: var(--gov-slate-600) !important;
+  font-weight: 500 !important;
+}
+
+.pagination select {
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 var(--space-3) !important;
+  font-size: 0.875rem !important;
+  border: 1px solid var(--gov-slate-300) !important;
+  border-radius: var(--radius-sm) !important;
+  background-color: var(--gov-white) !important;
+  color: var(--gov-slate-800) !important;
+  cursor: pointer !important;
+}
+
+.pagination svg {
+  cursor: pointer !important;
+  fill: var(--gov-slate-600) !important;
+  padding: 4px !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all var(--transition-fast) !important;
+}
+
+.pagination svg:hover {
+  background-color: var(--gov-slate-100) !important;
+  fill: var(--gov-slate-900) !important;
+}
+
+/* ── 21.4 KeyNote & Service Item Cards ── */
+.key-note-pair {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: var(--space-2) 0 !important;
+  border-bottom: 1px solid var(--gov-slate-100) !important;
+  gap: var(--space-4) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.key-note-pair h3 {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--gov-slate-600) !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+.key-note-pair p {
+  font-size: 0.9375rem !important;
+  font-weight: 700 !important;
+  color: var(--gov-slate-900) !important;
+  margin: 0 !important;
+  text-align: right !important;
+}
+
+/* ── 21.5 StatusTable Key-Value View (Application Details & Summary) ── */
+.data-table,
+.employee-data-table {
+  background: var(--gov-white) !important;
+  border: 1px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-md) !important;
+  overflow: hidden !important;
+  margin-bottom: var(--space-4) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  color: var(--gov-slate-900) !important;
+}
+
+.data-table .row,
+.employee-data-table .row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--gov-slate-100) !important;
+  box-sizing: border-box !important;
+  background: var(--gov-white) !important;
+}
+
+.data-table .row:nth-child(even),
+.employee-data-table .row:nth-child(even) {
+  background-color: var(--gov-slate-50) !important;
+}
+
+.data-table .row.last,
+.employee-data-table .row.last,
+.data-table .row:last-child,
+.employee-data-table .row:last-child {
+  border-bottom: none !important;
+}
+
+.data-table .row h2,
+.employee-data-table .row h2 {
+  flex: 0 0 35% !important;
+  max-width: 35% !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--gov-slate-600) !important;
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.data-table .row .value,
+.employee-data-table .row .value {
+  flex: 0 0 65% !important;
+  max-width: 65% !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  color: var(--gov-slate-900) !important;
+  margin: 0 !important;
+  text-align: left !important;
+  word-break: break-word !important;
+}
+
+.card-sub-header {
+  font-size: 1.1875rem !important;
+  font-weight: 700 !important;
+  color: var(--gov-slate-900) !important;
+  margin: var(--space-4) 0 var(--space-2) 0 !important;
+  padding-bottom: var(--space-1) !important;
+}
+
+/* ── 21.6 Government Success & Response Banners ── */
+.success-wrap,
+.emp-success-wrap {
+  background: linear-gradient(135deg, var(--gov-green-700) 0%, var(--gov-green-600) 100%) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: var(--space-8) var(--space-6) !important;
+  text-align: center !important;
+  color: var(--gov-white) !important;
+  margin-bottom: var(--space-6) !important;
+  box-shadow: 0 8px 24px rgba(4, 120, 87, 0.2) !important;
+  box-sizing: border-box !important;
+}
+
+.success-wrap header,
+.emp-success-wrap header {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem) !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  margin-bottom: var(--space-4) !important;
+  letter-spacing: -0.01em !important;
+}
+
+.success-wrap svg,
+.emp-success-wrap svg {
+  width: 52px !important;
+  height: 52px !important;
+  fill: #ffffff !important;
+  margin: 0 auto var(--space-3) auto !important;
+}
+
+.success-wrap h2,
+.emp-success-wrap h2 {
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: var(--space-2) !important;
+}
+
+.success-wrap p,
+.emp-success-wrap p {
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  display: inline-block !important;
+  padding: var(--space-2) var(--space-6) !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.5) !important;
+  margin: 0 auto !important;
+}
+
+.error-wrap,
+.emp-error-wrap {
+  background: linear-gradient(135deg, var(--gov-red-700) 0%, var(--gov-red-600) 100%) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: var(--space-8) var(--space-6) !important;
+  text-align: center !important;
+  color: var(--gov-white) !important;
+  margin-bottom: var(--space-6) !important;
+  box-shadow: 0 8px 24px rgba(185, 28, 28, 0.2) !important;
+  box-sizing: border-box !important;
+}
+
+.error-wrap header,
+.emp-error-wrap header {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  margin-bottom: var(--space-4) !important;
+}
+
+/* ── 21.7 Application Lifecycle Timeline ── */
+.checkpoint-connect-wrap {
+  position: relative !important;
+  padding-bottom: var(--space-6) !important;
+  box-sizing: border-box !important;
+}
+
+.checkpoint-connect {
+  position: absolute !important;
+  left: 15px !important;
+  top: 30px !important;
+  bottom: 0 !important;
+  width: 2px !important;
+  background-color: var(--gov-slate-300) !important;
+  border: none !important;
+}
+
+.checkpoint-done {
+  display: flex !important;
+  align-items: flex-start !important;
+}
+
+.checkpoint-done h2 {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 50% !important;
+  background-color: var(--gov-green-600) !important;
+  box-shadow: 0 0 0 4px var(--gov-green-50) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.checkpoint-done h2::after {
+  content: "✓" !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+}
+
+.checkpoint {
+  display: flex !important;
+  align-items: flex-start !important;
+}
+
+.checkpoint h2 {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 50% !important;
+  background-color: var(--gov-white) !important;
+  border: 2px solid var(--gov-blue-600) !important;
+  box-shadow: 0 0 0 4px var(--gov-blue-50) !important;
+  margin: 0 !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.checkpoint-done header,
+.checkpoint header {
+  margin-left: var(--space-4) !important;
+  font-size: 0.9375rem !important;
+  font-weight: 700 !important;
+  color: var(--gov-slate-900) !important;
+  line-height: 1.4 !important;
+}
+
+.checkpoint-done header p,
+.checkpoint header p {
+  font-size: 0.8125rem !important;
+  color: var(--gov-slate-500) !important;
+  font-weight: 500 !important;
+  margin-top: var(--space-1) !important;
+}
+
+.checkpoint-comments-wrap {
+  background-color: var(--gov-slate-50) !important;
+  border: 1px solid var(--gov-slate-200) !important;
+  border-radius: var(--radius-md) !important;
+  padding: var(--space-3) var(--space-4) !important;
+  margin-top: var(--space-2) !important;
+  max-width: 580px !important;
+}
+
+.checkpoint-comments-wrap h4 {
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  color: var(--gov-navy-900) !important;
+  margin-bottom: var(--space-1) !important;
+}
+
+.checkpoint-comments-wrap p {
+  font-size: 0.875rem !important;
+  color: var(--gov-slate-700) !important;
+  margin: 0 !important;
+}
+
+/* ── 21.8 Search Application Form Layout ── */
+.search-form-wrapper {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+  gap: var(--space-4) !important;
+  align-items: end !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin-top: var(--space-4) !important;
+}
+
+.search-form-wrapper .search-field {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.search-form-wrapper .search-field label {
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  color: var(--gov-slate-700) !important;
+  margin-bottom: var(--space-1) !important;
+  display: block !important;
+}
+
+/* ── 21.9 High Contrast Accessibility for Data Display ── */
+body.high-contrast-mode table.table,
+html.high-contrast-mode table.table,
+body.high-contrast-mode .data-table,
+html.high-contrast-mode .data-table,
+body.high-contrast-mode .key-note-pair {
+  background: #000000 !important;
+  color: #ffff00 !important;
+  border-color: #ffffff !important;
+}
+
+body.high-contrast-mode table.table thead th,
+html.high-contrast-mode table.table thead th {
+  background-color: #000000 !important;
+  color: #00ffff !important;
+  border-bottom: 2px solid #ffffff !important;
+}
+
+body.high-contrast-mode table.table tbody td,
+html.high-contrast-mode table.table tbody td,
+body.high-contrast-mode .data-table .row,
+html.high-contrast-mode .data-table .row {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #333333 !important;
+}
+
+body.high-contrast-mode .data-table .row h2,
+html.high-contrast-mode .data-table .row h2,
+body.high-contrast-mode .key-note-pair h3 {
+  color: #ffff00 !important;
+}
+
+body.high-contrast-mode .data-table .row .value,
+html.high-contrast-mode .data-table .row .value,
+body.high-contrast-mode .key-note-pair p {
+  color: #ffffff !important;
+}
+
+
+
+
+
+
+/* ── 22. MODERN SLIDER MENU & INTEGRATED HEADER SYSTEM ─────────────────── */
+
+/* 1. Completely remove the redundant citizen sub-navbar row */
+.citizen .navbar,
+.citizen .topbar,
+.navbar:has(.ulb-info) {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+}
+
+/* 2. GIGW Header Brand Wrapper with integrated Hamburger & mSeva Logo */
+.gigw-brand-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.gigw-sidebar-hamburger-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 8px !important;
+  border: 1px solid #E2E8F0 !important;
+  background-color: #ffffff !important;
+  color: #184474 !important;
+  cursor: pointer !important;
+  transition: all 150ms ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  flex-shrink: 0 !important;
+}
+
+.gigw-sidebar-hamburger-btn:hover {
+  background-color: #EFF6FF !important;
+  border-color: #93C5FD !important;
+  color: #1D4ED8 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 6px rgba(29, 78, 216, 0.12) !important;
+}
+
+.gigw-mseva-logo-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+
+.gigw-mseva-logo-img {
+  height: 28px !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+.gigw-mseva-logo-text {
+  font-size: 1.3rem !important;
+  font-weight: 800 !important;
+  color: #1E293B !important;
+  letter-spacing: -0.03em !important;
+  font-family: inherit !important;
+}
+
+.gigw-brand-divider {
+  width: 1.5px !important;
+  height: 30px !important;
+  background-color: #CBD5E1 !important;
+  margin: 0 4px 0 2px !important;
+  flex-shrink: 0 !important;
+}
+
+/* 3. Left-edge invisible hover sensor to catch scrolling/moving mouse to the left */
+.mseva-left-edge-sensor {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 22px !important;
+  height: 100vh !important;
+  z-index: 100045 !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+/* 4. Slider Menu: Tucked off-canvas, slides in on left hover/scroll or hamburger click */
+.mseva-mini-sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  width: 280px !important;
+  max-width: 85vw !important;
+  z-index: 100050 !important;
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border-right: 1px solid rgba(226, 232, 240, 0.9) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  padding: 10px 0 !important;
+  box-sizing: border-box !important;
+  transform: translateX(-100%) !important;
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+  user-select: none !important;
+}
+
+/* Slide in from the left */
+.mseva-mini-sidebar.slider-open,
+.mseva-mini-sidebar.expanded,
+.mseva-mini-sidebar.mobile-open {
+  transform: translateX(0) !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Layout offset: only when pinned */
+@media (min-width: 768px) {
+  body.has-mseva-mini-sidebar {
+    margin-left: 0 !important;
+    transition: margin-left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  body.has-mseva-mini-sidebar.sidebar-pinned {
+    margin-left: 280px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  body.has-mseva-mini-sidebar {
+    margin-left: 0 !important;
+  }
+}
+
+/* Dimming Backdrop Overlay */
+.mseva-sidebar-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 100040 !important;
+  animation: msevaFadeIn 200ms ease !important;
+}
+
+@keyframes msevaFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Identity Header Block */
+.mseva-sidebar-header {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 8px 14px 12px 14px !important;
+  border-bottom: 1px solid #F1F5F9 !important;
+  min-height: 52px !important;
+  box-sizing: border-box !important;
+}
+
+.mseva-user-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #184474 0%, #0284C7 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  box-shadow: 0 2px 4px rgba(24, 68, 116, 0.2) !important;
+  cursor: pointer !important;
+  overflow: visible !important;
+}
+
+.mseva-online-dot {
+  position: absolute !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  width: 10px !important;
+  height: 10px !important;
+  border-radius: 50% !important;
+  background-color: #10B981 !important;
+  border: 2px solid #ffffff !important;
+}
+
+/* Middle Scrollable Section */
+.mseva-sidebar-menu-scroll {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 8px 0 !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #CBD5E1 transparent !important;
+}
+
+.mseva-sidebar-menu-scroll::-webkit-scrollbar {
+  width: 4px !important;
+}
+
+.mseva-sidebar-menu-scroll::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1 !important;
+  border-radius: 4px !important;
+}
+
+.mseva-sidebar-menu-scroll::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+/* Semantic Group Headers */
+.mseva-menu-group-header {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #94A3B8 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 8px 14px 4px 14px !important;
+  user-select: none !important;
+}
+
+/* Navigation Items */
+.mseva-nav-item {
+  position: relative !important;
+  width: calc(100% - 16px) !important;
+  margin: 2px 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  background: transparent !important;
+  color: #475569 !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease !important;
+  box-sizing: border-box !important;
+}
+
+.mseva-nav-item:hover {
+  background-color: rgba(238, 242, 255, 0.8) !important;
+  color: #184474 !important;
+}
+
+.mseva-nav-item:hover .mseva-nav-icon {
+  color: #184474 !important;
+}
+
+.mseva-nav-item.active {
+  background-color: #EFF6FF !important;
+  color: #184474 !important;
+  font-weight: 600 !important;
+  border-left: 4px solid #184474 !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.mseva-nav-item.active .mseva-nav-icon {
+  color: #184474 !important;
+}
+
+.mseva-nav-icon {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  color: #64748B !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: color 150ms ease !important;
+  flex-shrink: 0 !important;
+}
+
+.mseva-nav-label {
+  flex: 1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+}
+
+.mseva-nav-badge {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #184474 !important;
+  background-color: #DBEAFE !important;
+  padding: 1px 6px !important;
+  border-radius: 9999px !important;
+  text-transform: uppercase !important;
+  flex-shrink: 0 !important;
+}
+
+/* Footer Section */
+.mseva-sidebar-footer {
+  padding: 10px 12px !important;
+  border-top: 1px solid #F1F5F9 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  background-color: #FAFAFA !important;
+}
+
+.mseva-helpline-chip {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  border-radius: 8px !important;
+  background-color: #ffffff !important;
+  border: 1px solid #E2E8F0 !important;
+  text-decoration: none !important;
+  color: inherit !important;
+  cursor: pointer !important;
+  transition: all 150ms ease !important;
+  position: relative !important;
+  box-sizing: border-box !important;
+}
+
+.mseva-helpline-chip:hover {
+  border-color: #CBD5E1 !important;
+  background-color: #F8FAFC !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}

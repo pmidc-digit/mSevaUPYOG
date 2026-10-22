@@ -1,4 +1,6 @@
 import React from "react";
+import { GIGWHeader } from "./components/GIGWHeader";
+import { GIGWFooter } from "./components/GIGWFooter";
 import { initPGRComponents, PGRReducers } from "@mseva/digit-ui-module-pgr";
 import {
   initSWACHComponents,
@@ -233,11 +235,20 @@ function App() {
     return <h1>stateCode is not defined</h1>;
   }
   return (
-    <DigitUI
-      stateCode={stateCode}
-      enabledModules={enabledModules}
-      moduleReducers={moduleReducers}
-    />
+    <div className="gov-portal-wrapper">
+      <a href="#main-portal-content" className="gov-skip-link">
+        Skip to main content / ਮੁੱਖ ਸਮੱਗਰੀ 'ਤੇ ਜਾਓ
+      </a>
+      <GIGWHeader />
+      <main id="main-portal-content" className="gov-app-wrapper" role="main">
+        <DigitUI
+          stateCode={stateCode}
+          enabledModules={enabledModules}
+          moduleReducers={moduleReducers}
+        />
+      </main>
+      <GIGWFooter />
+    </div>
   );
 }
 

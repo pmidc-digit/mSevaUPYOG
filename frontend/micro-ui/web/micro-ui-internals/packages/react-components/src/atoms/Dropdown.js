@@ -77,7 +77,19 @@ const TextField = (props) => {
       autoFocus={props.autoFocus}
       placeholder={props.placeholder}
       autoComplete={"off"}
-      style={{...props.style, zIndex: "auto"}}
+      style={{
+        border: "none",
+        outline: "none",
+        boxShadow: "none",
+        background: "transparent",
+        backgroundColor: "transparent",
+        height: "100%",
+        padding: "0 8px 0 0",
+        margin: 0,
+        width: "100%",
+        ...props.style,
+        zIndex: "auto",
+      }}
     />
   );
 };

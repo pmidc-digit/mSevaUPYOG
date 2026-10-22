@@ -64,9 +64,15 @@ const PropertyAddressDetails = ({ goNext }) => {
   }, [tenantId]);
 
   useEffect(() => {
-    if (tenants) {
-      const checkCity = tenants?.find((item) => item?.code == getCity);
+    if (tenants && tenants.length > 0) {
+      const checkCity =
+        tenants?.find((item) => item?.code == getCity) ||
+        tenants?.find((item) => item?.name?.toLowerCase() === "amritsar" || item?.code?.toLowerCase()?.includes("amritsar")) ||
+        tenants[0];
       setValue("city", checkCity);
+      if (checkCity?.code) {
+        batchType(checkCity.code);
+      }
     }
   }, [tenants, getCity]);
 
@@ -93,22 +99,20 @@ const PropertyAddressDetails = ({ goNext }) => {
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
       {/* Survey id */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("PT_SURVEY_ID_LABEL")}</CardLabel>
-        <div className="form-field" style={{ marginBottom: " 30px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: "4px" }}>
+          <CardLabel className="card-label-smaller">{t("PT_SURVEY_ID_LABEL")}</CardLabel>
+          <button className="survey-map-btn" type="button" onClick={onGISMapClickScenarioTwo}>
+            🗺️ {`${t("Survey ID Map")}`}
+          </button>
+        </div>
+        <div className="form-field">
           <Controller
             control={control}
             name="surveyId"
             render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} t={t} />}
           />
           {errors.surveyId && <p style={{ color: "red", marginTop: "4px", marginBottom: "0" }}>{errors.surveyId?.message}</p>}
-          <button
-            className="submit-bar"
-            type="button"
-            style={{ color: "white", width: "100%", maxWidth: "100px" }}
-            onClick={onGISMapClickScenarioTwo}
-          >
-            {`${t("Survey ID Map")}`}
-          </button>
+          
         </div>
       </LabelFieldPair>
 
@@ -130,7 +134,7 @@ const PropertyAddressDetails = ({ goNext }) => {
 
       {/* house shop no */}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("House/ Shop No.")}</CardLabel>
+        <CardLabel className="card-label-smaller">{t("House/ Shop No.")} *</CardLabel>
         <div className="form-field">
           <Controller
             control={control}

@@ -124,47 +124,9 @@ const TopBar = ({
   const isUserProfessional = window.location.href.includes("/citizen") && userInfo?.roles?.some(role => role?.code?.startsWith("BPA"))
 
   if (CITIZEN) {
-    return (
-      <div className="navbar" style={{padding : "1rem 1.5rem"}}>
-        <div className="center-container_navbar" style={{}}>
-          <div className="left-wrapper_navbar" style={{}}>
-            {isLoggedIn && <Hamburger handleClick={updateSidebar} />}
-            <div className="ulb-info" style={{display:"flex", gap:"10px",marginLeft : "1rem"}}>
-              <img src={ulbLogo} alt="ULB Logo" className="ulb-logo" style={{minWidth : "25px", height : "25px"}} />
-              <span className="ulb-name" style={mobileView ? {display:"flex", justifyContent:"center", alignItems:"center", fontSize: "12px", whiteSpace: "nowrap", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis"} : {}}>{ulbName}</span>
-            </div>
-          </div>
-
-          <div className="right-wrapper_navbar" style={{}}>
-            {!urlsToDisableNotificationIcon(pathname) && !mobileView && <div style={{marginTop: "20px"}}>
-              {/* <ChangeLanguage dropdown={true} /> */}
-            </div>}
-            {isUserProfessional && (
-              <div className="left">
-                {!window.location.href.includes("employee/user/login") &&
-                  !window.location.href.includes("employee/user/language-selection") && (
-                    <ProfessionalChangeCity dropdown={true} t={t} selectedCity={ulbDetails} userInfo={userInfo}/>
-                  )}
-              </div>
-            )}
-            {!urlsToDisableNotificationIcon(pathname) && (
-              <div className="notification-wrapper" onClick={onNotificationIconClick}>
-                {notificationCountLoaded && unreadNotificationCount ? (
-                  <span className="notification-count">{unreadNotificationCount < 99 ? unreadNotificationCount : 99}</span>
-                ) : null}
-                <NotificationBell />
-              </div>
-            )}
-            {/* <img
-              src={'https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/Upyog-logo.png'}
-              alt="mSeva"
-              className="upyog-logo"
-            /> */}
-          </div>
-        </div>
-      </div>
-    )
+    return null;
   }
+
   const loggedin = userDetails?.access_token ? true : false
   return (
     <div className="topbar" style={topbarStyle}>

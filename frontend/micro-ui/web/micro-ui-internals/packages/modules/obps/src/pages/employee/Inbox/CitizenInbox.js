@@ -6,6 +6,7 @@ import NewFilterFormFieldComponent from "../../../../../templates/Inbox/NewFilte
 import { InboxTopBar, InboxWrapper, InboxPagination } from "../../../../../templates/Inbox/components";
 import useInboxTableConfig from "./useInboxTableConfig";
 import { OBPS_BPA_NOR_BUSINESS_SERVICES } from "../../../../../../constants/constants";
+import { getBPAREGFallbackStatuses, getHolidaysSet, mapBPAREGLicenseToRow } from "../../../utils/bpaInboxUtils";
 
 const CitizenInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
@@ -222,8 +223,7 @@ const CitizenInbox = ({ parentRoute }) => {
   ]);
 
   const CheckForPunjab = window.location.href.includes("citizen-stakeholder-inbox");
-
-  console.log("CheckForPunjab", CheckForPunjab);
+  const isProfessional = window.location.href.includes("citizen-stakeholder-inbox") || window.location.href.includes("citizen-others");
 
   const finalTenantId = CheckForPunjab ? "pb.punjab" : tenantId;
 
@@ -232,6 +232,22 @@ const CitizenInbox = ({ parentRoute }) => {
     filters: memoizedFilters,
     config: { enabled: !!tenantId },
   });
+
+  const { data: bparegFallbackData, isLoading: isFallbackLoading } = Digit.Hooks.obps.useBPAREGSearch(
+    finalTenantId,
+    {},
+    {
+      mobileNumber: memoizedFilters?.searchForm?.mobileNumber || user?.info?.mobileNumber,
+      ...(memoizedFilters?.searchForm?.applicationNo ? { applicationNumber: memoizedFilters?.searchForm?.applicationNo } : {}),
+    },
+    {
+      enabled: isProfessional && !isInboxLoading && (inboxData?.totalCount === 0 || !inboxData?.table?.length),
+    }
+  );
+
+  const stateId = Digit.ULBService.getStateId();
+  const { data: holidayList } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "Holidays" }]);
+  const holidaysSet = useMemo(() => getHolidaysSet(holidayList), [holidayList]);
 
   const assigneeCountBaseFilters = useMemo(() => {
     const countFilterForm = { ...(memoizedFilters?.filterForm || {}) };
@@ -394,6 +410,24 @@ const CitizenInbox = ({ parentRoute }) => {
       setTotalCountData(inboxData?.totalCount || 0);
     }
   }, [inboxData]);
+
+  useEffect(() => {
+    if (
+      isProfessional &&
+      !isInboxLoading &&
+      (inboxData?.totalCount === 0 || !inboxData?.table?.length) &&
+      bparegFallbackData?.Licenses?.length > 0
+    ) {
+      const licenses = bparegFallbackData.Licenses;
+      const fallbackTable = licenses.map((license) => mapBPAREGLicenseToRow(license, holidaysSet));
+      setTableData(fallbackTable);
+      setTotalCountData(bparegFallbackData?.Count || licenses.length);
+
+      const statuses = getBPAREGFallbackStatuses(licenses);
+      setStatusData(statuses);
+      setTopBarStatusData(statuses);
+    }
+  }, [bparegFallbackData, inboxData, isInboxLoading, isProfessional, holidaysSet]);
 
   // useEffect(() => {
   //   const allStatuses = [...(inboxData?.statuses || []), ...(assignedToAllInboxDataPunjab?.statuses || [])];
@@ -717,7 +751,7 @@ const CitizenInbox = ({ parentRoute }) => {
               filterFormState={formState?.filterForm}
               getFilterFormValue={getFilterFormValue}
               statuses={statusData}
-              isInboxLoading={isInboxLoading}
+              isInboxLoading={isInboxLoading || (isProfessional && isFallbackLoading)}
               assigneeCounts={assigneeCounts}
               showAssigneeCards={isEmployee && !hasViewOBPSCardRole}
               handleFilter={handleFilterChange}
@@ -736,7 +770,7 @@ const CitizenInbox = ({ parentRoute }) => {
               showAll={false}
             />
           }
-          isLoading={isInboxLoading}
+          isLoading={isInboxLoading || (isProfessional && isFallbackLoading)}
           tableData={tableData}
           tableProps={propsForInboxTable}
           tableHeader="ES_INBOX_INBOX"

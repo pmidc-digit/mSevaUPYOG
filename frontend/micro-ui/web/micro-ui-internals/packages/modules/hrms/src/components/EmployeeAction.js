@@ -108,6 +108,7 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
 
   function submit(data) {
     // useHRMSUpdate
+    //debugger
     data.effectiveFrom = new Date(data.effectiveFrom).getTime();
     data.reasonForDeactivation = selectedReason.code;
     let Employees = [...applicationData.Employees];

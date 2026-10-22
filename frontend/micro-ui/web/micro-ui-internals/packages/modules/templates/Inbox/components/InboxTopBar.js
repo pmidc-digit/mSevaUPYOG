@@ -161,6 +161,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 
 const InboxTopBar = ({
+  submitSearchTogether = false,
   statuses = [],
   activeTab = "ALL",
   onTabClick,
@@ -266,14 +267,14 @@ const InboxTopBar = ({
                 }
               }}
             />
-            <button type="button" className="new-inbox-api-search-button" onClick={() => onApiMobileSearch(apiMobileValue)}>
+            {!submitSearchTogether && <><button type="button" className="new-inbox-api-search-button" onClick={() => onApiMobileSearch(apiMobileValue)}>
               {t("Search")}
             </button>
             {onApiMobileClear && (
               <button type="button" className="new-inbox-api-clear-button" onClick={onApiMobileClear}>
                 {t("Clear")}
               </button>
-            )}
+            )}</>}
           </div>
         )}
       <div className="new-inbox-search">
@@ -284,8 +285,18 @@ const InboxTopBar = ({
           </svg>
         </span>
 
-        <input type="text" className="new-inbox-search-input" value={searchValue} onChange={onSearchChange} placeholder={searchPlaceholder} />
+        <input type="text" className="new-inbox-search-input" value={searchValue} onChange={onSearchChange} placeholder={searchPlaceholder} aria-label={searchPlaceholder}
+          onKeyDown={(event) => {
+            if (submitSearchTogether && event.key === "Enter") {
+              event.preventDefault();
+              onApiMobileSearch?.(apiMobileValue);
+            }
+          }} />
       </div>
+        {submitSearchTogether && <>
+          <button type="button" className="new-inbox-api-search-button" onClick={() => onApiMobileSearch?.(apiMobileValue)}>{t("Search")}</button>
+          <button type="button" className="new-inbox-api-clear-button" onClick={onApiMobileClear}>{t("Clear")}</button>
+        </>}
       </div>
     </div>
   );

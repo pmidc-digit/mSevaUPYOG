@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Table, StatusTable, LinkButton } from "@mseva/digit-ui-react-components";
+import { Table, StatusTable, LinkButton, Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const CLUDocumentTableView = ({ documents }) => {
@@ -32,21 +32,22 @@ const CLUDocumentTableView = ({ documents }) => {
   const documentObj = useMemo(() => {
     return {
       value: {
-        workflowDocs: documents?.filter((doc) => doc?.documentAttachment)?.map((doc) => ({
+        workflowDocs: documents?.map((doc) => ({
           documentType: doc?.documentType || "",
           filestoreId: doc?.filestoreId || doc?.fileStoreId || "",
           documentUid: doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || "",
-          documentAttachment: doc?.documentAttachment || "",
+          documentAttachment: doc?.documentAttachment || doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || "",
         })),
       },
     };
   }, [documents]);
 
+
   const { data: urlsList, isLoading: urlsListLoading } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj, {
     enabled: documents?.length > 0 ? true : false,
   });
 
-  const mappedDocuments = documents?.filter((doc) => doc?.documentAttachment)?.map((doc) => {
+  const mappedDocuments = documents?.map((doc) => {
     const docUid = doc?.documentUid || doc?.fileStoreId || doc?.filestoreId || "";
     const { documentType } = doc;
     const url =
@@ -71,6 +72,9 @@ const CLUDocumentTableView = ({ documents }) => {
       fileUrl: doc.url,
     }));
   }, [mappedDocuments]);
+
+
+  if(urlsListLoading) return <Loader />
 
   return (
     <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", width: "100%", display: "block" }}>

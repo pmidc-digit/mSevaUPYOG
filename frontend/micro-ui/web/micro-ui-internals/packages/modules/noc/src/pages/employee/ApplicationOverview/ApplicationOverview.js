@@ -47,6 +47,7 @@ import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import { format } from "date-fns";
+import { useEmployeeZoneAccess } from "../../../../../core/src/hooks/useEmployeeZoneAccess";
 
 const DocumentLink = ({ fileStoreId, stateCode, t, label }) => {
   const [url, setUrl] = useState(null);
@@ -637,6 +638,12 @@ const NOCEmployeeApplicationOverview = () => {
   //   const { tenants } = storeData || {};
 
   let user = Digit.UserService.getUser();
+  const { isZoneMismatch } = useEmployeeZoneAccess(
+    user?.info?.tenantId || tenantId,
+    tenantId,
+    user?.info?.uuid,
+    currentZoneCode
+  );
   const menuRef = useRef();
 
   // console.log('user', user)
@@ -1264,7 +1271,7 @@ const NOCEmployeeApplicationOverview = () => {
             <div className="noc-pages-employee-application-overview-application-overview--style-4">
               <StatusTable>
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
-                <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Noc?.[0]?.applicationStatus ? t(`WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.workflowCode}_${applicationDetails?.Noc?.[0]?.applicationStatus}`) : "N/A"} />
+                <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Noc?.[0]?.applicationStatus ? t(`WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService}_${applicationDetails?.Noc?.[0]?.applicationStatus}`) : "N/A"} />
               </StatusTable>
             </div>
           </Card>
@@ -1620,7 +1627,12 @@ const NOCEmployeeApplicationOverview = () => {
               // style={MenuStyle}
             />
           ) : null}
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          <SubmitBar
+            ref={menuRef}
+            label={t("WF_TAKE_ACTION")}
+            disabled={isZoneMismatch}
+            onSubmit={() => setDisplayMenu(!displayMenu)}
+          />
         </ActionBar>
       )}
 

@@ -231,7 +231,10 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
       // if (window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")) {
       //   info.tenantId = Digit.ULBService.getStateId();
       // }
-    } catch (e) {
+    } catch (err) {
+      setIsError(true);
+      setShowToast(err?.response?.data?.error_description || "Invalid login credentials!");
+      setTimeout(closeToast, 5000);
       setCanSubmit(true);
       setIsOtpValid(false);
     }

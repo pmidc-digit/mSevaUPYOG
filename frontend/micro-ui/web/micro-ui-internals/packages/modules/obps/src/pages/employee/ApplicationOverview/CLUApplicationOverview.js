@@ -44,6 +44,7 @@ import { amountToWords, decryptId, formatDuration } from "../../../utils";
 import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
 import { getDrivingDistance } from "../../../utils/getDistance";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
+import { useEmployeeZoneAccess } from "../../../../../core/src/hooks/useEmployeeZoneAccess";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
   const caption = {
@@ -567,6 +568,12 @@ const CLUEmployeeApplicationDetails = () => {
   };
 
   let user = Digit.UserService.getUser();
+  const { isZoneMismatch } = useEmployeeZoneAccess(
+    user?.info?.tenantId || tenantId,
+    tenantId,
+    user?.info?.uuid,
+    applicationDetails?.Clu?.[0]?.additionalDetails?.siteDetails?.zone
+  );
   const menuRef = useRef();
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
@@ -1438,7 +1445,12 @@ const CLUEmployeeApplicationDetails = () => {
               // style={MenuStyle}
             />
           ) : null}
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          <SubmitBar
+            ref={menuRef}
+            label={t("WF_TAKE_ACTION")}
+            disabled={isZoneMismatch}
+            onSubmit={() => setDisplayMenu(!displayMenu)}
+          />
         </ActionBar>
       )}
 

@@ -32,8 +32,8 @@ const Inbox = ({ parentRoute }) => {
   const { data: cities } = Digit.Hooks.useTenants();
 
   const [activeStatusTab, setActiveStatusTab] = useState("ALL");
-  const [topBarSearch, setTopBarSearch] = useState("");
-  const [apiMobileSearch, setApiMobileSearch] = useState("");
+  const [topBarSearch, setTopBarSearch] = useState(() => Digit.SessionStorage.get("NOC.INBOX")?.searchForm?.applicationNo || "");
+  const [apiMobileSearch, setApiMobileSearch] = useState(() => Digit.SessionStorage.get("NOC.INBOX")?.searchForm?.mobileNumber || "");
 
   const searchFormDefaultValues = useMemo(() => ({ mobileNumber: "" }), []);
 
@@ -72,6 +72,11 @@ const Inbox = ({ parentRoute }) => {
 
   function formReducer(state, payload) {
     switch (payload.action) {
+      case "submitApiSearch": {
+        const updatedState = { ...state, searchForm: { ...state.searchForm, ...payload.data }, tableForm: { ...state.tableForm, offset: 0 } };
+        Digit.SessionStorage.set("NOC.INBOX", updatedState);
+        return updatedState;
+      }
       case "mutateSearchForm":
         Digit.SessionStorage.set("NOC.INBOX", { ...state, searchForm: payload.data });
         return { ...state, searchForm: payload.data };
@@ -152,15 +157,14 @@ const Inbox = ({ parentRoute }) => {
 
   const memoizedFilters = useMemo(() => {
     const tableForm = formState?.tableForm || tableOrderFormDefaultValues;
-    const isTopBarSearchActive = Boolean(String(topBarSearch || "").trim());
 
     return {
       filterForm: formState?.filterForm || filterFormDefaultValues,
       searchForm: formState?.searchForm || searchFormDefaultValues,
       tableForm: {
         ...tableForm,
-        limit: isTopBarSearchActive ? Math.max(Number(totalCountData) || 0, Number(tableForm.limit) || 10) : tableForm.limit,
-        offset: isTopBarSearchActive ? 0 : tableForm.offset,
+        limit: tableForm.limit,
+        offset: tableForm.offset,
       },
       selectedTenantId: formState?.selectedTenantId || selectedTenantIdDefaultValues,
     };
@@ -173,8 +177,6 @@ const Inbox = ({ parentRoute }) => {
     searchFormDefaultValues,
     tableOrderFormDefaultValues,
     selectedTenantIdDefaultValues,
-    topBarSearch,
-    totalCountData,
   ]);
 
   const { isLoading: isInboxLoading, data: inboxData, isError } = Digit.Hooks.noc.useInbox({
@@ -318,18 +320,15 @@ const Inbox = ({ parentRoute }) => {
     [formState.tableForm, formState.filterForm]
   );
 
-  const onApiMobileSearch = useCallback(
-    (mobileNumber) => {
-      dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
-      dispatch({ action: "mutateSearchForm", data: { mobileNumber: mobileNumber?.trim() || "" } });
-    },
-    [formState.searchForm, formState.tableForm]
-  );
+  const onApiMobileSearch = useCallback(() => {
+    dispatch({ action: "submitApiSearch", data: { mobileNumber: apiMobileSearch.trim(), applicationNo: topBarSearch.trim() } });
+  }, [apiMobileSearch, topBarSearch]);
 
   const onApiMobileClear = useCallback(() => {
     setApiMobileSearch("");
-    onApiMobileSearch("");
-  }, [onApiMobileSearch]);
+    setTopBarSearch("");
+    dispatch({ action: "submitApiSearch", data: { mobileNumber: "", applicationNo: "" } });
+  }, []);
 
   const propsForInboxTable = useInboxTableConfig({
     enableColumnSearch: true,
@@ -341,7 +340,7 @@ const Inbox = ({ parentRoute }) => {
     dispatch,
     onSortingByData,
     tenantId,
-    globalSearch: topBarSearch,
+    globalSearch: "",
     cities,
   });
 
@@ -501,9 +500,10 @@ const Inbox = ({ parentRoute }) => {
               statuses={[]}
               activeTab={activeStatusTab}
               onTabClick={onStatusTabClick}
+              submitSearchTogether
               searchValue={topBarSearch}
               onSearchChange={(e) => setTopBarSearch(e.target.value)}
-              searchPlaceholder="Search applications, names, mobile numbers, or status..."
+              searchPlaceholder="Search by application number..."
               apiMobileValue={apiMobileSearch}
               onApiMobileChange={(e) => setApiMobileSearch(e.target.value)}
               onApiMobileSearch={onApiMobileSearch}
@@ -521,7 +521,7 @@ const Inbox = ({ parentRoute }) => {
           tableProps={{ ...propsForInboxTable, stickyHorizontalScrollbar: true }}
           tableHeader="ES_INBOX_INBOX"
           pagination={
-            !String(topBarSearch || "").trim() && (
+            (
               <InboxPagination
                 offset={formState.tableForm?.offset || 0}
                 limit={formState.tableForm?.limit || 10}

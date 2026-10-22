@@ -141,6 +141,12 @@ const PropertyDetails = () => {
   if (appDetailsToShow?.applicationDetails) {
     appDetailsToShow.applicationDetails = appDetailsToShow?.applicationDetails?.map((e) => {
       if (e.title === "PT_PROPERTY_ADDRESS_SUB_HEADER") {
+        if (!e.values.some((value) => value.title === "PT_SEARCHPROPERTY_TABEL_PTUID")) {
+          e.values.unshift(
+            { title: "PT_PROPERTY_APPLICATION_NO", value: appDetailsToShow?.applicationData?.acknowldgementNumber },
+            { title: "PT_SEARCHPROPERTY_TABEL_PTUID", value: appDetailsToShow?.applicationData?.propertyId || applicationNumber }
+          );
+        }
         if (["ACTIVE", "INWORKFLOW"].includes(applicationDetails?.applicationData?.status)) {
           e.values.map((value) => {
             if (value.title === "Survey Id/UID") {

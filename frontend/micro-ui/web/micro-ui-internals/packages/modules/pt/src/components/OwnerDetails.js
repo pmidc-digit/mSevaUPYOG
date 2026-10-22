@@ -302,7 +302,7 @@ useEffect(() => {
                 option={owners}
                 optionKey="name"
                 t={t}
-                disable={isEditMode}
+                disable={false}
               />
             )}
           />
@@ -774,7 +774,7 @@ useEffect(() => {
                               });
                             }, 0);
                           }}
-                          disable={isEditMode}
+                          disable={false}
                           placeholder="0-100"
                         />
                       )}

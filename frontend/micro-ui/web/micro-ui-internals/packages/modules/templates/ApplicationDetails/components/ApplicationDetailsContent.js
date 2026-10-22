@@ -123,6 +123,7 @@ function ApplicationDetailsContent({
   const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "egf-master", [
     { name: "FinancialYear", filter: "[?(@.module == 'PT')]" },
   ]);
+  console.log("applicationDetails",applicationDetails)
   const currentPropertyId = applicationDetails?.applicationData?.propertyId || propertyId;
   const isPTLocation = window.location.href.includes("/pt/");
   const { data: propertySearchData, revalidate: revalidatePropertySearch } = Digit.Hooks.pt.usePropertySearch(

@@ -7,7 +7,7 @@ import { ActionBar, Header, Loader, SubmitBar, Card, CardSubHeader, CardSectionH
 import { useQueryClient } from "react-query";
 import _, { first, update, values } from "lodash";
 import { Modal, Dropdown, Row, StatusTable } from "@mseva/digit-ui-react-components";
-import { convertEpochToDate } from "../../../utils/index";
+import { convertEpochToDate, formatVasikaDate } from "../../../utils/index";
 import PTImportantDates from "../../../pageComponents/PTImportantDates";
 
 const getBooleanDisplayValue = (value) => (value === true ? "Yes" : "No");

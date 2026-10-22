@@ -81,6 +81,12 @@ const EDCRAcknowledgement = (props) => {
       win.focus();
     }
   };
+  const printDXF = async () => {
+    var win = window.open(edcrData.updatedDxfFile, "_blank");
+    if (win) {
+      win.focus();
+    }
+  };
 
   const routeToBPAScreen = async () => {
     history.push(
@@ -115,6 +121,12 @@ const EDCRAcknowledgement = (props) => {
               <path d="M19.3334 8H14V0H6.00002V8H0.666687L10 17.3333L19.3334 8ZM0.666687 20V22.6667H19.3334V20H0.666687Z" fill="#a82227" />
             </svg>
             {t("EDCR_DOWNLOAD_SCRUTINY_REPORT_LABEL")}
+          </div>
+          <div className="primary-label-btn d-grid obps-pages-citizen-edcr-edcracknowledgement--style-7"  onClick={printDXF}>
+            <svg width="20" height="23" viewBox="0 0 20 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19.3334 8H14V0H6.00002V8H0.666687L10 17.3333L19.3334 8ZM0.666687 20V22.6667H19.3334V20H0.666687Z" fill="#a82227" />
+            </svg>
+            {t("DOWNLOAD_UPDATED_DXF_FILE")}
           </div>
           <div className="obps-pages-citizen-edcr-edcracknowledgement--style-8">
             <Link

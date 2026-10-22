@@ -63,7 +63,7 @@ export const PayTwoTable = ({
                                             handleAdjustedAmountChange(row.index, e.target.value, row.amount)
                                         }
                                         onBlur={onAdjustedAmountBlur}
-                                        disable={isEmployee ? !enabledEmployee : disable}
+                                        disable={disable || (isEmployee ? !enabledEmployee : false)}
                                         step={1}
                                     />
                                 )}
@@ -82,7 +82,7 @@ export const PayTwoTable = ({
                                                     : t("ES_NO_FILE_SELECTED_LABEL")
                                             }
                                             uploadedFile={row.filestoreId}
-                                            disabled={isEmployee ? !enabledEmployee : disable}
+                                            disabled={disable || (isEmployee ? !enabledEmployee : false)}
                                         />
                                     )}
                                 </td>
@@ -105,7 +105,7 @@ export const PayTwoTable = ({
                                         handleRemarkChange(row.index, e.target.value, row.amount)
                                     }
                                     // onBlur={onAdjustedAmountBlur}
-                                    disable={isEmployee ? !enabledEmployee : disable}
+                                    disable={disable || (isEmployee ? !enabledEmployee : false)}
                                     // step={1}
                                     className="obps-page-components-pay-two-table--style-3"
                                 />}

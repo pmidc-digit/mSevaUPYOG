@@ -257,6 +257,16 @@ public class DxfValidator {
             for (double[] v : ((DxfToPdfConverterv2.PolylineEntity) e).vertices) {
                 addPoint(v[0], v[1], label, points, labels);
             }
+        } else if (e instanceof DxfToPdfConverterv2.HatchEntity) {
+            for (List<double[]> loop : ((DxfToPdfConverterv2.HatchEntity) e).boundaryLoops)
+                for (double[] p : loop) addPoint(p[0], p[1], label, points, labels);
+        } else if (e instanceof DxfToPdfConverterv2.MlineEntity) {
+            DxfToPdfConverterv2.MlineEntity mline = (DxfToPdfConverterv2.MlineEntity) e;
+            for (DxfToPdfConverterv2.MlineVertex vertex : mline.vertices)
+                for (int element = 0; element < Math.min(mline.elementCount, vertex.elementParameters.size()); element++) {
+                    double[] p = vertex.pointForElement(element);
+                    addPoint(p[0], p[1], label, points, labels);
+                }
         } else if (e instanceof DxfToPdfConverterv2.TextEntity) {
             DxfToPdfConverterv2.TextEntity t = (DxfToPdfConverterv2.TextEntity) e;
             addPoint(t.x, t.y, label, points, labels);
@@ -298,9 +308,6 @@ public class DxfValidator {
 		double size = Math.max(maxX - minX, maxY - minY);
 		double tol = size * BORDER_TOLERANCE_RATIO;
 		
-		// Increased text tolerance slightly to prevent false-positives on title blocks & metadata text
-		double textTol = size * 0.01; 
-
 		Set<String> allowed = new HashSet<>();
 		if (allowedOutsideLayers != null)
 			for (String l : allowedOutsideLayers)
@@ -308,8 +315,7 @@ public class DxfValidator {
 					allowed.add(l.trim().toUpperCase(Locale.ROOT));
 
 		Map<String, Integer> outsideByLayer = new LinkedHashMap<>();
-		List<String> samples = new ArrayList<>();
-		Map<String, Integer> detailCounts = new LinkedHashMap<>();
+		List<String> outsideDetails = new ArrayList<>();
 		
 		for (DxfToPdfConverterv2.Entity e : doc.entities) {
 			String layerKey = e.layer == null ? "0" : e.layer.toUpperCase(Locale.ROOT);
@@ -321,30 +327,31 @@ public class DxfValidator {
 				continue;
 
 			List<double[]> pts = new ArrayList<>();
-			collectWorldPoints(doc, e, p -> p, 0, pts);
 			boolean isText = e instanceof DxfToPdfConverterv2.TextEntity
 					|| e instanceof DxfToPdfConverterv2.MTextEntity;
-			double t = isText ? textTol : tol;
-
-			// For text/MText, check if the majority or anchor points are within relaxed tolerance
-			boolean failed = false;
-			for (double[] p : pts) {
-				if (!DxfToPdfConverterv2.insideOrNearPolygon(p[0], p[1], poly, t)) {
-					failed = true;
-					break;
+			if (isText) {
+				// Text width/height depends on the CAD font and is only estimated by
+				// this converter. Validate the insertion anchor to avoid reporting
+				// correctly placed labels because an estimated glyph box spills over.
+				if (e instanceof DxfToPdfConverterv2.TextEntity) {
+					DxfToPdfConverterv2.TextEntity text = (DxfToPdfConverterv2.TextEntity) e;
+					pts.add(new double[] { text.x, text.y });
+				} else {
+					DxfToPdfConverterv2.MTextEntity text = (DxfToPdfConverterv2.MTextEntity) e;
+					pts.add(new double[] { text.x, text.y });
 				}
+			} else {
+				collectWorldPoints(doc, e, p -> p, 0, pts);
 			}
 
 			double[] bad = null;
 			for (double[] p : pts) {
-			    if (!DxfToPdfConverterv2.insideOrNearPolygon(p[0], p[1], poly, t)) { bad = p; break; }
+			    if (!DxfToPdfConverterv2.insideOrNearPolygon(p[0], p[1], poly, tol)) { bad = p; break; }
 			}
 			if (bad != null) {
 			    outsideByLayer.merge(e.layer, 1, Integer::sum);
-			    String d = describe(e, bad);
-			    //LOG.warn("Outside WORK_SHEET: {} near ({}, {}) | worksheet bbox=[{}, {}, {}, {}]",
-			      //      d, bad[0], bad[1], minX, minY, maxX, maxY);
-			    detailCounts.merge(d, 1, Integer::sum);
+			    outsideDetails.add(String.format(Locale.US, "%s at (%.3f, %.3f)",
+			            describe(e), bad[0], bad[1]));
 			}
 		}
 		
@@ -362,13 +369,8 @@ public class DxfValidator {
 		        msg.append(String.format(Locale.US, "layer '%s' (%d)", en.getKey(), en.getValue()));
 		    }
 
-		    msg.append(". Details: ");
-//		    int d = 0;
-//		    for (Map.Entry<String, Integer> en : detailCounts.entrySet()) {
-//		        if (d++ > 0) msg.append("  ");
-//		        msg.append(en.getKey());
-//		        if (en.getValue() > 1) msg.append(" x").append(en.getValue());
-//		    }
+		    msg.append(". Outside entities (handle, type/text, layer, offending coordinate): ");
+		    msg.append(String.join("; ", outsideDetails));
 		    msg.append(". If these objects belong to the drawing, move them onto the ")
 		       .append(DxfToPdfConverterv2.WORK_SHEET_LAYER)
 		       .append(" boundary area; otherwise delete them from the file.");
@@ -377,7 +379,7 @@ public class DxfValidator {
 		}
 }
 
-    private static String describe(DxfToPdfConverterv2.Entity e, double[] p) {
+    private static String describe(DxfToPdfConverterv2.Entity e) {
         String type = e.getClass().getSimpleName().replace("Entity", "");
         if (e instanceof DxfToPdfConverterv2.InsertEntity)
             type = "Block '" + ((DxfToPdfConverterv2.InsertEntity) e).blockName + "'";
@@ -388,7 +390,8 @@ public class DxfValidator {
             txt = txt.replaceAll("\\s+", " ").trim();
             txt = " \"" + (txt.length() > 40 ? txt.substring(0, 40) + "..." : txt) + "\"";
         } else txt = "";
-        return String.format(Locale.US, "%s%s on layer '%s'", type, txt, e.layer);
+        String handle = e.handle == null || e.handle.trim().isEmpty() ? "unknown handle" : "handle " + e.handle;
+        return String.format(Locale.US, "%s %s%s on layer '%s'", handle, type, txt, e.layer);
     }
 	
 	private static String cleanMText(String text) {
@@ -449,6 +452,18 @@ public class DxfValidator {
 	            }
 	        }
 
+	    } else if (e instanceof DxfToPdfConverterv2.HatchEntity) {
+	        for (List<double[]> loop : ((DxfToPdfConverterv2.HatchEntity) e).boundaryLoops)
+	            if (loop != null) for (double[] v : loop) addPt(out, tf, v[0], v[1]);
+
+	    } else if (e instanceof DxfToPdfConverterv2.MlineEntity) {
+	        DxfToPdfConverterv2.MlineEntity mline = (DxfToPdfConverterv2.MlineEntity) e;
+	        for (DxfToPdfConverterv2.MlineVertex vertex : mline.vertices)
+	            for (int element = 0; element < Math.min(mline.elementCount, vertex.elementParameters.size()); element++) {
+	                double[] p = vertex.pointForElement(element);
+	                addPt(out, tf, p[0], p[1]);
+	            }
+
 	    } else if (e instanceof DxfToPdfConverterv2.LeaderEntity) {
 	        for (double[] v : ((DxfToPdfConverterv2.LeaderEntity) e).vertices) addPt(out, tf, v[0], v[1]);
 
@@ -504,10 +519,13 @@ public class DxfValidator {
 	        final DxfToPdfConverterv2.Block blk = (ins.blockName == null || ins.blockName.startsWith("*"))
 	                ? null : doc.blocks.get(ins.blockName.toUpperCase());
 	        if (blk == null || blk.entities.isEmpty()) { addPt(out, tf, ins.x, ins.y); return; }
-	        final double cos = Math.cos(Math.toRadians(ins.rotation)), sin = Math.sin(Math.toRadians(ins.rotation));
+		final double cos = Math.cos(Math.toRadians(ins.rotation)), sin = Math.sin(Math.toRadians(ins.rotation));
 	        for (int r = 0; r < Math.max(1, ins.rows); r++) {
 	            for (int c = 0; c < Math.max(1, ins.cols); c++) {
-	                final double ox = ins.x + c * ins.colSpacing, oy = ins.y + r * ins.rowSpacing;
+	                final double localX = c * ins.colSpacing * ins.scaleX;
+	                final double localY = r * ins.rowSpacing * ins.scaleY;
+	                final double ox = ins.x + localX * cos - localY * sin;
+	                final double oy = ins.y + localX * sin + localY * cos;
 	                UnaryOperator<double[]> itf = p -> {
 	                    double lx = (p[0] - blk.baseX) * ins.scaleX, ly = (p[1] - blk.baseY) * ins.scaleY;
 	                    return tf.apply(new double[]{ox + lx * cos - ly * sin, oy + lx * sin + ly * cos});

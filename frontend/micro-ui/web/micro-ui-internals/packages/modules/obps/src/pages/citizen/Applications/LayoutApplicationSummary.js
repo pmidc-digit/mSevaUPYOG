@@ -169,7 +169,10 @@ const LayoutApplicationOverview = () => {
   const applicationDetails = data?.resData
   const { isLoading: mdmsLoading, data: mdmsDocsData } = Digit.Hooks.pt.usePropertyMDMS(stateCode, "LAYOUT", ["LayoutDocuments"]);
   const layoutDocuments = applicationDetails?.Layout?.[0]?.documents || [];
-  const rawOwners = applicationDetails?.Layout?.[0]?.owners || [];
+  const rawOwners =
+    applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+      ? applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+      : applicationDetails?.Layout?.[0]?.owners || [];
   const activeOwners = rawOwners.filter(o => o?.status !== false && o?.status !== "false");
   const sortedOwners = [...activeOwners].sort((a, b) => {
     const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
@@ -457,7 +460,10 @@ const hasCMCApproval =
     }
 
     // 2. Check owner-level mandatory documents (Photo, ID Proof) for all active owners
-    const owners = layout?.owners || [];
+    const owners =
+      layout?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+        ? layout?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+        : layout?.owners || [];
     const allOwnerDocsUploaded = owners.every((owner, idx) => {
       if (owner?.status === false) return true;
       const photo = findOwnerDocument(idx, "OWNERPHOTO");
@@ -685,7 +691,11 @@ const hasCMCApproval =
       const villageName = site?.villageName || site?.district?.villageName;
       const areaSqm = site?.netTotalArea || site?.district?.netTotalArea;
 
-      const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
+      const primaryOwner =
+        applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") ||
+        applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") ||
+        displayData?.owners?.[0] ||
+        owner;
       const applicantType = (
         primaryOwner?.additionalDetails?.aplicantType?.code ||
         primaryOwner?.additionalDetails?.applicantType?.code ||

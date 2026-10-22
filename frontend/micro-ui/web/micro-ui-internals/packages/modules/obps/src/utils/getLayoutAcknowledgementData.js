@@ -73,7 +73,10 @@ const getProfessionalDetails = (appData, t) => {
 
 const getApplicantDetails = (appData, t) => {
   const values = [];
-  const rawOwners = appData?.owners || [];
+  const rawOwners =
+    appData?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+      ? appData?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+      : appData?.owners || [];
 
   const activeOwners = rawOwners?.filter(
     (o) => o?.status !== false && o?.status !== "false"

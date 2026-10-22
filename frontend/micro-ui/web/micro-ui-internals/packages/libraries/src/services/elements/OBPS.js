@@ -390,7 +390,8 @@ const formatDate = (timestamp) => {
   return `${day}/${month}/${year}`;
 };
 
-const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? License?.tradeLicenseDetail?.owners?.[0]?.dob : formatDate(License?.tradeLicenseDetail?.owners?.[0]?.dob)
+const owner = License?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || License?.tradeLicenseDetail?.owners?.[0];
+const dob = typeof owner?.dob === "string" ? owner?.dob : formatDate(owner?.dob)
 const getFormattedULBName = (ulbCode = "") => {
     if (!ulbCode) return t("BPA_ULB_NOT_AVAILABLE");
 
@@ -463,32 +464,32 @@ const getFormattedULBName = (ulbCode = "") => {
         title: "BPA_LICENSEE_DETAILS_HEADER_OWNER_INFO",
         asSectionHeader: true,
         values: [
-          { title: "BPA_APPLICANT_NAME_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.name || "NA" },
-          { title: "BPA_APPLICANT_GENDER_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.gender || "NA" },
-          { title: "BPA_OWNER_MOBILE_NO_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA" },
-          { title: "BPA_APPLICANT_EMAIL_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.emailId || "NA" },
+          { title: "BPA_APPLICANT_NAME_LABEL", value: owner?.name || "NA" },
+          { title: "BPA_APPLICANT_GENDER_LABEL", value: owner?.gender || "NA" },
+          { title: "BPA_OWNER_MOBILE_NO_LABEL", value: owner?.mobileNumber || "NA" },
+          { title: "BPA_APPLICANT_EMAIL_LABEL", value: owner?.emailId || "NA" },
           { title: "BPA_APPLICANT_DOB_LABEL", value: dob || "NA" },
-          // { title: "BPA_APPLICANT_PAN_NO", value: License?.tradeLicenseDetail?.owners?.[0]?.pan || "NA" },
+          // { title: "BPA_APPLICANT_PAN_NO", value: owner?.pan || "NA" },
         ],
       },
       {
         title: "BPA_PERMANANT_ADDRESS_LABEL",
         asSectionHeader: true,
         values: [
-          { title: "BPA_APPLICANT_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA" },
-          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentState || "NA" },
-          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict || "NA" },
-          { title: "BPA_DETAILS_PIN_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "NA" },
+          { title: "BPA_APPLICANT_ADDRESS_LABEL", value: owner?.permanentAddress || "NA" },
+          { title: "BPA_STATE_TYPE", value: owner?.permanentState || "NA" },
+          { title: "BPA_DISTRICT_TYPE", value: owner?.permanentDistrict || "NA" },
+          { title: "BPA_DETAILS_PIN_LABEL", value: owner?.permanentPinCode || "NA" },
         ],
       },
       {
         title: "BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL",
         asSectionHeader: true,
         values: [
-          { title: "BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress || "NA" },
-          { title: "BPA_STATE_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceState || "NA" },
-          { title: "BPA_DISTRICT_TYPE", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict || "NA" },
-          { title: "BPA_DETAILS_PIN_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode || "NA" },
+          { title: "BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL", value: owner?.correspondenceAddress || "NA" },
+          { title: "BPA_STATE_TYPE", value: owner?.correspondenceState || "NA" },
+          { title: "BPA_DISTRICT_TYPE", value: owner?.correspondenceDistrict || "NA" },
+          { title: "BPA_DETAILS_PIN_LABEL", value: owner?.correspondencePinCode || "NA" },
         ],
       },
       {
@@ -1133,10 +1134,11 @@ const getFormattedULBName = (ulbCode = "") => {
       ],
     };
 
-    const checkOwnerLength = BPA?.landInfo?.owners?.length || 1;
-    if (BPA?.landInfo?.owners?.length > 0) {
-      // BPA?.landInfo?.owners.sort((a, b) => b.isPrimaryOwner - a.isPrimaryOwner);
-      BPA?.landInfo?.owners?.forEach((ownerD) => {
+    const bpaOwners = (BPA?.additionalDetails?.owners?.length > 0 ? BPA.additionalDetails.owners : BPA?.landInfo?.owners) || [];
+    const checkOwnerLength = bpaOwners?.length || 1;
+    if (bpaOwners?.length > 0) {
+      // bpaOwners.sort((a, b) => b.isPrimaryOwner - a.isPrimaryOwner);
+      bpaOwners?.forEach((ownerD) => {
         if (!ownerD.isPrimaryOwner) ownerD.isPrimaryOwner = "false";
       });
     }
@@ -1144,7 +1146,7 @@ const getFormattedULBName = (ulbCode = "") => {
       title: "BPA_APPLICANT_DETAILS_HEADER",
       isOwnerDetails: true,
       additionalDetails: {
-        owners: BPA?.landInfo?.owners?.map((owner, index) => {
+        owners: bpaOwners?.map((owner, index) => {
           return {
             title: Number(checkOwnerLength) > 1 ? "COMMON_OWNER" : "",
             values: [
@@ -1153,7 +1155,7 @@ const getFormattedULBName = (ulbCode = "") => {
               { title: "CORE_COMMON_MOBILE_NUMBER", value: owner?.mobileNumber },
               { title: "CORE_COMMON_EMAIL_ID", value: owner?.emailId },
               { title: "BPA_APPLICANT_ADDRESS_LABEL", value: owner?.permanentAddress || "Not Provided" },
-              { title: "BPA_IS_PRIMARY_OWNER_LABEL", value: owner?.isPrimaryOwner === true ? "Yes" : "No", isNotTranslated: false },
+              { title: "BPA_IS_PRIMARY_OWNER_LABEL", value: owner?.isPrimaryOwner === true || owner?.isPrimaryOwner === "true" ? "Yes" : "No", isNotTranslated: false },
             ],
           };
         }),

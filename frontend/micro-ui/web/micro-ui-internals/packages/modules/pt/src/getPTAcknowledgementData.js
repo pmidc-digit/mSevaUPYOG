@@ -9,6 +9,7 @@ import {
   pdfDocumentName,
   pdfDownloadLink,
   getCityLocale,
+  formatVasikaDate,
 } from "./utils";
 
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
@@ -91,6 +92,20 @@ const getAssessmentInfo = (application, t) => {
     { title: t("PT_ASSESMENT_INFO_NO_OF_FLOOR"), value: t(application?.noOfFloors) || t("CS_NA") },
     { title: t("PT_ASSESMENT_INFO_ELECTRICITY_ID"), value: t(application?.additionalDetails?.electricity) || t("CS_NA") },
     { title: t("PT_ASSESMENT_INFO_ELECTRICITY_UID"), value: t(application?.additionalDetails?.uid) || t("CS_NA") },
+
+    { title: t("PT_ASSESMENT_INFO_VASIKA_NO"), value: t(application?.additionalDetails?.vasikaNo) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_VASIKA_DATE"), value: formatVasikaDate(application?.additionalDetails?.vasikaDate) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_ALLOTMENT_NO"), value: t(application?.additionalDetails?.allotmentNo) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_ALLOTMENT_DATE"), value: t(application?.additionalDetails?.allotmentDate) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_REMARKS"), value: t(application?.additionalDetails?.remarks) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_BUSINESS_NAME"), value: t(application?.businessName) || t("CS_NA") },
+
+
+    // { title:  t("PT_FORM2_PROPERTY_TYPE"),value: t(application?.additionalDetails?.structureType.i18nKey) || t("CS_NA")},
+    { title:  t("PT_FORM2_PROPERTY_TYPE"),value: t(application?.propertyType) || t("CS_NA")},
+  
+    {title:  t("PT_FORM2_AGE_OF_PROPERTY"),value: t(application?.landArea)|| t("CS_NA")},
+    // {title:  t("PT_FORM2_AGE_OF_PROPERTY"),value: t(application?.additionalDetails?.ageOfProperty.code)|| t("CS_NA")},
   ];
   application.units = application?.units?.filter((unit) => unit.active == true) || [];
   let flrno,

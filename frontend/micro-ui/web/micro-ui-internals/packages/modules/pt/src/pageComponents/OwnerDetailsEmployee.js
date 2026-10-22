@@ -641,6 +641,71 @@ const [showToast, setShowToast] = useState(null);
               />
             </div>
           </LabelFieldPair>
+          {formState?.submitCount > 0 && (errors?.correspondenceAddress || (!isIndividualTypeOwner && !formValue?.correspondenceAddress)) && (
+            <CardLabelError style={errorStyle}>
+              {errors?.correspondenceAddress?.message || t("CORE_COMMON_REQUIRED_ERRMSG")}
+            </CardLabelError>
+          )}
+          <Controller
+                control={control}
+                name={"isSamePropAddress"}
+                defaultValue={owner?.isSamePropAddress}
+                // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                render={(props) => (
+                  <CheckBox
+                    onChange={(e) => {
+                      setValue("correspondenceAddress", !owner?.isSamePropAddress? window.location.href.includes("employee")? getAddressEmployee() : getAddressCitizen() : "")
+                      // setIsSamePropAddress(e.target.checked)
+                      props.onChange(e.target.checked)
+                    }}
+                    checked={owner?.isSamePropAddress}
+                    disable={isEditScreen}
+                    label={t("Same as Property Address?")}
+                    pageType={"employee"}
+                    style={{ marginTop: "-5px" }}
+                  />
+                )}
+          />
+{((formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" || formData?.ownershipCategory?.code === "INDIVIDUAL.SINGLEOWNER")) &&(
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("Ownership Percentage")} {!isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"ownershipPercentage"}
+                defaultValue={owner?.ownershipPercentage}
+                rules={{
+                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                  validate: {
+                    maxHundred: (v) => !v || Number(v) <= 100 || t("PT_PERCENTAGE_CANNOT_EXCEED_100"),
+                    minZero: (v) => !v || Number(v) >= 0 || t("PT_PERCENTAGE_CANNOT_BE_NEGATIVE"),
+                    isNumber: (v) => !v || !isNaN(Number(v)) || t("PT_MUST_BE_A_VALID_NUMBER"),
+                    checkPercentage: (v) => {
+                      const ownershipType = formData?.ownershipCategory?.code;
+                      if (ownershipType === "INDIVIDUAL.SINGLEOWNER") {
+                        return Number(v) === 100 || t("PT_SINGLE_OWNER_PERCENTAGE_MUST_BE_100");
+                      }
+                      return true;
+                    }
+                  }
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    disable={false}
+                    autoFocus={focusIndex.index === owner?.key && focusIndex.type === "ownershipPercentage"}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      setFocusIndex({ index: owner.key, type: "ownershipPercentage" });
+                    }}
+                    onBlur={props.onBlur}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+)}
+{(formData?.ownershipCategory?.code?.includes("INDIVIDUAL") || formData?.ownershipCategory?.code?.includes("SINGLE")) && (
           <CardLabelError style={errorStyle}>
             {localFormState.touched.correspondenceAddress ? errors?.correspondenceAddress?.message : ""}
           </CardLabelError>

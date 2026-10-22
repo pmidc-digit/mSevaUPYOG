@@ -934,3 +934,157 @@ export const getWorkflow = (data = {}) => {
 export const getCreationReason = (data = {}) => {
   return data?.isUpdateProperty  ? "UPDATE" : "CREATE";
 };
+
+export const getAcknowledgementData = async (application, tenantInfo, t) => {
+  console.log("application in getAcknowledgement", application);
+
+  const details = [];
+
+  // License Details
+
+  details.push({
+    title: "Owner Details",
+    values: [
+      {
+        title: t("CORE_COMMON_NAME"),
+        value: application?.connectionHolders?.[0]?.name || t("CS_NA"),
+      },
+      {
+        title: t("CORE_COMMON_PROFILE_MOBILE_NUMBER"),
+        value: application?.connectionHolders?.[0]?.mobileNumber || t("CS_NA"),
+      },
+      {
+        title: t("CORE_EMAIL_ID"),
+        value: application?.connectionHolders?.[0]?.emailId || t("CS_NA"),
+      },
+    ],
+  });
+
+  // Licensee Details
+  details.push({
+    title: t("GC_CONNECTION_DETAILS"),
+    values: [
+      {
+        title: t("Application Status"),
+        value: t(application?.applicationStatus) || "NA",
+      },
+      {
+        title: t("GC_CONNECTION_TYPE"),
+        value: application?.connectionCategory || "NA",
+      },
+      {
+        title: t("GC_FREQUENCY"),
+        value: application?.frequency || "NA",
+      },
+      {
+        title: t("GC_WASTE_TYPE"),
+        value: application?.typeOfWaste || "NA",
+      },
+      {
+        title: t("GC_LOCATION"),
+        value: application?.location || "N/A",
+      },
+    ],
+  });
+
+  details.push({
+    title: t("PT_PROPERTY_DETAILS"),
+    values: [
+      {
+        title: t("PROPERTY_ID"),
+        value: t(application?.propertyId) || "NA",
+      },
+      {
+        title: t("PT_ACK_LOCALIZATION_PROPERTY_ADDRESS"),
+        value: application?.location || "NA",
+      },
+      {
+        title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PROPERTY_TYPE"),
+        value: application?.propertyType || "NA",
+      },
+      {
+        title: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_PLOT_SIZE"),
+        value: application?.plotSize || "NA",
+      },
+    ],
+  });
+  const docDetails = application?.documents?.map((doc, index) => ({
+    title: t(`${doc.documentType}`) || "NA",
+    value: " ",
+    link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
+  }));
+
+  details.push({
+    title: t("BPA_APPLICATION_DOCUMENTS"),
+    values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
+  });
+
+  const imageURL =
+    application?.applicationDetails
+      ?.find((detail) => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")
+      ?.additionalDetails?.documentsWithUrl?.[0]?.values?.find((doc) => doc?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.url || null;
+
+  return {
+    t: t,
+    tenantId: tenantInfo?.code,
+    name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
+    email: tenantInfo?.emailId,
+    phoneNumber: tenantInfo?.contactNumber,
+    heading: t("Acknowledgment letter for Garbage Collection"),
+    applicationNumber: application?.applicationNo || "NA",
+    details,
+    imageURL,
+  };
+};
+
+  export const deduplicateUsageOptions = (options) => {
+    const uniqueOptions = [];
+    const nameMap = new Map();
+    
+    options?.forEach((item) => {
+      if (!nameMap.has(item?.name)) {
+        nameMap.set(item.name, item);
+        uniqueOptions.push(item);
+      } else {
+        const existing = nameMap.get(item.name);
+        let shouldReplace = false;
+
+        // 1. Prefer the object that explicitly has the 'usageCategoryMinor' key
+        if (item.usageCategoryMinor && !existing.usageCategoryMinor) {
+          shouldReplace = true;
+        } 
+        else if (!item.usageCategoryMinor && existing.usageCategoryMinor) {
+          shouldReplace = false;
+        } 
+        // 2. Fallback (e.g. for usagecategorymajor where it doesn't exist on either): prefer the longer code
+        else if (item?.code?.length > existing?.code?.length) {
+          shouldReplace = true;
+        }
+
+        if (shouldReplace) {
+          const index = uniqueOptions?.findIndex((opt) => opt?.name === item?.name);
+          uniqueOptions[index] = item;
+          nameMap.set(item?.name, item);
+        }
+      }
+    });
+
+    return uniqueOptions;
+  };
+
+ 
+
+// Vasika date may be stored as a "YYYY-MM-DD" string or as a Date/ISO timestamp (saved at local midnight).
+// Read it with local-time getters so the picked calendar day is shown as dd-mm-yyyy.
+export const formatVasikaDate = (value) => {
+  if (!value) return "";
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-");
+    return `${day}-${month}-${year}`;
+  }
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return value;
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}-${month}-${date.getFullYear()}`;
+};

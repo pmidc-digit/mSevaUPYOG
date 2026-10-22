@@ -133,9 +133,9 @@ export const TableConfig = (t) => ({
         Header: t("ES_INBOX_STATUS"),
         Cell: ({ row }) => {
           const wf = row.original?.workflowData;
-          return GetCell(row.original?.searchData?.status);
+          return GetCell(t(`ES_PT_COMMON_STATUS_${wf?.state?.["state"]}`));
         },
-        mobileCell: (original) => GetMobCell(original?.searchData?.status || "-"),
+        mobileCell: (original) => GetMobCell(t(`ES_PT_COMMON_STATUS_${original?.workflowData?.state?.["state"]}`)),
       },
       {
         Header: t("ES_INBOX_SLA_DAYS_REMAINING"),

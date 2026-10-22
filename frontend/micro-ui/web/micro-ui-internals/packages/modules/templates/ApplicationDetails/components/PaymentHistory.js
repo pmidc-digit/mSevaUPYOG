@@ -176,9 +176,37 @@ const PaymentHistory = ({ payments, assessmentData = null, applicationData = nul
                       <div style={{ marginTop: isMobile ? "15px" : "0", alignSelf: isMobile ? "flex-start" : "center" }}>
                         <button
                           onClick={() => handleDownloadReceipt(payment)}
-                         
-                          
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "10px 18px",
+                            border: "none",
+                            borderRadius: "8px",
+                            background: "linear-gradient(135deg, #2947a3 0%, #3d5fd1 100%)",
+                            color: "#ffffff",
+                            fontSize: "15px",
+                            fontWeight: "600",
+                            letterSpacing: "0.02em",
+                            cursor: "pointer",
+                            boxShadow: "0 4px 12px rgba(41, 71, 163, 0.25)",
+                            transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                            whiteSpace: "nowrap",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-1px)";
+                            e.currentTarget.style.boxShadow = "0 6px 16px rgba(41, 71, 163, 0.35)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "none";
+                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(41, 71, 163, 0.25)";
+                          }}
                         >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
                           {t("PT_DOWNLOAD_RECEIPT") || "Download Receipt"}
                         </button>
                       </div>

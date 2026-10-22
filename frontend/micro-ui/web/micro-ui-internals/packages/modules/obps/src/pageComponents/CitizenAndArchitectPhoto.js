@@ -43,7 +43,8 @@ const CitizenAndArchitectPhoto = ({data}) => {
     };
     useEffect(async () => {
         if(data){
-            let primaryOwner = data?.landInfo?.owners?.find((owner) => owner?.isPrimaryOwner === true);
+            const _capOwners = data?.additionalDetails?.owners?.length > 0 ? data?.additionalDetails?.owners : data?.landInfo?.owners;
+            let primaryOwner = _capOwners?.find((owner) => owner?.isPrimaryOwner === true) || _capOwners?.[0];
             const ownerPhotoId = primaryOwner?.additionalDetails?.ownerPhoto || null;
             if(ownerPhotoId){
                 const result = await Digit.UploadServices.Filefetch([ownerPhotoId], stateCode);
@@ -109,7 +110,7 @@ return(
                     className={`citizen-and-architect-photo-image ${imageCitizenZoom ? "citizen-and-architect-photo-clickable" : ""}`}
                     onClick={() => imageCitizenZoom && setImageZoom(imageCitizenZoom)}
                 />
-                <div className="citizen-and-architect-photo-label">{data?.landInfo?.owners?.find((owner) => owner?.isPrimaryOwner === true)?.name || t("BPA_CITIZEN_PHOTO")}</div>
+                <div className="citizen-and-architect-photo-label">{(data?.additionalDetails?.owners?.length > 0 ? data?.additionalDetails?.owners : data?.landInfo?.owners)?.find((owner) => owner?.isPrimaryOwner === true)?.name || t("BPA_CITIZEN_PHOTO")}</div>
             </div>
             <div className="citizen-and-architect-photo-item">
                 <img

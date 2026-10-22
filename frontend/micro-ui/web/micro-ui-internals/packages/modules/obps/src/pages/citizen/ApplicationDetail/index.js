@@ -212,11 +212,12 @@ const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tra
 
   const getBPAREGFormData = (data, appType = "EDIT") => {
     let license = data;
-    const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
-    const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState;
-    const district = license?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
+    const licOwner = license?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || license?.tradeLicenseDetail?.owners?.[0];
+    const address = licOwner?.permanentAddress;
+    const state = license?.tradeLicenseDetail?.additionalDetail?.permanentState || licOwner?.permanentState;
+    const district = licOwner?.permanentDistrict;
     const permanentAddress = address;
-    const nameParts = license?.tradeLicenseDetail?.owners?.[0]?.name?.trim()?.split(/\s+/) || [];
+    const nameParts = licOwner?.name?.trim()?.split(/\s+/) || [];
 
     let name = "";
     let middleName = "";
@@ -235,7 +236,7 @@ const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tra
 
     let intermediateData = {
       Correspondenceaddress:
-        license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
+        licOwner?.correspondenceAddress ||
         `${license?.tradeLicenseDetail?.address?.doorNo ? `${license?.tradeLicenseDetail?.address?.doorNo}, ` : ""} ${
           license?.tradeLicenseDetail?.address?.street ? `${license?.tradeLicenseDetail?.address?.street}, ` : ""
         }${license?.tradeLicenseDetail?.address?.landmark ? `${license?.tradeLicenseDetail?.address?.landmark}, ` : ""}${t(
@@ -245,26 +246,26 @@ const licenseType = t(`TRADELICENSE_TRADETYPE_${License?.tradeLicenseDetail?.tra
         }`,
       formData: {
         LicneseDetails: {
-          PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
+          PanNumber: licOwner?.pan,
           PermanentAddress: permanentAddress,
-          email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
+          email: licOwner?.emailId,
           gender: {
-            code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
-            i18nKey: `COMMON_GENDER_${license?.tradeLicenseDetail?.owners?.[0]?.gender}`,
-            value: license?.tradeLicenseDetail?.owners?.[0]?.gender,
+            code: licOwner?.gender,
+            i18nKey: `COMMON_GENDER_${licOwner?.gender}`,
+            value: licOwner?.gender,
           },
-          mobileNumber: license?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
+          mobileNumber: licOwner?.mobileNumber,
           name: name,
           lastName: lastName,
           middleName: middleName,
           SelectedState: state || "",
           SelectedDistrict: district || "",
-          Pincode: license?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || "",
+          Pincode: licOwner?.permanentPinCode || "",
           Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
-          dateOfBirth: license?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(license?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
-          SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState,
-          SelectedCorrespondentDistrict: license?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict,
-          PincodeCorrespondent: license?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode,
+          dateOfBirth: licOwner?.dob ? Digit.Utils.date.getDate(licOwner?.dob) || null : null,
+          SelectedCorrespondentState: license?.tradeLicenseDetail?.additionalDetail?.correspondenceState || licOwner?.correspondenceState,
+          SelectedCorrespondentDistrict: licOwner?.correspondenceDistrict,
+          PincodeCorrespondent: licOwner?.correspondencePinCode,
         },
         LicneseType: {
           LicenseType: {
@@ -409,7 +410,8 @@ const formatDate = (timestamp) => {
   return `${day}/${month}/${year}`;
 };
 
-const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? License?.tradeLicenseDetail?.owners?.[0]?.dob : formatDate(License?.tradeLicenseDetail?.owners?.[0]?.dob)
+const licDisplayOwner = License?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || License?.tradeLicenseDetail?.owners?.[0];
+const dob = typeof licDisplayOwner?.dob === "string" ? licDisplayOwner?.dob : formatDate(licDisplayOwner?.dob)
 
   const documentsContainerStyle = {
     display: "flex",
@@ -517,7 +519,7 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
                   e.target.style.display = "none"
                 }}
               />
-              <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
+              <CardLabel style={boldLabelStyle}>{licDisplayOwner?.name}</CardLabel>
               </div>
             )
           })()}
@@ -562,29 +564,29 @@ const dob = typeof License?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? 
         {/* Applicant Details */}
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_LICENSE_DET_CAPTION")}</h2>
-          {renderLabel(t("BPA_APPLICANT_NAME_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.name)}
-          {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), t(License?.tradeLicenseDetail?.owners?.[0]?.gender))}
-          {renderLabel(t("BPA_OWNER_MOBILE_NO_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.mobileNumber)}
-          {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.emailId)}
+          {renderLabel(t("BPA_APPLICANT_NAME_LABEL"), licDisplayOwner?.name)}
+          {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), t(licDisplayOwner?.gender))}
+          {renderLabel(t("BPA_OWNER_MOBILE_NO_LABEL"), licDisplayOwner?.mobileNumber)}
+          {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), licDisplayOwner?.emailId)}
           {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), dob)}
         </div>
 
         {/* Permanent Address */}
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_LICENSEE_PERMANENT_LABEL")}</h2>
-          {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.permanentAddress)}
-          {renderLabel(t("BPA_STATE_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.permanentState))}
-          {renderLabel(t("BPA_DISTRICT_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict))}
-          {renderLabel(t("BPA_DETAILS_PIN_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode)}
+          {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), licDisplayOwner?.permanentAddress)}
+          {renderLabel(t("BPA_STATE_TYPE"), t(licDisplayOwner?.permanentState))}
+          {renderLabel(t("BPA_DISTRICT_TYPE"), t(licDisplayOwner?.permanentDistrict))}
+          {renderLabel(t("BPA_DETAILS_PIN_LABEL"), licDisplayOwner?.permanentPinCode)}
         </div>
 
         {/* Correspondence Address */}
         <div style={sectionStyle}>
           <h2 style={headingStyle}>{t("BPA_CORRESPONDANCE_ADDRESS_LABEL")}</h2>
-          {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress)}
-          {renderLabel(t("BPA_STATE_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.correspondenceState))}
-          {renderLabel(t("BPA_DISTRICT_TYPE"), t(License?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict))}
-          {renderLabel(t("BPA_DETAILS_PIN_LABEL"), License?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode)}
+          {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), licDisplayOwner?.correspondenceAddress)}
+          {renderLabel(t("BPA_STATE_TYPE"), t(licDisplayOwner?.correspondenceState))}
+          {renderLabel(t("BPA_DISTRICT_TYPE"), t(licDisplayOwner?.correspondenceDistrict))}
+          {renderLabel(t("BPA_DETAILS_PIN_LABEL"), licDisplayOwner?.correspondencePinCode)}
         </div>
 
         {/* Documents */}

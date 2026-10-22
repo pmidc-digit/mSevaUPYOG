@@ -67,7 +67,7 @@ const BPAEsignResponse = () => {
           },
           workflow: {
             action: "ESIGN",
-            assignes: isCitizen ? null : [application?.accountId, ...(application?.landInfo?.owners?.map(owner => owner?.uuid) || [])]
+            assignes: isCitizen ? null : [application?.accountId, ...(((application?.additionalDetails?.owners?.length > 0 ? application?.additionalDetails?.owners : application?.landInfo?.owners))?.map(owner => owner?.uuid) || [])]
           },
         },
       };

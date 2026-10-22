@@ -78,22 +78,26 @@ const getBPAEditDetails = async (data, APIScrutinyDetails,mdmsData,nocdata,t) =>
     NocDetails:nocdata,
     nocDocuments:[],
   }
-  data?.landInfo.owners.map((owner,ind) => {
-    owner.gender = {
-      active:true,
-      code:owner.gender,
-      i18nKey:`COMMON_GENDER_${owner.gender}`,
+  const _bpaOwners = data?.additionalDetails?.owners?.length > 0 ? data?.additionalDetails?.owners : data?.landInfo?.owners;
+  const _bpaOwnershipCategory = data?.additionalDetails?.ownershipCategory || data?.landInfo?.ownershipCategory;
+  _bpaOwners?.forEach((owner, ind) => {
+    if (owner && typeof owner.gender === "string") {
+      owner.gender = {
+        active: true,
+        code: owner.gender,
+        i18nKey: `COMMON_GENDER_${owner.gender}`,
+      };
     }
-  })
+  });
 
-  data.owners ={
-    owners:data?.landInfo?.owners,
-    ownershipCategory:{
-      active:true,
-      code:data?.landInfo?.ownershipCategory,
-      i18nKey:`COMMON_MASTERS_OWNERSHIPCATEGORY_${data?.landInfo?.ownershipCategory.replaceAll(".","_")}`,
-    }
-  }
+  data.owners = {
+    owners: _bpaOwners,
+    ownershipCategory: {
+      active: true,
+      code: _bpaOwnershipCategory,
+      i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${_bpaOwnershipCategory ? _bpaOwnershipCategory.replaceAll(".", "_") : ""}`,
+    },
+  };
 
   data.riskType = Digit.Utils.obps.calculateRiskType(mdmsData?.BPA?.RiskTypeComputation, APIScrutinyDetails?.planDetail?.plot?.area, APIScrutinyDetails?.planDetail?.blocks)
   data.subOccupancy = getBlocksforFlow(data?.landInfo?.unit);

@@ -612,7 +612,7 @@ export const getunitforBPA = (units) => {
 // }
 
 export const getBPAOwners = (data, isOCBPA) => {
-  if (isOCBPA) return data.landInfo.owners;
+  if (isOCBPA) return data?.additionalDetails?.owners?.length > 0 ? data.additionalDetails.owners : data.landInfo.owners;
   let bpaownerarray = cloneDeep(data?.owners?.owners);
   bpaownerarray &&
     bpaownerarray?.forEach((newOwner) => {
@@ -621,7 +621,8 @@ export const getBPAOwners = (data, isOCBPA) => {
       newOwner.active = true;
     });
 
-  data?.landInfo?.owners?.map((oldowner) => {
+  const existingOwners = (data?.additionalDetails?.owners?.length > 0 ? data?.additionalDetails?.owners : data?.landInfo?.owners) || [];
+  existingOwners?.map((oldowner) => {
     let found = bpaownerarray?.length > 0 ? bpaownerarray?.some((el) => el.id === oldowner.id) : false;
     if (!found) bpaownerarray?.push({ ...oldowner, active: false });
   });
@@ -630,8 +631,8 @@ export const getBPAOwners = (data, isOCBPA) => {
 };
 
 export const getOwnerShipCategory = (data, isOCBPA) => {
-  if (isOCBPA) return data?.landInfo?.ownershipCategory;
-  return data.owners.ownershipCategory || data?.landInfo?.ownershipCategory;
+  if (isOCBPA) return data?.additionalDetails?.ownershipCategory || data?.landInfo?.ownershipCategory;
+  return data.owners?.ownershipCategory || data?.additionalDetails?.ownershipCategory || data?.landInfo?.ownershipCategory;
 };
 
 export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = false) => {
@@ -698,6 +699,8 @@ export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = 
       auditDetails: data?.auditDetails,
       additionalDetails: {
         ...data?.additionalDetails,
+        owners: getBPAOwners(data, isOCBPA),
+        ownershipCategory: getOwnerShipCategory(data, isOCBPA)?.code || getOwnerShipCategory(data, isOCBPA),
         OTPverfiedTimeSamp: sessionStorage.getItem("otpVerifiedTimestamp"),
         otherFeesDiscription: sessionStorage.getItem("otherChargesDisc"),
         lessAdjustmentFeeFiles: JSON.parse(sessionStorage.getItem("uploadedFileLess")),
@@ -931,17 +934,20 @@ export const getBPAEditDetails = async (data, APIScrutinyDetails, mdmsData, nocd
     nocDocuments: [],
   };
 
-  data?.landInfo.owners.map((owner, ind) => {
-    owner.gender = {
-      active: true,
-      code: owner.gender,
-      i18nKey: `COMMON_GENDER_${owner.gender}`,
-    };
+  const _utilsBpaOwners = data?.additionalDetails?.owners?.length > 0 ? data?.additionalDetails?.owners : data?.landInfo?.owners;
+  _utilsBpaOwners?.forEach((owner, ind) => {
+    if (owner && typeof owner.gender === "string") {
+      owner.gender = {
+        active: true,
+        code: owner.gender,
+        i18nKey: `COMMON_GENDER_${owner.gender}`,
+      };
+    }
   });
 
   data.owners = {
-    owners: data?.landInfo?.owners,
-    ownershipCategory: data?.ownershipCategory?.code,
+    owners: _utilsBpaOwners,
+    ownershipCategory: data?.ownershipCategory?.code || data?.additionalDetails?.ownershipCategory || data?.landInfo?.ownershipCategory,
   };
 
   data.riskType = Digit.Utils.obps.calculateRiskType(

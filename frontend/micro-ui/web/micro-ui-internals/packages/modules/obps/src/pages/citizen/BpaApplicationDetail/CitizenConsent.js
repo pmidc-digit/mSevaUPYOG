@@ -51,7 +51,8 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
   // const TimeStamp = otpVerifiedTimestamp || data?.applicationData?.additionalDetails?.TimeStamp || "";
   const stakeholderName = data?.applicationData?.additionalDetails?.stakeholderName || "NA";
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
-  const address = data?.applicationData?.landInfo?.owners?.[0]?.permanentAddress || "NA";
+  const _bpaOwners = data?.applicationData?.additionalDetails?.owners?.length > 0 ? data?.applicationData?.additionalDetails?.owners : data?.applicationData?.landInfo?.owners;
+  const address = _bpaOwners?.[0]?.permanentAddress || "NA";
   const proposedSiteAddress = data?.applicationData?.additionalDetails?.registrationDetails || address;
   const [showOTPInput, setShowOTPInput] = useState(false)
   const [otp, setOTP] = useState("");
@@ -220,7 +221,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
     <p style="margin-top:-50px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;margin-left-5px; text-align:justify;">
-  I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${proposedSiteAddress || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
+  I/We, Shri/Smt/Kum <b>${_bpaOwners?.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${proposedSiteAddress || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
@@ -297,7 +298,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner }) => {
     <p style="margin-top:-50px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;margin-left-5px; text-align:justify;">
-  I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${address || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
+  I/We, Shri/Smt/Kum <b>${_bpaOwners?.map(item => item?.name).join(", ") || "<Owner Name>"}</b>, undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.), address <b>${address || "NA"}</b>, Ward Number <b>${ward}</b>, Zone Number <b>${data?.applicationData?.additionalDetails?.zonenumber}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">

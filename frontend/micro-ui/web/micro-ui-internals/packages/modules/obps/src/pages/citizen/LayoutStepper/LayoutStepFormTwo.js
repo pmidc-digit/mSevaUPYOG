@@ -397,8 +397,12 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         },
         layoutDetails: {
           additionalDetails: {
-            applicationDetails: transformedApplicationDetails,
+            applicationDetails: {
+              ...transformedApplicationDetails,
+              owners: applicants,
+            },
             siteDetails: transformedSiteDetails,
+            owners: applicants,
           },
           tenantId: tenantId,
         },

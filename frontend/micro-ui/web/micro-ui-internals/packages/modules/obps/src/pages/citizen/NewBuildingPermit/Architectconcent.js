@@ -37,8 +37,11 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
 
   // Map fields safely from params (these may be undefined)
   const architectid = currentStepData?.createdResponse?.additionalDetails?.architectid || "";
-  const ownername = currentStepData?.createdResponse?.landInfo?.owners?.[0]?.name || "";
-  const mobile = currentStepData?.createdResponse?.landInfo?.owners?.[0]?.mobileNumber || "";
+  const _archBpaOwners = currentStepData?.createdResponse?.additionalDetails?.owners?.length > 0
+    ? currentStepData?.createdResponse?.additionalDetails?.owners
+    : currentStepData?.createdResponse?.landInfo?.owners || [];
+  const ownername = _archBpaOwners?.[0]?.name || "";
+  const mobile = _archBpaOwners?.[0]?.mobileNumber || "";
   const architecttype =
     currentStepData?.createdResponse?.additionalDetails?.typeOfArchitect || user?.info?.roles?.find((r) => r.code === "BPA_ARCHITECT")?.name || "";
   const khasranumber = currentStepData?.createdResponse?.additionalDetails?.khasraNumber || "";
@@ -48,7 +51,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   const area = currentStepData?.createdResponse?.additionalDetails?.area || "";
   const zone = currentStepData?.createdResponse?.additionalDetails?.zonenumber || "";
   const ulbgrade = currentStepData?.createdResponse?.additionalDetails?.Ulblisttype || "";
-  const owners = currentStepData?.createdResponse?.landInfo?.owners || [];
+  const owners = _archBpaOwners;
 
   const ownerDetails = owners
     .map((item) => {

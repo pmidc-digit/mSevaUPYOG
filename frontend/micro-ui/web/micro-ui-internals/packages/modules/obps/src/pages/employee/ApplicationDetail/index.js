@@ -97,7 +97,7 @@ const licenseType = t(licenseSection?.values?.find(
                   e.target.style.display = "none"
                 }}
               />
-              <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
+              <CardLabel style={boldLabelStyle}>{License?.tradeLicenseDetail?.additionalDetail?.owners?.[0]?.name || License?.tradeLicenseDetail?.owners?.[0]?.name}</CardLabel>
               </div>
             )
           })()}

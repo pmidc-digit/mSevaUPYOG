@@ -61,7 +61,11 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ? currentStepData?.apiData
       : currentStepData?.apiData?.Layout?.[0];
 
-    const layoutOwners = layoutData?.owners || [];
+    const layoutOwners = layoutData?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+      ? layoutData?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+      : layoutData?.layoutDetails?.additionalDetails?.owners?.length > 0
+      ? layoutData?.layoutDetails?.additionalDetails?.owners
+      : layoutData?.owners || [];
     const primaryOwnerFromLayout = layoutOwners?.find((owner) => owner?.isPrimaryOwner === true || owner?.isPrimaryOwner === "true") || layoutOwners?.[0];
     const primaryApplicant = currentStepData?.applicants?.find((app) => app?.isPrimaryOwner === true || app?.isPrimaryOwner === "true") || primaryOwnerFromLayout || currentStepData?.applicants?.[0] || {};
 
@@ -160,7 +164,12 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     // For Update API: Merge original owners from API response with newly added applicants from Redux
     // The owners array from layoutData contains full user objects with id, uuid, roles, etc.
-    const ownersFromApi = layoutData?.owners ? [...layoutData.owners].sort((a, b) => {
+    const _ownersSource = layoutData?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+      ? layoutData?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+      : layoutData?.layoutDetails?.additionalDetails?.owners?.length > 0
+      ? layoutData?.layoutDetails?.additionalDetails?.owners
+      : layoutData?.owners;
+    const ownersFromApi = _ownersSource ? [..._ownersSource].sort((a, b) => {
       const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
       const bPrimary = b?.isPrimaryOwner === true || b?.isPrimaryOwner === "true";
       if (aPrimary && !bPrimary) return -1;
@@ -257,7 +266,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             aplicantType: applicant?.additionalDetails?.aplicantType || null,
             authorisedPerson: applicant?.additionalDetails?.aplicantType?.code === "FIRM" ? applicant?.additionalDetails?.authorisedPerson || "" : null,
           },
-          uuid: applicant?.uuid || null
+          uuid: applicant?.uuid || null,
+          id: applicant?.id || null,
+          ownerId: applicant?.ownerId || null
         };
 
         return ownerObj;
@@ -302,7 +313,9 @@ const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
             panNumber: layoutFormData?.applicationDetails?.panNumber,
             primaryOwnerPhoto: layoutFormData?.applicationDetails?.primaryOwnerPhoto,
             primaryOwnerDocument: layoutFormData?.applicationDetails?.primaryOwnerDocument,
+            owners: owners,
           },
+          owners: owners,
           siteDetails: {
             ...layoutData?.layoutDetails?.additionalDetails?.siteDetails,
             ...layoutFormData?.siteDetails,

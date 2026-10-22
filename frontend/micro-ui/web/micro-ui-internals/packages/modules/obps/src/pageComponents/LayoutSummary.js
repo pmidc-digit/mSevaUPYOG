@@ -77,8 +77,12 @@ function LayoutSummary({ currentStepData: formData, t }) {
   const isEditMode = !formData?.apiData?.Layout;
   const layoutData = isEditMode ? formData?.apiData : formData?.apiData?.Layout?.[0];
 
-  // Get owners from API response (existing owners)
-  const ownersFromApi = layoutData?.owners || [];
+  // Get owners from API response (preferring additionalDetails.owners)
+  const ownersFromApi = layoutData?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+    ? layoutData?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+    : layoutData?.layoutDetails?.additionalDetails?.owners?.length > 0
+    ? layoutData?.layoutDetails?.additionalDetails?.owners
+    : layoutData?.owners || [];
 
   // Get applicants from Redux state (LayoutNewApplicantDetails)
   const applicantsFromRedux = formData?.applicants || [];

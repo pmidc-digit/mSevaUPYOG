@@ -274,7 +274,8 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
   return `${day}/${month}/${year}`;
 };
 
-  const dob = typeof result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob === "string" ? result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob : formatDate(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob)
+  const owner = result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0];
+  const dob = typeof owner?.dob === "string" ? owner?.dob : formatDate(owner?.dob);
 
   return (
     <div style={pageStyle}>
@@ -306,7 +307,7 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
           e.target.style.display = "none"
         }}
       />
-      <CardLabel style={boldLabelStyle}>{formData?.LicneseDetails?.name}</CardLabel>
+      <CardLabel style={boldLabelStyle}>{formData?.LicneseDetails?.name || owner?.name}</CardLabel>
       </div>
     )
   })()}
@@ -352,10 +353,10 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
       {/* Applicant Details */}
       {mdmsLoading ? <Loader /> : <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_LICENSE_DET_CAPTION")}</h2>
-        {renderLabel(t("BPA_APPLICANT_NAME_LABEL"), [result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name])}
-        {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender))}
-        {renderLabel(t("BPA_OWNER_MOBILE_NO_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber)}
-        {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId)}
+        {renderLabel(t("BPA_APPLICANT_NAME_LABEL"), [owner?.name])}
+        {renderLabel(t("BPA_APPLICANT_GENDER_LABEL"), t(owner?.gender))}
+        {renderLabel(t("BPA_OWNER_MOBILE_NO_LABEL"), owner?.mobileNumber)}
+        {renderLabel(t("BPA_APPLICANT_EMAIL_LABEL"), owner?.emailId)}
         {renderLabel(t("BPA_APPLICANT_DOB_LABEL"), dob)}
         {/* {renderLabel(t("BPA_DETAILS_PIN_LABEL"), formData?.LicneseDetails?.Pincode)} */}
       </div>}
@@ -363,19 +364,19 @@ const CheckPage = ({ onSubmit, value, selectedWorkflowAction }) => {
       {/* Permanent Address */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_PERMANANT_ADDRESS_LABEL")}</h2>
-        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress)}
-        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentState)}
-        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict))}
-        {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode)}
+        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.permanentAddress)}
+        {renderLabel(t("BPA_STATE_TYPE"), owner?.permanentState)}
+        {renderLabel(t("BPA_DISTRICT_TYPE"), t(owner?.permanentDistrict))}
+        {renderLabel(t("BPA_DETAILS_PIN_LABEL"), owner?.permanentPinCode)}
       </div>
 
       {/* Communication Address */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_COMMUNICATION_ADDRESS_HEADER_DETAILS")}</h2>
-        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress)}
-        {renderLabel(t("BPA_STATE_TYPE"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceState)}
-        {renderLabel(t("BPA_DISTRICT_TYPE"), t(result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict))}
-        {renderLabel(t("BPA_DETAILS_PIN_LABEL"), result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode)}
+        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), owner?.correspondenceAddress)}
+        {renderLabel(t("BPA_STATE_TYPE"), owner?.correspondenceState)}
+        {renderLabel(t("BPA_DISTRICT_TYPE"), t(owner?.correspondenceDistrict))}
+        {renderLabel(t("BPA_DETAILS_PIN_LABEL"), owner?.correspondencePinCode)}
       </div>
 
 

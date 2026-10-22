@@ -141,7 +141,12 @@ const LayoutStepperForm = () => {
   const coordinates = layoutObject?.layoutDetails?.additionalDetails?.coordinates || {};
   const documents = layoutObject?.documents || [];
 
-  const primaryOwner = layoutObject?.owners?.[0] || {};
+  const _layoutOwners = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+    ? layoutObject?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+    : layoutObject?.layoutDetails?.additionalDetails?.owners?.length > 0
+    ? layoutObject?.layoutDetails?.additionalDetails?.owners
+    : layoutObject?.owners || [];
+  const primaryOwner = _layoutOwners[0] || {};
   const applicantDetails = {
     // Applicant personal info from primary owner
     applicantName: primaryOwner?.name || "",
@@ -356,52 +361,49 @@ const LayoutStepperForm = () => {
           })
         );
 
-        // Map ALL owners array to applicants format for the form
-        // Index 0 = primary owner (used by form but not displayed in UI)
-        // Index 1+ = additional owners (displayed in UI)
-        const ownersFromApi = layoutObject?.owners || [];
-
-
-        // Helper function to format DOB
-        const formatDobToDate = (dob) => {
-          if (!dob) return "";
-          try {
-            const dobDate = new Date(dob);
-            if (isNaN(dobDate.getTime())) return "";
-            const year = dobDate.getFullYear();
-            const month = String(dobDate.getMonth() + 1).padStart(2, "0");
-            const day = String(dobDate.getDate()).padStart(2, "0");
-            return `${year}-${month}-${day}`;
-          } catch (e) {
-
-            return "";
-          }
-        };
+        const topOwners = layoutObject?.owners || [];
+        const additionalOwners = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+          ? layoutObject?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+          : layoutObject?.layoutDetails?.additionalDetails?.owners || [];
+        const ownersSource = topOwners.length > 0 ? topOwners : additionalOwners;
 
         // Map all owners including primary (index 0)
-        const allApplicants = ownersFromApi?.map((owner, index) => {
-          const genderObj = menu.find((g) => g.code === owner?.gender) || owner?.gender;
-          const formattedDob = formatDobToDate(owner?.dob);
+        const allApplicants = ownersSource?.map((owner, index) => {
+          const matchingAddl = additionalOwners[index] || additionalOwners.find((o) => o?.mobileNumber === owner?.mobileNumber) || {};
+          const matchingTop = topOwners[index] || topOwners.find((o) => o?.mobileNumber === owner?.mobileNumber) || {};
+          const mergedOwner = {
+            ...matchingAddl,
+            ...matchingTop,
+            ...owner,
+            additionalDetails: {
+              ...(matchingTop?.additionalDetails || {}),
+              ...(matchingAddl?.additionalDetails || {}),
+              ...(owner?.additionalDetails || {})
+            }
+          };
+          const genderObj = menu.find((g) => g.code === mergedOwner?.gender) || mergedOwner?.gender;
+          const formattedDob = formatDobToDate(mergedOwner?.dob);
 
           return {
-            ...owner,
+            ...mergedOwner,
             actualIndex: index,
-            name: owner?.name || "",
-            fatherOrHusbandName: owner?.fatherOrHusbandName || "",
-            mobileNumber: owner?.mobileNumber || "",
-            emailId: owner?.emailId || "",
-            address: owner?.permanentAddress || owner?.address || "",
+            name: mergedOwner?.name || "",
+            fatherOrHusbandName: mergedOwner?.fatherOrHusbandName || "",
+            mobileNumber: mergedOwner?.mobileNumber || "",
+            emailId: mergedOwner?.emailId || "",
+            address: mergedOwner?.permanentAddress || mergedOwner?.address || "",
             dob: formattedDob,
             gender: genderObj,
-            panNumber: owner?.pan || owner?.panNumber || "",
-            photoUploadedFiles: owner?.additionalDetails?.ownerPhoto ,
-            documentUploadedFiles: owner?.additionalDetails?.documentFile ,
-            panDocumentUploadedFiles: owner?.additionalDetails?.panDocument,
-            aplicantType: owner?.additionalDetails?.aplicantType,
-            // Store original owner data for reference
-            uuid: owner?.uuid || "",
-            id: owner?.id || "",
-            status: owner?.status
+            panNumber: mergedOwner?.pan || mergedOwner?.panNumber || "",
+            photoUploadedFiles: mergedOwner?.additionalDetails?.ownerPhoto,
+            documentUploadedFiles: mergedOwner?.additionalDetails?.documentFile,
+            panDocumentUploadedFiles: mergedOwner?.additionalDetails?.panDocument,
+            aplicantType: mergedOwner?.additionalDetails?.aplicantType,
+            // Store original owner data for reference so id/uuid/ownerId are never lost
+            uuid: mergedOwner?.uuid || matchingTop?.uuid || "",
+            id: mergedOwner?.id || matchingTop?.id || "",
+            ownerId: mergedOwner?.ownerId || matchingTop?.ownerId || "",
+            status: mergedOwner?.status
           };
         });
 

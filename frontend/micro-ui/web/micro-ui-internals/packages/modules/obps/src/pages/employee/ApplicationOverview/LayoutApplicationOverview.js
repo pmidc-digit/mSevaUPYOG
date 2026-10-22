@@ -323,7 +323,10 @@ const LayoutEmployeeApplicationOverview = () => {
 
     if (layoutObject) {
       const applicantDetails = layoutObject?.layoutDetails?.additionalDetails?.applicationDetails;
-      const rawOwners = layoutObject?.owners || [];
+      const rawOwners =
+        layoutObject?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+          ? layoutObject?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+          : layoutObject?.owners || [];
       const activeOwners = rawOwners.filter(o => o?.status !== false && o?.status !== "false");
       const owners = [...activeOwners].sort((a, b) => {
         const aPrimary = a?.isPrimaryOwner === true || a?.isPrimaryOwner === "true";
@@ -504,7 +507,11 @@ const LayoutEmployeeApplicationOverview = () => {
         const villageName = site?.villageName || site?.district?.villageName;
         const areaSqm = site?.areaLeftForRoadWidening;
 
-        const primaryOwner = applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") || displayData?.owners?.[0] || owner;
+        const primaryOwner =
+          applicationDetails?.Layout?.[0]?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") ||
+          applicationDetails?.Layout?.[0]?.owners?.find(o => o?.isPrimaryOwner === true || o?.isPrimaryOwner === "true") ||
+          displayData?.owners?.[0] ||
+          owner;
         const applicantType = (
           primaryOwner?.additionalDetails?.aplicantType?.code ||
           primaryOwner?.additionalDetails?.applicantType?.code ||

@@ -134,6 +134,10 @@ const StakeholderRegistration = () => {
           tradeLicenseDetail: {
             ...finalDocVal?.tradeLicenseDetail,
             applicationDocuments: applicationDocuments,
+            additionalDetail: {
+              ...(finalDocVal?.tradeLicenseDetail?.additionalDetail || {}),
+              owners: finalDocVal?.tradeLicenseDetail?.additionalDetail?.owners || finalDocVal?.tradeLicenseDetail?.owners,
+            },
           },
         },
       ],

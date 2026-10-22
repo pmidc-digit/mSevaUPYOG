@@ -203,8 +203,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const [ownershipCategory, setOwnershipCategory] = useState(() => {
     // const stored = sessionStorage.getItem("ownershipCategory")
     // return stored ? JSON.parse(stored) : formData?.owners?.ownershipCategory
-    if(currentStepData?.createdResponse?.landInfo?.ownershipCategory){
+    if(currentStepData?.createdResponse?.additionalDetails?.ownershipCategory){
+      return currentStepData?.createdResponse?.additionalDetails?.ownershipCategory || null
+    }else if(currentStepData?.createdResponse?.landInfo?.ownershipCategory){
       return currentStepData?.createdResponse?.landInfo?.ownershipCategory || null
+    }else if(currentStepData?.PlotDetails?.additionalDetails?.ownershipCategory){
+      return currentStepData?.PlotDetails?.additionalDetails?.ownershipCategory || null
     }else if(currentStepData?.PlotDetails?.landInfo?.ownershipCategory){
       return currentStepData?.PlotDetails?.landInfo?.ownershipCategory || null
     }else{
@@ -249,29 +253,67 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const [fields, setFeilds] = useState(() => {
 
     let owners = [];
-    if (currentStepData?.createdResponse?.landInfo?.owners?.length > 0) {
-      owners = currentStepData?.createdResponse?.landInfo?.owners?.map((item) => {
+    const landOwners = currentStepData?.createdResponse?.landInfo?.owners || [];
+    const additionalOwners = currentStepData?.createdResponse?.additionalDetails?.owners || [];
+
+    const plotLandOwners = currentStepData?.PlotDetails?.landInfo?.owners || [];
+    const plotAdditionalOwners = currentStepData?.PlotDetails?.additionalDetails?.owners || [];
+
+    if (landOwners?.length > 0) {
+      owners = landOwners?.map((item, idx) => {
+        const matchingAdditional = additionalOwners[idx] || additionalOwners.find((o) => o?.mobileNumber === item?.mobileNumber) || {};
         return {
+          ...matchingAdditional,
           ...item,
-          dob: Digit.Utils.date.getDate(item?.dob),
-          isPrimaryOwner: item?.isPrimaryOwner === "true" ? true : false,
+          ownerId: item?.ownerId || matchingAdditional?.ownerId,
+          dob: Digit.Utils.date.getDate(item?.dob || matchingAdditional?.dob),
+          isPrimaryOwner: item?.isPrimaryOwner === "true" || item?.isPrimaryOwner === true || matchingAdditional?.isPrimaryOwner === true || matchingAdditional?.isPrimaryOwner === "true",
           additionalDetails: {
+            ...(matchingAdditional?.additionalDetails || {}),
             ...(item?.additionalDetails || {}),
             isMobileVerified: true
           }
-        }
+        };
       });
-    } else if (currentStepData?.PlotDetails?.landInfo?.owners?.length > 0) {
-      owners = currentStepData?.PlotDetails?.landInfo?.owners?.map((item) => {
+    } else if (additionalOwners?.length > 0) {
+      owners = additionalOwners?.map((item) => {
         return {
           ...item,
           dob: Digit.Utils.date.getDate(item?.dob),
-          isPrimaryOwner: item?.isPrimaryOwner === "true" ? true : false,
+          isPrimaryOwner: item?.isPrimaryOwner === "true" || item?.isPrimaryOwner === true,
           additionalDetails: {
             ...(item?.additionalDetails || {}),
             isMobileVerified: true
           }
-        }
+        };
+      });
+    } else if (plotLandOwners?.length > 0) {
+      owners = plotLandOwners?.map((item, idx) => {
+        const matchingAdditional = plotAdditionalOwners[idx] || plotAdditionalOwners.find((o) => o?.mobileNumber === item?.mobileNumber) || {};
+        return {
+          ...matchingAdditional,
+          ...item,
+          ownerId: item?.ownerId || matchingAdditional?.ownerId,
+          dob: Digit.Utils.date.getDate(item?.dob || matchingAdditional?.dob),
+          isPrimaryOwner: item?.isPrimaryOwner === "true" || item?.isPrimaryOwner === true || matchingAdditional?.isPrimaryOwner === true || matchingAdditional?.isPrimaryOwner === "true",
+          additionalDetails: {
+            ...(matchingAdditional?.additionalDetails || {}),
+            ...(item?.additionalDetails || {}),
+            isMobileVerified: true
+          }
+        };
+      });
+    } else if (plotAdditionalOwners?.length > 0) {
+      owners = plotAdditionalOwners?.map((item) => {
+        return {
+          ...item,
+          dob: Digit.Utils.date.getDate(item?.dob),
+          isPrimaryOwner: item?.isPrimaryOwner === "true" || item?.isPrimaryOwner === true,
+          additionalDetails: {
+            ...(item?.additionalDetails || {}),
+            isMobileVerified: true
+          }
+        };
       });
     }
     if(owners?.length > 0){
@@ -288,11 +330,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       const category = ownershipCategoryList.find((item) => item.code === ownershipCategory);
       if(category) setOwnershipCategory(category)
     }else if(ownershipCategory === null){
-      if(currentStepData?.createdResponse?.landInfo?.ownershipCategory){
-        setOwnershipCategory(currentStepData?.createdResponse?.landInfo?.ownershipCategory)
+      const cat = currentStepData?.createdResponse?.additionalDetails?.ownershipCategory || currentStepData?.createdResponse?.landInfo?.ownershipCategory;
+      if(cat){
+        setOwnershipCategory(cat)
       }
     }
-  }, [ownershipCategory, ownershipCategoryList, currentStepData?.createdResponse?.landInfo?.ownershipCategory])
+  }, [ownershipCategory, ownershipCategoryList, currentStepData?.createdResponse?.additionalDetails?.ownershipCategory, currentStepData?.createdResponse?.landInfo?.ownershipCategory])
 
   useEffect(() => {
     if(fields?.length > 0 && genderList?.length > 0){
@@ -746,7 +789,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         newErrors[`name_${index}`] = t("Name is required");
         isValid = false;
       }
-      if(owner?.isPrimaryOwner && owner?.name && !(owner?.name?.trim() === currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.applicantName?.trim())){
+      if (
+        owner?.isPrimaryOwner &&
+        owner?.name &&
+        owner.name.trim().toLowerCase() !==
+          currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.applicantName?.trim()?.toLowerCase()
+      ) {
         newErrors[`name_${index}`] = t("PRIMARY_OWNER_APPLICANT_NAME_VALIDATION_MESSAGE");
         isValid = false;
       }
@@ -883,17 +931,22 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
 
 
+      const existingLandOwners = currentStepData?.createdResponse?.landInfo?.owners || [];
       const conversionOwners = []
-      newFields?.map((owner) => {
+      newFields?.map((owner, idx) => {
+        const matchingLandOwner = existingLandOwners[idx] || existingLandOwners.find((l) => l?.mobileNumber === owner?.mobileNumber) || {};
+        const ownerId = owner?.ownerId || matchingLandOwner?.ownerId || owner?.id || matchingLandOwner?.id || null;
         conversionOwners.push({
+          ...matchingLandOwner,
           ...owner,
+          ownerId: ownerId,
           active: true,
           name: owner?.name,
           emailId: owner?.emailId,
           aadharNumber: owner?.aadharNumber,
           mobileNumber: owner?.mobileNumber,
           isPrimaryOwner: owner?.isPrimaryOwner || (fields?.length === 1) ? true : false,
-          gender: owner?.gender?.code,
+          gender: owner?.gender?.code || owner?.gender,
           dob: owner?.dob ? Digit.Utils.pt.convertDateToEpoch(owner?.dob) : null,
           fatherOrHusbandName: owner?.fatherOrHusbandName ||"",
           permanentAddress: owner?.permanentAddress || "",
@@ -918,6 +971,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       const result = await Digit.OBPSService.update({
         BPA: {
           ...currentStepData?.createdResponse,
+          additionalDetails: {
+            ...currentStepData?.createdResponse?.additionalDetails,
+            owners: conversionOwners,
+            ownershipCategory: ownershipCategory?.code
+          },
           landInfo: {
             ...currentStepData?.createdResponse?.landInfo,
             owners: conversionOwners,

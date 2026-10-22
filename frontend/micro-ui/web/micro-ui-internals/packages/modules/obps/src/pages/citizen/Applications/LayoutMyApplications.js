@@ -71,13 +71,19 @@ const LayoutMyApplications = ({ view }) => {
       {
         Header: t("Owner Name"),
         accessor: (row) => {
-          const owners = row?.Applications?.owners || [];
+          const owners =
+            row?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+              ? row?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+              : row?.Applications?.owners || [];
           const owner = owners.find((o) => o?.isPrimaryOwner === true) || owners[0];
           const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
           return isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
         },
         Cell: ({ row }) => {
-          const owners = row.original?.Applications?.owners || [];
+          const owners =
+            row.original?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+              ? row.original?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+              : row.original?.Applications?.owners || [];
           const owner = owners.find((o) => o?.isPrimaryOwner === true) || owners[0];
           const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
           const displayName = isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name;
@@ -149,7 +155,10 @@ const LayoutMyApplications = ({ view }) => {
                 <p className="obps-pages-citizen-applications-layout-my-applications--style-5">
                   <b>{t("Owner Name")}:</b>{" "}
                   {(() => {
-                    const owners = application?.Applications?.owners || [];
+                    const owners =
+                      application?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.owners?.length > 0
+                        ? application?.Applications?.layoutDetails?.additionalDetails?.applicationDetails?.owners
+                        : application?.Applications?.owners || [];
                     const owner = owners.find((o) => o?.isPrimaryOwner === true) || owners[0];
                     const isFirm = owner?.additionalDetails?.aplicantType?.code === "FIRM";
                     return (isFirm ? owner?.additionalDetails?.authorisedPerson : owner?.name) || t("CS_NA");

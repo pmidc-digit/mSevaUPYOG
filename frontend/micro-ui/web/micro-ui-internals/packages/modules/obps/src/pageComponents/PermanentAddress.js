@@ -29,8 +29,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const history = useHistory();
   const [loader, setLoader] = useState(false);
   const onSkip = () => onSelect();
+  const existingLicenseOwner =
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.owners?.[0] ||
+    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0];
+
   const [PermanentAddress, setPermanentAddress] = useState(
-    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentAddress ||
+    existingLicenseOwner?.permanentAddress ||
     formData?.LicneseDetails?.PermanentAddress ||
       formData?.formData?.LicneseDetails?.PermanentAddress      
   );
@@ -39,23 +43,23 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const stateId = Digit.ULBService.getStateId();
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
-  const [pinCode, setPinCode] = useState(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentPinCode || formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode  || "");
+  const [pinCode, setPinCode] = useState(existingLicenseOwner?.permanentPinCode || formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode  || "");
   const [ulbType, setUlbType] = useState("");
   const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedState, setSelectedState] = useState(
-    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentState || formData?.LicneseDetails?.SelectedState || formData?.formData?.LicneseDetails?.SelectedState ||  {}
+    existingLicenseOwner?.permanentState || formData?.LicneseDetails?.SelectedState || formData?.formData?.LicneseDetails?.SelectedState ||  {}
   );
   const [selectedDistrict, setSelectedDistrict] = useState(
-    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict || formData?.LicneseDetails?.SelectedDistrict || formData?.formData?.LicneseDetails?.SelectedDistrict ||  {}
+    existingLicenseOwner?.permanentDistrict || formData?.LicneseDetails?.SelectedDistrict || formData?.formData?.LicneseDetails?.SelectedDistrict ||  {}
   );
 
-  const [pinCodeCorrespondent, setPinCodeCorrespondent] = useState(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondencePinCode || formData?.LicneseDetails?.PincodeCorrespondent || formData?.formData?.LicneseDetails?.PincodeCorrespondent ||  "");
+  const [pinCodeCorrespondent, setPinCodeCorrespondent] = useState(existingLicenseOwner?.correspondencePinCode || formData?.LicneseDetails?.PincodeCorrespondent || formData?.formData?.LicneseDetails?.PincodeCorrespondent ||  "");
   const [selectedCorrespondentState, setSelectedCorrespondentState] = useState(
-    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceState || formData?.LicneseDetails?.SelectedCorrespondentState || formData?.formData?.LicneseDetails?.SelectedCorrespondentState ||  {}
+    existingLicenseOwner?.correspondenceState || formData?.LicneseDetails?.SelectedCorrespondentState || formData?.formData?.LicneseDetails?.SelectedCorrespondentState ||  {}
   );
   const [selectedCorrespondentDistrict, setSelectedCorrespondentDistrict] = useState(
-    formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict || formData?.LicneseDetails?.SelectedCorrespondentDistrict || formData?.formData?.LicneseDetails?.SelectedCorrespondentDistrict || {}
+    existingLicenseOwner?.correspondenceDistrict || formData?.LicneseDetails?.SelectedCorrespondentDistrict || formData?.formData?.LicneseDetails?.SelectedCorrespondentDistrict || {}
   );
 
   const [isAddressSame, setIsAddressSame] = useState(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.isAddressSame || formData?.isAddressSame || formData?.formData?.isAddressSame ||  false);
@@ -70,7 +74,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       formData?.formData?.LicneseDetails?.correspondenceAddress ||
       formData?.Correspondenceaddress ||
       formData?.formData?.Correspondenceaddress ||
-      formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
+      existingLicenseOwner?.correspondenceAddress ||
       ""
   );
   const userInfo = Digit.UserService.getUser();
@@ -213,8 +217,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   useEffect(() => {
     if (formData?.result?.Licenses) {
 
-      const selCity = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.permanentDistrict;
-      const selCorCity = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.correspondenceDistrict;
+      const selCity = existingLicenseOwner?.permanentDistrict;
+      const selCorCity = existingLicenseOwner?.correspondenceDistrict;
 
 
       const cityOpt = uniqueDistricts?.find((state) => state.district_name_english === selCity);
@@ -426,29 +430,31 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         }
       }
 
+      const ownersList = [
+        {
+          gender: formData?.LicneseDetails?.gender?.code,
+          mobileNumber: formData?.LicneseDetails?.mobileNumber,
+          name: formData?.LicneseDetails?.name,
+          dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
+          emailId: formData?.LicneseDetails?.email,
+          permanentAddress: PermanentAddress,
+          correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+          pan: formData?.LicneseDetails?.PanNumber,
+          permanentDistrict: selectedDistrict?.district_name_english,
+          correspondenceDistrict: isAddressSame ? selectedDistrict?.district_name_english : selectedCorrespondentDistrict?.district_name_english,
+          correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+          permanentPinCode : pinCode,
+          permanentState: selectedState?.state_name,
+          correspondenceState: isAddressSame ? selectedState?.state_name : selectedCorrespondentState?.state_name,                  
+        },
+      ];
+
       const payload = {
         Licenses: [
           {
             validTo,
             tradeLicenseDetail: {
-              owners: [
-                {
-                  gender: formData?.LicneseDetails?.gender?.code,
-                  mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  name: formData?.LicneseDetails?.name,
-                  dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
-                  emailId: formData?.LicneseDetails?.email,
-                  permanentAddress: PermanentAddress,
-                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
-                  pan: formData?.LicneseDetails?.PanNumber,
-                  permanentDistrict: selectedDistrict.district_name_english,
-                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
-                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
-                  permanentPinCode : pinCode,
-                  permanentState: selectedState.state_name,
-                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,                  
-                },
-              ],
+              owners: ownersList,
               subOwnerShipCategory: "INDIVIDUAL",
               tradeUnits: [
                 {
@@ -463,6 +469,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 // Ulb: selectedUlbTypes,
                 // Ulb: isArchitect ? [] : selectedUlbTypes,
                 Ulb: tenantToSend,
+                owners: ownersList,
               },
               address: {
                 city: "",
@@ -535,6 +542,27 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         }
       }
 
+      const existingOwner2 = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || {};
+      const ownersList2 = [
+        {
+          ...existingOwner2,
+          gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || existingOwner2?.gender,
+          mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || existingOwner2?.mobileNumber,
+          name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || existingOwner2?.name,
+          dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : existingOwner2?.dob || null,
+          emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || existingOwner2?.emailId,                
+          permanentAddress: PermanentAddress,
+          correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+          pan: formData?.LicneseDetails?.PanNumber || existingOwner2?.pan,
+          permanentDistrict: selectedDistrict?.district_name_english || existingOwner2?.permanentDistrict,
+          correspondenceDistrict: isAddressSame ? (selectedDistrict?.district_name_english || existingOwner2?.permanentDistrict) : (selectedCorrespondentDistrict?.district_name_english || existingOwner2?.correspondenceDistrict),
+          correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+          permanentPinCode : pinCode,
+          permanentState: selectedState?.state_name || existingOwner2?.permanentState,
+          correspondenceState: isAddressSame ? (selectedState?.state_name || existingOwner2?.permanentState) : (selectedCorrespondentState?.state_name || existingOwner2?.correspondenceState),
+        },
+      ];
+
       const payload = {
         Licenses: [
           {
@@ -542,25 +570,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
               applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
-              owners: [
-                {
-                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
-                  gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender,
-                  mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
-                  name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
-                  dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
-                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,                
-                  permanentAddress: PermanentAddress,
-                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
-                  pan: formData?.LicneseDetails?.PanNumber,
-                  permanentDistrict: selectedDistrict.district_name_english,
-                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
-                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
-                  permanentPinCode : pinCode,
-                  permanentState: selectedState.state_name,
-                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
-                },
-              ],
+              owners: ownersList2,
               tradeUnits: [
                 {
                   tradeType: formData?.LicneseType?.LicenseType?.tradeType || formData?.formData?.LicneseType?.LicenseType?.tradeType,
@@ -573,6 +583,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification || formData?.formData?.LicneseType?.selfCertification || null,
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
+                owners: ownersList2,
               },
               address: {
                 city: "",
@@ -647,6 +658,27 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         }
       }
 
+      const existingOwner3 = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || {};
+      const ownersList3 = [
+        {
+          ...existingOwner3,
+          gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || existingOwner3?.gender,
+          mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || existingOwner3?.mobileNumber,
+          name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || existingOwner3?.name,
+          dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : existingOwner3?.dob || null,
+          emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || existingOwner3?.emailId,                
+          permanentAddress: PermanentAddress,
+          correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+          pan: formData?.LicneseDetails?.PanNumber || existingOwner3?.pan,
+          permanentDistrict: selectedDistrict?.district_name_english || existingOwner3?.permanentDistrict,
+          correspondenceDistrict: isAddressSame ? (selectedDistrict?.district_name_english || existingOwner3?.permanentDistrict) : (selectedCorrespondentDistrict?.district_name_english || existingOwner3?.correspondenceDistrict),
+          correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+          permanentPinCode : pinCode,
+          permanentState: selectedState?.state_name || existingOwner3?.permanentState,
+          correspondenceState: isAddressSame ? (selectedState?.state_name || existingOwner3?.permanentState) : (selectedCorrespondentState?.state_name || existingOwner3?.correspondenceState),
+        },
+      ];
+
       const payload = {
         Licenses: [
           {
@@ -654,25 +686,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
               applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
-              owners: [
-                {
-                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
-                  gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender,
-                  mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
-                  name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
-                  dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
-                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,                
-                  permanentAddress: PermanentAddress,
-                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
-                  pan: formData?.LicneseDetails?.PanNumber,
-                  permanentDistrict: selectedDistrict.district_name_english,
-                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
-                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
-                  permanentPinCode : pinCode,
-                  permanentState: selectedState.state_name,
-                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
-                },
-              ],
+              owners: ownersList3,
               tradeUnits: [
                 {
                   tradeType: formData?.LicneseType?.LicenseType?.tradeType || formData?.formData?.LicneseType?.LicenseType?.tradeType,
@@ -685,6 +699,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification || formData?.formData?.LicneseType?.selfCertification || null,
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
+                owners: ownersList3,
               },
               address: {
                 city: "",
@@ -760,6 +775,27 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         }
       }
 
+      const existingOwner4 = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || {};
+      const ownersList4 = [
+        {
+          ...existingOwner4,
+          gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || existingOwner4?.gender,
+          mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || existingOwner4?.mobileNumber,
+          name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || existingOwner4?.name,
+          dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : existingOwner4?.dob || null,
+          emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || existingOwner4?.emailId,                
+          permanentAddress: PermanentAddress,
+          correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+          pan: formData?.LicneseDetails?.PanNumber || existingOwner4?.pan,
+          permanentDistrict: selectedDistrict?.district_name_english || existingOwner4?.permanentDistrict,
+          correspondenceDistrict: isAddressSame ? (selectedDistrict?.district_name_english || existingOwner4?.permanentDistrict) : (selectedCorrespondentDistrict?.district_name_english || existingOwner4?.correspondenceDistrict),
+          correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+          permanentState: selectedState?.state_name || existingOwner4?.permanentState,
+          correspondenceState: isAddressSame ? (selectedState?.state_name || existingOwner4?.permanentState) : (selectedCorrespondentState?.state_name || existingOwner4?.correspondenceState),
+          permanentPinCode : pinCode,
+        },
+      ];
+
       const payload = {
         Licenses: [
           {
@@ -768,25 +804,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
               applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
-              owners: [
-                {
-                  // gender: formData?.LicneseDetails?.gender?.code,
-                  // mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  // name: formData?.LicneseDetails?.name,
-                  // dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
-                  // emailId: formData?.LicneseDetails?.email,
-                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
-                  permanentAddress: PermanentAddress,
-                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
-                  pan: formData?.LicneseDetails?.PanNumber,
-                  permanentDistrict: selectedDistrict.district_name_english,
-                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
-                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
-                  permanentState: selectedState.state_name,
-                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
-                  permanentPinCode : pinCode,
-                },
-              ],
+              owners: ownersList4,
               tradeUnits: [
                 {
                   ...formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0],
@@ -803,6 +821,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification || formData?.formData?.LicneseType?.selfCertification || null,
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
+                owners: ownersList4,
               },
               address: {
                 ...formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.address,
@@ -874,6 +893,27 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         }
       }
 
+      const existingOwner5 = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || {};
+      const ownersList5 = [
+        {
+          ...existingOwner5,
+          gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || existingOwner5?.gender,
+          mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || existingOwner5?.mobileNumber,
+          name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || existingOwner5?.name,
+          dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : existingOwner5?.dob || null,
+          emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || existingOwner5?.emailId,                
+          permanentAddress: PermanentAddress,
+          correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+          pan: formData?.LicneseDetails?.PanNumber || existingOwner5?.pan,
+          permanentDistrict: selectedDistrict?.district_name_english || existingOwner5?.permanentDistrict,
+          correspondenceDistrict: isAddressSame ? (selectedDistrict?.district_name_english || existingOwner5?.permanentDistrict) : (selectedCorrespondentDistrict?.district_name_english || existingOwner5?.correspondenceDistrict),
+          correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+          permanentState: selectedState?.state_name || existingOwner5?.permanentState,
+          correspondenceState: isAddressSame ? (selectedState?.state_name || existingOwner5?.permanentState) : (selectedCorrespondentState?.state_name || existingOwner5?.correspondenceState),
+          permanentPinCode : pinCode,
+        },
+      ];
+
       const payload = {
         Licenses: [
           {
@@ -881,25 +921,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
               applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
-              owners: [
-                {
-                  // gender: formData?.LicneseDetails?.gender?.code,
-                  // mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  // name: formData?.LicneseDetails?.name,
-                  // dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
-                  // emailId: formData?.LicneseDetails?.email,
-                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
-                  permanentAddress: PermanentAddress,
-                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
-                  pan: formData?.LicneseDetails?.PanNumber,
-                  permanentDistrict: selectedDistrict.district_name_english,
-                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
-                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
-                  permanentState: selectedState.state_name,
-                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
-                  permanentPinCode : pinCode,
-                },
-              ],
+              owners: ownersList5,
               tradeUnits: [
                 {
                   tradeType: formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
@@ -912,6 +934,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
+                owners: ownersList5,
               },
               address: {
                 city: "",
@@ -984,6 +1007,27 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
         }
       }
 
+      const existingOwner6 = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || {};
+      const ownersList6 = [
+        {
+          ...existingOwner6,
+          gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || existingOwner6?.gender,
+          mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || existingOwner6?.mobileNumber,
+          name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || existingOwner6?.name,
+          dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : existingOwner6?.dob || null,
+          emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || existingOwner6?.emailId,                
+          permanentAddress: PermanentAddress,
+          correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+          pan: formData?.LicneseDetails?.PanNumber || existingOwner6?.pan,
+          permanentDistrict: selectedDistrict?.district_name_english || existingOwner6?.permanentDistrict,
+          correspondenceDistrict: isAddressSame ? (selectedDistrict?.district_name_english || existingOwner6?.permanentDistrict) : (selectedCorrespondentDistrict?.district_name_english || existingOwner6?.correspondenceDistrict),
+          correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+          permanentState: selectedState?.state_name || existingOwner6?.permanentState,
+          correspondenceState: isAddressSame ? (selectedState?.state_name || existingOwner6?.permanentState) : (selectedCorrespondentState?.state_name || existingOwner6?.correspondenceState),
+          permanentPinCode : pinCode,
+        },
+      ];
+
       const payload = {
         Licenses: [
           {
@@ -991,25 +1035,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
               applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
-              owners: [
-                {
-                  // gender: formData?.LicneseDetails?.gender?.code,
-                  // mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  // name: formData?.LicneseDetails?.name,
-                  // dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
-                  // emailId: formData?.LicneseDetails?.email,
-                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
-                  permanentAddress: PermanentAddress,
-                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
-                  pan: formData?.LicneseDetails?.PanNumber,
-                  permanentDistrict: selectedDistrict.district_name_english,
-                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
-                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
-                  permanentState: selectedState.state_name,
-                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
-                  permanentPinCode : pinCode,
-                },
-              ],
+              owners: ownersList6,
               tradeUnits: [
                 {
                   tradeType: formData?.LicneseType?.LicenseType?.tradeType || formData?.formData?.LicneseType?.LicenseType?.tradeType || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
@@ -1022,6 +1048,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
+                owners: ownersList6,
               },
               address: {
                 city: "",
@@ -1079,36 +1106,40 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       const licenseData = formData?.result?.Licenses[0];
 
 
+      const existingOwner7 = formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.owners?.[0] || {};
+      const ownersList7 = [
+        {                  
+          ...existingOwner7,
+          gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || existingOwner7?.gender,
+          mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || existingOwner7?.mobileNumber,
+          name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || existingOwner7?.name,
+          dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : existingOwner7?.dob || null,
+          emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || existingOwner7?.emailId,
+          permanentAddress: PermanentAddress,
+          correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
+          pan: formData?.LicneseDetails?.PanNumber || existingOwner7?.pan,
+          permanentDistrict: selectedDistrict?.district_name_english || existingOwner7?.permanentDistrict,
+          correspondenceDistrict: isAddressSame ? (selectedDistrict?.district_name_english || existingOwner7?.permanentDistrict) : (selectedCorrespondentDistrict?.district_name_english || existingOwner7?.correspondenceDistrict),
+          correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
+          permanentPinCode : pinCode,
+          permanentState: selectedState?.state_name || existingOwner7?.permanentState,
+          correspondenceState: isAddressSame ? (selectedState?.state_name || existingOwner7?.permanentState) : (selectedCorrespondentState?.state_name || existingOwner7?.correspondenceState),
+        },
+      ];
+
       const payload = {
         Licenses: [
           {
             ...licenseData,            
             tradeLicenseDetail: {
               ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail || {}),
-              owners: [
-                {                  
-                  ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0] || {}),
-                  gender: formData?.LicneseDetails?.gender?.code || formData?.formData?.LicneseDetails?.gender?.code || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.gender,
-                  mobileNumber: formData?.LicneseDetails?.mobileNumber || formData?.formData?.LicneseDetails?.mobileNumber || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
-                  name: formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.name,
-                  dob: (formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth) : formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.dob ||null,
-                  emailId: formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.owners?.[0]?.emailId,
-                  permanentAddress: PermanentAddress,
-                  correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
-                  pan: formData?.LicneseDetails?.PanNumber,
-                  permanentDistrict: selectedDistrict.district_name_english,
-                  correspondenceDistrict: isAddressSame ? selectedDistrict.district_name_english : selectedCorrespondentDistrict.district_name_english,
-                  correspondencePinCode: isAddressSame ? pinCode : pinCodeCorrespondent,
-                  permanentPinCode : pinCode,
-                  permanentState: selectedState.state_name,
-                  correspondenceState: isAddressSame ? selectedState.state_name : selectedCorrespondentState.state_name,
-                },
-              ],
+              owners: ownersList7,
               additionalDetail: {                
                 ...(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail || {}),                
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo,                
                 isAddressSame: isAddressSame,                
                 Ulb: tenantToSend,
+                owners: ownersList7,
               },
               applicationDocuments: cleanDocs(formData?.result?.Licenses?.[0]?.tradeLicenseDetail?.applicationDocuments),
             },         

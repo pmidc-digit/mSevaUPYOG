@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 public class SvgToPdfConverter {
 	
 	private static Logger LOG = LogManager.getLogger(SvgToPdfConverter.class);
-	private static final float DXF_RENDER_DPI = 300f;
+	static final float DXF_RENDER_DPI = 300f;
 
 	public static void convert(File svgFile, File pdfFile) throws Exception {
 	    LOG.info("Converting SVG → PDF: {}", svgFile.getAbsolutePath());

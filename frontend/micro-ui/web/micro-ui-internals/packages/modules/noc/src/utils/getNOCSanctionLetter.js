@@ -79,8 +79,6 @@ const getNOCSanctionLetter = async (application, t,EmpData,approverComment) => {
 
 
   const sanctionKeys = [
-    "NOC_SANCTION_ONE",
-    "NOC_SANCTION_TWO",
     "NOC_SANCTION_THREE",
     "NOC_SANCTION_FOUR",
     "NOC_SANCTION_FIVE",

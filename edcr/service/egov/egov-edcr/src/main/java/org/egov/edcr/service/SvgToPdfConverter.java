@@ -9,10 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 
-import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
-import org.apache.batik.util.XMLResourceDescriptor;
-import org.w3c.dom.svg.SVGDocument;
-import org.w3c.dom.svg.SVGSVGElement;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamReader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,27 +33,41 @@ public class SvgToPdfConverter {
 	        throw new Exception("SVG file not found or not readable: " + svgFile.getAbsolutePath());
 	    }
 
-	    String parser = XMLResourceDescriptor.getXMLParserClassName();
-	    SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(parser);
 	    String uri = svgFile.toURI().toString();
 
-	    // --- Step 1: Parse SVG DOM ---
-	    SVGDocument svgDoc;
+	    // --- Step 1+2: Read only the <svg> root tag (width / height / viewBox) ---
+	    // The whole SVG is NOT loaded into a DOM here. A DXF SVG can be very large, and Batik
+	    // clones a DOM passed to it, so pre-parsing it would keep several copies in memory.
+	    String widthAttr = null, heightAttr = null, viewBoxAttr = null;
+	    XMLStreamReader xr = null;
 	    try (InputStream is = new FileInputStream(svgFile)) {
-	        svgDoc = factory.createSVGDocument(uri, is);
+	        XMLInputFactory xif = XMLInputFactory.newInstance();
+	        xif.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+	        xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+	        xr = xif.createXMLStreamReader(is);
+	        while (xr.hasNext()) {
+	            if (xr.next() == XMLStreamConstants.START_ELEMENT) {
+	                widthAttr = xr.getAttributeValue(null, "width");
+	                heightAttr = xr.getAttributeValue(null, "height");
+	                viewBoxAttr = xr.getAttributeValue(null, "viewBox");
+	                break;
+	            }
+	        }
 	    } catch (Exception e) {
-	        LOG.error("Failed to parse SVG DOM from '{}': {}", svgFile.getAbsolutePath(), e.getMessage(), e);
-	        throw new Exception("SVG DOM parsing failed: " + e.getMessage(), e);
+	        LOG.error("Failed to read SVG root element from '{}': {}", svgFile.getAbsolutePath(), e.getMessage(), e);
+	        throw new Exception("SVG parsing failed: " + e.getMessage(), e);
+	    } finally {
+	        if (xr != null) {
+	            try { xr.close(); } catch (Exception ignore) { }
+	        }
 	    }
 
-	    // --- Step 2: Read SVG dimensions ---
-	    SVGSVGElement root = svgDoc.getRootElement();
-	    float svgWidth  = parseAttrPx(root.getAttribute("width"));
-	    float svgHeight = parseAttrPx(root.getAttribute("height"));
+	    float svgWidth  = parseAttrPx(widthAttr == null ? "" : widthAttr);
+	    float svgHeight = parseAttrPx(heightAttr == null ? "" : heightAttr);
 
 	    // Fallback to viewBox
 	    if (svgWidth <= 0 || svgHeight <= 0) {
-	        String vb = root.getAttribute("viewBox");
+	        String vb = viewBoxAttr;
 	        if (vb != null && !vb.isEmpty()) {
 	            String[] p = vb.trim().split("[\\s,]+");
 	            if (p.length >= 4) {
@@ -77,14 +90,16 @@ public class SvgToPdfConverter {
 
 	    // --- Step 3: Transcode SVG → PDF ---
 	    PDFTranscoder transcoder = new PDFTranscoder();
-	    if (isPixelLength(root.getAttribute("width")) && isPixelLength(root.getAttribute("height"))) {
+	    if (isPixelLength(widthAttr) && isPixelLength(heightAttr)) {
 	        transcoder.addTranscodingHint(PDFTranscoder.KEY_WIDTH,  svgWidth);
 	        transcoder.addTranscodingHint(PDFTranscoder.KEY_HEIGHT, svgHeight);
 	    }
 	    transcoder.addTranscodingHint(PDFTranscoder.KEY_PIXEL_UNIT_TO_MILLIMETER, 25.4f / DXF_RENDER_DPI);
 
-	    try (FileOutputStream fos = new FileOutputStream(pdfFile)) {
-	        TranscoderInput input = new TranscoderInput(svgDoc);
+	    try (FileOutputStream fos = new FileOutputStream(pdfFile);
+	         InputStream svgIn = new BufferedInputStream(new FileInputStream(svgFile), 1 << 16)) {
+	        // Batik parses the SVG once, straight from the stream.
+	        TranscoderInput input = new TranscoderInput(svgIn);
 	        input.setURI(uri);
 	        TranscoderOutput output = new TranscoderOutput(fos);
 	        transcoder.transcode(input, output);

@@ -613,6 +613,7 @@ public class DxfToPdfConverterv2 {
                 if (period < 1e-8) period = diagonal * 2.0;
                 double alongStep = ux * offsetX + uy * offsetY;
                 for (int k = kMin; k <= kMax; k++) {
+                    if (d.length() > MAX_HATCH_PATH_CHARS) return d.toString();   // memory guard
                     double baseX = originX + k * offsetX;
                     double baseY = originY + k * offsetY;
                     double lineMinAlong = minAlong - k * alongStep;
@@ -625,6 +626,7 @@ public class DxfToPdfConverterv2 {
                     long phaseMin = (long) Math.floor(lineMinAlong / period) - 1;
                     long phaseMax = (long) Math.ceil(lineMaxAlong / period) + 1;
                     for (long phase = phaseMin; phase <= phaseMax; phase++) {
+                        if (d.length() > MAX_HATCH_PATH_CHARS) return d.toString();   // memory guard
                         double along = phase * period;
                         for (double dash : dashes) {
                             if (dash > 1e-8) {
@@ -643,6 +645,9 @@ public class DxfToPdfConverterv2 {
             }
             return d.toString().trim();
         }
+
+        /** Upper limit of one hatch's pattern path (chars). Prevents dense / dashed patterns from exhausting memory. */
+        private static final int MAX_HATCH_PATH_CHARS = 1_500_000;
 
         private static void appendHatchSegment(StringBuilder d, double x1, double y1, double x2, double y2, double[] t) {
             d.append(String.format(Locale.US, "M %.4f %.4f L %.4f %.4f ",
@@ -5844,8 +5849,11 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         double insertScale = Math.sqrt(Math.abs(insert.scaleX * insert.scaleY));
         if (!Double.isFinite(insertScale) || insertScale < 1e-9) return;
         double totalScale = parentScale * insertScale;
-        blockScales.computeIfAbsent(block.name.toUpperCase(Locale.ROOT), ignored -> new ArrayList<>())
-                .add(totalScale);
+        List<Double> seen = blockScales.computeIfAbsent(block.name.toUpperCase(Locale.ROOT), ignored -> new ArrayList<>());
+        // Memory / time guard: a median needs only a sample. Without this limit, deeply nested
+        // or repeated INSERTs are expanded once per instance and can run out of memory.
+        if (seen.size() >= 64) return;
+        seen.add(totalScale);
         for (Entity entity : block.entities) {
             if (entity instanceof InsertEntity) {
                 collectBlockScales(doc, (InsertEntity) entity, totalScale, blockScales, depth + 1);

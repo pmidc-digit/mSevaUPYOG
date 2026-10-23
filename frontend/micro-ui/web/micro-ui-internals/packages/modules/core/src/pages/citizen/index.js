@@ -76,29 +76,16 @@ const Home = ({
     [
       {
         name: "actions-test",
-        filter: "[?(@.url == 'card')]",
+        // Keep default digit-ui cards, and include only PT_MY_PROPERTIES from mseva-ui-card
+        filter: "[?(@.url == 'digit-ui-card' || (@.url == 'mseva-ui-card' && @.name == 'PT_MY_PROPERTIES'))]",
       },
     ],
     {
       select: (data) => {
-        // Blocklist: exclude known employee-only or non-citizen-sidebar modules
-        const EXCLUDE_NAMES = new Set([
-          "rainmaker-citizen-scorecard",
-          "rainmaker-citizen-swach",
-          "rainmaker-citizen-hrms",
-          "rainmaker-citizen-finance",
-          "rainmaker-citizen-pgrai",
-        ]);
         const formattedData = data?.["ACCESSCONTROL-ACTIONS-TEST"]?.["actions-test"]
-          ?.filter(
-            (el) =>
-              el.enabled === true &&
-              el.url === "card" &&
-              !EXCLUDE_NAMES.has(el.name)
-          )
+          ?.filter((el) => el.enabled === true && (el.url === "digit-ui-card" || (el.url === "mseva-ui-card" && el.name === "PT_MY_PROPERTIES")))
           .reduce((a, b) => {
-            const moduleKey = b.parentModule || b.name;
-            a[moduleKey] = a[moduleKey]?.length > 0 ? [b, ...a[moduleKey]] : [b];
+            a[b.parentModule] = a[b.parentModule]?.length > 0 ? [b, ...a[b.parentModule]] : [b];
             return a;
           }, {});
         return formattedData;

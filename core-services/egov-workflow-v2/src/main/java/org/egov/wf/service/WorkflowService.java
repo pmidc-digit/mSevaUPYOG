@@ -380,7 +380,7 @@ public class WorkflowService {
         if(CollectionUtils.isEmpty(nextActionRoles))
         	return Collections.EMPTY_LIST;
         
-        return userService.getNextActionUsers(requestInfo, nextActionRoles, tenantId);
+        return userService.getNextActionUsers(requestInfo, nextActionRoles, tenantId,request.getProcessInstances().get(0).getHrmsSearchPath());
     }
     
     private boolean checkNextActonRoles(ProcessInstanceRequest request, List<String> terminateActionRoles) {

@@ -107,6 +107,42 @@
 @import "./pages/citizen/citizenDocument.scss";
 @import "./pages/employee/surveys.scss";
 
+@import "./pages/employee/faq.scss";
+@import "./pages/employee/dashboard.scss";
+
+@import "./pages/common/stepForm.scss";
+@import "./pages/common/form.scss";
+@import "./pages/swach/index.scss";
+@import "./pages/ws/index.scss";
+@import "./pages/common/requiredField.scss";
+@import "./pages/citizen/citizenNewLogin.scss";
+@import "./pages/common/searchIcon.scss";
+@import "./pages/common/sanctionFeeTable.scss";
+@import "./pages/citizen/loaderMessage.scss";
+@import "./pages/employee/disconnection.scss";
+@import "./pages/citizen/InboxCard.scss";
+@import "./pages/employee/header.scss";
+
+@import "./pages/common/pgrUICssfix.scss";
+@import "./pages/common/newApplicationTimeline.scss";
+@import "./components/newFooter.scss";
+@import "./pages/citizen/CitizenLogin.scss";
+@import "./components/NewAccordianCitizen.scss";
+@import "./modules/rentAndLease/index.scss";
+@import "./components/SurveyModal.scss";
+
+@import "./modules/adv/index.scss";
+@import "./modules/noc/index.scss";
+@import "./modules/hrms/index.scss";
+@import "./modules/BPA/index.scss";
+@import "./pages/common/sitePhotoGraphs.scss";
+@import "./modules/TL/index.scss";
+@import "./components/newInbox.scss";
+@import "./components/ptr.scss";
+@import "./components/challanGeneration.scss";
+@import "./gigw3-mseva.scss";
+
+
 .display-none {
   display: none;
 }

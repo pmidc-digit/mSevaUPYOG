@@ -86,6 +86,9 @@ public class WorkflowIntegrator {
 		obj.put(MODULENAMEKEY, NOCConstants.NOC_MODULE);
 		obj.put(ACTIONKEY, noc.getWorkflow().getAction());
 		
+		// Add hrmsSearchPath inside ProcessInstances
+		obj.put("hrmsSearchPath", hrmsSearchPath);
+		
 		if(noc.getWorkflow().getComment() != null)
 		  obj.put(COMMENTKEY, noc.getWorkflow().getComment());
 		
@@ -104,7 +107,6 @@ public class WorkflowIntegrator {
 		JSONObject workFlowRequest = new JSONObject();
 		workFlowRequest.put(REQUESTINFOKEY, nocRequest.getRequestInfo());
 		workFlowRequest.put(WORKFLOWREQUESTARRAYKEY, array);
-		workFlowRequest.put("hrmsSearchPath", hrmsSearchPath);
 		String response = null;
 
 

@@ -186,7 +186,7 @@ public class NOCService {
 				&& (NOCConstants.ACTION_APPLY.equalsIgnoreCase(noc.getWorkflow().getAction())
 						|| NOCConstants.ACTION_RESUBMIT.equalsIgnoreCase(noc.getWorkflow().getAction()))
 				&& CollectionUtils.isEmpty(noc.getDocuments())) {
-			throw new CustomException("NOC_DOCUMENT_REQUIRED", "Document is required");
+			throw new CustomException("NOC_DOCUMENT_REQUIRED", "Required documents are missing. Please upload all the mandatory documents to proceed.");
 		}
 
 

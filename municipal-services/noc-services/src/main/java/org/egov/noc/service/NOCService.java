@@ -182,6 +182,13 @@ public class NOCService {
 
 		Noc noc = nocRequest.getNoc();
 
+		if (noc.getWorkflow() != null
+				&& (NOCConstants.ACTION_APPLY.equalsIgnoreCase(noc.getWorkflow().getAction())
+						|| NOCConstants.ACTION_RESUBMIT.equalsIgnoreCase(noc.getWorkflow().getAction()))
+				&& CollectionUtils.isEmpty(noc.getDocuments())) {
+			throw new CustomException("NOC_DOCUMENT_REQUIRED", "Required documents are missing. Please upload all the mandatory documents to proceed.");
+		}
+
 
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getNocDetails().getAdditionalDetails()))  {

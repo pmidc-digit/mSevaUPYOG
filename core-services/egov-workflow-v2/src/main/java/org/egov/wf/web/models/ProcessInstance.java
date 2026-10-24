@@ -109,10 +109,8 @@ public class ProcessInstance   {
         @JsonProperty("escalated")
         private Boolean escalated = false;
         
-        @JsonProperty("hrmsSearchPath")
+        @JsonProperty(value = "hrmsSearchPath", access = JsonProperty.Access.READ_ONLY)
         private String hrmsSearchPath;
-        
-
 
         public ProcessInstance addDocumentsItem(Document documentsItem) {
             if (this.documents == null) {

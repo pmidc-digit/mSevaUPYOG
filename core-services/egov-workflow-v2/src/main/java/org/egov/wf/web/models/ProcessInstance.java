@@ -109,7 +109,7 @@ public class ProcessInstance   {
         @JsonProperty("escalated")
         private Boolean escalated = false;
         
-        @JsonProperty("hrmsSearchPath")
+        @JsonProperty(value = "hrmsSearchPath", access = JsonProperty.Access.WRITE_ONLY)
         private String hrmsSearchPath;
         
 

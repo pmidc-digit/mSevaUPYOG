@@ -46,7 +46,9 @@ export const mapBPAREGLicenseToRow = (license, holidaysSet) => {
     submissionDate: createdTime,
     issuedDate: license?.issuedDate,
     tenantId: license?.tenantId,
-    professionalOwner: license?.tradeLicenseDetail?.owners?.[0]?.name,
+    professionalOwner:
+      license?.tradeLicenseDetail?.additionalDetail?.owners?.[0]?.name ||
+      license?.tradeLicenseDetail?.owners?.[0]?.name,
     state: license?.status,
     businessService: getBPAREGBusinessService(license),
     applicationType: license?.applicationType,

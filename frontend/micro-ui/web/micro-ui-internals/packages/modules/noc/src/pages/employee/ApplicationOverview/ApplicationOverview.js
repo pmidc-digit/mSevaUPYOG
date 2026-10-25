@@ -571,7 +571,7 @@ const NOCEmployeeApplicationOverview = () => {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
         onClick: () =>
-          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData, filestoreId :  reciept_data?.Payments[0]?.fileStoreId}),
+          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData}),
       });
     }
   useEffect(() => {

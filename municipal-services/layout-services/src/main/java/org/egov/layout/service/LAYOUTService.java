@@ -209,6 +209,13 @@ public class LAYOUTService {
 		BusinessService businessServicename = workflowService.getBusinessService(nocRequest.getLayout(),
 				nocRequest.getRequestInfo(), businessServicedata);
 		Layout layout = nocRequest.getLayout();
+
+		if (layout.getWorkflow() != null
+				&& (LAYOUTConstants.ACTION_APPLY.equalsIgnoreCase(layout.getWorkflow().getAction())
+						|| LAYOUTConstants.ACTION_RESUBMIT.equalsIgnoreCase(layout.getWorkflow().getAction()))
+				&& CollectionUtils.isEmpty(layout.getDocuments())) {
+			throw new CustomException("LAYOUT_DOCUMENT_REQUIRED", "Required documents are missing. Please upload all the mandatory documents to proceed.");
+		}
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getNocDetails().getAdditionalDetails()))  {
 			additionalDetails = (Map) nocRequest.getLayout().getNocDetails().getAdditionalDetails();

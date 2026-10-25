@@ -152,7 +152,7 @@ public class PaymentUpdateService {
 					/*
 					 * calling workflow to update status
 					 */
-					wfIntegrator.callWorkFlow(updateRequest);
+					wfIntegrator.callWorkFlow(updateRequest,"");
 
 					log.debug(" the status of the application is : " + updateRequest.getBPA().getStatus());
 

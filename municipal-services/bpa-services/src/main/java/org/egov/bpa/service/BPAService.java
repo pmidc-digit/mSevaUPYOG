@@ -531,7 +531,7 @@ public class BPAService {
 						bpa.getWorkflow().setAssignes(assignee);
 					}
 					
-					String hrmsSearchPath = userService.getEmployeeSearchPATH(tenantId, additionalDetails);
+					String hrmsSearchPath = userService.getEmployeeSearchPATH(bpaRequest.getBPA().getTenantId(), additionalDetails);
 					wfIntegrator.callWorkFlow(bpaRequest,hrmsSearchPath);
 					log.debug("===> workflow done =>" + bpaRequest.getBPA().getStatus());
 					enrichmentService.postStatusEnrichment(bpaRequest);

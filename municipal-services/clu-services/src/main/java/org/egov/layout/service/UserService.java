@@ -318,4 +318,18 @@ public class UserService {
 
 	}
 
+	
+	public String getEmployeeSearchPATH(String tenantId, Map<String, String> additionalDetails, Object mdmsData) {
+		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone.code");
+
+		StringBuilder uri = new StringBuilder();
+
+		uri.append("assignedtenattids=").append(tenantId);
+		if (!org.springframework.util.StringUtils.isEmpty(zones))
+			uri.append("&zones=").append(zones);
+		uri.append("&modulename=").append(CLUConstants.MODULENAME);
+
+		return uri.toString();
+	}
+	
 }

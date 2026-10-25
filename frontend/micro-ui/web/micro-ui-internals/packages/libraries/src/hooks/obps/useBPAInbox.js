@@ -153,9 +153,23 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
             : "NA",
           status: application?.ProcessInstance?.state?.state,
           state: application?.ProcessInstance?.state?.state,
-          professionalOwner: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.name,
-          owner: application?.businessObject?.landInfo?.owners?.find((item) => item?.isPrimaryOwner)?.name || "NA",
-          mobileNumber: application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA",
+          professionalOwner:
+            application?.businessObject?.tradeLicenseDetail?.additionalDetail?.owners?.[0]?.name ||
+            application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.name,
+          owner: (() => {
+            const bpaObj = application?.businessObject;
+            const ownersFromAdditional = bpaObj?.additionalDetails?.owners;
+            const owners =
+              ownersFromAdditional?.length > 0 ? ownersFromAdditional : bpaObj?.landInfo?.owners || [];
+            const primaryOwner = owners.find((item) => item?.isPrimaryOwner === true || item?.isPrimaryOwner === "true");
+            const resolvedOwner = primaryOwner || owners[0];
+            const isFirm = resolvedOwner?.additionalDetails?.aplicantType?.code === "FIRM";
+            return isFirm ? resolvedOwner?.additionalDetails?.authorisedPerson : resolvedOwner?.name || "NA";
+          })(),
+          mobileNumber:
+            application?.businessObject?.tradeLicenseDetail?.additionalDetail?.owners?.[0]?.mobileNumber ||
+            application?.businessObject?.tradeLicenseDetail?.owners?.[0]?.mobileNumber ||
+            "NA",
           // sla: application?.businessObject?.status.match(/^(APPROVED)$/)
           //   ? getDaysSinceCreated(application?.businessObject?.applicationDate, application?.businessObject?.approvalDate)
           //   : getDaysSinceCreated(application?.businessObject?.applicationDate),

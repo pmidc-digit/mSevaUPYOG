@@ -190,6 +190,13 @@ public class CLUService {
 		BusinessService businessServicename = workflowService.getBusinessService(nocRequest.getLayout(),
 				nocRequest.getRequestInfo(), businessServicedata);
 		Clu clu = nocRequest.getLayout();
+
+		if (clu.getWorkflow() != null
+				&& (CLUConstants.ACTION_APPLY.equalsIgnoreCase(clu.getWorkflow().getAction())
+						|| CLUConstants.ACTION_RESUBMIT.equalsIgnoreCase(clu.getWorkflow().getAction()))
+				&& CollectionUtils.isEmpty(clu.getDocuments())) {
+			throw new CustomException("CLU_DOCUMENT_REQUIRED", "Required documents are missing. Please upload all the mandatory documents to proceed.");
+		}
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getNocDetails().getAdditionalDetails()))  {
 			additionalDetails = (Map) nocRequest.getLayout().getNocDetails().getAdditionalDetails();

@@ -421,7 +421,7 @@ public class EnrichmentService {
 		if (!(demandAmount.compareTo(BigDecimal.ZERO) > 0)) {
 			Workflow workflow = Workflow.builder().action(BPAConstants.ACTION_SKIP_PAY).build();
 			bpa.setWorkflow(workflow);
-			wfIntegrator.callWorkFlow(bpaRequest);
+			wfIntegrator.callWorkFlow(bpaRequest,"");
 		}
 	}
 

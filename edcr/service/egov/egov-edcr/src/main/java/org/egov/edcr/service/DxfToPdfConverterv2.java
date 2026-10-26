@@ -537,13 +537,32 @@ public class DxfToPdfConverterv2 {
                         path, color);
             }
 
+            if (!RENDER_PATTERN_HATCH_LINES) {
+                // Treat a pattern hatch like a normal entity: draw only its boundary. No per-line
+                // geometry is generated, so memory/time stay proportional to the boundary points.
+                return String.format(Locale.US,
+                        "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\"/>",
+                        path, color, resolveLineWeight(doc, layer, lineWeight));
+            }
+
             if (!patternLines.isEmpty()) {
                 String hatchId = "hatch_clip_" + (handle == null || handle.isEmpty()
                         ? Integer.toHexString(System.identityHashCode(this))
                         : handle.replaceAll("[^A-Za-z0-9_.-]", "_"));
                 String hatchGeometry = createPatternLineGeometry(doc, t);
-                if (hatchGeometry.isEmpty()) return "";
                 double hatchLineWidth = resolveLineWeight(doc, layer, lineWeight);
+                if (hatchGeometry == null) {
+                    // Pattern is too dense for the memory budget: draw only the hatch boundary.
+                    return String.format(Locale.US,
+                            "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\"/>",
+                            path, color, hatchLineWidth);
+                }
+                if (hatchGeometry.isEmpty()) {
+                    // No usable pattern lines: still show the hatch area (boundary) instead of dropping it.
+                    return String.format(Locale.US,
+                            "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\"/>",
+                            path, color, hatchLineWidth);
+                }
                 return String.format(Locale.US,
                         "<defs><clipPath id=\"%s\"><path d=\"%s\" fill-rule=\"evenodd\"/></clipPath></defs>"
                                 + "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\" clip-path=\"url(#%s)\"/>",
@@ -565,6 +584,13 @@ public class DxfToPdfConverterv2 {
                     id, spacing, spacing, patternAngle, hatchLines, color, Math.max(0.35, t[0] * 0.12), path, id);
         }
 
+        /**
+         * Builds the pattern lines of this hatch as SVG path data. Memory-safe by design:
+         *  - the number of lines is ESTIMATED first (nothing is generated yet);
+         *  - dashed patterns are drawn as continuous lines when they would be too many;
+         *  - if it is still too many, only every n-th line is drawn (hatch becomes sparser, but still visible);
+         *  - returns null (caller draws only the boundary) when the whole-drawing budget is used up.
+         */
         private String createPatternLineGeometry(DxfDocument doc, double[] t) {
             double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY;
             double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
@@ -577,10 +603,21 @@ public class DxfToPdfConverterv2 {
                 }
             }
             if (!Double.isFinite(minX) || !Double.isFinite(minY)) return "";
+
+            // Never zero: even when the whole-drawing budget is used up, every hatch still gets a few
+            // lines, so no hatch is ever missing from the PDF (it is only drawn sparser).
+            // Fair share: the whole-drawing budget is divided by the number of pattern hatches, so total
+            // work stays bounded however many hatches a file has, and every hatch is still drawn.
+            int budget = Math.max(MIN_HATCH_SEGMENTS, Math.min(MAX_HATCH_SEGMENTS, doc.hatchShare));
+
             double diagonal = Math.hypot(maxX - minX, maxY - minY) + 10.0;
-            StringBuilder d = new StringBuilder();
             double hatchRotation = Math.toRadians(angle);
             double hatchCos = Math.cos(hatchRotation), hatchSin = Math.sin(hatchRotation);
+
+            // ---- pass 1: per pattern line parameters + estimated segment count (no geometry yet) ----
+            List<double[]> params = new ArrayList<>();      // ux,uy,originX,originY,offX,offY,kMin,kMax,minAlong,maxAlong,period,alongStep
+            List<double[]> dashList = new ArrayList<>();
+            double estDashed = 0, estSolid = 0;
             for (HatchPatternLine line : patternLines) {
                 double radians = Math.toRadians(line.angle + angle);
                 double ux = Math.cos(radians), uy = Math.sin(radians);
@@ -604,54 +641,105 @@ public class DxfToPdfConverterv2 {
                 }
                 double firstOffset = minNormal / normalStep;
                 double lastOffset = maxNormal / normalStep;
-                int kMin = (int) Math.floor(Math.min(firstOffset, lastOffset)) - 1;
-                int kMax = (int) Math.ceil(Math.max(firstOffset, lastOffset)) + 1;
-                if (kMax - kMin > 10000) continue;
+                double kMinD = Math.floor(Math.min(firstOffset, lastOffset)) - 1;
+                double kMaxD = Math.ceil(Math.max(firstOffset, lastOffset)) + 1;
+                if (!Double.isFinite(kMinD) || !Double.isFinite(kMaxD) || kMaxD - kMinD > 1e7) continue;
                 double[] dashes = line.dashes.stream().mapToDouble(v -> v * scale).toArray();
                 double period = 0;
                 for (double dash : dashes) period += Math.abs(dash);
                 if (period < 1e-8) period = diagonal * 2.0;
                 double alongStep = ux * offsetX + uy * offsetY;
-                for (int k = kMin; k <= kMax; k++) {
-                    if (d.length() > MAX_HATCH_PATH_CHARS) return d.toString();   // memory guard
+                double lines = kMaxD - kMinD + 1;
+                double phases = (maxAlong - minAlong) / period + 3;
+                estSolid += lines;
+                estDashed += dashes.length == 0 ? lines : lines * phases * dashes.length;
+                params.add(new double[]{ux, uy, originX, originY, offsetX, offsetY, kMinD, kMaxD,
+                        minAlong, maxAlong, period, alongStep});
+                dashList.add(dashes);
+            }
+            if (params.isEmpty()) return "";
+
+            boolean useDashes = estDashed <= budget;          // too many dash pieces -> continuous lines
+            double estimate = useDashes ? estDashed : estSolid;
+            long stride = estimate <= budget ? 1 : (long) Math.ceil(estimate / budget);   // draw every n-th line
+
+            // ---- pass 2: generate with a hard cap ----
+            StringBuilder d = new StringBuilder();
+            int count = 0;
+            outer:
+            for (int li = 0; li < params.size(); li++) {
+                double[] pr = params.get(li);
+                double[] dashes = useDashes ? dashList.get(li) : new double[0];
+                double ux = pr[0], uy = pr[1], originX = pr[2], originY = pr[3], offsetX = pr[4], offsetY = pr[5];
+                long kMin = (long) pr[6], kMax = (long) pr[7];
+                double minAlong = pr[8], maxAlong = pr[9], period = pr[10], alongStep = pr[11];
+                for (long k = kMin; k <= kMax; k += stride) {
                     double baseX = originX + k * offsetX;
                     double baseY = originY + k * offsetY;
                     double lineMinAlong = minAlong - k * alongStep;
                     double lineMaxAlong = maxAlong - k * alongStep;
                     if (dashes.length == 0) {
+                        if (count >= budget) break outer;
                         appendHatchSegment(d, baseX + ux * lineMinAlong, baseY + uy * lineMinAlong,
                                 baseX + ux * lineMaxAlong, baseY + uy * lineMaxAlong, t);
+                        count++;
                         continue;
                     }
                     long phaseMin = (long) Math.floor(lineMinAlong / period) - 1;
                     long phaseMax = (long) Math.ceil(lineMaxAlong / period) + 1;
                     for (long phase = phaseMin; phase <= phaseMax; phase++) {
-                        if (d.length() > MAX_HATCH_PATH_CHARS) return d.toString();   // memory guard
                         double along = phase * period;
                         for (double dash : dashes) {
+                            if (count >= budget) break outer;
                             if (dash > 1e-8) {
                                 double start = Math.max(lineMinAlong, along);
                                 double end = Math.min(lineMaxAlong, along + dash);
-                                if (end > start) appendHatchSegment(d, baseX + ux * start, baseY + uy * start,
-                                        baseX + ux * end, baseY + uy * end, t);
+                                if (end > start) {
+                                    appendHatchSegment(d, baseX + ux * start, baseY + uy * start,
+                                            baseX + ux * end, baseY + uy * end, t);
+                                    count++;
+                                }
                             } else if (Math.abs(dash) < 1e-8 && along >= lineMinAlong && along <= lineMaxAlong) {
                                 appendHatchSegment(d, baseX + ux * along, baseY + uy * along,
                                         baseX + ux * (along + 0.01), baseY + uy * (along + 0.01), t);
+                                count++;
                             }
                             along += Math.abs(dash);
                         }
                     }
                 }
             }
+            doc.hatchSegmentsUsed += count;
+            if (stride > 1 || !useDashes) {
+                LOG.info("Hatch {} simplified (stride={}, dashes={}, segments={})", handle, stride, useDashes, count);
+            }
             return d.toString().trim();
         }
 
-        /** Upper limit of one hatch's pattern path (chars). Prevents dense / dashed patterns from exhausting memory. */
-        private static final int MAX_HATCH_PATH_CHARS = 1_500_000;
+        /**
+         * true (default) = pattern lines are drawn, always within the segment budget below (sparser if needed).
+         * false = pattern hatches are drawn as boundary outline only.
+         */
+        private static final boolean RENDER_PATTERN_HATCH_LINES = true;
+
+        private static final int MIN_HATCH_SEGMENTS = 8;              // guaranteed lines for every hatch
+        private static final int MAX_HATCH_SEGMENTS = 3_000;          // one hatch
+        static final int MAX_DOC_HATCH_SEGMENTS = 40_000;     // whole drawing
 
         private static void appendHatchSegment(StringBuilder d, double x1, double y1, double x2, double y2, double[] t) {
-            d.append(String.format(Locale.US, "M %.4f %.4f L %.4f %.4f ",
-                    tx(x1, t), ty(y1, t), tx(x2, t), ty(y2, t)));
+            d.append('M'); appendCoord(d, tx(x1, t)); d.append(' '); appendCoord(d, ty(y1, t));
+            d.append(" L"); appendCoord(d, tx(x2, t)); d.append(' '); appendCoord(d, ty(y2, t)); d.append(' ');
+        }
+
+        /** Fast 2-decimal number append (String.format per coordinate is slow and garbage-heavy). */
+        private static void appendCoord(StringBuilder d, double v) {
+            if (!Double.isFinite(v)) { d.append('0'); return; }
+            long scaled = Math.round(Math.abs(v) * 100.0);
+            if (v < 0 && scaled != 0) d.append('-');
+            d.append(scaled / 100).append('.');
+            long r = scaled % 100;
+            if (r < 10) d.append('0');
+            d.append(r);
         }
     }
 
@@ -1792,6 +1880,10 @@ public class DxfToPdfConverterv2 {
 
     // ── DXF Document ──────────────────────────────────────────────────────────
     static class DxfDocument {
+        /** Pattern-hatch line segments emitted so far for the SVG being generated (memory budget). */
+        int hatchSegmentsUsed = 0;
+        /** Line budget of every pattern hatch (whole-drawing budget / number of pattern hatches). */
+        int hatchShare = Integer.MAX_VALUE;
         Map<String, Layer> layers = new LinkedHashMap<>();
         Map<String, TextStyle> textStyles = new LinkedHashMap<>();
         Map<String, Block> blocks = new LinkedHashMap<>();
@@ -5706,6 +5798,8 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         double offsetX = (canvasW - drawnW) / 2.0, offsetY = (canvasH - drawnH) / 2.0;
         double[] t = new double[]{scale, offsetX - adjMinX * scale, -adjMinY * scale, offsetY + drawnH};
 
+        doc.hatchSegmentsUsed = 0;
+        doc.hatchShare = computeHatchShare(doc);
         normalizeLargeBlockCoordinates(doc);
 
         StringBuilder sb = new StringBuilder();
@@ -5757,6 +5851,19 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         return sb.toString();
     }
     
+    /** Pattern-hatch line budget per hatch: whole-drawing budget shared by all pattern hatches (modelspace + blocks). */
+    static int computeHatchShare(DxfDocument doc) {
+        long n = 0;
+        for (Entity e : doc.entities) if (isPatternHatch(e)) n++;
+        for (Block b : doc.blocks.values()) for (Entity e : b.entities) if (isPatternHatch(e)) n++;
+        if (n <= 0) return Integer.MAX_VALUE;
+        return (int) Math.max(1, HatchEntity.MAX_DOC_HATCH_SEGMENTS / n);
+    }
+
+    private static boolean isPatternHatch(Entity e) {
+        return e instanceof HatchEntity && !((HatchEntity) e).solid && !((HatchEntity) e).patternLines.isEmpty();
+    }
+
     private static void appendBlockDefs(StringBuilder sb, DxfDocument doc, double[] t) {
         for (Map.Entry<String, Block> entry : doc.blocks.entrySet()) {
             Block block = entry.getValue();

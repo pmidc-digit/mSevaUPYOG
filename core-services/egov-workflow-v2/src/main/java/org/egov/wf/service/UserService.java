@@ -152,11 +152,9 @@ public class UserService {
         return  d.getTime();
     }
 
-    public List<User> getNextActionUsers(RequestInfo requestInfo, List<String> nextActionRoles, String tenantId, String hrmsSearchPath){
+    public List<User> getNextActionUsers(RequestInfo requestInfo, List<String> nextActionRoles, String tenantId){
     	String roles = nextActionRoles.stream().collect(Collectors.joining(","));
-    	StringBuilder uri = getEmployeeSearchURL(tenantId, roles, hrmsSearchPath);
-    	
-    	
+    	StringBuilder uri = getEmployeeSearchURL(tenantId, roles);
     	
     	JSONObject hrmsRequest = new JSONObject();
     	UserSearchRequest userSearchRequest = new UserSearchRequest();
@@ -168,7 +166,7 @@ public class UserService {
     	return usersList;
     }
     
-    private StringBuilder getEmployeeSearchURL(String tenantId, String roles,String hrmsSearchPath) {
+    private StringBuilder getEmployeeSearchURL(String tenantId, String roles) {
     	
     	StringBuilder uri = new StringBuilder(hrmsHost).append(employeeSearchEndpoint);
     	uri.append("?tenantId=").append(tenantId)
@@ -176,8 +174,6 @@ public class UserService {
     	
     	if(!StringUtils.isEmpty(roles))
     		uri.append("&roles=").append(roles);
-    	if(!StringUtils.isEmpty(hrmsSearchPath))
-    		uri.append("&"+hrmsSearchPath);
     	
     	return uri;
     }

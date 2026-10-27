@@ -256,7 +256,10 @@ public class PlanReportServiceV2 {
         if (plan.getErrors() != null && plan.getErrors().size() > 0)
             finalReportStatus = false;
 
-        model.put("ulbName", ApplicationThreadLocals.getMunicipalityName());
+        if(plan.getPlanInformation().getCity()!=null)
+        	model.put("ulbName", ApplicationThreadLocals.getMunicipalityName() + ", "+ plan.getPlanInformation().getCity() );
+        else
+        	model.put("ulbName", ApplicationThreadLocals.getMunicipalityName());
         
         ClassPathResource logoResource = new ClassPathResource("images/logo_dep.png");    
         ClassPathResource footerLogoResource = new ClassPathResource("images/mseva.png"); 

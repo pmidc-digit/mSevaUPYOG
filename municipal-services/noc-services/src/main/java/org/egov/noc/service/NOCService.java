@@ -328,17 +328,17 @@ public class NOCService {
 						noc.getWorkflow().setAssignes(null);
 				}
 
-				if (CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
-					String createdBy = null;
-					if (searchResult != null && searchResult.getAuditDetails() != null) {
-						createdBy = searchResult.getAuditDetails().getCreatedBy();
-					} else if (noc.getAuditDetails() != null) {
-						createdBy = noc.getAuditDetails().getCreatedBy();
-					}
-					if (!StringUtils.isEmpty(createdBy)) {
-						noc.getWorkflow().setAssignes(Collections.singletonList(createdBy));
-					}
-				}
+//				if (CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
+//					String createdBy = null;
+//					if (searchResult != null && searchResult.getAuditDetails() != null) {
+//						createdBy = searchResult.getAuditDetails().getCreatedBy();
+//					} else if (noc.getAuditDetails() != null) {
+//						createdBy = noc.getAuditDetails().getCreatedBy();
+//					}
+//					if (!StringUtils.isEmpty(createdBy)) {
+//						noc.getWorkflow().setAssignes(Collections.singletonList(createdBy));
+//					}
+//				}
 				String hrmsSearchPath = userService.getEmployeeSearchPATH(noc.getTenantId(), additionalDetails, mdmsData);
 				wfIntegrator.callWorkFlow(nocRequest,businessServiceName,hrmsSearchPath);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);

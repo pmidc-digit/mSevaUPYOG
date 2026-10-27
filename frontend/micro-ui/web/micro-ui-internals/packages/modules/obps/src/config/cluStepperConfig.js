@@ -4,7 +4,7 @@ export const cluStepperConfig = [
     stepNumber: 1,
     body: [
       {
-        component: "CLUApplicantDetails",
+        component: "CLUNewApplicantDetails",
         withoutLabel: true,
         key: "applicationDetails",
         type: "component",

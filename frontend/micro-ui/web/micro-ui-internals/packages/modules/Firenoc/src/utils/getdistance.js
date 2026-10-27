@@ -31,35 +31,35 @@ const haversineDistance = (lat1, lon1, lat2, lon2) => {
   return R * c; // meters
 };
 
-export const getDrivingDistance = async (lat1, lon1, lat2, lon2) => {
-  try {
-    await loadGoogleMaps();
+// export const getDrivingDistance = async (lat1, lon1, lat2, lon2) => {
+//   try {
+//     await loadGoogleMaps();
 
-    return new Promise((resolve) => {
-      const origin = new window.google.maps.LatLng(lat1, lon1);
-      const destination = new window.google.maps.LatLng(lat2, lon2);
-      const service = new window.google.maps.DistanceMatrixService();
+//     return new Promise((resolve) => {
+//       const origin = new window.google.maps.LatLng(lat1, lon1);
+//       const destination = new window.google.maps.LatLng(lat2, lon2);
+//       const service = new window.google.maps.DistanceMatrixService();
 
-      service.getDistanceMatrix(
-        {
-          origins: [origin],
-          destinations: [destination],
-          travelMode: "DRIVING",
-          unitSystem: window.google.maps.UnitSystem.METRIC,
-        },
-        (response, status) => {
-          if (status === "OK") {
-            const distanceMeters = response.rows[0].elements[0].distance.value;
-            resolve(distanceMeters); // meters
-          } else {
-            console.warn("Google API failed, falling back to Haversine:", status);
-            resolve(haversineDistance(lat1, lon1, lat2, lon2)); // meters
-          }
-        }
-      );
-    });
-  } catch (err) {
-    console.error("Google Maps not available, using Haversine:", err);
-    return haversineDistance(lat1, lon1, lat2, lon2); // meters
-  }
-};
+//       service.getDistanceMatrix(
+//         {
+//           origins: [origin],
+//           destinations: [destination],
+//           travelMode: "DRIVING",
+//           unitSystem: window.google.maps.UnitSystem.METRIC,
+//         },
+//         (response, status) => {
+//           if (status === "OK") {
+//             const distanceMeters = response.rows[0].elements[0].distance.value;
+//             resolve(distanceMeters); // meters
+//           } else {
+
+//             resolve(haversineDistance(lat1, lon1, lat2, lon2)); // meters
+//           }
+//         }
+//       );
+//     });
+//   } catch (err) {
+
+//     return haversineDistance(lat1, lon1, lat2, lon2); // meters
+//   }
+// };

@@ -8,11 +8,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
+import org.egov.common.entity.edcr.PageLayoutInfo;
+
+
 /**
  * Full-featured DXF Parser and SVG/PDF Converter.
  *
  * Handles:
- *  - LINE, CIRCLE, ARC, POLYLINE, LWPOLYLINE, SPLINE, ELLIPSE, HATCH
+ *  - LINE, CIRCLE, ARC, POLYLINE, LWPOLYLINE, SPLINE, ELLIPSE, HATCH, MLINE
  *  - TEXT, MTEXT (with full RTF-style formatting codes)
  *  - INSERT (block references) -> SVG <use>
  *  - DIMENSION entities
@@ -24,14 +32,22 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DxfToPdfConverterv2 {
-
-    static final double TEXT_CHAR_W = 0.65;  // avg glyph width / height (used only to wrap long MTEXT)
 	
 	private static Logger LOG = LogManager.getLogger(DxfToPdfConverterv2.class);
 	
     private static final ThreadLocal<Boolean> RENDERING_BLOCK_DEFINITION =
             ThreadLocal.withInitial(() -> false);
-
+    
+    public static final String WORK_SHEET_LAYER = "WORK_SHEET";
+    public static final String PAGE_LAYOUT_LAYER = "PAGE_LAYOUT";
+    static final String UNDEFINED_LAYER_COLOR = "#808080";
+    
+    private static final Set<String> SYSTEM_LAYERS = new CopyOnWriteArraySet<>(
+            Arrays.asList("0", WORK_SHEET_LAYER, PAGE_LAYOUT_LAYER, "PLAN_INFO"));
+    private static final List<String> SYSTEM_LAYER_PREFIXES =
+            new java.util.concurrent.CopyOnWriteArrayList<>(Arrays.asList("BLK_"));
+    private static volatile boolean grayUndefinedLayers = false; // off until the real list is registered
+    
     // ── ACI (AutoCAD Color Index) table ──────────────────────────────────────
     private static final String[] ACI_COLORS = new String[256];
     static {
@@ -114,12 +130,20 @@ public class DxfToPdfConverterv2 {
     static class Block {
         String name = "";
         double baseX = 0, baseY = 0, baseZ = 0;
+        // Optional rendering-only local origin. DXF files can contain blocks
+        // whose geometry is authored at very large coordinates and then
+        // inserted back onto the sheet with a tiny scale and a compensating
+        // offset. Recentering those coordinates avoids precision/clipping
+        // problems in SVG/PDF renderers without changing the plotted position.
+        double renderOffsetX = 0, renderOffsetY = 0;
+        double renderStrokeCompensation = 1.0;
         List<Entity> entities = new ArrayList<>();
     }
 
     // Base entity
     static abstract class Entity {
         String layer = "0";
+        String handle = "";
         int colorIndex = -1; // -1 = bylayer, 0 = byblock
         int trueColor = -1;
         String lineType = "";
@@ -484,12 +508,293 @@ public class DxfToPdfConverterv2 {
         String patternName = "SOLID";
         boolean solid = false;
         List<List<double[]>> boundaryLoops = new ArrayList<>();
+        List<HatchPatternLine> patternLines = new ArrayList<>();
         double angle = 0;
         double scale = 1.0;
 
         @Override
         String toSvg(DxfDocument doc, double[] t) {
-            return "";
+            if (boundaryLoops == null || boundaryLoops.isEmpty()) return "";
+
+            StringBuilder d = new StringBuilder();
+            for (List<double[]> loop : boundaryLoops) {
+                if (loop == null || loop.size() < 3) continue;
+                for (int i = 0; i < loop.size(); i++) {
+                    double[] p = loop.get(i);
+                    if (p == null || p.length < 2 || !Double.isFinite(p[0]) || !Double.isFinite(p[1])) continue;
+                    d.append(String.format(Locale.US, "%s %.4f %.4f", i == 0 ? "M" : "L", tx(p[0], t), ty(p[1], t)));
+                    d.append(' ');
+                }
+                d.append("Z ");
+            }
+            if (d.length() == 0) return "";
+
+            String path = d.toString().trim();
+            String color = resolveColor(doc, this);
+            if (solid || "SOLID".equalsIgnoreCase(patternName)) {
+                return String.format(Locale.US,
+                        "<path d=\"%s\" fill=\"%s\" fill-rule=\"evenodd\" stroke=\"none\"/>",
+                        path, color);
+            }
+
+            if (!RENDER_PATTERN_HATCH_LINES) {
+                // Treat a pattern hatch like a normal entity: draw only its boundary. No per-line
+                // geometry is generated, so memory/time stay proportional to the boundary points.
+                return String.format(Locale.US,
+                        "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\"/>",
+                        path, color, resolveLineWeight(doc, layer, lineWeight));
+            }
+
+            if (!patternLines.isEmpty()) {
+                String hatchId = "hatch_clip_" + (handle == null || handle.isEmpty()
+                        ? Integer.toHexString(System.identityHashCode(this))
+                        : handle.replaceAll("[^A-Za-z0-9_.-]", "_"));
+                String hatchGeometry = createPatternLineGeometry(doc, t);
+                double hatchLineWidth = resolveLineWeight(doc, layer, lineWeight);
+                if (hatchGeometry == null) {
+                    // Pattern is too dense for the memory budget: draw only the hatch boundary.
+                    return String.format(Locale.US,
+                            "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\"/>",
+                            path, color, hatchLineWidth);
+                }
+                if (hatchGeometry.isEmpty()) {
+                    // No usable pattern lines: still show the hatch area (boundary) instead of dropping it.
+                    return String.format(Locale.US,
+                            "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\"/>",
+                            path, color, hatchLineWidth);
+                }
+                return String.format(Locale.US,
+                        "<defs><clipPath id=\"%s\"><path d=\"%s\" fill-rule=\"evenodd\"/></clipPath></defs>"
+                                + "<path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\" clip-path=\"url(#%s)\"/>",
+                        hatchId, path, hatchGeometry, color, hatchLineWidth, hatchId);
+            }
+
+            double spacing = Math.max(2.0, Math.abs(scale * t[0] * 4.0));
+            double patternAngle = Double.isFinite(angle) ? -angle : 0.0;
+            String id = "hatch_" + (handle == null || handle.isEmpty()
+                    ? Integer.toHexString(System.identityHashCode(this)) : handle.replaceAll("[^A-Za-z0-9_.-]", "_"));
+            String hatchLines = "M 0 0 L 0 " + String.format(Locale.US, "%.4f", spacing);
+            if (patternName != null && (patternName.toUpperCase(Locale.ROOT).contains("37")
+                    || patternName.toUpperCase(Locale.ROOT).contains("CROSS"))) {
+                hatchLines += " M 0 0 L " + String.format(Locale.US, "%.4f", spacing) + " 0";
+            }
+            return String.format(Locale.US,
+                    "<defs><pattern id=\"%s\" patternUnits=\"userSpaceOnUse\" width=\"%.4f\" height=\"%.4f\" patternTransform=\"rotate(%.4f)\"><path d=\"%s\" fill=\"none\" stroke=\"%s\" stroke-width=\"%.4f\"/></pattern></defs>"
+                    + "<path d=\"%s\" fill=\"url(#%s)\" fill-rule=\"evenodd\" stroke=\"none\"/>",
+                    id, spacing, spacing, patternAngle, hatchLines, color, Math.max(0.35, t[0] * 0.12), path, id);
+        }
+
+        /**
+         * Builds the pattern lines of this hatch as SVG path data. Memory-safe by design:
+         *  - the number of lines is ESTIMATED first (nothing is generated yet);
+         *  - dashed patterns are drawn as continuous lines when they would be too many;
+         *  - if it is still too many, only every n-th line is drawn (hatch becomes sparser, but still visible);
+         *  - returns null (caller draws only the boundary) when the whole-drawing budget is used up.
+         */
+        private String createPatternLineGeometry(DxfDocument doc, double[] t) {
+            double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY;
+            double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY;
+            for (List<double[]> loop : boundaryLoops) {
+                if (loop == null) continue;
+                for (double[] point : loop) {
+                    if (point == null || point.length < 2 || !isValidCoordinate(point[0]) || !isValidCoordinate(point[1])) continue;
+                    minX = Math.min(minX, point[0]); maxX = Math.max(maxX, point[0]);
+                    minY = Math.min(minY, point[1]); maxY = Math.max(maxY, point[1]);
+                }
+            }
+            if (!Double.isFinite(minX) || !Double.isFinite(minY)) return "";
+
+            // Never zero: even when the whole-drawing budget is used up, every hatch still gets a few
+            // lines, so no hatch is ever missing from the PDF (it is only drawn sparser).
+            // Fair share: the whole-drawing budget is divided by the number of pattern hatches, so total
+            // work stays bounded however many hatches a file has, and every hatch is still drawn.
+            int budget = Math.max(MIN_HATCH_SEGMENTS, Math.min(MAX_HATCH_SEGMENTS, doc.hatchShare));
+
+            double diagonal = Math.hypot(maxX - minX, maxY - minY) + 10.0;
+            double hatchRotation = Math.toRadians(angle);
+            double hatchCos = Math.cos(hatchRotation), hatchSin = Math.sin(hatchRotation);
+
+            // ---- pass 1: per pattern line parameters + estimated segment count (no geometry yet) ----
+            List<double[]> params = new ArrayList<>();      // ux,uy,originX,originY,offX,offY,kMin,kMax,minAlong,maxAlong,period,alongStep
+            List<double[]> dashList = new ArrayList<>();
+            double estDashed = 0, estSolid = 0;
+            for (HatchPatternLine line : patternLines) {
+                double radians = Math.toRadians(line.angle + angle);
+                double ux = Math.cos(radians), uy = Math.sin(radians);
+                double nx = -uy, ny = ux;
+                double originX = line.originX * hatchCos - line.originY * hatchSin;
+                double originY = line.originX * hatchSin + line.originY * hatchCos;
+                double offsetX = scale * (line.offsetX * hatchCos - line.offsetY * hatchSin);
+                double offsetY = scale * (line.offsetX * hatchSin + line.offsetY * hatchCos);
+                double normalStep = nx * offsetX + ny * offsetY;
+                if (Math.abs(normalStep) < 1e-8) continue;
+
+                double minNormal = Double.POSITIVE_INFINITY, maxNormal = Double.NEGATIVE_INFINITY;
+                double minAlong = Double.POSITIVE_INFINITY, maxAlong = Double.NEGATIVE_INFINITY;
+                double[][] corners = {{minX,minY},{minX,maxY},{maxX,minY},{maxX,maxY}};
+                for (double[] corner : corners) {
+                    double dx = corner[0] - originX, dy = corner[1] - originY;
+                    double normal = nx * dx + ny * dy;
+                    double along = ux * dx + uy * dy;
+                    minNormal = Math.min(minNormal, normal); maxNormal = Math.max(maxNormal, normal);
+                    minAlong = Math.min(minAlong, along); maxAlong = Math.max(maxAlong, along);
+                }
+                double firstOffset = minNormal / normalStep;
+                double lastOffset = maxNormal / normalStep;
+                double kMinD = Math.floor(Math.min(firstOffset, lastOffset)) - 1;
+                double kMaxD = Math.ceil(Math.max(firstOffset, lastOffset)) + 1;
+                if (!Double.isFinite(kMinD) || !Double.isFinite(kMaxD) || kMaxD - kMinD > 1e7) continue;
+                double[] dashes = line.dashes.stream().mapToDouble(v -> v * scale).toArray();
+                double period = 0;
+                for (double dash : dashes) period += Math.abs(dash);
+                if (period < 1e-8) period = diagonal * 2.0;
+                double alongStep = ux * offsetX + uy * offsetY;
+                double lines = kMaxD - kMinD + 1;
+                double phases = (maxAlong - minAlong) / period + 3;
+                estSolid += lines;
+                estDashed += dashes.length == 0 ? lines : lines * phases * dashes.length;
+                params.add(new double[]{ux, uy, originX, originY, offsetX, offsetY, kMinD, kMaxD,
+                        minAlong, maxAlong, period, alongStep});
+                dashList.add(dashes);
+            }
+            if (params.isEmpty()) return "";
+
+            boolean useDashes = estDashed <= budget;          // too many dash pieces -> continuous lines
+            double estimate = useDashes ? estDashed : estSolid;
+            long stride = estimate <= budget ? 1 : (long) Math.ceil(estimate / budget);   // draw every n-th line
+
+            // ---- pass 2: generate with a hard cap ----
+            StringBuilder d = new StringBuilder();
+            int count = 0;
+            outer:
+            for (int li = 0; li < params.size(); li++) {
+                double[] pr = params.get(li);
+                double[] dashes = useDashes ? dashList.get(li) : new double[0];
+                double ux = pr[0], uy = pr[1], originX = pr[2], originY = pr[3], offsetX = pr[4], offsetY = pr[5];
+                long kMin = (long) pr[6], kMax = (long) pr[7];
+                double minAlong = pr[8], maxAlong = pr[9], period = pr[10], alongStep = pr[11];
+                for (long k = kMin; k <= kMax; k += stride) {
+                    double baseX = originX + k * offsetX;
+                    double baseY = originY + k * offsetY;
+                    double lineMinAlong = minAlong - k * alongStep;
+                    double lineMaxAlong = maxAlong - k * alongStep;
+                    if (dashes.length == 0) {
+                        if (count >= budget) break outer;
+                        appendHatchSegment(d, baseX + ux * lineMinAlong, baseY + uy * lineMinAlong,
+                                baseX + ux * lineMaxAlong, baseY + uy * lineMaxAlong, t);
+                        count++;
+                        continue;
+                    }
+                    long phaseMin = (long) Math.floor(lineMinAlong / period) - 1;
+                    long phaseMax = (long) Math.ceil(lineMaxAlong / period) + 1;
+                    for (long phase = phaseMin; phase <= phaseMax; phase++) {
+                        double along = phase * period;
+                        for (double dash : dashes) {
+                            if (count >= budget) break outer;
+                            if (dash > 1e-8) {
+                                double start = Math.max(lineMinAlong, along);
+                                double end = Math.min(lineMaxAlong, along + dash);
+                                if (end > start) {
+                                    appendHatchSegment(d, baseX + ux * start, baseY + uy * start,
+                                            baseX + ux * end, baseY + uy * end, t);
+                                    count++;
+                                }
+                            } else if (Math.abs(dash) < 1e-8 && along >= lineMinAlong && along <= lineMaxAlong) {
+                                appendHatchSegment(d, baseX + ux * along, baseY + uy * along,
+                                        baseX + ux * (along + 0.01), baseY + uy * (along + 0.01), t);
+                                count++;
+                            }
+                            along += Math.abs(dash);
+                        }
+                    }
+                }
+            }
+            doc.hatchSegmentsUsed += count;
+            if (stride > 1 || !useDashes) {
+                LOG.info("Hatch {} simplified (stride={}, dashes={}, segments={})", handle, stride, useDashes, count);
+            }
+            return d.toString().trim();
+        }
+
+        /**
+         * true (default) = pattern lines are drawn, always within the segment budget below (sparser if needed).
+         * false = pattern hatches are drawn as boundary outline only.
+         */
+        private static final boolean RENDER_PATTERN_HATCH_LINES = true;
+
+        private static final int MIN_HATCH_SEGMENTS = 8;              // guaranteed lines for every hatch
+        private static final int MAX_HATCH_SEGMENTS = 3_000;          // one hatch
+        static final int MAX_DOC_HATCH_SEGMENTS = 40_000;     // whole drawing
+
+        private static void appendHatchSegment(StringBuilder d, double x1, double y1, double x2, double y2, double[] t) {
+            d.append('M'); appendCoord(d, tx(x1, t)); d.append(' '); appendCoord(d, ty(y1, t));
+            d.append(" L"); appendCoord(d, tx(x2, t)); d.append(' '); appendCoord(d, ty(y2, t)); d.append(' ');
+        }
+
+        /** Fast 2-decimal number append (String.format per coordinate is slow and garbage-heavy). */
+        private static void appendCoord(StringBuilder d, double v) {
+            if (!Double.isFinite(v)) { d.append('0'); return; }
+            long scaled = Math.round(Math.abs(v) * 100.0);
+            if (v < 0 && scaled != 0) d.append('-');
+            d.append(scaled / 100).append('.');
+            long r = scaled % 100;
+            if (r < 10) d.append('0');
+            d.append(r);
+        }
+    }
+
+    static class HatchPatternLine {
+        double angle, originX, originY, offsetX, offsetY;
+        final List<Double> dashes = new ArrayList<>();
+    }
+
+    /** A DXF multiline stores one center vertex plus per-style-element offsets at each vertex. */
+    static class MlineVertex {
+        double x, y, directionX, directionY, miterX, miterY;
+        final List<double[]> elementParameters = new ArrayList<>();
+
+        double[] pointForElement(int elementIndex) {
+            if (elementIndex < 0 || elementIndex >= elementParameters.size()) return new double[]{x, y};
+            double[] params = elementParameters.get(elementIndex);
+            double miterOffset = params.length > 0 ? params[0] : 0;
+            double alongOffset = params.length > 1 ? params[1] : 0;
+            return new double[]{x + miterX * miterOffset + directionX * alongOffset,
+                    y + miterY * miterOffset + directionY * alongOffset};
+        }
+    }
+
+    static class MlineEntity extends Entity {
+        String styleName = "STANDARD";
+        double scale = 1.0;
+        int flags;
+        int elementCount;
+        List<MlineVertex> vertices = new ArrayList<>();
+
+        boolean isClosed() { return (flags & 2) != 0; }
+
+        @Override
+        String toSvg(DxfDocument doc, double[] t) {
+            if (vertices.size() < 2 || elementCount < 1) return "";
+            String color = resolveColor(doc, this);
+            double lw = resolveLineWeight(doc, layer, lineWeight);
+            StringBuilder svg = new StringBuilder();
+            int count = Math.min(elementCount, vertices.stream()
+                    .mapToInt(v -> v.elementParameters.size()).min().orElse(0));
+            for (int element = 0; element < count; element++) {
+                StringBuilder d = new StringBuilder();
+                for (int i = 0; i < vertices.size(); i++) {
+                    double[] p = vertices.get(i).pointForElement(element);
+                    d.append(String.format(Locale.US, "%s %.4f %.4f", i == 0 ? "M" : "L",
+                            tx(p[0], t), ty(p[1], t)));
+                    d.append(' ');
+                }
+                if (isClosed()) d.append("Z");
+                String path = validatePathData(d.toString().trim());
+                if (path != null) svg.append(String.format(Locale.US,
+                        "<path d=\"%s\" stroke=\"%s\" stroke-width=\"%.4f\" fill=\"none\"/>",
+                        path, color, lw));
+            }
+            return svg.toString();
         }
     }
 
@@ -537,6 +842,13 @@ public class DxfToPdfConverterv2 {
             if (isDimensionPlaceholderText(cleanText)) {
                 return "";
             }
+
+            boolean aligned = (hJustify == 3 || hJustify == 5)
+                    && Double.isFinite(secondX) && Double.isFinite(secondY)
+                    && Math.hypot(secondX - x, secondY - y) > 1e-9;
+            double renderRotation = aligned
+                    ? Math.toDegrees(Math.atan2(secondY - y, secondX - x)) : rotation;
+            double alignedLength = aligned ? Math.hypot(secondX - x, secondY - y) * scale : 0;
             
             // Build SVG text element - NO transforms, simple and clean
             StringBuilder svg = new StringBuilder();
@@ -544,11 +856,16 @@ public class DxfToPdfConverterv2 {
                     "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" stroke=\"none\" stroke-width=\"0\" " +
                     "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"%s\" xml:space=\"preserve\">",
                     px, py, svgHeight, color, fontFamily, anchor, dominantBaseline));
+
+            if (aligned) {
+                svg.insert(svg.length() - 1, String.format(Locale.US,
+                        " textLength=\"%.6f\" lengthAdjust=\"spacingAndGlyphs\"", alignedLength));
+            }
             
             // Apply rotation if needed (use transform attribute)
-            if (Math.abs(rotation) > 0.01) {
+            if (Math.abs(renderRotation) > 0.01) {
                 svg.insert(svg.length() - 1, String.format(Locale.US, 
-                    " transform=\"rotate(%.6f %.6f %.6f)\"", -rotation, px, py));
+                    " transform=\"rotate(%.6f %.6f %.6f)\"", -renderRotation, px, py));
             }
             
             svg.append(escapeXml(cleanText));
@@ -559,213 +876,714 @@ public class DxfToPdfConverterv2 {
     }
 
     // ── MTEXT ENTITY (full RTF-style DXF codes) ───────────────────────────────
-    static class MTextEntity extends Entity {
-        double x, y, z;
-        double height = 2.5;
-        double width = 0;    // 0 = no wrapping
-        String text = "";    // Raw MTEXT content (with { } codes)
-        double rotation = 0; // In degrees (group 50) or radians from X-direction vector
-        String xDir = "";    // Group 11,21,31 X-direction vector
-        double xDirX = 1, xDirY = 0;
-        int attachment = 1;  // 1=TL,2=TC,3=TR,4=ML,5=MC,6=MR,7=BL,8=BC,9=BR
-        String styleName = "Standard";
-        double lineSpacing = 1.0;
-        int textDirection = 0; // Group code 74: 0=LTR, 1=RTL, 3=vertical
+	static class MTextEntity extends Entity {
 
-        @Override
-        String toSvg(DxfDocument doc, double[] t) {
-            if (text.isEmpty()) return "";
-            double scale = t[0];
-            double px = tx(x, t);
-            double py = ty(y, t);
-            double fontSize = height * scale;
-            // Enforce minimum font size to prevent text from becoming too small
-            if (fontSize < 1.0) {
-                fontSize = 1.0;
-            }
+		double x, y, z;
+		double height = 2.5;
+		double width = 0;
 
-            String fontFamily = resolveFontFamily(doc, styleName);
-            List<MTextSegment> segments = parseMText(text, doc, styleName, fontSize, height);
+		// ALWAYS keep this raw.
+		// It is required by parseMText().
+		String text = "";
 
-            // Map attachment point to SVG text-anchor.
-            // Attachment grid: 1=TL  2=TC  3=TR
-            //                 4=ML  5=MC  6=MR
-            //                 7=BL  8=BC  9=BR
-            String anchor = "start";      // 1,4,7 = left
-            if (attachment == 2 || attachment == 5 || attachment == 8) {
-                anchor = "middle";  // center
-            } else if (attachment == 3 || attachment == 6 || attachment == 9) {
-                anchor = "end";     // right
-            }
+		double rotation = 0;
 
-            StringBuilder sb = new StringBuilder();
+		String xDir = "";
+		double xDirX = 1;
+		double xDirY = 0;
 
-            // Preserve MTEXT inline color/font runs while splitting into visual lines.
-            List<List<MTextSegment>> lines = new ArrayList<>();
-            List<MTextSegment> currentLine = new ArrayList<>();
-            
-            for (MTextSegment seg : segments) {
-                if (seg.isNewline) {
-                    lines.add(currentLine);
-                    currentLine = new ArrayList<>();
-                } else if (!seg.text.isEmpty() || seg.isFraction) {
-                    currentLine.add(seg);
-                }
-            }
-            if (!currentLine.isEmpty()) lines.add(currentLine);
-            if (lines.isEmpty()) lines.add(new ArrayList<>());
+		int attachment = 1;
 
-            // Wrap long MTEXT so it stays inside the drawing instead of stretching past the border.
-            lines = wrapLinesByWidth(lines, mtextWrapWidth(doc, this) * scale, fontSize);
+		String styleName = "Standard";
 
-            double effectiveLineSpacing = Math.max(1.0, lineSpacing > 0 ? lineSpacing : 1.0);
-            double lineSpacingFactor = 1.35 * effectiveLineSpacing;
-            List<Double> lineFontSizes = new ArrayList<>();
-            for (List<MTextSegment> line : lines) {
-                lineFontSizes.add(maxMTextLineFontSize(line, fontSize));
-            }
-            double totalHeight = 0.0;
-            for (int i = 0; i < lineFontSizes.size(); i++) {
-                if (i == 0) totalHeight += lineFontSizes.get(0);
-                else totalHeight += lineFontSizes.get(i - 1) * lineSpacingFactor;
-            }
+		double lineSpacing = 1.0;
 
-            // Keep the DXF insertion point as the exact local origin. Attachment
-            // offsets are applied inside this local group, so rotation cannot move
-            // MTEXT away from the declared 10/20 point.
-            double firstBaselineOffset = lineFontSizes.get(0) * 0.8;
-            double localBaselineY = firstBaselineOffset;
-            if (attachment == 4 || attachment == 5 || attachment == 6) {
-                localBaselineY = -(totalHeight / 2.0) + firstBaselineOffset;
-            } else if (attachment == 7 || attachment == 8 || attachment == 9) {
-                localBaselineY = -totalHeight + firstBaselineOffset;
-            }
+		int textDirection = 0;
 
-            String transform;
-            if (Math.abs(rotation) > 0.01) {
-                transform = String.format(Locale.US,
-                        "translate(%.6f %.6f) rotate(%.6f)", px, py, -rotation);
-            } else {
-                transform = String.format(Locale.US, "translate(%.6f %.6f)", px, py);
-            }
+		/**
+		 * Returns plain readable text from raw DXF MTEXT.
+		 *
+		 * This method is ONLY for logging / description. Do not replace the original
+		 * 'text' field with this value.
+		 */
+		String getPlainText() {
 
-            sb.append(String.format(Locale.US, "<g transform=\"%s\">", transform));
+			if (text == null || text.isEmpty()) {
+				return "";
+			}
 
-            // Single line - simple output
-            if (lines.size() == 1) {
-                sb.append(String.format(
-                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" stroke=\"none\" stroke-width=\"0\" " +
-                    "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"alphabetic\" xml:space=\"preserve\">%s</text>",
-                    0.0, localBaselineY, fontSize,
-                    resolveColor(doc, this),
-                    fontFamily, anchor, renderMTextRuns(lines.get(0), resolveColor(doc, this), fontSize, fontFamily)));
-            } else {
-                // Multiple lines with tspan
-                sb.append(String.format(
-                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" stroke=\"none\" stroke-width=\"0\" " +
-                    "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"alphabetic\" xml:space=\"preserve\">",
-                    0.0, localBaselineY, fontSize,
-                    resolveColor(doc, this),
-                    fontFamily, anchor));
-                    
-                for (int i = 0; i < lines.size(); i++) {
-                    if (i == 0) {
-                        sb.append(String.format("<tspan x=\"%.6f\" dy=\"0\">%s</tspan>",
-                                0.0, renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize, fontFamily)));
-                    } else {
-                        sb.append(String.format("<tspan x=\"%.6f\" dy=\"%.6f\">%s</tspan>",
-                                0.0, lineFontSizes.get(i - 1) * lineSpacingFactor,
-                                renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize, fontFamily)));
-                    }
-                }
-                sb.append("</text>");
-            }
-            sb.append("</g>");
-            
-            return sb.toString();
-        }
+			String raw = text;
 
+			// Normalize line breaks
+			raw = raw.replace("\r\n", "\n").replace("\r", "\n");
 
-    }
+			StringBuilder result = new StringBuilder();
 
-    // ── MTEXT wrapping ────────────────────────────────────────────────────────
-    /** Wrap width in drawing units: MTEXT width (group 41), else the distance to the right edge of the drawing geometry. */
-    static double mtextWrapWidth(DxfDocument doc, MTextEntity m) {
-        if (m.width > 0) return m.width;
-        if (doc != null && Double.isFinite(doc.contentRightX) && Math.abs(m.rotation) < 0.01
-                && (m.attachment == 1 || m.attachment == 4 || m.attachment == 7)) {
-            double h = m.height > 0 ? m.height : 2.5;
-            double avail = doc.contentRightX - m.x - 0.5 * h;
-            return avail > 0 ? avail : 0;
-        }
-        return 0;
-    }
+			int i = 0;
 
-    /** Right edge of all visible non-text geometry (the drawing frame/plan), used as the MTEXT wrap limit. */
-    static void computeContentRightX(DxfDocument doc) {
-        double maxX = -Double.MAX_VALUE;
-        boolean any = false;
-        for (Entity e : doc.entities) {
-            if (!e.visible || e instanceof TextEntity || e instanceof MTextEntity) continue;
-            Layer lay = doc.layers.get(e.layer.toUpperCase());
-            if (lay != null && !lay.visible) continue;
-            List<double[]> boxes = new ArrayList<>();
-            addEntityBox(doc, e, boxes, new ArrayList<>(), 0);
-            for (double[] b : boxes) { maxX = Math.max(maxX, b[2]); any = true; }
-        }
-        doc.contentRightX = any ? maxX : Double.NaN;
-    }
+			while (i < raw.length()) {
 
-    static int segLen(MTextSegment s) {
-        return s.isFraction ? s.fractionNum.length() + s.fractionDenom.length() + 1 : cleanMTextVisibleText(s.text).length();
-    }
+				char c = raw.charAt(i);
 
-    static MTextSegment copySeg(MTextSegment s, String text) {
-        MTextSegment c = new MTextSegment();
-        c.text = text; c.color = s.color; c.fontSize = s.fontSize; c.bold = s.bold; c.italic = s.italic;
-        c.underline = s.underline; c.fontName = s.fontName;
-        return c;
-    }
+				// =====================================================
+				// Formatting group
+				// Example:
+				// {\fConsolas|b0|i0|c0|p49;PLAN INFO\P...
+				// =====================================================
+				if (c == '{' || c == '}') {
 
-    static double lineWidth(List<MTextSegment> line, double base) {
-        double w = 0;
-        for (MTextSegment s : line) w += segLen(s) * TEXT_CHAR_W * (s.fontSize > 0 ? s.fontSize : base);
-        return w;
-    }
+					// Ignore formatting braces
+					i++;
+					continue;
+				}
 
-    static List<List<MTextSegment>> wrapLinesByWidth(List<List<MTextSegment>> lines, double maxW, double base) {
-        if (maxW <= 0) return lines;
-        List<List<MTextSegment>> out = new ArrayList<>();
-        for (List<MTextSegment> line : lines) {
-            if (lineWidth(line, base) <= maxW) { out.add(line); continue; }
-            List<MTextSegment> cur = new ArrayList<>();
-            double curW = 0;
-            for (MTextSegment s : line) {
-                double cw = TEXT_CHAR_W * (s.fontSize > 0 ? s.fontSize : base);
-                if (s.isFraction) {
-                    double w = segLen(s) * cw;
-                    if (curW + w > maxW && !cur.isEmpty()) { out.add(cur); cur = new ArrayList<>(); curW = 0; }
-                    cur.add(s); curW += w;
-                    continue;
-                }
-                int maxCh = Math.max(1, (int) Math.floor(maxW / cw));
-                for (String piece : cleanMTextVisibleText(s.text).split("(?<=[ ,/;])")) {
-                    if (piece.isEmpty()) continue;
-                    if (curW + piece.length() * cw > maxW && !cur.isEmpty()) { out.add(cur); cur = new ArrayList<>(); curW = 0; }
-                    while (piece.length() > maxCh) {
-                        List<MTextSegment> one = new ArrayList<>();
-                        one.add(copySeg(s, piece.substring(0, maxCh)));
-                        out.add(one);
-                        piece = piece.substring(maxCh);
-                    }
-                    if (cur.isEmpty()) piece = piece.replaceFirst("^ +", "");
-                    if (!piece.isEmpty()) { cur.add(copySeg(s, piece)); curW += piece.length() * cw; }
-                }
-            }
-            if (!cur.isEmpty()) out.add(cur);
-        }
-        return out;
-    }
+				// =====================================================
+				// DXF MTEXT escape/control sequence
+				// =====================================================
+				if (c == '\\' && i + 1 < raw.length()) {
+
+					char next = raw.charAt(i + 1);
+
+					// -------------------------------------------------
+					// Paragraph break
+					// -------------------------------------------------
+					if (next == 'P') {
+
+						result.append(' ');
+						i += 2;
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Line break
+					// -------------------------------------------------
+					if (next == 'n') {
+
+						result.append(' ');
+						i += 2;
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Non-breaking space
+					// -------------------------------------------------
+					if (next == '~') {
+
+						result.append(' ');
+						i += 2;
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Font
+					//
+					// \fConsolas|b0|i0|c0|p49;
+					// -------------------------------------------------
+					if (next == 'F' || next == 'f') {
+
+						i += 2;
+
+						while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\'
+								&& raw.charAt(i) != '}') {
+
+							i++;
+						}
+
+						if (i < raw.length() && raw.charAt(i) == ';') {
+
+							i++;
+						}
+
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Height
+					//
+					// \H0.42358x;
+					// -------------------------------------------------
+					if (next == 'H' || next == 'h') {
+
+						i += 2;
+
+						while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\'
+								&& raw.charAt(i) != '}') {
+
+							i++;
+						}
+
+						if (i < raw.length() && raw.charAt(i) == ';') {
+
+							i++;
+						}
+
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Color
+					//
+					// \C1;
+					// \cRRGGBB;
+					// -------------------------------------------------
+					if (next == 'C' || next == 'c') {
+
+						i += 2;
+
+						while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\'
+								&& raw.charAt(i) != '}') {
+
+							i++;
+						}
+
+						if (i < raw.length() && raw.charAt(i) == ';') {
+
+							i++;
+						}
+
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Paragraph formatting
+					//
+					// \p...
+					// -------------------------------------------------
+					if (next == 'p') {
+
+						i += 2;
+
+						while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\'
+								&& raw.charAt(i) != '}') {
+
+							i++;
+						}
+
+						if (i < raw.length() && raw.charAt(i) == ';') {
+
+							i++;
+						}
+
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Tracking / oblique / width / alignment
+					// -------------------------------------------------
+					if (next == 'T' || next == 'Q' || next == 'W' || next == 'A') {
+
+						i += 2;
+
+						while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\'
+								&& raw.charAt(i) != '}') {
+
+							i++;
+						}
+
+						if (i < raw.length() && raw.charAt(i) == ';') {
+
+							i++;
+						}
+
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Underline / overline / strike / bold / italic
+					// -------------------------------------------------
+					if (next == 'L' || next == 'l' || next == 'O' || next == 'o' || next == 'K' || next == 'k'
+							|| next == 'B' || next == 'b' || next == 'I' || next == 'i') {
+
+						i += 2;
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Stacked fraction
+					//
+					// \S1/2;
+					// \S1#2;
+					// \S1^2;
+					// -------------------------------------------------
+					if (next == 'S') {
+
+						i += 2;
+
+						StringBuilder fraction = new StringBuilder();
+
+						while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\'
+								&& raw.charAt(i) != '}') {
+
+							fraction.append(raw.charAt(i));
+							i++;
+						}
+
+						if (i < raw.length() && raw.charAt(i) == ';') {
+
+							i++;
+						}
+
+						result.append(fraction.toString().replace('#', '/').replace('^', '/'));
+
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Unicode
+					//
+					// \U+00B0;
+					// \U00B0;
+					// -------------------------------------------------
+					if (next == 'U' || next == 'u') {
+
+						i += 2;
+
+						if (i < raw.length() && raw.charAt(i) == '+') {
+
+							i++;
+						}
+
+						StringBuilder unicode = new StringBuilder();
+
+						while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\'
+								&& raw.charAt(i) != '}') {
+
+							unicode.append(raw.charAt(i));
+							i++;
+						}
+
+						if (i < raw.length() && raw.charAt(i) == ';') {
+
+							i++;
+						}
+
+						try {
+
+							int codePoint = Integer.parseInt(unicode.toString().trim(), 16);
+
+							if (Character.isValidCodePoint(codePoint)) {
+
+								result.appendCodePoint(codePoint);
+							}
+
+						} catch (NumberFormatException ignored) {
+						}
+
+						continue;
+					}
+
+					// -------------------------------------------------
+					// Escaped characters
+					// -------------------------------------------------
+					if (next == '\\' || next == '{' || next == '}') {
+
+						result.append(next);
+						i += 2;
+						continue;
+					}
+
+					// Unknown escape
+					i += 2;
+					continue;
+				}
+
+				// =====================================================
+				// AutoCAD special codes
+				// =====================================================
+				if (c == '%' && i + 2 < raw.length() && raw.charAt(i + 1) == '%') {
+
+					char special = raw.charAt(i + 2);
+
+					switch (special) {
+
+					case 'd':
+					case 'D':
+						result.append('\u00B0');
+						break;
+
+					case 'p':
+					case 'P':
+						result.append('\u00B1');
+						break;
+
+					case 'c':
+					case 'C':
+						result.append('\u2300');
+						break;
+
+					case '%':
+						result.append('%');
+						break;
+
+					default:
+						result.append('%').append('%').append(special);
+						break;
+					}
+
+					i += 3;
+					continue;
+				}
+
+				// =====================================================
+				// Normal newline
+				// =====================================================
+				if (c == '\n') {
+
+					result.append(' ');
+					i++;
+					continue;
+				}
+
+				// =====================================================
+				// Normal character
+				// =====================================================
+				result.append(c);
+				i++;
+			}
+
+			return result.toString().replaceAll("\\s+", " ").trim();
+		}
+
+		@Override
+		String toSvg(DxfDocument doc, double[] t) {
+
+			if (text == null || text.isEmpty()) {
+				return "";
+			}
+
+			double scale = t[0];
+
+			double px = tx(x, t);
+			double py = ty(y, t);
+
+			double fontSize = height * scale;
+
+			if (fontSize < 1.0) {
+				fontSize = 1.0;
+			}
+
+			String fontFamily = resolveFontFamily(doc, styleName);
+
+			// IMPORTANT:
+			// Use RAW MTEXT here.
+			List<MTextSegment> segments = parseMText(text, doc, styleName, fontSize, height);
+
+			// ---------------------------------------------------------
+			// Attachment
+			// ---------------------------------------------------------
+			String anchor = "start";
+			double textX = 0.0;
+
+			if (attachment == 2 || attachment == 5 || attachment == 8) {
+
+				anchor = "middle";
+
+			} else if (attachment == 3 || attachment == 6 || attachment == 9) {
+
+				anchor = "end";
+			}
+
+			/*
+			 * AutoCAD paragraph justification (for example \\pxqc;) is separate
+			 * from the MTEXT attachment point. DXF table cells commonly use a
+			 * top-left attachment with center-justified paragraph text; ignoring
+			 * this code places each value at the cell's left edge and can make it
+			 * appear outside its column.
+			 */
+			int paragraphAlignment = mtextParagraphAlignment(text);
+			if (paragraphAlignment >= 0 && width > 0.0) {
+				double boxWidth = width * scale;
+				double boxLeft = 0.0;
+				int attachmentColumn = (attachment - 1) % 3;
+				if (attachmentColumn == 1) boxLeft = -boxWidth / 2.0;
+				else if (attachmentColumn == 2) boxLeft = -boxWidth;
+
+				if (paragraphAlignment == 1) {
+					anchor = "middle";
+					textX = boxLeft + boxWidth / 2.0;
+				} else if (paragraphAlignment == 2) {
+					anchor = "end";
+					textX = boxLeft + boxWidth;
+				} else if (paragraphAlignment == 0) {
+					anchor = "start";
+					textX = boxLeft;
+				}
+			}
+
+			StringBuilder sb = new StringBuilder();
+
+			// ---------------------------------------------------------
+			// Split into lines
+			// ---------------------------------------------------------
+			List<List<MTextSegment>> lines = new ArrayList<>();
+
+			List<MTextSegment> currentLine = new ArrayList<>();
+
+			for (MTextSegment seg : segments) {
+
+				if (seg.isNewline) {
+
+					lines.add(currentLine);
+					currentLine = new ArrayList<>();
+
+				} else if (!seg.text.isEmpty() || seg.isFraction) {
+
+					currentLine.add(seg);
+				}
+			}
+
+			if (!currentLine.isEmpty()) {
+				lines.add(currentLine);
+			}
+
+			if (lines.isEmpty()) {
+				lines.add(new ArrayList<>());
+			}
+
+			// ---------------------------------------------------------
+			// Wrapping
+			// ---------------------------------------------------------
+			//lines = wrapLines(lines, maxCharsFor(mtextWrapWidth(doc, this), height));
+			lines = wrapLinesByWidth(lines, mtextWrapWidth(doc, this) * scale, fontSize);
+			
+			double effectiveLineSpacing = Math.max(1.0, lineSpacing > 0 ? lineSpacing : 1.0);
+
+			double lineSpacingFactor = 1.35 * effectiveLineSpacing;
+
+			List<Double> lineFontSizes = new ArrayList<>();
+
+			for (List<MTextSegment> line : lines) {
+
+				lineFontSizes.add(maxMTextLineFontSize(line, fontSize));
+			}
+
+			double totalHeight = 0.0;
+
+			for (int i = 0; i < lineFontSizes.size(); i++) {
+
+				if (i == 0) {
+
+					totalHeight += lineFontSizes.get(0);
+
+				} else {
+
+					totalHeight += lineFontSizes.get(i - 1) * lineSpacingFactor;
+				}
+			}
+
+			// ---------------------------------------------------------
+			// Attachment positioning
+			// ---------------------------------------------------------
+			double firstBaselineOffset = lineFontSizes.get(0) * 0.8;
+
+			double localBaselineY = firstBaselineOffset;
+
+			if (attachment == 4 || attachment == 5 || attachment == 6) {
+
+				localBaselineY = -(totalHeight / 2.0) + firstBaselineOffset;
+
+			} else if (attachment == 7 || attachment == 8 || attachment == 9) {
+
+				localBaselineY = -totalHeight + firstBaselineOffset;
+			}
+
+			// ---------------------------------------------------------
+			// Transform
+			// ---------------------------------------------------------
+			String transform;
+
+			if (Math.abs(rotation) > 0.01) {
+
+				transform = String.format(Locale.US, "translate(%.6f %.6f) rotate(%.6f)", px, py, -rotation);
+
+			} else {
+
+				transform = String.format(Locale.US, "translate(%.6f %.6f)", px, py);
+			}
+
+			sb.append(String.format(Locale.US, "<g transform=\"%s\">", transform));
+
+			// ---------------------------------------------------------
+			// Single line
+			// ---------------------------------------------------------
+			if (lines.size() == 1) {
+
+				sb.append(String.format(
+						"<text x=\"%.6f\" y=\"%.6f\" " + "font-size=\"%.6f\" fill=\"%s\" "
+								+ "stroke=\"none\" stroke-width=\"0\" " + "font-family=\"%s\" " + "text-anchor=\"%s\" "
+								+ "dominant-baseline=\"alphabetic\" " + "xml:space=\"preserve\">%s</text>",
+
+						textX, localBaselineY, fontSize, resolveColor(doc, this), fontFamily, anchor,
+
+						renderMTextRuns(lines.get(0), resolveColor(doc, this), fontSize, fontFamily)));
+
+			} else {
+
+				// -----------------------------------------------------
+				// Multiple lines
+				// -----------------------------------------------------
+				sb.append(String.format(
+						"<text x=\"%.6f\" y=\"%.6f\" " + "font-size=\"%.6f\" fill=\"%s\" "
+								+ "stroke=\"none\" stroke-width=\"0\" " + "font-family=\"%s\" " + "text-anchor=\"%s\" "
+								+ "dominant-baseline=\"alphabetic\" " + "xml:space=\"preserve\">",
+
+						textX, localBaselineY, fontSize, resolveColor(doc, this), fontFamily, anchor));
+
+				for (int i = 0; i < lines.size(); i++) {
+
+					if (i == 0) {
+
+						sb.append(String.format("<tspan x=\"%.6f\" dy=\"0\">%s</tspan>",
+
+								textX,
+
+								renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize, fontFamily)));
+
+					} else {
+
+						sb.append(String.format("<tspan x=\"%.6f\" dy=\"%.6f\">%s</tspan>",
+
+								textX,
+
+								lineFontSizes.get(i - 1) * lineSpacingFactor,
+
+								renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize, fontFamily)));
+					}
+				}
+
+				sb.append("</text>");
+			}
+
+			sb.append("</g>");
+
+			return sb.toString();
+		}
+	}
+//    static class MTextEntity extends Entity {
+//        double x, y, z;
+//        double height = 2.5;
+//        double width = 0;    // 0 = no wrapping
+//        String text = "";    // Raw MTEXT content (with { } codes)
+//        double rotation = 0; // In degrees (group 50) or radians from X-direction vector
+//        String xDir = "";    // Group 11,21,31 X-direction vector
+//        double xDirX = 1, xDirY = 0;
+//        int attachment = 1;  // 1=TL,2=TC,3=TR,4=ML,5=MC,6=MR,7=BL,8=BC,9=BR
+//        String styleName = "Standard";
+//        double lineSpacing = 1.0;
+//        int textDirection = 0; // Group code 74: 0=LTR, 1=RTL, 3=vertical
+//
+//        @Override
+//        String toSvg(DxfDocument doc, double[] t) {
+//            if (text.isEmpty()) return "";
+//            double scale = t[0];
+//            double px = tx(x, t);
+//            double py = ty(y, t);
+//            double fontSize = height * scale;
+//            // Enforce minimum font size to prevent text from becoming too small
+//            if (fontSize < 1.0) {
+//                fontSize = 1.0;
+//            }
+//
+//            String fontFamily = resolveFontFamily(doc, styleName);
+//            List<MTextSegment> segments = parseMText(text, doc, styleName, fontSize, height);
+//
+//            // Map attachment point to SVG text-anchor.
+//            // Attachment grid: 1=TL  2=TC  3=TR
+//            //                 4=ML  5=MC  6=MR
+//            //                 7=BL  8=BC  9=BR
+//            String anchor = "start";      // 1,4,7 = left
+//            if (attachment == 2 || attachment == 5 || attachment == 8) {
+//                anchor = "middle";  // center
+//            } else if (attachment == 3 || attachment == 6 || attachment == 9) {
+//                anchor = "end";     // right
+//            }
+//
+//            StringBuilder sb = new StringBuilder();
+//
+//            // Preserve MTEXT inline color/font runs while splitting into visual lines.
+//            List<List<MTextSegment>> lines = new ArrayList<>();
+//            List<MTextSegment> currentLine = new ArrayList<>();
+//            
+//            for (MTextSegment seg : segments) {
+//                if (seg.isNewline) {
+//                    lines.add(currentLine);
+//                    currentLine = new ArrayList<>();
+//                } else if (!seg.text.isEmpty() || seg.isFraction) {
+//                    currentLine.add(seg);
+//                }
+//            }
+//            if (!currentLine.isEmpty()) lines.add(currentLine);
+//            if (lines.isEmpty()) lines.add(new ArrayList<>());
+//            lines = wrapLines(lines, maxCharsFor(mtextWrapWidth(doc, this), height));
+//            double effectiveLineSpacing = Math.max(1.0, lineSpacing > 0 ? lineSpacing : 1.0);
+//            double lineSpacingFactor = 1.35 * effectiveLineSpacing;
+//            List<Double> lineFontSizes = new ArrayList<>();
+//            for (List<MTextSegment> line : lines) {
+//                lineFontSizes.add(maxMTextLineFontSize(line, fontSize));
+//            }
+//            double totalHeight = 0.0;
+//            for (int i = 0; i < lineFontSizes.size(); i++) {
+//                if (i == 0) totalHeight += lineFontSizes.get(0);
+//                else totalHeight += lineFontSizes.get(i - 1) * lineSpacingFactor;
+//            }
+//
+//            // Keep the DXF insertion point as the exact local origin. Attachment
+//            // offsets are applied inside this local group, so rotation cannot move
+//            // MTEXT away from the declared 10/20 point.
+//            double firstBaselineOffset = lineFontSizes.get(0) * 0.8;
+//            double localBaselineY = firstBaselineOffset;
+//            if (attachment == 4 || attachment == 5 || attachment == 6) {
+//                localBaselineY = -(totalHeight / 2.0) + firstBaselineOffset;
+//            } else if (attachment == 7 || attachment == 8 || attachment == 9) {
+//                localBaselineY = -totalHeight + firstBaselineOffset;
+//            }
+//
+//            String transform;
+//            if (Math.abs(rotation) > 0.01) {
+//                transform = String.format(Locale.US,
+//                        "translate(%.6f %.6f) rotate(%.6f)", px, py, -rotation);
+//            } else {
+//                transform = String.format(Locale.US, "translate(%.6f %.6f)", px, py);
+//            }
+//
+//            sb.append(String.format(Locale.US, "<g transform=\"%s\">", transform));
+//
+//            // Single line - simple output
+//            if (lines.size() == 1) {
+//                sb.append(String.format(
+//                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" stroke=\"none\" stroke-width=\"0\" " +
+//                    "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"alphabetic\" xml:space=\"preserve\">%s</text>",
+//                    0.0, localBaselineY, fontSize,
+//                    resolveColor(doc, this),
+//                    fontFamily, anchor, renderMTextRuns(lines.get(0), resolveColor(doc, this), fontSize, fontFamily)));
+//            } else {
+//                // Multiple lines with tspan
+//                sb.append(String.format(
+//                    "<text x=\"%.6f\" y=\"%.6f\" font-size=\"%.6f\" fill=\"%s\" stroke=\"none\" stroke-width=\"0\" " +
+//                    "font-family=\"%s\" text-anchor=\"%s\" dominant-baseline=\"alphabetic\" xml:space=\"preserve\">",
+//                    0.0, localBaselineY, fontSize,
+//                    resolveColor(doc, this),
+//                    fontFamily, anchor));
+//                    
+//                for (int i = 0; i < lines.size(); i++) {
+//                    if (i == 0) {
+//                        sb.append(String.format("<tspan x=\"%.6f\" dy=\"0\">%s</tspan>",
+//                                0.0, renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize, fontFamily)));
+//                    } else {
+//                        sb.append(String.format("<tspan x=\"%.6f\" dy=\"%.6f\">%s</tspan>",
+//                                0.0, lineFontSizes.get(i - 1) * lineSpacingFactor,
+//                                renderMTextRuns(lines.get(i), resolveColor(doc, this), fontSize, fontFamily)));
+//                    }
+//                }
+//                sb.append("</text>");
+//            }
+//            sb.append("</g>");
+//            
+//            return sb.toString();
+//        }
+//
+//
+//    }
 
     static String renderMTextRuns(List<MTextSegment> runs, String baseColor, double baseFontSize, String baseFontFamily) {
         StringBuilder out = new StringBuilder();
@@ -899,12 +1717,21 @@ public class DxfToPdfConverterv2 {
             // Insertion point in SVG coords
             double px = tx(x, t);
             double py = ty(y, t);
+            double rotationRadians = Math.toRadians(rotation);
+            double cos = Math.cos(rotationRadians), sin = Math.sin(rotationRadians);
 
             StringBuilder sb = new StringBuilder();
             for (int r = 0; r < Math.max(1, rows); r++) {
                 for (int c = 0; c < Math.max(1, cols); c++) {
-                    double ox = px + c * colSpacing * t[0];
-                    double oy = py - r * rowSpacing * t[0];
+                    // DXF array spacing is in the INSERT's local axes. Apply the
+                    // insert scale and rotation before converting it to SVG space.
+                    Block referencedBlock = doc.blocks.get(blockName.toUpperCase(Locale.ROOT));
+                    double offsetX = referencedBlock == null ? 0 : referencedBlock.renderOffsetX;
+                    double offsetY = referencedBlock == null ? 0 : referencedBlock.renderOffsetY;
+                    double localX = (offsetX + c * colSpacing) * scaleX;
+                    double localY = (offsetY + r * rowSpacing) * scaleY;
+                    double ox = px + (localX * cos - localY * sin) * t[0];
+                    double oy = py - (localX * sin + localY * cos) * t[0];
 
                     // Build transform: translate to insertion point, then scale and rotate
                     // Scale and rotation are applied around the symbol's own origin (base point)
@@ -920,9 +1747,14 @@ public class DxfToPdfConverterv2 {
                                 "translate(%.4f,%.4f)", ox, oy);
                     }
 
+                    String useColor = resolveColor(doc, this);
+                    // currentColor is valid for a child path's stroke/fill,
+                    // but Batik rejects it as the value of SVG's `color`
+                    // property. Let nested uses inherit the parent color.
+                    if ("currentColor".equalsIgnoreCase(useColor)) useColor = "inherit";
                     sb.append(String.format(
                             "<use xlink:href=\"#block_%s\" transform=\"%s\" color=\"%s\"/>\n",
-                            escapeXml(sanitizeId(blockName)), transform, resolveColor(doc, this)));
+                            escapeXml(sanitizeId(blockName)), transform, useColor));
                 }
             }
             return sb.toString();
@@ -1048,8 +1880,11 @@ public class DxfToPdfConverterv2 {
 
     // ── DXF Document ──────────────────────────────────────────────────────────
     static class DxfDocument {
+        /** Pattern-hatch line segments emitted so far for the SVG being generated (memory budget). */
+        int hatchSegmentsUsed = 0;
+        /** Line budget of every pattern hatch (whole-drawing budget / number of pattern hatches). */
+        int hatchShare = Integer.MAX_VALUE;
         Map<String, Layer> layers = new LinkedHashMap<>();
-        double contentRightX = Double.NaN;   // right edge of non-text geometry (wrap limit for long MTEXT)
         Map<String, TextStyle> textStyles = new LinkedHashMap<>();
         Map<String, Block> blocks = new LinkedHashMap<>();
         List<Entity> entities = new ArrayList<>();
@@ -1067,6 +1902,7 @@ public class DxfToPdfConverterv2 {
         // entities dropped far away by mistake). Each entry: {minX, minY, maxX,
         // maxY, entityCount}. Populated by computeExtents().
         List<double[]> excludedRegions = new ArrayList<>();
+        List<double[]> workSheetPolygon = null;
     }
 
     // ── Transform helpers ─────────────────────────────────────────────────────
@@ -1165,9 +2001,14 @@ public class DxfToPdfConverterv2 {
     }
 
     static String resolveColor(DxfDocument doc, String layerName, int colorIndex, int trueColor) {
+    	if (!isSystemLayer(layerName)) return UNDEFINED_LAYER_COLOR;
         if (trueColor >= 0) return trueColorToHex(trueColor);
         if (colorIndex == -1 || colorIndex == 256) { // BYLAYER
-            // Only use currentColor inside a block symbol definition (for ByBlock inheritance)
+            // SVG's currentColor keyword is valid for paint properties such as
+            // stroke, but Batik rejects it when used as the value of the color
+            // presentation attribute (for example on a nested <use>). Use the
+            // CSS inheritance keyword here so nested block references retain
+            // the INSERT's ByBlock color without invalidating the whole symbol.
             if (RENDERING_BLOCK_DEFINITION.get() && "0".equalsIgnoreCase(layerName)) {
                 return "currentColor";
             }
@@ -1179,7 +2020,8 @@ public class DxfToPdfConverterv2 {
                 colorIndex = 7; // default black
             }
         } else if (colorIndex == 0) {
-            // ByBlock: inside symbol → currentColor, outside → black
+            // ByBlock: inherit the color from the parent INSERT while inside
+            // a symbol; outside a symbol there is no parent block context.
             if (RENDERING_BLOCK_DEFINITION.get()) {
                 return "currentColor";
             }
@@ -1199,22 +2041,57 @@ public class DxfToPdfConverterv2 {
     }
 
     static double resolveLineWeight(DxfDocument doc, String layerName, double lw) {
-        if (lw < 0) {
+        boolean useDefault = lw == -3;
+        if (lw == -1 || lw == -2) {
             Layer layer = doc.layers.get(layerName.toUpperCase());
             if (layer != null && layer.lineWeight >= 0) lw = layer.lineWeight;
+            else useDefault = true;
         }
-        if (lw < 0) return 0.35;
-        double resolved = lw * 0.01; // lineweight in hundredths of mm
-        // Enforce a minimum visible stroke width — very thin lines disappear at scale
-        // DXF lineweight 0 = "default" which should render visibly
-        return Math.max(0.35, resolved);
+        if (lw < 0 && !useDefault) useDefault = true;
+
+        // SVG coordinates are pixels and the PDF transcoder maps them at 300 DPI.
+        // DXF lineweights are physical hundredths of a millimeter, so convert them
+        // to SVG pixels instead of treating millimeters as pixels (which made all
+        // plotted linework much thinner than the source CAD PDF).
+        double lineWeightMm;
+        if (useDefault || lw < 0) {
+            double[] defaultWeight = doc.headerVars.get("$LWDEFAULT");
+            lineWeightMm = defaultWeight != null && defaultWeight.length > 0 && defaultWeight[0] >= 0
+                    ? defaultWeight[0] * 0.01 : 0.25;
+        } else {
+            lineWeightMm = lw * 0.01;
+        }
+        double resolvedPixels = lineWeightMm * SvgToPdfConverter.DXF_RENDER_DPI / 25.4;
+        // ACI lineweight zero is a hairline; keep it visible at rasterized preview sizes.
+        return Math.max(0.35, resolvedPixels);
     }
 
-    static String resolveFontFamily(DxfDocument doc, String styleName) {
-        TextStyle style = doc.textStyles.get(styleName.toUpperCase());
-        if (style != null && !style.fontFile.isEmpty()) {
-            return mapDxfFontToWeb(style.fontFile);
+    static String resolveFontFamily(
+            DxfDocument doc,
+            String styleName) {
+
+        if (doc == null
+                || doc.textStyles == null
+                || styleName == null
+                || styleName.trim().isEmpty()) {
+
+            return "Arial, sans-serif";
         }
+
+        TextStyle style =
+                doc.textStyles.get(
+                        styleName.toUpperCase()
+                );
+
+        if (style != null
+                && style.fontFile != null
+                && !style.fontFile.isEmpty()) {
+
+            return mapDxfFontToWeb(
+                    style.fontFile
+            );
+        }
+
         return "Arial, sans-serif";
     }
 
@@ -1278,251 +2155,1075 @@ public class DxfToPdfConverterv2 {
      *        \\A0=bottom \\A1=center \\A2=top = alignment
      *        { } = group (save/restore)
      */
-    static List<MTextSegment> parseMText(String raw, DxfDocument doc, String baseStyle, double baseHeight) {
+	static int mtextParagraphAlignment(String raw) {
+		if (raw == null || raw.isEmpty()) return -1;
+		Matcher matcher = Pattern.compile("\\\\p[^;]*?q([lrcjd])", Pattern.CASE_INSENSITIVE).matcher(raw);
+		if (!matcher.find()) return -1;
+		switch (Character.toLowerCase(matcher.group(1).charAt(0))) {
+			case 'l': return 0;
+			case 'c': return 1;
+			case 'r': return 2;
+			case 'j': return 3;
+			case 'd': return 4;
+			default: return -1;
+		}
+	}
+
+	static List<MTextSegment> parseMText(String raw, DxfDocument doc, String baseStyle, double baseHeight) {
         return parseMText(raw, doc, baseStyle, baseHeight, 0);
     }
 
-    static List<MTextSegment> parseMText(String raw, DxfDocument doc, String baseStyle, double baseHeight, double baseDxfHeight) {
+    static List<MTextSegment> parseMText(
+            String raw,
+            DxfDocument doc,
+            String baseStyle,
+            double baseHeight,
+            double baseDxfHeight) {
+
         List<MTextSegment> result = new ArrayList<>();
-        if (raw == null || raw.isEmpty()) return result;
 
-        // Normalize line continuation
-        raw = raw.replace("\r\n", "\n").replace("\r", "\n");
+        if (raw == null || raw.isEmpty()) {
+            return result;
+        }
 
-        // State stack
+        // Normalize line endings
+        raw = raw.replace("\r\n", "\n")
+                 .replace("\r", "\n");
+
         Deque<MTextState> stack = new ArrayDeque<>();
+
         MTextState state = new MTextState();
         state.color = null;
         state.fontSize = baseHeight;
         state.fontFamily = resolveFontFamily(doc, baseStyle);
+
         stack.push(state.copy());
 
         int i = 0;
         StringBuilder buf = new StringBuilder();
 
         while (i < raw.length()) {
+
             char c = raw.charAt(i);
 
+            // =========================================================
+            // Opening formatting group
+            // =========================================================
             if (c == '{') {
-                // Push state
+
                 if (buf.length() > 0) {
                     result.add(stateSegment(buf.toString(), state));
-                    buf = new StringBuilder();
+                    buf.setLength(0);
                 }
+
                 stack.push(state.copy());
+
                 i++;
-            } else if (c == '}') {
+                continue;
+            }
+
+            // =========================================================
+            // Closing formatting group
+            // =========================================================
+            if (c == '}') {
+
                 if (buf.length() > 0) {
                     result.add(stateSegment(buf.toString(), state));
-                    buf = new StringBuilder();
+                    buf.setLength(0);
                 }
-                if (stack.size() > 1) state = stack.pop();
+
+                if (stack.size() > 1) {
+                    state = stack.pop();
+                }
+
                 i++;
-            } else if (c == '\\' && i + 1 < raw.length()) {
+                continue;
+            }
+
+            // =========================================================
+            // DXF MTEXT escape/control sequence
+            // =========================================================
+            if (c == '\\' && i + 1 < raw.length()) {
+
                 char next = raw.charAt(i + 1);
+
+                // -----------------------------------------------------
+                // Escaped backslash
+                // -----------------------------------------------------
                 if (next == '\\') {
-                    buf.append('\\'); i += 2;
-                } else if (next == '{') {
-                    buf.append('{'); i += 2;
-                } else if (next == '}') {
-                    buf.append('}'); i += 2;
-                } else if (next == 'P') {
-                    // Paragraph break
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    MTextSegment nl = new MTextSegment(); nl.isNewline = true; result.add(nl);
+                    buf.append('\\');
                     i += 2;
-                } else if (next == 'p') {
-                    // Paragraph formatting properties, e.g. \pi-0.8,l1.1,t1.1;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Escaped braces
+                // -----------------------------------------------------
+                if (next == '{') {
+                    buf.append('{');
                     i += 2;
-                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') i++;
-                    if (i < raw.length() && raw.charAt(i) == ';') i++;
-                } else if (next == 'n') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    MTextSegment nl = new MTextSegment(); nl.isNewline = true; result.add(nl);
+                    continue;
+                }
+
+                if (next == '}') {
+                    buf.append('}');
                     i += 2;
-                } else if (next == '~') {
-                    buf.append('\u00A0'); i += 2;
-                } else if (next == 'L') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.underline = true; i += 2;
-                } else if (next == 'l') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.underline = false; i += 2;
-                } else if (next == 'O') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.overline = true; i += 2;
-                } else if (next == 'o') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.overline = false; i += 2;
-                } else if (next == 'K') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.strikethrough = true; i += 2;
-                } else if (next == 'k') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.strikethrough = false; i += 2;
-                } else if (next == 'B') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.bold = true; i += 2;
-                } else if (next == 'b') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.bold = false; i += 2;
-                } else if (next == 'I') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.italic = true; i += 2;
-                } else if (next == 'i') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    state.italic = false; i += 2;
-                } else if (next == 'H' || next == 'h') {
-                    // \Hvalue; or \Hvaluex;  (x = relative)
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    i += 2;
-                    StringBuilder val = new StringBuilder();
-                    boolean relative = false;
-                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != ' ' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') {
-                        if (raw.charAt(i) == 'x' || raw.charAt(i) == 'X') relative = true;
-                        else val.append(raw.charAt(i));
-                        i++;
-                    }
-                    if (i < raw.length() && raw.charAt(i) == ';') i++;
-                    try {
-                        double h = Double.parseDouble(val.toString().trim());
-                        if (relative) {
-                            state.fontSize = state.fontSize * h;
-                        } else {
-                            state.fontSize = (baseDxfHeight > 0 && baseHeight > 0) ? (h * (baseHeight / baseDxfHeight)) : (h > 0 ? h : state.fontSize);
-                        }
-                    } catch (NumberFormatException ignored) {}
-                } else if (next == 'C' || next == 'c') {
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    if (next == 'C') {
-                        // ACI color
-                        i += 2;
-                        StringBuilder val = new StringBuilder();
-                        while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
-                        if (i < raw.length()) i++; // skip ;
-                        try {
-                            int aci = Integer.parseInt(val.toString().trim());
-                            state.color = aci < ACI_COLORS.length && ACI_COLORS[aci] != null
-                                ? ACI_COLORS[aci] : "#000000";
-                        } catch (NumberFormatException ignored) {}
-                    } else {
-                        // 24-bit color \cRRGGBB; (BGR in DXF)
-                        i += 2;
-                        StringBuilder val = new StringBuilder();
-                        while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
-                        if (i < raw.length()) i++;
-                        try {
-                            long bgr = Long.parseLong(val.toString().trim());
-                            int r2 = (int)(bgr & 0xFF);
-                            int g2 = (int)((bgr >> 8) & 0xFF);
-                            int b2 = (int)((bgr >> 16) & 0xFF);
-                            state.color = String.format("#%02X%02X%02X", r2, g2, b2);
-                        } catch (NumberFormatException ignored) {}
-                    }
-                } else if (next == 'F' || next == 'f') {
-                    // Font: \Ffontname; or \ffontname|b0|i0|c0|p0;
-                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                    i += 2;
-                    StringBuilder val = new StringBuilder();
-                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
-                    if (i < raw.length()) i++;
-                    String[] parts2 = val.toString().split("\\|");
-                    if (parts2.length > 0) {
-                        state.fontFamily = mapDxfFontToWeb(parts2[0].trim());
-                        if (parts2.length > 1) state.bold = parts2[1].equalsIgnoreCase("b1");
-                        if (parts2.length > 2) state.italic = parts2[2].equalsIgnoreCase("i1");
-                    }
-                } else if (next == 'T' || next == 'Q' || next == 'W' || next == 'A') {
-                    // Tracking, oblique, width, alignment - skip value
-                    i += 2;
-                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') i++;
-                    if (i < raw.length() && raw.charAt(i) == ';') i++;
-                } else if (next == 'S') {
-                    // Stacking: \Snum/denom; or \Snum#denom; or \Snum^denom;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Paragraph break
+                // \P
+                // -----------------------------------------------------
+                if (next == 'P') {
+
                     if (buf.length() > 0) {
                         result.add(stateSegment(buf.toString(), state));
-                        buf = new StringBuilder();
+                        buf.setLength(0);
                     }
+
+                    MTextSegment nl = new MTextSegment();
+                    nl.isNewline = true;
+                    result.add(nl);
+
                     i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Line break
+                // \n
+                // -----------------------------------------------------
+                if (next == 'n') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    MTextSegment nl = new MTextSegment();
+                    nl.isNewline = true;
+                    result.add(nl);
+
+                    i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Non-breaking space
+                // \~
+                // -----------------------------------------------------
+                if (next == '~') {
+                    buf.append('\u00A0');
+                    i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Paragraph formatting
+                // \p...;
+                // -----------------------------------------------------
+                if (next == 'p') {
+
+                    i += 2;
+
+                    while (i < raw.length()
+                            && raw.charAt(i) != ';'
+                            && raw.charAt(i) != '\\'
+                            && raw.charAt(i) != '}') {
+
+                        i++;
+                    }
+
+                    if (i < raw.length() && raw.charAt(i) == ';') {
+                        i++;
+                    }
+
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Underline ON
+                // \L
+                // -----------------------------------------------------
+                if (next == 'L') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    state.underline = true;
+
+                    i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Underline OFF
+                // \l
+                // -----------------------------------------------------
+                if (next == 'l') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    state.underline = false;
+
+                    i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Overline ON
+                // \O
+                // -----------------------------------------------------
+                if (next == 'O') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    state.overline = true;
+
+                    i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Overline OFF
+                // \o
+                // -----------------------------------------------------
+                if (next == 'o') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    state.overline = false;
+
+                    i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Strikethrough ON
+                // \K
+                // -----------------------------------------------------
+                if (next == 'K') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    state.strikethrough = true;
+
+                    i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Strikethrough OFF
+                // \k
+                // -----------------------------------------------------
+                if (next == 'k') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    state.strikethrough = false;
+
+                    i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Bold ON/OFF
+                // -----------------------------------------------------
+                if (next == 'B' || next == 'b') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    state.bold = next == 'B';
+
+                    i += 2;
+                    continue;
+                }
+
+                // -----------------------------------------------------
+                // Italic ON/OFF
+                // -----------------------------------------------------
+                if (next == 'I' || next == 'i') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    state.italic = next == 'I';
+
+                    i += 2;
+                    continue;
+                }
+
+                // =====================================================
+                // HEIGHT
+                // \Hvalue;
+                // \Hvaluex;
+                // =====================================================
+                if (next == 'H' || next == 'h') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    i += 2;
+
                     StringBuilder val = new StringBuilder();
-                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') {
+                    boolean relative = false;
+
+                    while (i < raw.length()
+                            && raw.charAt(i) != ';'
+                            && raw.charAt(i) != ' '
+                            && raw.charAt(i) != '\\'
+                            && raw.charAt(i) != '}') {
+
+                        char hc = raw.charAt(i);
+
+                        if (hc == 'x' || hc == 'X') {
+                            relative = true;
+                        } else {
+                            val.append(hc);
+                        }
+
+                        i++;
+                    }
+
+                    if (i < raw.length() && raw.charAt(i) == ';') {
+                        i++;
+                    }
+
+                    try {
+
+                        double h =
+                                Double.parseDouble(
+                                        val.toString().trim()
+                                );
+
+                        if (relative) {
+
+                            state.fontSize =
+                                    state.fontSize * h;
+
+                        } else {
+
+                            state.fontSize =
+                                    (baseDxfHeight > 0 && baseHeight > 0)
+                                    ? h * (baseHeight / baseDxfHeight)
+                                    : (h > 0 ? h : state.fontSize);
+                        }
+
+                    } catch (NumberFormatException ignored) {
+                    }
+
+                    continue;
+                }
+
+                // =====================================================
+                // COLOR
+                // \C1;
+                // \cRRGGBB;
+                // =====================================================
+                if (next == 'C' || next == 'c') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    i += 2;
+
+                    StringBuilder val = new StringBuilder();
+
+                    while (i < raw.length()
+                            && raw.charAt(i) != ';'
+                            && raw.charAt(i) != '\\'
+                            && raw.charAt(i) != '}') {
+
                         val.append(raw.charAt(i));
                         i++;
                     }
-                    if (i < raw.length() && raw.charAt(i) == ';') i++;
+
+                    if (i < raw.length() && raw.charAt(i) == ';') {
+                        i++;
+                    }
+
+                    try {
+
+                        if (next == 'C') {
+
+                            int aci =
+                                    Integer.parseInt(
+                                            val.toString().trim()
+                                    );
+
+                            if (aci >= 0
+                                    && aci < ACI_COLORS.length
+                                    && ACI_COLORS[aci] != null) {
+
+                                state.color =
+                                        ACI_COLORS[aci];
+                            } else {
+
+                                state.color = "#000000";
+                            }
+
+                        } else {
+
+                            long bgr =
+                                    Long.parseLong(
+                                            val.toString().trim()
+                                    );
+
+                            int r =
+                                    (int) (bgr & 0xFF);
+
+                            int g =
+                                    (int) ((bgr >> 8) & 0xFF);
+
+                            int b =
+                                    (int) ((bgr >> 16) & 0xFF);
+
+                            state.color =
+                                    String.format(
+                                            Locale.US,
+                                            "#%02X%02X%02X",
+                                            r,
+                                            g,
+                                            b
+                                    );
+                        }
+
+                    } catch (NumberFormatException ignored) {
+                    }
+
+                    continue;
+                }
+
+                // =====================================================
+                // FONT
+                //
+                // \FConsolas|b0|i0|c0|p49;
+                // =====================================================
+                if (next == 'F' || next == 'f') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    i += 2;
+
+                    StringBuilder val = new StringBuilder();
+
+                    while (i < raw.length()
+                            && raw.charAt(i) != ';'
+                            && raw.charAt(i) != '\\'
+                            && raw.charAt(i) != '}') {
+
+                        val.append(raw.charAt(i));
+                        i++;
+                    }
+
+                    if (i < raw.length() && raw.charAt(i) == ';') {
+                        i++;
+                    }
+
+                    String[] parts =
+                            val.toString().split("\\|");
+
+                    if (parts.length > 0) {
+
+                        String fontName =
+                                parts[0].trim();
+
+                        if (!fontName.isEmpty()) {
+                            state.fontFamily =
+                                    mapDxfFontToWeb(fontName);
+                        }
+                    }
+
+                    if (parts.length > 1) {
+                        state.bold =
+                                parts[1].equalsIgnoreCase("b1");
+                    }
+
+                    if (parts.length > 2) {
+                        state.italic =
+                                parts[2].equalsIgnoreCase("i1");
+                    }
+
+                    continue;
+                }
+
+                // =====================================================
+                // TRACKING / OBLIQUE / WIDTH / ALIGNMENT
+                //
+                // \T
+                // \Q
+                // \W
+                // \A
+                // =====================================================
+                if (next == 'T'
+                        || next == 'Q'
+                        || next == 'W'
+                        || next == 'A') {
+
+                    i += 2;
+
+                    while (i < raw.length()
+                            && raw.charAt(i) != ';'
+                            && raw.charAt(i) != '\\'
+                            && raw.charAt(i) != '}') {
+
+                        i++;
+                    }
+
+                    if (i < raw.length()
+                            && raw.charAt(i) == ';') {
+
+                        i++;
+                    }
+
+                    continue;
+                }
+
+                // =====================================================
+                // STACKED FRACTION
+                //
+                // \S1/2;
+                // \S1#2;
+                // \S1^2;
+                // =====================================================
+                if (next == 'S') {
+
+                    if (buf.length() > 0) {
+                        result.add(stateSegment(buf.toString(), state));
+                        buf.setLength(0);
+                    }
+
+                    i += 2;
+
+                    StringBuilder val = new StringBuilder();
+
+                    while (i < raw.length()
+                            && raw.charAt(i) != ';'
+                            && raw.charAt(i) != '\\'
+                            && raw.charAt(i) != '}') {
+
+                        val.append(raw.charAt(i));
+                        i++;
+                    }
+
+                    if (i < raw.length()
+                            && raw.charAt(i) == ';') {
+
+                        i++;
+                    }
+
                     String sv = val.toString();
+
                     char fracType = '/';
                     int delimIdx = -1;
+
                     for (int di = 0; di < sv.length(); di++) {
+
                         char ch = sv.charAt(di);
-                        if (ch == '/' || ch == '#' || ch == '^') {
+
+                        if (ch == '/'
+                                || ch == '#'
+                                || ch == '^') {
+
                             fracType = ch;
                             delimIdx = di;
                             break;
                         }
                     }
+
                     if (delimIdx >= 0) {
-                        String num = sv.substring(0, delimIdx);
-                        String denom = sv.substring(delimIdx + 1);
-                        MTextSegment fSeg = new MTextSegment();
+
+                        String num =
+                                sv.substring(0, delimIdx);
+
+                        String denom =
+                                sv.substring(delimIdx + 1);
+
+                        MTextSegment fSeg =
+                                new MTextSegment();
+
                         fSeg.isFraction = true;
                         fSeg.fractionType = fracType;
                         fSeg.fractionNum = num;
                         fSeg.fractionDenom = denom;
+
                         fSeg.fontSize = state.fontSize;
                         fSeg.color = state.color;
                         fSeg.fontName = state.fontFamily;
                         fSeg.bold = state.bold;
                         fSeg.italic = state.italic;
+
                         result.add(fSeg);
+
                     } else {
+
                         buf.append(sv);
                     }
-                } else if (next == 'U' || next == 'u') {
-                    // Unicode character \Unnnn;
+
+                    continue;
+                }
+
+                // =====================================================
+                // UNICODE
+                //
+                // \U+00B0
+                // \U00B0
+                // =====================================================
+                if (next == 'U' || next == 'u') {
+
                     i += 2;
-                    StringBuilder val = new StringBuilder();
-                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
-                    if (i < raw.length()) i++;
+
+                    StringBuilder val =
+                            new StringBuilder();
+
+                    if (i < raw.length()
+                            && raw.charAt(i) == '+') {
+
+                        i++;
+                    }
+
+                    while (i < raw.length()
+                            && raw.charAt(i) != ';'
+                            && raw.charAt(i) != '\\'
+                            && raw.charAt(i) != '}') {
+
+                        val.append(raw.charAt(i));
+                        i++;
+                    }
+
+                    if (i < raw.length()
+                            && raw.charAt(i) == ';') {
+
+                        i++;
+                    }
+
                     try {
-                        int codePoint = Integer.parseInt(val.toString().trim(), 16);
-                        buf.append((char) codePoint);
-                    } catch (NumberFormatException ignored) {}
-                } else {
-                    // Unknown escape - skip
-                    i += 2;
+
+                        int codePoint =
+                                Integer.parseInt(
+                                        val.toString().trim(),
+                                        16
+                                );
+
+                        if (Character.isValidCodePoint(codePoint)) {
+
+                            buf.appendCodePoint(codePoint);
+                        }
+
+                    } catch (NumberFormatException ignored) {
+                    }
+
+                    continue;
                 }
-            } else if (c == '%' && i + 2 < raw.length() && raw.charAt(i+1) == '%') {
-                // AutoCAD special: %%d=°  %%p=±  %%c=⌀  %%o=overline  %%u=underline  %%%=%
-                char special = raw.charAt(i + 2);
-                switch (special) {
-                    case '%': buf.append('%'); break;
-                    case 'd': case 'D': buf.append('\u00B0'); break;
-                    case 'p': case 'P': buf.append('\u00B1'); break;
-                    case 'c': case 'C': buf.append('\u2300'); break; // diameter
-                    case 'o': case 'O':
-                        if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                        state.overline = !state.overline;
-                        break;
-                    case 'u': case 'U':
-                        if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                        state.underline = !state.underline;
-                        break;
-                    default: buf.append('%').append('%').append(special);
-                }
-                i += 3;
-            } else if (c == '\n') {
-                if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
-                MTextSegment nl = new MTextSegment(); nl.isNewline = true; result.add(nl);
-                i++;
-            } else {
-                buf.append(c);
-                i++;
+
+                // -----------------------------------------------------
+                // Unknown escape
+                // -----------------------------------------------------
+                i += 2;
+                continue;
             }
+
+            // =========================================================
+            // AutoCAD special codes
+            //
+            // %%d = degree
+            // %%p = plus/minus
+            // %%c = diameter
+            // %%o = overline
+            // %%u = underline
+            // =========================================================
+            if (c == '%'
+                    && i + 2 < raw.length()
+                    && raw.charAt(i + 1) == '%') {
+
+                char special =
+                        raw.charAt(i + 2);
+
+                switch (special) {
+
+                    case '%':
+                        buf.append('%');
+                        break;
+
+                    case 'd':
+                    case 'D':
+                        buf.append('\u00B0');
+                        break;
+
+                    case 'p':
+                    case 'P':
+                        buf.append('\u00B1');
+                        break;
+
+                    case 'c':
+                    case 'C':
+                        buf.append('\u2300');
+                        break;
+
+                    case 'o':
+                    case 'O':
+
+                        if (buf.length() > 0) {
+                            result.add(
+                                    stateSegment(
+                                            buf.toString(),
+                                            state
+                                    )
+                            );
+                            buf.setLength(0);
+                        }
+
+                        state.overline =
+                                !state.overline;
+
+                        break;
+
+                    case 'u':
+                    case 'U':
+
+                        if (buf.length() > 0) {
+                            result.add(
+                                    stateSegment(
+                                            buf.toString(),
+                                            state
+                                    )
+                            );
+                            buf.setLength(0);
+                        }
+
+                        state.underline =
+                                !state.underline;
+
+                        break;
+
+                    default:
+
+                        buf.append("%%")
+                           .append(special);
+                }
+
+                i += 3;
+                continue;
+            }
+
+            // =========================================================
+            // Normal newline
+            // =========================================================
+            if (c == '\n') {
+
+                if (buf.length() > 0) {
+                    result.add(
+                            stateSegment(
+                                    buf.toString(),
+                                    state
+                            )
+                    );
+                    buf.setLength(0);
+                }
+
+                MTextSegment nl =
+                        new MTextSegment();
+
+                nl.isNewline = true;
+
+                result.add(nl);
+
+                i++;
+                continue;
+            }
+
+            // =========================================================
+            // Normal character
+            // =========================================================
+            buf.append(c);
+            i++;
         }
-        if (buf.length() > 0) result.add(stateSegment(buf.toString(), state));
+
+        // Flush remaining text
+        if (buf.length() > 0) {
+
+            result.add(
+                    stateSegment(
+                            buf.toString(),
+                            state
+                    )
+            );
+        }
+
         return result;
     }
+    
+//    static List<MTextSegment> parseMText(String raw, DxfDocument doc, String baseStyle, double baseHeight, double baseDxfHeight) {
+//        List<MTextSegment> result = new ArrayList<>();
+//        if (raw == null || raw.isEmpty()) return result;
+//
+//        // Normalize line continuation
+//        raw = raw.replace("\r\n", "\n").replace("\r", "\n");
+//
+//        // State stack
+//        Deque<MTextState> stack = new ArrayDeque<>();
+//        MTextState state = new MTextState();
+//        state.color = null;
+//        state.fontSize = baseHeight;
+//        state.fontFamily = resolveFontFamily(doc, baseStyle);
+//        stack.push(state.copy());
+//
+//        int i = 0;
+//        StringBuilder buf = new StringBuilder();
+//
+//        while (i < raw.length()) {
+//            char c = raw.charAt(i);
+//
+//            if (c == '{') {
+//                // Push state
+//                if (buf.length() > 0) {
+//                    result.add(stateSegment(buf.toString(), state));
+//                    buf = new StringBuilder();
+//                }
+//                stack.push(state.copy());
+//                i++;
+//            } else if (c == '}') {
+//                if (buf.length() > 0) {
+//                    result.add(stateSegment(buf.toString(), state));
+//                    buf = new StringBuilder();
+//                }
+//                if (stack.size() > 1) state = stack.pop();
+//                i++;
+//            } else if (c == '\\' && i + 1 < raw.length()) {
+//                char next = raw.charAt(i + 1);
+//                if (next == '\\') {
+//                    buf.append('\\'); i += 2;
+//                } else if (next == '{') {
+//                    buf.append('{'); i += 2;
+//                } else if (next == '}') {
+//                    buf.append('}'); i += 2;
+//                } else if (next == 'P') {
+//                    // Paragraph break
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    MTextSegment nl = new MTextSegment(); nl.isNewline = true; result.add(nl);
+//                    i += 2;
+//                } else if (next == 'p') {
+//                    // Paragraph formatting properties, e.g. \pi-0.8,l1.1,t1.1;
+//                    i += 2;
+//                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') i++;
+//                    if (i < raw.length() && raw.charAt(i) == ';') i++;
+//                } else if (next == 'n') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    MTextSegment nl = new MTextSegment(); nl.isNewline = true; result.add(nl);
+//                    i += 2;
+//                } else if (next == '~') {
+//                    buf.append('\u00A0'); i += 2;
+//                } else if (next == 'L') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.underline = true; i += 2;
+//                } else if (next == 'l') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.underline = false; i += 2;
+//                } else if (next == 'O') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.overline = true; i += 2;
+//                } else if (next == 'o') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.overline = false; i += 2;
+//                } else if (next == 'K') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.strikethrough = true; i += 2;
+//                } else if (next == 'k') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.strikethrough = false; i += 2;
+//                } else if (next == 'B') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.bold = true; i += 2;
+//                } else if (next == 'b') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.bold = false; i += 2;
+//                } else if (next == 'I') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.italic = true; i += 2;
+//                } else if (next == 'i') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    state.italic = false; i += 2;
+//                } else if (next == 'H' || next == 'h') {
+//                    // \Hvalue; or \Hvaluex;  (x = relative)
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    i += 2;
+//                    StringBuilder val = new StringBuilder();
+//                    boolean relative = false;
+//                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != ' ' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') {
+//                        if (raw.charAt(i) == 'x' || raw.charAt(i) == 'X') relative = true;
+//                        else val.append(raw.charAt(i));
+//                        i++;
+//                    }
+//                    if (i < raw.length() && raw.charAt(i) == ';') i++;
+//                    try {
+//                        double h = Double.parseDouble(val.toString().trim());
+//                        if (relative) {
+//                            state.fontSize = state.fontSize * h;
+//                        } else {
+//                            state.fontSize = (baseDxfHeight > 0 && baseHeight > 0) ? (h * (baseHeight / baseDxfHeight)) : (h > 0 ? h : state.fontSize);
+//                        }
+//                    } catch (NumberFormatException ignored) {}
+//                } else if (next == 'C' || next == 'c') {
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    if (next == 'C') {
+//                        // ACI color
+//                        i += 2;
+//                        StringBuilder val = new StringBuilder();
+//                        while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
+//                        if (i < raw.length()) i++; // skip ;
+//                        try {
+//                            int aci = Integer.parseInt(val.toString().trim());
+//                            state.color = aci < ACI_COLORS.length && ACI_COLORS[aci] != null
+//                                ? ACI_COLORS[aci] : "#000000";
+//                        } catch (NumberFormatException ignored) {}
+//                    } else {
+//                        // 24-bit color \cRRGGBB; (BGR in DXF)
+//                        i += 2;
+//                        StringBuilder val = new StringBuilder();
+//                        while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
+//                        if (i < raw.length()) i++;
+//                        try {
+//                            long bgr = Long.parseLong(val.toString().trim());
+//                            int r2 = (int)(bgr & 0xFF);
+//                            int g2 = (int)((bgr >> 8) & 0xFF);
+//                            int b2 = (int)((bgr >> 16) & 0xFF);
+//                            state.color = String.format("#%02X%02X%02X", r2, g2, b2);
+//                        } catch (NumberFormatException ignored) {}
+//                    }
+//                } else if (next == 'F' || next == 'f') {
+//                    // Font: \Ffontname; or \ffontname|b0|i0|c0|p0;
+//                    if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                    i += 2;
+//                    StringBuilder val = new StringBuilder();
+//                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
+//                    if (i < raw.length()) i++;
+//                    String[] parts2 = val.toString().split("\\|");
+//                    if (parts2.length > 0) {
+//                        state.fontFamily = mapDxfFontToWeb(parts2[0].trim());
+//                        if (parts2.length > 1) state.bold = parts2[1].equalsIgnoreCase("b1");
+//                        if (parts2.length > 2) state.italic = parts2[2].equalsIgnoreCase("i1");
+//                    }
+//                } else if (next == 'T' || next == 'Q' || next == 'W' || next == 'A') {
+//                    // Tracking, oblique, width, alignment - skip value
+//                    i += 2;
+//                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') i++;
+//                    if (i < raw.length() && raw.charAt(i) == ';') i++;
+//                } else if (next == 'S') {
+//                    // Stacking: \Snum/denom; or \Snum#denom; or \Snum^denom;
+//                    if (buf.length() > 0) {
+//                        result.add(stateSegment(buf.toString(), state));
+//                        buf = new StringBuilder();
+//                    }
+//                    i += 2;
+//                    StringBuilder val = new StringBuilder();
+//                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') {
+//                        val.append(raw.charAt(i));
+//                        i++;
+//                    }
+//                    if (i < raw.length() && raw.charAt(i) == ';') i++;
+//                    String sv = val.toString();
+//                    char fracType = '/';
+//                    int delimIdx = -1;
+//                    for (int di = 0; di < sv.length(); di++) {
+//                        char ch = sv.charAt(di);
+//                        if (ch == '/' || ch == '#' || ch == '^') {
+//                            fracType = ch;
+//                            delimIdx = di;
+//                            break;
+//                        }
+//                    }
+//                    if (delimIdx >= 0) {
+//                        String num = sv.substring(0, delimIdx);
+//                        String denom = sv.substring(delimIdx + 1);
+//                        MTextSegment fSeg = new MTextSegment();
+//                        fSeg.isFraction = true;
+//                        fSeg.fractionType = fracType;
+//                        fSeg.fractionNum = num;
+//                        fSeg.fractionDenom = denom;
+//                        fSeg.fontSize = state.fontSize;
+//                        fSeg.color = state.color;
+//                        fSeg.fontName = state.fontFamily;
+//                        fSeg.bold = state.bold;
+//                        fSeg.italic = state.italic;
+//                        result.add(fSeg);
+//                    } else {
+//                        buf.append(sv);
+//                    }
+//                } else if (next == 'U' || next == 'u') {
+//                    // Unicode character \Unnnn;
+//                    i += 2;
+//                    StringBuilder val = new StringBuilder();
+//                    while (i < raw.length() && raw.charAt(i) != ';' && raw.charAt(i) != '\\' && raw.charAt(i) != '}') { val.append(raw.charAt(i)); i++; }
+//                    if (i < raw.length()) i++;
+//                    try {
+//                        int codePoint = Integer.parseInt(val.toString().trim(), 16);
+//                        buf.append((char) codePoint);
+//                    } catch (NumberFormatException ignored) {}
+//                } else {
+//                    // Unknown escape - skip
+//                    i += 2;
+//                }
+//            } else if (c == '%' && i + 2 < raw.length() && raw.charAt(i+1) == '%') {
+//                // AutoCAD special: %%d=°  %%p=±  %%c=⌀  %%o=overline  %%u=underline  %%%=%
+//                char special = raw.charAt(i + 2);
+//                switch (special) {
+//                    case '%': buf.append('%'); break;
+//                    case 'd': case 'D': buf.append('\u00B0'); break;
+//                    case 'p': case 'P': buf.append('\u00B1'); break;
+//                    case 'c': case 'C': buf.append('\u2300'); break; // diameter
+//                    case 'o': case 'O':
+//                        if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                        state.overline = !state.overline;
+//                        break;
+//                    case 'u': case 'U':
+//                        if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                        state.underline = !state.underline;
+//                        break;
+//                    default: buf.append('%').append('%').append(special);
+//                }
+//                i += 3;
+//            } else if (c == '\n') {
+//                if (buf.length() > 0) { result.add(stateSegment(buf.toString(), state)); buf = new StringBuilder(); }
+//                MTextSegment nl = new MTextSegment(); nl.isNewline = true; result.add(nl);
+//                i++;
+//            } else {
+//                buf.append(c);
+//                i++;
+//            }
+//        }
+//        if (buf.length() > 0) result.add(stateSegment(buf.toString(), state));
+//        return result;
+//    }
 
     static MTextSegment stateSegment(String text, MTextState state) {
         MTextSegment seg = new MTextSegment();
@@ -1625,7 +3326,9 @@ public class DxfToPdfConverterv2 {
         for (Block b : doc.blocks.values()) {
             mergeAdjacentCollinearText(b.entities);
         }
-        computeContentRightX(doc);
+        
+        detectWorkSheetBorder(doc);
+        
         computeExtents(doc);
         detectApprovalPlanTitles(doc);
 
@@ -1724,6 +3427,7 @@ public class DxfToPdfConverterv2 {
                     if (c == 10) { arr[0] = v; }
                     else if (c == 20) { arr[1] = v; }
                     else if (c == 30) { arr[2] = v; }
+                    else { arr[0] = v; }
                     doc.headerVars.put(currentVar, arr);
                 } catch (NumberFormatException ignored) {}
             }
@@ -1862,6 +3566,7 @@ public class DxfToPdfConverterv2 {
                     case "LWPOLYLINE": { PolylineEntity e = new PolylineEntity(); idx = parseLwPolyline(tokens, idx, e);   entityList.add(e); break; }
                     case "SPLINE":     { SplineEntity e = new SplineEntity();   idx = parseSplineEntity(tokens, idx, e);    entityList.add(e); break; }
                     case "HATCH":      { HatchEntity e = new HatchEntity();     idx = parseHatchEntity(tokens, idx, e);     entityList.add(e); break; }
+                    case "MLINE":      { MlineEntity e = new MlineEntity();     idx = parseMlineEntity(tokens, idx, e);     entityList.add(e); break; }
                     case "TEXT":       { TextEntity e = new TextEntity();       idx = parseTextEntity(tokens, idx, e);      entityList.add(e); break; }
                     case "MTEXT":      { MTextEntity e = new MTextEntity();     idx = parseMTextEntity(tokens, idx, e);     entityList.add(e); break; }
                     case "INSERT":     { InsertEntity e = new InsertEntity();   idx = parseInsertEntity(tokens, idx, e);    entityList.add(e); break; }
@@ -1886,7 +3591,8 @@ public class DxfToPdfConverterv2 {
     static void applyCommonCode(String[] tok, Entity e) {
         try {
             int c = Integer.parseInt(tok[0].trim());
-            if (c == 8) e.layer = tok[1].trim();
+            if (c == 5) e.handle = tok[1].trim();
+            else if (c == 8) e.layer = tok[1].trim();
             else if (c == 62) e.colorIndex = Integer.parseInt(tok[1].trim());
             else if (c == 420) e.trueColor = Integer.parseInt(tok[1].trim());
             else if (c == 6) e.lineType = tok[1].trim();
@@ -2073,7 +3779,9 @@ public class DxfToPdfConverterv2 {
         double pendingX = 0;
         boolean waitingForY = false;
         boolean inBoundaryData = false;
+        boolean inPatternData = false;
         List<double[]> currentLoop = null;
+        HatchPatternLine currentPatternLine = null;
         while (idx < tokens.size() && !tokens.get(idx)[0].equals("0")) {
             String[] tok = tokens.get(idx);
             applyCommonCode(tok, e);
@@ -2084,6 +3792,10 @@ public class DxfToPdfConverterv2 {
                 else if (c == 52) e.angle = Double.parseDouble(tok[1].trim());
                 else if (c == 41) e.scale = Double.parseDouble(tok[1].trim());
                 else if (c == 91) inBoundaryData = Integer.parseInt(tok[1].trim()) > 0;
+                else if (c == 78) inPatternData = Integer.parseInt(tok[1].trim()) > 0;
+                // Boundary paths end before the hatch style/pattern-definition fields.
+                // Do not mistake pattern-line origins for additional boundary vertices.
+                else if (c == 75 || c == 76 || c == 78 || c == 98) inBoundaryData = false;
                 else if (c == 92 && inBoundaryData) {
                     if (currentLoop != null && !currentLoop.isEmpty()) {
                         e.boundaryLoops.add(currentLoop);
@@ -2095,12 +3807,72 @@ public class DxfToPdfConverterv2 {
                 } else if ((c == 20 || c == 21) && waitingForY && currentLoop != null) {
                     currentLoop.add(new double[]{pendingX, Double.parseDouble(tok[1].trim())});
                     waitingForY = false;
+                } else if (inPatternData && c == 53) {
+                    currentPatternLine = new HatchPatternLine();
+                    currentPatternLine.angle = Double.parseDouble(tok[1].trim());
+                    e.patternLines.add(currentPatternLine);
+                } else if (inPatternData && currentPatternLine != null && c == 43) {
+                    currentPatternLine.originX = Double.parseDouble(tok[1].trim());
+                } else if (inPatternData && currentPatternLine != null && c == 44) {
+                    currentPatternLine.originY = Double.parseDouble(tok[1].trim());
+                } else if (inPatternData && currentPatternLine != null && c == 45) {
+                    currentPatternLine.offsetX = Double.parseDouble(tok[1].trim());
+                } else if (inPatternData && currentPatternLine != null && c == 46) {
+                    currentPatternLine.offsetY = Double.parseDouble(tok[1].trim());
+                } else if (inPatternData && currentPatternLine != null && c == 49) {
+                    currentPatternLine.dashes.add(Double.parseDouble(tok[1].trim()));
                 }
             } catch (NumberFormatException ignored) {}
             idx++;
         }
         if (currentLoop != null && !currentLoop.isEmpty()) {
             e.boundaryLoops.add(currentLoop);
+        }
+        return idx;
+    }
+
+    static int parseMlineEntity(List<String[]> tokens, int idx, MlineEntity e) {
+        MlineVertex currentVertex = null;
+        List<Double> currentParameters = null;
+        int parametersRemaining = 0;
+        while (idx < tokens.size() && !tokens.get(idx)[0].equals("0")) {
+            String[] tok = tokens.get(idx);
+            applyCommonCode(tok, e);
+            try {
+                int code = Integer.parseInt(tok[0].trim());
+                if (code == 2) {
+                    e.styleName = tok[1].trim();
+                    idx++;
+                    continue;
+                }
+                double value = Double.parseDouble(tok[1].trim());
+                if (code == 40) e.scale = value;
+                else if (code == 70) e.flags = (int) value;
+                else if (code == 73) e.elementCount = (int) value;
+                else if (code == 11) {
+                    currentVertex = new MlineVertex();
+                    currentVertex.x = value;
+                    e.vertices.add(currentVertex);
+                    currentParameters = null;
+                    parametersRemaining = 0;
+                } else if (currentVertex != null && code == 21) currentVertex.y = value;
+                else if (currentVertex != null && code == 12) currentVertex.directionX = value;
+                else if (currentVertex != null && code == 22) currentVertex.directionY = value;
+                else if (currentVertex != null && code == 13) currentVertex.miterX = value;
+                else if (currentVertex != null && code == 23) currentVertex.miterY = value;
+                else if (currentVertex != null && code == 74) {
+                    currentParameters = new ArrayList<>();
+                    currentVertex.elementParameters.add(new double[0]);
+                    parametersRemaining = (int) value;
+                } else if (currentVertex != null && code == 41 && currentParameters != null
+                        && parametersRemaining > 0) {
+                    currentParameters.add(value);
+                    currentVertex.elementParameters.set(currentVertex.elementParameters.size() - 1,
+                            currentParameters.stream().mapToDouble(Double::doubleValue).toArray());
+                    if (--parametersRemaining == 0) currentParameters = null;
+                }
+            } catch (NumberFormatException ignored) {}
+            idx++;
         }
         return idx;
     }
@@ -2129,7 +3901,8 @@ public class DxfToPdfConverterv2 {
             idx++;
         }
         // Use alignment point if specified
-        if (!Double.isNaN(e.secondX) && !Double.isNaN(e.secondY)
+        if (e.hJustify != 3 && e.hJustify != 5
+                && !Double.isNaN(e.secondX) && !Double.isNaN(e.secondY)
                 && (e.hJustify > 0 || e.vJustify > 0)
                 && (Math.abs(e.secondX - e.x) > 1e-6 || Math.abs(e.secondY - e.y) > 1e-6)) {
             e.x = e.secondX;
@@ -2313,11 +4086,27 @@ public class DxfToPdfConverterv2 {
 
     // ── Extents computation ───────────────────────────────────────────────────
     static void computeExtents(DxfDocument doc) {
+    	doc.excludedRegions.clear();
+
+        if (doc.workSheetPolygon != null) {
+            double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+            double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+            for (double[] p : doc.workSheetPolygon) {
+                minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+                minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+            }
+            doc.minX = minX; doc.minY = minY; doc.maxX = maxX; doc.maxY = maxY;
+            doc.extentsSet = true;
+            LOG.info("Page-fit locked to {} border: [{}, {}] to [{}, {}]", WORK_SHEET_LAYER, minX, minY, maxX, maxY);
+            return;
+        }
+
+    
     List<double[]> entityBoxes = new ArrayList<>();
     List<String> entityLabels = new ArrayList<>();
     collectEntityBoxes(doc, entityBoxes, entityLabels);
 
-    doc.excludedRegions.clear();
+    //doc.excludedRegions.clear();
 
     if (entityBoxes.isEmpty()) {
         useHeaderOrDefaultExtents(doc);
@@ -2682,7 +4471,7 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                 && maxX >= minX && maxY >= minY;
     }
 
-    private static void addEntityBox(DxfDocument doc, Entity e, List<double[]> boxes, List<String> labels, int depth) {
+    static void addEntityBox(DxfDocument doc, Entity e, List<double[]> boxes, List<String> labels, int depth) {
         String label = e.layer + "/" + e.getClass().getSimpleName();
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
         boolean valid = false;
@@ -2748,6 +4537,27 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                     }
                 }
             }
+        } else if (e instanceof HatchEntity) {
+            for (List<double[]> loop : ((HatchEntity) e).boundaryLoops) {
+                if (loop == null) continue;
+                for (double[] p : loop) {
+                    if (p == null || p.length < 2 || !isValidCoordinate(p[0]) || !isValidCoordinate(p[1])) continue;
+                    minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+                    minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+                    valid = true;
+                }
+            }
+        } else if (e instanceof MlineEntity) {
+            MlineEntity mline = (MlineEntity) e;
+            for (MlineVertex vertex : mline.vertices) {
+                for (int element = 0; element < Math.min(mline.elementCount, vertex.elementParameters.size()); element++) {
+                    double[] p = vertex.pointForElement(element);
+                    if (!isValidCoordinate(p[0]) || !isValidCoordinate(p[1])) continue;
+                    minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+                    minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+                    valid = true;
+                }
+            }
         } else if (e instanceof SplineEntity) {
             SplineEntity s = (SplineEntity) e;
             List<double[]> pts = s.controlPoints.isEmpty() ? s.fitPoints : s.controlPoints;
@@ -2759,30 +4569,40 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                 }
             }
         } else if (e instanceof TextEntity) {
-            TextEntity t = (TextEntity) e;
+//            TextEntity t = (TextEntity) e;
+//            if (isValidCoordinate(t.x) && isValidCoordinate(t.y)) {
+//                minX = maxX = t.x; minY = maxY = t.y;
+//                double h = (t.height > 0 && isValidCoordinate(t.height)) ? t.height : 2.5;
+//                String txt = processTextCodes(t.text);
+//                double w = (txt != null && !txt.trim().isEmpty()) ? Math.min(txt.length() * 0.7 * h, 100.0 * h) : h;
+//                double rad = Math.toRadians(t.rotation);
+//                double endX = t.x + w * Math.cos(rad);
+//                double endY = t.y + w * Math.sin(rad);
+//                minX = Math.min(minX, endX); maxX = Math.max(maxX, endX);
+//                minY = Math.min(minY, endY); maxY = Math.max(maxY, endY);
+//                minY = Math.min(minY, t.y + h); maxY = Math.max(maxY, t.y + h);
+//                valid = true;
+//            }
+        	TextEntity t = (TextEntity) e;
             if (isValidCoordinate(t.x) && isValidCoordinate(t.y)) {
-                minX = maxX = t.x; minY = maxY = t.y;
-                double h = (t.height > 0 && isValidCoordinate(t.height)) ? t.height : 2.5;
-                String txt = processTextCodes(t.text);
-                double w = (txt != null && !txt.trim().isEmpty()) ? Math.min(txt.length() * 0.7 * h, 100.0 * h) : h;
-                double rad = Math.toRadians(t.rotation);
-                double endX = t.x + w * Math.cos(rad);
-                double endY = t.y + w * Math.sin(rad);
-                minX = Math.min(minX, endX); maxX = Math.max(maxX, endX);
-                minY = Math.min(minY, endY); maxY = Math.max(maxY, endY);
-                minY = Math.min(minY, t.y + h); maxY = Math.max(maxY, t.y + h);
+                double[] bb = cornersToAabb(textCorners(t));
+                minX = bb[0]; minY = bb[1]; maxX = bb[2]; maxY = bb[3];
                 valid = true;
             }
         } else if (e instanceof MTextEntity) {
-            MTextEntity m = (MTextEntity) e;
+//            MTextEntity m = (MTextEntity) e;
+//            if (isValidCoordinate(m.x) && isValidCoordinate(m.y)) {
+//                minX = maxX = m.x; minY = maxY = m.y;
+//                double h = (m.height > 0 && isValidCoordinate(m.height)) ? m.height : 2.5;
+//                double w = (m.width > 0 && isValidCoordinate(m.width)) ? m.width : (m.text != null ? Math.min(m.text.length() * 0.7 * h, 100.0 * h) : h);
+//                minX = Math.min(minX, m.x + w); maxX = Math.max(maxX, m.x + w);
+//                minY = Math.min(minY, m.y - h); maxY = Math.max(maxY, m.y + h);
+//                valid = true;
+//            }
+        	MTextEntity m = (MTextEntity) e;
             if (isValidCoordinate(m.x) && isValidCoordinate(m.y)) {
-                minX = maxX = m.x; minY = maxY = m.y;
-                double h = (m.height > 0 && isValidCoordinate(m.height)) ? m.height : 2.5;
-                double w = (m.width > 0 && isValidCoordinate(m.width)) ? m.width : (m.text != null ? Math.min(m.text.length() * 0.7 * h, 100.0 * h) : h);
-                double wrapW = mtextWrapWidth(doc, m);
-                if (m.width <= 0 && wrapW > 0) w = Math.min(w, wrapW);   // wrapped text never extends past the drawing
-                minX = Math.min(minX, m.x + w); maxX = Math.max(maxX, m.x + w);
-                minY = Math.min(minY, m.y - h); maxY = Math.max(maxY, m.y + h);
+                double[] bb = cornersToAabb(mtextCorners(doc, m));
+                minX = bb[0]; minY = bb[1]; maxX = bb[2]; maxY = bb[3];
                 valid = true;
             }
         } else if (e instanceof InsertEntity) {
@@ -2957,134 +4777,6 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
 
     // ── SVG GENERATOR ─────────────────────────────────────────────────────────
 
-    public static String generateSvg(DxfDocument doc, int targetWidthPx, int targetHeightPx) {
-        if (targetWidthPx <= 0) targetWidthPx = 3508;
-        if (targetHeightPx <= 0) targetHeightPx = 2480;
-
-        // Compute transform
-        double dxfW = doc.maxX - doc.minX;
-        double dxfH = doc.maxY - doc.minY;
-        if (!Double.isFinite(dxfW) || dxfW <= 0.001) dxfW = 1.0;
-        if (!Double.isFinite(dxfH) || dxfH <= 0.001) dxfH = 1.0;
-
-        // Add 2% margin
-        double margin = 0.02;
-        double mw = dxfW * margin;
-        double mh = dxfH * margin;
-        double adjMinX = doc.minX - mw, adjMinY = doc.minY - mh;
-        double adjMaxX = doc.maxX + mw, adjMaxY = doc.maxY + mh;
-        dxfW = adjMaxX - adjMinX;
-        dxfH = adjMaxY - adjMinY;
-
-        // Fit to a fixed target canvas keeping aspect ratio.
-        double scale = Math.min(targetWidthPx / dxfW, targetHeightPx / dxfH);
-        if (!Double.isFinite(scale) || scale <= 0) scale = 1.0;
-        double drawnW = dxfW * scale;
-        double drawnH = dxfH * scale;
-        double offsetX = (targetWidthPx - drawnW) / 2.0;
-        double offsetY = (targetHeightPx - drawnH) / 2.0;
-
-        // transform: [scale, translateX, translateY, viewHeight]
-        // tx(x) = offsetX + (x - adjMinX) * scale
-        // ty(y) = offsetY + drawnH - (y - adjMinY) * scale
-        double[] t = new double[]{scale, offsetX - adjMinX * scale, -adjMinY * scale, offsetY + drawnH};
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format(Locale.US,
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" " +
-            "xmlns:xlink=\"http://www.w3.org/1999/xlink\" " +
-            "width=\"%.2fpx\" height=\"%.2fpx\" " +
-            "viewBox=\"0 0 %.4f %.4f\">\n",
-            (double) targetWidthPx, (double) targetHeightPx, (double) targetWidthPx, (double) targetHeightPx));
-
-        // Defs: block symbols + arrowhead marker
-        sb.append("<defs>\n");
-        sb.append("<marker id=\"arrow\" markerWidth=\"10\" markerHeight=\"7\" " +
-                  "refX=\"10\" refY=\"3.5\" orient=\"auto\">" +
-                  "<polygon points=\"0 0, 10 3.5, 0 7\" fill=\"#000000\"/></marker>\n");
-
-            // Render block definitions
-    // FIND this entire defs block loop and REPLACE:
-    for (Map.Entry<String, Block> entry : doc.blocks.entrySet()) {
-        Block block = entry.getValue();
-        // Skip only true model/paper space blocks
-        if (block.name.equalsIgnoreCase("*Model_Space") ||
-                block.name.equalsIgnoreCase("*Paper_Space") ||
-                block.name.toLowerCase().startsWith("*paper_space")) continue;
-
-        String safeId = sanitizeId(block.name);
-        sb.append(String.format("<symbol id=\"block_%s\" overflow=\"visible\">\n", safeId));
-
-        // Block symbols must be local to their own base point. Do not include
-        // the drawing/page translation here, because INSERT applies that when
-        // the symbol is reused at the actual DXF insertion point.
-        double[] blockT = new double[]{
-                t[0],
-                -block.baseX * t[0],
-                -block.baseY * t[0],
-                0
-        };
-
-        // Set flag to indicate we're rendering inside a block definition
-        RENDERING_BLOCK_DEFINITION.set(true);
-        try {
-            for (Entity e : block.entities) {
-                if (!e.visible) continue;
-                try {
-                    String svg = e.toSvg(doc, blockT);
-                    if (!svg.isEmpty()) sb.append("  ").append(svg).append("\n");
-                } catch (Exception ex) {
-                    System.err.println("Block entity error in " + block.name + ": " + ex.getMessage());
-                }
-            }
-        } finally {
-            // Always reset the flag after rendering block entities
-            RENDERING_BLOCK_DEFINITION.remove();
-        }
-        sb.append("</symbol>\n");
-    }
-    sb.append("</defs>\n");
-
-        // White background
-        sb.append(String.format(Locale.US,
-            "<rect width=\"%.4f\" height=\"%.4f\" fill=\"white\"/>\n",
-            (double) targetWidthPx, (double) targetHeightPx));
-
-        // Render entities layer by layer (visible layers first, then by draw order)
-        // Collect layer names in order
-        Set<String> visibleLayers = new LinkedHashSet<>();
-        for (Entity e : doc.entities) {
-            Layer lay = doc.layers.get(e.layer.toUpperCase());
-            if (lay == null || lay.visible) visibleLayers.add(e.layer);
-        }
-
-        // Group by layer
-        Map<String, List<Entity>> byLayer = new LinkedHashMap<>();
-        for (Entity e : doc.entities) {
-            Layer lay = doc.layers.get(e.layer.toUpperCase());
-            if (lay != null && !lay.visible) continue;
-            byLayer.computeIfAbsent(e.layer, k -> new ArrayList<>()).add(e);
-        }
-
-        for (Map.Entry<String, List<Entity>> entry : byLayer.entrySet()) {
-            String layerName = entry.getKey();
-            sb.append(String.format("<g id=\"layer_%s\">\n", sanitizeId(layerName)));
-            for (Entity e : entry.getValue()) {
-                if (!e.visible) continue;
-                try {
-                    String svg = e.toSvg(doc, t);
-                    if (!svg.isEmpty()) sb.append("  ").append(svg).append("\n");
-                } catch (Exception ex) {
-                    System.err.println("Warning: entity render error on layer " + layerName + ": " + ex.getMessage());
-                }
-            }
-            sb.append("</g>\n");
-        }
-
-        sb.append("</svg>\n");
-        return sb.toString();
-    }
 
     static String stripNonStandardCodes(String text) {
         if (text == null) return "";
@@ -3314,6 +5006,9 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
      * scaled the blank page instead of the visible drawing.
      */
     private static int[] calculateDynamicRenderCanvas(DxfDocument doc) {
+        // Preserve the established fit-to-extents canvas used by the prior
+        // DXF-to-PDF path. The overlay service uniformly scales this page next
+        // to the report panel; changing the canvas edge alters that scale.
         final int LONG_EDGE_PX = 3508;
         final int MIN_SHORT_EDGE_PX = 900;
         final int MAX_SHORT_EDGE_PX = 3508;
@@ -3376,7 +5071,93 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
     public static void convertDxfToPdf(InputStream dxfInputStream, File outputPdfFile) throws Exception {
         convertDxfToPdf(dxfInputStream, outputPdfFile, false);
     }
+    
+    
+    public static List<PageLayoutInfo> convertDxfToPdf(InputStream dxfInputStream, File outputPdfFile,
+            boolean saveSvg, List<PageLayoutInfo> pageLayouts) throws Exception {
+    	int width;
+        int height;
 
+        File tempDxf = null;
+        try {
+            // --- Step 1: Write InputStream → temp DXF file ---
+            tempDxf = File.createTempFile("upload_", ".dxf");
+            try (FileOutputStream fos = new FileOutputStream(tempDxf)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = dxfInputStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+            }
+            LOG.info("DXF written to temp file: {}", tempDxf.getAbsolutePath());
+
+            // --- Step 2: Parse DXF ---
+            LOG.info("Parsing DXF: {}", tempDxf.getAbsolutePath());
+            DxfDocument doc;
+            try {
+                doc = parseDxf(tempDxf.getAbsolutePath());
+            } catch (Exception e) {
+                LOG.error("Failed to parse DXF file '{}': {}", tempDxf.getAbsolutePath(), e.getMessage(), e);
+                throw new Exception("DXF parsing failed: " + e.getMessage(), e);
+            }
+
+            LOG.info("Final render extents: ({}, {}) to ({}, {}) | width={} | height={}",
+                    doc.minX, doc.minY, doc.maxX, doc.maxY,
+                    (doc.maxX - doc.minX), (doc.maxY - doc.minY));
+            LOG.info("Entities: {}, Blocks: {}, Layers: {}",
+                    doc.entities.size(), doc.blocks.size(), doc.layers.size());
+
+            int[] renderCanvas = calculateDynamicRenderCanvas(doc);
+            width = renderCanvas[0];
+            height = renderCanvas[1];
+
+            if (pageLayouts != null && !pageLayouts.isEmpty()) {
+                List<PageLayoutInfo> used = renderPaged(doc, pageLayouts, outputPdfFile);
+                if (used != null) {
+                    LOG.info("Paged PDF saved ({} pages): {}", used.size(), outputPdfFile.getAbsolutePath());
+                    return used;               // the existing finally block still deletes the temp DXF
+                }
+            }
+            
+            // --- Step 3: Generate SVG in memory ---
+            LOG.info("Generating SVG...");
+            String svg;
+            try {
+                // Render the complete drawing extents on the established
+                // dynamic canvas. Worksheet-only cropping changes the relative
+                // scale and placement of details against the scrutiny table.
+                svg = generateSvg(doc, width, height);
+            } catch (Exception e) {
+                LOG.error("Failed to generate SVG from DXF: {}", e.getMessage(), e);
+                throw new Exception("SVG generation failed: " + e.getMessage(), e);
+            }
+            
+            // sanitize before handing to Batik
+            LOG.info("Sanitizing SVG paths...");
+            svg = sanitizeSvgPaths(svg);
+
+            // --- Step 4: Convert SVG → PDF ---
+            LOG.info("Converting SVG to PDF...");
+            try {
+                convertSvgToPdf(svg, outputPdfFile, saveSvg);
+            } catch (Exception e) {
+                LOG.error("Failed to convert SVG to PDF '{}': {}", outputPdfFile.getAbsolutePath(), e.getMessage(), e);
+                throw new Exception("SVG→PDF conversion failed: " + e.getMessage(), e);
+            }
+
+            LOG.info("PDF saved: {}", outputPdfFile.getAbsolutePath());
+
+        } finally {
+            // Always clean up temp DXF
+            if (tempDxf != null && tempDxf.exists() && !tempDxf.delete()) {
+                LOG.warn("Temp DXF file not deleted: {}", tempDxf.getAbsolutePath());
+                tempDxf.deleteOnExit();
+            }
+        }
+		return null;
+    
+    }
+    
     public static void convertDxfToPdf(InputStream dxfInputStream, File outputPdfFile, boolean saveSvg)
             throws Exception {
 
@@ -3420,7 +5201,7 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
             LOG.info("Generating SVG...");
             String svg;
             try {
-                svg = generateSvg(doc, width, height);
+                svg = generateSvgForWorksheet(doc, width, height);
             } catch (Exception e) {
                 LOG.error("Failed to generate SVG from DXF: {}", e.getMessage(), e);
                 throw new Exception("SVG generation failed: " + e.getMessage(), e);
@@ -3532,5 +5313,689 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
         }
         return d;
     }
+    
+    static void detectWorkSheetBorder(DxfDocument doc) {
+        doc.workSheetPolygon = null;
+        List<double[]> best = null;
+        double bestArea = 0;
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+        double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        boolean any = false;
 
+        for (Entity e : doc.entities) {
+            if (!e.visible || !WORK_SHEET_LAYER.equalsIgnoreCase(e.layer)) continue;
+
+            List<double[]> boxes = new ArrayList<>();
+            addEntityBox(doc, e, boxes, new ArrayList<>(), 0);
+            for (double[] b : boxes) {
+                minX = Math.min(minX, b[0]); minY = Math.min(minY, b[1]);
+                maxX = Math.max(maxX, b[2]); maxY = Math.max(maxY, b[3]);
+                any = true;
+            }
+
+            if (e instanceof PolylineEntity) {
+                PolylineEntity p = (PolylineEntity) e;
+                int n = p.vertices.size();
+                if (n < 3) continue;
+                double[] f = p.vertices.get(0), l = p.vertices.get(n - 1);
+                boolean closed = p.closed || Math.hypot(f[0] - l[0], f[1] - l[1]) < 1e-6;
+                if (!closed) continue;
+                List<double[]> pts = new ArrayList<>();
+                for (double[] v : p.vertices) pts.add(new double[]{v[0], v[1]});
+                double area = Math.abs(polygonArea(pts));
+                if (area > bestArea) { bestArea = area; best = pts; }
+            }
+        }
+
+        if (best != null) {
+            doc.workSheetPolygon = best;                       // largest closed polyline = outer border
+        } else if (any) {                                      // fallback: border drawn as LINEs/arcs
+            doc.workSheetPolygon = Arrays.asList(
+                    new double[]{minX, minY}, new double[]{maxX, minY},
+                    new double[]{maxX, maxY}, new double[]{minX, maxY});
+        }
+    }
+    
+    static double polygonArea(List<double[]> p) {
+        double a = 0;
+        for (int i = 0, j = p.size() - 1; i < p.size(); j = i++)
+            a += (p.get(j)[0] * p.get(i)[1]) - (p.get(i)[0] * p.get(j)[1]);
+        return a / 2.0;
+    }
+    
+    static boolean insideOrNearPolygon(double x, double y, List<double[]> poly, double tol) {
+        boolean in = false;
+        for (int i = 0, j = poly.size() - 1; i < poly.size(); j = i++) {
+            double xi = poly.get(i)[0], yi = poly.get(i)[1];
+            double xj = poly.get(j)[0], yj = poly.get(j)[1];
+            if (((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) in = !in;
+            if (distToSegment(x, y, xi, yi, xj, yj) <= tol) return true; // on/near edge counts as inside
+        }
+        return in;
+    }
+    
+    static double distToSegment(double px, double py, double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1, dy = y2 - y1;
+        double len2 = dx * dx + dy * dy;
+        double t = len2 == 0 ? 0 : Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / len2));
+        return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+    }
+    
+    static final double TEXT_CHAR_W = 0.65;  // avg glyph width / height (safe for uppercase Arial)
+    static final double TEXT_LINE_H = 1.35;
+
+    static double[] localRectCorners(double ax, double ay, double x0, double y0, double x1, double y1, double rotDeg) {
+        double r = Math.toRadians(rotDeg), c = Math.cos(r), s = Math.sin(r);
+        double[][] lp = {{x0, y0}, {x1, y0}, {x1, y1}, {x0, y1}};
+        double[] out = new double[8];
+        for (int i = 0; i < 4; i++) {
+            out[2 * i]     = ax + lp[i][0] * c - lp[i][1] * s;
+            out[2 * i + 1] = ay + lp[i][0] * s + lp[i][1] * c;
+        }
+        return out;
+    }
+
+    static double[] cornersToAabb(double[] c) {
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        for (int i = 0; i < 8; i += 2) {
+            minX = Math.min(minX, c[i]); maxX = Math.max(maxX, c[i]);
+            minY = Math.min(minY, c[i + 1]); maxY = Math.max(maxY, c[i + 1]);
+        }
+        return new double[]{minX, minY, maxX, maxY};
+    }
+
+    static double[] textCorners(TextEntity t) {
+        String txt = processTextCodes(t.text);
+        double h = t.height > 0 ? t.height : 2.5;
+        if ((t.hJustify == 3 || t.hJustify == 5)
+                && Double.isFinite(t.secondX) && Double.isFinite(t.secondY)) {
+            double dx = t.secondX - t.x, dy = t.secondY - t.y;
+            double length = Math.hypot(dx, dy);
+            if (length > 1e-9) {
+                double angle = Math.toDegrees(Math.atan2(dy, dx));
+                return localRectCorners(t.x, t.y, 0, 0, length, h, angle);
+            }
+        }
+        double w = Math.max(1, txt.length()) * TEXT_CHAR_W * h * (t.widthFactor > 0 ? t.widthFactor : 1.0);
+        double x0 = 0, x1 = w;
+        if (t.hJustify == 1 || t.hJustify == 4) { x0 = -w / 2; x1 = w / 2; }
+        else if (t.hJustify == 2) { x0 = -w; x1 = 0; }
+        double y0 = 0, y1 = h;
+        if (t.vJustify == 3) { y0 = -h; y1 = 0; }
+        else if (t.vJustify == 2) { y0 = -h / 2; y1 = h / 2; }
+        return localRectCorners(t.x, t.y, x0, y0, x1, y1, t.rotation);
+    }
+
+    /** Wrap width in drawing units: MTEXT width (group 41), else the distance to the WORK_SHEET right edge. */
+    static double mtextWrapWidth(DxfDocument doc, MTextEntity m) {
+        if (m.width > 0) return m.width;
+        if (doc != null && doc.workSheetPolygon != null && Math.abs(m.rotation) < 0.01
+                && (m.attachment == 1 || m.attachment == 4 || m.attachment == 7)) {
+            double maxX = -Double.MAX_VALUE;
+            for (double[] p : doc.workSheetPolygon) maxX = Math.max(maxX, p[0]);
+            double h = m.height > 0 ? m.height : 2.5;
+            double avail = maxX - m.x - 0.5 * h;
+            return avail > 0 ? avail : 0;
+        }
+        return 0;
+    }
+
+    static int maxCharsFor(double wrapW, double h) {
+        if (wrapW <= 0 || h <= 0) return Integer.MAX_VALUE;
+        return Math.max(1, (int) Math.floor(wrapW / (TEXT_CHAR_W * h)));
+    }
+
+    static List<String> wrapPlain(String line, int maxChars) {
+        List<String> out = new ArrayList<>();
+        if (maxChars == Integer.MAX_VALUE || line.length() <= maxChars) { out.add(line); return out; }
+        StringBuilder cur = new StringBuilder();
+        for (String piece : line.split("(?<=[ ,/;])")) {
+            if (cur.length() + piece.length() > maxChars && cur.length() > 0) { out.add(cur.toString()); cur.setLength(0); }
+            while (piece.length() > maxChars) { out.add(piece.substring(0, maxChars)); piece = piece.substring(maxChars); }
+            cur.append(piece);
+        }
+        if (cur.length() > 0) out.add(cur.toString());
+        return out;
+    }
+
+    static List<String> mtextPlainLines(DxfDocument doc, MTextEntity m, int maxChars) {
+        double h = m.height > 0 ? m.height : 2.5;
+        List<MTextSegment> segs = parseMText(m.text, doc, m.styleName, h, h);
+        List<String> raw = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        for (MTextSegment s : segs) {
+            if (s.isNewline) { raw.add(cur.toString()); cur.setLength(0); }
+            else if (s.isFraction) cur.append(s.fractionNum).append('/').append(s.fractionDenom);
+            else cur.append(cleanMTextVisibleText(s.text));
+        }
+        raw.add(cur.toString());
+        List<String> out = new ArrayList<>();
+        for (String l : raw) out.addAll(wrapPlain(l, maxChars));
+        return out;
+    }
+
+//    static double[] mtextCorners(DxfDocument doc, MTextEntity m) {
+//        double h = m.height > 0 ? m.height : 2.5;
+//        double wrapW = mtextWrapWidth(doc, m);
+//        List<String> lines = mtextPlainLines(doc, m, maxCharsFor(wrapW, h));
+//        int longest = 1;
+//        for (String l : lines) longest = Math.max(longest, l.length());
+//        double w = longest * TEXT_CHAR_W * h;
+//        if (wrapW > 0) w = Math.min(w, wrapW);
+//        double H = h + (lines.size() - 1) * h * TEXT_LINE_H * Math.max(1.0, m.lineSpacing > 0 ? m.lineSpacing : 1.0);
+//        double x0 = 0, x1 = w;
+//        if (m.attachment == 2 || m.attachment == 5 || m.attachment == 8) { x0 = -w / 2; x1 = w / 2; }
+//        else if (m.attachment == 3 || m.attachment == 6 || m.attachment == 9) { x0 = -w; x1 = 0; }
+//        double y0 = -H, y1 = 0;                                    // top attachment: text hangs below the point
+//        if (m.attachment >= 4 && m.attachment <= 6) { y0 = -H / 2; y1 = H / 2; }
+//        else if (m.attachment >= 7) { y0 = 0; y1 = H; }
+//        return localRectCorners(m.x, m.y, x0, y0, x1, y1, m.rotation);
+//    }
+
+    static int segLen(MTextSegment s) {
+        return s.isFraction ? s.fractionNum.length() + s.fractionDenom.length() + 1 : cleanMTextVisibleText(s.text).length();
+    }
+
+    static MTextSegment copySeg(MTextSegment s, String text) {
+        MTextSegment c = new MTextSegment();
+        c.text = text; c.color = s.color; c.fontSize = s.fontSize; c.bold = s.bold; c.italic = s.italic;
+        c.underline = s.underline; c.fontName = s.fontName;
+        return c;
+    }
+
+    /** Wraps rendered MTEXT lines so they stay inside maxChars, keeping per-run colour/font. */
+    static List<List<MTextSegment>> wrapLines(List<List<MTextSegment>> lines, int maxChars) {
+        if (maxChars == Integer.MAX_VALUE) return lines;
+        List<List<MTextSegment>> out = new ArrayList<>();
+        for (List<MTextSegment> line : lines) {
+            int total = 0;
+            for (MTextSegment s : line) total += segLen(s);
+            if (total <= maxChars) { out.add(line); continue; }
+
+            List<MTextSegment> cur = new ArrayList<>();
+            int curLen = 0;
+            for (MTextSegment s : line) {
+                if (s.isFraction) {
+                    int l = segLen(s);
+                    if (curLen + l > maxChars && curLen > 0) { out.add(cur); cur = new ArrayList<>(); curLen = 0; }
+                    cur.add(s); curLen += l;
+                    continue;
+                }
+                for (String piece : cleanMTextVisibleText(s.text).split("(?<=[ ,/;])")) {
+                    if (curLen + piece.length() > maxChars && curLen > 0) { out.add(cur); cur = new ArrayList<>(); curLen = 0; }
+                    while (piece.length() > maxChars) {
+                        List<MTextSegment> one = new ArrayList<>();
+                        one.add(copySeg(s, piece.substring(0, maxChars)));
+                        out.add(one);
+                        piece = piece.substring(maxChars);
+                    }
+                    if (curLen == 0) piece = piece.replaceFirst("^ +", "");
+                    if (!piece.isEmpty()) { cur.add(copySeg(s, piece)); curLen += piece.length(); }
+                }
+            }
+            if (!cur.isEmpty()) out.add(cur);
+        }
+        return out.isEmpty() ? lines : out;
+    }
+
+    static List<List<MTextSegment>> splitLines(List<MTextSegment> segs) {
+        List<List<MTextSegment>> lines = new ArrayList<>();
+        List<MTextSegment> cur = new ArrayList<>();
+        for (MTextSegment s : segs) {
+            if (s.isNewline) { lines.add(cur); cur = new ArrayList<>(); }
+            else if (s.isFraction || !s.text.isEmpty()) cur.add(s);
+        }
+        lines.add(cur);
+        return lines;
+    }
+
+    static double lineWidth(List<MTextSegment> line, double base) {
+        double w = 0;
+        for (MTextSegment s : line) w += segLen(s) * TEXT_CHAR_W * (s.fontSize > 0 ? s.fontSize : base);
+        return w;
+    }
+
+    static double lineSize(List<MTextSegment> line, double base) {
+        double m = 0;
+        for (MTextSegment s : line) m = Math.max(m, s.fontSize > 0 ? s.fontSize : base);
+        return m > 0 ? m : base;
+    }
+
+    static List<List<MTextSegment>> wrapLinesByWidth(List<List<MTextSegment>> lines, double maxW, double base) {
+        if (maxW <= 0) return lines;
+        List<List<MTextSegment>> out = new ArrayList<>();
+        for (List<MTextSegment> line : lines) {
+            if (lineWidth(line, base) <= maxW) { out.add(line); continue; }
+            List<MTextSegment> cur = new ArrayList<>();
+            double curW = 0;
+            for (MTextSegment s : line) {
+                double cw = TEXT_CHAR_W * (s.fontSize > 0 ? s.fontSize : base);
+                if (s.isFraction) {
+                    double w = segLen(s) * cw;
+                    if (curW + w > maxW && !cur.isEmpty()) { out.add(cur); cur = new ArrayList<>(); curW = 0; }
+                    cur.add(s); curW += w;
+                    continue;
+                }
+                int maxCh = Math.max(1, (int) Math.floor(maxW / cw));
+                for (String piece : cleanMTextVisibleText(s.text).split("(?<=[ ,/;])")) {
+                    if (piece.isEmpty()) continue;
+                    if (curW + piece.length() * cw > maxW && !cur.isEmpty()) { out.add(cur); cur = new ArrayList<>(); curW = 0; }
+                    while (piece.length() > maxCh) {
+                        List<MTextSegment> one = new ArrayList<>();
+                        one.add(copySeg(s, piece.substring(0, maxCh)));
+                        out.add(one);
+                        piece = piece.substring(maxCh);
+                    }
+                    if (cur.isEmpty()) piece = piece.replaceFirst("^ +", "");
+                    if (!piece.isEmpty()) { cur.add(copySeg(s, piece)); curW += piece.length() * cw; }
+                }
+            }
+            if (!cur.isEmpty()) out.add(cur);
+        }
+        return out;
+    }
+
+    static double[] mtextCorners(DxfDocument doc, MTextEntity m) {
+        double h = m.height > 0 ? m.height : 2.5;
+        double wrapW = mtextWrapWidth(doc, m);
+        List<List<MTextSegment>> lines = wrapLinesByWidth(
+                splitLines(parseMText(m.text, doc, m.styleName, h, h)), wrapW, h);
+        double sp = Math.max(1.0, m.lineSpacing > 0 ? m.lineSpacing : 1.0);
+        double w = 1, H = 0, prev = h;
+        for (int i = 0; i < lines.size(); i++) {
+            double fs = lineSize(lines.get(i), h);
+            w = Math.max(w, lineWidth(lines.get(i), h));
+            H += (i == 0) ? fs : prev * TEXT_LINE_H * sp;
+            prev = fs;
+        }
+        double x0 = 0, x1 = w;
+        if (m.attachment == 2 || m.attachment == 5 || m.attachment == 8) { x0 = -w / 2; x1 = w / 2; }
+        else if (m.attachment == 3 || m.attachment == 6 || m.attachment == 9) { x0 = -w; x1 = 0; }
+        double y0 = -H, y1 = 0;
+        if (m.attachment >= 4 && m.attachment <= 6) { y0 = -H / 2; y1 = H / 2; }
+        else if (m.attachment >= 7) { y0 = 0; y1 = H; }
+        return localRectCorners(m.x, m.y, x0, y0, x1, y1, m.rotation);
+    }
+    
+    /** Register every layer name (and prefix) your system defines. Gray mode turns on only after this call. */
+    public static void registerSystemLayers(Collection<String> names, Collection<String> prefixes) {
+        if (names != null) for (String n : names) if (n != null) SYSTEM_LAYERS.add(n.trim().toUpperCase(Locale.ROOT));
+        if (prefixes != null) for (String p : prefixes) if (p != null) SYSTEM_LAYER_PREFIXES.add(p.trim().toUpperCase(Locale.ROOT));
+        grayUndefinedLayers = true;
+    }
+
+    static boolean isSystemLayer(String name) {
+        if (!grayUndefinedLayers || name == null || name.trim().isEmpty()) return true;
+        String u = name.trim().toUpperCase(Locale.ROOT);
+        if (SYSTEM_LAYERS.contains(u)) return true;
+        for (String p : SYSTEM_LAYER_PREFIXES) if (u.startsWith(p)) return true;
+        return false;
+    }
+    
+    static class PageInfo {
+        final double[] bounds; final int pageOrder;
+        PageInfo(double[] b, int o) { bounds = b; pageOrder = o; }
+    }
+
+    static int[] getPageDimensions(String paperSize) {
+        // SVG dimensions are pixels at 300 DPI. Keep the paper size physical
+        // so PDFBox/Batik emits the same sheet size as the CAD plot.
+        if (paperSize == null) return new int[]{4961, 3508};
+        switch (paperSize) {
+            case "A3":  return new int[]{4961, 3508};
+            case "A2":  return new int[]{7016, 4961};
+            case "A1":  return new int[]{9933, 7016};
+            case "A0":  return new int[]{14043, 9933};
+            case "2A0": return new int[]{19843, 14043};
+            case "4A0": return new int[]{28063, 19843};
+            default:    return new int[]{4961, 3508};
+        }
+    }
+
+    private static double[] polylineBounds(PolylineEntity p) {
+        double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        boolean any = false;
+        for (double[] v : p.vertices) {
+            if (!isValidCoordinate(v[0]) || !isValidCoordinate(v[1])) continue;
+            minX = Math.min(minX, v[0]); maxX = Math.max(maxX, v[0]);
+            minY = Math.min(minY, v[1]); maxY = Math.max(maxY, v[1]);
+            any = true;
+        }
+        return any ? new double[]{minX, minY, maxX, maxY} : null;
+    }
+
+    /** Page number n from the "n/m" text sitting inside the rectangle; MAX_VALUE when absent. */
+    private static int pageNumberIn(DxfDocument doc, double[] b) {
+        Pattern pat = Pattern.compile("(\\d+)\\s*/\\s*(\\d+)");
+        for (Entity e : doc.entities) {
+            if (!PAGE_LAYOUT_LAYER.equalsIgnoreCase(e.layer)) continue;
+            double x, y; String text;
+            if (e instanceof TextEntity) { TextEntity t = (TextEntity) e; x = t.x; y = t.y; text = t.text; }
+            else if (e instanceof MTextEntity) { MTextEntity m = (MTextEntity) e; x = m.x; y = m.y; text = m.getPlainText(); }
+            else continue;
+            if (x < b[0] || x > b[2] || y < b[1] || y > b[3] || text == null) continue;
+            Matcher m = pat.matcher(text.trim());
+            if (m.matches()) return Integer.parseInt(m.group(1));
+            LOG.warn("Invalid PAGE_LAYOUT page number text: {}", text);
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    static List<PageInfo> getOrderedPages(DxfDocument doc) {
+        List<PageInfo> pages = new ArrayList<>();
+        if (doc.workSheetPolygon != null && doc.workSheetPolygon.size() >= 3) {
+            double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+            for (double[] p : doc.workSheetPolygon) {
+                minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+                minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+            }
+            pages.add(new PageInfo(new double[]{minX, minY, maxX, maxY}, 1));
+        }
+        return pages;
+    }
+
+    /**
+     * When no PAGE_LAYOUT metadata is supplied, use WORK_SHEET as the plot
+     * window instead of fitting to whatever entity happens to be farthest out.
+     * This keeps detail blocks and annotations registered to the same sheet
+     * coordinates as the CAD model plot.
+     */
+    private static String generateSvgForWorksheet(DxfDocument doc, int fallbackWidth, int fallbackHeight) {
+        List<PageInfo> pages = getOrderedPages(doc);
+        if (pages.isEmpty()) return generateSvg(doc, fallbackWidth, fallbackHeight);
+
+        double[] sheet = pages.get(0).bounds;
+        double margin = 0.0444;
+        double padX = (sheet[2] - sheet[0]) * margin;
+        double padY = (sheet[3] - sheet[1]) * margin;
+        double[] paperBounds = new double[]{sheet[0] - padX, sheet[1] - padY,
+                sheet[2] + padX, sheet[3] + padY};
+        int[] paper = getPageDimensions("A3");
+        return generateSvg(doc, paperBounds, paper[0], paper[1]);
+    }
+
+    /** Match by rectangle geometry first, then by page order, then by position. */
+    private static PageLayoutInfo findLayout(PageInfo p, List<PageLayoutInfo> layouts, int idx) {
+        double[] b = p.bounds;
+        double tol = Math.max(1e-6, 0.01 * Math.max(b[2] - b[0], b[3] - b[1]));
+        for (PageLayoutInfo l : layouts) {
+            if (l.isHasBounds() && Math.abs(l.getMinX() - b[0]) <= tol && Math.abs(l.getMinY() - b[1]) <= tol
+                    && Math.abs(l.getMaxX() - b[2]) <= tol && Math.abs(l.getMaxY() - b[3]) <= tol) return l;
+        }
+        if (p.pageOrder != Integer.MAX_VALUE)
+            for (PageLayoutInfo l : layouts) if (l.getPageOrder() == p.pageOrder) return l;
+        return idx < layouts.size() ? layouts.get(idx) : null;
+    }
+
+    /** Returns layouts in rendered page order, or null when paged mode is not possible (caller falls back to single page). */
+    private static List<PageLayoutInfo> renderPaged(DxfDocument doc, List<PageLayoutInfo> pageLayouts, File outputPdf) throws Exception {
+        List<PageInfo> pages = getOrderedPages(doc);
+        if (pages.isEmpty()) return null;
+        List<PageLayoutInfo> ordered = new ArrayList<>();
+        for (int i = 0; i < pages.size(); i++) {
+            PageLayoutInfo l = findLayout(pages.get(i), pageLayouts, i);
+            if (l == null) {
+                LOG.warn("PAGE_LAYOUT page {} has no valid layout; falling back to single-page output.", i + 1);
+                return null;
+            }
+            ordered.add(l);
+        }
+        List<File> temps = new ArrayList<>();
+        try {
+            for (int i = 0; i < pages.size(); i++) {
+                int[] dim = getPageDimensions(ordered.get(i).getPaperSize());
+                double[] sheet = pages.get(i).bounds;
+                double margin = 0.0444;
+                double padX = (sheet[2] - sheet[0]) * margin;
+                double padY = (sheet[3] - sheet[1]) * margin;
+                double[] paperBounds = new double[]{sheet[0] - padX, sheet[1] - padY,
+                        sheet[2] + padX, sheet[3] + padY};
+                String svg = sanitizeSvgPaths(generateSvg(doc, paperBounds, dim[0], dim[1]));
+                File f = File.createTempFile("page_" + (i + 1) + "_", ".pdf");
+                temps.add(f);
+                convertSvgToPdf(svg, f, false);
+            }
+            PDFMergerUtility merger = new PDFMergerUtility();
+            merger.setDestinationFileName(outputPdf.getAbsolutePath());
+            for (File f : temps) merger.addSource(f);
+            merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+        } finally {
+            for (File f : temps) if (f.exists() && !f.delete()) f.deleteOnExit();
+        }
+        return ordered;
+    }
+    
+    public static String generateSvg(DxfDocument doc, int targetWidthPx, int targetHeightPx) {
+        return generateSvg(doc, null, targetWidthPx, targetHeightPx);
+    }
+    
+
+    
+    /** pageBounds == null -> single page fitted to extents. Otherwise fitted to the supplied paper bounds. */
+    public static String generateSvg(DxfDocument doc, double[] pageBounds, int targetWidthPx, int targetHeightPx) {
+        boolean pageMode = pageBounds != null;
+        if (targetWidthPx <= 0) targetWidthPx = 3508;
+        if (targetHeightPx <= 0) targetHeightPx = 2480;
+
+        double bMinX = pageMode ? pageBounds[0] : doc.minX, bMinY = pageMode ? pageBounds[1] : doc.minY;
+        double bMaxX = pageMode ? pageBounds[2] : doc.maxX, bMaxY = pageMode ? pageBounds[3] : doc.maxY;
+        double dxfW = bMaxX - bMinX, dxfH = bMaxY - bMinY;
+        if (!Double.isFinite(dxfW) || dxfW <= 0.001) dxfW = 1.0;
+        if (!Double.isFinite(dxfH) || dxfH <= 0.001) dxfH = 1.0;
+
+        // Keep the same small fit-to-extents margin as the previous renderer.
+        double margin = pageMode ? 0.0 : 0.02;
+        double adjMinX = bMinX - dxfW * margin, adjMinY = bMinY - dxfH * margin;
+        double adjMaxX = bMaxX + dxfW * margin, adjMaxY = bMaxY + dxfH * margin;
+        dxfW = adjMaxX - adjMinX;
+        dxfH = adjMaxY - adjMinY;
+
+        double scale = Math.min(targetWidthPx / dxfW, targetHeightPx / dxfH);
+        if (!Double.isFinite(scale) || scale <= 0) scale = 1.0;
+        double drawnW = dxfW * scale, drawnH = dxfH * scale;
+        double canvasW = pageMode ? drawnW : targetWidthPx;
+        double canvasH = pageMode ? drawnH : targetHeightPx;
+        double offsetX = (canvasW - drawnW) / 2.0, offsetY = (canvasH - drawnH) / 2.0;
+        double[] t = new double[]{scale, offsetX - adjMinX * scale, -adjMinY * scale, offsetY + drawnH};
+
+        doc.hatchSegmentsUsed = 0;
+        doc.hatchShare = computeHatchShare(doc);
+        normalizeLargeBlockCoordinates(doc);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format(Locale.US,
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+          + "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" "
+          + "width=\"%.2fpx\" height=\"%.2fpx\" viewBox=\"0 0 %.4f %.4f\">\n",
+            canvasW, canvasH, canvasW, canvasH));
+
+        sb.append("<defs>\n");
+        sb.append("<marker id=\"arrow\" markerWidth=\"10\" markerHeight=\"7\" refX=\"10\" refY=\"3.5\" orient=\"auto\">"
+                + "<polygon points=\"0 0, 10 3.5, 0 7\" fill=\"#000000\"/></marker>\n");
+
+        // block symbols (INSERT targets)
+        appendBlockDefs(sb, doc, t);
+
+        boolean hasWs = doc.workSheetPolygon != null && doc.workSheetPolygon.size() >= 3;
+        if (pageMode) {
+            sb.append(String.format(Locale.US,
+                "<clipPath id=\"pageClip\"><rect x=\"0\" y=\"0\" width=\"%.4f\" height=\"%.4f\"/></clipPath>\n", canvasW, canvasH));
+        }
+        if (hasWs) {
+            StringBuilder pts = new StringBuilder();
+            for (double[] p : doc.workSheetPolygon)
+                pts.append(String.format(Locale.US, "%.4f,%.4f ", tx(p[0], t), ty(p[1], t)));
+            sb.append("<clipPath id=\"wsClip\"><polygon points=\"").append(pts.toString().trim()).append("\"/></clipPath>\n");
+        }
+        sb.append("</defs>\n");
+
+        sb.append(String.format(Locale.US, "<rect width=\"%.4f\" height=\"%.4f\" fill=\"white\"/>\n", canvasW, canvasH));
+
+        Map<String, List<Entity>> byLayer = new LinkedHashMap<>();
+        for (Entity e : doc.entities) {
+            Layer lay = doc.layers.get(e.layer.toUpperCase());
+            if (lay != null && !lay.visible) continue;
+            byLayer.computeIfAbsent(e.layer, k -> new ArrayList<>()).add(e);
+        }
+
+        if (pageMode) sb.append("<g clip-path=\"url(#pageClip)\">\n");
+        if (hasWs) sb.append("<g clip-path=\"url(#wsClip)\">\n");
+        for (Map.Entry<String, List<Entity>> en : byLayer.entrySet())
+            if (!isBorderLayer(en.getKey())) appendLayer(sb, doc, en.getKey(), en.getValue(), t);
+        if (hasWs) sb.append("</g>\n");
+        for (Map.Entry<String, List<Entity>> en : byLayer.entrySet())
+            if (isBorderLayer(en.getKey())) appendLayer(sb, doc, en.getKey(), en.getValue(), t);
+        if (pageMode) sb.append("</g>\n");
+
+        sb.append("</svg>\n");
+        return sb.toString();
+    }
+    
+    /** Pattern-hatch line budget per hatch: whole-drawing budget shared by all pattern hatches (modelspace + blocks). */
+    static int computeHatchShare(DxfDocument doc) {
+        long n = 0;
+        for (Entity e : doc.entities) if (isPatternHatch(e)) n++;
+        for (Block b : doc.blocks.values()) for (Entity e : b.entities) if (isPatternHatch(e)) n++;
+        if (n <= 0) return Integer.MAX_VALUE;
+        return (int) Math.max(1, HatchEntity.MAX_DOC_HATCH_SEGMENTS / n);
+    }
+
+    private static boolean isPatternHatch(Entity e) {
+        return e instanceof HatchEntity && !((HatchEntity) e).solid && !((HatchEntity) e).patternLines.isEmpty();
+    }
+
+    private static void appendBlockDefs(StringBuilder sb, DxfDocument doc, double[] t) {
+        for (Map.Entry<String, Block> entry : doc.blocks.entrySet()) {
+            Block block = entry.getValue();
+            if (block.name.equalsIgnoreCase("*Model_Space") || block.name.equalsIgnoreCase("*Paper_Space")
+                    || block.name.toLowerCase().startsWith("*paper_space")) continue;
+            sb.append(String.format("<symbol id=\"block_%s\" overflow=\"visible\">\n", sanitizeId(block.name)));
+            double[] blockT = new double[]{t[0], -(block.baseX + block.renderOffsetX) * t[0],
+                    -(block.baseY + block.renderOffsetY) * t[0], 0};
+            RENDERING_BLOCK_DEFINITION.set(true);
+            try {
+                for (Entity e : block.entities) {
+                    if (!e.visible) continue;
+                    try {
+                        String svg = e.toSvg(doc, blockT);
+                        if (!svg.isEmpty()) {
+                            sb.append("  ").append(preserveBlockLineweights(svg, block.renderStrokeCompensation)).append("\n");
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("Block entity error in " + block.name + ": " + ex.getMessage());
+                    }
+                }
+            } finally {
+                RENDERING_BLOCK_DEFINITION.remove();
+            }
+            sb.append("</symbol>\n");
+        }
+    }
+
+    /**
+     * DXF lineweights are plot widths and do not shrink when a block insert is
+     * scaled. SVG normally scales stroke widths with the transformed symbol,
+     * which made details inside small-scale inserts almost disappear. Keep the
+     * stroke width in device space while the block geometry follows its insert.
+     */
+    private static String preserveBlockLineweights(String svg, double compensation) {
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("stroke-width=\"((?:[0-9]*\\.)?[0-9]+)\"")
+                .matcher(svg);
+        StringBuffer adjusted = new StringBuffer();
+        while (matcher.find()) {
+            double width = Double.parseDouble(matcher.group(1)) * compensation;
+            matcher.appendReplacement(adjusted, java.util.regex.Matcher.quoteReplacement(
+                    String.format(Locale.US, "stroke-width=\"%.4f\"", width)));
+        }
+        matcher.appendTail(adjusted);
+        return adjusted.toString();
+    }
+
+    /**
+     * Rebase blocks with very large local coordinates before writing SVG.
+     * The INSERT writer adds the inverse offset to the insertion transform,
+     * keeping the final geometry at its original sheet coordinates.
+     */
+    private static void normalizeLargeBlockCoordinates(DxfDocument doc) {
+        Map<String, List<Double>> blockScales = new HashMap<>();
+        for (Entity entity : doc.entities) {
+            if (entity instanceof InsertEntity) {
+                collectBlockScales(doc, (InsertEntity) entity, 1.0, blockScales, 0);
+            }
+        }
+        for (Block block : doc.blocks.values()) {
+            block.renderOffsetX = 0;
+            block.renderOffsetY = 0;
+            block.renderStrokeCompensation = representativeStrokeCompensation(
+                    blockScales.get(block.name.toUpperCase(Locale.ROOT)));
+            if (block.entities == null || block.entities.isEmpty()) continue;
+
+            List<double[]> boxes = new ArrayList<>();
+            List<String> labels = new ArrayList<>();
+            for (Entity entity : block.entities) {
+                if (entity.visible) addEntityBox(doc, entity, boxes, labels, 0);
+            }
+            if (boxes.isEmpty()) continue;
+
+            double[] bounds = unionBoxes(boxes);
+            double centerX = (bounds[0] + bounds[2]) / 2.0;
+            double centerY = (bounds[1] + bounds[3]) / 2.0;
+            double relativeX = centerX - block.baseX;
+            double relativeY = centerY - block.baseY;
+            if (Math.abs(relativeX) > 10000.0) block.renderOffsetX = relativeX;
+            if (Math.abs(relativeY) > 10000.0) block.renderOffsetY = relativeY;
+        }
+    }
+
+    private static void collectBlockScales(DxfDocument doc, InsertEntity insert, double parentScale,
+            Map<String, List<Double>> blockScales, int depth) {
+        if (insert == null || insert.blockName == null || depth > 12) return;
+        Block block = doc.blocks.get(insert.blockName.toUpperCase(Locale.ROOT));
+        if (block == null) return;
+        double insertScale = Math.sqrt(Math.abs(insert.scaleX * insert.scaleY));
+        if (!Double.isFinite(insertScale) || insertScale < 1e-9) return;
+        double totalScale = parentScale * insertScale;
+        List<Double> seen = blockScales.computeIfAbsent(block.name.toUpperCase(Locale.ROOT), ignored -> new ArrayList<>());
+        // Memory / time guard: a median needs only a sample. Without this limit, deeply nested
+        // or repeated INSERTs are expanded once per instance and can run out of memory.
+        if (seen.size() >= 64) return;
+        seen.add(totalScale);
+        for (Entity entity : block.entities) {
+            if (entity instanceof InsertEntity) {
+                collectBlockScales(doc, (InsertEntity) entity, totalScale, blockScales, depth + 1);
+            }
+        }
+    }
+
+    private static double representativeStrokeCompensation(List<Double> scales) {
+        if (scales == null || scales.isEmpty()) return 1.0;
+        List<Double> sorted = new ArrayList<>();
+        for (Double scale : scales) {
+            if (scale != null && Double.isFinite(scale) && scale > 1e-9) sorted.add(scale);
+        }
+        if (sorted.isEmpty()) return 1.0;
+        Collections.sort(sorted);
+        double medianScale = sorted.get(sorted.size() / 2);
+        return Math.max(0.01, Math.min(100.0, 1.0 / medianScale));
+    }
+    
+    
+    private static boolean isBorderLayer(String name) {
+        return WORK_SHEET_LAYER.equalsIgnoreCase(name) || PAGE_LAYOUT_LAYER.equalsIgnoreCase(name);
+    }
+
+    private static void appendLayer(StringBuilder sb, DxfDocument doc, String layerName, List<Entity> list, double[] t) {
+        sb.append(String.format("<g id=\"layer_%s\">\n", sanitizeId(layerName)));
+        for (Entity e : list) {
+            if (!e.visible) continue;
+            try {
+                String svg = e.toSvg(doc, t);
+                if (!svg.isEmpty()) sb.append("  ").append(svg).append("\n");
+            } catch (Exception ex) {
+                System.err.println("Warning: entity render error on layer " + layerName + ": " + ex.getMessage());
+            }
+        }
+        sb.append("</g>\n");
+    }
 }

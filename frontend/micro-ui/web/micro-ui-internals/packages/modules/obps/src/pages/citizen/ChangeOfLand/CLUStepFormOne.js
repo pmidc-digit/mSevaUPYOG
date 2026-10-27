@@ -89,64 +89,57 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setOwnerPhotoList,
   };
 
-  function checkOwnershipSumVaildation(data) {
-    const ownersArr = data?.owners || [];
-    const ownershipPctArr = ownersArr?.map((owner) => parseFloat(owner?.ownershipInPct));
-    const totalOwnershipSum = ownershipPctArr?.reduce((acc, curr) => acc + curr, 0);
+  const onSubmit = async (data) => {
+    const applicants = currentStepData?.applicants || [];
+    const activeApplicants = applicants.filter((a) => a?.status !== false && a?.status !== "false");
+    const rawApplicantType = currentStepData?.applicationDetails?.aplicantType || currentStepData?.applicationDetails?.applicantType;
+    const typeCode = (typeof rawApplicantType === "string" ? rawApplicantType : rawApplicantType?.code || rawApplicantType?.name || "").toUpperCase();
 
-    return totalOwnershipSum == 100 ? true : false;
-  }
-
-  function checkValidation(data) {
-    const ownerPhotoCount = ownerPhotoList?.length || 0;
-    const ownerIdCount = ownerIdList?.length || 0;
-
-    const ownersCount = data?.owners?.length || 0;
-
-    const uniqueOwnersList = new Set(data?.owners?.map((owner) => owner?.mobileNumber) || []);
-    const isDuplicateOwner = uniqueOwnersList.size !== ownersCount;
-
-    if (!checkOwnershipSumVaildation(data)) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("TOTAL_OWNERSHIP_SUM_VALIDATION_MESSAGE") });
-      return false;
-    } else if (ownersCount !== ownerPhotoCount) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_PHOTOS_LABEL") });
-      return false;
-    } else if (ownersCount !== ownerIdCount) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_IDS_LABEL") });
-      return false;
-    } else if (isDuplicateOwner) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
-      return false;
-    } else {
-      return true;
+    if (activeApplicants?.length === 0) {
+      setShowToast({ key: "true", error: true, message: t("AT LEAST ONE OWNER REQUIRED") });
+      setTimeout(() => setShowToast(null), 3000);
+      return;
     }
-  }
 
-  const onSubmit = (data) => {
-    trigger();
+    if (typeCode === "MULTIPLE" && activeApplicants?.length < 2) {
+      setShowToast({ key: "true", error: true, message: t("MULTIPLE OWNER TYPE REQUIRES MORE THAN ONE OWNER") });
+      setTimeout(() => setShowToast(null), 3000);
+      return;
+    }
 
-    if (!checkValidation(data)) return;
+    if (typeCode === "INDIVIDUAL" && activeApplicants?.length > 1) {
+      setShowToast({ key: "true", error: true, message: t("INDIVIDUAL OWNER TYPE CAN HAVE ONLY ONE OWNER") });
+      setTimeout(() => setShowToast(null), 3000);
+      return;
+    }
+
+    if (typeCode === "MULTIPLE") {
+      const ownershipPctArr = activeApplicants.map((owner) => parseFloat(owner?.ownershipInPct || 0));
+      const totalOwnershipSum = ownershipPctArr.reduce((acc, curr) => acc + curr, 0);
+      if (Math.round(totalOwnershipSum) !== 100) {
+        setShowToast({ key: "true", error: true, message: t("TOTAL_OWNERSHIP_SUM_VALIDATION_MESSAGE") });
+        setTimeout(() => setShowToast(null), 3000);
+        return;
+      }
+    }
 
     goNext(data);
   };
 
   function goNext(data) {
-    dispatch(UPDATE_OBPS_FORM(config.key, data));
-    dispatch(UPDATE_OBPS_OwnerIds("ownerIdList", ownerIdList));
-    dispatch(UPDATE_OBPS_OwnerPhotos("ownerPhotoList", ownerPhotoList));
+    const formattedOwners = currentStepData?.applicationDetails?.owners || [];
+    const mergedData = {
+      ...currentStepData?.applicationDetails,
+      ...data,
+      owners: formattedOwners,
+    };
+    dispatch(UPDATE_OBPS_FORM(config.key, mergedData));
+    if (ownerIdList && ownerIdList.length > 0) {
+      dispatch(UPDATE_OBPS_OwnerIds("ownerIdList", ownerIdList));
+    }
+    if (ownerPhotoList && ownerPhotoList.length > 0) {
+      dispatch(UPDATE_OBPS_OwnerPhotos("ownerPhotoList", ownerPhotoList));
+    }
     onGoNext();
   }
 
@@ -195,7 +188,7 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
   }, []);
 
   const CLUProfessionalDetails = Digit?.ComponentRegistryService?.getComponent("CLUProfessionalDetails");
-  const CLUApplicantDetails = Digit?.ComponentRegistryService?.getComponent("CLUApplicantDetails");
+  const CLUNewApplicantDetails = Digit?.ComponentRegistryService?.getComponent("CLUNewApplicantDetails");
 
   return (
     <React.Fragment>
@@ -204,11 +197,11 @@ const CLUStepFormOne = ({ config, onGoNext, onBackClick }) => {
           {isRegisteredStakeHolder ? (
             <React.Fragment>
               <CLUProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-              <CLUApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              <CLUNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <CLUApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              <CLUNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           )}
         </div>

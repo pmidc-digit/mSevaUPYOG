@@ -74,6 +74,7 @@ import CLUSiteDetails from "./pageComponents/CLUSiteDetails";
 import CLUSpecificationDetails from "./pageComponents/CLUSpecificationDetails";
 import CLUDocumentsRequired from "./pageComponents/CLUDocumentsRequired";
 import CLUApplicantDetails from "./pageComponents/CLUApplicantDetails";
+import CLUNewApplicantDetails from "./pageComponents/CLUNewApplicantDetails";
 import CLUProfessionalDetails from "./pageComponents/CLUProfessionalDetails";
 import CLUSummary from "./pageComponents/CLUSummary";
 import CLUResponse from "./pageComponents/CLUResponse";
@@ -283,6 +284,7 @@ const componentsToRegister = {
   CLUSpecificationDetails,
   CLUDocumentsRequired,
   CLUApplicantDetails,
+  CLUNewApplicantDetails,
   CLUProfessionalDetails,
   CLUSummary,
   CLUResponse,

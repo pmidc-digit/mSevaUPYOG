@@ -47,7 +47,15 @@ const CloseBtn = (props) => {
   );
 };
 
-export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobileNumber, editingOwner, isPrimaryOwner }) => {
+export const LayoutOwnerSearchModal = ({
+  closeModal,
+  onSelectUser,
+  initialMobileNumber,
+  editingOwner,
+  isPrimaryOwner,
+  uploadModule,
+  showOwnershipShare = false,
+}) => {
   const { t } = useTranslation();
   const stateId = Digit.ULBService.getStateId();
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -67,6 +75,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
   const [documentUploadedFile, setDocumentUploadedFile] = useState(null);
   const [panDocumentUploadedFile, setPanDocumentUploadedFile] = useState(null);
   const [panNumber, setPanNumber] = useState("");
+  const [ownershipInPct, setOwnershipInPct] = useState(editingOwner?.ownershipInPct || "");
   const [aplicantType, setAplicantType] = useState(null);
   const [authorisedPerson, setAuthorisedPerson] = useState("");
   const [errors, setErrors] = useState({});
@@ -99,6 +108,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       setDocumentUploadedFile(editingOwner?.documentUploadedFiles || editingOwner?.additionalDetails?.documentFile || null);
       setPanDocumentUploadedFile(editingOwner?.panDocumentUploadedFiles || editingOwner?.additionalDetails?.panDocument || null);
       setPanNumber(editingOwner?.panNumber || editingOwner?.pan || "");
+      setOwnershipInPct(editingOwner?.ownershipInPct !== undefined && editingOwner?.ownershipInPct !== null ? String(editingOwner.ownershipInPct) : "");
       const appType = editingOwner?.aplicantType || editingOwner?.additionalDetails?.aplicantType || null;
       setAplicantType(findApplicantTypeOption(appType) || (isPrimaryOwner ? applicantTypeOptions[0] : null));
       setAuthorisedPerson(editingOwner?.authorisedPerson || editingOwner?.additionalDetails?.authorisedPerson || "");
@@ -176,7 +186,8 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     }
     try {
       setDocLoader(true);
-      const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+      const targetModule = uploadModule || "PT";
+      const response = await Digit.UploadServices.Filestorage(targetModule, file, stateId);
       setDocLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
@@ -199,7 +210,8 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     }
     try {
       setDocLoader(true);
-      const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
+      const targetModule = uploadModule || "PT";
+      const response = await Digit.UploadServices.Filestorage(targetModule, file, stateId);
       setDocLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
@@ -222,7 +234,8 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
     }
     try {
       setDocLoader(true);
-      const response = await Digit.UploadServices.Filestorage("Layout", file, stateId);
+      const targetModule = uploadModule || "Layout";
+      const response = await Digit.UploadServices.Filestorage(targetModule, file, stateId);
       setDocLoader(false);
       if (response?.data?.files?.length > 0) {
         const fileId = response.data.files[0].fileStoreId;
@@ -370,6 +383,15 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       errs.panNumber = t("Invalid PAN Number format. Format should be like AAAAA1234A");
     }
 
+    if (showOwnershipShare) {
+      const shareVal = parseFloat(ownershipInPct);
+      if (!ownershipInPct || String(ownershipInPct).trim() === "") {
+        errs.ownershipInPct = t("REQUIRED_FIELD");
+      } else if (isNaN(shareVal) || shareVal <= 0 || shareVal > 100) {
+        errs.ownershipInPct = t("INVALID_PERCENTAGE_VALUE");
+      }
+    }
+
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
@@ -383,6 +405,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
       authorisedPerson: isFirm ? authorisedPerson.trim() : null,
       panNumber: panNumber.trim().toUpperCase(),
       pan: panNumber.trim().toUpperCase(),
+      ownershipInPct: showOwnershipShare ? String(ownershipInPct).trim() : (editingOwner?.ownershipInPct || null),
       photoUploadedFiles: photoUploadedFile,
       documentUploadedFiles: documentUploadedFile,
       panDocumentUploadedFiles: panDocumentUploadedFile,
@@ -393,6 +416,7 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
         panDocument: panDocumentUploadedFile,
         aplicantType: isPrimaryOwner ? aplicantType : null,
         authorisedPerson: isFirm ? authorisedPerson.trim() : null,
+        ownershipInPct: showOwnershipShare ? String(ownershipInPct).trim() : (editingOwner?.ownershipInPct || null),
       },
     };
 
@@ -834,6 +858,31 @@ export const LayoutOwnerSearchModal = ({ closeModal, onSelectUser, initialMobile
                 />
               </div>
             {errors?.panNumber && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-55">{errors.panNumber}</CardLabelError>}
+
+            {/* Ownership Share */}
+            {showOwnershipShare && (
+              <React.Fragment>
+                <CardLabel className="card-label-smaller">
+                  {`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field">
+                  <TextInput
+                    value={ownershipInPct || ""}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "" || (/^\d*\.?\d*$/.test(val) && parseFloat(val) <= 100)) {
+                        setOwnershipInPct(val);
+                        setErrors((prev) => ({ ...prev, ownershipInPct: "" }));
+                      }
+                    }}
+                    placeholder="e.g. 50"
+                    t={t}
+                  />
+                </div>
+                {errors?.ownershipInPct && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-55">{errors.ownershipInPct}</CardLabelError>}
+              </React.Fragment>
+            )}
 
             {/* Action Buttons */}
             <div className="obps-page-components-layout-owner-search-modal--style-56">

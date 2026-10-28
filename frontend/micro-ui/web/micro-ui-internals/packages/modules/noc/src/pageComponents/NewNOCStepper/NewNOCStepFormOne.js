@@ -1,9 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Loader, Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
 import { UPDATE_NOCNewApplication_FORM, UPDATE_NOC_OwnerIds, UPDATE_NOC_OwnerPhotos } from "../../redux/action/NOCNewApplicationActions";
-import { useState, useEffect } from "react";
-import NOCApplicantDetails from "../NOCApplicantDetails";
+import NOCNewApplicantDetails from "../NOCNewApplicantDetails";
 import NOCProfessionalDetails from "../NOCProfessionalDetails";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
@@ -106,67 +105,45 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setOwnerPhotoList,
   };
 
-  function checkValidation(data) {
+  const onSubmit = (data) => {
+    const applicants = currentStepData?.applicants || [];
+    const activeApplicants = applicants.filter((a) => a?.status !== false && a?.status !== "false");
+    const isPropAvail = data?.isPropertyAvailable?.value || currentStepData?.applicationDetails?.isPropertyAvailable?.value;
 
-    const owners = data?.owners || [];
+    if (activeApplicants?.length === 0) {
+      setShowToast({ key: "true", error: true, message: t("AT LEAST ONE OWNER REQUIRED") });
+      setTimeout(() => setShowToast(null), 3000);
+      return;
+    }
 
-
-    // Filter photos/ids to only those that match current owners by mobileNumber
-
-    const ownerPhotoCount = ownerPhotoList?.length || 0;
-    const ownerIdCount = ownerIdList?.length || 0;
-
-    const ownersCount = owners?.length;
-
-    const uniqueOwnersList = new Set(data?.owners?.map((owner) => owner?.mobileNumber) || []);
-    const isDuplicateOwner = uniqueOwnersList.size !== ownersCount;
-
-    if (data.isPropertyAvailable?.value) {
-      if (!data.owners[0]?.propertyId?.trim()) {
-        setTimeout(() => {
-          setShowToast(null);
-        }, 3000);
-        setShowToast({ key: "true", error: true, message: t("NOC_PROPERTY_ID_REQUIRED_IF_YES_MSG") }); // Use your NOC-specific translation key if different from BPA
-        return false;
+    if (isPropAvail) {
+      const propId =
+        currentStepData?.applicationDetails?.propertyId ||
+        currentStepData?.applicationDetails?.owners?.[0]?.propertyId;
+      if (!propId || !propId.trim()) {
+        setShowToast({ key: "true", error: true, message: t("NOC_PROPERTY_ID_REQUIRED_IF_YES_MSG") });
+        setTimeout(() => setShowToast(null), 3000);
+        return;
       }
     }
-
-    if (ownersCount !== ownerPhotoCount) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_PHOTOS_LABEL") });
-      return false;
-    } else if (ownersCount !== ownerIdCount) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_IDS_LABEL") });
-      return false;
-    } else if (isDuplicateOwner) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  const onSubmit = (data) => {
-
-    trigger();
-
-    if (!checkValidation(data)) return;
 
     goNext(data);
   };
 
   function goNext(data) {
-    dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
-    dispatch(UPDATE_NOC_OwnerIds("ownerIdList", ownerIdList));
-    dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", ownerPhotoList));
+    const formattedOwners = currentStepData?.applicationDetails?.owners || [];
+    const mergedData = {
+      ...currentStepData?.applicationDetails,
+      ...data,
+      owners: formattedOwners,
+    };
+    dispatch(UPDATE_NOCNewApplication_FORM(config.key, mergedData));
+    if (ownerIdList && ownerIdList.length > 0) {
+      dispatch(UPDATE_NOC_OwnerIds("ownerIdList", ownerIdList));
+    }
+    if (ownerPhotoList && ownerPhotoList.length > 0) {
+      dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", ownerPhotoList));
+    }
     onGoNext();
   }
 
@@ -227,11 +204,11 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
           {isRegisteredStakeHolder ? (
             <React.Fragment>
               <NOCProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-              <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              <NOCNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           ) : (
             <React.Fragment>
-              <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              <NOCNewApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           )}
         </div>

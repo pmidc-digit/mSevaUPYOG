@@ -71,13 +71,11 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
             Header: t("Mobile Number"),
             accessor: "owners",
             Cell: ({ value }) => {
-                let ownerObject;
-                if (value?.length === 1) {
-                    ownerObject = value?.[0];
-                } else {
-                    ownerObject = value?.find(value => value?.isPrimaryOwner)
-                }
-                return ownerObject?.mobileNumber || "";
+                const allMobiles = value
+                    ?.map((o) => o?.mobileNumber)
+                    .filter(Boolean)
+                    .join(", ");
+                return allMobiles || "";
             },
         },
         {
@@ -85,13 +83,11 @@ export const PropertySearchModal = ({ key = "cpt", onSelect, formData, setApiLoa
             accessor: "acknowldgementNumber",
             Cell: ({ value }) => {
                 const selectedProperty = propertyData?.find((val) => val?.acknowldgementNumber === value);
-                let ownerObject;
-                if (selectedProperty?.owners?.length === 1) {
-                    ownerObject = selectedProperty?.owners?.[0];
-                } else {
-                    ownerObject = selectedProperty?.owners?.find(val => val?.isPrimaryOwner)
-                }
-                return ownerObject?.name || "";
+                const allOwnerNames = selectedProperty?.owners
+                    ?.map((o) => o?.name)
+                    .filter(Boolean)
+                    .join(", ");
+                return allOwnerNames || "";
             },
         },
         {

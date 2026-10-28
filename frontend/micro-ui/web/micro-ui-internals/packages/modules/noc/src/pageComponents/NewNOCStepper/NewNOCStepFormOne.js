@@ -118,8 +118,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
 
     const ownersCount = owners?.length;
 
-    const uniqueOwnersList = new Set(data?.owners?.map((owner) => owner?.mobileNumber) || []);
-    const isDuplicateOwner = uniqueOwnersList.size !== ownersCount;
+    // const uniqueOwnersList = new Set(data?.owners?.map((owner) => owner?.mobileNumber) || []);
+    // const isDuplicateOwner = uniqueOwnersList.size !== ownersCount;
 
     if (data.isPropertyAvailable?.value) {
       if (!data.owners[0]?.propertyId?.trim()) {
@@ -143,13 +143,15 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
       }, 3000);
       setShowToast({ key: "true", error: true, message: t("UPLOAD_ALL_OWNER_IDS_LABEL") });
       return false;
-    } else if (isDuplicateOwner) {
-      setTimeout(() => {
-        setShowToast(null);
-      }, 3000);
-      setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
-      return false;
-    } else {
+    } 
+    // else if (isDuplicateOwner) {
+    //   setTimeout(() => {
+    //     setShowToast(null);
+    //   }, 3000);
+    //   setShowToast({ key: "true", error: true, message: t("DUPLICATE_OWNER_FOUND_LABEL") });
+    //   return false;
+    // } 
+    else {
       return true;
     }
   }

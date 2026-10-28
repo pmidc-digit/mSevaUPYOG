@@ -334,6 +334,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       if(cat){
         setOwnershipCategory(cat)
       }
+    }else if(ownershipCategory && ownershipCategoryList?.length > 0){
+      // Auto-correct: if property has multiple owners, ensure MULTIPLEOWNERS is selected
+      const plotLandOwners = currentStepData?.PlotDetails?.landInfo?.owners || [];
+      if(plotLandOwners.length > 1 && ownershipCategory?.code === "INDIVIDUAL.SINGLEOWNER"){
+        const multipleOwnersCategory = ownershipCategoryList.find((item) => item.code === "INDIVIDUAL.MULTIPLEOWNERS");
+        if(multipleOwnersCategory) setOwnershipCategory(multipleOwnersCategory);
+      }
     }
   }, [ownershipCategory, ownershipCategoryList, currentStepData?.createdResponse?.additionalDetails?.ownershipCategory, currentStepData?.createdResponse?.landInfo?.ownershipCategory])
 
@@ -425,7 +432,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   useEffect(() => {
     const values = cloneDeep(fields)
-    if (ownershipCategory && ownershipCategory?.code?.includes("SINGLEOWNER") && values?.length > 1) setFeilds([{ ...values[0], isPrimaryOwner: true }])
+    // If the searched property has multiple owners, the category will be auto-corrected to MULTIPLEOWNERS,
+    // so don't trim the owners list down to one in the meantime.
+    const propertyOwnersCount = Math.max(
+      currentStepData?.PlotDetails?.landInfo?.owners?.length || 0,
+      currentStepData?.createdResponse?.landInfo?.owners?.length || 0
+    )
+    if (ownershipCategory && ownershipCategory?.code?.includes("SINGLEOWNER") && values?.length > 1 && propertyOwnersCount <= 1) setFeilds([{ ...values[0], isPrimaryOwner: true }])
   }, [ownershipCategory])
 
   const { isLoading, data: ownerShipCategories } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", [

@@ -1,5 +1,6 @@
 package org.egov.wf.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
@@ -165,6 +166,12 @@ public class UserService {
     	Object response = serviceRequestRepository.fetchResult(uri, userSearchRequest);
     	
     	List<User> usersList = JsonPath.read(response, "$.Employees.*.user");
+    	
+    	usersList = mapper.convertValue(
+    			usersList, 
+                new TypeReference<List<User>>() {}
+            );
+    	
     	return usersList;
     }
     

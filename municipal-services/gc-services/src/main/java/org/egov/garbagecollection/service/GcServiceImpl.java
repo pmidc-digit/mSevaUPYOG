@@ -507,7 +507,7 @@ public class GcServiceImpl implements GcService {
 		}
 
 		if (wsUtil.isModifyConnectionRequest(waterConnectionRequest)
-				&& !waterConnectionRequest.getGarbageConnection().getIsDisconnectionTemporary()) {
+				&& !(Boolean.TRUE.equals(waterConnectionRequest.getGarbageConnection().getIsDisconnectionTemporary()))) {
 			
 			waterConnectionRequest = updateConnectionStatusBasedOnAction(waterConnectionRequest);
 			  // Received request to update the connection for modifyConnection WF

@@ -130,7 +130,7 @@ public class GcDaoImpl implements GcDao {
 			if ((Boolean.TRUE.equals(garbageConnectionRequest.getReconnectRequest()) || garbageConnectionRequest.getGarbageConnection().getApplicationType().equalsIgnoreCase(GCConstants.GARBAGE_RECONNECTION)) && GCConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				garbageConnectionRequest.getGarbageConnection().setStatus(Connection.StatusEnum.ACTIVE);
 			}
-			else if(garbageConnectionRequest.getGarbageConnection().getIsworkflowdisabled())
+			else if(Boolean.TRUE.equals(garbageConnectionRequest.getGarbageConnection().getIsworkflowdisabled()))
 			{
 			// For meter number and rest details addition before payment (02-08-2024)
 				String applicationNo = garbageConnectionRequest.getGarbageConnection().getApplicationNo();

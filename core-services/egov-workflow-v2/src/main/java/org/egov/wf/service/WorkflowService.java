@@ -5,6 +5,7 @@ import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
 import org.egov.wf.config.WorkflowConfig;
 import org.egov.wf.repository.BusinessServiceRepository;
+import org.egov.wf.repository.ServiceRequestRepository;
 import org.egov.wf.repository.WorKflowRepository;
 import org.egov.wf.util.WorkflowConstants;
 import org.egov.wf.util.WorkflowUtil;
@@ -16,6 +17,8 @@ import org.springframework.util.CollectionUtils;
 import org.egov.tracer.model.CustomException;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,6 +58,9 @@ public class WorkflowService {
 
     @Autowired
     private BusinessMasterService businessMasterService;
+    
+    @Autowired
+    private ServiceRequestRepository serviceRequestRepository;
 
 
     @Autowired
@@ -98,6 +104,7 @@ public class WorkflowService {
         			autoSkipTransition(request, autoSkipStepsMdmsData);
 				} catch (Exception ex) {
 					log.error("Enable to Skip State : " + request.getProcessInstances().get(0).getState().getState());
+					ex.printStackTrace();
 				}
         	}
         	
@@ -329,6 +336,11 @@ public class WorkflowService {
         RequestInfo requestInfo = request.getRequestInfo();
         RequestInfo systemRequestInfo = RequestInfo.builder().userInfo(userService.searchSystemUser()).build();
         
+        Map<String, Object> hrmsSearchPathConfig = (Map<String, Object>) autoSkipStepsMdmsData.get("hrmsSearchPath");
+        String hrmsSearchPath = getHrmsSearchPath(hrmsSearchPathConfig, requestInfo, request.getProcessInstances().get(0).getTenantId()
+        		, request.getProcessInstances().get(0).getBusinessId());
+        request.getProcessInstances().get(0).setHrmsSearchPath(hrmsSearchPath);
+        
     	//Uncomment below line if you are working on local
     	systemRequestInfo.setAuthToken(requestInfo.getAuthToken());
         
@@ -337,13 +349,17 @@ public class WorkflowService {
         String comment = autoSkipStepsMdmsData.get("comment").toString();
         List<String> terminateActionRoles = (List<String>)autoSkipStepsMdmsData.get("terminateActionRoles");
         
+        List<BusinessService> businessServiceList = businessServiceRepository
+        		.getBusinessServices(new BusinessServiceSearchCriteria(request.getProcessInstances().get(0).getTenantId(), 
+        				Collections.singletonList(request.getProcessInstances().get(0).getBusinessService()) , null, null));
+        
         List<User> nextActionUsers = getNextActionUsers(request);
         boolean isterminateActionRolesContains = checkNextActonRoles(request, terminateActionRoles);
         while(nextActionUsers.isEmpty() && !isterminateActionRolesContains) {
         	Role systemRole = util.getSystemRole();
         	String nextAction = request.getProcessInstances().get(0).getState()
         			.getActions()
-            		.stream().filter(action -> action.getRoles().contains(systemRole.getCode()))
+            		.stream().filter(action -> action.getRoles().contains(systemRole.getCode()) && !action.getCurrentState().equalsIgnoreCase(action.getNextState()))
             		.map(Action::getAction).findFirst().orElse("");
         	
         	if(StringUtils.isEmpty(nextAction))
@@ -352,6 +368,16 @@ public class WorkflowService {
         	requestInfo.getUserInfo().getRoles().add(systemRole);
         	request.getProcessInstances().get(0).setAction(nextAction);
         	request.getProcessInstances().get(0).setComment(comment);
+        	
+        	String nextStateId = request.getProcessInstances().get(0).getState()
+        			.getActions().stream().filter(action -> action.getAction().equals(nextAction))
+        			.map(Action::getNextState).findFirst().orElse("");
+        	List<User> nextToNextActionUsers = getNextToNextActionUsers(requestInfo, nextStateId, request.getProcessInstances().get(0).getTenantId(),
+        			hrmsSearchPath, businessServiceList.get(0));
+        	
+        	if(!CollectionUtils.isEmpty(nextToNextActionUsers)) {
+        		request.getProcessInstances().get(0).setAssignes(nextToNextActionUsers);
+        	}
         	
         	List<ProcessStateAndAction> processStateAndActions = transitionService.getProcessStateAndActions(request.getProcessInstances(),true);
             enrichmentService.enrichProcessRequest(systemRequestInfo,processStateAndActions);
@@ -374,13 +400,29 @@ public class WorkflowService {
         		.getActions()
         		.stream()
         		.map(action -> action.getRoles()).flatMap(List::stream).distinct()
-        		.filter(role -> !systemRole.getCode().equalsIgnoreCase(role) && !"OBPAS_UPDATE_ZONE".equalsIgnoreCase(role))
+        		.filter(role -> !systemRole.getCode().equalsIgnoreCase(role))
         		.collect(Collectors.toList());
         
         if(CollectionUtils.isEmpty(nextActionRoles))
         	return Collections.EMPTY_LIST;
         
-        return userService.getNextActionUsers(requestInfo, nextActionRoles, tenantId);
+        return userService.getNextActionUsers(requestInfo, nextActionRoles, tenantId,request.getProcessInstances().get(0).getHrmsSearchPath());
+    }
+    
+    private List<User> getNextToNextActionUsers(RequestInfo requestInfo,String nextStateId, String tenantId, String hrmsSearchPath, BusinessService businessService){
+        Role systemRole = util.getSystemRole();
+        
+        List<String> nextActionRoles = businessService.getStates().stream()
+        		.filter(state -> state.getUuid().equals(nextStateId))
+        		.map(state -> state.getActions())
+        		.flatMap(List::stream).map(action -> action.getRoles())
+        		.flatMap(List::stream)
+        		.collect(Collectors.toList());
+        
+        if(CollectionUtils.isEmpty(nextActionRoles))
+        	return Collections.EMPTY_LIST;
+        
+        return userService.getNextActionUsers(requestInfo, nextActionRoles, tenantId,hrmsSearchPath);
     }
     
     private boolean checkNextActonRoles(ProcessInstanceRequest request, List<String> terminateActionRoles) {
@@ -398,6 +440,50 @@ public class WorkflowService {
     	}
     	
     	return isterminateActionRolesContains;
+    }
+    
+    private String getHrmsSearchPath(Map<String, Object> hrmsSearchPathConfig, RequestInfo requestInfo, String tenantId, String applicationNo) {
+    	if(hrmsSearchPathConfig == null)
+    		return null;
+    	
+    	StringBuilder hrmsSearchPath = new StringBuilder();
+    	Object mdmsData = null;
+    	StringBuilder applicationSearchUrl = new StringBuilder(hrmsSearchPathConfig.get("searchUrl").toString().replace("{0}", tenantId).replace("{1}", applicationNo));
+    	Object applicationObj = serviceRequestRepository.fetchResult(applicationSearchUrl, new HashMap<String, Object>(){{
+    		put("RequestInfo", requestInfo);
+    	}});
+    	
+    	if(hrmsSearchPathConfig.get("mdmsPath") != null) {
+    		String mdmsPath[] = hrmsSearchPathConfig.get("mdmsPath").toString().split("\\.");
+    		mdmsData = mdmsService.getMdmsData(requestInfo, tenantId, mdmsPath[0], mdmsPath[1]);
+    	}
+    	
+    	List<Map<String, String>> paramsMaps = (List<Map<String, String>>) hrmsSearchPathConfig.get("params");
+    	
+    	for(Map<String, String> map : paramsMaps) {
+
+    		String value = map.get("value");
+    		hrmsSearchPath.append(map.get("key")).append("=");
+    		if(value.startsWith("$")) {
+    			List<String> values = JsonPath.read(applicationObj, value);
+    			if(map.get("mdmsMapping") == null) {
+    				String finalValues = values.stream().map(val -> val.toString()).collect(Collectors.joining(","));
+    				hrmsSearchPath.append(finalValues);
+    			}else {
+    				String mdmsMapping = map.get("mdmsMapping").toString();
+    				String finalValues = values.stream().map(val -> val.toString()).collect(Collectors.joining(","));
+    				values = JsonPath.read(mdmsData, mdmsMapping.replace("{0}", finalValues));
+    				hrmsSearchPath.append(String.join(",", values));
+    			}
+    		}else
+    			hrmsSearchPath.append(value);
+    		
+    		hrmsSearchPath.append("&");
+    	
+    	}
+    	
+    	
+    	return hrmsSearchPath.toString();
     }
     
 }

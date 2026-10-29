@@ -151,11 +151,22 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
   // Assuming data is latest first, we don't reverse.
   const sortedData = data?.filter((val) => !(val?.performedAction === "SAVE_AS_DRAFT")) || [];
 
-  const codesArray = sortedData.map((item) => item?.assigner?.userName).filter(Boolean);
+  // Extract tenantId from assignes object, assigner, or fallback to passed tenantId prop
+  const searchTenantId =
+    sortedData?.flatMap((item) => item?.assignes || [])?.find((assignee) => assignee?.tenantId)?.tenantId ||
+    sortedData?.find((item) => item?.assigner?.tenantId)?.assigner?.tenantId ||
+    tenantId;
+
+  // Collect user codes from both assigner and assignes (filtering out SYSTEM)
+  const assignerCodes = sortedData.map((item) => item?.assigner?.userName).filter(Boolean);
+  const assigneeCodes = sortedData.flatMap((item) => item?.assignes?.map((a) => a?.userName) || []).filter(Boolean);
+  const codesArray = [...assignerCodes, ...assigneeCodes];
 
   const uniqueCodes = [...new Set(codesArray)].join(",");
 
-  const employeeData = Digit.Hooks.useEmployeeSearch(tenantId, { codes: uniqueCodes, isActive: true }, { enabled: !!uniqueCodes });
+
+  const employeeData = Digit.Hooks.useEmployeeSearch(searchTenantId, { codes: uniqueCodes, isActive: true }, { enabled: !!uniqueCodes });
+
 
   const BPA_ROLE_MAP = {
     "BPA_ARCHITECT": "Architect",
@@ -177,6 +188,7 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
  const getUserDesignation = (user) => {
   if (!user) return null;
 
+
   const emp = deptMap[user?.userName];
   if (emp) return emp;
 
@@ -189,9 +201,10 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
     data: {
       ...(workflowDetails?.data || {}),
       timeline: data?.map((item) => ({
-      ...item,
-      designationKey: getUserDesignation(item?.assigner), // ✅ attach it here
-    })),
+        ...item,
+        designationKey: getUserDesignation(item?.assigner), // ✅ attach it here
+        designationKeyAssignee: getUserDesignation(item?.assignes?.[0]),
+      })),
     },
   };
    const handleDownloadPDF = React.useCallback(() => {
@@ -234,6 +247,7 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
         <div className="custom-timeline-entries">
           {sortedData?.map((item, index) => {
             const designationKey = getUserDesignation(item?.assigner);
+            const designationKeyAssignee = getUserDesignation(item?.assignes?.[0]);
             return (
               <div key={index} className="custom-timeline-entry">
                 <div className="custom-vertical-line"></div>
@@ -343,6 +357,11 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
                                   <span className="custom-officer-email">- {t(deptMap[item.assignes[0]?.userName])}</span>
                                 )}
                               </div>
+                              {designationKeyAssignee && (
+                              <div className="custom-officer-name">
+                                {t(designationKeyAssignee)}
+                              </div>
+                            )}
                               {/* {deptMap[item.assignes[0]?.userName] && (
                               <div className="custom-officer-email">{t(deptMap[item.assignes[0]?.userName])}</div>
                             )} */}

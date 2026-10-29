@@ -1013,7 +1013,7 @@ const BpaApplicationDetail = () => {
         dowloadOptions.push({
           order: 3,
           label: t("BPA_PERMIT_ORDER"),
-          onClick: () => getPermitOccupancyOrderSearch({ tenantId: stateCode }, "buildingpermit"),
+          onClick: () => getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
         },
         {
           order: 4,

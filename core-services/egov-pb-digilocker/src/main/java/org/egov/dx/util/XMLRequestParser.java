@@ -42,6 +42,7 @@ public class XMLRequestParser {
             .docType(trim(request.getDocDetails().getDocType()))
             .payerName(trim(request.getDocDetails().getFullName()))
             .mobile(trim(request.getDocDetails().getMobile()))
+            .digiLockerId(trim(request.getDocDetails().getDigiLockerId()))
             .build();
             
         return criteria;

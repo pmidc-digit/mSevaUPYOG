@@ -23,34 +23,35 @@ export default ({ config }) => {
   return api;
 };
 export const searchApiResponse = async (request, next = {}) => {
-  let response = {
-    ResponseInfo: requestInfoToResponseInfo(request.body.RequestInfo, true),
-    FireNOCs: []
-  };
-  const queryObj = JSON.parse(JSON.stringify(request.query));
-  //console.log("request", request.query);
-  //console.log("Query object:"+JSON.stringify(queryObj));
-  let errors = validateFireNOCSearchModel(queryObj);
-  if (errors.length > 0) {
-    next({
-      errorType: "custom",
-      errorReponse: {
-        ResponseInfo: requestInfoToResponseInfo(request.body.RequestInfo, true),
-        Errors: errors
-      }
-    });
-    return;
-  }
-  console.log("QUERY OBJECT Test--> "+JSON.stringify(queryObj));
-  let text =
-    " SELECT * FROM (SELECT FN.uuid as FID,FN.tenantid,FN.fireNOCNumber,FN.islegacy,FN.provisionfirenocnumber,FN.oldfirenocnumber,FN.dateofapplied,FN.createdBy,FN.createdTime,FN.lastModifiedBy,FN.lastModifiedTime,FD.uuid as firenocdetailsid,FD.action,FD.applicationnumber,FD.fireNOCType,FD.applicationdate,FD.financialYear,FD.firestationid,FD.issuedDate,FD.validFrom,FD.validTo,FD.action,FD.status,FD.channel,FD.propertyid,FD.noofbuildings,FD.additionaldetail,FBA.uuid as puuid,FBA.doorno as pdoorno,FBA.latitude as platitude,FBA.longitude as plongitude,FBA.buildingName as pbuildingname,FBA.addressnumber as paddressnumber,FBA.pincode as ppincode,FBA.locality as plocality,FBA.landmark as landmark, FBA.addressline2,FBA.city as pcity, FBA.areatype as pareatype, FBA.subdistrict as psubdistrict, FBA.street as pstreet,FB.uuid as buildingid ,FB.name as buildingname,FB.usagetype,FB.usagesubtype,FB.leftsurrounding,FB.rightsurrounding,FB.frontsurrounding,FB.backsurrounding,FB.landarea,FB.totalcoveredarea,FB.parkingarea,FO.uuid as ownerid,FO.ownertype,FO.useruuid,FO.relationship,FUOM.uuid as uomuuid,FUOM.code,FUOM.value,FUOM.activeuom,FBD.uuid as documentuuid,FUOM.active,FBD.documentType,FBD.filestoreid,FBD.documentuid,FBD.createdby as documentCreatedBy,FBD.lastmodifiedby as documentLastModifiedBy,FBD.createdtime as documentCreatedTime,FBD.lastmodifiedtime as documentLastModifiedTime FROM eg_fn_firenoc FN JOIN eg_fn_firenocdetail FD ON (FN.uuid = FD.firenocuuid) JOIN eg_fn_address FBA ON (FD.uuid = FBA.firenocdetailsuuid) JOIN eg_fn_owner FO ON (FD.uuid = FO.firenocdetailsuuid) JOIN eg_fn_buidlings FB ON (FD.uuid = FB.firenocdetailsuuid) JOIN eg_fn_buildinguoms FUOM ON (FB.uuid = FUOM.buildinguuid) LEFT OUTER JOIN eg_fn_buildingdocuments FBD on(FB.uuid = FBD.buildinguuid)";
-  // FBD.active=true AND FO.active=true AND FUOM.active=true AND";
-  //if citizen
-  const roles = get(request.body, "RequestInfo.userInfo.roles");
-  const userUUID = get(request.body, "RequestInfo.userInfo.uuid");
-  const isUser = some(roles, { code: "CITIZEN" }) && userUUID;
-  //console.log("isUser"+isUser)
-  if (isUser) {
+  try {
+    let response = {
+      ResponseInfo: requestInfoToResponseInfo(request.body.RequestInfo, true),
+      FireNOCs: []
+    };
+    const queryObj = JSON.parse(JSON.stringify(request.query));
+    //console.log("request", request.query);
+    //console.log("Query object:"+JSON.stringify(queryObj));
+    let errors = validateFireNOCSearchModel(queryObj);
+    if (errors.length > 0) {
+      next({
+        errorType: "custom",
+        errorReponse: {
+          ResponseInfo: requestInfoToResponseInfo(request.body.RequestInfo, true),
+          Errors: errors
+        }
+      });
+      return;
+    }
+    console.log("QUERY OBJECT Test--> "+JSON.stringify(queryObj));
+    let text =
+      " SELECT * FROM (SELECT FN.uuid as FID,FN.tenantid,FN.fireNOCNumber,FN.islegacy,FN.provisionfirenocnumber,FN.oldfirenocnumber,FN.dateofapplied,FN.createdBy,FN.createdTime,FN.lastModifiedBy,FN.lastModifiedTime,FD.uuid as firenocdetailsid,FD.action,FD.applicationnumber,FD.fireNOCType,FD.applicationdate,FD.financialYear,FD.firestationid,FD.issuedDate,FD.validFrom,FD.validTo,FD.action,FD.status,FD.channel,FD.propertyid,FD.noofbuildings,FD.additionaldetail,FBA.uuid as puuid,FBA.doorno as pdoorno,FBA.latitude as platitude,FBA.longitude as plongitude,FBA.buildingName as pbuildingname,FBA.addressnumber as paddressnumber,FBA.pincode as ppincode,FBA.locality as plocality,FBA.landmark as landmark, FBA.addressline2,FBA.city as pcity, FBA.areatype as pareatype, FBA.subdistrict as psubdistrict, FBA.street as pstreet,FB.uuid as buildingid ,FB.name as buildingname,FB.usagetype,FB.usagesubtype,FB.leftsurrounding,FB.rightsurrounding,FB.frontsurrounding,FB.backsurrounding,FB.landarea,FB.totalcoveredarea,FB.parkingarea,FO.uuid as ownerid,FO.ownertype,FO.useruuid,FO.relationship,FUOM.uuid as uomuuid,FUOM.code,FUOM.value,FUOM.activeuom,FBD.uuid as documentuuid,FUOM.active,FBD.documentType,FBD.filestoreid,FBD.documentuid,FBD.createdby as documentCreatedBy,FBD.lastmodifiedby as documentLastModifiedBy,FBD.createdtime as documentCreatedTime,FBD.lastmodifiedtime as documentLastModifiedTime FROM eg_fn_firenoc FN JOIN eg_fn_firenocdetail FD ON (FN.uuid = FD.firenocuuid) JOIN eg_fn_address FBA ON (FD.uuid = FBA.firenocdetailsuuid) JOIN eg_fn_owner FO ON (FD.uuid = FO.firenocdetailsuuid) JOIN eg_fn_buidlings FB ON (FD.uuid = FB.firenocdetailsuuid) JOIN eg_fn_buildinguoms FUOM ON (FB.uuid = FUOM.buildinguuid) LEFT OUTER JOIN eg_fn_buildingdocuments FBD on(FB.uuid = FBD.buildinguuid)";
+    // FBD.active=true AND FO.active=true AND FUOM.active=true AND";
+    //if citizen
+    const roles = get(request.body, "RequestInfo.userInfo.roles");
+    const userUUID = get(request.body, "RequestInfo.userInfo.uuid");
+    const isUser = some(roles, { code: "CITIZEN" }) && userUUID;
+    //console.log("isUser"+isUser)
+    if (isUser) {
     const mobileNumber = get(request.body, "RequestInfo.userInfo.mobileNumber");
     const tenantId = get(request.body, "RequestInfo.userInfo.tenantId");
     
@@ -312,38 +313,25 @@ console.log("final Query"+JSON.stringify(sqlQuery));
   sqlQuery = `${sqlQuery.substring(0, sqlQuery.length - 3)}  ) s ORDER BY fid `;
 }
 
-  console.log("SQL QUery:" +sqlQuery);
-  const dbResponse = await db.query(sqlQuery);
-  //console.log("dbResponse"+JSON.stringify(dbResponse));
-  if (dbResponse.err) {
-    console.log(err.stack);
-  } else {
-   // console.log(JSON.stringify(dbResponse.rows));
-    response.FireNOCs =
-      dbResponse.rows && !isEmpty(dbResponse.rows)
-        ? await mergeSearchResults(
-            dbResponse.rows,
-            request.query,
-            request.body.RequestInfo
-          )
-        : [];
+    console.log("SQL QUery:" +sqlQuery);
+    const dbResponse = await db.query(sqlQuery);
+    //console.log("dbResponse"+JSON.stringify(dbResponse));
+    if (dbResponse.err) {
+      console.log(err.stack);
+    } else {
+     // console.log(JSON.stringify(dbResponse.rows));
+      response.FireNOCs =
+        dbResponse.rows && !isEmpty(dbResponse.rows)
+          ? await mergeSearchResults(
+              dbResponse.rows,
+              request.query,
+              request.body.RequestInfo
+            )
+          : [];
+    }
+    return response;
+  } catch (error) {
+    console.error("Error in searchApiResponse:", error);
+    throw error;
   }
-  return response;
-
-  // , async (err, dbRes) => {
-  //   if (err) {
-  //     console.log(err.stack);
-  //   } else {
-  //     // console.log(JSON.stringify(res.rows));
-  //     response.FireNOCs =
-  //       dbRes.rows && !isEmpty(dbRes.rows)
-  //         ? await mergeSearchResults(
-  //             dbRes.rows,
-  //             request.query,
-  //             request.body.RequestInfo
-  //           )
-  //         : [];
-  //    return (response);
-  //   }
-  // });
 };

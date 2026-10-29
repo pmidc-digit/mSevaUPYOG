@@ -59,8 +59,8 @@ public class SearchRepository {
 			
 	public List<String> fetchData(SearchRequest searchRequest, Definition definition) {
         Map<String, Object> preparedStatementValues = new HashMap<>();
-        String query = searchUtils.buildQuery(searchRequest, definition.getSearchParams(), definition.getQuery(), preparedStatementValues);
-		log.info("Final Query: " + query);
+        String query = searchUtils.buildQuery(searchRequest, definition.getSearchParams(), definition.getQuery(), definition, preparedStatementValues);
+		log.info("Final Query: \n" + SearchUtils.getExecutableQuery(query, preparedStatementValues));
 		//log.debug("preparedStatementValues: " + preparedStatementValues);
  		List<PGobject> maps = namedParameterJdbcTemplate.queryForList(query, preparedStatementValues, PGobject.class);
  		log.info("data before convertPGOBjects" + maps);
@@ -75,11 +75,12 @@ public class SearchRepository {
 	            searchRequest,
 	            searchDefinition.getSearchParams(),
 	            searchDefinition.getQuery(),
+	            searchDefinition,
 	            preparedStatementValues
 	    );
 
 	    try {
-	        log.info("Final Query: " + query);
+	        log.info("Final Query: \n" + SearchUtils.getExecutableQuery(query, preparedStatementValues));
 	        
 
 	        String rowMapperKey = searchDefinition.getRowMapperKey();
@@ -112,6 +113,7 @@ public class SearchRepository {
 	        if (url != null && url.toLowerCase().contains("integrated")) {
 	            log.info("URL contains 'integrated': " + url);
 	            integratedResult = namedParameterJdbcTemplate.query(query, preparedStatementValues, integratedRowMapper);
+	            return integratedResult;
 	        } 
 
 	        // 3️⃣ Saski / Property search
@@ -125,11 +127,6 @@ public class SearchRepository {
 	        else {
 	            log.info("URL does not contain 'integrated' or 'saski': " + url);
 	            normalResult = namedParameterJdbcTemplate.query(query, preparedStatementValues, rowMapper);
-	        }
-
-	        // Return integrated if exists
-	        if (integratedResult != null && !integratedResult.isEmpty()) {
-	            return integratedResult;
 	        }
 
 	        // Sort BillDetails for SW/WS

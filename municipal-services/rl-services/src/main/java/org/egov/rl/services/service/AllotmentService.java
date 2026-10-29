@@ -240,8 +240,8 @@ public class AllotmentService {
         if (additionalDetails.has(RLConstants.LEGACY_ARREAR_START_DATE_KEY)) {
             arrearStartDate = additionalDetails.get(RLConstants.LEGACY_ARREAR_START_DATE_KEY).asLong();
         }
-        if (additionalDetails.has(RLConstants.LEGACY_ARREAR_END_DATE_KEY)) {
-            arrearEndDate = additionalDetails.get(RLConstants.LEGACY_ARREAR_END_DATE_KEY).asLong();
+        if (additionalDetails.has(RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY)) {
+            arrearEndDate = additionalDetails.get(RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY).asLong();
         }
 
         CalculationReq calculationReq = getCalculationReqForLegacy(allotmentRequest, arrearAmount, arrearStartDate, arrearEndDate);
@@ -267,8 +267,8 @@ public class AllotmentService {
                 .isSatelment(false)
                 .isLegacyArrear(true)
                 .arrearAmount(arrearAmount)
-                .fromDate(arrearStartDate)
-                .toDate(arrearEndDate)
+                .arrearStartDate(arrearStartDate)
+                .lastBillingPeriod(arrearEndDate)
                 .allotmentRequest(allotmentRequest)
                 .build();
         calculationCriteriaList.add(calculationCriteria);

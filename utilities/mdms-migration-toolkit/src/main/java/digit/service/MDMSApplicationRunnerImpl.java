@@ -29,6 +29,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
+import digit.util.DataSanitizerUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 
@@ -127,6 +128,7 @@ public class MDMSApplicationRunnerImpl {
             try {
                 masterDataJsonArray = JsonPath.read(objectMapper.writeValueAsString(map.get(masterName)),
                         "$");
+                DataSanitizerUtil.sanitizeMasterData(masterDataJsonArray, masterName);
             } catch (JsonProcessingException e) {
                 log.error("Error while parsing file", e);
             }

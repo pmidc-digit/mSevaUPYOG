@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import digit.util.DataSanitizerUtil;
 import digit.util.FileReader;
 import digit.web.models.MasterDataMigrationRequest;
 
@@ -87,6 +88,10 @@ public class MasterDataMigrationService {
                         if(!masterDatumJsonNode.has("id")) {
                         	((ObjectNode)masterDatumJsonNode).put("id", UUID.randomUUID().toString());
                         }
+
+                        // Sanitize numeric fields: replace null with 0/0.0 and convert string numbers
+                        // to number type
+                        DataSanitizerUtil.sanitizeObjectNode((ObjectNode) masterDatumJsonNode, master);
 
                         // Build MDMS objects
                         Mdms mdms = Mdms.builder()

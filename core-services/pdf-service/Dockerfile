@@ -6,8 +6,8 @@ ENV npm_config_cache=/tmp
 WORKDIR /app
 
 RUN apk update && \
-    apk add --no-cache ca-certificates
-    
+    apk add --no-cache ca-certificates  
+
 COPY ./mseva.lgpunjab.gov.in.crt /usr/local/share/ca-certificates/mseva.lgpunjab.gov.in.crt
 
 RUN update-ca-certificates
@@ -17,6 +17,7 @@ RUN update-ca-certificates
 COPY ${WORK_DIR} .
 
 RUN npm install
+
 # set your port
 ENV PORT 8080
 # expose the port to outside world

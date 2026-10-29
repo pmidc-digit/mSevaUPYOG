@@ -87,12 +87,24 @@ public class PaymentUpdateService {
 					String tenantIdFromSearch = applications.get(0).getTenantId();
 
                     applications.forEach(application -> {
-								Workflow workflow=new Workflow();
-								workflow.setAction(NDCConstants.ACTION_PAY);
-								application.setWorkflow(workflow);
-								application.setAction(NDCConstants.ACTION_PAY);
-							}
-						);
+						// Fix P2-NDC: Idempotency guard — skip applications already past the PAY step.
+						// Re-consuming the same Kafka payment event for an already-paid/approved application
+						// causes callWorkFlow() to throw CustomException INVALID_ACTION.
+						String currentStatus = application.getApplicationStatus();
+						if (NDCConstants.APPROVED_STATE.equalsIgnoreCase(currentStatus)
+								|| NDCConstants.AUTOAPPROVED_STATE.equalsIgnoreCase(currentStatus)
+								|| "REJECTED".equalsIgnoreCase(currentStatus)
+								|| "DOCUMENTVERIFY".equalsIgnoreCase(currentStatus)) {
+							log.warn("PaymentUpdateService: Skipping ACTION_PAY for application {} — already in terminal/post-payment status '{}'.",
+									application.getApplicationNo(), currentStatus);
+							return;
+						}
+						Workflow workflow=new Workflow();
+						workflow.setAction(NDCConstants.ACTION_PAY);
+						application.setWorkflow(workflow);
+						application.setAction(NDCConstants.ACTION_PAY);
+					}
+				);
 
 					Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(tenantIdFromSearch).build();
 					requestInfo.getUserInfo().getRoles().add(role);

@@ -11,6 +11,7 @@ if(config.serviceProvider === 'eGov') {
         console.log('Using PGR v1');
         module.exports.pgrService = require('./egov-pgr-v1');
     }
+    module.exports.swachService = require('./egov-swach');
 }
 else {
     console.log("Using Dummy Services");

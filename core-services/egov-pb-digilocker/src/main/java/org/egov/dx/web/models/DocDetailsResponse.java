@@ -30,4 +30,6 @@ public class DocDetailsResponse {
 	@XStreamAlias("DataContent")
     private String dataContent;
      
+	@XStreamAlias("DigiLockerId")
+    private String digiLockerId;
 }

@@ -20,6 +20,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
       "businessServiceSla": null,
       "states": [
         {
+          "tenantId": "pb",
           "sla": null,
           "state": null,
           "applicationStatus": "INWORKFLOW",
@@ -29,6 +30,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
           "isStateUpdatable": false,
           "actions": [
             {
+              "tenantId": "pb",
               "action": "OPEN",
               "nextState": "INITIATED",
               "roles": [
@@ -40,6 +42,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
           ]
         },
         {
+          "tenantId": "pb",
           "sla": null,
           "state": "INITIATED",
           "applicationStatus": "INWORKFLOW",
@@ -49,49 +52,50 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
           "isStateUpdatable": true,
           "actions": [
             {
+              "tenantId": "pb",
               "action": "SUBMIT",
-              "nextState": "APPROVED",
+              "nextState": "PENDINGWS",
               "roles": [
                 "EMPLOYEE",
                 "CITIZEN",
                 "SW_CEMP",
                 "WS_CEMP"
+              ]
+            }
+          ]
+        },
+        {
+          "tenantId": "pb",
+          "sla": null,
+          "state": "PENDINGWS",
+          "applicationStatus": "PENDINGWS",
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": false,
+          "isStateUpdatable": false,
+          "actions": [
+            {
+              "tenantId": "pb",
+              "action": "APPROVE",
+              "nextState": "APPROVED",
+              "roles": [
+                "PT_APPROVER",
+                "EMPLOYEE"
               ]
             },
             {
-              "action": "BACK",
-              "nextState": "INWORKFLOW",
+              "tenantId": "pb",
+              "action": "REJECT",
+              "nextState": "REJECTED",
               "roles": [
-                "EMPLOYEE",
-                "CITIZEN",
-                "SW_CEMP",
-                "WS_CEMP"
+                "PT_APPROVER",
+                "EMPLOYEE"
               ]
             }
           ]
         },
         {
-          "sla": null,
-          "state": "INWORKFLOW",
-          "applicationStatus": "INWORKFLOW",
-          "docUploadRequired": false,
-          "isStartState": true,
-          "isTerminateState": false,
-          "isStateUpdatable": true,
-          "actions": [
-            {
-              "action": "SUBMIT",
-              "nextState": "APPROVED",
-              "roles": [
-                "EMPLOYEE",
-                "CITIZEN",
-                "SW_CEMP",
-                "WS_CEMP"
-              ]
-            }
-          ]
-        },
-        {
+          "tenantId": "pb",
           "sla": null,
           "state": "APPROVED",
           "applicationStatus": "ACTIVE",
@@ -99,7 +103,18 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
           "isStartState": false,
           "isTerminateState": true,
           "isStateUpdatable": false,
-          "actions": null
+          "actions": []
+        },
+        {
+          "tenantId": "pb",
+          "sla": null,
+          "state": "REJECTED",
+          "applicationStatus": "INACTIVE",
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": true,
+          "isStateUpdatable": false,
+          "actions": []
         }
       ]
     }

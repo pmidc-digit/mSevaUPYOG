@@ -94,5 +94,5 @@ public interface WSCalculationDao {
 	 */
 	List<BulkMeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria);
 
-	Boolean isBatchDemandExecuted(String tenantId, Long taxPeriodFrom, Long taxPeriodTo);
+	Boolean isBatchDemandExecuted(String tenantId, String locality, Long taxPeriodFrom, Long taxPeriodTo);
 }

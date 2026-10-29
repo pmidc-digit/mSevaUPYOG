@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
@@ -125,6 +126,37 @@ public class UserService {
 			return u;
 		}).collect(Collectors.toList());
 		allotmentRequest.getAllotment().get(0).setOwnerInfo(ownerInfos);
+
+		if (allotmentDetails.getAdditionalDetails() != null) {
+			com.fasterxml.jackson.databind.JsonNode addnl = allotmentDetails.getAdditionalDetails();
+			if (addnl.has("alternateMobileNumber") && !addnl.get("alternateMobileNumber").isNull()) {
+				String alternateMobileNumber = addnl.get("alternateMobileNumber").asText();
+				if (StringUtils.isNotBlank(alternateMobileNumber)) {
+					Owner altOwner = Owner.builder()
+							.name("Tenant")
+							.mobileNumber(alternateMobileNumber)
+							.roles(getCitizenRole())
+							.userName(alternateMobileNumber)
+							.tenantId(allotmentDetails.getTenantId())
+							.build();
+					addUserDefaultFields(allotmentDetails.getTenantId(), getCitizenRole().get(0), altOwner);
+					UserDetailResponse mobileSearch = userExists(altOwner, requestInfo);
+					org.egov.rl.services.models.user.User existingUser = null;
+					if (mobileSearch != null && !CollectionUtils.isEmpty(mobileSearch.getUser())) {
+						existingUser = mobileSearch.getUser().get(0);
+					} else {
+						UserDetailResponse userNameSearch = searchByUserName(alternateMobileNumber, allotmentDetails.getTenantId());
+						if (userNameSearch != null && !CollectionUtils.isEmpty(userNameSearch.getUser())) {
+							existingUser = userNameSearch.getUser().get(0);
+						}
+					}
+					if (existingUser == null) {
+						setUserName(altOwner);
+						createUser(requestInfo, altOwner);
+					}
+				}
+			}
+		}
 	}
 
 	/**

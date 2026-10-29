@@ -94,6 +94,9 @@ public class SWCalculationConfiguration {
 
     @Value("${notification.mail.recipients}")
     private String mailRecipients;
+
+    @Value("${notification.mail.cc.recipients:}")
+    private String mailCcRecipients;
     
     //User-events
     @Value("${egov.user.event.notification.enabled}")

@@ -23,6 +23,8 @@ public interface WSCalculationDao {
 	
 	void updateMeterReading(MeterConnectionRequest meterConnectionRequest);
 	void cancelPreviousMeterReading(CancelDemandReq cancelDemandPayload);
+
+	Boolean cancelDemandAndExpiryBills(CancelDemandReq cancelDemandPayload);
 	
 	List<MeterReading> searchMeterReadings(MeterReadingSearchCriteria criteria);
 	
@@ -64,7 +66,7 @@ public interface WSCalculationDao {
 	public List<Canceldemandsearch> getConnectionCancels( String tenantId, String demandid);
 	
 	public Boolean getUpdates(List demandlists);
-	public List<Map<String, Object>>  getCollection(String tenatId,Long fromDate, Long toDate, String connectionno);
+	public List<Map<String, Object>>  getCollection(String tenatId,Long fromDate, Long toDate, String connectionno,String businessService);
 
 	
 	public List<BillSearchs> getBillss (String tenantId, String demandid);

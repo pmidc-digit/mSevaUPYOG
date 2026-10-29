@@ -47,6 +47,9 @@
 
 package org.egov.edcr.web.controller.rest;
 
+import static org.egov.edcr.utility.DcrConstants.FILESTORE_MODULECODE;
+
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -76,6 +79,7 @@ import org.egov.edcr.contract.EdcrResponse;
 import org.egov.edcr.contract.PlanResponse;
 import org.egov.edcr.entity.ApplicationType;
 import org.egov.edcr.service.EdcrApplicationService;
+import org.egov.edcr.service.EdcrApplicationService.CustomMultipartFile;
 import org.egov.edcr.service.EdcrRestService;
 import org.egov.edcr.service.EdcrValidator;
 import org.egov.edcr.service.FetchEdcrRulesMdms;
@@ -83,6 +87,8 @@ import org.egov.edcr.service.OcComparisonService;
 import org.egov.edcr.service.PlanService;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.filestore.entity.FileStoreMapper;
+import org.egov.infra.filestore.service.FileStoreService;
+import org.egov.infra.filestore.service.impl.CompressionService;
 import org.egov.infra.microservice.contract.RequestInfoWrapper;
 import org.egov.infra.microservice.contract.ResponseInfo;
 import org.egov.infra.microservice.models.RequestInfo;
@@ -90,11 +96,13 @@ import org.egov.infra.microservice.models.UserInfo;
 import org.egov.infra.utils.FileStoreUtils;
 import org.egov.infra.utils.StringUtils;
 import org.egov.infra.web.rest.error.ErrorResponse;
+import org.hibernate.exception.ConstraintViolationException;
 import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -157,6 +165,12 @@ public class RestEdcrApplicationController {
     
     @Autowired
     private EdcrApplicationService edcrApplicationService;
+    
+    @Autowired
+    private FileStoreService fileStoreService;
+    
+    @Autowired
+    private CompressionService CompressionService;
 
     @PostMapping(value = "/scrutinizeplan", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -179,7 +193,7 @@ public class RestEdcrApplicationController {
             if (errorResponses != null)
                 return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);
             else {
-                edcrDetail = edcrRestService.createEdcr(edcr, planFile, new HashMap<>());
+                edcrDetail = edcrRestService.createEdcr(edcr, planFile, new HashMap<>(), null);
             }
 
         } catch (IOException e) {
@@ -214,7 +228,7 @@ public class RestEdcrApplicationController {
             else {
                 edcr.setAppliactionType(ApplicationType.OCCUPANCY_CERTIFICATE.toString());
 
-                edcrDetail = edcrRestService.createEdcr(edcr, planFile, new HashMap<>());
+                edcrDetail = edcrRestService.createEdcr(edcr, planFile, new HashMap<>(), null);
             }
 
         } catch (IOException e) {
@@ -228,7 +242,8 @@ public class RestEdcrApplicationController {
     @PostMapping(value = "/scrutinize", consumes = { MediaType.APPLICATION_JSON_UTF8_VALUE,
             MediaType.MULTIPART_FORM_DATA_VALUE }, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<?> scrutinize(@RequestPart("planFile") MultipartFile planFile,
+    public ResponseEntity<?> scrutinize(@RequestPart(value = "planFile", required = false) MultipartFile planFile,
+    		@RequestPart(value = "controlSheet", required = false) MultipartFile controlSheet,
             @RequestParam("edcrRequest") String edcrRequest, final HttpServletRequest request) throws Exception {
         String userInfo = request.getHeader(USER_INFO_HEADER_NAME);
         LOGGER.info("###User Info####"+userInfo);
@@ -259,10 +274,35 @@ public class RestEdcrApplicationController {
             ErrorDetail edcRes = edcrValidator.validate(edcr);
             if (edcRes != null && StringUtils.isNotBlank(edcRes.getErrorMessage()))
                 return new ResponseEntity<>(edcRes, HttpStatus.BAD_REQUEST);
-            List<ErrorDetail> errors = edcrRestService.validateEdcrMandatoryFields(edcr);
+            List<ErrorDetail> errors = edcrRestService.validateEdcrMandatoryFields(edcr);                       
+            
+            if (Boolean.TRUE.equals(edcr.getSiteReserved())
+                    && Boolean.TRUE.equals(edcr.getApprovedCS())) {
+                if (controlSheet == null || controlSheet.isEmpty()) {
+                	LOGGER.info("ControSheet is not provided in request. Fetching controlSheet file from FileStore.");
+                	controlSheet = edcrRestService.getControlSheetFromFileStore(edcr);
+                    //errors.add(new ErrorDetail("BPA-22","Control Sheet PDF is required"));
+                } else {
+                    String fileName = controlSheet.getOriginalFilename();
+                    if (StringUtils.isBlank(fileName) || !fileName.toLowerCase().endsWith(".pdf")) {
+                        errors.add(new ErrorDetail("BPA-22","Only PDF file are allow for Control Sheet upload"));
+                    }
+                }
+            }
+            
             if (!errors.isEmpty())
-                return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-
+                return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST); 
+            
+            // getting the file form the edcrRequest
+            if (planFile == null || planFile.isEmpty()) {
+                LOGGER.info("planFile is not provided in request. Fetching DXF file from FileStore.");
+                planFile = edcrRestService.getPlanFileFromFileStore(edcr);
+            } else {
+                LOGGER.info("planFile is provided in request. Using uploaded planFile. fileName={}, size={}",
+                        planFile.getOriginalFilename(), planFile.getSize());
+            }            
+            
+            
             String applicationType = edcr.getAppliactionType();
             String serviceType = edcr.getApplicationSubType();
             Map<String, List<Object>> masterData = new HashMap<>();
@@ -304,7 +344,7 @@ public class RestEdcrApplicationController {
             if (!errorResponses.isEmpty())
                 return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);
             else {
-                edcrDetail = edcrRestService.createEdcr(edcr, planFile, masterData);
+                edcrDetail = edcrRestService.createEdcr(edcr, planFile, masterData, controlSheet);
             }
 
         } catch (IOException e) {
@@ -391,7 +431,7 @@ public class RestEdcrApplicationController {
             if (!errorResponses.isEmpty())
                 return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);
             else {
-                edcrDetail = edcrRestService.createEdcr(edcr, planFile, masterData);
+                edcrDetail = edcrRestService.createEdcr(edcr, planFile, masterData, null);
             }
 
         } catch (IOException e) {
@@ -496,37 +536,6 @@ public class RestEdcrApplicationController {
         ResponseInfo responseInfo = edcrRestService.createResponseInfoFromRequestInfo(requestInfo, true);
         planRes.setResponseInfo(responseInfo);
         return new ResponseEntity<>(planRes, HttpStatus.OK);
-    }
-    
-    @ExceptionHandler(EdcrException.class)
-    public final ResponseEntity<ErrorResponse> handleEdcrException(EdcrException ex) {
-
-        ErrorResponse error = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage(),
-                ex.getStatus());
-
-        return new ResponseEntity<>(error, ex.getStatus());
-    }
-
-    @ExceptionHandler(Exception.class)
-    public final ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-
-        String errorDesc;
-        if (ex.getLocalizedMessage() == null) {
-            errorDesc = String.valueOf(ex).length() <= 200
-                    ? String.valueOf(ex)
-                    : String.valueOf(ex).substring(0, 200);
-        } else {
-            errorDesc = ex.getMessage();
-        }
-
-        ErrorResponse error = new ErrorResponse(
-                "Internal Server Error",
-                errorDesc,
-                HttpStatus.INTERNAL_SERVER_ERROR);
-
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PostMapping(value = "/occomparison", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -704,100 +713,93 @@ public class RestEdcrApplicationController {
     		        errorResponse.put("message", "PDF processing failed");
     		        errorResponse.put("error", e.getMessage());
 
-    		        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    		        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 
     		    } catch (Exception e) {
 
     		        LOGGER.error("Unexpected error occurred during mergeSanctionLetter", e);
 
     		        Map<String, Object> errorResponse = new HashMap<>();
-    		        errorResponse.put("message", "Internal server error");
+    		        errorResponse.put("message", "Bad request: PDF processing failed");
     		        errorResponse.put("error", e.getMessage());
 
-    		        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    		        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     		    }
     		}
     		    
     
    
-    @PostMapping(value = "/updateBPADetails", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public ResponseEntity<?> updateBPADetails(@RequestBody Object bpaObject) {
-    	Map<String, Object> response = new HashMap<>();
-        try {
-            String applicationNo = getJsonValue(bpaObject, "$.BPA[0].applicationNo");
-            if (applicationNo == null || applicationNo.trim().isEmpty()) {
-                response.put("success", false);
-                response.put("message", "Application number is mandatory.");
-                return ResponseEntity.badRequest().body(response);
-            }
+			@PostMapping(value = "/updateBPADetails", produces = MediaType.APPLICATION_JSON_VALUE)
+			@ResponseBody
+			public ResponseEntity<?> updateBPADetails(@RequestBody Object bpaObject) {
+				Map<String, Object> response = new HashMap<>();
+				try {
+					String applicationNo = getJsonValue(bpaObject, "$.BPA[0].applicationNo");
+					if (applicationNo == null || applicationNo.trim().isEmpty()) {
+						response.put("success", false);
+						response.put("message", "Application number is mandatory.");
+						return ResponseEntity.badRequest().body(response);
+					}
 
-            String examinedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
-            String approvedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
-            String approvedDate = getJsonValue(bpaObject, "$.BPA[0].approvalDate");
-            String validDate = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.validityDate");
-            String edcrNo = getJsonValue(bpaObject, "$.BPA[0].edcrNumber");
-            String zone = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.zonenumber");
-            Boolean isSelfCertification = JsonPath.read(
-                    bpaObject,
-                    "$.BPA[0].additionalDetails.isSelfCertification"
-            );
-            String tenantId = getJsonValue(bpaObject, "$.BPA[0].tenantId");
+					String examinedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
+					String approvedBy = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
+					String approvedDate = getJsonValue(bpaObject, "$.BPA[0].approvalDate");
+					String validDate = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.validityDate");
+					String edcrNo = getJsonValue(bpaObject, "$.BPA[0].edcrNumber");
+					String zone = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.zonenumber");
+					Boolean isSelfCertification = JsonPath.read(bpaObject,
+							"$.BPA[0].additionalDetails.isSelfCertification");
+					String tenantId = getJsonValue(bpaObject, "$.BPA[0].tenantId");
 
-            String eSign;
-            String eSignName;
+					String eSign;
+					String eSignName;
 
-            if (Boolean.TRUE.equals(isSelfCertification)) {
-                eSign = "Licensed professional";
-                eSignName = getJsonValue(bpaObject,
-                        "$.BPA[0].additionalDetails.stakeholderName");
-            } else {
-                eSign = "Competent Authority";
-                eSignName = getJsonValue(bpaObject,
-                        "$.BPA[0].additionalDetails.approvedBy");
-            }
+					if (Boolean.TRUE.equals(isSelfCertification)) {
+						eSign = "Licensed professional";
+						eSignName = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.stakeholderName");
+					} else {
+						eSign = "Competent Authority";
+						eSignName = getJsonValue(bpaObject, "$.BPA[0].additionalDetails.approvedBy");
+					}
 
-            approvedDate = formatEpochDate(approvedDate);
-            validDate = formatEpochDate(validDate);
+					approvedDate = formatEpochDate(approvedDate);
+					validDate = formatEpochDate(validDate);
 
-            edcrApplicationService.updateDXFOutput(
-                    applicationNo,
-                    examinedBy,
-                    approvedBy,
-                    approvedDate,
-                    validDate,
-                    edcrNo,
-                    isSelfCertification,
-                    eSign,
-                    eSignName,
-                    tenantId,
-                    zone
-            );
+					String proposedSiteAddress = getJsonValue(bpaObject,
+							"$.BPA[0].additionalDetails.registrationDetails");
+					String pinCode = getJsonValue(bpaObject, "$.BPA[0].landInfo.address.pincode");
 
-            response.put("success", true);
-            response.put("message", "BPA details updated successfully.");
-            return ResponseEntity.ok(response);
+					if (StringUtils.isNotBlank(pinCode)) {
+						proposedSiteAddress = proposedSiteAddress + ", Pincode - " + pinCode;
+					}
 
-        } catch (PathNotFoundException ex) {
-            LOGGER.error("Required JSON path not found in BPA request.", ex);
-            response.put("success", false);
-            response.put("message", "Invalid BPA request payload.");
-            return ResponseEntity.badRequest().body(response);
+					edcrApplicationService.updateDXFOutput(applicationNo, examinedBy, approvedBy, approvedDate,
+							validDate, edcrNo, isSelfCertification, eSign, eSignName, tenantId, zone,
+							proposedSiteAddress);
 
-        } catch (IllegalArgumentException ex) {
-            LOGGER.error("Validation failed while processing BPA details.", ex);
-            response.put("success", false);
-            response.put("message", ex.getMessage());
-            return ResponseEntity.badRequest().body(response);
+					response.put("success", true);
+					response.put("message", "BPA details updated successfully.");
+					return ResponseEntity.ok(response);
 
-        } catch (Exception ex) {
-            LOGGER.error("Unexpected error while updating BPA details.", ex);
-            response.put("success", false);
-            response.put("message", "Internal server error occurred while processing BPA details.");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(response);
-        }
-    }
+				} catch (PathNotFoundException ex) {
+					LOGGER.error("Required JSON path not found in BPA request.", ex);
+					response.put("success", false);
+					response.put("message", "Invalid BPA request payload.");
+					return ResponseEntity.badRequest().body(response);
+
+				} catch (IllegalArgumentException ex) {
+					LOGGER.error("Validation failed while processing BPA details.", ex);
+					response.put("success", false);
+					response.put("message", ex.getMessage());
+					return ResponseEntity.badRequest().body(response);
+
+				} catch (Exception ex) {
+					LOGGER.error("Unexpected error while updating BPA details.", ex);
+					response.put("success", false);
+					response.put("message", "Bad request: Failed to update BPA details: " + ex.getMessage());
+					return ResponseEntity.badRequest().body(response);
+				}
+			}
 
     private String getJsonValue(Object json, String path) {
         try {
@@ -827,5 +829,4 @@ public class RestEdcrApplicationController {
     	        return "";
     	    }
 	}
-    
 }

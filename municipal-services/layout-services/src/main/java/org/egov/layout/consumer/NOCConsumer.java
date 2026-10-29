@@ -20,8 +20,7 @@ public class NOCConsumer {
 	@Autowired
 	private NOCNotificationService notificationService;
 	
-	@KafkaListener(topics = { "${persister.save.layout.topic}", "${persister.update.layout.topic}",
-			"${persister.update.layout.workflow.topic}" },
+	@KafkaListener(topics = { "${persister.update.layout.topic}", "${persister.update.layout.workflow.topic}" },
 			concurrency = "${kafka.consumer.config.concurrency.count}"
 	)
 

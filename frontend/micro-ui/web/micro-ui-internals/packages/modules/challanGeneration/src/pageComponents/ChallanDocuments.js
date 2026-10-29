@@ -1,7 +1,7 @@
 import React, { use, useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair, ActionBar } from "@mseva/digit-ui-react-components";
 import { Loader } from "../components/Loader";
-import EXIF from "exif-js";
+import EXIF from "../utils/exif-compat";
 
 const ChallanDocuments = ({
   t,

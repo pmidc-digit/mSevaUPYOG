@@ -26,6 +26,10 @@ public interface IESService {
 
     Boolean push(Map requestBody) throws Exception;
 
+    default Boolean bulkPush(List<Map> requestBodies) throws Exception {
+        return Boolean.TRUE;
+    }
+
     default boolean createIndex(String indexName){
         return Boolean.TRUE;
     }

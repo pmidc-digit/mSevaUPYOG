@@ -310,4 +310,26 @@ public class UserService {
 		return designationMap;
 	}
     
+	public String getEmployeeSearchPATH(String tenantId,Map<String, String> additionalDetails) {
+		String zones = StringUtils.isEmpty(additionalDetails.get("zonenumber")) ? null
+				: additionalDetails.get("zonenumber").toString();
+		String categories = StringUtils.isEmpty(additionalDetails.get("categories")) ? null
+				: additionalDetails.get("categories").toString();
+		String subcategories = StringUtils.isEmpty(additionalDetails.get("subcategories")) ? null
+				: additionalDetails.get("subcategories").toString();
+
+		StringBuilder uri = new StringBuilder();
+
+		uri.append("assignedtenattids=").append(tenantId);
+		if (!StringUtils.isEmpty(zones))
+			uri.append("&zones=").append(zones);
+		if (!StringUtils.isEmpty(categories))
+			uri.append("&categories=").append(categories);
+		if (!StringUtils.isEmpty(subcategories))
+			uri.append("&subcategories=").append(subcategories);
+		uri.append("&modulename=").append(BPAConstants.MODULENAME);
+
+		return uri.toString();
+	}
+    
 }

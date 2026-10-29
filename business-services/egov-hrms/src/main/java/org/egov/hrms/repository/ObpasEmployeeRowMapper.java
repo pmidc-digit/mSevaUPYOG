@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -40,6 +41,9 @@ public class ObpasEmployeeRowMapper implements ResultSetExtractor<List<ObpasEmpl
             emp.setAssignedTenantId(rs.getString("assigned_tenantid"));
             if (hasColumn(rs, "modulename")) {
                 emp.setModulename(rs.getString("modulename"));
+            }
+            if (hasColumn(rs, "role_code")) {
+                emp.setRoles(rs.getString("role_code"));
             }
             emp.setAuditDetails(audit);
 

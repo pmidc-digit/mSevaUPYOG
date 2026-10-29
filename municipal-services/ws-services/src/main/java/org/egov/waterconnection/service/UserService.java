@@ -75,11 +75,31 @@ public class UserService {
 	            setOwnerFields(holderInfo, createdUser, request.getRequestInfo());
 
 	        } else {
-
-	            holderInfo.setUuid(existingUser.getUser().get(0).getUuid());
-	            holderInfo.setId(existingUser.getUser().get(0).getId());
-
-	            setOwnerFields(holderInfo, existingUser, request.getRequestInfo());
+	            OwnerInfo dbUser = existingUser.getUser().get(0);
+	            boolean isChanged = !java.util.Objects.equals(dbUser.getName(), holderInfo.getName()) ||
+	                                !java.util.Objects.equals(dbUser.getFatherOrHusbandName(), holderInfo.getFatherOrHusbandName()) ||
+	                                !java.util.Objects.equals(dbUser.getGender(), holderInfo.getGender()) ||
+	                                !java.util.Objects.equals(dbUser.getCorrespondenceAddress(), holderInfo.getCorrespondenceAddress()) ||
+	                                !java.util.Objects.equals(dbUser.getEmailId(), holderInfo.getEmailId());
+	                                
+	            if (isChanged) {
+	                holderInfo.setId(null);
+	                holderInfo.setUuid(null);
+	                holderInfo.setUserName(java.util.UUID.randomUUID().toString());
+	                
+	                StringBuilder uri = new StringBuilder(configuration.getUserHost())
+	                        .append(configuration.getUserContextPath())
+	                        .append(configuration.getUserCreateEndPoint());
+	                        
+	                ConnectionUserRequest userRequest = new ConnectionUserRequest(request.getRequestInfo(), holderInfo);
+	                UserDetailResponse createdUser = userCall(userRequest, uri);
+	                
+	                if (createdUser != null && !CollectionUtils.isEmpty(createdUser.getUser())) {
+	                    setOwnerFields(holderInfo, createdUser, request.getRequestInfo());
+	                }
+	            } else {
+	                setOwnerFields(holderInfo, existingUser, request.getRequestInfo());
+	            }
 	        }
 
 	    });

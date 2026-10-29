@@ -273,6 +273,7 @@ public class EmployeeService {
 	            empToDelete.setTenantId(emp.getTenantId());       // required for delete
 	            empToDelete.setUserUUID(emp.getUserUUID());       // optional but useful
 	            empToDelete.setModulename(emp.getModulename());
+	            empToDelete.setRoles(emp.getRoles());
 
 	            employeesToDelete.add(empToDelete);
 	        }

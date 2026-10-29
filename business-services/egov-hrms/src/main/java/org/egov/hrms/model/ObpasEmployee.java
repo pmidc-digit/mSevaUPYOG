@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 
 @Data
 @AllArgsConstructor
@@ -24,8 +23,8 @@ public class ObpasEmployee {
     @JsonProperty("modulename")
     @JsonAlias({"modulename", "moduleName"})
     private String modulename;
-    
-    private AuditDetails auditDetails; // add this field
+    private String roles;
+    private AuditDetails auditDetails;
 
     public String getModulename() {
         return modulename;
@@ -35,4 +34,4 @@ public class ObpasEmployee {
         this.modulename = modulename;
     }
 
-}
+}

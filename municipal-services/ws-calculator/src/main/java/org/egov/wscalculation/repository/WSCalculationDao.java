@@ -23,6 +23,8 @@ public interface WSCalculationDao {
 	
 	void updateMeterReading(MeterConnectionRequest meterConnectionRequest);
 	void cancelPreviousMeterReading(CancelDemandReq cancelDemandPayload);
+
+	Boolean cancelDemandAndExpiryBills(CancelDemandReq cancelDemandPayload);
 	
 	List<MeterReading> searchMeterReadings(MeterReadingSearchCriteria criteria);
 	

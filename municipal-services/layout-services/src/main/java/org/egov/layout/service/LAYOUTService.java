@@ -151,7 +151,7 @@ public class LAYOUTService {
 		enrichmentService.enrichCreateRequest(nocRequest, mdmsData);
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
 //		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(LAYOUTConstants.WORKFLOWCODE));
-			wfIntegrator.callWorkFlow(nocRequest, businessService);
+			wfIntegrator.callWorkFlow(nocRequest, businessService,"");
 			//wfIntegrator.callWorkFlow(nocRequest, LAYOUTConstants.NOC_BUSINESS_SERVICE);
 		}else{
 		  nocRequest.getLayout().setApplicationStatus(LAYOUTConstants.CREATED_STATUS);
@@ -212,6 +212,13 @@ public class LAYOUTService {
 		BusinessService businessServicename = workflowService.getBusinessService(nocRequest.getLayout(),
 				nocRequest.getRequestInfo(), businessServicedata);
 		Layout layout = nocRequest.getLayout();
+
+		if (layout.getWorkflow() != null
+				&& (LAYOUTConstants.ACTION_APPLY.equalsIgnoreCase(layout.getWorkflow().getAction())
+						|| LAYOUTConstants.ACTION_RESUBMIT.equalsIgnoreCase(layout.getWorkflow().getAction()))
+				&& CollectionUtils.isEmpty(layout.getDocuments())) {
+			throw new CustomException("LAYOUT_DOCUMENT_REQUIRED", "Required documents are missing. Please upload all the mandatory documents to proceed.");
+		}
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getNocDetails().getAdditionalDetails()))  {
 			additionalDetails = (Map) nocRequest.getLayout().getNocDetails().getAdditionalDetails();
@@ -253,7 +260,8 @@ public class LAYOUTService {
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
-				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);
+				String hrmsSearchPath = userService.getEmployeeSearchPATH(nocRequest.getLayout().getTenantId(), additionalDetails, mdmsData);
+				wfIntegrator.callWorkFlow(nocRequest,businessServicedata,hrmsSearchPath);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServicedata);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getLayout(),
 						nocRequest.getRequestInfo(), businessServicedata);
@@ -281,8 +289,8 @@ public class LAYOUTService {
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
 
 
-
-				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);
+				String hrmsSearchPath = userService.getEmployeeSearchPATH(nocRequest.getLayout().getTenantId(), additionalDetails, mdmsData);
+				wfIntegrator.callWorkFlow(nocRequest,businessServicedata,hrmsSearchPath);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServicedata);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getLayout(),
 						nocRequest.getRequestInfo(), businessServicedata);

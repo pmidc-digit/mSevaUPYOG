@@ -77,7 +77,7 @@ public class WorkflowIntegrator {
 	 *
 	 * @param bpaRequest
 	 */
-	public void callWorkFlow(BPARequest bpaRequest) {
+	public void callWorkFlow(BPARequest bpaRequest, String hrmsSearchPath) {
 		String wfTenantId = bpaRequest.getBPA().getTenantId();
 		JSONArray array = new JSONArray();
 		BPA bpa = bpaRequest.getBPA();
@@ -88,6 +88,8 @@ public class WorkflowIntegrator {
 		obj.put(MODULENAMEKEY, MODULENAMEVALUE);
 		obj.put(ACTIONKEY, bpa.getWorkflow().getAction());
 		obj.put(COMMENTKEY, bpa.getWorkflow().getComments());
+		// Add hrmsSearchPath inside ProcessInstances
+		obj.put("hrmsSearchPath", hrmsSearchPath);
 
 		if (!CollectionUtils.isEmpty(bpa.getWorkflow().getAssignes())) {
 			List<Map<String, String>> uuidmaps = new LinkedList<>();

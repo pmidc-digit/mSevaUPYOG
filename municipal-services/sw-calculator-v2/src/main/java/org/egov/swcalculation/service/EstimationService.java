@@ -106,19 +106,39 @@ public class EstimationService {
 				.estimateAmount(sewerageCharge.setScale(2, 2)).build());
 
 		/// DISPOSAL DISCHARGE CHARGES
-		HashMap<String, String> add_details = ((HashMap<String, String>) connection.getAdditionalDetails());
-		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection") != null) {
+		Map<String, Object> add_details = null;
+		if (connection.getAdditionalDetails() != null) {
+			try {
+				add_details = mapper.convertValue(connection.getAdditionalDetails(), HashMap.class);
+			} catch (Exception e) {
+				log.error("Error converting additional details in getEstimatesForTax", e);
+			}
+		}
+		if (add_details == null) {
+			add_details = new HashMap<>();
+		}
 
-			if (add_details.get("dischargeConnection").equalsIgnoreCase("true")) {
+		String dischargeConnectionStr = null;
+		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection") != null) {
+			dischargeConnectionStr = String.valueOf(add_details.get("dischargeConnection"));
+		}
+
+		if (dischargeConnectionStr != null) {
+
+			if (dischargeConnectionStr.equalsIgnoreCase("true")) {
 				// BigDecimal disposal_charge=new BigDecimal(200.0);
 				BigDecimal disposal_charge;
 				try {
-					if (add_details.containsKey("dischargeFee")) // if dischargeFee attribute is present in
-																	// additionalDetails then use give dischargeFee else
-																	// fix dischagefee to 200
-						disposal_charge = new BigDecimal(add_details.get("dischargeFee"));
-					else
+					Object dischargeFeeObj = add_details.get("dischargeFee");
+					if (dischargeFeeObj != null) {
+						if (dischargeFeeObj instanceof Number) {
+							disposal_charge = BigDecimal.valueOf(((Number) dischargeFeeObj).doubleValue());
+						} else {
+							disposal_charge = new BigDecimal(String.valueOf(dischargeFeeObj));
+						}
+					} else {
 						disposal_charge = new BigDecimal(200.0);
+					}
 				} catch (Exception ex) {
 					disposal_charge = new BigDecimal(200.0);
 				}
@@ -147,7 +167,15 @@ public class EstimationService {
 	        Map<String, JSONArray> billingSlabMaster, ArrayList<String> billingSlabIds, CalculationReq request) {
 
 	    BigDecimal sewerageCharge = BigDecimal.ZERO;
-	    HashMap<String, Object> additionalDetail = mapper.convertValue(sewerageConnection.getAdditionalDetails(), HashMap.class);
+	    HashMap<String, Object> additionalDetail = new HashMap<>();
+	    if (sewerageConnection.getAdditionalDetails() != null) {
+	        try {
+	            additionalDetail = mapper.convertValue(sewerageConnection.getAdditionalDetails(), HashMap.class);
+	        } catch (Exception e) {
+	            log.warn("Could not convert additionalDetails for connection {}: {}",
+	                    sewerageConnection.getConnectionNo(), e.getMessage());
+	        }
+	    }
 	    String billingType = (String) additionalDetail.getOrDefault(SWCalculationConstant.BILLINGTYPE, "STANDARD");
 
 	    if (SWCalculationConstant.nonMeterdConnection.equalsIgnoreCase(sewerageConnection.getConnectionType())
@@ -208,6 +236,7 @@ public class EstimationService {
 	            }
 	        }
 
+	        if (billSlab.getSlabs() == null || billSlab.getSlabs().isEmpty()) continue;
 	        for (Slab slab : billSlab.getSlabs()) {
 	            boolean slabCondition = totalUnits >= slab.getFrom() && totalUnits <= slab.getTo()
 	                    && slab.getEffectiveFrom() <= System.currentTimeMillis()

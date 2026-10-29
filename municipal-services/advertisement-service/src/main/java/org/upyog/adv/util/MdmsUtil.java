@@ -254,7 +254,7 @@ public class MdmsUtil {
 				objects.toJSONString(),
 				mapper.getTypeFactory().constructCollectionType(List.class, Advertisements.class)
 		);
-		System.out.println("Using TypeReference: " + list1);
+		log.debug("Using TypeReference: " + list1);
 
 		return list1;
 	}

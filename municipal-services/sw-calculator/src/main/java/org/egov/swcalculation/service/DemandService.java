@@ -147,7 +147,7 @@ public class DemandService {
 	/**
 	 * Creates or updates Demand
 	 * 
-	 * @param requestInfo The RequestInfo of the calculation request
+//	 * @param requestInfo The RequestInfo of the calculation request
 	 * @param calculations The Calculation Objects for which demand has to be generated or updated
 	 */
 	public List<Demand> generateDemand(CalculationReq request, List<Calculation> calculations,
@@ -220,7 +220,7 @@ public class DemandService {
 	/**
 	 * Creates demand for the given list of calculations
 	 * 
-	 * @param requestInfo
+//	 * @param requestInfo
 	 *            The RequestInfo of the calculation request
 	 * @param calculations
 	 *            List of calculation object
@@ -582,7 +582,7 @@ public class DemandService {
 	/**
 	 * Updates demand for the given list of calculations
 	 * 
-	 * @param requestInfo
+//	 * @param requestInfo
 	 *            The RequestInfo of the calculation request
 	 * @param calculations
 	 *            List of calculation object
@@ -954,6 +954,14 @@ public class DemandService {
 	     ----------------------------------------------------------- */
 
 	    for (Demand demand : demands) {
+	    	
+	    	/* Skip Payment Completed demand */
+
+	        if (demand.getIsPaymentCompleted()) {
+
+	            log.info("Skipping Payment Completed demand {}", demand.getId());
+	            continue;
+	        }
 
 	        BigDecimal totalTax = demand.getDemandDetails()
 	                .stream()
@@ -1152,10 +1160,10 @@ public class DemandService {
 	 * 
 	 * If applied already then the demand details will be updated
 	 * 
-	 * @param demand - Demand Object
-	 * @param requestInfoWrapper - Request Info Object
-	 * @param timeBasedExemptionMasterMap - List of Time based exemptions
-	 * @param taxPeriods - List of Tax Periods
+//	 * @param demand - Demand Object
+//	 * @param requestInfoWrapper - Request Info Object
+//	 * @param timeBasedExemptionMasterMap - List of Time based exemptions
+//	 * @param taxPeriods - List of Tax Periods
 	 * @return - Returns TRUE or FALSE
 	 */
 //	
@@ -1406,7 +1414,7 @@ public class DemandService {
 	 * 
 	 * @param tenantId TenantId for getting master data.
 	 */
-	public void generateDemandForTenantId(String tenantId, RequestInfo requestInfo) {
+	public void generateDemandForTenantId(String tenantId, String locality, RequestInfo requestInfo) {
 		requestInfo.getUserInfo().setTenantId(tenantId);
 		Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterData(requestInfo, tenantId);
 		long taxPeriodFrom = billingMasterData.get("taxPeriodFrom") == null ? 0l
@@ -1416,12 +1424,12 @@ public class DemandService {
 			throw new CustomException("NO_BILLING_PERIODS","MDMS Billing Period does not available for tenant: "+ tenantId);
 		}
 		
-		generateDemandForULB(billingMasterData, requestInfo, tenantId, taxPeriodFrom, taxPeriodTo);
+		generateDemandForULB(billingMasterData, requestInfo, tenantId, locality, taxPeriodFrom, taxPeriodTo);
 	}
 	
 	/**
 	 * 
-	 * @param master - List of MDMS master data
+//	 * @param master - List of MDMS master data
 	 * @param requestInfo - Request Info Object
 	 * @param tenantId - Tenant Id
 	 * @param bulkBillCriteria - Critera for bulk bill generation
@@ -1513,7 +1521,7 @@ public class DemandService {
 	 * @param tenantId    - Tenant Id
 	 */
 	@SuppressWarnings("unchecked")
-	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId,
+	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId, String locality,
 			Long taxPeriodFrom, Long taxPeriodTo) {
 		try {
 			List<Role> roles = requestInfo.getUserInfo().getRoles()	!= null ? requestInfo.getUserInfo().getRoles() : new ArrayList<Role>();
@@ -1523,29 +1531,39 @@ public class DemandService {
 			log.info("requestInfo After removing Anonymous User: {}", mapper.writeValueAsString(requestInfo));
 
 			List<TaxPeriod> taxPeriods = calculatorUtils.getTaxPeriodsFromMDMS(requestInfo, tenantId);
-			
-			int generateDemandToIndex = IntStream.range(0, taxPeriods.size())
-				     .filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate()))
-				     .findFirst().getAsInt();
+
+            int generateDemandToIndex;
+            try {
+                generateDemandToIndex = IntStream.range(0, taxPeriods.size())
+                        .filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate()))
+                        .findFirst().getAsInt();
+            } catch (Exception e) {
+                log.error("❌ taxPeriodFrom {} not found in taxPeriods for tenant: {} | {}",
+                        taxPeriodFrom, tenantId, e.getMessage());
+                return;
+            }
 			
 			log.info("Billing master data values for non metered connection:: {}", master);
 			String cone=requestInfo.getKey();
-			List<SewerageDetails> connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId,SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo,cone);
-
+            List<SewerageDetails> connectionNos = null;
+            if(locality!=null && !locality.trim().isEmpty()) {
+                connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId, locality, SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+            }
+            else{
+                connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId, null, SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+            }
 
 			//Generate bulk demands for connections in below count
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
 
-			int connectionNosCount = 0;
 			int totalRecordsPushedToKafka = 0;
-			int threadSleepCount = 0;
+			int connectionCount = 0;
 			List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 			for (int connectionNosIndex = 0; connectionNosIndex < connectionNos.size(); connectionNosIndex++) {
 				SewerageDetails sewConnDetails = connectionNos.get(connectionNosIndex);
-				connectionNosCount++;
-				int billingCycleCount = 0;
+				log.info("Connection Number: {}", sewConnDetails.getConnectionNo());
 
 				try {
 					int generateDemandFromIndex = 0;
@@ -1558,9 +1576,13 @@ public class DemandService {
 						generateDemandFromIndex++;
 					}
 
-					for (int taxPeriodIndex = generateDemandFromIndex; generateDemandFromIndex <= generateDemandToIndex; taxPeriodIndex++) {
-						generateDemandFromIndex++;
-						billingCycleCount++;
+					List<CalculationCriteria> connectionCriteriaList = new ArrayList<>();
+					for (int taxPeriodIndex = generateDemandFromIndex; taxPeriodIndex <= generateDemandToIndex; taxPeriodIndex++) {
+						if (taxPeriods == null || taxPeriods.isEmpty() || taxPeriodIndex < 0 || taxPeriodIndex >= taxPeriods.size()) {
+							log.warn("⚠️ taxPeriodIndex {} out of bounds (size: {}) or taxPeriods is empty for connectionNo: {} — breaking.",
+									taxPeriodIndex, taxPeriods != null ? taxPeriods.size() : 0, sewConnDetails.getConnectionNo());
+							break;
+						}
 						TaxPeriod taxPeriod = taxPeriods.get(taxPeriodIndex);
 //						log.info("FromPeriod: {} and ToPeriod: {}",taxPeriod.getFromDate(),taxPeriod.getToDate());
 						log.info("taxPeriodIndex: {} and generateDemandFromIndex: {} and generateDemandToIndex: {}",taxPeriodIndex, generateDemandFromIndex, generateDemandToIndex);
@@ -1569,24 +1591,26 @@ public class DemandService {
 								requestInfo);
 						if (isValidBillingCycle) {
 
-							CalculationCriteria calculationCriteria = CalculationCriteria.builder()
+							connectionCriteriaList.add(CalculationCriteria.builder()
 									.tenantId(tenantId)
 									.assessmentYear(taxPeriod.getFinancialYear())
 									.from(taxPeriod.getFromDate())
 									.to(taxPeriod.getToDate())
 									.connectionNo(sewConnDetails.getConnectionNo())
-									.build();
-							calculationCriteriaList.add(calculationCriteria);
+									.build());
 							log.info("connectionNosIndex: {} and connectionNos.size(): {}",connectionNosIndex, connectionNos.size());
 
 						}
 						
 					}
-					if(calculationCriteriaList == null || calculationCriteriaList.isEmpty())
-						continue;
+
+					if (!connectionCriteriaList.isEmpty()) {
+						calculationCriteriaList.addAll(connectionCriteriaList);
+						connectionCount++;
+					}
 					
-					if(billingCycleCount > 10 || connectionNosCount == bulkSaveDemandCount) {
-						log.info("Controller entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}",connectionNosCount, connectionNos.size());
+					if (connectionCount == bulkSaveDemandCount) {
+						log.info("Controller entered into producer logic, connectionCount: {} and connectionNos.size(): {}", connectionCount, connectionNos.size());
 						MigrationCount migrationCount = MigrationCount.builder()
 								.tenantid(tenantId)
 								.businessService("SW")
@@ -1608,48 +1632,43 @@ public class DemandService {
 					    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
 					    
 						totalRecordsPushedToKafka++;
-						billingCycleCount=0;
 						calculationCriteriaList.clear();
-						connectionNosCount=0;
-						if(threadSleepCount == 3) {
-						    Thread.sleep(1000); // Sleep for 1 second
-							threadSleepCount=0;
-						}
-						threadSleepCount++;
-
-					} else if(connectionNosIndex == connectionNos.size()-1) {
-						log.info("Last connection entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}",connectionNosCount, connectionNos.size());
-						MigrationCount migrationCount = MigrationCount.builder()
-								.tenantid(tenantId)
-								.businessService("SW")
-								.limit((long)1.00)
-								.id(UUID.randomUUID().toString())
-								.offset((long)1.00)								
-								.createdTime(System.currentTimeMillis())
-								.recordCount(Long.valueOf(connectionNos.size()))
-								.build();
-						CalculationReq calculationReq = CalculationReq.builder()
-								.calculationCriteria(calculationCriteriaList)
-								.requestInfo(requestInfo)
-								.isconnectionCalculation(true)
-								.migrationCount(migrationCount)
-								.build();
-						log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						String key = sewConnDetails.getConnectionNo();
-					    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
-						totalRecordsPushedToKafka++;
-						calculationCriteriaList.clear();
-						connectionNosCount=0;
-
+						connectionCount = 0;
 					}
 
 				}catch (Exception e) {
 					log.error("Exception occurred while generating demand for sewerage connectionno: "+sewConnDetails.getConnectionNo() + " tenantId: "+tenantId);
 				}
 			}
+
+			if (!calculationCriteriaList.isEmpty()) {
+				log.info("Last connection entered into producer logic, connectionCount: {} and connectionNos.size(): {}", connectionCount, connectionNos.size());
+				MigrationCount migrationCount = MigrationCount.builder()
+						.tenantid(tenantId)
+						.businessService("SW")
+						.limit((long)1.00)
+						.id(UUID.randomUUID().toString())
+						.offset((long)1.00)								
+						.createdTime(System.currentTimeMillis())
+						.recordCount(Long.valueOf(connectionNos.size()))
+						.build();
+				CalculationReq calculationReq = CalculationReq.builder()
+						.calculationCriteria(calculationCriteriaList)
+						.requestInfo(requestInfo)
+						.isconnectionCalculation(true)
+						.migrationCount(migrationCount)
+						.build();
+				log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
+				String key = calculationCriteriaList.get(0).getConnectionNo();
+			    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
+				totalRecordsPushedToKafka++;
+				calculationCriteriaList.clear();
+			}
+
 			log.info("totalConnRecordsPushedToKafka: {}", totalRecordsPushedToKafka);
-		}catch (Exception e) {
-			log.error("Exception occurred while processing the demand generation for tenantId: "+tenantId);
+
+		} catch (Exception e) {
+			log.error("Exception occurred while processing the demand generation for tenantId: " + tenantId);
 		}
 	}
 
@@ -1728,10 +1747,23 @@ public class DemandService {
 		        String tenantId = cancelList.gettenantId();
 		        String demandid = cancelList.getdemandid();
 		        List<Canceldemandsearch> demandlists = sewerageCalculatorDao.getConnectionCancels(tenantId, demandid);
-		        
-		        if (demandlists.isEmpty()) {
-		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
-		        }
+
+              if (!demandlists.isEmpty()) {
+                  String consumerCode = demandlists.get(0).getConsumercode();
+                  String collectionamount=demandlists.get(0).getCollectionamount();
+                  String taxamount=demandlists.get(0).getTaxamount();
+
+                  if (Double.parseDouble(collectionamount) > 0 && Double.parseDouble(taxamount) > 0) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for collectionamount > 0.");
+                  }
+
+                  String wsConnection= sewerageCalculatorDao.getRelatedConnection(tenantId, consumerCode);
+                  if (StringUtils.isNotBlank(wsConnection)) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for water related sewerage connection.");
+                  }
+              }else {
+                  throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
+              }
 
 		        Boolean cancels = sewerageCalculatorDao.getUpdates(demandlists);
 
@@ -1740,6 +1772,10 @@ public class DemandService {
 		        }
 
 		        List<BillSearchs> billSearchsss = sewerageCalculatorDao.getBillss(tenantId, demandid);
+		        
+		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
+		        	continue; // Skip bill cancellation if there are no bills and payment is completed
+		        
 		        boolean billCancelled = sewerageCalculatorDao.getexpiryBills(billSearchsss);
 
 		        if (!billCancelled) {
@@ -1771,7 +1807,7 @@ public class DemandService {
 			
 			log.info("Billing master data values for non metered connection:: {}", master);
 		
-			List<SewerageDetails> connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId,SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo,singleDemand.getConsumercode());
+			List<SewerageDetails> connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId,null,SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo,singleDemand.getConsumercode());
 
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
@@ -1851,7 +1887,7 @@ public class DemandService {
 						log.info("Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
 						
 						String key = sewConnDetails.getConnectionNo();
-						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
+						kafkaTemplate.send(configs.getCreateSingleDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						billingCycleCount=0;
 						calculationCriteriaList.clear();
@@ -1880,7 +1916,7 @@ public class DemandService {
 								.migrationCount(migrationCount).build();
 						log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
 						String key = sewConnDetails.getConnectionNo();
-						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
+						kafkaTemplate.send(configs.getCreateSingleDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						calculationCriteriaList.clear();
 						connectionNosCount=0;
@@ -2156,7 +2192,7 @@ public List<String> fetchBillSchedulerBatch(Set<String> consumerCodes,String ten
 	/**
 	 * 
 	 * @param requestInfo  RequestInfo
-	 * @param calculations List of Calculation
+//	 * @param calculations List of Calculation
 	 * @param masterMap    Master MDMS Data
 	 * @return Returns list of demands
 	 */

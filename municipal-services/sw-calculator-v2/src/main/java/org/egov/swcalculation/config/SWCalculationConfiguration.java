@@ -91,6 +91,12 @@ public class SWCalculationConfiguration {
     
     @Value("${kafka.topics.notification.mail.name}")
     private String emailNotifTopic;
+
+    @Value("${notification.mail.recipients}")
+    private String mailRecipients;
+
+    @Value("${notification.mail.cc.recipients:}")
+    private String mailCcRecipients;
     
     //User-events
     @Value("${egov.user.event.notification.enabled}")
@@ -211,5 +217,34 @@ public class SWCalculationConfiguration {
 	
 	@Value("${egov.bulk.bill.generate.count}")
 	private Integer bulkBillGenerateCount;
+
+	@Value("${kafka.topics.save.sw.batch.demand.log}")
+	private String saveBatchDemandLogTopic;
+
+	@Value("${kafka.topics.save.sw.batch.connection.log}")
+	private String saveBatchConnectionLogTopic;
+
+	// Multi-threading configuration
+	@Value("${sw.tenant.thread.pool.size:5}")
+	private Integer tenantThreadPoolSize;
+
+	@Value("${sw.connection.thread.pool.size:3}")
+	private Integer connectionThreadPoolSize;
+
+	// Elasticsearch properties
+	@Value("${elasticsearch.host}")
+	private String elasticsearchHost;
+
+	@Value("${elasticsearch.search.endpoint}")
+	private String elasticsearchSearchEndpoint;
+
+	@Value("${property.es.index}")
+	private String propertyEsIndex;
+
+	@Value("${elasticsearch.username:}")
+	private String elasticsearchUsername;
+
+	@Value("${elasticsearch.password:}")
+	private String elasticsearchPassword;
 
 }

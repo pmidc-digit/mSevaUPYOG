@@ -28,19 +28,30 @@ public class NorthDirectionExtract extends FeatureExtract {
         DXFDocument doc = pl.getDoc();
 
         List<DXFLWPolyline> northDirectionPolyLines = Util.getPolyLinesByLayer(doc,
-                layerNames.getLayerName("LAYER_NAME_NORTH_DIRECTION"));
+        		layerNames.getLayerName("LAYER_NAME_NORTH_DIRECTION"));
         String direction = Util.getMtextByLayerName(doc, layerNames.getLayerName("LAYER_NAME_NORTH_DIRECTION"));
-        if (!northDirectionPolyLines.isEmpty() || org.apache.commons.lang.StringUtils.isNotBlank(direction)) {
-        	
-        	Util.validateLayerColor(northDirectionPolyLines.get(0).getLayerName(), 
-        			Util.getColorByPolyLine(northDirectionPolyLines), pl);
-        	
+        if (!northDirectionPolyLines.isEmpty()
+                || org.apache.commons.lang.StringUtils.isNotBlank(direction)) {
+
             pl.getDrawingPreference().setNorthDirection(new NorthDirection());
             pl.getDrawingPreference().getNorthDirection().setDirections(new ArrayList<>());
 
-            for (DXFLWPolyline northDirectionPolyLine : northDirectionPolyLines)
-                pl.getDrawingPreference().getNorthDirection().getDirections().add(new MeasurementDetail(northDirectionPolyLine, true));
+            if (!northDirectionPolyLines.isEmpty()) {
 
+                Util.validateLayerColor(
+                        northDirectionPolyLines.get(0).getLayerName(),
+                        Util.getColorByPolyLine(northDirectionPolyLines),
+                        pl);
+
+                for (DXFLWPolyline northDirectionPolyLine : northDirectionPolyLines) {
+                    pl.getDrawingPreference().getNorthDirection().getDirections()
+                            .add(new MeasurementDetail(northDirectionPolyLine, true));
+                }
+            }else {
+            	pl.addError("North_Direction", "NORTH DIRECTION PolyLine is not defined");
+            }
+
+            // Set direction whether it came from MTEXT or corresponds to the polyline
             pl.getDrawingPreference().getNorthDirection().setDirection(direction);
         }
 

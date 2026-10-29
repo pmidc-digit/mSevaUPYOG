@@ -93,13 +93,13 @@ public class NOCService {
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
 //		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
 			String businessService = JsonPath.read(nocRequest.getNoc().getNocDetails().getAdditionalDetails(), "$.businessService");
-			wfIntegrator.callWorkFlow(nocRequest, businessService);
+			wfIntegrator.callWorkFlow(nocRequest, businessService,"");
 		}else{
 		  nocRequest.getNoc().setApplicationStatus(NOCConstants.CREATED_STATUS);
 		}
 
 
-			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
+		userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
 
 		if(nocRequest.getNoc().getOwners().get(0).getUuid() != null)
 			nocRequest.getNoc().setAccountId(nocRequest.getNoc().getOwners().get(0).getUuid());
@@ -182,6 +182,13 @@ public class NOCService {
 
 		Noc noc = nocRequest.getNoc();
 
+		if (noc.getWorkflow() != null
+				&& (NOCConstants.ACTION_APPLY.equalsIgnoreCase(noc.getWorkflow().getAction())
+						|| NOCConstants.ACTION_RESUBMIT.equalsIgnoreCase(noc.getWorkflow().getAction()))
+				&& CollectionUtils.isEmpty(noc.getDocuments())) {
+			throw new CustomException("NOC_DOCUMENT_REQUIRED", "Required documents are missing. Please upload all the mandatory documents to proceed.");
+		}
+
 
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getNocDetails().getAdditionalDetails()))  {
@@ -226,24 +233,37 @@ public class NOCService {
 					.findFirst().orElse(new Action()).getNextState();
 			State nextState = businessServicename.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
 
-			if (nextState != null && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())
-					&& !CollectionUtils.isEmpty(nextState.getActions())) {
-				List<String> roles = new ArrayList<>();
-				nextState.getActions().stream()
-				.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId)).forEach(stateAction -> 
-					roles.addAll(stateAction.getRoles())
-				);
+			List<String> roles = new ArrayList<String>();
+			if(nextState != null && !CollectionUtils.isEmpty(nextState.getActions()))
+				roles = nextState.getActions().stream()
+				.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId))
+				.flatMap(stateAction -> stateAction.getRoles().stream())
+				.distinct()
+				.filter(role -> !role.equalsIgnoreCase("OBPAS_UPDATE_ZONE")
+						&& !role.equalsIgnoreCase("SYSTEM"))
+				.collect(Collectors.toList());
+			
+			if (nextState != null && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
 				List<String> assignee = null;
 				if(!CollectionUtils.isEmpty(roles))
-					assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo());
+					assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), false, mdmsData);
 				noc.getWorkflow().setAssignes(assignee);
 			}
 
+			if(!CollectionUtils.isEmpty(roles)) {
+				List<String> assignee = null;
+				assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), true, mdmsData);
+				noc.getWorkflow().setAssignes(assignee);
+			}
+				
+			
 			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
 
 
-				wfIntegrator.callWorkFlow(nocRequest, businessServiceName);
+				String hrmsSearchPath = userService.getEmployeeSearchPATH(noc.getTenantId(), additionalDetails, mdmsData);
+				wfIntegrator.callWorkFlow(nocRequest,businessServiceName,hrmsSearchPath);
+				
 				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
 						nocRequest.getRequestInfo(), businessServiceName);
@@ -285,21 +305,42 @@ public class NOCService {
 
 				String action = noc.getWorkflow() != null ? noc.getWorkflow().getAction() : "";
 
-				if (nextState != null && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())
-						&& !CollectionUtils.isEmpty(nextState.getActions())) {
-					List<String> roles = new ArrayList<>();
-					nextState.getActions().stream()
-					.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId)).forEach(stateAction -> 
-						roles.addAll(stateAction.getRoles())
-					);
+				List<String> roles = new ArrayList<String>();
+				if(nextState != null && !CollectionUtils.isEmpty(nextState.getActions()))
+					roles = nextState.getActions().stream()
+					.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId))
+					.flatMap(stateAction -> stateAction.getRoles().stream())
+					.distinct()
+					.filter(role -> !role.equalsIgnoreCase("OBPAS_UPDATE_ZONE")
+							&& !role.equalsIgnoreCase("SYSTEM"))
+					.collect(Collectors.toList());
+				
+				if (nextState != null && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
 					List<String> assignee = null;
-					if(!CollectionUtils.isEmpty(roles))
-						assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo());
+					if (!CollectionUtils.isEmpty(roles))
+						assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), false, mdmsData);
 					noc.getWorkflow().setAssignes(assignee);
 				}
 
+				if (!CollectionUtils.isEmpty(roles)) {
+					List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), true, mdmsData);
+					if(CollectionUtils.isEmpty(assignee))
+						noc.getWorkflow().setAssignes(null);
+				}
 
-				wfIntegrator.callWorkFlow(nocRequest,businessServiceName);
+				if ("SENDBACKTOCITIZEN".equalsIgnoreCase(action) && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
+					String createdBy = null;
+					if (searchResult != null && searchResult.getAuditDetails() != null) {
+						createdBy = searchResult.getAuditDetails().getCreatedBy();
+					} else if (noc.getAuditDetails() != null) {
+						createdBy = noc.getAuditDetails().getCreatedBy();
+					}
+					if (!StringUtils.isEmpty(createdBy)) {
+						noc.getWorkflow().setAssignes(Collections.singletonList(createdBy));
+					}
+				}
+				String hrmsSearchPath = userService.getEmployeeSearchPATH(noc.getTenantId(), additionalDetails, mdmsData);
+				wfIntegrator.callWorkFlow(nocRequest,businessServiceName,hrmsSearchPath);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
 						nocRequest.getRequestInfo(), businessServiceName);
@@ -496,7 +537,8 @@ public class NOCService {
 				List<BPA> bpaList = new ArrayList<BPA>();
 				bpaList = bpaResponse.getBPA();
 				bpaList.forEach(bpa -> {
-					additionalDetails.put("applicantName", bpa.getLandInfo().getOwners().get(0).getName());
+					if(bpa.getLandInfo() != null && !CollectionUtils.isEmpty(bpa.getLandInfo().getOwners()))
+						additionalDetails.put("applicantName", bpa.getLandInfo().getOwners().get(0).getName());
 				});
 				log.info("ADDITIONAL DETAILS :: " + additionalDetails.get("applicantName"));
 				// PROCESS CALL
@@ -581,5 +623,17 @@ public class NOCService {
                 criteria.setAccountId(uuids);*/
                 return nocRepository.getNocCount(criteria);
         }
+
+	public List<Noc> plainSearch(NocSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Noc> nocList = getNocFromCriteriaForPlainSearch(criteria, requestInfo);
+		return nocList;
+	}
+
+	public List<Noc> getNocFromCriteriaForPlainSearch(NocSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Noc> nocList = nocRepository.getNocDataForPlainSearch(criteria);
+		if (CollectionUtils.isEmpty(nocList))
+			return Collections.emptyList();
+		return nocList;
+	}
 	
 }

@@ -371,13 +371,20 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	@Override
-	public List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String connectionType, Long taxPeriodFrom,
+	public List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String locality, String connectionType, Long taxPeriodFrom,
 			Long taxPeriodTo, String cone) {
-		
+
+            String query;
 			List<Object> preparedStatement = new ArrayList<>();
-			String query = queryBuilder.getConnectionNumberList(tenantId, connectionType,
-					WSCalculationConstant.ACTIVE_CONNECTION, taxPeriodFrom, taxPeriodTo, cone, preparedStatement);
-			log.info("preparedStatement: " + preparedStatement + " connection type: " + connectionType
+            if(locality!=null && !locality.trim().isEmpty()) {
+                query = queryBuilder.getConnectionNumberList(tenantId, locality, connectionType,
+                        WSCalculationConstant.ACTIVE_CONNECTION, taxPeriodFrom, taxPeriodTo, cone, preparedStatement);
+            }
+            else{
+                query = queryBuilder.getConnectionNumberList(tenantId, null, connectionType,
+                        WSCalculationConstant.ACTIVE_CONNECTION, taxPeriodFrom, taxPeriodTo, cone, preparedStatement);
+            }
+        log.info("preparedStatement: " + preparedStatement + " connection type: " + connectionType
 					+ " connection list : " + query);
 			return jdbcTemplate.query(query, preparedStatement.toArray(), demandSchedulerRowMapper);
 		
@@ -398,9 +405,9 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 	
 	
 	@Override
-	public List<Map<String, Object>> getCollection(String tenantId, Long taxPeriodFrom, Long taxPeriodTo, String consumerCode) {
+	public List<Map<String, Object>> getCollection(String tenantId, Long taxPeriodFrom, Long taxPeriodTo, String consumerCode,String businessService) {
 	    List<Object> preparedStatement = new ArrayList<>();
-	    String query = queryBuilder.getCollection(tenantId, taxPeriodFrom, taxPeriodTo, consumerCode, preparedStatement);
+	    String query = queryBuilder.getCollection(tenantId, taxPeriodFrom, taxPeriodTo, consumerCode,businessService, preparedStatement);
 
 	    log.info("preparedStatement: {} | query: {}", preparedStatement, query);
 
@@ -535,6 +542,17 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 		log.debug("Query: " + query);
 		log.debug("Prepared Statement" + preparedStatement.toString());
 		return jdbcTemplate.query(query, preparedStatement.toArray(), bulkMeterReadingRowMapper);
+	}
+
+	@Override
+	public Boolean cancelDemandAndExpiryBills(CancelDemandReq demandId) {
+		try {
+			wSCalculationProducer.push(cancelMeterConnection, demandId);
+			return true;
+		} catch (Exception e) {
+			log.error("Error while sending cancel demand to Persister", e);
+			return false;
+		}
 	}
 
 	

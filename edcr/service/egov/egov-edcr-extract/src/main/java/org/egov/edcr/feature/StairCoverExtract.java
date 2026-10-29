@@ -37,11 +37,11 @@ public class StairCoverExtract extends FeatureExtract {
                 if (minHeight.compareTo(new BigDecimal(3)) > 0) {
                     increasedHeight = block.getBuilding().getBuildingHeight()
                             .subtract(block.getBuilding().getDeclaredBuildingHeight());
-                    if (minHeight.compareTo(increasedHeight) > 0) {
-                        block.getBuilding()
-                                .setBuildingHeight(block.getBuilding().getDeclaredBuildingHeight().add(minHeight));
-                        block.getBuilding().setHeightIncreasedBy("Stair Cover");
-                    }
+//                    if (minHeight.compareTo(increasedHeight) > 0) {
+//                        block.getBuilding()
+//                                .setBuildingHeight(block.getBuilding().getDeclaredBuildingHeight().add(minHeight));
+//                        block.getBuilding().setHeightIncreasedBy("Stair Cover");
+//                    }
                 }
             }
 

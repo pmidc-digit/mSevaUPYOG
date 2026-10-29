@@ -88,8 +88,8 @@ public class CalculatorController {
 	}
 	
 	@PostMapping("/_jobscheduler")
-	public void jobscheduler(@Valid @RequestBody BulkBillReq bulkBillReq) {
-		wSCalculationService.generateDemandBasedOnTimePeriod(bulkBillReq.getRequestInfo(), bulkBillReq.getBulkBillCriteria());
+	public void jobscheduler(@Valid @RequestBody BulkDemandReq bulkDemandReq) {
+		wSCalculationService.generateDemandBasedOnTimePeriod(bulkDemandReq.getRequestInfo(), bulkDemandReq.getBulkDemandCriteria());
 	}
 	
 	@PostMapping("/_singledemand")
@@ -154,6 +154,9 @@ public class CalculatorController {
 	    } catch (CustomException e) {
 	        response.put("status", "Failed");
 	        response.put("message", e.getMessage());
+            if (e.getMessage().startsWith("Cancel demand")){
+                return  new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+            }
 	        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 	    } catch (Exception e) {
 	        log.error("Error while processing cancel demand: ", e);

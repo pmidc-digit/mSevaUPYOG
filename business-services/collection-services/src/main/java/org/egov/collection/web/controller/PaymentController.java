@@ -50,12 +50,20 @@ import javax.validation.Valid;
 
 import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentRequest;
+import org.egov.collection.model.PaymentResettleBatchAudit;
+import org.egov.collection.model.PaymentResettleDetailAudit;
 import org.egov.collection.model.PaymentResponse;
 import org.egov.collection.model.PaymentSearchCriteria;
 import org.egov.collection.service.MigrationService;
+import org.egov.collection.service.PaymentResettleService;
 import org.egov.collection.service.PaymentService;
 import org.egov.collection.service.PaymentWorkflowService;
+import org.egov.collection.web.contract.PaymentAutoResettleRequest;
+import org.egov.collection.web.contract.PaymentAutoResettleResponse;
+import org.egov.collection.web.contract.PaymentResettleRequest;
+import org.egov.collection.web.contract.PaymentResettleResponse;
 import org.egov.collection.web.contract.PaymentWorkflowRequest;
+import org.egov.collection.web.contract.factory.RequestInfoUpdateWrapper;
 import org.egov.collection.web.contract.factory.RequestInfoWrapper;
 import org.egov.collection.web.contract.factory.ResponseInfoFactory;
 import org.egov.common.contract.request.RequestInfo;
@@ -92,6 +100,9 @@ public class PaymentController {
 
     @Autowired
     private MigrationService migrationService;
+
+    @Autowired
+    private PaymentResettleService paymentResettleService;
 
     @RequestMapping(path = {"/_search","/{moduleName}/_search"}, method = RequestMethod.POST)
     @ResponseBody
@@ -158,6 +169,36 @@ public class PaymentController {
 
     }
 
+    @RequestMapping(value = "/_resettle", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<PaymentResettleResponse> resettle(@RequestBody @Valid PaymentResettleRequest resettleRequest) {
+        PaymentResettleResponse response = paymentResettleService.resettlePayment(resettleRequest);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/_auto-resettle", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<PaymentAutoResettleResponse> autoResettle(@RequestBody @Valid PaymentAutoResettleRequest request) {
+        PaymentAutoResettleResponse response = paymentResettleService.autoResettlePayments(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/_resettle-audit", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<?> getResettleAudit(@RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,
+            @RequestParam(required = false) String batchId,
+            @RequestParam(required = false) String paymentId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Integer limit) {
+        List<PaymentResettleDetailAudit> details = paymentResettleService.getResettleDetailAudits(batchId, paymentId, status, limit);
+        List<PaymentResettleBatchAudit> batches = paymentResettleService.getResettleBatchAudits(null, limit);
+        Map<String, Object> response = new HashMap<>();
+        response.put("ResponseInfo", ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true));
+        response.put("batches", batches);
+        response.put("details", details);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 
     private ResponseEntity<PaymentResponse> getSuccessResponse(List<Payment> payments, RequestInfo requestInfo) {
         final ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfo, true);
@@ -204,18 +245,16 @@ public class PaymentController {
     
     @RequestMapping(value = "/_update", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<PaymentResponse> update(@RequestBody @Valid PaymentSearchCriteria paymentSearchCriteria,
-    		  @RequestBody @Valid final RequestInfoWrapper requestInfoWrapper) {
-    	log.info("PaymentSearchCriteria: " + paymentSearchCriteria);
+    public ResponseEntity<String> update(@RequestBody @Valid final RequestInfoUpdateWrapper requestInfoUpdateWrapper) {
     	
-    	List<Payment> payment=paymentService.plainSearch(paymentSearchCriteria);
+    	String tenantId = requestInfoUpdateWrapper.getTenantId();
+    	String consumerNo = requestInfoUpdateWrapper.getConsumerNo();
+    	String recieptNo = requestInfoUpdateWrapper.getRecieptNo();
+    	
+    	String paymentId = paymentService.paymentSearchForUpdate(tenantId, consumerNo, recieptNo);
+        String paymentUpdated = paymentService.updatePaymentForFilestore(paymentId);
 
-        Payment paymentUpdated = paymentService.updatePaymentForFilestore(payment.get(0));
-        final RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-
-        List<Payment> updatedPayments=new ArrayList<Payment>();
-        updatedPayments.add(paymentUpdated);
-        return getSuccessResponse(updatedPayments, requestInfo);
+        return new ResponseEntity<>("Successfully updated file Store Id to null with payment id "+ paymentUpdated, HttpStatus.OK);
 
     }
     

@@ -47,6 +47,9 @@ public class BookingDetailRowmapper implements ResultSetExtractor<List<BookingDe
 						.receiptNo(rs.getString("receipt_no"))
 						.permissionLetterFilestoreId(rs.getString("permission_letter_filestore_id"))
 						.paymentReceiptFilestoreId(rs.getString("payment_receipt_filestore_id"))
+						.bookingStartDate(rs.getString("booking_start_date") != null ? BookingUtil.parseStringToLocalDate(rs.getString("booking_start_date")) : null)
+						.bookingEndDate(rs.getString("booking_end_date") != null ? BookingUtil.parseStringToLocalDate(rs.getString("booking_end_date")) : null)
+						.additionalDetails(BookingUtil.getAdditionalDetails(rs, "additionaldetails"))
 						.auditDetails(BookingUtil.getAuditDetails(rs))
 						.build();
 

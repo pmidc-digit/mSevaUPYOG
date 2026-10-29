@@ -77,12 +77,16 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			DXFLWPolyline plotBndryPolyLine = plotBoundaries.get(0);
 			((PlotDetail) pl.getPlot()).setPolyLine(plotBndryPolyLine);
 			// pl.getPlot().setPlotBndryArea(Util.getPolyLineArea(plotBndryPolyLine));
+			MeasurementDetail footPrint = new MeasurementDetail(plotBndryPolyLine, true);
+			//PolylineMetrics.getMinDistance(plotBoundary, buildFoorPrint, yardPolyline);
 			BigDecimal area = Util.getPolyLineArea(plotBndryPolyLine);
 			if (area == null) {
 				pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
 			} else {
-				pl.getPlot().setPlotBndryArea(area);
+				pl.getPlot().setPlotBndryArea(area.setScale(2, RoundingMode.HALF_UP));
 				pl.getPlot().setArea(area.setScale(2, RoundingMode.HALF_UP));
+				pl.getPlot().setLength(footPrint.getHeight().setScale(2, RoundingMode.HALF_UP));
+				pl.getPlot().setWidth(footPrint.getWidth().setScale(2, RoundingMode.HALF_UP));
 			}
 		} else {
 			pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
@@ -151,13 +155,21 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			BigDecimal height = Util.getSingleDimensionValueByLayer(pl.getDoc(), layerName, pl);
 			
 			Map<String, String> data = Util.getColorByDimensionByLayer(pl, layerName);
-	        String layer = data.get("layerName");
-	        String color = data.get("colorCode");
-			Util.validateLayerColor(layer, Integer.parseInt(color), pl);
+			if (data != null && data.get("colorCode") != null && data.get("layerName") != null) {
+				try {
+					Util.validateLayerColor(data.get("layerName"), Integer.parseInt(data.get("colorCode")), pl);
+				} catch (Exception e) {
+					LOG.warn("Failed to parse color code for layer {}: {}", data.get("layerName"), e.getMessage());
+				}
+			}
 	        
 			b.setHeight(height);
-			b.getBuilding().setBuildingHeight(height);
-			b.getBuilding().setDeclaredBuildingHeight(height);
+			if (height != null && b.getBuilding() != null) {
+				b.getBuilding().setBuildingHeight(height.setScale(2, RoundingMode.HALF_UP));
+			}
+			if (b.getBuilding() != null) {
+				b.getBuilding().setDeclaredBuildingHeight(height);
+			}
 
 			String layerName1 = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + b.getNumber() + "_"
 					+ layerNames.getLayerName("LAYER_NAME_HEIGHT_OF_BUILDING_EXCLUDING_MP"); // building height
@@ -165,12 +177,20 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 																								// parapet
 			BigDecimal heightExMP = Util.getSingleDimensionValueByLayer(pl.getDoc(), layerName1, pl);
 			
-			if(heightExMP!=null) {
-				data = Util.getColorByDimensionByLayer(pl, layerName);
-				Util.validateLayerColor(data.get("layerName"), Integer.parseInt(data.get("colorCode")), pl);
+			if (heightExMP != null) {
+				data = Util.getColorByDimensionByLayer(pl, layerName1);
+				if (data != null && data.get("colorCode") != null && data.get("layerName") != null) {
+					try {
+						Util.validateLayerColor(data.get("layerName"), Integer.parseInt(data.get("colorCode")), pl);
+					} catch (Exception e) {
+						LOG.warn("Failed to parse color code for layer {}: {}", data.get("layerName"), e.getMessage());
+					}
+				}
 			}			
 			
-			b.getBuilding().setBuildingHeightExcludingMP(heightExMP);
+			if (b.getBuilding() != null) {
+				b.getBuilding().setBuildingHeightExcludingMP(heightExMP);
+			}
 
 //			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
 //				b.getBuilding().setIsHighRise(true);
@@ -246,13 +266,19 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			pl.setPlot(plot);
 		} else {
 			plotArea = plotArea.replaceAll(digitsRegex, "");
+			plotArea = sanitizeDecimal(plotArea);
 			BigDecimal numericValue = getNumericValue(plotArea, pl, DxfFileConstants.PLOT_AREA);
 			if (numericValue != null) {
-				pi.setPlotArea(numericValue);
-				plot.setArea(numericValue);
-				if (numericValue.compareTo(ONEHUDREDTWENTYFIVE) <= 0)
-					plot.setSmallPlot(true);
-			}
+				 numericValue = numericValue.setScale(2, RoundingMode.HALF_UP);
+
+			        pi.setPlotArea(numericValue);
+			        plot.setArea(numericValue);
+
+			        if (numericValue.compareTo(ONEHUDREDTWENTYFIVE) <= 0) {
+			            plot.setSmallPlot(true);
+			        }
+			}			
+			
 			plot.setPresentInDxf(true);
 			pl.setPlot(plot);
 		}
@@ -773,13 +799,13 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		if (StringUtils.isNotBlank(numberOfFloors))
 			pi.setNumberOfFloors(numberOfFloors);
 
-		String roadType = planInfoProperties.get(DxfFileConstants.ROAD_TYPE);
-		if (StringUtils.isNotBlank(roadType))
-			pi.setRoadType(roadType);
-		else {
-			pl.addError(DxfFileConstants.ROAD_TYPE,
-					getLocaleMessage(OBJECTNOTDEFINED, DxfFileConstants.ROAD_TYPE + " of PLAN_INFO layer"));
-		}
+//		String roadType = planInfoProperties.get(DxfFileConstants.ROAD_TYPE);
+//		if (StringUtils.isNotBlank(roadType))
+//			pi.setRoadType(roadType);
+//		else {
+//			pl.addError(DxfFileConstants.ROAD_TYPE,
+//					getLocaleMessage(OBJECTNOTDEFINED, DxfFileConstants.ROAD_TYPE + " of PLAN_INFO layer"));
+//		}
 		
 		String khasraNo = planInfoProperties.get(DxfFileConstants.KHASRA_NO);
 		if (StringUtils.isNotBlank(khasraNo)) {
@@ -836,4 +862,20 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		this.layerNames = layerNames;
 	}
 
+	private String sanitizeDecimal(String value) {
+	    if (StringUtils.isBlank(value)) {
+	        return value;
+	    }
+
+	    value = value.replaceAll("[^\\d.]", "");
+
+	    int firstDot = value.indexOf('.');
+	    if (firstDot >= 0) {
+	        value = value.substring(0, firstDot + 1)
+	                + value.substring(firstDot + 1).replace(".", "");
+	    }
+
+	    return value;
+	}
+	
 }

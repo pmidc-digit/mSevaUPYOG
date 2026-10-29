@@ -1,16 +1,15 @@
 package org.egov.dx.service;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.egov.common.contract.request.RequestInfo;
 import org.egov.dx.util.Configurations;
 import org.egov.dx.web.models.UserResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
@@ -19,40 +18,31 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserService {
 
-      
     @Autowired
     private RestTemplate restTemplate;
 
     @Autowired
-	private Configurations configurations;
-    
-    public UserResponse getUser() {
-    	 log.info("Fetch access token for register with login flow");
-         try {
-             HttpHeaders headers = new HttpHeaders();
-             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-             headers.set("Authorization", "Basic ZWdvdi11c2VyLWNsaWVudDplZ292LXVzZXItc2VjcmV0");
-             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-             map.add("username", "EMP11");
-             map.add("password", "EMP11");
-             map.add("grant_type", "password");
-             map.add("scope", "read");
-             map.add("tenantId","pb.testing");
-             map.add("isInternal", "true");
-             map.add("userType", "EMPLOYEE");
+    private Configurations configurations;
 
-             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map,
-                     headers);
-             UserResponse userResponse= restTemplate.postForEntity(configurations.getUserHost() + configurations.getUserSearchEndPoint(), request, UserResponse.class).getBody();
+    public UserResponse getUser() {
+        log.info("Fetching system user details via User Search flow");
+        try {
+            Map<String, Object> userSearchRequest = new HashMap<>();
+            userSearchRequest.put("RequestInfo", new RequestInfo());
+            userSearchRequest.put("uuid", Collections.singletonList(configurations.getAuthTokenVariable()));
+
+            UserResponse userResponse = restTemplate.postForObject(
+                    configurations.getUserHost() + configurations.getUserSearchEndPoint(),
+                    userSearchRequest,
+                    UserResponse.class
+            );
             return userResponse;
-             
-         } catch (Exception e) {
-             log.error("Error occurred while logging-in via register flow", e);
-             throw new CustomException("LOGIN_ERROR", "Error occurred while logging in via register flow: " + e.getMessage());
-         }
+
+        } catch (Exception e) {
+            log.error("Error occurred while searching system user via user search flow", e);
+            throw new CustomException("USER_SEARCH_ERROR", "Error occurred while searching system user: " + e.getMessage());
+        }
 
     }
-    
-   
 
 }

@@ -173,6 +173,9 @@ public class WSCalculationConfiguration {
 	
 	@Value("${egov.watercalculatorservice.createdemand.topic}")
 	private String createDemand;
+
+    @Value("${egov.watercalculatorservice.createsingledemand.topic}")
+    private String createSingleDemand;
 	
     	@Value("${ws.demand.based.batch.size}")
     	private Integer batchSize;
@@ -236,4 +239,6 @@ public class WSCalculationConfiguration {
 	@Value("${kafka.topics.save.demand}")
 	private String saveDemand;
 
+	@Value("${egov.ws_calculation.bulkMeterReading.default.limit}")
+	private String bulkMeterLimit;
 }

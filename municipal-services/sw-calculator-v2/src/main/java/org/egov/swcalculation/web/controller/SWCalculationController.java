@@ -26,11 +26,9 @@ import org.egov.swcalculation.web.models.GetBillCriteria;
 import org.egov.swcalculation.web.models.RequestInfoWrapper;
 import org.egov.swcalculation.web.models.SewerageConnection;
 import org.egov.swcalculation.web.models.SingleDemand;
+import org.egov.swcalculation.web.models.SewerageSchedulerRequestWrapper;
+import org.egov.swcalculation.web.models.BulkDemandReq;
 import org.egov.tracer.model.CustomException;
-import org.egov.swcalculation.service.DemandService;
-import org.egov.swcalculation.service.SWCalculationService;
-import org.egov.swcalculation.service.SWCalculationServiceImpl;
-import org.egov.swcalculation.util.ResponseInfoFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -97,8 +95,8 @@ public class SWCalculationController {
 	}
 	
 	@PostMapping("/_jobscheduler")
-	public void jobscheduler(@Valid @RequestBody BulkBillReq bulkBillReq) {
-		sWCalculationService.generateDemandBasedOnTimePeriod(bulkBillReq.getRequestInfo(), bulkBillReq.getBulkBillCriteria());
+	public void jobscheduler(@Valid @RequestBody BulkDemandReq bulkDemandReq) {
+		sWCalculationService.generateDemandBasedOnTimePeriod(bulkDemandReq.getRequestInfo(), bulkDemandReq.getBulkDemandCriteria());
 	}
 	@PostMapping("/_singledemand")
 	public ResponseEntity<Map<String, Object>> singledemandgen(@Valid @RequestBody SingleDemand singledemand) {
@@ -132,8 +130,9 @@ public class SWCalculationController {
 
 	        
 	@PostMapping("/_jobbillscheduler")
-	public void jobbillscheduler(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) {
-		sWCalculationService.generateBillBasedLocality(requestInfoWrapper.getRequestInfo());
+	public void jobbillscheduler(@Valid @RequestBody SewerageSchedulerRequestWrapper schedulerRequestWrapper) {
+		sWCalculationService.generateBillBasedLocalityOrTenant(schedulerRequestWrapper.getRequestInfo(),
+				schedulerRequestWrapper.getSchedulerLevel(), schedulerRequestWrapper.getTenantId());
 	}
 	
 

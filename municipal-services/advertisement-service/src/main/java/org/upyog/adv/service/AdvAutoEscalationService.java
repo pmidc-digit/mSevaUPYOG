@@ -91,7 +91,7 @@ public class AdvAutoEscalationService {
         String currentStates = autoEscalationMdmsData.getOrDefault("currentStates", "BOOKED").toString();
 
     StringBuilder url = new StringBuilder(workflowHost).append(workflowEscalationPath);
-        System.out.println(url.toString());
+        log.info("Auto escalation workflow URL: {}", url);
     url.append("?businessService=").append(businessService)
                 .append("&moduleName=").append(moduleName);
         if (!sla.isEmpty()) url.append("&sla=").append(sla);

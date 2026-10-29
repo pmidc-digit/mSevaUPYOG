@@ -129,12 +129,28 @@ public class EstimationService {
 			Map<String, JSONArray> timeBasedExemptionsMasterMap, RequestInfoWrapper requestInfoWrapper) {
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
-		HashMap<String, String> add_details = ((HashMap<String, String>) connection.getAdditionalDetails());
+		Map<String, Object> add_details = null;
+		if (connection.getAdditionalDetails() != null) {
+			try {
+				add_details = mapper.convertValue(connection.getAdditionalDetails(), HashMap.class);
+			} catch (Exception e) {
+				log.error("Error converting additional details in getEstimatesForTax", e);
+			}
+		}
+		if (add_details == null) {
+			add_details = new HashMap<>();
+		}
+
+		String dischargeConnectionStr = null;
+		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection") != null) {
+			dischargeConnectionStr = String.valueOf(add_details.get("dischargeConnection"));
+		}
+
 		// water_charge to be added only if dischargeConnection is not Onlydisposal
 		// (category 62 of Amritsar) means if the connection is only disposal that only
 		// discharge/disposal charges should be applicable
-		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection")!=null) {
-			if (add_details.get("dischargeConnection").equalsIgnoreCase("OnlyDischarge") == false)
+		if (dischargeConnectionStr != null) {
+			if (!dischargeConnectionStr.equalsIgnoreCase("OnlyDischarge"))
 				estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_CHARGE)
 						.estimateAmount(waterCharge.setScale(2, 2)).build());
 		} else
@@ -154,18 +170,22 @@ public class EstimationService {
 		// .estimateAmount(waterCess.setScale(2, 2)).build());
 
 		// DISPOSAL DISCHARGE CHARGES
-		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection")!=null) {
+		if (dischargeConnectionStr != null) {
 
-			if (add_details.get("dischargeConnection").equalsIgnoreCase("true")
-					|| add_details.get("dischargeConnection").equalsIgnoreCase("OnlyDischarge")) {
+			if (dischargeConnectionStr.equalsIgnoreCase("true")
+					|| dischargeConnectionStr.equalsIgnoreCase("OnlyDischarge")) {
 				BigDecimal disposal_charge;
 				try {
-					if (add_details.containsKey("dischargeFee")) // if dischargeFee attribute is present in
-																	// additionalDetails then use give dischargeFee else
-																	// fix dischagefee to 200
-						disposal_charge = new BigDecimal(add_details.get("dischargeFee"));
-					else
+					Object dischargeFeeObj = add_details.get("dischargeFee");
+					if (dischargeFeeObj != null) {
+						if (dischargeFeeObj instanceof Number) {
+							disposal_charge = BigDecimal.valueOf(((Number) dischargeFeeObj).doubleValue());
+						} else {
+							disposal_charge = new BigDecimal(String.valueOf(dischargeFeeObj));
+						}
+					} else {
 						disposal_charge = new BigDecimal(200.0);
+					}
 				} catch (Exception ex) {
 					disposal_charge = new BigDecimal(200.0);
 				}
@@ -299,17 +319,28 @@ public class EstimationService {
 		// Track all slab IDs but calculate water charge only once — unchanged
 		BillingSlab applicableBillSlab = null;
 		Slab applicableSlab = null;
- 
+		String waterUsageType = (String) additionalDetail.getOrDefault(WSCalculationConstant.WATER_SUBUSAGE_TYPE, null);
+		
 		for (BillingSlab billSlab : billingSlabs) {
 			billingSlabIds.add(billSlab.getId());
  
+			if (billSlab.getSlabs() == null || billSlab.getSlabs().isEmpty()) continue;
 			List<Slab> filteredSlabs = billSlab.getSlabs().stream()
 					.filter(slab -> slab.getFrom() <= totalUOM && slab.getTo() >= totalUOM
 							&& slab.getEffectiveFrom() <= System.currentTimeMillis()
 							&& slab.getEffectiveTo() >= System.currentTimeMillis())
 					.collect(Collectors.toList());
- 
-			if (!filteredSlabs.isEmpty() && applicableBillSlab == null) {
+			
+			if (filteredSlabs.isEmpty() || applicableBillSlab != null) {
+		        continue;
+		    }
+			
+			if (waterUsageType == null) {
+				// No water usage type provided, pick the first matching BillingSlab
+				applicableBillSlab = billSlab;
+				applicableSlab = filteredSlabs.get(0);
+			} else if (waterUsageType.equals(billSlab.getWaterSubUsageType())) {
+				// Water usage type provided, pick only the matching BillingSlab
 				applicableBillSlab = billSlab;
 				applicableSlab = filteredSlabs.get(0);
 			}
@@ -1091,7 +1122,7 @@ public class EstimationService {
 									additionalDetails.get(WSCalculationConstant.COMPOSITION_FEE_CONST).toString()))
 							.build());
 				}
-				System.out.println(additionalDetails.get(WSCalculationConstant.connectionCategory).toString());
+				log.debug("connectionCategory: {}", additionalDetails.get(WSCalculationConstant.connectionCategory));
 				if (additionalDetails.getOrDefault(WSCalculationConstant.USER_CHARGES_CONST, null) != null) {
 					estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.USER_CHARGES)
 							.estimateAmount(new BigDecimal(

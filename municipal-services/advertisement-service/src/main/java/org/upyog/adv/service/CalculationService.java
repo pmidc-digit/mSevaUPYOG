@@ -2,17 +2,22 @@ package org.upyog.adv.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.upyog.adv.config.BookingConfiguration;
 import org.upyog.adv.constants.BookingConstants;
+import org.upyog.adv.enums.RentalType;
+import org.upyog.adv.util.BookingUtil;
 import org.upyog.adv.util.MdmsUtil;
 import org.upyog.adv.util.FeeCalculationUtil;
 import org.upyog.adv.web.models.*;
@@ -45,12 +50,18 @@ public class CalculationService {
 		String tenantId = bookingRequest.getBookingApplication().getTenantId();
 		Map<String, Object> mdmsDataMap = (Map<String, Object>) mdmsData;
 
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails == null || cartDetails.isEmpty()) {
+			throw new CustomException("EMPTY_CART", "Cart details cannot be empty for demand calculation");
+		}
+
 		List<Map<String, Object>> taxRateList = (List<Map<String, Object>>) ((Map<String, Object>) ((Map<String, Object>) mdmsDataMap
 				.get("MdmsRes")).get("Advertisement")).get("TaxAmount");
 
 		List<TaxHeadMaster> headMasters = mdmsUtil.getTaxHeadMasterList(bookingRequest.getRequestInfo(), tenantId, BookingConstants.BILLING_SERVICE);
 
-		List<Advertisements> calculationTypes = mdmsUtil.getAdvertisements(bookingRequest.getRequestInfo(), tenantId, config.getModuleName(), bookingRequest.getBookingApplication().getCartDetails().get(0));
+		// Fetch ALL advertisements from MDMS — the cartDetail parameter is unused by the method (no per-item filtering)
+		List<Advertisements> calculationTypes = mdmsUtil.getAdvertisements(bookingRequest.getRequestInfo(), tenantId, config.getModuleName(), null);
 
 		log.info("Retrieved calculation types: {}", calculationTypes);
 
@@ -60,47 +71,172 @@ public class CalculationService {
 		return demandDetails;
 	}
 
+	/**
+	 * Compute per-advertisement breakdown (id, name, days, base rental) for the
+	 * estimate response. Taxes/fees are allocated pro-rata separately in DemandService.
+	 */
+	public List<AdvertisementSlotWiseBreakdown> calculateSlotWiseBreakdown(
+			BookingRequest bookingRequest, Object mdmsData) throws JsonProcessingException {
+
+		String tenantId = bookingRequest.getBookingApplication().getTenantId();
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails == null || cartDetails.isEmpty()) {
+			throw new CustomException("EMPTY_CART", "Cart details cannot be empty for demand calculation");
+		}
+
+		List<Advertisements> advertisements = mdmsUtil.getAdvertisements(
+				bookingRequest.getRequestInfo(), tenantId, config.getModuleName(), null);
+
+		Map<Integer, Advertisements> advById = advertisements.stream()
+				.filter(a -> a.getId() != null)
+				.collect(Collectors.toMap(Advertisements::getId, a -> a, (existing, replacement) -> existing));
+
+		Map<String, List<LocalDate>> adDatesMap = cartDetails.stream()
+				.filter(cd -> cd.getAdvertisementId() != null)
+				.collect(Collectors.groupingBy(
+						CartDetail::getAdvertisementId,
+						Collectors.mapping(CartDetail::getBookingDate, Collectors.toList())));
+
+		Map<String, Long> daysPerAd = cartDetails.stream()
+				.map(CartDetail::getAdvertisementId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+
+		List<AdvertisementSlotWiseBreakdown> breakdown = new LinkedList<>();
+		for (Map.Entry<String, List<LocalDate>> entry : adDatesMap.entrySet()) {
+			String adId = entry.getKey();
+			List<LocalDate> dates = entry.getValue();
+			Advertisements adv = advById.get(Integer.parseInt(adId));
+			if (adv == null) {
+				throw new CustomException("ADVERTISEMENT_NOT_FOUND",
+						"No advertisement found with id: " + adId);
+			}
+
+			BigDecimal base = BigDecimal.ZERO;
+			if (adv.getRentalType() == RentalType.FIXED) {
+				BigDecimal fixed = BookingUtil.calculateFixedRentalAmount(adv, dates);
+				if (fixed != null) base = fixed;
+			} else {
+				long bookingDaysForAd = daysPerAd.getOrDefault(adId, 0L);
+				LocalDate refDate = dates.isEmpty() ? null : dates.get(0);
+				BigDecimal perDay = BookingUtil.getPerDayRate(adv, refDate, bookingDaysForAd);
+				if (perDay != null) base = perDay.multiply(BigDecimal.valueOf(bookingDaysForAd));
+			}
+
+			breakdown.add(AdvertisementSlotWiseBreakdown.builder()
+					.advertisementId(adId)
+					.advertisementName(adv.getName())
+					.numberOfDays(dates.size())
+					.baseRentalAmount(base)
+					.build());
+		}
+		return breakdown;
+	}
+
 	private List<DemandDetail> processCalculationForDemandGeneration(String tenantId,
 																	 List<Advertisements> advertisements, BookingRequest bookingRequest, List<TaxHeadMaster> headMasters, List<String> taxRateCodes, Object taxRateList) {
 
-		Map<String, Long> advBookingDaysMap = bookingRequest.getBookingApplication().getCartDetails()
-				.stream().collect(Collectors.groupingBy(CartDetail::getAddType, Collectors.counting()));
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails == null || cartDetails.isEmpty()) {
+			throw new CustomException("EMPTY_CART", "Cart details cannot be empty for demand calculation");
+		}
 
 		final List<DemandDetail> demandDetails = new LinkedList<>();
 
 		List<String> taxHeadCodes = headMasters.stream().map(head -> head.getCode()).collect(Collectors.toList());
-
 		log.info("tax head codes  : " + taxHeadCodes);
 
-		// Demand for which tax is applicable is stored
-		List<Advertisements> taxableFeeType = new ArrayList<>();
+		// Build lookup: advertisementId → Advertisements for fast per-entry matching
+		Map<Integer, Advertisements> advById = advertisements.stream()
+				.filter(a -> a.getId() != null)
+				.collect(Collectors.toMap(Advertisements::getId, a -> a, (existing, replacement) -> existing));
 
-		CartDetail cartDetail = bookingRequest.getBookingApplication().getCartDetails().get(0);
-		// use valueOf to convert long to BigDecimal safely
-		BigDecimal advBookingDays = BigDecimal.valueOf(advBookingDaysMap.get(cartDetail.getAddType()));
-		String advertisementId = cartDetail.getAdvertisementId();
+		// Collect all unique advertisement IDs from cart entries
+		Set<Integer> bookedAdIds = cartDetails.stream()
+				.map(CartDetail::getAdvertisementId)
+				.filter(Objects::nonNull)
+				.map(Integer::parseInt)
+				.collect(Collectors.toSet());
 
-		// We have two type of fee 1.taxable(Booking fee, advertisement fee etc) and 2.fixed(Security deposit)
-		for (Advertisements type : advertisements) {
-			if (taxHeadCodes.contains(type.getFeeType()) && type.getId().equals(Integer.parseInt(advertisementId))) {
-				if (type.isTaxApplicable()) {
-					// Add taxable fee
-					taxableFeeType.add(type);
-				} else {
-					DemandDetail data = DemandDetail.builder().taxAmount(type.getAmount())
-							.taxHeadMasterCode(type.getFeeType()).tenantId(tenantId).build();
-					// Add fixed fee for which tax is not applicable like security deposit
-					demandDetails.add(data);
+		// Fixed fee (non-taxable like security deposit) — once per unique advertisement
+		for (Integer adId : bookedAdIds) {
+			Advertisements adv = advById.get(adId);
+			if (adv == null) {
+				throw new CustomException("ADVERTISEMENT_NOT_FOUND",
+						"No advertisement found with id: " + adId);
+			}
+			if (taxHeadCodes.contains(adv.getFeeType()) && !adv.isTaxApplicable()) {
+				DemandDetail data = DemandDetail.builder().taxAmount(adv.getAmount())
+						.taxHeadMasterCode(adv.getFeeType()).tenantId(tenantId).build();
+				demandDetails.add(data);
+			}
+		}
+
+		// Group cart entry booking dates by advertisementId (for fixed-rental month/week grouping)
+		Map<String, List<LocalDate>> adDatesMap = cartDetails.stream()
+				.filter(cd -> cd.getAdvertisementId() != null)
+				.collect(Collectors.groupingBy(
+						CartDetail::getAdvertisementId,
+						Collectors.mapping(CartDetail::getBookingDate, Collectors.toList())));
+
+		Map<String, Long> daysPerAd = cartDetails.stream()
+				.map(CartDetail::getAdvertisementId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+
+		// Pre-compute total amount per advertisement, branching on rentalType
+		Map<String, BigDecimal> adAmounts = new java.util.LinkedHashMap<>();
+		for (Map.Entry<String, List<LocalDate>> entry : adDatesMap.entrySet()) {
+			String adId = entry.getKey();
+			List<LocalDate> dates = entry.getValue();
+			Advertisements adv = advById.get(Integer.parseInt(adId));
+			if (adv == null) {
+				throw new CustomException("ADVERTISEMENT_NOT_FOUND",
+						"No advertisement found with id: " + adId);
+			}
+			if (adv.getRentalType() == RentalType.FIXED) {
+				BigDecimal fixed = BookingUtil.calculateFixedRentalAmount(adv, dates);
+				if (fixed != null) {
+					adAmounts.put(adId, fixed);
+				}
+			} else {
+				// DAILY rental (default / legacy behavior)
+				long bookingDaysForAd = daysPerAd.getOrDefault(adId, 0L);
+				LocalDate refDate = dates.isEmpty() ? null : dates.get(0);
+				BigDecimal perDay = BookingUtil.getPerDayRate(adv, refDate, bookingDaysForAd);
+				if (perDay != null) {
+					adAmounts.put(adId, perDay.multiply(BigDecimal.valueOf(bookingDaysForAd)));
 				}
 			}
 		}
 
-		log.info("taxable fee type : " + taxableFeeType);
+		BigDecimal totalTaxBaseAmount = adAmounts.values().stream()
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		// Calculating taxable demand as per no of days for taxable fee
-		List<DemandDetail> taxableDemands = taxableFeeType.stream().map(data ->
-				DemandDetail.builder().taxAmount(data.getAmount().multiply(advBookingDays))
-						.taxHeadMasterCode(data.getFeeType()).tenantId(tenantId).build()).collect(Collectors.toList());
+		if (totalTaxBaseAmount.compareTo(BigDecimal.ZERO) == 0) {
+			throw new CustomException("ZERO_TAX_BASE",
+					"No valid advertisement rates found. Ensure each advertisement has an amount field populated.");
+		}
+		log.info("totalTaxBaseAmount={} (from {} cart entries across {} unique ads)",
+				totalTaxBaseAmount, cartDetails.size(), bookedAdIds.size());
+
+		// Taxable breakdown by feeType — using pre-computed adAmounts
+		Map<String, BigDecimal> taxableByFeeType = new java.util.LinkedHashMap<>();
+		for (Map.Entry<String, BigDecimal> entry : adAmounts.entrySet()) {
+			String adId = entry.getKey();
+			BigDecimal amount = entry.getValue();
+			Advertisements adv = advById.get(Integer.parseInt(adId));
+			if (adv == null || !adv.isTaxApplicable() || !taxHeadCodes.contains(adv.getFeeType())) continue;
+			taxableByFeeType.merge(adv.getFeeType(), amount, BigDecimal::add);
+		}
+
+		List<DemandDetail> taxableDemands = taxableByFeeType.entrySet().stream()
+				.map(e -> DemandDetail.builder()
+						.taxAmount(e.getValue())
+						.taxHeadMasterCode(e.getKey())
+						.tenantId(tenantId)
+						.build())
+				.collect(Collectors.toList());
 
 		log.info("taxableDemands : " + taxableDemands);
 
@@ -161,16 +297,24 @@ public class CalculationService {
 	 * Returns 0 if booking hasn't ended yet
 	 */
 	private int calculateDaysAfterBooking(BookingRequest bookingRequest) {
-		// Get booking end date from first cart detail
-		CartDetail firstCart = bookingRequest.getBookingApplication()
-				.getCartDetails().get(0);
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails == null || cartDetails.isEmpty()) {
+			throw new CustomException("EMPTY_CART", "Cart details cannot be empty for demand calculation");
+		}
+
+		LocalDate bookingEndDate = cartDetails.stream()
+				.map(CartDetail::getBookingDate)
+				.filter(Objects::nonNull)
+				.max(LocalDate::compareTo)
+				.orElseThrow(() -> new CustomException("BOOKING_DATE_NOT_FOUND",
+						"Booking date is required for demand calculation"));
 
 		/*
 		 * Assuming CartDetail.getBookingDate() returns a java.time.LocalDate (or similar)
 		 * Convert to epoch-day then to milliseconds (start of day), like CHB implementation.
 		 * Use long literals to avoid int overflow.
 		 */
-		long bookingEndDateMillis = firstCart.getBookingDate().toEpochDay() * 24L * 60 * 60 * 1000;
+		long bookingEndDateMillis = bookingEndDate.toEpochDay() * 24L * 60 * 60 * 1000;
 		long currentTimeMillis = System.currentTimeMillis();
 		long elapsedMillis = currentTimeMillis - bookingEndDateMillis;
 		int daysAfterBooking = (int) (elapsedMillis / (24L * 60 * 60 * 1000));
@@ -180,32 +324,73 @@ public class CalculationService {
 	}
 
 	/**
-	 * Get base amount for rate calculation from MDMS
-	 * This is the PER DAY booking fee, NOT the total
+	 * Get the TOTAL base amount (not per-day) for additional fee rate calculation.
+	 * For FIXED-rental ads this returns the total fixed rental amount;
+	 * for DAILY-rental ads it returns dailyRate × bookingDays.
+	 * Only ads with feeType {@code BOOKING_FEES} are counted.
 	 */
 	private BigDecimal getBaseAmountFromMDMS(BookingRequest bookingRequest) {
 		String tenantId = bookingRequest.getBookingApplication().getTenantId();
-		CartDetail cartDetail = bookingRequest.getBookingApplication().getCartDetails().get(0);
+		List<CartDetail> cartDetails = bookingRequest.getBookingApplication().getCartDetails();
+		if (cartDetails == null || cartDetails.isEmpty()) {
+			throw new CustomException("EMPTY_CART", "Cart details cannot be empty for demand calculation");
+		}
 
+		// Fetch ALL advertisements from MDMS — the cartDetail parameter is unused (no per-item filtering)
 		List<Advertisements> advertisements = null;
 		try {
 			advertisements = mdmsUtil.getAdvertisements(
 					bookingRequest.getRequestInfo(),
 					tenantId,
 					config.getModuleName(),
-					cartDetail);
+					null);
 		} catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
 
-		String advertisementId = cartDetail.getAdvertisementId();
+		Map<Integer, Advertisements> advById = advertisements.stream()
+				.filter(ad -> ad.getId() != null)
+				.collect(Collectors.toMap(Advertisements::getId, ad -> ad, (existing, replacement) -> existing));
 
-		return advertisements.stream()
-				.filter(ad -> ad.getId().equals(Integer.parseInt(advertisementId)) &&
-						"BOOKING_FEES".equals(ad.getFeeType()))
-				.findFirst()
-				.map(Advertisements::getAmount)
-				.orElse(BigDecimal.ZERO);
+		// Group booking dates by advertisementId
+		Map<String, List<LocalDate>> adDatesMap = cartDetails.stream()
+				.filter(cd -> cd.getAdvertisementId() != null)
+				.collect(Collectors.groupingBy(
+						CartDetail::getAdvertisementId,
+						Collectors.mapping(CartDetail::getBookingDate, Collectors.toList())));
+
+		Map<String, Long> daysPerAd = cartDetails.stream()
+				.map(CartDetail::getAdvertisementId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.groupingBy(id -> id, Collectors.counting()));
+
+		BigDecimal total = BigDecimal.ZERO;
+		for (Map.Entry<String, List<LocalDate>> entry : adDatesMap.entrySet()) {
+			String adId = entry.getKey();
+			List<LocalDate> dates = entry.getValue();
+			Advertisements advertisement = advById.get(Integer.parseInt(adId));
+			if (advertisement == null) {
+				throw new CustomException("ADVERTISEMENT_NOT_FOUND",
+						"No advertisement found with id: " + adId);
+			}
+			if (!"ADV_BOOKING_FEES".equals(advertisement.getFeeType())) {
+				continue;
+			}
+			if (advertisement.getRentalType() == RentalType.FIXED) {
+				BigDecimal fixed = BookingUtil.calculateFixedRentalAmount(advertisement, dates);
+				if (fixed != null) {
+					total = total.add(fixed);
+				}
+			} else {
+				long bookingDaysForAd = daysPerAd.getOrDefault(adId, 0L);
+				LocalDate refDate = dates.isEmpty() ? null : dates.get(0);
+				BigDecimal perDay = BookingUtil.getPerDayRate(advertisement, refDate, bookingDaysForAd);
+				if (perDay != null) {
+					total = total.add(perDay.multiply(BigDecimal.valueOf(bookingDaysForAd)));
+				}
+			}
+		}
+		return total;
 	}
 
 	/**

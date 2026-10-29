@@ -21,6 +21,7 @@ public class LAYOUTConstants {
 	public static final String ACTION_APPLY = "APPLY";
 	public static final String INVALID_REQUEST = "INVALID REQUEST";
 	public static final String LAYOUT_MODULE = "LAYOUT";
+	public static final String MODULENAME = "layout-service";
 	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
 	// mdms path codes
 

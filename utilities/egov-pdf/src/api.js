@@ -306,7 +306,16 @@ async function search_billgeneiWater(data, requestinfo, headers) {
     data: Object.assign(requestinfo, data),
     headers: headers,
   });
-  }else{
+  }else if(data &&
+    data.searchCriteria &&
+    data.searchCriteria.type === "integraded_bill"){
+      return await axios({
+        method: "post",
+        url: url.resolve(config.host.bill, config.paths.searcher_api_sw_integrated),
+        data: Object.assign(requestinfo, data),
+        headers: headers,
+      });
+    }else{
      return await axios({
     method: "post",
     url: url.resolve(config.host.bill, config.paths.searcher_api_water),
@@ -777,63 +786,101 @@ async function create_bulk_pdf(kafkaData) {
     //   throw new Error("There is no billfound for the criteria");
     // }
 
+    console.log("DEBUG: batchType =", batchType, "bussinessService =", bussinessService, "isConsolidated =", isConsolidated);
 
-    if (!isConsolidated && bussinessService === 'WS') {
+    if (batchType === 'Integrated Bill') {
       try {
-          var inputData ={}
-          if(batchType  === 'Group'){
-            inputData = { searchCriteria: { group: group, tenantId: tenantId, url : config.paths.searcher_api_water, businesService : bussinessService, type : 'group'  } };
-          }else{
-            inputData  = { searchCriteria: { locality: locality, tenantId: tenantId, url : config.paths.searcher_api_water, businesService : bussinessService, type: "locality"  } };
-          }
-            
-           waterBillsData = await search_billgeneiWater(
-           inputData,
-           { RequestInfo: requestinfo.RequestInfo },
-           headers
-         );
+        var inputData = { searchCriteria: { locality: locality, tenantId: tenantId, url: config.paths.searcher_api_sw_integrated, businesService: bussinessService, type: "integraded_bill" } };
 
-         console.log("waterBillsData",waterBillsData)
-         waterBillsData = waterBillsData.data.Bills;
-          if (waterBillsData.length > 0) {
-            for (let waterBill of waterBillsData) {
-                if (waterBill.status === 'ACTIVE' && waterBill.totalAmount > 0){
-                  consolidatedResult.Bill.push(waterBill);
-                }
-            } 
+        integratedBillsData = await search_billgeneiWater(
+          inputData,
+          { RequestInfo: requestinfo.RequestInfo },
+          headers
+        );
+        console.log("integratedBillsData", integratedBillsData)
+
+        // Extract Bills array from response (handle different response structures)
+        var billsArray = integratedBillsData.data?.Bills || integratedBillsData.Bills || integratedBillsData || [];
+
+        if (billsArray && billsArray.length > 0) {
+          // Pass each property's integrated bill data as a single Bill entry
+          // Each entry contains both water and sewerage bills within connection object
+          for (let propertyBill of billsArray) {
+            if (propertyBill && propertyBill.connection && propertyBill.connection.propertyTotalAmount > 0) {
+              consolidatedResult.Bill.push(propertyBill);
+            }
           }
-      }catch (err){
-        throw new Error ("Error in API "+ err)
+        }
+      } catch (err) {
+        throw new Error("Error fetching Integrated Bills: " + err)
       }
-    }else if (!isConsolidated && bussinessService === 'SW') {
+    } else if (bussinessService === 'WS') {
       try {
-         var inputData ={}
-          if(batchType  === 'Group'){
-            inputData = { searchCriteria: { group: group, tenantId: tenantId, url : config.paths.searcher_api_water, businesService : bussinessService, type : 'group'  } };
-          }else{
-            inputData  = { searchCriteria: { locality: locality, tenantId: tenantId, url : config.paths.searcher_api_water, businesService : bussinessService, type: "locality"  } };
+        var inputData = {}
+        if (batchType === 'Group') {
+          inputData = { searchCriteria: { group: group, tenantId: tenantId, url: config.paths.searcher_api_water, businesService: bussinessService, type: 'group' } };
+        } else {
+          inputData = { searchCriteria: { locality: locality, tenantId: tenantId, url: config.paths.searcher_api_water, businesService: bussinessService, type: "locality" } };
+        }
+
+        waterBillsData = await search_billgeneiWater(
+          inputData,
+          { RequestInfo: requestinfo.RequestInfo },
+          headers
+        );
+        console.log("waterBillsData", waterBillsData)
+
+        waterBillsData = waterBillsData.data.Bills;
+        if (waterBillsData.length > 0) {
+          for (let waterBill of waterBillsData) {
+            if (waterBill.status === 'ACTIVE' && waterBill.totalAmount > 0) {
+              if (!waterBill.additionalDetails) {
+                waterBill.additionalDetails = {};
+              }
+              waterBill.additionalDetails.latePaymentc = (waterBillsData[0].tenantId == "pb.patiala" || waterBillsData[0].tenantId == "pb.nabha") ? '0% Late payment charges will be applied after due date' : '10% late payment charges For both water and sewerage';
+              consolidatedResult.Bill.push(waterBill);
+            }
           }
-           sewerageBillsData = await search_billgeneiSewerage(
-           inputData,
-           { RequestInfo: requestinfo.RequestInfo },
-           headers
-         );
-         sewerageBillsData = sewerageBillsData.data.Bills;
-          if (sewerageBillsData.length > 0) {
-            for (let sewerageBill of sewerageBillsData) {
-                if (sewerageBill.status === 'ACTIVE' && sewerageBill.totalAmount > 0){
-                  consolidatedResult.Bill.push(sewerageBill);
-                }
-            } 
-          }
-      }catch (err){
-        throw new Error ("Error in API "+ err)
+        }
+      } catch (err) {
+        throw new Error("Error in API " + err)
       }
-    }else{
-      throw new Error("There is no billfound for the criteria");
+    } else if (bussinessService === 'SW') {
+      try {
+        var inputData = {}
+        if (batchType === 'Group') {
+          inputData = { searchCriteria: { group: group, tenantId: tenantId, url: config.paths.searcher_api_sewerage_group, businesService: bussinessService, type: 'group' } };
+        } else {
+          inputData = { searchCriteria: { locality: locality, tenantId: tenantId, url: config.paths.searcher_api_sewerage, businesService: bussinessService, type: "locality" } };
+        }
+
+        sewerageBillsData = await search_billgeneiSewerage(
+          inputData,
+          { RequestInfo: requestinfo.RequestInfo },
+          headers
+        );
+        console.log("sewerageBillsData", sewerageBillsData)
+
+        sewerageBillsData = sewerageBillsData.data.Bills;
+        if (sewerageBillsData.length > 0) {
+          for (let sewerageBill of sewerageBillsData) {
+            if (sewerageBill.status === 'ACTIVE' && sewerageBill.totalAmount > 0) {
+              if (!sewerageBill.additionalDetails) {
+                sewerageBill.additionalDetails = {};
+              }
+              sewerageBill.additionalDetails.latePaymentc = (sewerageBillsData[0].tenantId == "pb.patiala" || sewerageBillsData[0].tenantId == "pb.nabha") ? '25% Late payment charges will be applied after due date' : '10% late payment charges For both water and sewerage';
+              consolidatedResult.Bill.push(sewerageBill);
+            }
+          }
+        }
+      } catch (err) {
+        throw new Error("Error in API " + err)
+      }
+    } else {
+      throw new Error(`There is no billfound for the criteria. batchType: ${batchType}, bussinessService: ${bussinessService}, isConsolidated: ${isConsolidated}`);
     }
-    var propertyDetails = await getPropertyDeatils({ RequestInfo: requestinfo.RequestInfo }, tenantId, propertyIdSet, connectionnoToPropertyMap, headers);
-    console.log("propertyDetails:", propertyDetails);
+    //var propertyDetails = await getPropertyDeatils({ RequestInfo: requestinfo.RequestInfo }, tenantId, propertyIdSet, connectionnoToPropertyMap, headers);
+    //console.log("propertyDetails:", propertyDetails);
     if (consolidatedResult && consolidatedResult.Bill && consolidatedResult.Bill.length > 0) {
       var pdfResponse;
       var pdfkey = pdfKey || config.pdf.wns_bill;

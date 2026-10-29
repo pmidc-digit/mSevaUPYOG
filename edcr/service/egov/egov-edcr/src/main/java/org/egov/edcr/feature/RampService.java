@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -127,51 +128,62 @@ public class RampService extends FeatureProcess {
         }
 
         // validate necessary
-        HashMap<String, String> errors = new HashMap<>();
-        OccupancyTypeHelper mostRestrictiveOccupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
+		HashMap<String, String> errors = new HashMap<>();
 
-        if (pl != null && !pl.getBlocks().isEmpty()) {
-            blk: for (Block block : pl.getBlocks()) {
-                /*
-                 * if (block.getBuilding() != null && !block.getBuilding().getOccupancies().isEmpty()) { if
-                 * (Util.checkExemptionConditionForBuildingParts(block)) { continue blk; } List<OccupancyType> occupancyTypeList =
-                 * block.getBuilding().getOccupancies().stream() .map(occupancy ->
-                 * occupancy.getType()).collect(Collectors.toList()); for (OccupancyType occupancyType : occupancyTypeList) { if
-                 * (getOccupanciesForRamp(occupancyType)) { if (block.getDARamps().isEmpty()) {
-                 * errors.put(String.format(DcrConstants.RAMP, block.getNumber()),
-                 * edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED, new String[]{String.format(DcrConstants.RAMP,
-                 * block.getNumber())}, LocaleContextHolder.getLocale())); pl.addErrors(errors); break; } } } }
-                 */
-                if (pl.getPlot() != null && !Util.checkExemptionConditionForSmallPlotAtBlkLevel(pl.getPlot(), block)
-                        && mostRestrictiveOccupancyType != null && mostRestrictiveOccupancyType.getSubtype() != null
-                        && !A_R.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())) {
-                    if (!block.getDARamps().isEmpty()) {
-                        boolean isSlopeDefined = false;
-                        for (DARamp daRamp : block.getDARamps()) {
-                            if (daRamp != null && daRamp.getSlope() != null
-                                    && daRamp.getSlope().compareTo(BigDecimal.valueOf(0)) > 0) {
-                                isSlopeDefined = true;
-                            }
-                        }
-                        if (!isSlopeDefined) {
-                            errors.put(String.format(DcrConstants.RAMP_SLOPE, "", block.getNumber()),
-                                    edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED,
-                                            new String[] { String.format(DcrConstants.RAMP_SLOPE, "", block.getNumber()) },
-                                            LocaleContextHolder.getLocale()));
-                            pl.addErrors(errors);
-                        }
-                    } else {
-                        errors.put(String.format("DA Ramp", block.getNumber()),
-                                edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED,
-                                        new String[] { String.format("DA Ramp",
-                                                block.getNumber()) },
-                                        LocaleContextHolder.getLocale()));
-                        pl.addErrors(errors);
-                        break;
-                    }
-                }
-            }
-        }
+		if (pl != null && !pl.getBlocks().isEmpty() && pl.getVirtualBuilding() != null
+				&& pl.getVirtualBuilding().getMostRestrictiveFarHelper() != null
+				&& pl.getVirtualBuilding().getMostRestrictiveFarHelper().getSubtype() != null) {
+
+			OccupancyTypeHelper mostRestrictiveOccupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
+
+			String occupancyCode = mostRestrictiveOccupancyType.getSubtype().getCode();
+
+			boolean isExcludedOccupancy =
+			        A_R.equalsIgnoreCase(occupancyCode)
+			        || isPetrolOrCngOccupancy(occupancyCode);
+
+			if (!isExcludedOccupancy && pl.getPlot() != null) {
+
+				blk: for (Block block : pl.getBlocks()) {
+
+					if (Util.checkExemptionConditionForSmallPlotAtBlkLevel(pl.getPlot(), block)) {
+						continue;
+					}
+
+					if (block.getDARamps() == null || block.getDARamps().isEmpty()) {
+
+						errors.put("DA Ramp " + block.getNumber(),
+								"DA Ramp not defined for block (" + block.getNumber() + ").");
+
+						pl.addErrors(errors);
+						break;
+					}
+
+					boolean isSlopeDefined = false;
+
+					for (DARamp daRamp : block.getDARamps()) {
+
+						if (daRamp != null && daRamp.getSlope() != null
+								&& daRamp.getSlope().compareTo(BigDecimal.ZERO) > 0) {
+
+							isSlopeDefined = true;
+							break;
+						}
+					}
+
+					if (!isSlopeDefined) {
+
+						String rampSlope = String.format(DcrConstants.RAMP_SLOPE, "", block.getNumber());
+
+						errors.put(rampSlope, edcrMessageSource.getMessage(DcrConstants.OBJECTNOTDEFINED,
+								new String[] { rampSlope }, LocaleContextHolder.getLocale()));
+
+						pl.addErrors(errors);
+					}
+				}
+			}
+		}
+        
         return pl;
     }
 
@@ -372,6 +384,13 @@ public class RampService extends FeatureProcess {
                             	                mapOfRampNumberAndSlopeValues.put("slope", actualRatio);
 
                             	                break;
+                            	            }else {
+                            	            	valid = false;
+
+                            	                mapOfRampNumberAndSlopeValues.put("daRampNumber",
+                            	                        daRamp.getNumber().toString());
+
+                            	                mapOfRampNumberAndSlopeValues.put("slope", actualRatio);
                             	            }
                             	        }
                             	    }
@@ -394,7 +413,9 @@ public class RampService extends FeatureProcess {
                             	            SUBRULE_50_C_4_B,
                             	            String.format(SUBRULE_50_C_4_B_SLOPE_DESCRIPTION, ""),
                             	            expectedRatio,
-                            	            mapOfRampNumberAndSlopeValues.get("slope"),
+                            	            Optional.ofNullable(
+                            	                    mapOfRampNumberAndSlopeValues.get("slope"))
+                            	                    .orElse("0"),
                             	            Result.Not_Accepted.getResultVal(),
                             	            scrutinyDetail2
                             	    );
@@ -405,7 +426,7 @@ public class RampService extends FeatureProcess {
                         }
                     }
 
-                    if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0) {
+                    //if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0) {
                         OccupancyTypeHelper mostRestrictiveFarHelper = pl.getVirtualBuilding() != null
                                 ? pl.getVirtualBuilding().getMostRestrictiveFarHelper()
                                 : null;
@@ -551,7 +572,7 @@ public class RampService extends FeatureProcess {
                                                 if (valid) {
                                                 	setReportOutputDetailsFloorWiseWithDescription(
                                             	            pl,
-                                            	            SUBRULE_40,
+                                            	            SUBRULE_50_C_4_B,
                                             	            String.format(SUBRULE_50_C_4_B_DESCRIPTION,
                                             	                    mapOfRampNumberAndSlopeValues.get("rampNumber")),
                                             	            value,
@@ -563,7 +584,7 @@ public class RampService extends FeatureProcess {
                                             	} else {
                                             		setReportOutputDetailsFloorWiseWithDescription(
                                             	            pl,
-                                            	            SUBRULE_40,
+                                            	            SUBRULE_50_C_4_B,
                                             	            String.format(SUBRULE_50_C_4_B_DESCRIPTION, ""),
                                             	            value,
                                             	            expectedRatio,
@@ -578,7 +599,7 @@ public class RampService extends FeatureProcess {
                                 }
                             }
                         }
-                    }
+                    //}
                 }
             }
         }
@@ -660,4 +681,13 @@ public class RampService extends FeatureProcess {
     public Map<String, Date> getAmendments() {
         return new LinkedHashMap<>();
     }
+    
+    private boolean isPetrolOrCngOccupancy(String occupancyCode) {
+        return DxfFileConstants.F_PFSF.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_PFST.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_PFSS.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_PS.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_CNGS.equalsIgnoreCase(occupancyCode);
+    }
+    
 }

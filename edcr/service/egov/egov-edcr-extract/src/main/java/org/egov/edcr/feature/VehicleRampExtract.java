@@ -18,7 +18,9 @@ import org.egov.common.entity.edcr.VehicleRamp;
 import org.egov.edcr.entity.blackbox.MeasurementDetail;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
+import org.egov.edcr.utility.PolylineMetrics;
 import org.egov.edcr.utility.Util;
+import org.egov.edcr.utility.PolylineMetrics.PolylineMeasurement;
 import org.kabeja.dxf.DXFLWPolyline;
 import org.kabeja.dxf.DXFLine;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,16 +139,12 @@ public class VehicleRampExtract extends FeatureExtract {
 		        String rampHeight = Util.getMtextByLayerName(pl.getDoc(), vehicleRmpLayer,
 		                "RAMP_HT_M");
 				if (!isBlank(rampHeight)) {
-					if (rampHeight.contains("="))
-						rampHeight = rampHeight.split("=")[1] != null
-								? rampHeight.split("=")[1].replaceAll("[^\\d.]", "") : "";
-					else
-						rampHeight = rampHeight.replaceAll("[^\\d.]", "");
-
-					if (!isBlank(rampHeight)) {
-						BigDecimal height = BigDecimal.valueOf(Double.parseDouble(rampHeight));
+					if (rampHeight.contains("=")) {
+						rampHeight = rampHeight.split("=")[1] != null ? rampHeight.split("=")[1] : "";
+					}
+					BigDecimal height = Util.extractBigDecimalFromText(rampHeight, pl, vehicleRmpLayer, "Ramp height");
+					if (height != null) {
 						flight.setHeight(height);
-
 					}
 				}
 				
@@ -178,21 +176,22 @@ public class VehicleRampExtract extends FeatureExtract {
 		        List<Measurement> vehicleRampPolyLine = polylines.stream()
 		                .map(dxflwPolyline -> new MeasurementDetail(dxflwPolyline, true))
 		                .collect(Collectors.toList());
+		        vehicleRamp.setWidth(vehicleRampPolyLine.get(0).getWidth().setScale(2, RoundingMode.HALF_UP));
+		        //PolylineMeasurement metrics = PolylineMetrics.calculateMetrics(polylines.get(0));
 		        vehicleRamp.setRamps(vehicleRampPolyLine);
 		        vehicleRamp.setSlope(extractSlope(pl, vehicleRmpLayer));
+		        String slopeRatio = extractSlopeRatio(pl, vehicleRmpLayer);
+		        vehicleRamp.setSlopeRatio(slopeRatio);
+		        
 		        String floorHeight = Util.getMtextByLayerName(pl.getDoc(), vehicleRmpLayer,
 		                "FLR_HT_M");
 
 		        if (!isBlank(floorHeight)) {
-		            if (floorHeight.contains("="))
-		                floorHeight = floorHeight.split("=")[1] != null
-		                        ? floorHeight.split("=")[1].replaceAll("[^\\d.]", "")
-		                        : "";
-		            else
-		                floorHeight = floorHeight.replaceAll("[^\\d.]", "");
-
-		            if (!isBlank(floorHeight)) {
-		                BigDecimal height = BigDecimal.valueOf(Double.parseDouble(floorHeight));
+		            if (floorHeight.contains("=")) {
+		                floorHeight = floorHeight.split("=")[1] != null ? floorHeight.split("=")[1] : "";
+		            }
+		            BigDecimal height = Util.extractBigDecimalFromText(floorHeight, pl, vehicleRmpLayer, "Floor height");
+		            if (height != null) {
 		                vehicleRamp.setFloorHeight(height);
 		            }
 		        }
@@ -202,7 +201,7 @@ public class VehicleRampExtract extends FeatureExtract {
 	}
 
     private BigDecimal extractSlope(PlanDetail pl, String vehicleRmpLayer) {
-		String text = Util.getMtextByLayerName(pl.getDoc(), vehicleRmpLayer);
+    	String text = Util.getMtextByLayerName(pl.getDoc(), vehicleRmpLayer);
 		BigDecimal slope = BigDecimal.ZERO;
 		if (text != null && !text.isEmpty() && text.contains("=")) {
 		    String[] textArray = text.split("=", 2);
@@ -220,6 +219,20 @@ public class VehicleRampExtract extends FeatureExtract {
 		}
 		return slope;
 	}
+    
+    private String extractSlopeRatio(PlanDetail pl, String rampLayerName) {
+		String text = Util.getMtextByLayerName(pl.getDoc(), rampLayerName);
+		String slope = null;
+		if (text != null && !text.isEmpty() && text.contains("=")) {
+		    String[] textArray = text.split("=", 2);
+		    String slopeText = textArray[1];
+		    if(slopeText!=null) {				
+				slope = slopeText.replace("IN", ":");
+		    }
+		}
+		return slope;
+	}
+
 
     @Override
     public PlanDetail validate(PlanDetail pl) {

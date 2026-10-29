@@ -135,6 +135,12 @@ public class WSCalculationConfiguration {
   	//Email
     	@Value("${kafka.topics.notification.mail.name}")
     	private String emailNotifyTopic;
+
+    	@Value("${notification.mail.recipients:rabhi5067@gmail.com}")
+    	private String mailRecipients;
+
+    	@Value("${notification.mail.cc.recipients:}")
+    	private String mailCcRecipients;
     
     	//User Configuration
     	@Value("${egov.user.host}")
@@ -173,6 +179,9 @@ public class WSCalculationConfiguration {
 	
 	@Value("${egov.watercalculatorservice.createdemand.topic}")
 	private String createDemand;
+
+    @Value("${egov.watercalculatorservice.createsingledemand.topic}")
+    private String createSingleDemand;
 	
     	@Value("${ws.demand.based.batch.size}")
     	private Integer batchSize;
@@ -235,5 +244,34 @@ public class WSCalculationConfiguration {
 	
 	@Value("${kafka.topics.save.demand}")
 	private String saveDemand;
+
+	@Value("${kafka.topics.save.ws.batch.demand.log}")
+	private String saveBatchDemandLogTopic;
+
+	@Value("${kafka.topics.save.ws.batch.connection.log}")
+	private String saveBatchConnectionLogTopic;
+
+	// Multi-threading configuration
+	@Value("${ws.tenant.thread.pool.size:5}")
+	private Integer tenantThreadPoolSize;
+
+	@Value("${ws.connection.thread.pool.size:3}")
+	private Integer connectionThreadPoolSize;
+
+	// Elasticsearch properties
+	@Value("${elasticsearch.host}")
+	private String elasticsearchHost;
+
+	@Value("${elasticsearch.search.endpoint}")
+	private String elasticsearchSearchEndpoint;
+
+	@Value("${property.es.index}")
+	private String propertyEsIndex;
+
+	@Value("${elasticsearch.username:}")
+	private String elasticsearchUsername;
+
+	@Value("${elasticsearch.password:}")
+	private String elasticsearchPassword;
 
 }

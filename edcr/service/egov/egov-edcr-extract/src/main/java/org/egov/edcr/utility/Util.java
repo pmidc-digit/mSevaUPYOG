@@ -66,11 +66,15 @@ public class Util {
     private static final BigDecimal FIFTY = BigDecimal.valueOf(50);
     private static final BigDecimal THREEHUNDRED = BigDecimal.valueOf(300);
 
+    
+    private static final double DEFAULT_EPS = 0.02;
+
+    
+    
     @Autowired
     public LayerNames layerNames;
 
     
- // 1. Helper class for Layer Rules
     private static class LayerRule {
         Pattern pattern;
         int colorCode;
@@ -108,7 +112,7 @@ public class Util {
         LAYER_RULES.add(new LayerRule(".*FIRE[_]?STAIR(_\\d+)?$", 97));
         LAYER_RULES.add(new LayerRule(".*FIRE[_]?STAIR(_\\d+)?_FLIGHT(_\\d+)?$", 98));
         LAYER_RULES.add(new LayerRule(".*FIRE[_]?STAIR(_\\d+)?_LANDING(_\\d+)?$", 99));
-        LAYER_RULES.add(new LayerRule(".*SPIRA[_]?FIRE[_]?STAIR(_\\d+)?$", 102));
+        LAYER_RULES.add(new LayerRule(".*SPIRA[_]?FIRE[_]?STAIR(_\\d+)?$", 101));
 
 
         // --- STAIRS & CIRCULATION ---
@@ -138,10 +142,13 @@ public class Util {
         LAYER_RULES.add(new LayerRule(".*WATER_CLOSET$", 89));
         LAYER_RULES.add(new LayerRule(".*DRINKING_WATER$", 90));
         LAYER_RULES.add(new LayerRule(".*TOILET_k$", 91));
-        LAYER_RULES.add(new LayerRule(".*TOILET_VENTILATION$", 92));
+        //LAYER_RULES.add(new LayerRule(".*TOILET_VENTILATION$", 92));
+        // --- TOILET VENTILATION ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_TOILET(?:_\\d+)?_VENTILATION$",92));
+        LAYER_RULES.add(new LayerRule(".*CINEMA_k$", 150));
 
         // --- BASEMENT & PARKING ---
-        LAYER_RULES.add(new LayerRule(".*BASEMENT_FOOT_PRINT$", 110));
+        LAYER_RULES.add(new LayerRule(".*BSMNT_FOOT_PRINT$", 102));
         LAYER_RULES.add(new LayerRule(".*BSMNT_FRONT_SETBACK$", 103));
         LAYER_RULES.add(new LayerRule(".*BSMNT_REAR_SETBACK$", 104));
         LAYER_RULES.add(new LayerRule(".*BSMNT_SIDE_SETBACK1$", 7));
@@ -200,12 +207,28 @@ public class Util {
 
         // --- LIGHT & VENTILATION ---
         LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_LIGHT_VENTILATION$", 121));
-
+        
+        // --- LIGHT & VENTILATION ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_ROOM_\\d+_LIGHT_VENTILATION_\\d+$", 122));
         // --- TOILET VENTILATION ---
-        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_TOILET_\\d+_VENTILATION$", 92));
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_ACROOM_\\d+_LIGHT_VENTILATION_\\d+$", 122));
+        
+        // --- AC ROOM ---
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_AC_ROOM_\\d+$", 135));
 
+        // Unit-FA
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_UNITFA_\\d+_TOILET_\\d+_VENTILATION_\\d+$", 92));  
+        
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_UNITFA_\\d+_LIGHT_VENTILATION$", 121));
+        
+     // Normal balcony layer
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_BALCONY_\\d+$", 121));
+
+        // UnitFA balcony layer
+        LAYER_RULES.add(new LayerRule("^BLK_\\d+_FLR_-?\\d+_UNITFA_\\d+_BALCONY_\\d+$", 121));
         
     }
+    
 
     public static int resolveLayerColor(String layerName) {
         try {
@@ -513,6 +536,30 @@ public class Util {
         return disNames;
     }
     
+    public static List<String> printLayerNamesLike(DXFDocument doc, String layerRegEx) {
+        List<String> matchingLayers = new ArrayList<>();
+
+        if (doc == null || layerRegEx == null || layerRegEx.trim().isEmpty()) {
+            return matchingLayers;
+        }
+
+        Pattern pattern = Pattern.compile(layerRegEx);
+
+        Iterator<?> layerIterator = doc.getDXFLayerIterator();
+        while (layerIterator.hasNext()) {
+            DXFLayer layer = (DXFLayer) layerIterator.next();
+            String layerName = layer.getName();
+
+            if (pattern.matcher(layerName).matches()) {
+                matchingLayers.add(layerName);
+                //LOG.info("Matched Layer : {}", layerName);
+            }
+        }
+
+        Collections.sort(matchingLayers);
+        return matchingLayers;
+    }
+    
     public static List<String> getAllLayersNameLike(DXFDocument doc, String regExp) {
     	List<String> layerNames = new ArrayList<>();
         if (doc == null || regExp == null) {
@@ -625,6 +672,51 @@ public class Util {
 
     }
 
+    public static BigDecimal extractBigDecimalFromText(String rawText) {
+        return extractBigDecimalFromText(rawText, null, null, null);
+    }
+
+    public static BigDecimal extractBigDecimalFromText(String rawText, PlanDetail planDetail, String layerName, String fieldName) {
+        if (StringUtils.isBlank(rawText)) {
+            return null;
+        }
+        String text2 = rawText;
+        if (text2.contains(";")) {
+            String[] textSplit = text2.split(";");
+            int length = textSplit.length;
+            if (length >= 1) {
+                text2 = textSplit[length - 1];
+            }
+        }
+        text2 = text2.replaceAll("[^\\d.]", "");
+        if (text2.isEmpty() || text2.equals(".")) {
+            if (planDetail != null) {
+                String layerDesc = StringUtils.isNotBlank(layerName) ? " on layer '" + layerName + "'" : "";
+                String key = StringUtils.isNotBlank(layerName) ? layerName : "INVALID_DIMENSION";
+                planDetail.addError(key, "Dimension text '" + rawText.trim() + "'" + layerDesc + " not defined correctly into the plan.");
+            }
+            return null;
+        }
+        // Handle multiple decimal points gracefully (e.g., "12.3.4" or "10..5")
+        int firstDot = text2.indexOf('.');
+        if (firstDot != -1) {
+            String intPart = text2.substring(0, firstDot);
+            String decPart = text2.substring(firstDot + 1).replace(".", "");
+            text2 = (intPart.isEmpty() ? "0" : intPart) + (decPart.isEmpty() ? "" : "." + decPart);
+        }
+        try {
+            return BigDecimal.valueOf(Double.parseDouble(text2));
+        } catch (NumberFormatException e) {
+            LOG.warn("Failed to parse numeric value from '{}': {}", rawText, e.getMessage());
+            if (planDetail != null) {
+                String layerDesc = StringUtils.isNotBlank(layerName) ? " on layer '" + layerName + "'" : "";
+                String key = StringUtils.isNotBlank(layerName) ? layerName : "INVALID_DIMENSION";
+                planDetail.addError(key, "Dimension text '" + rawText.trim() + "'" + layerDesc + " not defined correctly into the plan.");
+            }
+            return null;
+        }
+    }
+
     public static void extractDimensionValue(PlanDetail planDetail, List<BigDecimal> dimensionValues, DXFDimension line,
             String layerName) {
         DXFDocument dxfDocument = planDetail.getDoc();
@@ -654,21 +746,10 @@ public class Util {
                         BigDecimal convertedValue = convertToInch(text2);
                         dimensionValues.add(convertedValue);
                     } else {
-                        if (text2.contains(";")) {
-                            String[] textSplit = text2.split(";");
-                            int length = textSplit.length;
-
-                            if (length >= 1) {
-                                int index = length - 1;
-                                text2 = textSplit[index];
-                                text2 = text2.replaceAll("[^\\d.]", "");
-                            } else
-                                text2 = text2.replaceAll("[^\\d.]", "");
-                        } else
-                            text2 = text2.replaceAll("[^\\d.]", "");
-
-                        if (!text2.isEmpty())
-                            dimensionValues.add(BigDecimal.valueOf(Double.parseDouble(text2)));
+                        BigDecimal parsedValue = extractBigDecimalFromText(text2, planDetail, layerName, "Dimension value");
+                        if (parsedValue != null) {
+                            dimensionValues.add(parsedValue);
+                        }
                     }
 
                 }
@@ -767,9 +848,10 @@ public class Util {
             LOG.error("Dimension text : " + text2);
             BigDecimal textValue = BigDecimal.ZERO;
             if (StringUtils.isNotBlank(text2)) {
-                textValue = BigDecimal.valueOf(Double.parseDouble(text2))
-                        .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
-
+                BigDecimal parsed = extractBigDecimalFromText(text2, planDetail, layerName, "Dimension text");
+                if (parsed != null) {
+                    textValue = parsed.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
+                }
             }
             LOG.error("dimDecimal : " + textValue);
             // LOG.error("Dimension text : " + text2);
@@ -1287,6 +1369,38 @@ public class Util {
 
     }
 
+    public static List<DXFLWPolyline> getPolyLinesByLayerV2(DXFDocument dxfDocument, List<String> layerNames) {
+
+        List<DXFLWPolyline> dxflwPolylines = new ArrayList<>();
+
+        if (dxfDocument == null || layerNames == null || layerNames.isEmpty()) {
+            return dxflwPolylines;
+        }
+
+        for (String layerName : layerNames) {
+
+            if (layerName == null || !dxfDocument.containsDXFLayer(layerName)) {
+                continue;
+            }
+
+            DXFLayer dxfLayer = dxfDocument.getDXFLayer(layerName);
+
+            if (dxfLayer != null
+                    && dxfLayer.getName().equalsIgnoreCase(layerName)
+                    && dxfLayer.hasDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE)) {
+
+                List<?> dxfPolyLineEntities =
+                        dxfLayer.getDXFEntities(DXFConstants.ENTITY_TYPE_LWPOLYLINE);
+
+                for (Object dxfEntity : dxfPolyLineEntities) {
+                    dxflwPolylines.add((DXFLWPolyline) dxfEntity);
+                }
+            }
+        }
+
+        return dxflwPolylines;
+    }
+    
     public static List<DXFLWPolyline> getPolyLinesByLayerPattern(DXFDocument doc, String regex) {
 
         List<DXFLWPolyline> result = new ArrayList<>();
@@ -1418,21 +1532,10 @@ public class Util {
                                     text2 = next.getText();
                                 }
 
-                                if (text2.contains(";")) {
-                                    String[] textSplit = text2.split(";");
-                                    int length = textSplit.length;
-
-                                    if (length >= 1) {
-                                        int index = length - 1;
-                                        text2 = textSplit[index];
-                                        text2 = text2.replaceAll("[^\\d.]", "");
-                                    } else
-                                        text2 = text2.replaceAll("[^\\d.]", "");
-                                } else
-                                    text2 = text2.replaceAll("[^\\d.]", "");
-
-                                if (!text2.isEmpty())
-                                    value = BigDecimal.valueOf(Double.parseDouble(text2));
+                                BigDecimal parsedVal = extractBigDecimalFromText(text2, pl, name, "Dimension");
+                                if (parsedVal != null) {
+                                    value = parsedVal;
+                                }
 
                             }
                         }
@@ -1667,45 +1770,105 @@ public class Util {
 
     }
 
+//    public static void setDimension(Measurement measurement, DXFLWPolyline polyLine) {
+//        Iterator vertexIterator2 = polyLine.getVertexIterator();
+//        if (LOG.isDebugEnabled())
+//            while (vertexIterator2.hasNext()) {
+//                DXFVertex dxfVertex = (DXFVertex) vertexIterator2.next();
+//                Point p = dxfVertex.getPoint();
+//                LOG.debug(p.getX() + " " + p.getY());
+//            }
+//
+//        // if (polyLine.getVertexCount() == 4 || polyLine.getVertexCount() == 5) {
+//        if (polyLine.getVertexCount() > 1) {
+//            Iterator vertexIterator = polyLine.getVertexIterator();
+//            Point next = null, first = null;
+//            List<Double> distances = new ArrayList<>();
+//            while (vertexIterator.hasNext()) {
+//                DXFVertex dxfVertex = (DXFVertex) vertexIterator.next();
+//                Point p = dxfVertex.getPoint();
+//                if (next == null) {
+//                    next = p;
+//                    first = p;
+//                    continue;
+//                }
+//                distances.add(MathUtils.distance(next, p));
+//                next = p;
+//            }
+//            if (!pointsEquals(next, first))
+//                distances.add(MathUtils.distance(next, first));
+//
+//            if (!distances.isEmpty()) {
+//                measurement.setWidth(BigDecimal.valueOf(Collections.min(distances)));
+//                measurement.setHeight(BigDecimal.valueOf(Collections.max(distances)));
+//                measurement.setMinimumSide(BigDecimal.valueOf(Collections.min(distances)));
+//            } else {
+//                measurement.setWidth(BigDecimal.ZERO);
+//                measurement.setHeight(BigDecimal.ZERO);
+//                measurement.setMinimumSide(BigDecimal.ZERO);
+//            }
+//        } else
+//            measurement.setInvalidReason("It is not rectangle, found " + polyLine.getVertexCount() + " points");
+//    }
+    
     public static void setDimension(Measurement measurement, DXFLWPolyline polyLine) {
+
         Iterator vertexIterator2 = polyLine.getVertexIterator();
-        if (LOG.isDebugEnabled())
+
+        if (LOG.isDebugEnabled()) {
             while (vertexIterator2.hasNext()) {
                 DXFVertex dxfVertex = (DXFVertex) vertexIterator2.next();
                 Point p = dxfVertex.getPoint();
                 LOG.debug(p.getX() + " " + p.getY());
             }
+        }
 
-        // if (polyLine.getVertexCount() == 4 || polyLine.getVertexCount() == 5) {
         if (polyLine.getVertexCount() > 1) {
+
             Iterator vertexIterator = polyLine.getVertexIterator();
+
             Point next = null, first = null;
             List<Double> distances = new ArrayList<>();
+
             while (vertexIterator.hasNext()) {
+
                 DXFVertex dxfVertex = (DXFVertex) vertexIterator.next();
                 Point p = dxfVertex.getPoint();
+
                 if (next == null) {
                     next = p;
                     first = p;
                     continue;
                 }
+
                 distances.add(MathUtils.distance(next, p));
                 next = p;
             }
-            if (!pointsEquals(next, first))
+
+            if (!pointsEquals(next, first)) {
                 distances.add(MathUtils.distance(next, first));
+            }
+
+            double actualWidth = getPolylineWidth(polyLine);
+
+            if (actualWidth == 0 && !distances.isEmpty()) {
+                actualWidth = Collections.min(distances);
+            }
 
             if (!distances.isEmpty()) {
-                measurement.setWidth(BigDecimal.valueOf(Collections.min(distances)));
+                measurement.setWidth(BigDecimal.valueOf(actualWidth));
                 measurement.setHeight(BigDecimal.valueOf(Collections.max(distances)));
-                measurement.setMinimumSide(BigDecimal.valueOf(Collections.min(distances)));
+                measurement.setMinimumSide(BigDecimal.valueOf(actualWidth));
             } else {
                 measurement.setWidth(BigDecimal.ZERO);
                 measurement.setHeight(BigDecimal.ZERO);
                 measurement.setMinimumSide(BigDecimal.ZERO);
             }
-        } else
-            measurement.setInvalidReason("It is not rectangle, found " + polyLine.getVertexCount() + " points");
+
+        } else {
+            measurement.setInvalidReason(
+                "It is not rectangle, found " + polyLine.getVertexCount() + " points");
+        }
     }
 
     public static void setOccupancyType(DXFLWPolyline pline, Occupancy occupancy) {
@@ -1723,20 +1886,20 @@ public class Util {
             occupancy.setType(OccupancyType.OCCUPANCY_B1);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
 //            occupancy.setType(OccupancyType.OCCUPANCY_B2);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_B3);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_B3);
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
             occupancy.setType(OccupancyType.OCCUPANCY_C1);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C2_COLOR_CODE)
 //            occupancy.setType(OccupancyType.OCCUPANCY_C2);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C3_COLOR_CODE)
 //            occupancy.setType(OccupancyType.OCCUPANCY_C3);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_D);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_D1);
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
-            occupancy.setType(OccupancyType.OCCUPANCY_D2);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_D);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_D1);
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
+//            occupancy.setType(OccupancyType.OCCUPANCY_D2);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_E_COLOR_CODE)
 //            occupancy.setType(OccupancyType.OCCUPANCY_E);
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F_COLOR_CODE)
@@ -1804,24 +1967,24 @@ public class Util {
             return OccupancyType.OCCUPANCY_A2;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_A2_BOARDING_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_A3;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_B1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_B1;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B2_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_B2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_B3;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_C1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_B3_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_B3;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_C1;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C2_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_C2;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_C3_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_C3;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_D;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_D1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_D2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_D;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_D1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_D2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_D2;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_E_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_E;
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F_COLOR_CODE)
@@ -1866,6 +2029,8 @@ public class Util {
             return OccupancyType.OCCUPANCY_F16;
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F17_COLOR_CODE)
             return OccupancyType.OCCUPANCY_F17;
+        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F18_COLOR_CODE)
+            return OccupancyType.OCCUPANCY_F18;
         
 //        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_F2_COLOR_CODE)
 //            return OccupancyType.OCCUPANCY_F2;
@@ -1902,22 +2067,22 @@ public class Util {
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_G12_COLOR_CODE)
             return OccupancyType.OCCUPANCY_G12;
         
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_H_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_H;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_I1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_I2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_KIOSK_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_F4;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J1_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J1;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J2_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J2;
-        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J3_COLOR_CODE)
-            return OccupancyType.OCCUPANCY_J3;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_H_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_H;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_I1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_I2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_I2_KIOSK_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_F4;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J1_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J1;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J2_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J2;
+//        else if (pline.getColor() == DxfFileConstants.OCCUPANCY_J3_COLOR_CODE)
+//            return OccupancyType.OCCUPANCY_J3;
         
         else if (pline.getColor() == DxfFileConstants.OCCUPANCY_L1_COLOR_CODE)
             return OccupancyType.OCCUPANCY_L1;
@@ -2105,7 +2270,6 @@ public class Util {
             Boolean isTypicalRepititiveFloor) { // Reverting the signature change
         
     Map<String, Object> mapOfTypicalFloorValues = new HashMap<>();
-    List<Integer> typicalFlrs = new ArrayList<>();
     String typicalFloors = null;
     Integer maxTypicalFloors = null;
     Integer minTypicalFloors = null;
@@ -2122,18 +2286,17 @@ public class Util {
             if (typicalFloor.getModelFloorNo().equals(floor.getNumber())
                     || typicalFloor.getRepetitiveFloorNos().contains(floor.getNumber())) {
                 
-                // Add the model floor number and all repetitive floor numbers to a list.
-                typicalFlrs.add(typicalFloor.getModelFloorNo());
-                typicalFlrs.addAll(typicalFloor.getRepetitiveFloorNos());
+                List<Integer> repetitiveFloors = typicalFloor.getRepetitiveFloorNos();
 
-                // Calculate the min and max floor numbers for the typical set.
-                if (!typicalFlrs.isEmpty()) {
-                    // Use streams for a cleaner way to find min/max
-                    minTypicalFloors = typicalFlrs.stream().min(Integer::compareTo).orElse(null);
-                    maxTypicalFloors = typicalFlrs.stream().max(Integer::compareTo).orElse(null);
+                if (repetitiveFloors != null && !repetitiveFloors.isEmpty()) {
+                    minTypicalFloors = repetitiveFloors.stream().min(Integer::compareTo).orElse(null);
+                    maxTypicalFloors = repetitiveFloors.stream().max(Integer::compareTo).orElse(null);
                     
                     if (minTypicalFloors != null && maxTypicalFloors != null) {
-                        typicalFloors = "Typical Floor " + minTypicalFloors + " to " + maxTypicalFloors;
+                        String typicalFloorLabel = minTypicalFloors.equals(maxTypicalFloors)
+                                ? minTypicalFloors.toString()
+                                : minTypicalFloors + " to " + maxTypicalFloors;
+                        typicalFloors = "Typical Floor " + typicalFloorLabel;
                     }
                 }
                 
@@ -2302,9 +2465,19 @@ public class Util {
     }
     
     public static boolean isPointStrictlyInsidePolygon(DXFLWPolyline poly, Point p) {
+        return isPointStrictlyInsidePolygon(poly, p, DEFAULT_EPS);
+    }
+
+    public static boolean isPointStrictlyInsidePolygon(DXFLWPolyline poly, Point p, double eps) {
+
+        // Check boundary FIRST — avoids running ray casting on points that are
+        // going to be rejected anyway, and guarantees boundary always wins over
+        // any float noise in the ray-cast result.
+        if (isPointOnPolygonBoundary(poly, p, eps)) {
+            return false;
+        }
 
         List<Point> pts = new ArrayList<>();
-
         Iterator it = poly.getVertexIterator();
         while (it.hasNext()) {
             DXFVertex v = (DXFVertex) it.next();
@@ -2328,15 +2501,44 @@ public class Util {
                 inside = !inside;
         }
 
-        // strictly inside → not on boundary
-        if (inside && !isPointOnPolygonBoundary(poly, p)) {
-            return true;
-        }
-
-        return false;
+        return inside;
     }
     
+    public static double minDistanceToPolygonBoundary(DXFLWPolyline poly, Point p) {
+        List<Point> pts = new ArrayList<>();
+        Iterator it = poly.getVertexIterator();
+        while (it.hasNext()) {
+            DXFVertex v = (DXFVertex) it.next();
+            pts.add(v.getPoint());
+        }
+        int n = pts.size();
+        double min = Double.MAX_VALUE;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            min = Math.min(min, distanceToSegment(p, pts.get(j), pts.get(i)));
+        }
+        return min;
+    }
+
+    // point-to-segment distance, shared helper
+    private static double distanceToSegment(Point p, Point a, Point b) {
+        double px = p.getX(), py = p.getY();
+        double ax = a.getX(), ay = a.getY();
+        double bx = b.getX(), by = b.getY();
+        double abx = bx - ax, aby = by - ay;
+        double apx = px - ax, apy = py - ay;
+        double lenSq = abx * abx + aby * aby;
+        double t = lenSq < 1e-12 ? 0 : (apx * abx + apy * aby) / lenSq;
+        t = Math.max(0, Math.min(1, t));
+        double cx = ax + t * abx, cy = ay + t * aby;
+        return Math.hypot(px - cx, py - cy);
+    }
+    
+
     public static boolean isPointOnPolygonBoundary(DXFLWPolyline poly, Point p) {
+        return isPointOnPolygonBoundary(poly, p, DEFAULT_EPS);
+    }
+
+    public static boolean isPointOnPolygonBoundary(DXFLWPolyline poly, Point p, double eps) {
 
         Iterator it = poly.getVertexIterator();
         Point prev = null;
@@ -2347,32 +2549,44 @@ public class Util {
 
         while (it.hasNext()) {
             Point curr = ((DXFVertex) it.next()).getPoint();
-            if (isPointOnLine(prev, curr, p)) return true;
+            if (isPointOnLine(prev, curr, p, eps)) return true;
             prev = curr;
         }
 
         // close last-to-first segment
         Point first = ((DXFVertex) poly.getVertex(0)).getPoint();
-        if (isPointOnLine(prev, first, p)) return true;
+        if (isPointOnLine(prev, first, p, eps)) return true;
 
         return false;
     }
 
     public static boolean isPointOnLine(Point a, Point b, Point p) {
-        double cross = (p.getY() - a.getY()) * (b.getX() - a.getX())
-                - (p.getX() - a.getX()) * (b.getY() - a.getY());
+        return isPointOnLine(a, b, p, DEFAULT_EPS);
+    }
 
-        if (Math.abs(cross) > 1e-6) return false;
+    public static boolean isPointOnLine(Point a, Point b, Point p, double eps) {
+        double abx = b.getX() - a.getX();
+        double aby = b.getY() - a.getY();
+        double apx = p.getX() - a.getX();
+        double apy = p.getY() - a.getY();
 
-        double dot = (p.getX() - a.getX()) * (b.getX() - a.getX()) +
-                (p.getY() - a.getY()) * (b.getY() - a.getY());
+        double lenSq = abx * abx + aby * aby;
+        if (lenSq < 1e-12) {
+            // degenerate segment, treat as point comparison
+            return Math.hypot(apx, apy) <= eps;
+        }
 
-        if (dot < 0) return false;
+        double cross = apy * abx - apx * aby;
+        double perpDist = Math.abs(cross) / Math.sqrt(lenSq); // <-- normalize!
 
-        double lenSq = (b.getX() - a.getX()) * (b.getX() - a.getX())
-                + (b.getY() - a.getY()) * (b.getY() - a.getY());
+        if (perpDist > eps) return false;
 
-        return dot <= lenSq;
+        double dot = apx * abx + apy * aby;
+        if (dot < -eps) return false; // small tolerance at ends too
+
+        if (dot > lenSq + eps) return false;
+
+        return true;
     }
 
     public static boolean doLineSegmentsIntersect(Point p1, Point p2, Point q1, Point q2) {
@@ -2402,11 +2616,140 @@ public class Util {
         if (Math.abs(val) < 1e-10) return 0;  // Collinear
         return (val > 0) ? 1 : 2;            // Clockwise or Counterclockwise
     }
+    
+    public static boolean isPointInsideOrOnPolygon(DXFLWPolyline poly, Point p) {
+        return isPointInsideOrOnPolygon(poly, p, DEFAULT_EPS);
+    }
+
+    public static boolean isPointInsideOrOnPolygon(DXFLWPolyline poly, Point p, double eps) {
+        if (isPointOnPolygonBoundary(poly, p, eps)) {
+            return true;
+        }
+        List<Point> pts = new ArrayList<>();
+        Iterator it = poly.getVertexIterator();
+        while (it.hasNext()) {
+            DXFVertex v = (DXFVertex) it.next();
+            pts.add(v.getPoint());
+        }
+        int n = pts.size();
+        boolean inside = false;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            double xi = pts.get(i).getX(), yi = pts.get(i).getY();
+            double xj = pts.get(j).getX(), yj = pts.get(j).getY();
+            boolean intersect =
+                    ((yi > p.getY()) != (yj > p.getY())) &&
+                            (p.getX() < (xj - xi) * (p.getY() - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
 
     private static boolean onSegment(Point a, Point b, Point c) {
-        return b.getX() <= Math.max(a.getY(), c.getX()) && b.getX() >= Math.min(a.getX(), c.getX()) &&
+        return b.getX() <= Math.max(a.getX(), c.getX()) && b.getX() >= Math.min(a.getX(), c.getX()) &&
                b.getY() <= Math.max(a.getY(), c.getY()) && b.getY() >= Math.min(a.getY(), c.getY());
     }
 
+    public static class Segment {
+
+        Point p1;
+        Point p2;
+
+        public Segment(Point p1, Point p2) {
+            this.p1 = p1;
+            this.p2 = p2;
+        }
+
+        public double length() {
+            return MathUtils.distance(p1, p2);
+        }
+    }
+    
+    private static boolean areParallel(Segment s1, Segment s2) {
+
+        double dx1 = s1.p2.getX() - s1.p1.getX();
+        double dy1 = s1.p2.getY() - s1.p1.getY();
+
+        double dx2 = s2.p2.getX() - s2.p1.getX();
+        double dy2 = s2.p2.getY() - s2.p1.getY();
+
+        double cross = dx1 * dy2 - dy1 * dx2;
+
+        return Math.abs(cross) < 0.001;
+    }
+    
+    private static double perpendicularDistance(Segment s1, Segment s2) {
+
+        double x1 = s1.p1.getX();
+        double y1 = s1.p1.getY();
+
+        double x2 = s1.p2.getX();
+        double y2 = s1.p2.getY();
+
+        double x0 = s2.p1.getX();
+        double y0 = s2.p1.getY();
+
+        return Math.abs(
+                (y2 - y1) * x0
+              - (x2 - x1) * y0
+              + x2 * y1
+              - y2 * x1)
+                / Math.sqrt(
+                Math.pow(y2 - y1, 2)
+              + Math.pow(x2 - x1, 2));
+    }
+    
+    private static double getPolylineWidth(DXFLWPolyline polyLine) {
+
+        List<Point> points = new ArrayList<>();
+
+        Iterator<?> iterator = polyLine.getVertexIterator();
+
+        while (iterator.hasNext()) {
+            DXFVertex vertex = (DXFVertex) iterator.next();
+            points.add(vertex.getPoint());
+        }
+
+        if (!pointsEquals(points.get(0), points.get(points.size() - 1))) {
+            points.add(points.get(0));
+        }
+
+        List<Segment> segments = new ArrayList<>();
+
+        for (int i = 0; i < points.size() - 1; i++) {
+
+            Segment segment = new Segment(
+                    points.get(i),
+                    points.get(i + 1));
+
+            /*
+             * Ignore tiny chamfer/notch edges.
+             */
+            if (segment.length() > 1.0) {
+                segments.add(segment);
+            }
+        }
+
+        double width = Double.MAX_VALUE;
+
+        for (int i = 0; i < segments.size(); i++) {
+
+            for (int j = i + 1; j < segments.size(); j++) {
+
+                Segment s1 = segments.get(i);
+                Segment s2 = segments.get(j);
+
+                if (!areParallel(s1, s2))
+                    continue;
+
+                double distance = perpendicularDistance(s1, s2);
+
+                if (distance > 0.01) {
+                    width = Math.min(width, distance);
+                }
+            }
+        }
+
+        return width == Double.MAX_VALUE ? 0 : width;
+    }
     
 }

@@ -29,6 +29,7 @@ import org.egov.wscalculation.repository.WSCalculationDao;
 import org.egov.wscalculation.repository.WSCalculationDaoImpl;
 import org.egov.wscalculation.repository.WaterConnectionRepository;
 import org.egov.wscalculation.util.CalculatorUtil;
+import org.egov.wscalculation.util.MeterReadingUtil;
 import org.egov.wscalculation.util.NotificationUtil;
 import org.egov.wscalculation.util.WSCalculationUtil;
 import org.egov.wscalculation.validator.WSCalculationWorkflowValidator;
@@ -56,6 +57,9 @@ import static org.egov.wscalculation.constants.WSCalculationConstant.DISCONNECT_
 @Service
 @Slf4j
 public class DemandService {
+
+    @Autowired
+    private WSCalculationDao wSCalculationDao;
 
 	@Autowired
 	private ServiceRequestRepository repository;
@@ -113,6 +117,9 @@ public class DemandService {
 	
 	@Autowired
 	private WSCalculationDaoImpl dao;
+
+	@Autowired
+	private MeterReadingUtil meterReadingUtil;
 
 	
 	
@@ -220,7 +227,7 @@ public class DemandService {
 	/**
 	 * Creates or updates Demand
 	 * 
-	 * @param requestInfo  The RequestInfo of the calculation request
+//	 * @param requestInfo  The RequestInfo of the calculation request
 	 * @param calculations The Calculation Objects for which demand has to be
 	 *                     generated or updated
 	 */
@@ -292,7 +299,7 @@ public class DemandService {
 	 * @param calculations List of Calculation
 	 * @param masterMap    Master MDMS Data
 	 * @return Returns list of demands
-	 * @throws IOException
+//	 * @throws IOException
 	 * @throws JsonMappingException
 	 */
 	private List<Demand> createDemand(RequestInfo requestInfo, List<Calculation> calculations,
@@ -517,77 +524,101 @@ public class DemandService {
 					.additionalDetails(additionalDetailsMap).build());
 			
 			
-			/*PI-19231
+			/*
+			 * Water = Sewerage logic (Configurable via MDMS)
 			 * 
-			 * Sharan_Gakhar
 			 * 
-			 * */
-			
-			Object mdmsResponse = null;
-	        String relatedSwConn = "";
-//	        List<String> matchingUsages = new ArrayList<>();
-	        boolean matchingUsages = false;
-	        List<String> dbUsageCategory = new ArrayList<>();
+			 * {
+  "tenantId": "pb.amritsar",
+  "moduleName": "ws-services-calculation",
+  "meteredWaterSewerageMapping": [
+    {
+      "waterequaltosewerage": true,
+      "criteria": "PIPE_SIZE",
+      "fromPipeSize": 1.0,
+      "toPipeSize": 5.0
+    }
+  ]
+}
+
+LOCALITY WISE 
+{
+  "tenantId": "pb.amritsar",
+  "moduleName": "ws-services-calculation",
+  "meteredWaterSewerageMapping": [
+    {
+      "waterequaltosewerage": true,
+      "criteria": "LOCALITY",
+      "wards": [
+        "WARD-1",
+        "WARD-2",
+        "WARD-5"
+      ]
+    }
+  ]
+}
 
 
-			List<String> mdmsUsageCategory = new ArrayList<>();
+WATER SOURCE 
 
-			try {
-			    mdmsResponse = getMdmsResponse(requestInfo, tenantId);
+{
+  "tenantId": "pb.amritsar",
+  "moduleName": "ws-services-calculation",
+  "meteredWaterSewerageMapping": [
+    {
+      "waterequaltosewerage": true,
+      "criteria": "WATER_SOURCE",
+      "waterSource": [
+        "GROUND_WATER",
+        "SURFACE_WATER"
+      ]
+    }
+  ]
+}
 
-			    if (mdmsResponse != null) {
-			        // Safely try to read usageCategory from MDMS
-			        try {
-			            mdmsUsageCategory = JsonPath.read(mdmsResponse, "$.MdmsRes.tenant.meterReadingMapping[0].usageCategory");
-			        } catch (Exception e) {
-			            log.error("Error reading usageCategory from MDMS response for tenantId: {} | Message: {}", tenantId, e.getMessage());
-			            mdmsUsageCategory = new ArrayList<>();
-			        }
-			    } else {
-			        log.error("MDMS response is null for tenantId: {}", tenantId);
-			        mdmsUsageCategory = new ArrayList<>();
-			    }
+			 */
+			boolean isWaterEqualSewerageApplicable = false;
+			String relatedSwConn = "";
 
-			} catch (Exception e) {
-			    log.error("Exception while fetching MDMS response for tenantId: {} | {}", tenantId, e.getMessage());
-			    mdmsUsageCategory = new ArrayList<>();
+			Map<String, Object> tenantMapping = getMeteredWaterSewerageMappingFromMDMS(requestInfo, tenantId);
+
+			if (tenantMapping != null) {
+				isWaterEqualSewerageApplicable = isWaterEqualToSewerageApplicable(tenantMapping, property, connection, consumerCode);
+				if (isWaterEqualSewerageApplicable) {
+					try {
+						relatedSwConn = dao.getSwConnection(tenantId, consumerCode);
+					} catch (Exception e) {
+						log.info("relatedSwConn not found in the table for consumerCode: {}", consumerCode);
+						relatedSwConn = "";
+					}
+				}
 			}
-			if (mdmsUsageCategory !=null && !mdmsUsageCategory.isEmpty()) {
-				 dbUsageCategory = waterCalculatorDao.fetchUsageCategory(consumerCode);
-				 matchingUsages = mdmsUsageCategory.stream().anyMatch(dbUsageCategory::contains);
-//		         matchingUsages2 = mdmsUsageCategory.stream().filter(dbUsageCategory::contains).collect(Collectors.toList());
-		        try {
-		            relatedSwConn = dao.getSwConnection(tenantId , consumerCode);
-		        } catch(Exception e){
-		            log.info("relatedSwConn not found in the table");
-		            relatedSwConn = "";
-		        }
-				
-			}
-			
-	        	 				additionalDetailsMap.put("connectionType", connection.getConnectionType());
 
-//	        List<String> sewConnectionList = waterCalculatorDao.fetchSewConnection(consumerCode); 
-//	        sewConsumerCode = sewConnectionList.isEmpty() ? "" : sewConnectionList.get(0).toString();
-	        
-//	        WSCalculationDaoImpl dao = new WSCalculationDaoImpl();
-	       
-        	
-	        if (matchingUsages && relatedSwConn != null && !relatedSwConn.isEmpty()) {
+			additionalDetailsMap.put("connectionType", connection.getConnectionType());
+
+			if (isWaterEqualSewerageApplicable && relatedSwConn != null && !relatedSwConn.isEmpty()) {
 	        	// For the metered connections demand has to create one by one
+
 	 			if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connection.getConnectionType())) {
 	 				demandReq.addAll(demands);
 	 					businessServices = "SW";
 	 					for (DemandDetail ddSew : demandDetails) {
+	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_DISCHARGE_CHARGES)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_DISCHARGE_CHARGES")) {
+	 							continue;
+	 						}
 	 						DemandDetail dd1 = new DemandDetail();
-	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_CHARGE)) {
+	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_CHARGE)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_CHARGE")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
-	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off)) {
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_Round_Off")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ROUND_OFF);
-	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_ADVANCE_CARRYFORWARD)) {
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_ADVANCE_CARRYFORWARD)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_ADVANCE_CARRYFORWARD")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ADVANCE_CARRYFORWARD);
 	 						} else {
-	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
+	 							continue;
 	 						}
 	 						dd1.setDemandId(ddSew.getDemandId());
 	 						dd1.setAuditDetails(ddSew.getAuditDetails());
@@ -597,8 +628,13 @@ public class DemandService {
 	 						dd1.setTenantId(ddSew.getTenantId());
 	 						demandDetails1.add(dd1);
 	 					}
+
+	 					BigDecimal sewMinimumPayableAmount = demandDetails1.stream()
+	 							.map(DemandDetail::getTaxAmount)
+	 							.reduce(BigDecimal.ZERO, BigDecimal::add);
+
 	 					demandsSw.add(Demand.builder().consumerCode(relatedSwConn).demandDetails(demandDetails1).payer(owner)
-	 							.minimumAmountPayable(minimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
+	 							.minimumAmountPayable(sewMinimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
 	 							.taxPeriodTo(toDate).consumerType("sewerageConnection").businessService(businessService)
 	 							.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate)
 	 							.additionalDetails(additionalDetailsMap).build());
@@ -1204,6 +1240,14 @@ public class DemandService {
 	     ----------------------------------------------------------- */
 
 	    for (Demand demand : demands) {
+	    	
+	    	/* Skip Payment Completed demand */
+
+	        if (demand.getIsPaymentCompleted()) {
+
+	            log.info("Skipping Payment Completed demand {}", demand.getId());
+	            continue;
+	        }
 
 	        BigDecimal totalTax = demand.getDemandDetails()
 	                .stream()
@@ -1353,7 +1397,7 @@ public class DemandService {
 								.toCommonUser();
 					}
 					owner = getPlainOwnerDetails(requestInfo, owner.getUuid(), tenantId);
-					if (!(demand.getPayer().getUuid().equalsIgnoreCase(owner.getUuid())))
+					if (demand.getPayer() == null || !(demand.getPayer().getUuid().equalsIgnoreCase(owner.getUuid())))
 						demand.setPayer(owner);
 				}
 
@@ -1607,7 +1651,7 @@ public class DemandService {
 	 * 
 	 * @param tenantId TenantId for getting master data.
 	 */
-	public void generateDemandForTenantId(String tenantId, RequestInfo requestInfo) {
+	public void generateDemandForTenantId(String tenantId, String locality, RequestInfo requestInfo) {
 		requestInfo.getUserInfo().setTenantId(tenantId);
 		Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterData(requestInfo, tenantId);
 		long taxPeriodFrom = billingMasterData.get("taxPeriodFrom") == null ? 0l
@@ -1621,7 +1665,12 @@ public class DemandService {
 					"MDMS Billing Period does not available for tenant: " + tenantId);
 		}
 
-		generateDemandForULB(billingMasterData, requestInfo, tenantId, taxPeriodFrom, taxPeriodTo);
+        if(locality!=null && !locality.trim().isEmpty()){
+            generateDemandForULB(billingMasterData, requestInfo, tenantId, locality, taxPeriodFrom, taxPeriodTo);
+        }
+        else{
+            generateDemandForULB(billingMasterData, requestInfo, tenantId,null, taxPeriodFrom, taxPeriodTo);
+        }
 	}
 
 	public String generateDemandForConsumerCode(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria) {
@@ -1707,21 +1756,36 @@ public class DemandService {
 
 		        List<Canceldemandsearch> demandlists = waterCalculatorDao.getConnectionCancels(tenantId, demandid);
 
-		        if (demandlists.isEmpty()) {
-		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
-		        }
+                // Block cancel operation for metered connections
+                if (!demandlists.isEmpty()) {
+                      String consumerCode = demandlists.get(0).getConsumercode();
+                      String collectionamount=demandlists.get(0).getCollectionamount();
+                      String taxamount=demandlists.get(0).getTaxamount();
 
-		        Boolean cancels = waterCalculatorDao.getUpdates(demandlists);
+                      if (Double.parseDouble(collectionamount) > 0 && Double.parseDouble(taxamount) > 0) {
+                          throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for collectionamount > 0.");
+                      }
 
-		        if (!cancels) {
-		            throw new CustomException("Update failed", "Failed to update demand records.");
+                    String connectionType = calculatorUtils.getWaterConnectionType(cancelDemand.getRequestInfo(),tenantId, consumerCode);
+                      if (StringUtils.isNotBlank(connectionType)
+                              && WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connectionType)) {
+                          throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for metered connections.");
+                      }
+                }else{
+		                throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
 		        }
 
 		        List<BillSearchs> billSearchsss = waterCalculatorDao.getBillss(tenantId, demandid);
-		        boolean billCancelled = waterCalculatorDao.getexpiryBills(billSearchsss);
+		        
+		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
+		        	continue; // Skip bill cancellation if there are no bills and payment is completed
 
-		        if (!billCancelled) {
-		            throw new CustomException("Bill Cancellation Failed", "Failed to cancel bills for the given demand.");
+			  CancelDemandReq cancelDemandReq = new CancelDemandReq(demandid,tenantId,demandlists.get(0).getConsumercode(), "WS");
+
+			  boolean Cancelled = waterCalculatorDao.cancelDemandAndExpiryBills(cancelDemandReq);
+
+		        if (!Cancelled) {
+		            throw new CustomException("Cancel failed", "Failed to cancel demand and bills.");
 		        }
 		    }
 
@@ -1742,7 +1806,7 @@ public class DemandService {
 					.filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate())).findFirst().getAsInt();
 			String cone = singleDemand.getConsumercode();
 			log.info("Billing master data values for non metered connection:: {}", master);
-			List<WaterDetails> connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId,
+			List<WaterDetails> connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId, null,
 					WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
@@ -1809,7 +1873,7 @@ public class DemandService {
 								"Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}",
 								calculationCriteriaList.size());
 
-						wsCalculationProducer.push(configs.getCreateDemand(), calculationReq);
+						wsCalculationProducer.push(configs.getCreateSingleDemand(), calculationReq);
 						totalRecordsPushedToKafka = totalRecordsPushedToKafka + calculationCriteriaList.size();
 						calculationCriteriaList.clear();
 						connectionNosCount = 0;
@@ -1837,7 +1901,7 @@ public class DemandService {
 								"Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}",
 								calculationCriteriaList.size());
 
-						wsCalculationProducer.push(configs.getCreateDemand(), calculationReq);
+						wsCalculationProducer.push(configs.getCreateSingleDemand(), calculationReq);
 						totalRecordsPushedToKafka = totalRecordsPushedToKafka + calculationCriteriaList.size();
 						calculationCriteriaList.clear();
 						connectionNosCount = 0;
@@ -1925,7 +1989,7 @@ public class DemandService {
 	 * @param requestInfo Request Info
 	 * @param tenantId    Tenant Id
 	 */
-	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId,
+	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId, String locality,
 			Long taxPeriodFrom, Long taxPeriodTo) {
 		log.info("generateDemandForULB:: {} taxPeriodFrom:: {} taxPeriodTo {}", tenantId, taxPeriodFrom, taxPeriodTo);
 		try {
@@ -1937,14 +2001,22 @@ public class DemandService {
 			String cone = requestInfo.getKey();
 			log.info("Billing master data values for non metered connection:: {}", master);
 
-			List<WaterDetails> connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId,
-					WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+            List<WaterDetails> connectionNos = new ArrayList<>();
+            if(locality!=null && !locality.trim().isEmpty()) {
+                connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId, locality,
+                        WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+            }
+            else{
+                connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId, null,
+                        WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+            }
 
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
 
 			List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 			int totalRecordsPushedToKafka = 0;
+			int connectionCount = 0;
 
 			for (int connectionNosIndex = 0; connectionNosIndex < connectionNos.size(); connectionNosIndex++) {
 				WaterDetails waterConnection = connectionNos.get(connectionNosIndex);
@@ -1962,6 +2034,7 @@ public class DemandService {
 						startIndex++; // move to next quarter
 					}
 
+					List<CalculationCriteria> connectionCriteriaList = new ArrayList<>();
 					for (int taxPeriodIndex = startIndex; taxPeriodIndex <= generateDemandToIndex; taxPeriodIndex++) {
 						TaxPeriod taxPeriod = taxPeriods.get(taxPeriodIndex);
 						log.info("FromPeriod: {} ToPeriod: {} connectionNo: {}", taxPeriod.getFromDate(),
@@ -1970,24 +2043,25 @@ public class DemandService {
 						if (isValidBillingCycle(waterConnection, requestInfo, tenantId, taxPeriod.getFromDate(),
 								taxPeriod.getToDate())) {
 
-							calculationCriteriaList.add(CalculationCriteria.builder().tenantId(tenantId)
+							connectionCriteriaList.add(CalculationCriteria.builder().tenantId(tenantId)
 									.assessmentYear(taxPeriod.getFinancialYear()).from(taxPeriod.getFromDate())
 									.to(taxPeriod.getToDate()).connectionNo(waterConnection.getConnectionNo()).build());
-
-							// ✅ Push batch when reaching configured size
-							if (calculationCriteriaList.size() == bulkSaveDemandCount) {
-								pushBatchToKafka(calculationCriteriaList, requestInfo);
-							
-									//Thread.sleep(1500000);
-
-								
-								totalRecordsPushedToKafka += calculationCriteriaList.size();
-								calculationCriteriaList.clear();
-							}
-
 						} else {
 							log.info("Invalid Connection for period {}", taxPeriod.getFinancialYear());
 						}
+					}
+
+					if (!connectionCriteriaList.isEmpty()) {
+						calculationCriteriaList.addAll(connectionCriteriaList);
+						connectionCount++;
+					}
+
+					// ✅ Push batch when reaching configured connection count size
+					if (connectionCount == bulkSaveDemandCount) {
+						pushBatchToKafka(calculationCriteriaList, requestInfo);
+						totalRecordsPushedToKafka += calculationCriteriaList.size();
+						calculationCriteriaList.clear();
+						connectionCount = 0;
 					}
 
 				} catch (Exception e) {
@@ -1996,7 +2070,7 @@ public class DemandService {
 				}
 			}
 
-// ✅ Push leftover records if any
+			// ✅ Push leftover records if any
 			if (!calculationCriteriaList.isEmpty()) {
 				pushBatchToKafka(calculationCriteriaList, requestInfo);
 				totalRecordsPushedToKafka += calculationCriteriaList.size();
@@ -2234,8 +2308,9 @@ public class DemandService {
 		for (Demand demand : demandResponse) {
 			try {
 				Object result = serviceRequestRepository.fetchResult(
-						calculatorUtils.getFetchBillURL(demand.getTenantId(), demand.getConsumerCode()),
-						RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+                        calculatorUtils.getFetchBillURLWithBusinessService(demand.getTenantId(), demand.getConsumerCode(),demand.getBusinessService()),
+                        RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+
 				HashMap<String, Object> billResponse = new HashMap<>();
 				billResponse.put("requestInfo", requestInfo);
 				billResponse.put("billResponse", result);
@@ -2490,5 +2565,217 @@ public class DemandService {
 	    return url;
 	}
 
+public void validateNoCollectionBeforeCancel(String connectionNo, String relatedSwConn, List<Map<String, Object>> demandList, List<Map<String, Object>> demandListSw) {
+    double waterCollected = 0.0;
+    double swCollected = 0.0;
+
+    if (demandList != null && !demandList.isEmpty()) {
+        for (Map<String, Object> row : demandList) {
+            Object obj = row.get("amountcollected");
+            waterCollected = obj != null ? Double.parseDouble(obj.toString()) : 0.0;
+        }
+    }
+
+    if (demandListSw != null && !demandListSw.isEmpty()) {
+        for (Map<String, Object> row : demandListSw) {
+            Object obj = row.get("amountcollected");
+            swCollected = obj != null ? Double.parseDouble(obj.toString()) : 0.0;
+        }
+    }
+
+    if (swCollected > 0) {
+        throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for water related sewerage connection " + relatedSwConn + " as collectionamount > 0.");
+    }
+}
+
+    public void cancelWaterAndRelatedSwDemand(String tenantId, String connectionNo, String relatedSwConn, List<Map<String, Object>> demandList, List<Map<String, Object>> demandListSw) {
+
+        if (demandList != null && !demandList.isEmpty()) {
+            for (Map<String, Object> row : demandList) {
+                String demandId = row.get("demandId") != null ? row.get("demandId").toString() : null;
+                if (demandId == null) {
+                    continue;
+                }
+                CancelDemandReq cancelDemandReq = new CancelDemandReq();
+                cancelDemandReq.setId(demandId);
+                cancelDemandReq.setTenantId(tenantId);
+                cancelDemandReq.setConsumerCode(connectionNo);
+                cancelDemandReq.setBusinessService("WS");
+
+                log.info("Synchronously cancelling existing WS demand {} for consumer {}", demandId, connectionNo);
+
+                wSCalculationDao.cancelPreviousMeterReading(cancelDemandReq);
+            }
+        }
+
+        if (demandListSw != null && !demandListSw.isEmpty()) {
+            for (Map<String, Object> row : demandListSw) {
+                String demandIdSw = row.get("demandId") != null ? row.get("demandId").toString() : null;
+                if (demandIdSw == null) {
+                    continue;
+                }
+                CancelDemandReq cancelSwDemandReq = new CancelDemandReq();
+                cancelSwDemandReq.setId(demandIdSw);
+                cancelSwDemandReq.setTenantId(tenantId);
+                cancelSwDemandReq.setConsumerCode(relatedSwConn);
+                cancelSwDemandReq.setBusinessService("SW");
+
+                log.info("Synchronously cancelling existing SW demand {} for consumer {}", demandIdSw, relatedSwConn);
+
+                wSCalculationDao.cancelPreviousMeterReading(cancelSwDemandReq);
+            }
+        }
+    }
+
+	/**
+	 * Fetches meteredWaterSewerageMapping from MDMS for the given tenantId.
+	 */
+	private Map<String, Object> getMeteredWaterSewerageMappingFromMDMS(RequestInfo requestInfo, String tenantId) {
+		try {
+			List<String> masters = Collections.singletonList(WSCalculationConstant.METERED_WATER_SEWERAGE_MAPPING);
+			MdmsCriteriaReq criteriaReq = meterReadingUtil.prepareMdMsRequest(tenantId, WSCalculationConstant.WS_TAX_MODULE, masters, null, requestInfo);
+			StringBuilder uri = calculatorUtils.getMdmsSearchUrl();
+			Object result = serviceRequestRepository.fetchResult(uri, criteriaReq);
+
+			if (result != null) {
+				List<Map<String, Object>> mappingList = JsonPath.read(result, "$.MdmsRes." + WSCalculationConstant.WS_TAX_MODULE + "." + WSCalculationConstant.METERED_WATER_SEWERAGE_MAPPING);
+				if (!CollectionUtils.isEmpty(mappingList)) {
+					for (Map<String, Object> mapping : mappingList) {
+						String status = mapping.get("status") != null ? (String) mapping.get("status") : "Active";
+						if ("Active".equalsIgnoreCase(status)) {
+							return mapping;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching meteredWaterSewerageMapping from MDMS for tenantId: {} | {}", tenantId, e.getMessage());
+		}
+		return null;
+	}
+
+	/**
+	 * Evaluates whether the Water = Sewerage charge rule is applicable based on MDMS config.
+	 */
+	private boolean isWaterEqualToSewerageApplicable(Map<String, Object> mapping, Property property, WaterConnection connection, String consumerCode) {
+		if (mapping == null) {
+			return false;
+		}
+
+		Object flagObj = mapping.get(WSCalculationConstant.WATER_EQUAL_TO_SEWERAGE_KEY);
+		if (flagObj != null && !Boolean.parseBoolean(flagObj.toString())) {
+			return false;
+		}
+
+		String criteria = mapping.get(WSCalculationConstant.CRITERIA_KEY) != null ? mapping.get(WSCalculationConstant.CRITERIA_KEY).toString() : null;
+
+		// Check USAGE_CATEGORY
+		if (WSCalculationConstant.CRITERIA_USAGE_CATEGORY.equalsIgnoreCase(criteria) || mapping.containsKey("usageCategory")) {
+			List<String> allowedCategories = null;
+			if (mapping.get("usageCategory") instanceof List) {
+				allowedCategories = (List<String>) mapping.get("usageCategory");
+			} else if (mapping.get("value") instanceof List) {
+				allowedCategories = (List<String>) mapping.get("value");
+			}
+			if (!CollectionUtils.isEmpty(allowedCategories)) {
+				List<String> propertyCategories = getPropertyUsageCategories(property, consumerCode);
+				return allowedCategories.stream().anyMatch(allowed ->
+					propertyCategories.stream().anyMatch(actual -> actual.equalsIgnoreCase(allowed) || actual.contains(allowed))
+				);
+			}
+		}
+
+		// Check PLOT_SIZE
+		if (WSCalculationConstant.CRITERIA_PLOT_SIZE.equalsIgnoreCase(criteria) || mapping.containsKey("from") || mapping.containsKey("fromPlotSize")) {
+			Double plotSize = getPropertyPlotSize(property);
+			if (plotSize == null || plotSize <= 0) {
+				log.warn("Plot size is zero or null for propertyId: {}", property != null ? property.getPropertyId() : "null");
+				return false;
+			}
+			Object fromObj = mapping.get("from") != null ? mapping.get("from") : mapping.get("fromPlotSize");
+			Object toObj = mapping.get("to") != null ? mapping.get("to") : mapping.get("toPlotSize");
+
+			Double from = fromObj != null ? Double.valueOf(fromObj.toString()) : 0.0;
+			Double to = toObj != null ? Double.valueOf(toObj.toString()) : Double.MAX_VALUE;
+
+			return plotSize >= from && plotSize <= to;
+		}
+
+		// Check LOCALITY
+		if (WSCalculationConstant.CRITERIA_LOCALITY.equalsIgnoreCase(criteria) || mapping.containsKey("locality") || mapping.containsKey("wards")) {
+			List<String> allowedWards = null;
+			if (mapping.get("locality") instanceof List) {
+				allowedWards = (List<String>) mapping.get("locality");
+			} else if (mapping.get("wards") instanceof List) {
+				allowedWards = (List<String>) mapping.get("wards");
+			}
+			if (!CollectionUtils.isEmpty(allowedWards)) {
+				String currentLocality = (property != null && property.getAddress() != null && property.getAddress().getLocality() != null)
+						? property.getAddress().getLocality().getCode() : "";
+				return allowedWards.stream().anyMatch(allowed -> currentLocality.equalsIgnoreCase(allowed));
+			}
+		}
+
+		// Check WATER_SOURCE
+		if (WSCalculationConstant.CRITERIA_WATER_SOURCE.equalsIgnoreCase(criteria) || mapping.containsKey("waterSource")) {
+			List<String> allowedSources = null;
+			if (mapping.get("waterSource") instanceof List) {
+				allowedSources = (List<String>) mapping.get("waterSource");
+			}
+			if (!CollectionUtils.isEmpty(allowedSources)) {
+				String currentSource = (connection != null && connection.getWaterSource() != null) ? connection.getWaterSource() : "";
+				return allowedSources.stream().anyMatch(allowed -> currentSource.equalsIgnoreCase(allowed));
+			}
+		}
+
+		// Check PIPE_SIZE
+		if (WSCalculationConstant.CRITERIA_PIPE_SIZE.equalsIgnoreCase(criteria) || mapping.containsKey("fromPipeSize")) {
+			Double pipeSize = (connection != null && connection.getPipeSize() != null) ? connection.getPipeSize() : 0.0;
+			if (pipeSize <= 0) return false;
+
+			Object fromObj = mapping.get("fromPipeSize") != null ? mapping.get("fromPipeSize") : mapping.get("from");
+			Object toObj = mapping.get("toPipeSize") != null ? mapping.get("toPipeSize") : mapping.get("to");
+
+			Double from = fromObj != null ? Double.valueOf(fromObj.toString()) : 0.0;
+			Double to = toObj != null ? Double.valueOf(toObj.toString()) : Double.MAX_VALUE;
+
+			return pipeSize >= from && pipeSize <= to;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Extracts plot size from property (landArea primary, superBuiltUpArea fallback).
+	 */
+	private Double getPropertyPlotSize(Property property) {
+		if (property == null) return 0.0;
+		if (property.getLandArea() != null && property.getLandArea() > 0) {
+			return property.getLandArea();
+		}
+		if (property.getSuperBuiltUpArea() != null && property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) {
+			return property.getSuperBuiltUpArea().doubleValue();
+		}
+		return 0.0;
+	}
+
+	/**
+	 * Collects usage categories from Property and DB for matching.
+	 */
+	private List<String> getPropertyUsageCategories(Property property, String consumerCode) {
+		List<String> categories = new ArrayList<>();
+		if (property != null && !StringUtils.isEmpty(property.getUsageCategory())) {
+			categories.add(property.getUsageCategory());
+		}
+		try {
+			List<String> dbCategories = waterCalculatorDao.fetchUsageCategory(consumerCode);
+			if (!CollectionUtils.isEmpty(dbCategories)) {
+				categories.addAll(dbCategories);
+			}
+		} catch (Exception e) {
+			log.error("Error fetching usage category from DB for consumerCode: {}", consumerCode, e);
+		}
+		return categories;
+	}
 
 }

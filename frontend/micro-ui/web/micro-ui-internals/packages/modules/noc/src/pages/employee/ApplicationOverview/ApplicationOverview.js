@@ -556,8 +556,7 @@ const NOCEmployeeApplicationOverview = () => {
           }),
       });
     }
-  }
-  if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
+    else if(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
         onClick: () =>
@@ -568,12 +567,15 @@ const NOCEmployeeApplicationOverview = () => {
             filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
           }),
       });
+    }
+  }
+  if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
         onClick: () =>
           getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData}),
       });
-    }
+  }
   useEffect(() => {
     const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
     const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];

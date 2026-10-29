@@ -92,10 +92,10 @@ public class BookingServiceImpl implements BookingService {
 		// Queries eg_adv_cart_detail (bookings) and eg_adv_payment_timer (active timers) — no DB changes needed.
 		String bookingId = bookingRequest.getBookingApplication().getBookingId();
 		String userId = bookingRequest.getRequestInfo().getUserInfo().getUuid();
-//		if (bookingRepository.hasActiveSlotConflict(bookingId, userId, bookingRequest.getBookingApplication().getCartDetails())) {
-//			throw new CustomException("SLOT_ALREADY_BOOKED",
-//					"One or more selected advertisement slots are already booked by another user. Please choose different slots/dates.");
-//		}
+		if (bookingRepository.hasActiveSlotConflict(bookingId, userId, bookingRequest.getBookingApplication().getCartDetails())) {
+			throw new CustomException("SLOT_ALREADY_BOOKED",
+					"One or more selected advertisement slots are already booked by another user. Please choose different slots/dates.");
+		}
 
 		// ENcrypt PII data of applicant
 		encryptionService.encryptObject(bookingRequest);
@@ -196,8 +196,7 @@ public class BookingServiceImpl implements BookingService {
 					.collect(Collectors.toList());
 			criteria.setOwnerIds(ownerIds);
 		}
-        System.out.println("BOOKINGNO!!!" + bookingDetail.getBookingNo());
-        System.out.println("CRITERIA!!!!!!" + criteria.toString());
+        log.debug("Enriching booking {} with owners {}", bookingDetail.getBookingNo(), criteria);
         if(criteria.getOwnerIds()!=null)
         {
             UserResponse userDetailResponse = userService.getUser(criteria, info);
@@ -272,19 +271,25 @@ public class BookingServiceImpl implements BookingService {
 	public List<AdvertisementSlotAvailabilityDetail> checkAdvertisementSlotAvailability(
 			AdvertisementSlotSearchCriteria criteria, RequestInfo requestInfo) {
 
-		// Quantity-based — "ANYWHERE" location means no specific slot, always available
+		// Quantity-based — "ANYWHERE" location means no specific slot, always available.
+		// Still expand the date range so the frontend gets one entry per day.
 		if ("ANYWHERE".equalsIgnoreCase(criteria.getLocation())) {
 			List<AdvertisementSlotAvailabilityDetail> result = new ArrayList<>();
-			AdvertisementSlotAvailabilityDetail detail = new AdvertisementSlotAvailabilityDetail();
-			detail.setSlotStaus("AVAILABLE");
-			detail.setBookingDate(criteria.getBookingStartDate());
-			detail.setAdvertisementId(criteria.getAdvertisementId());
-			detail.setAddType(criteria.getAddType());
-			detail.setLocation(criteria.getLocation());
-			detail.setFaceArea(criteria.getFaceArea());
-			detail.setNightLight(criteria.getNightLight());
-			result.add(detail);
-			log.info("Quantity-based ad {} — always available, skipping slot check", criteria.getAdvertisementId());
+			LocalDate start = BookingUtil.parseStringToLocalDate(criteria.getBookingStartDate());
+			LocalDate end = BookingUtil.parseStringToLocalDate(criteria.getBookingEndDate());
+			while (!start.isAfter(end)) {
+				AdvertisementSlotAvailabilityDetail detail = new AdvertisementSlotAvailabilityDetail();
+				detail.setSlotStaus("AVAILABLE");
+				detail.setBookingDate(BookingUtil.parseLocalDateToString(start, BookingUtil.DATE_FORMAT));
+				detail.setAdvertisementId(criteria.getAdvertisementId());
+				detail.setAddType(criteria.getAddType());
+				detail.setLocation(criteria.getLocation());
+				detail.setFaceArea(criteria.getFaceArea());
+				detail.setNightLight(criteria.getNightLight());
+				result.add(detail);
+				start = start.plusDays(1);
+			}
+			log.info("Quantity-based ad {} — expanded {} dates, skipping slot check", criteria.getAdvertisementId(), result.size());
 			return result;
 		}
 
@@ -311,7 +316,20 @@ public class BookingServiceImpl implements BookingService {
 			List<AdvertisementSlotAvailabilityDetail> availabilityDetails = checkAdvertisementSlotAvailability(criteria,
 					requestInfo);
 			allAvailabilityDetails.addAll(availabilityDetails);
+		}
 
+		// Deduplicate: when multiple criteria have overlapping date ranges —
+		// applicable to both ANYWHERE (range expansion) and non-ANYWHERE
+		// (convertToAdvertisementAvailabilityResponse expands per-criteria).
+		// @EqualsAndHashCode on (addType, location, faceArea, nightLight,
+		// bookingDate, advertisementId) ensures correct dedup for both paths.
+		if (criteriaList.size() > 1) {
+			long beforeDedup = allAvailabilityDetails.size();
+			List<AdvertisementSlotAvailabilityDetail> deduped =
+					allAvailabilityDetails.stream().distinct().collect(Collectors.toList());
+			log.info("Deduplicated slot results: {} → {} ({} criteria)",
+					beforeDedup, deduped.size(), criteriaList.size());
+			allAvailabilityDetails = deduped;
 		}
 
 		boolean isTimerRequiredForAnyCriteria = criteriaList.stream()

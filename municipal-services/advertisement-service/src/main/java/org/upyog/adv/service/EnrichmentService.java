@@ -152,7 +152,7 @@ public class EnrichmentService {
 					.filter(Objects::nonNull) // Optional: avoid nulls
 					.collect(Collectors.toList());
 
-			System.out.println("Owner UUIDs: " + ownerIds); // Debug log
+			log.debug("Owner UUIDs: " + ownerIds);
 
 			criteria.setOwnerIds(ownerIds);
 		}

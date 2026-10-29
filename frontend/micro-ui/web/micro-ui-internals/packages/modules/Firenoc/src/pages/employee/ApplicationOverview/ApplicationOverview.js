@@ -43,7 +43,7 @@ import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
-import { getDrivingDistance } from "../../../utils/getdistance";
+//import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {

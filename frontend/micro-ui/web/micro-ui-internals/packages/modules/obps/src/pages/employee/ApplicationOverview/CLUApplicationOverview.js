@@ -42,7 +42,7 @@ import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { amountToWords, decryptId, formatDuration } from "../../../utils";
 import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
-import { getDrivingDistance } from "../../../utils/getDistance";
+//import { getDrivingDistance } from "../../../utils/getDistance";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import { useEmployeeZoneAccess } from "../../../../../core/src/hooks/useEmployeeZoneAccess";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {

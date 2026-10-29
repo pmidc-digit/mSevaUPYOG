@@ -17,6 +17,32 @@ const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, Statuspre
     return formats?.find((link) => !link?.includes("large") && !link?.includes("medium") && !link?.includes("small")) || formats?.[0] || "";
   };
 
+  if (typeof deptMap === "function") {
+    t = deptMap;
+    deptMap = {};
+  }
+
+  const BPA_ROLE_MAP = {
+    "BPA_ARCHITECT": "Architect",
+    "BPA_BUILDER": "Builder",
+    "BPA_ENGINEER": "Engineer",
+    "BPA_STRUCTURALENGINEER": "Structural Engineer",
+    "BPA_TOWNPLANNER": "Town Planner",
+    "BPA_DESIGNER": "Designer",
+    "BPA_SUPERVISOR": "Supervisor",
+  };
+
+  const getUserDesignation = (user, explicitKey) => {
+    if (explicitKey) return t ? t(explicitKey) : explicitKey;
+    if (!user) return null;
+
+    const emp = deptMap?.[user?.userName];
+    if (emp) return t ? t(emp) : emp;
+
+    const roleCode = user?.roles?.find((r) => BPA_ROLE_MAP[r?.code])?.code;
+    return roleCode ? BPA_ROLE_MAP[roleCode] : null;
+  };
+
   // regex pattern for trimming
   const pattern = /\[#\?.*?\*\*\]/;
 
@@ -40,15 +66,31 @@ const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, Statuspre
     const mobileNumber = item?.assigner?.mobileNumber || "N/A";
     const action = prefix ? `${prefix}_${item?.performedAction}` : item?.performedAction || "N/A";
     const status = item?.status || item?.state || "N/A";
-    const designationKey = item?.designationKey || null;
-    const designation = designationKey ? t(designationKey) : (assignerType || "N/A");
+
+    const designationKey = item?.designationKey || deptMap?.[item?.assigner?.userName] || null;
+    const designation = getUserDesignation(item?.assigner, item?.designationKey) || assignerType || "N/A";
+
     // sanitize wfComment before using
     const rawComment = item?.wfComment?.[0] || "-";
     const comment = typeof rawComment === "string" ? rawComment.split(pattern)[0] : rawComment;
 
     const documents = item?.wfDocuments || [];
     const sla = item?.sla || "N/A";
-    const assignedTo = Array.isArray(item?.assignes) ? item.assignes.map(a => a?.name).filter(Boolean).join(", ") : "";
+
+    const designationKeyAssignee = item?.designationKeyAssignee || null;
+    const assignedTo = item?.assignes?.[0]
+      ? item.assignes
+          .map((a) => {
+            const aDesig = getUserDesignation(a, designationKeyAssignee);
+            return aDesig ? `${a?.name} - ${aDesig}` : a?.name;
+          })
+          .filter(Boolean)
+          .join(", ")
+      : "";
+
+    const assignedToDesignation = Array.isArray(item?.assignes)
+      ? item.assignes.map((a) => getUserDesignation(a, designationKeyAssignee)).filter(Boolean).join(", ")
+      : "";
 
     return {
       sNo: index + 1,
@@ -71,6 +113,7 @@ const getTimelineAcknowledgementData = ({workflowDetails, prefix=null, Statuspre
       hasDocuments: documents.length > 0,
       sla,
       assignedTo,
+      assignedToDesignation,
     };
   });
   const timelineStatusKey = timeline?.[0]?.status || timeline?.[0]?.state

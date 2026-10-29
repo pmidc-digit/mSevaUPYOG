@@ -1324,19 +1324,34 @@ const generateTimelinePDF = async (data) => {
 
 
                   {
-                    stack: [
-                      { text: `${row.assignerName?.toUpperCase()} (${row.designation || row.assignerType})` || "N/A", fontSize: 10, bold: true, alignment: "right", color: "#000" },
+                    columns: [
+                      row.assignedTo
+                        ? {
+                            stack: [
+                              { text: t ? `${t("Assigned To")}:` : "Assigned To:", fontSize: 9, bold: true, color: "#555" },
+                              { text: row.assignedTo, fontSize: 10, bold: true, color: "#000", margin: [0, 2, 0, 0] },
+                            ],
+                            width: "*",
+                            alignment: "left",
+                          }
+                        : { text: "", width: "*" },
                       {
-                        text: `${row.date} | ${row.time}`,
-                        fontSize: 9,
-                        color: "#666",
+                        stack: [
+                          { text: `${row.assignerName?.toUpperCase()} (${row.designation || row.assignerType})` || "N/A", fontSize: 10, bold: true, alignment: "right", color: "#000" },
+                          {
+                            text: `${row.date} | ${row.time}`,
+                            fontSize: 9,
+                            color: "#666",
+                            alignment: "right",
+                            margin: [0, 2, 0, 0],
+                          },
+                        ],
+                        width: "*",
                         alignment: "right",
-                        margin: [0, 2, 0, 0],
                       },
                     ],
                     width: "*",
-                    alignment: "right",
-                    margin: [0, 5, 0, 0],
+                    margin: [0, 6, 0, 0],
                   },
                   
                 ],

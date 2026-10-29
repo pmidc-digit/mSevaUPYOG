@@ -44,6 +44,18 @@ public class CalculationCriteria   {
 
         @JsonProperty("arrearAmount")
         private java.math.BigDecimal arrearAmount;
+
+        @JsonProperty("baseArrear")
+        private java.math.BigDecimal baseArrear;
+
+        @JsonProperty("arrearGST")
+        private java.math.BigDecimal arrearGST;
+
+        @JsonProperty("arrearPenalty")
+        private java.math.BigDecimal arrearPenalty;
+
+        @JsonProperty("futurePenalty")
+        private java.math.BigDecimal futurePenalty;
         
         @JsonProperty("isSatelment")
         @Default

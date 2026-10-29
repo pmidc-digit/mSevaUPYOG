@@ -9,6 +9,25 @@ public class RLConstants {
 	public static final String RENEWAL_RL_APPLICATION = "RENEWAL";
 	
     public static final String APPROVED_RL_APPLICATION = "APPROVE";
+
+    /**
+     * Workflow action that saves the edits without changing the state of the application (self transition).
+     * Must match the action name configured in the workflow business service.
+     */
+    public static final String DRAFT_RL_APPLICATION = "DRAFT";
+
+    /**
+     * Workflow action that only levies / edits the adhoc penalty and exemption (self transition). Must match the
+     * action name configured in the workflow business service.
+     */
+    public static final String ADHOC_PENALTY_RL_APPLICATION = "ADHOC_PENALTY";
+
+    // Adhoc penalty / exemption - one-off amounts only an employee may set (see AllotmentValidator)
+    public static final String ADHOC_PENALTY_KEY = "adhocPenalty";
+    public static final String ADHOC_REBATE_KEY = "adhocExemption";
+
+    // User types
+    public static final String CITIZEN_USER_TYPE = "CITIZEN";
     
     public static final String APPROVED = "APPROVED";  
     

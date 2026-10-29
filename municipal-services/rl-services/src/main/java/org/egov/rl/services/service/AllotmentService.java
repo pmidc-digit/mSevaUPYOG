@@ -1,6 +1,11 @@
 package org.egov.rl.services.service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.log4j.Log4j2;
@@ -64,6 +70,13 @@ public class AllotmentService {
 
 	@Autowired
 	AllotmentRepository allotmentRepository;
+
+	/**
+	 * States in which the application already has a demand - the only states in which a draft save may touch it.
+	 * Before approval nothing was raised, so a draft must only persist the edits.
+	 */
+	private static final Set<String> DEMAND_RAISED_STATUSES = new HashSet<>(Arrays.asList(
+			RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION, RLConstants.APPROVED));
 
 	/**
 	 * Enriches the Request and pushes to the Queue
@@ -110,12 +123,18 @@ public class AllotmentService {
 		userService.createUser(allotmentRequest);
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
-		if (config.getIsWorkflowEnabled()) {
-			wfService.updateWorkflowStatus(allotmentRequest);
-		} else {
-			allotmentRequest.getAllotment().get(0).setStatus(RLConstants.APPROVED);
-		}
 		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
+		// A draft keeps the application in its current state, so its edits are carried by the enrichment alone
+		// (the arrears live in additionalDetails). The demand is only touched when it already exists, i.e. while
+		// the application is waiting for payment: before that nothing was raised, so there is nothing to update
+		// and a draft must never create a demand.
+		boolean isDraft = action != null && RLConstants.DRAFT_RL_APPLICATION.equalsIgnoreCase(action.trim());
+		// A dedicated "levy adhoc penalty" action changes nothing but the adhoc charge. Like a draft it may only
+		// touch a demand that already exists - before approval nothing was raised and the charge simply waits in
+		// additionalDetails until the approval call picks it up.
+		boolean isAdhocAction = action != null
+				&& RLConstants.ADHOC_PENALTY_RL_APPLICATION.equalsIgnoreCase(action.trim());
+		boolean isDemandSync = isApprove || ((isDraft || isAdhocAction) && hasRaisedDemand(allotmentDetails));
 		boolean isLegacyApplication = isLegacyApplication(allotmentDetails);
 		String applicationType = resolveApplicationType(allotmentDetails);
 		if (isLegacyApplication) {
@@ -125,14 +144,17 @@ public class AllotmentService {
 		log.info("Processing update for application: {}, action: {}, isApprove: {}, isLegacy: {}, applicationType: {}", 
 				allotmentDetails.getApplicationNumber(), action, isApprove, isLegacyApplication, applicationType);
 
-		if (isApprove && isLegacyApplication) {
-			// For legacy applications use the same flow as new applications but exclude security deposit and include arrear details if present
-			log.info("Processing legacy application as NEW flow (security deposit excluded) for application: {}", allotmentDetails.getApplicationNumber());
+		if (isLegacyApplication && isDemandSync) {
+			// Legacy demands are generated once and then reconciled: a demand that already exists is left alone,
+			// except an arrear demand whose values changed and the standalone adhoc demand, which are updated in
+			// place (same id, same issue instant).
+			log.info("Syncing legacy demands for application: {} (approve: {}, draft: {}, adhoc: {})",
+					allotmentDetails.getApplicationNumber(), isApprove, isDraft, isAdhocAction);
 			try {
 				// isSatelment=false, isSecurityDeposite=false (exclude security deposit)
 				callCalculatorServiceForLegacy(allotmentRequest);
 			} catch (Exception e) {
-				log.error("Error creating demand for legacy application: {}", allotmentDetails.getApplicationNumber(), e);
+				log.error("Error syncing demand for legacy application: {}", allotmentDetails.getApplicationNumber(), e);
 				throw new CustomException("CREATE_DEMAND_ERROR",
 						"Error occurred while generating demand for legacy application.");
 			}
@@ -148,6 +170,16 @@ public class AllotmentService {
 			}
 		}
 		
+		// The workflow transition is committed only AFTER the demand exists. It used to run first, so a failed
+		// demand call left the application APPROVED with no bill - and it could not be replayed, because the
+		// transition had already happened. Demand creation is idempotent per (tenant, consumerCode), so if the
+		// transition itself fails, re-approving returns the stored demand instead of duplicating it.
+		if (config.getIsWorkflowEnabled()) {
+			wfService.updateWorkflowStatus(allotmentRequest);
+		} else {
+			allotmentRequest.getAllotment().get(0).setStatus(RLConstants.APPROVED);
+		}
+
 		if(action.equalsIgnoreCase(RLConstants.FORWARD_FOR_SATELMENT_RL_APPLICATION)) {
 			satelmentAllotment(allotmentRequest);
 		}
@@ -189,6 +221,18 @@ public class AllotmentService {
 	}
 
     /**
+	 * True when the application is in a state that already has a demand, i.e. the only states in which a draft
+	 * save may change anything on the demand.
+	 */
+	private boolean hasRaisedDemand(AllotmentDetails allotmentDetails) {
+		if (allotmentDetails == null || allotmentDetails.getStatus() == null) {
+			return false;
+		}
+		String status = allotmentDetails.getStatus().trim();
+		return DEMAND_RAISED_STATUSES.stream().anyMatch(state -> state.equalsIgnoreCase(status));
+	}
+
+    /**
      * Check if the application is a legacy application based on additionalDetails
      * @param allotmentDetails The allotment details to check
      * @return true if applicationType in additionalDetails is "Legacy"
@@ -227,24 +271,45 @@ public class AllotmentService {
      */
     private String callCalculatorServiceForLegacy(AllotmentRequest allotmentRequest) {
         AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
-        com.fasterxml.jackson.databind.JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+        JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
 
         // Extract arrear details from additionalDetails
         BigDecimal arrearAmount = BigDecimal.ZERO;
+        BigDecimal baseArrear = BigDecimal.ZERO;
+        BigDecimal arrearGST = BigDecimal.ZERO;
+        BigDecimal arrearPenalty = BigDecimal.ZERO;
+        BigDecimal futurePenalty = BigDecimal.ZERO;
+        Long lastPaidUpto = null;
         Long arrearStartDate = null;
         Long arrearEndDate = null;
 
-        if (additionalDetails.has(RLConstants.LEGACY_ARREAR_KEY)) {
-            arrearAmount = new BigDecimal(additionalDetails.get(RLConstants.LEGACY_ARREAR_KEY).asText());
-        }
-        if (additionalDetails.has(RLConstants.LEGACY_ARREAR_START_DATE_KEY)) {
-            arrearStartDate = additionalDetails.get(RLConstants.LEGACY_ARREAR_START_DATE_KEY).asLong();
-        }
-        if (additionalDetails.has(RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY)) {
-            arrearEndDate = additionalDetails.get(RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY).asLong();
+        if (additionalDetails != null) {
+            // `arrear` wins over `arrearAmount` (kept from the original contract); `baseArrear` overrides both.
+            if (additionalDetails.has(RLConstants.LEGACY_ARREAR_KEY)) {
+                arrearAmount = readLegacyAmount(additionalDetails, RLConstants.LEGACY_ARREAR_KEY);
+                baseArrear = arrearAmount;
+            } else if (additionalDetails.has("arrearAmount")) {
+                arrearAmount = readLegacyAmount(additionalDetails, "arrearAmount");
+                baseArrear = arrearAmount;
+            }
+            if (additionalDetails.has("baseArrear")) {
+                baseArrear = readLegacyAmount(additionalDetails, "baseArrear");
+            }
+            arrearGST = readLegacyAmount(additionalDetails, "arrearGST");
+            arrearPenalty = readLegacyAmount(additionalDetails, "arrearPenalty");
+            futurePenalty = readLegacyAmount(additionalDetails, "futurePenalty");
+
+            lastPaidUpto = readLegacyDateMillis(additionalDetails, "lastPaidUpto", "lastPaidOn", "lastPaidDate");
+            arrearStartDate = readLegacyDateMillis(additionalDetails, RLConstants.LEGACY_ARREAR_START_DATE_KEY);
+            arrearEndDate = readLegacyDateMillis(additionalDetails, RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY);
         }
 
-        CalculationReq calculationReq = getCalculationReqForLegacy(allotmentRequest, arrearAmount, arrearStartDate, arrearEndDate);
+        log.info("Legacy arrear input for application {}: arrearAmount={}, baseArrear={}, arrearGST={}, "
+                        + "arrearPenalty={}, futurePenalty={}, lastPaidUpto={}, arrearStartDate={}, arrearEndDate={}",
+                allotmentDetails.getApplicationNumber(), arrearAmount, baseArrear, arrearGST, arrearPenalty,
+                futurePenalty, lastPaidUpto, arrearStartDate, arrearEndDate);
+
+        CalculationReq calculationReq = getCalculationReqForLegacy(allotmentRequest, arrearAmount, baseArrear, arrearGST, arrearPenalty, futurePenalty, lastPaidUpto, arrearStartDate, arrearEndDate);
 
         StringBuilder url = new StringBuilder().append(config.getRlCalculatorHost())
                 .append(config.getRlCalculatorEndpoint());
@@ -258,6 +323,8 @@ public class AllotmentService {
      * Build CalculationReq for legacy applications with arrear details
      */
     private CalculationReq getCalculationReqForLegacy(AllotmentRequest allotmentRequest, BigDecimal arrearAmount,
+                                                      BigDecimal baseArrear, BigDecimal arrearGST, BigDecimal arrearPenalty,
+                                                      BigDecimal futurePenalty, Long lastPaidUpto,
                                                       Long arrearStartDate, Long arrearEndDate) {
         CalculationReq calculationReq = new CalculationReq();
         calculationReq.setRequestInfo(allotmentRequest.getRequestInfo());
@@ -267,6 +334,11 @@ public class AllotmentService {
                 .isSatelment(false)
                 .isLegacyArrear(true)
                 .arrearAmount(arrearAmount)
+                .baseArrear(baseArrear)
+                .arrearGST(arrearGST)
+                .arrearPenalty(arrearPenalty)
+                .futurePenalty(futurePenalty)
+                .lastPaidUpto(lastPaidUpto)
                 .arrearStartDate(arrearStartDate)
                 .lastBillingPeriod(arrearEndDate)
                 .allotmentRequest(allotmentRequest)
@@ -315,6 +387,112 @@ public class AllotmentService {
 			return new ArrayList<>();
 		allotmentEnrichmentService.enrichOwnerDetailsFromUserService(applications, requestInfo);
 		return applications;
+	}
+
+	/**
+	 * Reads a numeric arrear value from additionalDetails. A present but non numeric value fails fast with a
+	 * meaningful error instead of surfacing as a raw NumberFormatException during demand generation.
+	 */
+	private BigDecimal readLegacyAmount(JsonNode details, String key) {
+		if (details == null || key == null || !details.has(key)) {
+			return BigDecimal.ZERO;
+		}
+		JsonNode node = details.get(key);
+		if (node == null || node.isNull()) {
+			return BigDecimal.ZERO;
+		}
+		String raw = node.asText();
+		if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+			return BigDecimal.ZERO;
+		}
+		try {
+			return new BigDecimal(raw.trim());
+		} catch (NumberFormatException e) {
+			throw new CustomException("INVALID_LEGACY_AMOUNT",
+					"Unable to parse '" + key + "' value '" + raw + "'. Expected a numeric amount.");
+		}
+	}
+
+	/**
+	 * Reads an epoch-millis date from the first key that is present, or null when none is provided.
+	 *
+	 * <p>Jackson's {@code asLong()} returns 0 for a non numeric value without throwing, which would turn
+	 * 1970-01-01 into the arrear start date (and generate an absurd penalty), so the value is parsed
+	 * explicitly and a present but unreadable value fails fast.
+	 */
+	private Long readLegacyDateMillis(JsonNode details, String... keys) {
+		if (details == null || keys == null) {
+			return null;
+		}
+		for (String key : keys) {
+			if (key == null || !details.has(key)) {
+				continue;
+			}
+			JsonNode node = details.get(key);
+			if (node == null || node.isNull()) {
+				continue;
+			}
+			String raw = node.asText();
+			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+				continue;
+			}
+			String trimmed = raw.trim();
+			// The frontend sends 0 for "no value" - typically lastPaidUpto when the arrears come as a breakdown.
+			// A non positive plain number is an absent date, never an unparseable one.
+			if (isNotProvidedNumber(trimmed)) {
+				continue;
+			}
+			LocalDate date = parseLegacyDate(trimmed);
+			if (date == null) {
+				throw new CustomException("INVALID_LEGACY_DATE", "Unable to parse '" + key + "' value '" + raw
+						+ "'. Expected epoch millis, yyyy-MM-dd, ISO-8601 date-time or dd/MM/yyyy.");
+			}
+			return date.atStartOfDay(ZoneId.of("Asia/Kolkata")).toInstant().toEpochMilli();
+		}
+		return null;
+	}
+
+	/** True when the value is a plain number that is zero or negative, i.e. the frontend's "not provided". */
+	private static boolean isNotProvidedNumber(String value) {
+		if (!value.matches("-?\\d+(\\.\\d+)?")) {
+			return false;
+		}
+		return new BigDecimal(value).compareTo(BigDecimal.ZERO) <= 0;
+	}
+
+	/**
+	 * Lenient date parser for legacy values. Accepts epoch millis (13+ digits), epoch seconds (10 digits),
+	 * yyyy-MM-dd, yyyy/MM/dd, dd/MM/yyyy, dd-MM-yyyy and ISO-8601 date-times. Returns null when the value
+	 * cannot be interpreted. Must stay in sync with rl-calculator's CalculationService#parseLegacyDate.
+	 */
+	private LocalDate parseLegacyDate(String raw) {
+		if (raw == null || raw.isEmpty()) {
+			return null;
+		}
+		if (raw.matches("\\d{9,}")) {
+			try {
+				long epoch = Long.parseLong(raw);
+				if (raw.length() <= 10) {
+					epoch = epoch * 1000L; // epoch seconds
+				}
+				return Instant.ofEpochMilli(epoch).atZone(ZoneId.of("Asia/Kolkata")).toLocalDate();
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+		String[] supportedPatterns = { "yyyy-MM-dd", "yyyy/MM/dd", "dd/MM/yyyy", "dd-MM-yyyy" };
+		for (String pattern : supportedPatterns) {
+			try {
+				return LocalDate.parse(raw, DateTimeFormatter.ofPattern(pattern));
+			} catch (Exception ignored) {
+				// try the next supported pattern
+			}
+		}
+		try {
+			return OffsetDateTime.parse(raw).atZoneSameInstant(ZoneId.of("Asia/Kolkata")).toLocalDate();
+		} catch (Exception ignored) {
+			return null;
+		}
 	}
 
 }

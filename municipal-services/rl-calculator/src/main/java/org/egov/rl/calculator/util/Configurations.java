@@ -65,6 +65,14 @@ public class Configurations {
 	private String updateAllotmentTopic;
 	@Value("${demand.generation.batch.size}")
 	private Integer demandGenerationBatchSize;
+
+	/**
+	 * Number of days a legacy arrear / back-dated demand stays payable from the moment it is created.
+	 * Back-dated periods have their due date in the past, so without this window the generated demand
+	 * (and the bill) would be created already expired.
+	 */
+	@Value("${egov.rl.arrear.payable.window.days:30}")
+	private Integer arrearPayableWindowDays;
 	
 	  //USER
     @Value("${egov.user.host}")

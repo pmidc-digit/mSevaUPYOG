@@ -103,58 +103,26 @@ export const pdfDocumentName = (documentLink = "", index = 0) => {
   return documentName;
 };
 
+const ones = ("_ One Two Three Four Five Six Seven Eight Nine Ten Eleven Twelve Thirteen Fourteen Fifteen Sixteen Seventeen Eighteen Nineteen").replace("_", "").split(" ");
+const tens = "_ _ Twenty Thirty Forty Fifty Sixty Seventy Eighty Ninety".split(" ").map(t => (t === "_" ? "" : t));
+
+const below1000 = (n) =>
+  n < 20 ? ones[n]
+  : n < 100 ? `${tens[n / 10 | 0]} ${ones[n % 10]}`
+  : `${ones[n / 100 | 0]} Hundred ${below1000(n % 100)}`;
+
+const indian = (n) =>
+  n >= 1e7 ? `${indian(n / 1e7 | 0)} Crore ${indian(n % 1e7)}`
+  : n >= 1e5 ? `${below1000(n / 1e5 | 0)} Lakh ${indian(n % 1e5)}`
+  : n >= 1e3 ? `${below1000(n / 1e3 | 0)} Thousand ${indian(n % 1e3)}`
+  : below1000(n);
+
 export const amountToWords = (num) => {
-  if (num == null || num === "") return "Zero Rupees";
-  const ones = [
-      "",
-      "One",
-      "Two",
-      "Three",
-      "Four",
-      "Five",
-      "Six",
-      "Seven",
-      "Eight",
-      "Nine",
-      "Ten",
-      "Eleven",
-      "Twelve",
-      "Thirteen",
-      "Fourteen",
-      "Fifteen",
-      "Sixteen",
-      "Seventeen",
-      "Eighteen",
-      "Nineteen",
-    ],
-    tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"],
-    units = ["", "Thousand", "Lakh", "Crore"];
-
-  const chunk = (n) =>
-    n < 20
-      ? ones[n]
-      : n < 100
-      ? tens[Math.floor(n / 10)] + (n % 10 ? " " + ones[n % 10] : "")
-      : ones[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " " + chunk(n % 100) : "");
-
-  const toWords = (n) => {
-    if (!n) return "";
-    let parts = [n % 1000],
-      res = "";
-    n = Math.floor(n / 1000);
-    while (n) {
-      parts.push(n % 100);
-      n = Math.floor(n / 100);
-    }
-    for (let j = parts.length - 1; j >= 0; j--) if (parts[j]) res += chunk(parts[j]) + " " + units[j] + " ";
-    return res.trim();
-  };
-
-  let [r, p] = num
-    .toString()
-    .split(".")
-    .map((x) => +x || 0);
-  return (r ? "Rupees " + toWords(r) : "") + (p ? (r ? " and " : "") + toWords(p) + " Paise" : "") || "Rupees Zero ";
+  const total = Math.round(Math.abs(+num) * 100);
+  if (!total) return "Zero Rupees";
+  const [r, p] = [Math.floor(total / 100), total % 100];
+  return (+num < 0 ? "Minus " : "") + [r && `${indian(r)} Rupees`, p && `${below1000(p)} Paise`]
+    .filter(Boolean).join(" and ").replace(/\s+/g, " ").trim();
 };
 
 export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {

@@ -43,7 +43,7 @@ import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
-import { getDrivingDistance } from "../../../utils/getdistance";
+//import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import { format } from "date-fns";
@@ -556,8 +556,7 @@ const NOCEmployeeApplicationOverview = () => {
           }),
       });
     }
-  }
-  if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
+    else if(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
         onClick: () =>
@@ -568,12 +567,15 @@ const NOCEmployeeApplicationOverview = () => {
             filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
           }),
       });
+    }
+  }
+  if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
       dowloadOptions.push({
         label: t("CHB_FEE_RECEIPT"),
         onClick: () =>
           getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData}),
       });
-    }
+  }
   useEffect(() => {
     const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
     const apiEstimates = data?.Calculation?.[0]?.taxHeadEstimates || [];
@@ -855,44 +857,44 @@ const NOCEmployeeApplicationOverview = () => {
     }
   }
 
-  useEffect(() => {
-    const fetchDistances = async () => {
-      if (
-        coordinates?.Latitude1 &&
-        coordinates?.Latitude2 &&
-        geoLocations?.length > 0 &&
-        applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
-      ) {
-        try {
-          const results = await Promise.all(
-            geoLocations.map(async (loc, idx) => {
-              const d1 = await getDrivingDistance(
-                parseFloat(coordinates?.Latitude1),
-                parseFloat(coordinates?.Longitude1),
-                parseFloat(loc?.latitude),
-                parseFloat(loc?.longitude)
-              );
-              const d2 = await getDrivingDistance(
-                parseFloat(coordinates?.Latitude2),
-                parseFloat(coordinates?.Longitude2),
-                parseFloat(loc?.latitude),
-                parseFloat(loc?.longitude)
-              );
-              const minDistance = Math.min(d1, d2);
-              // console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
-              return minDistance;
-            })
-          );
-          setDistances(results);
-          // console.log("Final distances (m):", results);
-        } catch (err) {
-          console.error("Error fetching distances:", err);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const fetchDistances = async () => {
+  //     if (
+  //       coordinates?.Latitude1 &&
+  //       coordinates?.Latitude2 &&
+  //       geoLocations?.length > 0 &&
+  //       applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
+  //     ) {
+  //       try {
+  //         const results = await Promise.all(
+  //           geoLocations.map(async (loc, idx) => {
+  //             const d1 = await getDrivingDistance(
+  //               parseFloat(coordinates?.Latitude1),
+  //               parseFloat(coordinates?.Longitude1),
+  //               parseFloat(loc?.latitude),
+  //               parseFloat(loc?.longitude)
+  //             );
+  //             const d2 = await getDrivingDistance(
+  //               parseFloat(coordinates?.Latitude2),
+  //               parseFloat(coordinates?.Longitude2),
+  //               parseFloat(loc?.latitude),
+  //               parseFloat(loc?.longitude)
+  //             );
+  //             const minDistance = Math.min(d1, d2);
+  //             // console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
+  //             return minDistance;
+  //           })
+  //         );
+  //         setDistances(results);
+  //         // console.log("Final distances (m):", results);
+  //       } catch (err) {
+  //         console.error("Error fetching distances:", err);
+  //       }
+  //     }
+  //   };
 
-    fetchDistances();
-  }, [coordinates, geoLocations]);
+  //   fetchDistances();
+  // }, [coordinates, geoLocations]);
 
   // validation util
   const validateSiteImages = (action) => {

@@ -43,7 +43,7 @@ import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
-import { getDrivingDistance } from "../../../utils/getdistance";
+//import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -711,36 +711,36 @@ const NOCEmployeeApplicationOverview = () => {
     }
   }
 
-  useEffect(() => {
-    const fetchDistances = async () => {
-      if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0 && applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS") {
-        try {
-          const results = await Promise.all(
-            geoLocations.map(async (loc, idx) => {
-              const d1 = await getDrivingDistance(
-                parseFloat(coordinates?.Latitude1),
-                parseFloat(coordinates?.Longitude1),
-                parseFloat(loc?.latitude),
-                parseFloat(loc?.longitude)
-              );
-              const d2 = await getDrivingDistance(
-                parseFloat(coordinates?.Latitude2),
-                parseFloat(coordinates?.Longitude2),
-                parseFloat(loc?.latitude),
-                parseFloat(loc?.longitude)
-              );
-              const minDistance = Math.min(d1, d2);
-              return minDistance;
-            })
-          );
-          setDistances(results);
-        } catch (err) {
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const fetchDistances = async () => {
+  //     if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0 && applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS") {
+  //       try {
+  //         const results = await Promise.all(
+  //           geoLocations.map(async (loc, idx) => {
+  //             const d1 = await getDrivingDistance(
+  //               parseFloat(coordinates?.Latitude1),
+  //               parseFloat(coordinates?.Longitude1),
+  //               parseFloat(loc?.latitude),
+  //               parseFloat(loc?.longitude)
+  //             );
+  //             const d2 = await getDrivingDistance(
+  //               parseFloat(coordinates?.Latitude2),
+  //               parseFloat(coordinates?.Longitude2),
+  //               parseFloat(loc?.latitude),
+  //               parseFloat(loc?.longitude)
+  //             );
+  //             const minDistance = Math.min(d1, d2);
+  //             return minDistance;
+  //           })
+  //         );
+  //         setDistances(results);
+  //       } catch (err) {
+  //       }
+  //     }
+  //   };
 
-    fetchDistances();
-  }, [coordinates, geoLocations]);
+  //   fetchDistances();
+  // }, [coordinates, geoLocations]);
 
   // validation util
   const validateSiteImages = (action) => {

@@ -35,6 +35,8 @@ public class RLConstants {
 
 	public static final String PENALTY_FEE_RL_APPLICATION = "RL_PENALTY_FEE";
 
+	public static final String RL_TIME_REBATE = "RL_TIME_REBATE";
+
     public static final String RL_DAILYINTEREST = "RL_DAILYINTEREST";
 	
 	public static final String SGST_FEE_RL_APPLICATION = "RL_SGST_FEE";

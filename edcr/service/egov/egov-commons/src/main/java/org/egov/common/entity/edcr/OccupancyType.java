@@ -54,7 +54,8 @@ public enum OccupancyType {
 	OCCUPANCY_A1("Residential"), // singlefamily,
 	OCCUPANCY_A2("Special Residential"), 
 	OCCUPANCY_A3("Hostel Educational"), 
-	OCCUPANCY_A4("Apartment/Flat"),
+	//OCCUPANCY_A4("Apartment/Flat"),
+	OCCUPANCY_A4("Group Housing"),
 	OCCUPANCY_A5("Professional Office"), 
 	OCCUPANCY_A6("Independent Floor"),  
 	

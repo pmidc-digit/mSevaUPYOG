@@ -55,7 +55,7 @@ public class WSCalculatorQueryBuilder {
 	
 	private static final String getDemandId = "SELECT DISTINCT d.id AS demandId, d.status AS Status, dd.collectionamount as amountCollected FROM egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 
-	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode, d.ispaymentcompleted from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
+	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode, d.ispaymentcompleted, dd.collectionamount, dd.taxamount from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 	private static final String connectionNoListQueryUpdate = "UPDATE egbs_demand_v1 set ";
 	
 	private static final String connectionNoListQuerybill = "UPDATE egbs_bill_v1 " +
@@ -800,7 +800,7 @@ StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
 	
 	
 	
-	public String getCollection( String tenantId,   Long taxperiodfrom,Long taxPeriodTo,String consumerCode,
+	public String getCollection( String tenantId,   Long taxperiodfrom,Long taxPeriodTo,String consumerCode,String businessService,
 			List<Object> preparedStatement) {
 StringBuilder query = new StringBuilder(getDemandId);
 		
@@ -818,14 +818,24 @@ StringBuilder query = new StringBuilder(getDemandId);
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" d.consumercode = ? ");
 		preparedStatement.add(consumerCode);
-		
-		
-		query.append("AND d.businessservice = 'WS' ");
+
+
+        addClauseIfRequired(preparedStatement, query);
+        query.append(" d.businessservice = ? ");
+        if (businessService == null || businessService.isEmpty() || "WS".equalsIgnoreCase(businessService)) {
+            preparedStatement.add("WS");
+        } else {
+            preparedStatement.add("SW");
+        }
 		
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" dd.collectionamount = '0' ");
 		
 		addClauseIfRequired(preparedStatement, query);
+        query.append(" d.status = ? ");
+        preparedStatement.add("ACTIVE");
+
+        addClauseIfRequired(preparedStatement, query);
 		query.append(" d.ispaymentcompleted = 'false' ");
 				
 		//Add taxperiodfrom

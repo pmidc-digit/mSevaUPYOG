@@ -1,4 +1,4 @@
-package org.egov.filestore.repository.impl;
+﻿package org.egov.filestore.repository.impl;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.io.FilenameUtils;
+import org.egov.filestore.config.FileStoreConfig;
 import org.egov.filestore.domain.model.Artifact;
 import org.egov.filestore.repository.AzureClientFacade;
 import org.egov.filestore.repository.CloudFilesManager;
@@ -44,6 +45,9 @@ public class AzureBlobStorageImpl implements CloudFilesManager {
 	
 	@Autowired
 	private CloudFileMgrUtils util;
+
+	@Autowired
+	private FileStoreConfig fileStoreConfig;
 	
 	@Value("${is.container.fixed}")
 	private Boolean isContainerFixed;
@@ -199,6 +203,42 @@ public class AzureBlobStorageImpl implements CloudFilesManager {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
+	@Override
+	public void deleteFiles(List<org.egov.filestore.persistence.entity.Artifact> artifacts) {
+		if (!Boolean.TRUE.equals(fileStoreConfig.getIsBillAutoDeleteEnabled())) {
+			log.info("Bill auto-deletion switch is disabled (bill.auto.delete.enabled=false). Skipping deletion from Azure Blob Storage.");
+			return;
+		}
+		if (null == azureBlobClient)
+			azureBlobClient = azureFacade.getAzureClient();
+
+		for (org.egov.filestore.persistence.entity.Artifact artifact : artifacts) {
+			if (!isBillModule(artifact.getModule())) {
+				log.warn("Artifact {} belongs to non-bill module {}. Skipping Azure deletion.", artifact.getFileStoreId(), artifact.getModule());
+				continue;
+			}
+			try {
+				String completeName = artifact.getFileName();
+				int index = completeName.indexOf('/');
+				String containerName = isContainerFixed ? fixedContainerName : completeName.substring(0, index);
+				String fileNameWithPath = completeName.substring(index + 1);
+				CloudBlobContainer container = azureBlobClient.getContainerReference(containerName);
+				CloudBlockBlob blob = container.getBlockBlobReference(fileNameWithPath);
+				blob.deleteIfExists();
+				log.info("Deleted blob from Azure: {}", fileNameWithPath);
+			} catch (Exception e) {
+				log.error("Error while deleting blob from Azure: ", e);
+			}
+		}
+	}
+
+	private boolean isBillModule(String module) {
+		if (module == null) {
+			return false;
+		}
+		String lower = module.toLowerCase();
+		return lower.contains("bill") || lower.equalsIgnoreCase("billing-service");
+	}
 	
 }

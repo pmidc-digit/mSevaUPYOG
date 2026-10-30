@@ -95,7 +95,7 @@ public class WSCalculationUtil {
 					.append(getBillCriteria.getConnectionNumber())
 					.append(WSCalculationConstant.SEPARATER)
 					.append(WSCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
-					.append("WS")
+                    .append(WSCalculationConstant.SERVICE_FIELD_VALUE_WS)
 				
 						;
 
@@ -108,7 +108,7 @@ public class WSCalculationUtil {
 					.append(StringUtils.join(getBillCriteria.getConsumerCodes(), ","))
 					.append(WSCalculationConstant.SEPARATER)
 					.append(WSCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
-					.append("WS");
+                     .append(WSCalculationConstant.SERVICE_FIELD_VALUE_WS);
 
 			 if(getBillCriteria.getIsPaymentCompleted() != null)
 				 url.append(WSCalculationConstant.SEPARATER)

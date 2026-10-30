@@ -77,6 +77,7 @@ public class PetApplicationRowMapper implements ResultSetExtractor<List<PetRegis
 					    .previousApplicationNumber(rs.getString("ppreviousapplicationnumber"))
 					    .petRegistrationNumber(rs.getString("ppetregistrationnumber"))
 					    .propertyId(rs.getString("ppropertyid"))
+					    .consentDocument(rs.getString("pconsentdocument"))
 					    .petDetails(petdetails)
 					    .owner(owner)
 					    .auditDetails(auditdetails)

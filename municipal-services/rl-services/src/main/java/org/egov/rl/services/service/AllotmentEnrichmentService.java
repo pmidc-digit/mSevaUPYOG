@@ -120,6 +120,13 @@ public class AllotmentEnrichmentService {
 			}
 		}
 		
+		if (!additionalDetailsNode.has("gstAmount")) {
+			additionalDetailsNode.put("gstAmount", 0);
+		}
+		if (!additionalDetailsNode.has("rebatePercentage")) {
+			additionalDetailsNode.put("rebatePercentage", 0);
+		}
+		
 		allotmentDetails.setAdditionalDetails(additionalDetailsNode);
 	}
 
@@ -156,10 +163,37 @@ public class AllotmentEnrichmentService {
 		allotmentDbDetails.setPenaltyType(allotmentDetails.getPenaltyType());
 		allotmentDbDetails.setOwnerInfo(allotmentDetails.getOwnerInfo());
 		allotmentDbDetails.setDocuments(allotmentDetails.getDocuments());
+
+		// Editable fields that were previously dropped: without these an operator's change on a draft (renewed
+		// rent, closure notes, registration numbers) never reached the stored application. Each one is copied only
+		// when the request actually carries a value, so a partial draft payload never wipes what is stored.
+		if (allotmentDetails.getRentRevisions() != null) {
+			allotmentDbDetails.setRentRevisions(allotmentDetails.getRentRevisions());
+		}
+		if (allotmentDetails.getReasonForClosure() != null) {
+			allotmentDbDetails.setReasonForClosure(allotmentDetails.getReasonForClosure());
+		}
+		if (allotmentDetails.getNotesComments() != null) {
+			allotmentDbDetails.setNotesComments(allotmentDetails.getNotesComments());
+		}
+		if (allotmentDetails.getRegistrationNumber() != null) {
+			allotmentDbDetails.setRegistrationNumber(allotmentDetails.getRegistrationNumber());
+		}
+		if (allotmentDetails.getTradeLicenseNumber() != null) {
+			allotmentDbDetails.setTradeLicenseNumber(allotmentDetails.getTradeLicenseNumber());
+		}
+		if (allotmentDetails.getPreviousApplicationNumber() != null) {
+			allotmentDbDetails.setPreviousApplicationNumber(allotmentDetails.getPreviousApplicationNumber());
+		}
 		
-		allotmentDbDetails.setStatus(allotmentDetails.getWorkflow().getStatus());
+		// Keep the stored status when the request carries none: overwriting it with null would wipe the state the
+		// application is actually in, and the caller relies on it before the workflow transition runs.
+		String incomingStatus = (allotmentDetails.getWorkflow() != null)
+				? allotmentDetails.getWorkflow().getStatus() : null;
+		if (incomingStatus != null && !incomingStatus.trim().isEmpty()) {
+			allotmentDbDetails.setStatus(incomingStatus);
+		}
 		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
-		
 		allotmentDbDetails.setAdditionalDetails(allotmentDetails.getAdditionalDetails());
 		allotmentDbDetails.setApplicationNumber(allotmentDetails.getApplicationNumber());
 		allotmentDbDetails.setPropertyId(allotmentDetails.getPropertyId());
@@ -336,7 +370,7 @@ public class AllotmentEnrichmentService {
 			}
 		}
 
-		if (baseRentStr == null) {
+		if (org.apache.commons.lang3.StringUtils.isBlank(baseRentStr) || "null".equalsIgnoreCase(baseRentStr)) {
 			return;
 		}
 
@@ -350,30 +384,36 @@ public class AllotmentEnrichmentService {
 			JsonNode propDetails = additionalDetails.path("propertyDetails");
 			JsonNode targetNode = (propDetails.isArray() && propDetails.size() > 0) ? propDetails.get(0) : additionalDetails;
 
-			if (additionalDetails.has("lastrevisiondate")) {
+			if (additionalDetails.has("lastrevisiondate") && !additionalDetails.get("lastrevisiondate").isNull()) {
 				revisionDate = additionalDetails.get("lastrevisiondate").asLong();
-			} else if (additionalDetails.has("lastRevisionDate")) {
+			} else if (additionalDetails.has("lastRevisionDate") && !additionalDetails.get("lastRevisionDate").isNull()) {
 				revisionDate = additionalDetails.get("lastRevisionDate").asLong();
-			} else if (additionalDetails.has("lastRentRevisedDate")) {
+			} else if (additionalDetails.has("lastRentRevisedDate") && !additionalDetails.get("lastRentRevisedDate").isNull()) {
 				revisionDate = additionalDetails.get("lastRentRevisedDate").asLong();
-			} else if (targetNode.has("lastrevisiondate")) {
+			} else if (targetNode.has("lastrevisiondate") && !targetNode.get("lastrevisiondate").isNull()) {
 				revisionDate = targetNode.get("lastrevisiondate").asLong();
-			} else if (targetNode.has("lastRevisionDate")) {
+			} else if (targetNode.has("lastRevisionDate") && !targetNode.get("lastRevisionDate").isNull()) {
 				revisionDate = targetNode.get("lastRevisionDate").asLong();
-			} else if (targetNode.has("lastRentRevisedDate")) {
+			} else if (targetNode.has("lastRentRevisedDate") && !targetNode.get("lastRentRevisedDate").isNull()) {
 				revisionDate = targetNode.get("lastRentRevisedDate").asLong();
 			}
 
-			if (additionalDetails.has("incrementPeriodMonths")) {
+			if (additionalDetails.has("incrementPeriodMonths") && !additionalDetails.get("incrementPeriodMonths").isNull()) {
 				incrementPeriodMonths = additionalDetails.get("incrementPeriodMonths").asInt();
-			} else if (targetNode.has("incrementPeriodMonths")) {
+			} else if (targetNode.has("incrementPeriodMonths") && !targetNode.get("incrementPeriodMonths").isNull()) {
 				incrementPeriodMonths = targetNode.get("incrementPeriodMonths").asInt();
 			}
 
-			if (additionalDetails.has("incrementPercentage")) {
-				incrementPercentage = new java.math.BigDecimal(additionalDetails.get("incrementPercentage").asText());
-			} else if (targetNode.has("incrementPercentage")) {
-				incrementPercentage = new java.math.BigDecimal(targetNode.path("incrementPercentage").asText());
+			if (additionalDetails.has("incrementPercentage") && !additionalDetails.get("incrementPercentage").isNull()) {
+				String incStr = additionalDetails.get("incrementPercentage").asText();
+				if (org.apache.commons.lang3.StringUtils.isNotBlank(incStr) && !"null".equalsIgnoreCase(incStr)) {
+					incrementPercentage = new java.math.BigDecimal(incStr);
+				}
+			} else if (targetNode.has("incrementPercentage") && !targetNode.get("incrementPercentage").isNull()) {
+				String incStr = targetNode.get("incrementPercentage").asText();
+				if (org.apache.commons.lang3.StringUtils.isNotBlank(incStr) && !"null".equalsIgnoreCase(incStr)) {
+					incrementPercentage = new java.math.BigDecimal(incStr);
+				}
 			}
 		}
 

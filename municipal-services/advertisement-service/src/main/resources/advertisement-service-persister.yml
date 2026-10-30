@@ -7,7 +7,7 @@ serviceMaps:
    isTransaction: true
    queryMaps:
 
-       - query: INSERT INTO public.eg_adv_booking_detail(booking_id, booking_no, payment_date, application_date, tenant_id, booking_status, receipt_no, createdby, createdtime, lastmodifiedby, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+       - query: INSERT INTO public.eg_adv_booking_detail(booking_id, booking_no, payment_date, application_date, tenant_id, booking_status, receipt_no, createdby, createdtime, lastmodifiedby, lastmodifiedtime, additionaldetails) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
          basePath: bookingApplication
          jsonMaps:
           - jsonPath: $.bookingApplication.bookingId
@@ -32,6 +32,10 @@ serviceMaps:
 
           - jsonPath: $.bookingApplication.auditDetails.lastModifiedTime
           
+          - jsonPath: $.bookingApplication.additionalDetails
+            type: JSON
+            dbType: JSONB
+
        - query: INSERT INTO public.eg_adv_cart_detail(cart_id, booking_id, add_type, location, face_area, night_light, booking_date, booking_from_time, booking_to_time, status, 
                createdby, createdtime, lastmodifiedby, lastmodifiedtime, advertisement_id) VALUES (?, ?, ?, ?, ?, ?, ?::DATE, ?::TIME, ?::TIME, ?, ?, ?, ?, ?, ?);
          basePath: bookingApplication.cartDetails.*
@@ -154,7 +158,7 @@ serviceMaps:
       fromTopic: update-advertisement-booking
       isTransaction: true
       queryMaps:
-         - query: UPDATE public.eg_adv_booking_detail SET booking_status = ?, payment_date = ?, lastmodifiedby = ?, lastmodifiedtime = ?, permission_letter_filestore_id = ?, payment_receipt_filestore_id = ? WHERE booking_id = ?;
+         - query: UPDATE public.eg_adv_booking_detail SET booking_status = ?, payment_date = ?, lastmodifiedby = ?, lastmodifiedtime = ?, permission_letter_filestore_id = ?, payment_receipt_filestore_id = ?, additionaldetails = COALESCE(?::jsonb, additionaldetails) WHERE booking_id = ?;
             basePath: bookingApplication
             jsonMaps:
                - jsonPath: $.bookingApplication.bookingStatus
@@ -163,6 +167,9 @@ serviceMaps:
                - jsonPath: $.bookingApplication.auditDetails.lastModifiedTime
                - jsonPath: $.bookingApplication.permissionLetterFilestoreId
                - jsonPath: $.bookingApplication.paymentReceiptFilestoreId
+               - jsonPath: $.bookingApplication.additionalDetails
+                 type: JSON
+                 dbType: JSONB
                - jsonPath: $.bookingApplication.bookingId
 
          - query: INSERT INTO public.eg_adv_cart_detail(cart_id, booking_id, add_type, location, face_area, night_light, booking_date, booking_from_time, booking_to_time, status, createdby, createdtime, lastmodifiedby, lastmodifiedtime, advertisement_id) VALUES (?, ?, ?, ?, ?, ?, ?::DATE, ?::TIME, ?::TIME, ?, ?, ?, ?, ?, ?) ON CONFLICT (cart_id) DO UPDATE SET booking_id = EXCLUDED.booking_id, add_type = EXCLUDED.add_type, location = EXCLUDED.location, face_area = EXCLUDED.face_area, night_light = EXCLUDED.night_light, booking_date = EXCLUDED.booking_date, booking_from_time = EXCLUDED.booking_from_time, booking_to_time = EXCLUDED.booking_to_time, status = EXCLUDED.status, lastmodifiedby = EXCLUDED.lastmodifiedby, lastmodifiedtime = EXCLUDED.lastmodifiedtime, advertisement_id = EXCLUDED.advertisement_id;

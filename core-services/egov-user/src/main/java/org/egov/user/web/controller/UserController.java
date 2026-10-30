@@ -24,6 +24,7 @@ import org.egov.user.web.contract.UserSearchRequest;
 import org.egov.user.web.contract.UserSearchResponse;
 import org.egov.user.web.contract.UserSearchResponseContent;
 import org.egov.user.web.contract.EmployeeLoginRequest;
+import org.egov.user.web.contract.UserUnlockRequest;
 import org.egov.user.web.contract.auth.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -203,6 +204,21 @@ public class UserController {
                 loginRequest.getTenantId(),
                 loginRequest.getRequestInfo());
         return createResponse(authenticatedUser);
+    }
+
+    /**
+     * Endpoint to unlock a locked/blocked user account and clear failed login attempts.
+     *
+     * @param unlockRequest
+     * @return UserDetailResponse containing the unlocked user details
+     */
+    @PostMapping({"/users/_unlock", "/_unlock"})
+    public UserDetailResponse unlockUser(@RequestBody @Valid UserUnlockRequest unlockRequest) {
+        log.info("Received User Unlock Request for user: {}, uuid: {}",
+                unlockRequest != null ? unlockRequest.getUserName() : null,
+                unlockRequest != null ? unlockRequest.getUuid() : null);
+        User unlockedUser = userService.unlockUser(unlockRequest);
+        return createResponse(unlockedUser);
     }
 
     private UserDetailResponse createResponse(User newUser) {

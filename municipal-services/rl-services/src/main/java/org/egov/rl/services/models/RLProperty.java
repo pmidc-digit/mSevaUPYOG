@@ -61,6 +61,9 @@ public class RLProperty {// extends PropertyInfo {
 	@JsonProperty("address")
 	private String address;
 
+	@JsonProperty("areaCode")
+	private String areaCode;
+
 	@JsonProperty("geoLocation")
 	private GeoLocation geoLocation;
 	
@@ -81,6 +84,15 @@ public class RLProperty {// extends PropertyInfo {
 	
 	@JsonProperty("penaltyType")
 	private String penaltyType;
+	
+	@JsonProperty("penaltyRate")
+	private java.math.BigDecimal penaltyRate;
+
+	@JsonProperty("penaltyFlatAmount")
+	private java.math.BigDecimal penaltyFlatAmount;
+
+	@JsonProperty("rents")
+	private java.util.List<RentPeriod> rents;
 	
 //	@JsonProperty("latePayment")
 //	private String latePayment;

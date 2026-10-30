@@ -50,10 +50,13 @@ package org.egov.edcr.service;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.egov.edcr.utility.DcrConstants.FILESTORE_MODULECODE;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,8 +104,10 @@ import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.config.core.EnvironmentSettings;
 import org.egov.infra.exception.ApplicationRuntimeException;
 import org.egov.infra.filestore.service.FileStoreService;
+import org.egov.infra.filestore.service.impl.CompressionService;
 import org.egov.infra.microservice.contract.RequestInfoWrapper;
 import org.egov.infra.microservice.contract.ResponseInfo;
+import org.egov.infra.microservice.models.CustomMultipartFile;
 import org.egov.infra.microservice.models.RequestInfo;
 import org.egov.infra.microservice.models.Role;
 import org.egov.infra.microservice.models.UserInfo;
@@ -143,6 +148,9 @@ public class EdcrRestService {
     private static final String BPA_07 = "BPA-07";
 
     private static final String BPA_05 = "BPA-05";
+
+    // Employee user type constant, used to bypass ownership (thirdPartyUserCode/applicantName) filters
+    private static final String EMPLOYEE_TYPE = "EMPLOYEE";
 
     private static Logger LOG = LogManager.getLogger(EdcrRestService.class);
 
@@ -195,13 +203,16 @@ public class EdcrRestService {
 	@Value("${indexer.host}")
 	private String indexerHost;
 	
+	@Autowired
+    private CompressionService CompressionService;
+	
     public Session getCurrentSession() {
         return entityManager.unwrap(Session.class);
     }
     
     @Transactional
     public EdcrDetail createEdcr(final EdcrRequest edcrRequest, final MultipartFile file,
-            Map<String, List<Object>> masterData){
+            Map<String, List<Object>> masterData, final MultipartFile controlSheet){
         EdcrApplication edcrApplication = new EdcrApplication();
         edcrApplication.setMdmsMasterData(masterData);
         
@@ -241,6 +252,10 @@ public class EdcrRestService {
        
         edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
         edcrApplication.setDxfFile(file);
+        
+        if(controlSheet!=null) {
+        	edcrApplication.setControlSheetFile(controlSheet);
+        }        
 
         if (edcrRequest.getRequestInfo() != null && edcrRequest.getRequestInfo().getUserInfo() != null) {
             edcrApplication.setThirdPartyUserCode(isNotBlank(edcrRequest.getRequestInfo().getUserInfo().getUuid())
@@ -500,6 +515,7 @@ public class EdcrRestService {
                 ObjectMapper mapper = new ObjectMapper();
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 Plan pl1 = mapper.readValue(file, Plan.class);
+                Files.deleteIfExists(file.toPath());
                 pl1.getPlanInformation().setApplicantName(edcrApplnDtl.getApplication().getApplicantName());
                
                 if (LOG.isInfoEnabled())
@@ -606,7 +622,17 @@ public class EdcrRestService {
             LOG.log(Level.ERROR, e);
         }
 
-        edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+        //edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+        
+        if (isBlank(tenantId)) {
+            edcrDetail.setTenantId(stateCityCode);
+        } else if (tenantId.contains(".")) {
+            // already fully qualified (e.g. "pb.lalru") — use as-is
+            edcrDetail.setTenantId(tenantId);
+        } else {
+            // raw tenant key only (e.g. "lalru") — qualify it
+            edcrDetail.setTenantId(stateCityCode.concat(".").concat(tenantId));
+        }
 
         if (!String.valueOf(applnDtls[3]).equalsIgnoreCase("Accepted"))
             edcrDetail.setStatus(String.valueOf(applnDtls[3]));
@@ -628,6 +654,20 @@ public class EdcrRestService {
         }
         LOG.info("[resolveSpecificTenant] Input tenantId: '{}' is state-level, returning null", tenantId);
         return null;
+    }
+
+    /**
+     * Determines whether the calling user is an EMPLOYEE.
+     * Employees bypass the ownership (thirdPartyUserCode/applicantName) filter so they can
+     * pull up any application within their tenant scope by edcr number / transaction number etc.,
+     * not just applications they personally submitted.
+     */
+    private boolean isEmployeeUser(UserInfo userInfo) {
+        if (userInfo == null || userInfo.getType() == null)
+            return false;
+        boolean isEmployee = EMPLOYEE_TYPE.equalsIgnoreCase(userInfo.getType());
+        LOG.info("[isEmployeeUser] userType: '{}', isEmployee: {}", userInfo.getType(), isEmployee);
+        return isEmployee;
     }
     
 //    @SuppressWarnings("unchecked")
@@ -847,6 +887,9 @@ public class EdcrRestService {
 
         	LOG.info("[fetchEdcr] isBpaStakeholderRole flag          : {}", isBpaStakeholderRole);
 
+        // NEW: employee callers bypass the ownership filter entirely
+        boolean isEmployee = isEmployeeUser(userInfo);
+        LOG.info("[fetchEdcr] isEmployee flag                    : {}", isEmployee);
 
         if (edcrRequest.getLimit() == null)
             edcrRequest.setLimit(-1);
@@ -907,10 +950,9 @@ public class EdcrRestService {
             String specificTenant = resolveSpecificTenant(edcrRequest.getTenantId());
             LOG.info("[fetchEdcr] specificTenant after resolve     : '{}'", specificTenant);
 
-//            String queryString = searchAtStateTenantLevel(
-//                    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant);
             String queryString = searchAtStateTenantLevel(
-            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant, isBpaStakeholderRole);
+            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant,
+            	    isBpaStakeholderRole, isEmployee);
 
             LOG.info("[fetchEdcr] Generated SQL query              :\n{}", queryString);
 
@@ -961,7 +1003,7 @@ public class EdcrRestService {
             LOG.info("[fetchEdcr] Taking SINGLE-TENANT path for tenantId: '{}'", edcrRequest.getTenantId());
 
             final Criteria criteria = getCriteriaofSingleTenant(
-                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
+                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder, isEmployee);
 
             LOG.info("[fetchEdcr] Criteria query : {}", criteria.toString());
             criteria.setFirstResult(offset);
@@ -1016,6 +1058,10 @@ public class EdcrRestService {
 
         	boolean isBpaStakeholderRole = roles.stream().anyMatch(BPA_STAKEHOLDER_ROLES::contains);
 
+        // NEW: employee callers bypass the ownership filter entirely
+        boolean isEmployee = isEmployeeUser(userInfo);
+        LOG.info("[fetchCount] isEmployee flag                  : {}", isEmployee);
+
         boolean onlyTenantId = edcrRequest != null && isBlank(edcrRequest.getEdcrNumber())
                 && isBlank(edcrRequest.getTransactionNumber()) && isBlank(edcrRequest.getAppliactionType())
                 && isBlank(edcrRequest.getApplicationSubType()) && isBlank(edcrRequest.getStatus())
@@ -1047,7 +1093,8 @@ public class EdcrRestService {
             LOG.info("[fetchCount] specificTenant after resolve     : '{}'", specificTenant);
 
             String queryString = searchAtStateTenantLevel(
-            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant, isBpaStakeholderRole);
+            	    edcrRequest, userInfo, userId, onlyTenantId, params, isStakeholder, specificTenant,
+            	    isBpaStakeholderRole, isEmployee);
 
             LOG.info("[fetchCount] Generated SQL query for count   :\n{}", queryString);
 
@@ -1066,7 +1113,7 @@ public class EdcrRestService {
             LOG.info("[fetchCount] Taking SINGLE-TENANT path for count, tenantId: '{}'", edcrRequest.getTenantId());
 
             final Criteria criteria = getCriteriaofSingleTenant(
-                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder);
+                    edcrRequest, userInfo, userId, onlyTenantId, isStakeholder, isEmployee);
 
             int count = criteria.list().size();
             LOG.info("[fetchCount] Count result (single-tenant)    : {}", count);
@@ -1178,7 +1225,7 @@ public class EdcrRestService {
             query = orderByWrapperDesc.replace("{}", queryStr);
         return query;
     }
-    
+
 //    private String searchAtStateTenantLevel(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
 //            boolean onlyTenantId, final Map<String, String> params, boolean isStakeholder,
 //            String specificTenant, boolean isBpaStakeholderRole) {
@@ -1336,15 +1383,21 @@ public class EdcrRestService {
 //        return query;
 //    }
 
+    /**
+     * State/cross-tenant search. When the caller is an EMPLOYEE, the ownership filter
+     * (thirdPartyUserCode / applicantName) is skipped entirely — employees can look up
+     * any application in scope by edcrNumber / transactionNumber / applicationNumber etc.
+     */
     private String searchAtStateTenantLevel(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
             boolean onlyTenantId, final Map<String, String> params, boolean isStakeholder,
-            String specificTenant, boolean isBpaStakeholderRole) {
+            String specificTenant, boolean isBpaStakeholderRole, boolean isEmployee) {
 
         LOG.info("[searchAtStateTenantLevel] ========== START ==========");
         LOG.info("[searchAtStateTenantLevel] specificTenant               : '{}'", specificTenant);
         LOG.info("[searchAtStateTenantLevel] userId                       : '{}'", userId);
         LOG.info("[searchAtStateTenantLevel] onlyTenantId                 : {}", onlyTenantId);
         LOG.info("[searchAtStateTenantLevel] isStakeholder                : {}", isStakeholder);
+        LOG.info("[searchAtStateTenantLevel] isEmployee                   : {}", isEmployee);
         LOG.info("[searchAtStateTenantLevel] edcrNumber                   : '{}'", edcrRequest.getEdcrNumber());
         LOG.info("[searchAtStateTenantLevel] transactionNumber            : '{}'", edcrRequest.getTransactionNumber());
 
@@ -1409,28 +1462,32 @@ public class EdcrRestService {
                 params.put("applicationNumber", edcrRequest.getApplicationNumber());
             }
 
-            // UUID filter:
+            // UUID / ownership filter:
             // Case 1: onlyTenantId or isStakeholder — existing behavior
             // Case 2: specificTenant + userId present — new condition (scope by uuid)
-         // UUID filter is ONLY applied when the user holds one of the designated BPA stakeholder roles.
-         // All other roles (e.g. CITIZEN, EMPLOYEE, ANONYMOUS, etc.) skip this filter entirely.
-         if (isBpaStakeholderRole && userInfo != null && isNotBlank(userId)) {
-             if ((onlyTenantId || isStakeholder)) {
-                 LOG.info("[searchAtStateTenantLevel] Adding uuid filter (onlyTenantId/isStakeholder + BPA role) — userId: '{}'", userId);
-                 queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
-                 params.put("thirdPartyUserCode", userId);
-                 params.put("applicantName", userInfo.getName());
-             } else if (isNotBlank(specificTenant)) {
-                 LOG.info("[searchAtStateTenantLevel] Adding uuid filter (specificTenant + BPA role) — userId: '{}'", userId);
-                 queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
-                 params.put("thirdPartyUserCode", userId);
-                 params.put("applicantName", userInfo.getName());
-             } else {
-                 LOG.info("[searchAtStateTenantLevel] BPA role present but no matching scope condition — uuid filter skipped");
-             }
-         } else {
-             LOG.info("[searchAtStateTenantLevel] Non-BPA role or missing userId — uuid filter NOT applied. roles qualify: {}", isBpaStakeholderRole);
-         }
+            // UUID filter is ONLY applied when the user holds one of the designated BPA stakeholder
+            // roles AND is NOT an employee. Employees (e.g. reviewing/searching staff) always bypass
+            // this filter so they can look up any application within the tenant scope.
+            // All other roles (e.g. CITIZEN, ANONYMOUS, etc.) skip this filter entirely.
+            if (isEmployee) {
+                LOG.info("[searchAtStateTenantLevel] Caller is EMPLOYEE — skipping ownership filter, scoping by tenant/search fields only");
+            } else if (isBpaStakeholderRole && userInfo != null && isNotBlank(userId)) {
+                if ((onlyTenantId || isStakeholder)) {
+                    LOG.info("[searchAtStateTenantLevel] Adding uuid filter (onlyTenantId/isStakeholder + BPA role) — userId: '{}'", userId);
+                    queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
+                    params.put("thirdPartyUserCode", userId);
+                    params.put("applicantName", userInfo.getName());
+                } else if (isNotBlank(specificTenant)) {
+                    LOG.info("[searchAtStateTenantLevel] Adding uuid filter (specificTenant + BPA role) — userId: '{}'", userId);
+                    queryStr.append("and (appln.thirdPartyUserCode=:thirdPartyUserCode OR appln.applicantName=:applicantName) ");
+                    params.put("thirdPartyUserCode", userId);
+                    params.put("applicantName", userInfo.getName());
+                } else {
+                    LOG.info("[searchAtStateTenantLevel] BPA role present but no matching scope condition — uuid filter skipped");
+                }
+            } else {
+                LOG.info("[searchAtStateTenantLevel] Non-BPA role or missing userId — uuid filter NOT applied. roles qualify: {}", isBpaStakeholderRole);
+            }
 
             String appliactionType = edcrRequest.getAppliactionType();
             if (isNotBlank(appliactionType)) {
@@ -1494,7 +1551,7 @@ public class EdcrRestService {
         LOG.info("[searchAtStateTenantLevel] ========== END ==========");
         return query;
     }
-    
+
 //    private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest, UserInfo userInfo, String userId,
 //            boolean onlyTenantId, boolean isStakeholder) {
 //        final Criteria criteria = getCurrentSession().createCriteria(EdcrApplicationDetail.class,
@@ -1700,12 +1757,17 @@ public class EdcrRestService {
 //        return criteria;
 //    }
 
-    
+    /**
+     * Single-tenant search via Hibernate Criteria. When the caller is an EMPLOYEE, the
+     * ownership filter (thirdPartyUserCode / applicantName) is skipped so any application
+     * within the tenant can be found by dcrNumber / transactionNumber / applicationNumber etc.
+     */
     private Criteria getCriteriaofSingleTenant(final EdcrRequest edcrRequest,
             UserInfo userInfo,
             String userId,
             boolean onlyTenantId,
-            boolean isStakeholder) {
+            boolean isStakeholder,
+            boolean isEmployee) {
 
     	LOG.info("============== SINGLE TENANT CRITERIA START ==============");
 
@@ -1783,13 +1845,18 @@ public class EdcrRestService {
 
         LOG.info("onlyTenantId : {}", onlyTenantId);
         LOG.info("isStakeholder : {}", isStakeholder);
+        LOG.info("isEmployee : {}", isEmployee);
         LOG.info("userId : {}", userId);
 
-        if ((onlyTenantId || isStakeholder)
+        // Ownership filter is skipped entirely for employees — they can search across
+        // any application within the tenant using dcrNumber/transactionNumber/etc. alone.
+        if (isEmployee) {
+            LOG.info("Caller is EMPLOYEE — skipping ownership filter, relying on tenant/dcrNumber/transactionNumber criteria only");
+        } else if ((onlyTenantId || isStakeholder)
                 && userInfo != null
                 && isNotBlank(userId)) {
 
-        	LOG.info("Adding filter -> thirdPartyUserCode : {}", userId);
+        	LOG.info("Adding filter -> thirdPartyUserCode/applicantName : {}", userId);
 
         	criteria.add(
         		    Restrictions.or(
@@ -1852,33 +1919,70 @@ public class EdcrRestService {
         return criteria;
     }
     
-    public ErrorDetail validatePlanFile(final MultipartFile file) {
-        List<String> dcrAllowedExtenstions = new ArrayList<>(
-                Arrays.asList(edcrApplicationSettings.getValue("dcr.dxf.allowed.extenstions").split(",")));
+//    public ErrorDetail validatePlanFile(final MultipartFile file) {
+//        List<String> dcrAllowedExtenstions = new ArrayList<>(
+//                Arrays.asList(edcrApplicationSettings.getValue("dcr.dxf.allowed.extenstions").split(",")));
+//
+//        String fileSize = edcrApplicationSettings.getValue("dcr.dxf.max.size");
+//        final String maxAllowSizeInMB = fileSize;
+//        String extension;
+//        if (file != null && !file.isEmpty()) {
+//            extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.') + 1);
+//            if (extension != null && !extension.isEmpty()) {
+//
+//                if (!dcrAllowedExtenstions.contains(extension.toLowerCase())) {
+//                    return new ErrorDetail("BPA-02", "Please upload " + dcrAllowedExtenstions + " format file only");
+//                } else if (file.getSize() > (Long.valueOf(maxAllowSizeInMB) * 1024 * 1024)) {
+//                    return new ErrorDetail("BPA-04", "File size should not exceed 30 MB");
+//                } /*
+//                   * else if (allowedExtenstions.contains(extension.toLowerCase()) && (!mimeTypes.contains(mimeType) ||
+//                   * StringUtils.countMatches(file.getOriginalFilename(), ".") > 1 || file.getOriginalFilename().contains("%00")))
+//                   * { return new ErrorDetail("BPA-03", "Malicious file upload"); }
+//                   */
+//            }
+//        } else {
+//            return new ErrorDetail(BPA_05, "Please upload plan file, It is mandatory");
+//        }
+//
+//        return null;
+//    }
+    
+	public ErrorDetail validatePlanFile(final MultipartFile file) {
+		String fileSize = edcrApplicationSettings.getValue("dcr.dxf.max.size");
+		final long maxAllowSizeInBytes = Long.valueOf(fileSize) * 1024L * 1024L;
 
-        String fileSize = edcrApplicationSettings.getValue("dcr.dxf.max.size");
-        final String maxAllowSizeInMB = fileSize;
-        String extension;
-        if (file != null && !file.isEmpty()) {
-            extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.') + 1);
-            if (extension != null && !extension.isEmpty()) {
+		if (file == null || file.isEmpty()) {
+			return new ErrorDetail(BPA_05, "Please upload plan file, It is mandatory");
+		}
 
-                if (!dcrAllowedExtenstions.contains(extension.toLowerCase())) {
-                    return new ErrorDetail("BPA-02", "Please upload " + dcrAllowedExtenstions + " format file only");
-                } else if (file.getSize() > (Long.valueOf(maxAllowSizeInMB) * 1024 * 1024)) {
-                    return new ErrorDetail("BPA-04", "File size should not exceed 30 MB");
-                } /*
-                   * else if (allowedExtenstions.contains(extension.toLowerCase()) && (!mimeTypes.contains(mimeType) ||
-                   * StringUtils.countMatches(file.getOriginalFilename(), ".") > 1 || file.getOriginalFilename().contains("%00")))
-                   * { return new ErrorDetail("BPA-03", "Malicious file upload"); }
-                   */
-            }
-        } else {
-            return new ErrorDetail(BPA_05, "Please upload plan file, It is mandatory");
-        }
+		String extension = null;
+		String contentType = null;
 
-        return null;
-    }
+		try {
+			contentType = fileStoreService.getFileContentType(file.getInputStream());
+
+			if (contentType != null) {
+				String mimeType = contentType.split(";")[0].trim();
+				if ("image/vnd.dxf".equalsIgnoreCase(mimeType)) {
+					extension = "dxf";
+				}
+			}
+
+		} catch (IOException e) {
+			return new ErrorDetail("BPA-03", "Unable to validate uploaded file");
+		}
+		
+		if (!"dxf".equalsIgnoreCase(extension)) {
+			return new ErrorDetail("BPA-02", "Please upload DXF format file only");
+		}
+
+		// Validate file size
+		if (file.getSize() > maxAllowSizeInBytes) {
+			return new ErrorDetail("BPA-04", "File size should not exceed " + fileSize + " MB");
+		}
+
+		return null;
+	}
 
     public ErrorDetail validateEdcrRequest(final EdcrRequest edcrRequest, final MultipartFile planFile) {
         if (edcrRequest.getRequestInfo() == null)
@@ -2020,28 +2124,35 @@ public class EdcrRestService {
         if ("SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
             // Scheme Area Validations
             if (StringUtils.isBlank(edcrRequest.getSchemeArea())) {
-                errors.add(new ErrorDetail("BPA-15", "Scheme type is required for Scheme Area"));
+                errors.add(new ErrorDetail("BPA-15",
+                        "Scheme type is required for Scheme Area"));
             }
             if (StringUtils.isBlank(edcrRequest.getSchName())) {
-                errors.add(new ErrorDetail("BPA-16", "Scheme name is required for Scheme Area"));
+                errors.add(new ErrorDetail("BPA-16",
+                        "Scheme name is required for Scheme Area"));
             }
             if (edcrRequest.getSiteReserved() == null) {
-                errors.add(new ErrorDetail("BPA-17", "Site reserved selection is required for Scheme Area"));
-            } else {
-                if (edcrRequest.getSiteReserved() && edcrRequest.getApprovedCS() == null) {
-                    errors.add(new ErrorDetail("BPA-18", "Approved control sheet selection is required when site is reserved"));
-                }
+                errors.add(new ErrorDetail("BPA-17",
+                        "Site reserved selection is required for Scheme Area"));
             }
+            // If site is reserved, Approved Control Sheet must be YES
+            if (Boolean.TRUE.equals(edcrRequest.getSiteReserved())
+                    && !Boolean.TRUE.equals(edcrRequest.getApprovedCS())) {
+                errors.add(new ErrorDetail("BPA-18", "Approved Control Sheet must be selected as YES when site is reserved"));
+            }
+
         } else if ("NON_SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
             // Non-Scheme Area Validations
             if (edcrRequest.getCluApprove() == null) {
-                errors.add(new ErrorDetail("BPA-19", "CLU approval selection is required for Non-Scheme Area"));
+                errors.add(new ErrorDetail("BPA-19",
+                        "CLU approval selection is required for Non-Scheme Area"));
             }
-            if (edcrRequest.getCoreArea() == null) {
-                errors.add(new ErrorDetail("BPA-20", "Core area selection is required for Non-Scheme Area"));
+            if (StringUtils.isBlank(edcrRequest.getCoreArea())) {
+                errors.add(new ErrorDetail("BPA-20",
+                        "Core area selection is required for Non-Scheme Area"));
             }
         } else {
-            errors.add(new ErrorDetail("BPA-21", "Invalid Area Type value"));
+            errors.add(new ErrorDetail("BPA-21","Invalid Area Type value"));
         }
 
         return errors;
@@ -2132,4 +2243,173 @@ public class EdcrRestService {
         return cal1.getTime();
     }
     
+    public MultipartFile getPlanFileFromFileStore(EdcrRequest edcr) throws IOException {
+	    String dxfFileTenantId = edcr.getTenantId();
+	    String dxfFileStoreId = edcr.getDxfFileStoreId();
+
+	    LOG.info("Fetching DXF file from FileStore. fileId={}, tenantId={}",dxfFileStoreId,dxfFileTenantId);
+
+	    File dxfFile = fileStoreService.fetch(
+	            dxfFileStoreId,
+	            FILESTORE_MODULECODE,
+	            dxfFileTenantId);
+
+	    if (dxfFile == null || !dxfFile.exists() || !dxfFile.isFile()) {
+	        LOG.error("DXF file not found in FileStore. fileId={}, tenantId={}",
+	                dxfFileStoreId,dxfFileTenantId);
+	        throw new IOException("Unable to fetch DXF file from FileStore.");
+	    }
+
+	    byte[] fileContent = Files.readAllBytes(dxfFile.toPath());
+	    Files.deleteIfExists(dxfFile.toPath());
+	    
+	    String contentType = fileStoreService.getFileContentType(fileContent);
+	    
+	    MultipartFile multipartFile = new CustomMultipartFile("Drawing.dxf", "Drawing.dxf", contentType, fileContent);
+	    
+	    
+	    LOG.info("File fetched from FileStore. fileId={}, fileName={}, contentType={}, size={}",
+	            dxfFileStoreId,multipartFile.getOriginalFilename(),contentType, multipartFile.getSize());
+//	    if ("application/zip".equalsIgnoreCase(contentType)
+//	            || "application/x-zip-compressed".equalsIgnoreCase(contentType)
+//	            || "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType)) {
+//
+//	        LOG.info(
+//	                "ZIP file detected. Decompressing FileStore file. fileId={}",
+//	                dxfFileStoreId);
+//
+//	        MultipartFile decompressedFile =
+//	        		CompressionService.decompressFromZip(multipartFile);
+//
+//	        LOG.info(
+//	                "ZIP decompressed successfully. fileId={}, fileName={}, size={}",
+//	                dxfFileStoreId,
+//	                decompressedFile.getOriginalFilename(),
+//	                decompressedFile.getSize());
+//
+//	        return decompressedFile;
+//	    }
+	    if (isDxfFile(multipartFile, contentType)) {
+
+	        LOG.info(
+	                "DXF file detected. Returning file directly. fileId={}, fileName={}",
+	                dxfFileStoreId,
+	                multipartFile.getOriginalFilename());
+
+	        return multipartFile;
+	    }
+
+	    LOG.warn(
+	            "Unsupported file type received from FileStore. fileId={}, fileName={}, contentType={}",
+	            dxfFileStoreId,
+	            multipartFile.getOriginalFilename(),
+	            contentType);
+
+	    throw new IOException(
+	            "Unsupported file type. Expected DXF or ZIP containing DXF.");
+	}
+    
+	public MultipartFile getControlSheetFromFileStore(EdcrRequest edcr) throws IOException {
+
+		String tenantId = edcr.getTenantId();
+		String controlSheetFileStoreId = edcr.getControlSheet();
+
+		LOG.info("Fetching Control Sheet from FileStore. fileId={}, tenantId={}", controlSheetFileStoreId, tenantId);
+
+		File controlSheet = fileStoreService.fetch(controlSheetFileStoreId, FILESTORE_MODULECODE, tenantId);
+
+		if (controlSheet == null || !controlSheet.exists() || !controlSheet.isFile()) {
+
+			LOG.error("Control Sheet not found in FileStore. fileId={}, tenantId={}", controlSheetFileStoreId,
+					tenantId);
+
+			throw new IOException("Unable to fetch Control Sheet from FileStore.");
+		}
+
+		byte[] fileContent = Files.readAllBytes(controlSheet.toPath());
+
+		String contentType = fileStoreService.getFileContentType(fileContent);
+
+		/*
+		 * Use the actual file name instead of forcing it to ControlSheet.pdf.
+		 */
+		MultipartFile multipartFile = new CustomMultipartFile("ControlSheet.pdf", "ControlSheet.pdf", contentType, fileContent);
+
+		LOG.info("File fetched from FileStore. fileId={}, fileName={}, contentType={}, size={}",
+				controlSheetFileStoreId, multipartFile.getOriginalFilename(), contentType, multipartFile.getSize());
+
+		if (!isValidControlSheetPdf(multipartFile)) {
+
+			LOG.error("Invalid Control Sheet file. fileId={}, fileName={}, contentType={}", controlSheetFileStoreId,
+					multipartFile.getOriginalFilename(), contentType);
+
+			// Delete only after validation failure
+			Files.deleteIfExists(controlSheet.toPath());
+
+			throw new IOException("Invalid Control Sheet file. Only PDF files are allowed.");
+		}
+
+		LOG.info("Valid Control Sheet PDF detected. fileId={}, fileName={}", controlSheetFileStoreId,
+				multipartFile.getOriginalFilename());
+
+		// Delete temporary FileStore file after successful validation
+		Files.deleteIfExists(controlSheet.toPath());
+
+		return multipartFile;
+	}
+
+	private boolean isDxfFile(MultipartFile file, String contentType) {
+
+		String fileName = file.getOriginalFilename();
+
+		if (fileName != null && fileName.toLowerCase().endsWith(".dxf")) {
+			return true;
+		}
+
+		return "image/vnd.dxf".equalsIgnoreCase(contentType) || "application/dxf".equalsIgnoreCase(contentType)
+				|| "application/x-dxf".equalsIgnoreCase(contentType)
+				|| "image/vnd.dxf; format=ascii".equalsIgnoreCase(contentType);
+	}
+
+	private boolean isValidControlSheetPdf(MultipartFile file) {
+
+		if (file == null || file.isEmpty()) {
+	        return false;
+	    }
+
+	    String fileName = file.getOriginalFilename();
+	    String contentType = file.getContentType();
+
+	    LOG.info("Validating Control Sheet. fileName={}, contentType={}, size={}",
+	            fileName, contentType, file.getSize());
+
+	    // Check MIME type
+	    if (!"application/pdf".equalsIgnoreCase(contentType)) {
+	        return false;
+	    }
+
+		/*
+		 * Temporarily skipped PDF file signature (%PDF) validation
+		 *
+		 * try (InputStream is = file.getInputStream()) {
+		 *
+		 * byte[] header = new byte[4];
+		 *
+		 * int bytesRead = is.read(header);
+		 *
+		 * if (bytesRead != 4) { return false; }
+		 *
+		 * return header[0] == '%' && header[1] == 'P' && header[2] == 'D' && header[3]
+		 * == 'F';
+		 *
+		 * } catch (IOException e) {
+		 *
+		 * LOG.error( "Error validating Control Sheet PDF. fileName={}, contentType={}",
+		 * fileName, contentType, e);
+		 *
+		 * return false; }
+		 */
+
+		return true;
+	}
 }

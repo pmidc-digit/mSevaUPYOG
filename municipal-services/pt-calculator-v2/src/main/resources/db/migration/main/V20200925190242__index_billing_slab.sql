@@ -8,7 +8,17 @@ CREATE INDEX IF NOT EXISTS index_eg_pt_billingslab_v2_usagecategorymajor ON eg_p
 
 CREATE INDEX IF NOT EXISTS index_eg_pt_billingslab_v2_usagecategoryminor ON eg_pt_billingslab_v2 (usagecategoryminor);
 
-ALTER TABLE eg_pt_mutation_billingslab ADD PRIMARY KEY (id, tenantid);
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.table_constraints 
+        WHERE table_name = 'eg_pt_mutation_billingslab' 
+          AND constraint_type = 'PRIMARY KEY'
+    ) THEN
+        ALTER TABLE eg_pt_mutation_billingslab ADD PRIMARY KEY (id, tenantid);
+    END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS index_eg_pt_mutation_billingslab_usagecategoryminor ON eg_pt_mutation_billingslab (usagecategoryminor);
 

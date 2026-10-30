@@ -67,7 +67,7 @@ public class EdcrValidator {
             }
 
             if (edcr.getAdditionalDetails() != null) {
-                ErrorDetail e4 = validateAdditionalDetails(edcr.getAdditionalDetails(), error);
+                ErrorDetail e4 = validateAdditionalDetails(edcr.getAdditionalDetails(), error, edcr.getAppliactionType());
                 if (e4 != null) {
                     return e4;
                 }
@@ -194,7 +194,7 @@ public class EdcrValidator {
         return null;
     }
     
-    private ErrorDetail validateAdditionalDetails(final Object additionalDetails, ErrorDetail error) {
+    private ErrorDetail validateAdditionalDetails(final Object additionalDetails, ErrorDetail error, String applicationType) {
 
         if (additionalDetails == null) {
             return null;
@@ -208,11 +208,14 @@ public class EdcrValidator {
 
         // Validate roadType
         Object roadType = details.get("roadType");
-        if (roadType == null || StringUtils.isBlank(String.valueOf(roadType))) {
-            error.setErrorCode("EDCR-33");
-            error.setErrorMessage("RoadType is mandatory.");
-            return error;
+        if(!applicationType.equalsIgnoreCase("BUILDING_OC_PLAN_SCRUTINY")) {
+        	if (roadType == null || StringUtils.isBlank(String.valueOf(roadType))) {
+                error.setErrorCode("EDCR-33");
+                error.setErrorMessage("RoadType is mandatory.");
+                return error;
+            }
         }
+        
 
         // Validate source
         Object source = details.get("source");

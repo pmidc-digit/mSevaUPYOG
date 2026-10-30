@@ -1,6 +1,9 @@
 package org.egov.dx.web.models;
 
+import java.util.List;
+
 import org.egov.common.contract.response.ResponseInfo;
+import org.egov.common.contract.request.User;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -10,7 +13,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.egov.common.contract.request.User;
 
 @Builder
 @Data
@@ -19,14 +21,11 @@ import org.egov.common.contract.request.User;
 @Setter
 @Getter
 public class UserResponse {
-	
-	@JsonProperty("access_token")
-    private String authToken;
 
-    @JsonProperty("ResponseInfo")
+    @JsonProperty("responseInfo")
     private ResponseInfo responseInfo;
 
-    @JsonProperty("UserRequest")
-    private User user;
+    @JsonProperty("user")
+    private List<User> user;
 
 }

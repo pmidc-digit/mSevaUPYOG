@@ -14,21 +14,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.Collections;
+import org.egov.common.entity.edcr.Building;
+import org.egov.common.entity.edcr.PageLayoutInfo;
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -93,13 +100,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.aspose.cad.Color;
-import com.aspose.cad.Image;
-import com.aspose.cad.fileformats.cad.CadDrawTypeMode;
-import com.aspose.cad.imageoptions.CadRasterizationOptions;
-import com.aspose.cad.imageoptions.PdfDocumentOptions;
-import com.aspose.cad.imageoptions.PdfOptions;
-import com.aspose.cad.imageoptions.UnitType;
+//import com.aspose.cad.Color;
+//import com.aspose.cad.Image;
+//import com.aspose.cad.fileformats.cad.CadDrawTypeMode;
+//import com.aspose.cad.imageoptions.CadRasterizationOptions;
+//import com.aspose.cad.imageoptions.PdfDocumentOptions;
+//import com.aspose.cad.imageoptions.PdfOptions;
+//import com.aspose.cad.imageoptions.UnitType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -167,6 +174,9 @@ public class EdcrApplicationService {
     private static final DateTimeFormatter TS_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
+    private static final Set<String> DEFAULT_ALLOWED_OUTSIDE_LAYERS =
+            new LinkedHashSet<>(Arrays.asList("DUMMY_ALLOWED_LAYER_1", "DUMMY_ALLOWED_LAYER_2"));
+    
     @Autowired
     protected SecurityUtils securityUtils;
 
@@ -211,7 +221,6 @@ public class EdcrApplicationService {
     @Autowired
     private PlanReportServiceV2 planReportServiceV2;
     
-
     public Session getCurrentSession() {
         return entityManager.unwrap(Session.class);
     }
@@ -259,6 +268,11 @@ public class EdcrApplicationService {
         Plan planDetail = new Plan();
         planDetail = planService.process(edcrApplication, applicationType, edcrRequest);         
         updateFilev2(planDetail, edcrApplication);
+        try {
+			Files.deleteIfExists(edcrApplication.getSavedDxfFile().toPath());
+		} catch (IOException e) {
+			LOG.error("Error while deleting saved DXF file: " + e.getMessage());
+		}
         edcrApplicationDetailService.saveAll(edcrApplication.getEdcrApplicationDetails());
         return planDetail;
     }
@@ -266,14 +280,68 @@ public class EdcrApplicationService {
     private Plan callDcrProcess(EdcrApplication edcrApplication, String applicationType){
         Plan planDetail = new Plan();
         planDetail = planService.process(edcrApplication, applicationType);
-        updateFile(planDetail, edcrApplication);
+        //updateFile(planDetail, edcrApplication);
+        updateFilev2(planDetail, edcrApplication);
         edcrApplicationDetailService.saveAll(edcrApplication.getEdcrApplicationDetails());
         return planDetail;
     }
 
-    private File saveDXF(EdcrApplication edcrApplication) {
-        FileStoreMapper fileStoreMapper = addToFileStore(edcrApplication.getDxfFile());
+//    private File saveDXF(EdcrApplication edcrApplication) {
+//        FileStoreMapper fileStoreMapper = addToFileStore(edcrApplication.getDxfFile());
+//        LOG.info("Returned FileStoreMapper : {}", fileStoreMapper);
+//        if (fileStoreMapper == null) {
+//            LOG.error("FileStoreMapper is null");
+//            return null;
+//        }
+//
+//        LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
+//        LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
+//        
+//        File dxfFile = fileStoreService.fetch(fileStoreMapper.getFileStoreId(), FILESTORE_MODULECODE);
+//        planService.buildDocuments(edcrApplication, fileStoreMapper, null, null);
+//        List<EdcrApplicationDetail> edcrApplicationDetails = edcrApplication.getEdcrApplicationDetails();
+//        edcrApplicationDetails.get(0).setStatus(ABORTED);
+//        edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
+//        return dxfFile;
+//
+//    }
+    
+    private File saveDXF_V2(EdcrApplication edcrApplication , EdcrRequest edcrRequest) {
+
+        FileStoreMapper fileStoreMapper = new FileStoreMapper(edcrRequest.getDxfFileStoreId(),
+        		edcrApplication.getDxfFile().getOriginalFilename());
+        fileStoreMapper.setFileStoreId(edcrRequest.getDxfFileStoreId());
+        fileStoreMapper.setTenantId(edcrRequest.getTenantId());
+        
+        LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
+        LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
+
+        File dxfFile = null;
+		try {
+			dxfFile = FileStoreService.convertMultipartFileToFile(edcrApplication.getDxfFile());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+        planService.buildDocuments(edcrApplication, fileStoreMapper, null, null);
+
+        List<EdcrApplicationDetail> edcrApplicationDetails =
+                edcrApplication.getEdcrApplicationDetails();
+
+        edcrApplicationDetails.get(0).setStatus(ABORTED);
+        edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
+
+        return dxfFile;
+    }
+    
+    private File saveDXF(EdcrApplication edcrApplication , String tenantId) {
+
+        FileStoreMapper fileStoreMapper =
+                addToFileStore(edcrApplication.getDxfFile(), tenantId);
+
         LOG.info("Returned FileStoreMapper : {}", fileStoreMapper);
+
         if (fileStoreMapper == null) {
             LOG.error("FileStoreMapper is null");
             return null;
@@ -281,14 +349,52 @@ public class EdcrApplicationService {
 
         LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
         LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
-        
-        File dxfFile = fileStoreService.fetch(fileStoreMapper.getFileStoreId(), FILESTORE_MODULECODE);
+
+        File dxfFile = fileStoreService.fetch(
+                fileStoreMapper.getFileStoreId(),
+                FILESTORE_MODULECODE,
+                tenantId
+        );
+
         planService.buildDocuments(edcrApplication, fileStoreMapper, null, null);
-        List<EdcrApplicationDetail> edcrApplicationDetails = edcrApplication.getEdcrApplicationDetails();
+
+        List<EdcrApplicationDetail> edcrApplicationDetails =
+                edcrApplication.getEdcrApplicationDetails();
+
         edcrApplicationDetails.get(0).setStatus(ABORTED);
         edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
-        return dxfFile;
 
+        return dxfFile;
+    }
+    
+    private File saveDXF(EdcrApplication edcrApplication) {
+        FileStoreMapper fileStoreMapper =
+                addToFileStore(edcrApplication.getDxfFile());
+
+        LOG.info("Returned FileStoreMapper : {}", fileStoreMapper);
+
+        if (fileStoreMapper == null) {
+            LOG.error("FileStoreMapper is null");
+            return null;
+        }
+
+        LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
+        LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
+
+        File dxfFile = fileStoreService.fetch(
+                fileStoreMapper.getFileStoreId(),
+                FILESTORE_MODULECODE
+        );
+
+        planService.buildDocuments(edcrApplication, fileStoreMapper, null, null);
+
+        List<EdcrApplicationDetail> edcrApplicationDetails =
+                edcrApplication.getEdcrApplicationDetails();
+
+        edcrApplicationDetails.get(0).setStatus(ABORTED);
+        edcrApplication.setEdcrApplicationDetails(edcrApplicationDetails);
+
+        return dxfFile;
     }
 
     public File savePlanDXF(final MultipartFile file) {
@@ -304,6 +410,30 @@ public class EdcrApplicationService {
         } catch (final IOException e) {
             LOG.error("Error occurred, while getting input stream!!!!!", e);
         }
+        return fileStoreMapper;
+    }
+    
+    private FileStoreMapper addToFileStore(final MultipartFile file, final String tenantId) {
+
+        FileStoreMapper fileStoreMapper = null;
+
+        try {
+
+            fileStoreMapper = fileStoreService.store(
+                    file.getInputStream(),
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    FILESTORE_MODULECODE,
+                    tenantId,
+                    true
+            );
+
+        } catch (final IOException e) {
+
+            LOG.error("Error occurred, while getting input stream!!!!!", e);
+
+        }
+
         return fileStoreMapper;
     }
 
@@ -476,9 +606,16 @@ public class EdcrApplicationService {
 
         try {
             Map<String, Object> finalReportData = extractFinalReportData(pl, dcrApplication);
-            if(!CollectionUtils.isEmpty(pl.getBlocks())) {
-            	finalReportData.put("buildingHeight", pl.getBlocks().get(0).getBuilding().getBuildingHeightExcludingMP().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
-            	finalReportData.put("totalBuildingHeight", pl.getBlocks().get(0).getBuilding().getBuildingHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+            if (!CollectionUtils.isEmpty(pl.getBlocks()) && pl.getBlocks().get(0).getBuilding() != null) {
+                Building firstBuilding = pl.getBlocks().get(0).getBuilding();
+                if (firstBuilding.getBuildingHeightExcludingMP() != null) {
+                    finalReportData.put("buildingHeight", firstBuilding.getBuildingHeightExcludingMP()
+                            .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+                }
+                if (firstBuilding.getBuildingHeight() != null) {
+                    finalReportData.put("totalBuildingHeight", firstBuilding.getBuildingHeight()
+                            .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+                }
             }
             if (finalReportData == null || finalReportData.isEmpty()) {
                 LOG.warn("finalReportData is empty. Building minimal overlay JSON.");
@@ -529,6 +666,15 @@ public class EdcrApplicationService {
         if (fileNumber != null && details.path("applicationDetails").isObject()) {
             ((ObjectNode) details.get("applicationDetails")).put("fileNumber", fileNumber);
         }
+        
+        // Proposed Site Address
+        String proposedSiteAddress = meaningfulText(patchRoot, "proposedSiteAddress");
+        if (proposedSiteAddress == null) {
+        	proposedSiteAddress = meaningfulText(patchRoot.path("applicationDetails"), "proposedSiteAddress");
+        }
+        if (proposedSiteAddress != null && details.path("applicationDetails").isObject()) {
+            ((ObjectNode) details.get("applicationDetails")).put("proposedSiteAddress", proposedSiteAddress);
+        }
 
         // Office Use patch
         JsonNode officeUsePatch = patchRoot.path("officeUse");
@@ -562,50 +708,52 @@ public class EdcrApplicationService {
         }
     }
 
-    private JsonNode buildLateFieldPatch(String fileNumber,
-                                         String examinedBy,
-                                         String approvedSanctionedBy,
-                                         String approvalSanctionDate,
-                                         String validTill,
-                                         String signatoryName,
-                                         String designation,
-                                         String zone) {
-        final ObjectMapper mapper = new ObjectMapper();
-        final ObjectNode root = mapper.createObjectNode();
-        final ObjectNode details = mapper.createObjectNode();
-        root.set("details", details);
+	private JsonNode buildLateFieldPatch(String fileNumber, String examinedBy, String approvedSanctionedBy,
+			String approvalSanctionDate, String validTill, String signatoryName, String designation, String zone,
+			String proposedSiteAddress) {
+		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectNode root = mapper.createObjectNode();
+		final ObjectNode details = mapper.createObjectNode();
+		root.set("details", details);
 
-        if (StringUtils.isNotBlank(fileNumber)) {
-            String trimmed = fileNumber.trim();
-            if (isMeaningfulPatchText(trimmed)) {
-                details.put("fileNumber", trimmed);
-            }
-        }
+		if (StringUtils.isNotBlank(fileNumber)) {
+			String trimmed = fileNumber.trim();
+			if (isMeaningfulPatchText(trimmed)) {
+				details.put("fileNumber", trimmed);
+			}
+		}
+		
+		if (StringUtils.isNotBlank(proposedSiteAddress)) {
+			String trimmed = proposedSiteAddress.trim();
+			if (isMeaningfulPatchText(trimmed)) {
+				details.put("proposedSiteAddress", trimmed);
+			}
+		}
 
-        ObjectNode officeUse = mapper.createObjectNode();
-        //putIfNotBlank(officeUse, "examinedBy", examinedBy);
-        putIfNotBlank(officeUse, "approvedSanctionedBy", approvedSanctionedBy);
-        putIfNotBlank(officeUse, "approvalSanctionDate", approvalSanctionDate);
-        putIfNotBlank(officeUse, "validTill", validTill);
-        if (officeUse.size() > 0) {
-            details.set("officeUse", officeUse);
-        }
+		ObjectNode officeUse = mapper.createObjectNode();
+		// putIfNotBlank(officeUse, "examinedBy", examinedBy);
+		putIfNotBlank(officeUse, "approvedSanctionedBy", approvedSanctionedBy);
+		putIfNotBlank(officeUse, "approvalSanctionDate", approvalSanctionDate);
+		putIfNotBlank(officeUse, "validTill", validTill);
+		if (officeUse.size() > 0) {
+			details.set("officeUse", officeUse);
+		}
 
-        if (StringUtils.isNotBlank(signatoryName) || StringUtils.isNotBlank(designation)) {
-            ArrayNode eSign = mapper.createArrayNode();
-            ObjectNode row = mapper.createObjectNode();
-            putIfNotBlank(row, "signatoryName", signatoryName);
-            putIfNotBlank(row, "designation", designation);
-            if (row.size() > 0) {
-                eSign.add(row);
-                details.set("eSign", eSign);
-            }
-        }
-        
-        details.put("zone", zone);
+		if (StringUtils.isNotBlank(signatoryName) || StringUtils.isNotBlank(designation)) {
+			ArrayNode eSign = mapper.createArrayNode();
+			ObjectNode row = mapper.createObjectNode();
+			putIfNotBlank(row, "signatoryName", signatoryName);
+			putIfNotBlank(row, "designation", designation);
+			if (row.size() > 0) {
+				eSign.add(row);
+				details.set("eSign", eSign);
+			}
+		}
 
-        return root;
-    }
+		details.put("zone", zone);
+
+		return root;
+	}
 
     private void putIfNotBlank(ObjectNode node, String key, String value) {
         if (node != null && StringUtils.isNotBlank(value) && isMeaningfulPatchText(value.trim())) {
@@ -664,10 +812,10 @@ public class EdcrApplicationService {
         n.put("nameOfApplicant", txt(frd, "applicantName"));
         n.put("fileNumber", txt(frd, "fileNumber"));
         n.put("edcrNumber", txt(frd, "dcrNo"));
-        n.put("ulbName", txt(frd, "district"));
+        n.put("ulbName", txt(pi, "ulbName"));
         n.put("ulbType", txt(frd, "ulbType"));
         n.put("buildingCategory", txt(pi, "occupancy"));
-        n.put("proposedSiteAddress", txt(pi, "city"));
+        n.put("proposedSiteAddress", txt(pi, "proposedSiteAddress"));
         n.put("khasraNo", txt(pi, "khasraNo"));
         n.put("zone", zone);
         return n;
@@ -685,13 +833,19 @@ public class EdcrApplicationService {
         return n;
     }
 
-    private ObjectNode buildBuiltUpArea(ObjectMapper mapper, JsonNode frd) {
-        ObjectNode n = mapper.createObjectNode();
-        n.put("existingBuiltUpArea", 0.0d);
-        n.put("proposedBuiltUpArea", num(frd, "totalBuiltUpArea"));
-        n.put("totalBuiltUpArea", num(frd, "totalBuiltUpArea"));
-        return n;
-    }
+	private ObjectNode buildBuiltUpArea(ObjectMapper mapper, JsonNode frd) {
+		ObjectNode n = mapper.createObjectNode();
+		BigDecimal existingBuiltUpArea = BigDecimal.valueOf(num(frd, "totalExistingBuiltUpArea"));
+		BigDecimal totalBuiltUpArea = BigDecimal.valueOf(num(frd, "totalBuiltUpArea"));
+		BigDecimal proposedBuiltUpArea = totalBuiltUpArea;
+		if (existingBuiltUpArea.compareTo(BigDecimal.ZERO) > 0) {
+			proposedBuiltUpArea = totalBuiltUpArea.subtract(existingBuiltUpArea);
+			n.put("existingBuiltUpArea", existingBuiltUpArea);
+		}
+		n.put("proposedBuiltUpArea", proposedBuiltUpArea);
+		n.put("totalBuiltUpArea", totalBuiltUpArea);
+		return n;
+	}
 
     private ObjectNode buildFarDetails(ObjectMapper mapper, JsonNode frd) {
         ObjectNode n = mapper.createObjectNode();
@@ -1187,9 +1341,9 @@ public class EdcrApplicationService {
 
 	private void updateFileNew(Plan pl, EdcrApplication edcrApplication, String fileNumber, String examinedBy,
 			String approvedSanctionedBy, String approvalSanctionDate, String validTill, String signatoryName,
-			String designation, String tenantId, String zone) {
+			String designation, String tenantId, String zone, String proposedSiteAddress) {
 		JsonNode patchFields = buildLateFieldPatch(fileNumber, examinedBy, approvedSanctionedBy, approvalSanctionDate,
-				validTill, signatoryName, designation, zone);
+				validTill, signatoryName, designation, zone, proposedSiteAddress);
 		updateFileV4(pl, edcrApplication, patchFields, tenantId);
 	}
     
@@ -1285,11 +1439,9 @@ public class EdcrApplicationService {
 
 			tempPdf = File.createTempFile("scrutinized_", ".pdf");
 
+			List<PageLayoutInfo> usedLayouts;
 			try (FileInputStream dxfInput = new FileInputStream(edcrApplication.getSavedDxfFile())) {
-
-				DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false);
-
-				LOG.info("DXF converted successfully.");
+			    usedLayouts = DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false, pl.getPageLayouts());
 			}
 
 			File signatureFile = fetchSignatureFile(pl);
@@ -1297,10 +1449,11 @@ public class EdcrApplicationService {
 			JsonNode additionalDetails = buildJsonNode(pl, signatureFile, patchFields, edcrApplication);
 
 			tempPdf = pdfOverlayTemplateService.impose(tempPdf, tempPdf.getAbsolutePath(), additionalDetails,
-					EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP);
+			        EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP, usedLayouts);
+			validateGeneratedPdf(tempPdf);
 
 			FileStoreMapper fileStoreMapper = fileStoreService.store(tempPdf, newFileName, "application/pdf",
-					FILESTORE_MODULECODE);
+					FILESTORE_MODULECODE,tenantId);
 
 			if (fileStoreMapper == null) {
 				throw new IllegalStateException("Unable to store scrutinized PDF in FileStore.");
@@ -1405,13 +1558,13 @@ public class EdcrApplicationService {
         try {
             tempPdf = File.createTempFile("scrutinized_", ".pdf");
 
-            try (FileInputStream dxfInput =
-                         new FileInputStream(edcrApplication.getSavedDxfFile())) {
-                DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false); // false = don't save SVG
-                LOG.info("DXF to PDF conversion completed: {} bytes", tempPdf.length());
+            List<PageLayoutInfo> usedLayouts;
+            try (FileInputStream dxfInput = new FileInputStream(edcrApplication.getSavedDxfFile())) {
+                usedLayouts = DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false, pl.getPageLayouts());
             }
 
             String uuid = pl.getEdcrRequest().getRequestInfo().getUserInfo().getUuid();
+            String tenantId  = pl.getEdcrRequest().getTenantId();
             LOG.info("UUID no : "  + uuid);
             Object data = getUserData(uuid);
             List<String> signatures = JsonPath.read(data, "$.user[*].signature");
@@ -1427,21 +1580,18 @@ public class EdcrApplicationService {
             additionalDetails = buildJsonNode(pl, uploadedDiagramFile, patchFields,edcrApplication);
 
             // Overlay the information onto the DXF-converted PDF using template renderer
-            tempPdf = pdfOverlayTemplateService.impose(
-                    tempPdf,
-                    tempPdf.getAbsolutePath(),
-                    additionalDetails,
-                    EXPAND_RIGHT,
-                    EXPAND_BOTTOM,
-                    GAP_DRAWING_TO_TABLES,
-                    GAP_TOP);
+            tempPdf = pdfOverlayTemplateService.impose(tempPdf, tempPdf.getAbsolutePath(), additionalDetails,
+                    EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP, usedLayouts);
+
+            validateGeneratedPdf(tempPdf);
 
             
             FileStoreMapper fileStoreMapper = fileStoreService.store(
                     tempPdf,
                     newFileName,
                     "application/pdf",
-                    FILESTORE_MODULECODE
+                    FILESTORE_MODULECODE,
+                    tenantId
             );
 
             edcrApplication.getEdcrApplicationDetails()
@@ -1468,149 +1618,149 @@ public class EdcrApplicationService {
         }
     }
 
-    private void updateFile(Plan pl, EdcrApplication edcrApplication) {
-        long start = System.currentTimeMillis();
-        String filePath = edcrApplication.getSavedDxfFile().getAbsolutePath();
-        String newFileName = edcrApplication.getDxfFile().getOriginalFilename()
-                .replace(".dxf", "_system_scrutinized.pdf");
-        File finalOutputFile = new File(newFileName);
-
-        LOG.info("Starting scrutinized PDF generation for: {}", newFileName);
-
-        File tempPdf = null;
-        File watermarkRemovedFile = null;
-        try {
-            tempPdf = File.createTempFile("scrutinized_", ".pdf");
-            LOG.debug("Temporary PDF path: {}", tempPdf.getAbsolutePath());
-
-            try (Image cadImage = Image.load(filePath);
-                 FileOutputStream tempOut = new FileOutputStream(tempPdf)) {
-
-                PdfOptions pdfOptions = new PdfOptions();
-                CadRasterizationOptions rasterOpts = new CadRasterizationOptions();
-
-                rasterOpts.setBackgroundColor(Color.getWhite());
-                rasterOpts.setDrawType(CadDrawTypeMode.UseObjectColor);
-
-                rasterOpts.setPageWidth(4494);   
-                rasterOpts.setPageHeight(3178);
-
-                rasterOpts.setAutomaticLayoutsScaling(true);
-                
-                rasterOpts.setNoScaling(false);
-
-                rasterOpts.setLayouts(new String[]{"Model"});
-
-                rasterOpts.setUnitType(UnitType.Millimeter);
-
-                pdfOptions.setVectorRasterizationOptions(rasterOpts);
-
-                pdfOptions.setCorePdfOptions(new PdfDocumentOptions());
-
-                cadImage.save(tempOut, pdfOptions);
-                LOG.debug("CAD to PDF conversion complete.");
-
-            } catch (OutOfMemoryError oom) {
-                LOG.error("OutOfMemoryError while converting DXF → PDF: {}", filePath, oom);
-                throw oom;
-            } catch (Exception ex) {
-                LOG.error("Error converting DXF → PDF: {}", filePath, ex);
-                throw ex;
-            }
-
-            // --- Step 2: Post-process PDF (timestamp, incremental save) ---
-            try (RandomAccessBufferedFileInputStream rar = new RandomAccessBufferedFileInputStream(tempPdf);
-                 PDDocument document = PDDocument.load(rar);
-                 BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(finalOutputFile))) {
-
-                PDPage page = document.getPage(0);
-                float pageWidth  = page.getMediaBox().getWidth();
-                float pageHeight = page.getMediaBox().getHeight();
-
-                // Set initial view to center
-                PDPageXYZDestination dest = new PDPageXYZDestination();
-                dest.setPage(page);
-                dest.setLeft((int) (pageWidth / 2f));
-                dest.setTop((int) (pageHeight / 2f));
-                dest.setZoom(1.0f);
-                document.getDocumentCatalog().setOpenAction(dest);
-
-                try (PDPageContentStream contentStream = new PDPageContentStream(
-                        document, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
-
-                    PDExtendedGraphicsState gs = new PDExtendedGraphicsState();
-                    gs.setNonStrokingAlphaConstant(0.7f);
-                    contentStream.setGraphicsStateParameters(gs);
-
-                    String timestamp = LocalDateTime.now().format(TS_FORMAT);
-
-                    float fontSize = Math.max(12f, pageWidth * 0.024f);
-                    contentStream.setFont(PDType1Font.HELVETICA_BOLD, fontSize);
-
-                    float textWidth = (PDType1Font.HELVETICA_BOLD.getStringWidth(timestamp) / 1000f) * fontSize;
-
-                    float margin = pageWidth * 0.005f;
-                    float xPos = Math.max(margin, pageWidth - textWidth - margin);
-                    float yPos = margin;
-
-                    contentStream.beginText();
-                    contentStream.newLineAtOffset(xPos, yPos);
-                    contentStream.showText(timestamp);
-                    contentStream.endText();
-                }
-
-                document.saveIncremental(out);
-                LOG.info("PDF timestamp appended incrementally.");
-
-            } catch (Exception pdfEx) {
-                LOG.error("Error during PDF post-processing for '{}': {}", newFileName, pdfEx.getMessage(), pdfEx);
-                throw pdfEx;
-            }
-            
-         // --- Step 3: Replace Aspose Watermark ---
-            watermarkRemovedFile = File.createTempFile("watermark_removed_", ".pdf");
-            try {
-                watermarkRemovedFile = replaceAsposeWatermark(
-                        finalOutputFile,
-                        watermarkRemovedFile.getAbsolutePath(),
-                        ""
-                );
-                LOG.info("Aspose watermark replaced successfully.");
-            } catch (Exception wmEx) {
-                LOG.error("Failed to replace Aspose watermark: {}", wmEx.getMessage(), wmEx);
-                throw wmEx;
-            }
-
-            // --- Step 4: Store to Filestore ---
-            try {
-                FileStoreMapper fileStoreMapper = fileStoreService.store(
-                        watermarkRemovedFile,              // ← use watermark-removed file
-                        finalOutputFile.getName(),
-                        edcrApplication.getDxfFile().getContentType(), FILESTORE_MODULECODE);
-
-                edcrApplication.getEdcrApplicationDetails()
-                        .get(0).setScrutinizedDxfFileId(fileStoreMapper);
-
-                LOG.info("File stored in filestore: {}",
-                        fileStoreMapper != null ? fileStoreMapper.getFileStoreId() : "null");
-            } catch (Exception storeEx) {
-                LOG.error("Failed to store generated PDF: {}", storeEx.getMessage(), storeEx);
-                throw storeEx;
-            }
-
-        } catch (Exception e) {
-            LOG.error("Error in updateFile() for '{}': {}", newFileName, e.getMessage(), e);
-        } finally {
-        	if (tempPdf != null && tempPdf.exists() && !tempPdf.delete()) {
-                LOG.warn("Temporary PDF not deleted: {}", tempPdf.getAbsolutePath());
-            }
-            if (watermarkRemovedFile != null && watermarkRemovedFile.exists() && !watermarkRemovedFile.delete()) {
-                LOG.warn("Watermark-removed temp PDF not deleted: {}", watermarkRemovedFile.getAbsolutePath());
-            }
-            long elapsed = System.currentTimeMillis() - start;
-            LOG.info("updateFile() completed in {} ms → {}", elapsed, newFileName);
-        }
-    }
+//    private void updateFile(Plan pl, EdcrApplication edcrApplication) {
+//        long start = System.currentTimeMillis();
+//        String filePath = edcrApplication.getSavedDxfFile().getAbsolutePath();
+//        String newFileName = edcrApplication.getDxfFile().getOriginalFilename()
+//                .replace(".dxf", "_system_scrutinized.pdf");
+//        File finalOutputFile = new File(newFileName);
+//
+//        LOG.info("Starting scrutinized PDF generation for: {}", newFileName);
+//
+//        File tempPdf = null;
+//        File watermarkRemovedFile = null;
+//        try {
+//            tempPdf = File.createTempFile("scrutinized_", ".pdf");
+//            LOG.debug("Temporary PDF path: {}", tempPdf.getAbsolutePath());
+//
+//            try (Image cadImage = Image.load(filePath);
+//                 FileOutputStream tempOut = new FileOutputStream(tempPdf)) {
+//
+//                PdfOptions pdfOptions = new PdfOptions();
+//                CadRasterizationOptions rasterOpts = new CadRasterizationOptions();
+//
+//                rasterOpts.setBackgroundColor(Color.getWhite());
+//                rasterOpts.setDrawType(CadDrawTypeMode.UseObjectColor);
+//
+//                rasterOpts.setPageWidth(4494);   
+//                rasterOpts.setPageHeight(3178);
+//
+//                rasterOpts.setAutomaticLayoutsScaling(true);
+//                
+//                rasterOpts.setNoScaling(false);
+//
+//                rasterOpts.setLayouts(new String[]{"Model"});
+//
+//                rasterOpts.setUnitType(UnitType.Millimeter);
+//
+//                pdfOptions.setVectorRasterizationOptions(rasterOpts);
+//
+//                pdfOptions.setCorePdfOptions(new PdfDocumentOptions());
+//
+//                cadImage.save(tempOut, pdfOptions);
+//                LOG.debug("CAD to PDF conversion complete.");
+//
+//            } catch (OutOfMemoryError oom) {
+//                LOG.error("OutOfMemoryError while converting DXF → PDF: {}", filePath, oom);
+//                throw oom;
+//            } catch (Exception ex) {
+//                LOG.error("Error converting DXF → PDF: {}", filePath, ex);
+//                throw ex;
+//            }
+//
+//            // --- Step 2: Post-process PDF (timestamp, incremental save) ---
+//            try (RandomAccessBufferedFileInputStream rar = new RandomAccessBufferedFileInputStream(tempPdf);
+//                 PDDocument document = PDDocument.load(rar);
+//                 BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(finalOutputFile))) {
+//
+//                PDPage page = document.getPage(0);
+//                float pageWidth  = page.getMediaBox().getWidth();
+//                float pageHeight = page.getMediaBox().getHeight();
+//
+//                // Set initial view to center
+//                PDPageXYZDestination dest = new PDPageXYZDestination();
+//                dest.setPage(page);
+//                dest.setLeft((int) (pageWidth / 2f));
+//                dest.setTop((int) (pageHeight / 2f));
+//                dest.setZoom(1.0f);
+//                document.getDocumentCatalog().setOpenAction(dest);
+//
+//                try (PDPageContentStream contentStream = new PDPageContentStream(
+//                        document, page, PDPageContentStream.AppendMode.APPEND, true, true)) {
+//
+//                    PDExtendedGraphicsState gs = new PDExtendedGraphicsState();
+//                    gs.setNonStrokingAlphaConstant(0.7f);
+//                    contentStream.setGraphicsStateParameters(gs);
+//
+//                    String timestamp = LocalDateTime.now().format(TS_FORMAT);
+//
+//                    float fontSize = Math.max(12f, pageWidth * 0.024f);
+//                    contentStream.setFont(PDType1Font.HELVETICA_BOLD, fontSize);
+//
+//                    float textWidth = (PDType1Font.HELVETICA_BOLD.getStringWidth(timestamp) / 1000f) * fontSize;
+//
+//                    float margin = pageWidth * 0.005f;
+//                    float xPos = Math.max(margin, pageWidth - textWidth - margin);
+//                    float yPos = margin;
+//
+//                    contentStream.beginText();
+//                    contentStream.newLineAtOffset(xPos, yPos);
+//                    contentStream.showText(timestamp);
+//                    contentStream.endText();
+//                }
+//
+//                document.saveIncremental(out);
+//                LOG.info("PDF timestamp appended incrementally.");
+//
+//            } catch (Exception pdfEx) {
+//                LOG.error("Error during PDF post-processing for '{}': {}", newFileName, pdfEx.getMessage(), pdfEx);
+//                throw pdfEx;
+//            }
+//            
+//         // --- Step 3: Replace Aspose Watermark ---
+//            watermarkRemovedFile = File.createTempFile("watermark_removed_", ".pdf");
+//            try {
+//                watermarkRemovedFile = replaceAsposeWatermark(
+//                        finalOutputFile,
+//                        watermarkRemovedFile.getAbsolutePath(),
+//                        ""
+//                );
+//                LOG.info("Aspose watermark replaced successfully.");
+//            } catch (Exception wmEx) {
+//                LOG.error("Failed to replace Aspose watermark: {}", wmEx.getMessage(), wmEx);
+//                throw wmEx;
+//            }
+//
+//            // --- Step 4: Store to Filestore ---
+//            try {
+//                FileStoreMapper fileStoreMapper = fileStoreService.store(
+//                        watermarkRemovedFile,              // ← use watermark-removed file
+//                        finalOutputFile.getName(),
+//                        edcrApplication.getDxfFile().getContentType(), FILESTORE_MODULECODE);
+//
+//                edcrApplication.getEdcrApplicationDetails()
+//                        .get(0).setScrutinizedDxfFileId(fileStoreMapper);
+//
+//                LOG.info("File stored in filestore: {}",
+//                        fileStoreMapper != null ? fileStoreMapper.getFileStoreId() : "null");
+//            } catch (Exception storeEx) {
+//                LOG.error("Failed to store generated PDF: {}", storeEx.getMessage(), storeEx);
+//                throw storeEx;
+//            }
+//
+//        } catch (Exception e) {
+//            LOG.error("Error in updateFile() for '{}': {}", newFileName, e.getMessage(), e);
+//        } finally {
+//        	if (tempPdf != null && tempPdf.exists() && !tempPdf.delete()) {
+//                LOG.warn("Temporary PDF not deleted: {}", tempPdf.getAbsolutePath());
+//            }
+//            if (watermarkRemovedFile != null && watermarkRemovedFile.exists() && !watermarkRemovedFile.delete()) {
+//                LOG.warn("Watermark-removed temp PDF not deleted: {}", watermarkRemovedFile.getAbsolutePath());
+//            }
+//            long elapsed = System.currentTimeMillis() - start;
+//            LOG.info("updateFile() completed in {} ms → {}", elapsed, newFileName);
+//        }
+//    }
    
  //Safe delete with retry (shared by both methods)
  private boolean safeDeleteWithRetry(Path path, int maxRetries, long sleepMillis) {
@@ -1644,13 +1794,21 @@ public class EdcrApplicationService {
         if (edcrApplication.getApplicationDate() == null)
             edcrApplication.setApplicationDate(new Date());
         edcrApplication.setApplicationNumber(applicationNumberGenerator.generate());
-        edcrApplication.setSavedDxfFile(saveDXF(edcrApplication));
+//        edcrApplication.setSavedDxfFile(saveDXF(edcrApplication));
+//        edcrApplication.setSavedDxfFile(saveDXF(edcrApplication, edcrRequest.getTenantId()));
+        if(StringUtils.isEmpty(edcrRequest.getDxfFileStoreId())) {        	
+        	edcrApplication.setSavedDxfFile(saveDXF(edcrApplication, edcrRequest.getTenantId()));
+        }else {
+        	edcrApplication.setSavedDxfFile(saveDXF_V2(edcrApplication, edcrRequest));
+        }
+        
         edcrApplication.setStatus(ABORTED);
         edcrApplicationRepository.save(edcrApplication);
         edcrApplication.getEdcrApplicationDetails().get(0).setComparisonDcrNumber(comparisonDcrNo);
 //        callDcrProcess(edcrApplication, NEW_SCRTNY);
         callDcrProcess(edcrApplication, NEW_SCRTNY,edcrRequest);
         edcrIndexService.updateEdcrRestIndexes(edcrApplication, NEW_SCRTNY);
+        
         return edcrApplication;
     }
     
@@ -1889,6 +2047,18 @@ public class EdcrApplicationService {
                 GAP_DRAWING_TO_TABLES,
                 GAP_TOP);
     }
+
+    private void validateGeneratedPdf(File pdf) throws IOException {
+        if (pdf == null || !pdf.isFile() || pdf.length() == 0L) {
+            throw new IOException("Generated scrutinized PDF is missing or empty.");
+        }
+        try (PDDocument document = PDDocument.load(pdf)) {
+            if (document.getNumberOfPages() == 0) {
+                throw new IOException("Generated scrutinized PDF contains no pages.");
+            }
+        }
+        LOG.info("Validated scrutinized PDF: {} bytes", pdf.length());
+    }
     
     public Object getUserData(String uuid) {
 
@@ -1905,7 +2075,7 @@ public class EdcrApplicationService {
     
 	public FileStoreMapper updateDXFOutput(String fileNo, String examinedBy, String approvedBy, String approvedDate,
 			String validDate, String edcrNo, Boolean isSelfCertification, String eSign, String eSignName,
-			String tenantId, String zone) throws IOException {
+			String tenantId, String zone, String proposedSiteAddress) throws IOException {
 
 		if (StringUtils.isBlank(edcrNo)) {
 			throw new IllegalArgumentException("EDCR Number is mandatory.");
@@ -1966,7 +2136,7 @@ public class EdcrApplicationService {
 		edcrApplication.setSavedDxfFile(dxfFile);
 
 		updateFileNew(pl, edcrApplication, fileNo, examinedBy, approvedBy, approvedDate, validDate, eSignName, eSign,
-				tenantId, zone);
+				tenantId, zone, proposedSiteAddress);
 
 		FileStoreMapper mapper = appDetail.getScrutinizedDxfFileId();
 
@@ -2060,9 +2230,18 @@ public class CustomMultipartFile implements MultipartFile {
 
     @Override
     public void transferTo(File dest) throws IOException {
-        Files.copy(getInputStream(), dest.toPath());
+        Files.copy(
+                getInputStream(),
+                dest.toPath(),
+                StandardCopyOption.REPLACE_EXISTING);
     }
 }
+
+static Set<String> getAllowedOutsideLayers() {
+    return Collections.emptySet(); // or read from config / request later
+}
+
+
 
 }
 

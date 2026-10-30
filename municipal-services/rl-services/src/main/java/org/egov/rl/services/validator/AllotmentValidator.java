@@ -13,6 +13,7 @@ import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
+import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.services.config.RentLeaseConfiguration;
 import org.egov.rl.services.models.AllotmentCriteria;
 import org.egov.rl.services.models.AllotmentDetails;
@@ -151,6 +152,8 @@ public class AllotmentValidator {
 
 		validateOwnersData(allotementRequest, errorMap);
 		boundaryService.validateAndLoadPropertyData(allotementRequest, errorMap);
+		// Before the Legacy shortcut below: a legacy approval is exactly where an employee adds adhoc charges.
+		validateAdhocCharges(allotementRequest);
 
 		if ("Legacy".equalsIgnoreCase(allotementRequest.getAllotment().get(0).getApplicationType())) {
 			return;
@@ -259,6 +262,8 @@ public class AllotmentValidator {
 
 		validateOwnersData(allotementRequest, errorMap);
 		boundaryService.validateAndLoadPropertyData(allotementRequest, errorMap);
+		// Before the Legacy shortcut below: a legacy approval is exactly where an employee adds adhoc charges.
+		validateAdhocCharges(allotementRequest);
 		if ("Legacy".equalsIgnoreCase(allotementRequest.getAllotment().get(0).getApplicationType())) {
 			return;
 		}
@@ -339,5 +344,37 @@ public class AllotmentValidator {
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 
+	}
+
+	/**
+	 * Adhoc penalty and adhoc exemption are one-off amounts an employee enters while levying a charge (PT guards
+	 * this the same way). A citizen request must not carry them, otherwise a self service update could add a
+	 * penalty or waive charges on its own application.
+	 */
+	private void validateAdhocCharges(AllotmentRequest allotementRequest) {
+		RequestInfo requestInfo = allotementRequest.getRequestInfo();
+		if (requestInfo == null || requestInfo.getUserInfo() == null || requestInfo.getUserInfo().getType() == null
+				|| !RLConstants.CITIZEN_USER_TYPE.equalsIgnoreCase(requestInfo.getUserInfo().getType().trim())) {
+			return;
+		}
+		if (CollectionUtils.isEmpty(allotementRequest.getAllotment())) {
+			return;
+		}
+		for (AllotmentDetails allotmentDetails : allotementRequest.getAllotment()) {
+			JsonNode additionalDetails = (allotmentDetails != null) ? allotmentDetails.getAdditionalDetails() : null;
+			if (hasValue(additionalDetails, RLConstants.ADHOC_PENALTY_KEY)
+					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_KEY)) {
+				throw new CustomException("INVALID ADHOC CHARGES",
+						"AdhocPenalty or AdhocExemption can only be set by an employee, not by a citizen.");
+			}
+		}
+	}
+
+	/** True when the JSON node carries a non blank value for the key. */
+	private static boolean hasValue(JsonNode details, String key) {
+		if (details == null || key == null || !details.hasNonNull(key)) {
+			return false;
+		}
+		return !details.get(key).asText().trim().isEmpty();
 	}
 }

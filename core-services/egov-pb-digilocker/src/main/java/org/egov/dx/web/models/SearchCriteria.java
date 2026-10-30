@@ -38,4 +38,6 @@ public class SearchCriteria {
 
     private String level2;
 
+    private String digiLockerId;
+
 }

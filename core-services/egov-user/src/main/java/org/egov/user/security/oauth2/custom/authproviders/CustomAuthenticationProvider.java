@@ -10,6 +10,7 @@ import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.enums.UserType;
 import org.egov.user.domain.service.UserService;
 import org.egov.user.domain.service.utils.EncryptionDecryptionUtil;
+import org.egov.user.domain.service.utils.IpAddressUtil;
 import org.egov.user.web.contract.auth.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,6 +60,9 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Value("${default.employee.password}")
     private String defaultEmployeePassword;
+    
+    @Value("#{'${login.withpassword.usernames}'.split(',')}") 
+    private List<String> loginWithPasswordUsernames;
 
     @Autowired
     private HttpServletRequest request;
@@ -109,6 +113,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             user = encryptionDecryptionUtil.decryptObject(
                     user, "UserListSelf", User.class, requestInfo
             );
+            
+            requestInfo.setUserInfo(org.egov.common.contract.request.User.builder().uuid(user.getUuid()).id(user.getId()).build());
 
         } catch (UserNotFoundException | DuplicateUserNameException e) {
             log.error("Login failed", e);
@@ -123,8 +129,19 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             if (userService.isAccountUnlockAble(user)) {
                 user = unlockAccount(user, requestInfo);
             } else {
-                throw new OAuth2Exception("Account locked");
+                throw userService.buildAccountLockedException(user);
             }
+        }
+
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            log.error("Login failed: User '{}' of type '{}' in tenant '{}' has no roles assigned in the database.",
+                    userName, userType, tenantId);
+            OAuth2Exception exception = new OAuth2Exception(
+                    "No roles assigned for user: " + userName + ". Your account does not have access permissions configured. Please contact your system administrator.");
+            exception.addAdditionalInformation("roles_missing", "true");
+            exception.addAdditionalInformation("user_name", userName);
+            exception.addAdditionalInformation("user_type", userType);
+            throw exception;
         }
 
         boolean isCitizen = user.getType() != null &&
@@ -139,22 +156,31 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         boolean isPasswordMatched;
 
         if (isCitizen) {
-
-            if (fixedOTPEnabled
-                    && !fixedOTPPassword.isEmpty()
-                    && fixedOTPPassword.equals(password)) {
-
-                isPasswordMatched = true;
-
-            } else {
-
-                isPasswordMatched = isPasswordMatch(
-                        citizenLoginPasswordOtpEnabled,
+        	if(loginWithPasswordUsernames.contains(userName)) {
+            	isPasswordMatched = isPasswordMatch(
+                        false,
                         password,
                         user,
                         authentication
                 );
             }
+        	else {
+        		 if (fixedOTPEnabled
+                         && !fixedOTPPassword.isEmpty()
+                         && fixedOTPPassword.equals(password)) {
+
+                     isPasswordMatched = true;
+
+                 } else {
+
+                     isPasswordMatched = isPasswordMatch(
+                             citizenLoginPasswordOtpEnabled,
+                             password,
+                             user,
+                             authentication
+                     );
+                 }
+        	}
 
         } else {
         	log.info("Employee login - validating credentials for user: {}", userName);
@@ -197,13 +223,34 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             );
         }
 
-        userService.handleFailedLogin(
+        long attempLeftCount = userService.handleFailedLogin(
                 user,
-                request.getHeader(IP_HEADER_NAME),
+                IpAddressUtil.getClientIp(request),
                 requestInfo
         );
 
-        throw new OAuth2Exception("Invalid login credentials");
+        boolean isOtpAttempt = isCitizen ? !loginWithPasswordUsernames.contains(userName) : !isPasswordType;
+
+        String errMsg;
+        if (isOtpAttempt) {
+            if (attempLeftCount == 1) {
+                errMsg = "Invalid OTP. Warning: You have only 1 attempt remaining before your account is locked.";
+            } else {
+                errMsg = "Invalid OTP. Please enter the valid OTP. You have " + attempLeftCount + " attempt(s) remaining.";
+            }
+        } else {
+            if (attempLeftCount == 1) {
+                errMsg = "Invalid password. Warning: You have only 1 attempt remaining before your account is locked.";
+            } else {
+                errMsg = "Invalid password. You have " + attempLeftCount + " attempt(s) remaining.";
+            }
+        }
+
+        OAuth2Exception exception = new OAuth2Exception(errMsg);
+        exception.addAdditionalInformation("auth_type", isOtpAttempt ? "OTP" : "PASSWORD");
+        exception.addAdditionalInformation("attempts_left", String.valueOf(attempLeftCount));
+        exception.addAdditionalInformation("max_attempts", String.valueOf(userService.getMaxInvalidLoginAttempts()));
+        throw exception;
     }
 
     private boolean isPasswordMatch(Boolean isOtpBased,
@@ -227,8 +274,15 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             user.setOtpReference(password);
 
             try {
-                return userService.validateOtp(user);
+                boolean isOtpValid = userService.validateOtp(user);
+                if (!isOtpValid) {
+                    log.warn("OTP validation failed for user: '{}', type: {}, tenant: {}",
+                            user.getUserName(), user.getType(), user.getTenantId());
+                }
+                return isOtpValid;
             } catch (ServiceCallException e) {
+                log.error("OTP validation service call failed for user: '{}', type: {}, tenant: {}, error: {}",
+                        user.getUserName(), user.getType(), user.getTenantId(), e.getMessage());
                 return false;
             }
 
@@ -238,7 +292,12 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 return true;
             }
 
-            return bcrypt.matches(password, user.getPassword());
+            boolean isPwdMatched = bcrypt.matches(password, user.getPassword());
+            if (!isPwdMatched) {
+                log.warn("Password mismatch for user: '{}', type: {}, tenant: {}",
+                        user.getUserName(), user.getType(), user.getTenantId());
+            }
+            return isPwdMatched;
         }
     }
 
@@ -253,7 +312,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         User updatedUser = userService.updateWithoutOtpValidation(
                 user.toBuilder()
                         .accountLocked(false)
-                        .password(user.getPassword())
+                        .password(null)
                         .build(),
                 requestInfo
         );
@@ -274,7 +333,6 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
         return authUser;
     }
-
     private Set<Role> toAuthRole(
             Set<org.egov.user.domain.model.Role> domainRoles) {
 

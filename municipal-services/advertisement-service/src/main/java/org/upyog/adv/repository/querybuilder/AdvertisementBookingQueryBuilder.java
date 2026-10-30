@@ -23,7 +23,7 @@ public class AdvertisementBookingQueryBuilder {
 			"SELECT ecbd.booking_id, booking_no, payment_date, application_date, tenant_id,\n"
 					+ "ecbd.advertisementId ,booking_status,receipt_no, ecbd.createdby, ecbd.createdtime, \n"
 					+ "ecbd.lastmodifiedby, ecbd.lastmodifiedtime,ecbd.permission_letter_filestore_id, ecbd.payment_receipt_filestore_id, \n"
-					+ "ecbd.booking_start_date, ecbd.booking_end_date, \n"
+					+ "ecbd.booking_start_date, ecbd.booking_end_date, ecbd.additionaldetails, \n"
 					+ "appl.applicant_detail_id, applicant_name, applicant_email_id, applicant_mobile_no,\n"
 					+ "applicant_alternate_mobile_no, \n"
 					+ "address_id, door_no, house_no, address_line_1,address_line_2, \n"
@@ -57,6 +57,11 @@ public class AdvertisementBookingQueryBuilder {
 			+ " where booking_id = ?";
 
 	public static final String PAYMENT_TIMER_QUERY = "INSERT INTO eg_adv_payment_timer(booking_id, createdby, createdtime, status, booking_no, lastmodifiedby, lastmodifiedtime, add_type, location, face_area, night_light,advertisementId, booking_start_date, booking_end_date, booking_date) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?::DATE, ?::DATE, ?::DATE);\n";
+
+	// Insert that silently skips when another ACTIVE timer already holds the same slot+date.
+	// Backed by unique partial index uq_adv_timer_active_slot.
+	public static final String PAYMENT_TIMER_QUERY_ON_CONFLICT = "INSERT INTO eg_adv_payment_timer(booking_id, createdby, createdtime, status, booking_no, lastmodifiedby, lastmodifiedtime, add_type, location, face_area, night_light,advertisementId, booking_start_date, booking_end_date, booking_date) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?::DATE, ?::DATE, ?::DATE) "
+			+ "ON CONFLICT (advertisementId, booking_date, add_type, location, face_area, night_light) WHERE status = 'ACTIVE' DO NOTHING;\n";
 
 	public static final String DRAFT_QUERY = "INSERT INTO eg_adv_draft_detail(draft_id, tenant_id, user_uuid, draft_application_data, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?,CAST(? AS jsonb), ?, ?, ?, ?);\n";
 

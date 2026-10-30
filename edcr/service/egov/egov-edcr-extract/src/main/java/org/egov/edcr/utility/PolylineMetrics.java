@@ -342,7 +342,8 @@ public class PolylineMetrics {
         if (bestBoundaryLine == null || bestFootprintLine == null) {
             LOG.warn("getMinParallelSetback: could not find matching parallel lines. boundary={}, footprint={}",
                     bestBoundaryLine != null, bestFootprintLine != null);
-            return BigDecimal.ZERO;
+            return getIrregularSetbackDistance(plotBoundary, footprint, setbackPolyline,
+                    boundaryLines, footprintLines);
         }
 
         if (!isParallel(bestBoundaryLine, bestFootprintLine, angleTolerance)) {
@@ -353,7 +354,8 @@ public class PolylineMetrics {
             LOG.info("Selected footprint line: ({}, {}) -> ({}, {})",
                     bestFootprintLine.getStartPoint().getX(), bestFootprintLine.getStartPoint().getY(),
                     bestFootprintLine.getEndPoint().getX(), bestFootprintLine.getEndPoint().getY());
-            return BigDecimal.ZERO;
+            return getIrregularSetbackDistance(plotBoundary, footprint, setbackPolyline,
+                    boundaryLines, footprintLines);
         }
 
         double distance = getPerpendicularDistanceBetweenParallelSegments(bestFootprintLine, bestBoundaryLine);
@@ -370,10 +372,33 @@ public class PolylineMetrics {
 
         if (distance <= 0.1) {
             LOG.warn("getMinParallelSetback: invalid distance");
-            return BigDecimal.ZERO;
+            return getIrregularSetbackDistance(plotBoundary, footprint, setbackPolyline,
+                    boundaryLines, footprintLines);
         }
 
         return BigDecimal.valueOf(distance).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Handles trapezoidal and angled setback markings where the plot-side and
+     * building-side edges are not parallel. First restrict the calculation to
+     * edges belonging to the supplied setback polygon; the unrestricted
+     * shortest-distance calculation is retained only as a final safety net.
+     */
+    private static BigDecimal getIrregularSetbackDistance(DXFLWPolyline plotBoundary,
+            DXFLWPolyline footprint, DXFLWPolyline setbackPolyline,
+            List<DXFLine> boundaryLines, List<DXFLine> footprintLines) {
+        BigDecimal distance = getSandwichSetbackDistance(plotBoundary, footprint, setbackPolyline);
+        if (distance.compareTo(BigDecimal.ZERO) <= 0) {
+            distance = getFallbackShortestDistance(footprintLines, boundaryLines);
+        }
+
+        if (distance.compareTo(BigDecimal.ZERO) > 0) {
+            LOG.info("Computed irregular setback distance={}", distance);
+        } else {
+            LOG.warn("Unable to calculate irregular setback distance");
+        }
+        return distance;
     }
    
    

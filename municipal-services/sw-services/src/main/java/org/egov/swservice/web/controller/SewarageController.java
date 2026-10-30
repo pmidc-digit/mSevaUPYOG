@@ -74,16 +74,8 @@ public class SewarageController {
 	    // 1. FIX: Extract requestInfo from the wrapper
 	    RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 	    
-	    List<SewerageConnection> sewerageConnectionList = null;
-	    
-	    if (criteria.getOwnerName() != null || criteria.getDoorNo() != null || criteria.getLocality() != null) {
-	        // 2. FIX: Assign to the list instead of returning directly
-	        sewerageConnectionList = swFuzzySearchService.getConnections(requestInfo, criteria);
-	    } 
-	    else {
-	        // 2. FIX: Assign to the list instead of returning directly
-	        sewerageConnectionList = sewarageService.search(criteria, requestInfo);
-	    }
+	    List<SewerageConnection> sewerageConnectionList = sewarageService.search(criteria, requestInfo);
+
 	    
 	    // Now this code is reachable and will actually execute
 	    Integer count = sewarageService.countAllSewerageApplications(criteria, requestInfo);

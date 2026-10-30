@@ -119,9 +119,13 @@ public class UserRepository {
             Map<Long, List<Role>> userRoles = jdbcTemplate.query(roleQueryStr, preparedStatementValuesForRole.toArray(), extractor);
             for(User user : users) {
             	Set<Role> roles = new HashSet<>();
-            	if(userRoles.get(user.getId()) != null) {
+            	if(userRoles != null && userRoles.get(user.getId()) != null) {
             		roles.addAll(userRoles.get(user.getId()));
-            		user.setRoles(roles);
+            	}
+            	user.setRoles(roles);
+            	if(roles.isEmpty()) {
+            		log.warn("No roles found in database for user id: {}, username: '{}', tenant: {}",
+            				user.getId(), user.getUserName(), user.getTenantId());
             	}
             }
         }
@@ -213,7 +217,7 @@ public class UserRepository {
         user.setCreatedBy(user.getLoggedInUserId());
         user.setLastModifiedBy(user.getLoggedInUserId());
         final User savedUser = save(user);
-        if (user.getRoles().size() > 0) {
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
             saveUserRoles(user);
         }
         final Address savedCorrespondenceAddress = saveAddress(user.getCorrespondenceAddress(), savedUser.getId(),
@@ -483,6 +487,18 @@ public class UserRepository {
                 Collections.singletonMap("user_uuid", uuid));
     }
 
+    public void unlockUser(String uuid, Long modifiedBy) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("uuid", uuid);
+        params.put("accountLocked", false);
+        params.put("accountLockedDate", 0L);
+        params.put("lastModifiedDate", new Date());
+        params.put("lastModifiedBy", modifiedBy != null ? modifiedBy : 0L);
+
+        namedParameterJdbcTemplate.update(UserTypeQueryBuilder.UNLOCK_USER_BY_UUID_SQL, params);
+        resetFailedLoginAttemptsForUser(uuid);
+    }
+
 
     /**
      * Fetch roles by role codes
@@ -574,6 +590,9 @@ public class UserRepository {
      * @param entityUser
      */
     private void saveUserRoles(User entityUser) {
+        if (entityUser.getRoles() == null || entityUser.getRoles().isEmpty()) {
+            return;
+        }
         List<Map<String, Object>> batchValues = new ArrayList<>(entityUser.getRoles().size());
         for (Role role : entityUser.getRoles()) {
             batchValues.add(
@@ -721,14 +740,19 @@ public class UserRepository {
      * @param user
      */
     private void updateRoles(User user) {
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            return;
+        }
         Map<String, Object> roleInputs = new HashMap<String, Object>();
 		List<String> roleCodes = user.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+		List<String> tenantIds = user.getRoles().stream().map(Role::getTenantId).distinct().collect(Collectors.toList());
         roleInputs.put("user_id", user.getId());
         roleInputs.put("user_tenantid", user.getTenantId());
 
-		// Add roles filter as well, other wise during concurrent update call there is a
+		// Add roles and tenantIds filter as well, other wise during concurrent update call there is a
 		// null pointer exception due to delete of roles
 		roleInputs.put("roles", roleCodes);
+		roleInputs.put("tenantIds", tenantIds);
         namedParameterJdbcTemplate.update(RoleQueryBuilder.DELETE_USER_ROLES, roleInputs);
         saveUserRoles(user);
     }
@@ -742,6 +766,9 @@ public class UserRepository {
 	 * @author Roshan Chaudhary
 	 */
 	private void updateCitizenRoles(User user) {
+		if (user.getRoles() == null || user.getRoles().isEmpty()) {
+			return;
+		}
 		Map<String, Object> roleInputs = new HashMap<String, Object>();
 		List<String> roleCodesWithTenantid = user.getRoles().stream()
 				.map(role -> role.getCode() + ":" + role.getTenantId()).collect(Collectors.toList());

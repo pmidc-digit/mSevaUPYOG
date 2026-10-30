@@ -344,6 +344,8 @@ public class WCConstants {
 	public static final String CHANNEL = "Channel";
 	
 	public static final String ACTIVE = "ACTIVE";
+
+    public static final String EXPIRED = "EXPIRED";
 	
 	public static final String BILL_NO_DEMAND_ERROR_CODE = "EG_BS_BILL_NO_DEMANDS_FOUND";
 	
@@ -419,6 +421,8 @@ public class WCConstants {
 	public static final String TENANTS_MASTER_ROOT = "tenants";
 	
 	public static final String INACTIVE_STATUS = "Inactive";
+
+	public static final String DISCONNECT_STATUS = "Disconnected";
 
 	public static final String TENANTS_JSONPATH_ROOT = "$.MdmsRes.tenant.tenants";
 

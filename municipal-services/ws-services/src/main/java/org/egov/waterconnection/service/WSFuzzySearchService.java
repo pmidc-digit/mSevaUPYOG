@@ -88,10 +88,10 @@ public class WSFuzzySearchService {
         List<WaterConnection> orderedConnections = new LinkedList<>();
 
         if (!CollectionUtils.isEmpty(connections)) {
-            Map<String, WaterConnection> idToConnectionMap = new LinkedHashMap<>();
+            Map<String, List<WaterConnection>> idToConnectionMap = new LinkedHashMap<>();
 
-            // Map connections by their business identifier (Connection Number)
-            connections.forEach(conn -> idToConnectionMap.put(conn.getConnectionNo(), conn));
+            // Map connections by their business identifier (Connection Number) to a list of connection objects
+            connections.forEach(conn -> idToConnectionMap.computeIfAbsent(conn.getConnectionNo(), k -> new ArrayList<>()).add(conn));
 
             try {
                 List<Map<String, Object>> data = JsonPath.read(esResponse, ES_DATA_PATH);
@@ -100,7 +100,7 @@ public class WSFuzzySearchService {
                     for (Map<String, Object> map : data) {
                         String connNo = JsonPath.read(map, "$.connectionNo");
                         if (idToConnectionMap.containsKey(connNo)) {
-                            orderedConnections.add(idToConnectionMap.get(connNo));
+                            orderedConnections.addAll(idToConnectionMap.get(connNo));
                         }
                     }
                 }
@@ -154,20 +154,21 @@ public class WSFuzzySearchService {
             throw new CustomException("EG_WS_SEARCH_TENANTID_MANDATORY", "TenantId is mandatory for all search operations.");
         }
 
-        // 2. Dependency: If searching by Name, Locality is also mandatory
-        if (criteria.getOwnerName() != null && criteria.getLocality() == null) {
-            throw new CustomException("EG_WS_SEARCH_LOCALITY_MANDATORY", "Locality is mandatory when searching by Owner Name.");
+     // 2. Dependency: If searching by Name or Guardian Name, Locality is also mandatory
+        if ((criteria.getOwnerName() != null || criteria.getGuardianName() != null) && criteria.getLocality() == null) {
+            throw new CustomException("EG_WS_SEARCH_LOCALITY_MANDATORY", "Locality is mandatory when searching by Owner Name or Guardian Name.");
         }
 
         // 3. Minimum Criteria: At least one fuzzy parameter must exist
         if (criteria.getConnectionNumber() == null && 
             criteria.getOldConnectionNumber() == null && 
             criteria.getOwnerName() == null && 
+            criteria.getGuardianName() == null && 
             criteria.getDoorNo() == null &&
             criteria.getLocality()==null
             ) {
             
-            throw new CustomException("INVALID_SEARCH_CRITERIA", "Please provide at least one search parameter (Connection No, Name, or Door No).");
+            throw new CustomException("INVALID_SEARCH_CRITERIA", "Please provide at least one search parameter (Connection No, Name, Guardian Name, or Door No).");
         }
     }
 }

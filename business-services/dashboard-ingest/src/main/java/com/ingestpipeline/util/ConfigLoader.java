@@ -44,12 +44,32 @@ public class ConfigLoader {
 	}
 
     /**
-     * To fetch a particular string content for a give resource/file name
+     * To fetch a particular string content for a give resource/file name.
+     * If not found in external CONFIG_SCHEMA_PATHS, falls back to classpath:config/<name>.
      * @param name
      * @return
      */
     public String get(String name) {
-        return nameContentMap.get(name);
+        String content = nameContentMap.get(name);
+        if (content == null && resourceLoader != null) {
+            try {
+                Resource resource = resourceLoader.getResource("classpath:config/" + name);
+                if (resource != null && resource.exists()) {
+                    content = getContent(resource);
+                    if (content != null) {
+                        nameContentMap.put(name, content);
+                        logger.info("Loaded {} from classpath fallback", name);
+                    }
+                }
+            } catch (Exception e) {
+                logger.warn("Could not load {} from classpath fallback: {}", name, e.getMessage());
+            }
+        }
+        return content;
+    }
+
+    public java.util.Set<String> getResourceNames() {
+        return nameContentMap.keySet();
     }
 
     /**

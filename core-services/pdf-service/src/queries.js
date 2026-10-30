@@ -1,10 +1,10 @@
-const { Pool } = require('pg');
+﻿const { Pool } = require('pg');
 import logger from "./config/logger";
 import producer from "./kafka/producer";
 import consumer from "./kafka/consumer";
 import envVariables from "./EnvironmentVariables";
 import PDFMerger from 'pdf-merger-js';
-import { fileStoreAPICall, getFilestoreUrl } from "./utils/fileStoreAPICall";
+import { fileStoreAPICall, getFilestoreUrl, deleteFileStoreFile } from "./utils/fileStoreAPICall";
 import fs, {
   exists
 } from "fs";
@@ -15,7 +15,12 @@ const pool = new Pool({
   database: envVariables.DB_NAME,
   password: envVariables.DB_PASSWORD,
   port: envVariables.DB_PORT,
-})
+});
+
+// Auto-ensure expirydate column exists in egov_bulk_pdf_info
+pool.query('ALTER TABLE egov_bulk_pdf_info ADD COLUMN IF NOT EXISTS expirydate bigint').catch((err) => {
+  logger.warn('Could not auto-add expirydate column to egov_bulk_pdf_info: ' + (err.message || err));
+});
 
 let createJobKafkaTopic = envVariables.KAFKA_CREATE_JOB_TOPIC;
 const uuidv4 = require("uuid/v4");
@@ -188,12 +193,24 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
           }
       
           var mergePdfData = fs.createReadStream(baseFolder+'output.pdf');
-          await fileStoreAPICall('output.pdf', tenantId, mergePdfData).then((filestoreid) => {
-            const updateQuery = 'UPDATE egov_bulk_pdf_info SET filestoreid = $1, lastmodifiedby = $2, lastmodifiedtime = $3, status = $5 WHERE jobid = $4';
+          let batchDays = envVariables.BATCH_EXPIRATION_DAYS || 15;
+          let batchExpiryText = `${batchDays} days`;
+          let batchExpiryDate;
+          if (envVariables.BATCH_EXPIRATION_SECONDS && envVariables.BATCH_EXPIRATION_SECONDS > 0) {
+            batchExpiryDate = new Date().getTime() + (envVariables.BATCH_EXPIRATION_SECONDS * 1000);
+            let mins = Math.round(envVariables.BATCH_EXPIRATION_SECONDS / 60);
+            batchExpiryText = mins > 0 ? `${mins} minutes` : `${envVariables.BATCH_EXPIRATION_SECONDS} seconds`;
+          } else {
+            batchExpiryDate = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
+          }
+          await fileStoreAPICall('output.pdf', tenantId, mergePdfData, "bulk-bill", bulkPdfJobId, batchExpiryDate).then((filestoreid) => {
+            const updateQuery = 'UPDATE egov_bulk_pdf_info SET filestoreid = $1, lastmodifiedby = $2, lastmodifiedtime = $3, status = $5, expirydate = $6 WHERE jobid = $4';
             const curentTimeStamp = new Date().getTime();
             const status = 'DONE';
-            pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status]);
-            sendNoitification(filestoreid, mobileNumber, tenantId);
+            pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status, batchExpiryDate]);
+            sendNoitification(filestoreid, mobileNumber, tenantId, batchExpiryText).catch(err => {
+              logger.error("Error sending notification: " + (err.stack || err));
+            });
         
           }).catch((err) => {
             logger.error(err.stack || err);
@@ -239,25 +256,34 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
   
 }
 
-export async function sendNoitification(filestoreid, mobileNumber, tenantId){
-  const topic = envVariables.KAFKA_TOPICS_NOTIFICATION;
-  var pdfLink = await getFilestoreUrl(filestoreid, tenantId);
-  let smsRequest = {};
-  smsRequest['mobileNumber'] = mobileNumber;
-  smsRequest['message'] = "Your download is ready. It will expire in 24 hours. Please click on the link below to download the pdf.\n"+pdfLink;
-  let payloads = [];
-  payloads.push({
-    topic,
-    messages: JSON.stringify(smsRequest)
-  });
-
-  producer.send(payloads, function(err, data) {
-    if (!err) {
-      console.log(data);
+export async function sendNoitification(filestoreid, mobileNumber, tenantId, expiryInfo){
+  try {
+    const topic = envVariables.KAFKA_TOPICS_NOTIFICATION;
+    var pdfLink = await getFilestoreUrl(filestoreid, tenantId);
+    let smsRequest = {};
+    smsRequest['mobileNumber'] = mobileNumber;
+    if (expiryInfo) {
+      let suffix = String(expiryInfo).includes("day") || String(expiryInfo).includes("minute") || String(expiryInfo).includes("second") ? "" : " days";
+      smsRequest['message'] = `Your download is ready. It will expire in ${expiryInfo}${suffix}. Please click on the link below to download the pdf.\n`+pdfLink;
     } else {
-      console.log(err);
+      smsRequest['message'] = `Your download is ready. Please click on the link below to download the pdf.\n`+pdfLink;
     }
-  });
+    let payloads = [];
+    payloads.push({
+      topic,
+      messages: JSON.stringify(smsRequest)
+    });
+
+    producer.send(payloads, function(err, data) {
+      if (!err) {
+        console.log(data);
+      } else {
+        console.log(err);
+      }
+    });
+  } catch (err) {
+    logger.error("Error in sendNoitification: " + (err.stack || err.message));
+  }
 }
 
 
@@ -298,7 +324,8 @@ export async function getBulkPdfRecordsDetails(userid, offset, limit, jobId){
           consumercode: row.consumercode,
           isConsolidated: row.isconsolidated,
           group: row.group_name,
-          status: row.status
+          status: row.status,
+          expiryDate: row.expirydate
         };
         data.push(value);
       }
@@ -454,7 +481,7 @@ export async function mergePdfForDN(bulkPdfJobId, tenantId, userid, numberOfFile
             const curentTimeStamp = new Date().getTime();
             const status = 'DONE';
             pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status]);
-            sendNoitification(filestoreid, mobileNumber, tenantId);
+            sendNoitification(filestoreid, mobileNumber, tenantId, null);
         
           }).catch((err) => {
             logger.error(err.stack || err);
@@ -498,4 +525,104 @@ export async function mergePdfForDN(bulkPdfJobId, tenantId, userid, numberOfFile
     logger.error(err.stack || err);
   }
   
+}
+export async function updateBillFileStoreId(billId, billNumber, consumerCode, tenantId, fileStoreId, userId) {
+  try {
+    const currentTime = new Date().getTime();
+    const modifiedBy = userId ? String(userId) : 'pdf-service';
+    const tenantPattern = tenantId ? `${tenantId.split('.')[0]}%` : '%';
+
+    // 1. Try updating by bill id directly (UUID is globally unique)
+    if (billId) {
+      // 1a. If tenantId matches exactly or starts with tenantId (e.g. pb or pb.amritsar)
+      if (tenantId) {
+        const updateByIdTenantQuery = 'UPDATE egbs_bill_v1 SET filestoreid = $1, lastmodifiedby = $2, lastmodifieddate = $3 WHERE id = $4 AND (tenantid = $5 OR tenantid LIKE $6)';
+        const resultTenant = await pool.query(updateByIdTenantQuery, [fileStoreId, modifiedBy, currentTime, billId, tenantId, `${tenantId}.%`]);
+        if (resultTenant && resultTenant.rowCount > 0) {
+          logger.info(`Updated filestoreid ${fileStoreId} for bill id: ${billId} (tenant: ${tenantId}) in egbs_bill_v1`);
+          return;
+        }
+      }
+
+      // 1b. Fallback: update by bill id alone since UUID is globally unique
+      const updateByIdQuery = 'UPDATE egbs_bill_v1 SET filestoreid = $1, lastmodifiedby = $2, lastmodifieddate = $3 WHERE id = $4';
+      const result = await pool.query(updateByIdQuery, [fileStoreId, modifiedBy, currentTime, billId]);
+      if (result && result.rowCount > 0) {
+        logger.info(`Updated filestoreid ${fileStoreId} for bill id: ${billId} in egbs_bill_v1`);
+        return;
+      }
+    }
+
+    // 2. Try updating by bill number via egbs_billdetail_v1
+    if (billNumber) {
+      const updateByBillNoQuery = 'UPDATE egbs_bill_v1 SET filestoreid = $1, lastmodifiedby = $2, lastmodifieddate = $3 WHERE id IN (SELECT billid FROM egbs_billdetail_v1 WHERE billno = $4 AND (tenantid = $5 OR tenantid LIKE $6 OR tenantid LIKE $7))';
+      const result = await pool.query(updateByBillNoQuery, [fileStoreId, modifiedBy, currentTime, billNumber, tenantId || '', `${tenantId}.%`, tenantPattern]);
+      if (result && result.rowCount > 0) {
+        logger.info(`Updated filestoreid ${fileStoreId} for billno: ${billNumber} in egbs_bill_v1`);
+        return;
+      }
+    }
+
+    // 3. Fallback: update active bill for consumerCode
+    if (consumerCode) {
+      const updateByConsumerCodeQuery = "UPDATE egbs_bill_v1 SET filestoreid = $1, lastmodifiedby = $2, lastmodifieddate = $3 WHERE consumercode = $4 AND (tenantid = $5 OR tenantid LIKE $6 OR tenantid LIKE $7) AND status = 'ACTIVE'";
+      const result = await pool.query(updateByConsumerCodeQuery, [fileStoreId, modifiedBy, currentTime, consumerCode, tenantId || '', `${tenantId}.%`, tenantPattern]);
+      if (result && result.rowCount > 0) {
+        logger.info(`Updated filestoreid ${fileStoreId} for active bill with consumerCode: ${consumerCode} in egbs_bill_v1`);
+        return;
+      }
+    }
+
+    logger.warn(`Could not find bill in egbs_bill_v1 to update filestoreid ${fileStoreId}. billId: ${billId}, billNumber: ${billNumber}, consumerCode: ${consumerCode}, tenantId: ${tenantId}`);
+  } catch (err) {
+    logger.error(`Error updating filestoreid in egbs_bill_v1: ${err.stack || err.message}`);
+  }
+}
+
+export async function cleanupExpiredBulkPdfs() {
+  const deletedJobs = [];
+  try {
+    const now = Date.now();
+    const fallbackMs = (envVariables.BATCH_EXPIRATION_SECONDS && envVariables.BATCH_EXPIRATION_SECONDS > 0)
+      ? (envVariables.BATCH_EXPIRATION_SECONDS * 1000)
+      : ((envVariables.BATCH_EXPIRATION_DAYS || 15) * 24 * 60 * 60 * 1000);
+
+    const query = `
+      SELECT jobid, filestoreid, tenantid, expirydate, createdtime
+      FROM egov_bulk_pdf_info
+      WHERE status = 'DONE'
+        AND status NOT IN ('EXPIRED')
+        AND filestoreid IS NOT NULL
+        AND trim(filestoreid) != ''
+        AND lower(trim(filestoreid)) NOT IN ('null', 'undefined')
+        AND (
+          (expirydate IS NOT NULL AND expirydate <= $1)
+          OR (expirydate IS NULL AND createdtime IS NOT NULL AND (createdtime + $2) <= $1)
+        )
+      LIMIT 50
+    `;
+    const result = await pool.query(query, [now, fallbackMs]);
+
+    if (result.rows && result.rows.length > 0) {
+      logger.info(`[Cleanup] Found ${result.rows.length} expired bulk PDF(s) to delete from filestore/MinIO.`);
+      for (const row of result.rows) {
+        const { jobid, filestoreid, tenantid } = row;
+        if (!filestoreid || typeof filestoreid !== 'string' || filestoreid.trim() === '' || filestoreid.toLowerCase() === 'null' || filestoreid.toLowerCase() === 'undefined') {
+          logger.warn(`[Cleanup] Skipping job ${jobid} because it does not have a valid fileStoreId: '${filestoreid}'`);
+          continue;
+        }
+        logger.info(`[Cleanup] Deleting expired bulk bill fileStoreId: ${filestoreid} (jobid: ${jobid})`);
+        await deleteFileStoreFile(filestoreid, tenantid);
+        await pool.query(
+          "UPDATE egov_bulk_pdf_info SET status = 'EXPIRED', lastmodifiedtime = $1 WHERE jobid = $2",
+          [Date.now(), jobid]
+        );
+        logger.info(`[Cleanup] Bulk PDF job ${jobid} successfully marked as EXPIRED.`);
+        deletedJobs.push({ jobId: jobid, fileStoreId: filestoreid });
+      }
+    }
+  } catch (err) {
+    logger.error(`Error in cleanupExpiredBulkPdfs: ${err.message || err}`);
+  }
+  return deletedJobs;
 }

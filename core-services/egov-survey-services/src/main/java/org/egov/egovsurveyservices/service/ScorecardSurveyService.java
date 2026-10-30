@@ -530,9 +530,11 @@ public class ScorecardSurveyService {
             }
         }
 
-        return PlainSearchResponse.builder()
+        PlainSearchResponse response = PlainSearchResponse.builder()
                 .surveyResponses(responses)
                 .build();
+        producer.push("csc-answer-legacyIndex", response);
+        return response;
     }
 
     private ScorecardAnswerResponse buildScorecardAnswerResponseWithWeightage(List<AnswerNew> answers, AnswerFetchCriteria criteria) {

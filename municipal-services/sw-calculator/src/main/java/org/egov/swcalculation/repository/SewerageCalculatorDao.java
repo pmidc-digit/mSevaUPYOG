@@ -55,5 +55,7 @@ public interface SewerageCalculatorDao {
 	
 	public Boolean getexpiryBills(List billSearchsss);
 
+    public String getRelatedConnection(String tenantId, String consumerCode);
+
 	
 }

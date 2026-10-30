@@ -16,19 +16,38 @@ let localisationPrefix = 'SERVICEDEFS.';
 class PGRV1StatusUpdateEventFormatter{
 
     constructor() {
-        let consumerGroup = new kafka.ConsumerGroup(consumerGroupOptions, config.pgrUseCase.pgrUpdateTopic);
+        let pgrConsumerOptions = Object.assign({}, consumerGroupOptions, {
+            groupId: config.kafka.pgrConsumerGroupId
+        });
+        let consumerGroup = new kafka.ConsumerGroup(pgrConsumerOptions, config.pgrUseCase.pgrUpdateTopic);
         let self = this;
         consumerGroup.on('message', function(message) {
-            if(message.topic === config.pgrUseCase.pgrUpdateTopic) {
-                self.templateMessgae(JSON.parse(message.value))
-                .then(() => {
-                    console.log("template message sent to citizen");        // TODO: Logs to be removed
-                })
-                .catch(error => {
-                    console.error('error while sending event message');
-                    console.error(error.stack || error);
-                });
+            try {
+                if(message.topic === config.pgrUseCase.pgrUpdateTopic) {
+                    let parsedValue;
+                    try {
+                        parsedValue = typeof message.value === 'string' ? JSON.parse(message.value) : message.value;
+                    } catch (parseErr) {
+                        console.error('Failed to parse PGR v1 message JSON:', parseErr.message);
+                        return;
+                    }
+                    self.templateMessgae(parsedValue)
+                    .then(() => {
+                        console.log("template message sent to citizen");        // TODO: Logs to be removed
+                    })
+                    .catch(error => {
+                        console.error('error while sending event message:', error.message);
+                        console.error(error.stack || error);
+                    });
+                }
+            } catch (err) {
+                console.error('Unhandled error in PGR v1 consumer on message:', err.message);
+                console.error(err.stack || err);
             }
+        });
+        consumerGroup.on('error', (error) => {
+            console.error('Kafka consumer group error:', error.message);
+            console.error(error.stack || error);
         });
     }
     

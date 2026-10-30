@@ -114,6 +114,30 @@ public class MeterReading {
 	@JsonProperty("tenantId")
 	private String tenantId = null;
 	
+	@SafeHtml
+	@JsonProperty("createdByName")
+	private String createdByName = null;
+
+	@SafeHtml
+	@JsonProperty("lastModifiedByName")
+	private String lastModifiedByName = null;
+
+	public String getCreatedByName() {
+		return createdByName;
+	}
+
+	public void setCreatedByName(String createdByName) {
+		this.createdByName = createdByName;
+	}
+
+	public String getLastModifiedByName() {
+		return lastModifiedByName;
+	}
+
+	public void setLastModifiedByName(String lastModifiedByName) {
+		this.lastModifiedByName = lastModifiedByName;
+	}
+	
 	// ✅ NEW: isBulkMeter field
 	// Sent from CURL request. Drives which MDMS max reading cap is used for
 	// meter status "Reset":

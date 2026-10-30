@@ -78,13 +78,14 @@ public class ESignController {
             @RequestParam("eSignResponse") String response,
             @RequestParam("espTxnID") String espTxnID,
             @RequestParam(value = "callbackUrl", required = false) String callbackUrl,
+            @RequestParam(value = "tenantId", required = false) String tenantId,
             HttpServletRequest request) {
 
         logger.info("Received complete signing request for espTxnID: {}", espTxnID);
 
         try {
             // Updated: Service now returns a Map
-            Map<String, String> signingResult = eSignService.processDocumentCompletion(response, espTxnID, request);
+            Map<String, String> signingResult = eSignService.processDocumentCompletion(response, espTxnID, request, tenantId);
             
             logger.info("Document signing completed successfully: {}", signingResult.get("fileUrl"));
 

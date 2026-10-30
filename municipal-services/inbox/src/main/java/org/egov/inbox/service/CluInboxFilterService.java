@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
+import org.egov.inbox.config.InboxConfiguration;
 import org.egov.inbox.repository.ServiceRequestRepository;
 import org.egov.inbox.web.model.InboxSearchCriteria;
 import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
@@ -25,6 +26,9 @@ import static org.egov.inbox.util.TLConstants.STATUS_PARAM;
 @Slf4j
 @Service
 public class CluInboxFilterService {
+
+    @Autowired
+    private InboxConfiguration config;
 
     @Value("${egov.user.search.path}")
     private String userSearchEndpoint;
@@ -110,6 +114,57 @@ public class CluInboxFilterService {
 
         return applicationNumbers == null ? new ArrayList<>() : applicationNumbers;
     }
+    //This is made so as to get full application and perform ulb wise grouping
+    public List<Map<String, String>> fetchTenantWiseApplicationNumbersFromSearcher(InboxSearchCriteria criteria,
+                                                                                    HashMap<String, String> statusIdNameMap,
+                                                                                    RequestInfo requestInfo) {
+        HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
+        ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
+        Boolean isSearchResultEmpty = false;
+        Boolean isMobileNumberPresent = false;
+        List<String> userUUIDs = new ArrayList<>();
+        List<String> citizenRoles = Collections.emptyList();
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
+            isMobileNumberPresent = true;
+        }
+        if (isMobileNumberPresent) {
+            String tenantId = criteria.getTenantId();
+            String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
+            Map<String, List<String>> userDetails = fetchUserUUID(mobileNumber, requestInfo, tenantId);
+            userUUIDs = userDetails.get(USER_UUID);
+            citizenRoles = userDetails.get(USER_ROLES);
+            Boolean isUserPresentForGivenMobileNumber = CollectionUtils.isEmpty(userUUIDs) ? false : true;
+            isSearchResultEmpty = !isMobileNumberPresent || !isUserPresentForGivenMobileNumber;
+            if (isSearchResultEmpty) {
+                return new ArrayList<>();
+            }
+        } else {
+            List<String> roles = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toList());
+            if(roles.contains(CITIZEN)) {
+                userUUIDs.add(requestInfo.getUserInfo().getUuid());
+                citizenRoles = roles;
+            }
+        }
+        Map<String, Object> searcherRequest = new HashMap<>();
+        Map<String, Object> searchCriteria = getSearchCriteria(criteria, statusIdNameMap,
+                moduleSearchCriteria, processCriteria,userUUIDs,citizenRoles);
+
+        if (criteria.getOffset() != null) searchCriteria.put(OFFSET_PARAM, criteria.getOffset());
+        if (criteria.getLimit() != null) searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
+        if (moduleSearchCriteria != null && criteria.getLimit() != null) moduleSearchCriteria.put(LIMIT_PARAM, criteria.getLimit());
+
+        searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
+        searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
+
+        String endpoint = resolveSearchEndpoint(moduleSearchCriteria);
+        if (endpoint == null || endpoint.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Object result = restTemplate.postForObject(endpoint, searcherRequest, Map.class);
+        List<Map<String, String>> tenantWiseApplns = JsonPath.read(result, "$.cluApplication.*");
+        return tenantWiseApplns == null ? new ArrayList<>() : tenantWiseApplns;
+    }
 
     /**
      * Resolve search endpoint based on sort order
@@ -144,7 +199,16 @@ public class CluInboxFilterService {
         Map<String, Object> searchCriteria = new HashMap<>();
 
         // Mandatory parameters
-        searchCriteria.put(TENANT_ID_PARAM, criteria.getTenantId());
+
+        String tenantId = criteria.getTenantId();
+        //if tenant id is pb.punjab then we make it a wildcard so that all ulbs can be fetched
+        if (tenantId != null && tenantId.equals("pb.punjab")) {
+            tenantId = tenantId.split("\\.")[0] + ".%";
+            if (config != null && !ObjectUtils.isEmpty(config.getCrossTenantExcludedTenantId())) {
+                searchCriteria.put("excludeTenantId", config.getCrossTenantExcludedTenantId());
+            }
+        }
+        searchCriteria.put(TENANT_ID_PARAM, tenantId);
         searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());
 
         // Application Number
@@ -194,6 +258,14 @@ public class CluInboxFilterService {
         // Owner Type
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("ownerType")) {
             searchCriteria.put("ownerType", moduleSearchCriteria.get("ownerType"));
+        }
+
+        // Migration filter: default to false (non-migrated) unless isMigrated is true
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("isMigrated")
+                && Boolean.parseBoolean(String.valueOf(moduleSearchCriteria.get("isMigrated")))) {
+            searchCriteria.put("isMigrationTrue", "true");
+        } else {
+            searchCriteria.put("isMigrationTrue", "false");
         }
 
         // Assignee from workflow

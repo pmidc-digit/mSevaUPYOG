@@ -391,14 +391,15 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		    .sorted(Comparator.comparing(MeterReading::getLastReadingDate).reversed())
 		    .findFirst()
 		    .orElse(null);
-
+		    
+		    BigDecimal breakdownCharge = BigDecimal.ZERO;
 		    if (previousReading != null
 		            && MeterReading.MeterStatusEnum.BREAKDOWN
 		                    .equals(previousReading.getMeterStatus())) {
 
 		        // 🔥 Consecutive BREAKDOWN → penalty
-		        waterCharge = getChargeFromDemand(previousReading, criteria, requestInfo);
-		        penalty = waterCharge.multiply(BigDecimal.valueOf(2))
+		    	breakdownCharge  = getChargeFromDemand(previousReading, criteria, requestInfo);
+		        penalty = breakdownCharge .multiply(BigDecimal.valueOf(2))
 		                .setScale(2, RoundingMode.HALF_UP);
 
 //		        log.info("Consecutive BREAKDOWN | prevFrom={} charge={} penalty={}",
@@ -406,12 +407,22 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 
 		    } else {
 		        // ✅ First BREAKDOWN
-		        waterCharge = getAverageFromLastThreeDemands(criteria, requestInfo);
+		    	breakdownCharge  = getAverageFromLastThreeDemands(criteria, requestInfo);
 		        penalty = BigDecimal.ZERO;
 
-		        log.info("First BREAKDOWN | avgCharge={}", waterCharge);
+		        log.info("First BREAKDOWN | avgCharge={}", breakdownCharge);
 		    }
-		
+
+		    if (breakdownCharge.compareTo(BigDecimal.ZERO) > 0) {
+		        long effectiveMonths = estimationService.calculateEffectiveMonths(currentFrom, currentTo);
+		        double quarterRatio = effectiveMonths / 3.0;
+		        waterCharge = breakdownCharge.multiply(BigDecimal.valueOf(quarterRatio)).setScale(2, RoundingMode.HALF_UP);
+		        if (penalty.compareTo(BigDecimal.ZERO) > 0) {
+		            penalty = penalty.multiply(BigDecimal.valueOf(quarterRatio)).setScale(2, RoundingMode.HALF_UP);
+		        }
+		    } else {
+		        log.info("BREAKDOWN average was 0 or not found; using estimation charge = {}", waterCharge);
+		    }		
 
 				    // Add WS_CHARGE estimate
 				    estimates.removeIf(e -> TaxHeadCategory.CHARGES.equals(e.getCategory()));

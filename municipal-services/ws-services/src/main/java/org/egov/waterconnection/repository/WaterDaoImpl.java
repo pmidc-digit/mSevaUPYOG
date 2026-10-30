@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
@@ -65,11 +66,20 @@ public class WaterDaoImpl implements WaterDao {
 	@Value("${egov.waterservice.updatewaterconnection.topic}")
 	private String updateWaterConnection;
 
+    @Value("${egov.waterservice.updatebillstatus.topic}")
+    private String updateBillStatusTopic;
+
+    @Value("${egov.waterservice.updatedemandpayer.topic}")
+    private String updateDemandPayerTopic;
+
 	@Value("${egov.waterservice.oldDataEncryptionStatus.topic}")
 	private String encryptionStatusTopic;
 
 	@Value("${egov.waterservice.update.oldData.topic}")
 	private String updateOldDataEncTopic;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
 	@Override
 	public void saveWaterConnection(WaterConnectionRequest waterConnectionRequest) {
@@ -130,11 +140,11 @@ public class WaterDaoImpl implements WaterDao {
 		String key = waterConnectionRequest.getWaterConnection().getConnectionNo();
 		if (isStateUpdatable) 
 		{
-			if (WCConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction)) 
+			if (WCConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction) || WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(reqAction)) 
 			{
-				waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.INACTIVE);
+				waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.DISCONNECTED);
 			}
-			if ((waterConnectionRequest.isReconnectRequest() || waterConnectionRequest.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION)) && WCConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
+			if ((waterConnectionRequest.isReconnectRequest() || (waterConnectionRequest.getWaterConnection().getApplicationType() != null && waterConnectionRequest.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) && WCConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.ACTIVE);
 			}
 			else if(waterConnectionRequest.getWaterConnection().isIsworkflowdisabled())
@@ -145,10 +155,15 @@ public class WaterDaoImpl implements WaterDao {
 			}
 			else
 				waterConnectionProducer.push(updateWaterConnection, key, waterConnectionRequest);
-		} 
-		
-		
-		else {
+		} else if (waterConnectionRequest.getWaterConnection().getApplicationType() != null && waterConnectionRequest
+				.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.DISCONNECT_WATER_CONNECTION)) {
+			if (WCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(reqAction)
+					|| WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(reqAction)
+					|| WCConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction)) {
+				waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.DISCONNECTED);
+			}
+			waterConnectionProducer.push(updateWaterConnection, key, waterConnectionRequest);
+		} else {
 			waterConnectionProducer.push(wsConfiguration.getWorkFlowUpdateTopic(), key, waterConnectionRequest);
 		}
 	}
@@ -497,6 +512,26 @@ public class WaterDaoImpl implements WaterDao {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	
+
+    @Override
+    public void updateOldBillStatus(UpdateBillStatusReq updateBillStatusReq) {
+        String key = updateBillStatusReq.getConsumer();
+        try{
+            waterConnectionProducer.push(updateBillStatusTopic, key, updateBillStatusReq);
+        }catch (Exception e){
+            log.info("Exception",e);
+        }
+    }
+
+    @Override
+    public void updatePayerIDForDemand(UpdateDemandPayerRequest updateDemandPayerRequest) {
+        String key = updateDemandPayerRequest.getConsumer();
+        try{
+            waterConnectionProducer.push(updateDemandPayerTopic, key, updateDemandPayerRequest);
+        }catch (Exception e){
+            log.info("Exception",e);
+        }
+
+    }
+
 }

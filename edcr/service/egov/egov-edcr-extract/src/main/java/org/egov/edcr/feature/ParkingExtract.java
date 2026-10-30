@@ -56,17 +56,27 @@ public class ParkingExtract extends FeatureExtract {
             LOGGER.debug("Starting of Parking Extract......");
         for (Block block : pl.getBlocks()) {
             for (Floor floor : block.getBuilding().getFloors()) {
-                String layerRegEx = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
-                        + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + floor.getNumber() + "_"
-                        + layerNames.getLayerName("LAYER_NAME_UNITFA");
-                List<DXFLWPolyline> occupancyUnits = Util.getPolyLinesByLayer(pl.getDoc(), layerRegEx);
+//                String layerRegEx = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
+//                        + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + floor.getNumber() + "_"
+//                        + layerNames.getLayerName("LAYER_NAME_UNITFA");
+//            	String layerRegEx = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
+//            	        + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + floor.getNumber() + "_"
+//            	        + layerNames.getLayerName("LAYER_NAME_UNITFA") + "_\\d+"; 
+//                //List<DXFLWPolyline> occupancyUnits = Util.getPolyLinesByLayer(pl.getDoc(), layerRegEx);
+//            	//Util.printLayerNamesLike(pl.getDoc());
+//                List<String> unitFALayers = Util.getLayerNamesLike(pl.getDoc(), layerRegEx);
+//                List<DXFLWPolyline> occupancyUnits = Util.getPolyLinesByLayerV2(pl.getDoc(), unitFALayers);
+//                
+//                for(DXFLWPolyline dxflwPolyline :occupancyUnits) {
+//                	LOGGER.info("Layer name : {} , code : {} " + dxflwPolyline.getLayerName(), dxflwPolyline.getColor());
+//                }
+//                
+//                if(!occupancyUnits.isEmpty()) {
+//                	Util.validateLayerColor(layerRegEx, 
+//                			Util.getColorByPolyLine(occupancyUnits), pl);
+//                }
                 
-                if(!occupancyUnits.isEmpty()) {
-                	Util.validateLayerColor(layerRegEx, 
-                			Util.getColorByPolyLine(occupancyUnits), pl);
-                }
-                
-                extractByLayer(pl, pl.getDoc(), block, floor, occupancyUnits);
+                //extractByLayer(pl, pl.getDoc(), block, floor, occupancyUnits);
                 
                 String coveredParkLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber()
                         + "_" + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + floor.getNumber() + "_"
@@ -112,31 +122,31 @@ public class ParkingExtract extends FeatureExtract {
 
             }
 
-            String hallLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
-                    + layerNames.getLayerName("LAYER_NAME_UNITFA_HALL") + "_" + "\\d";
-            List<String> layerNames1 = Util.getLayerNamesLike(pl.getDoc(), hallLayer);
-            for (String s : layerNames1) {
+//            String hallLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
+//                    + layerNames.getLayerName("LAYER_NAME_UNITFA_HALL") + "_" + "\\d";
+//            List<String> layerNames1 = Util.getLayerNamesLike(pl.getDoc(), hallLayer);
+//            for (String s : layerNames1) {
+//
+//                List<DXFLWPolyline> hallPolylines = Util.getPolyLinesByLayer(pl.getDoc(), s);
+//                for (DXFLWPolyline pline : hallPolylines) {
+//                    MeasurementDetail m = new MeasurementDetail(pline, true);
+//                    Hall hall = new Hall();
+//                    hall.setNumber(pline.getLayerName().substring(pline.getLayerName().length() - 1));
+//                    hall.setArea(m.getArea());
+//                    hall.setLength(m.getLength());
+//                    hall.setWidth(m.getWidth());
+//                    hall.setHeight(m.getHeight());
+//                    hall.setMinimumSide(m.getMinimumSide());
+//                    block.getHallAreas().add(hall);
+//                }
+//            }
 
-                List<DXFLWPolyline> hallPolylines = Util.getPolyLinesByLayer(pl.getDoc(), s);
-                for (DXFLWPolyline pline : hallPolylines) {
-                    MeasurementDetail m = new MeasurementDetail(pline, true);
-                    Hall hall = new Hall();
-                    hall.setNumber(pline.getLayerName().substring(pline.getLayerName().length() - 1));
-                    hall.setArea(m.getArea());
-                    hall.setLength(m.getLength());
-                    hall.setWidth(m.getWidth());
-                    hall.setHeight(m.getHeight());
-                    hall.setMinimumSide(m.getMinimumSide());
-                    block.getHallAreas().add(hall);
-                }
-            }
-
-            String dinningLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
-                    + layerNames.getLayerName("LAYER_NAME_UNITFA_DINING") + "_" + "\\d";
-            List<String> layerNames2 = Util.getLayerNamesLike(pl.getDoc(), dinningLayer);
-            for (String s : layerNames2)
-                Util.getPolyLinesByLayer(pl.getDoc(), s).forEach(
-                        dinningPolyline -> block.getDiningSpaces().add(new MeasurementDetail(dinningPolyline, true)));
+//            String dinningLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
+//                    + layerNames.getLayerName("LAYER_NAME_UNITFA_DINING") + "_" + "\\d";
+//            List<String> layerNames2 = Util.getLayerNamesLike(pl.getDoc(), dinningLayer);
+//            for (String s : layerNames2)
+//                Util.getPolyLinesByLayer(pl.getDoc(), s).forEach(
+//                        dinningPolyline -> block.getDiningSpaces().add(new MeasurementDetail(dinningPolyline, true)));
         }
 
         Util.getPolyLinesByLayer(pl.getDoc(), layerNames.getLayerName("LAYER_NAME_LOADING_UNLOADING"))
@@ -296,7 +306,8 @@ public class ParkingExtract extends FeatureExtract {
                 floorUnit.setColorCode(flrUnitPLine.getColor());
                 Occupancy occupancy = new Occupancy();
                 // this should not be called
-                Util.setOccupancyType(flrUnitPLine, occupancy);
+                //Util.setOccupancyType(flrUnitPLine, occupancy);
+                occupancy.setType(Util.findOccupancyType(flrUnitPLine));
                 occupancy.setTypeHelper(Util.findOccupancyType(flrUnitPLine, pl));
                 specialCaseCheckForOccupancyType(flrUnitPLine, occupancy);
                 floorUnit.setOccupancy(occupancy);

@@ -95,4 +95,15 @@ public class CLUController {
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@PostMapping(value = "/_plainsearch")
+	public ResponseEntity<CluResponse> plainSearch(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+												  @Valid @ModelAttribute LayoutSearchCriteria criteria) {
+
+		List<Clu> nocList = nocService.plainSearch(criteria, requestInfoWrapper.getRequestInfo());
+		CluResponse response = CluResponse.builder().noc(nocList).responseInfo(
+				responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

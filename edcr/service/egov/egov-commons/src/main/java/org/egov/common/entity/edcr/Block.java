@@ -95,8 +95,17 @@ public class Block extends Measurement {
     private Parapet parapetV2;
     private Chimney chimneyV2;
     private List<Portico> porticos = new ArrayList<>();
-    
-    private List<TerraceToilet> terraceToilet = new ArrayList<>();
+    private Boolean isUnitFa = false;
+           
+    public Boolean getIsUnitFa() {
+		return isUnitFa;
+	}
+
+	public void setIsUnitFa(Boolean isUnitFa) {
+		this.isUnitFa = isUnitFa;
+	}
+
+	private List<TerraceToilet> terraceToilet = new ArrayList<>();
 
     public List<TerraceToilet> getTerraceToilet() {
 		return terraceToilet;

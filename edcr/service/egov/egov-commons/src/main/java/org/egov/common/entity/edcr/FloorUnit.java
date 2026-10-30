@@ -50,6 +50,7 @@ package org.egov.common.entity.edcr;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FloorUnit extends Measurement {
 
@@ -58,29 +59,596 @@ public class FloorUnit extends Measurement {
     private Occupancy occupancy;
     private List<Measurement> deductions = new ArrayList<>();
     private BigDecimal totalUnitDeduction;
+    private Floor dwellingUnit;
+    private Integer unitNo;
+    
+    private List<Occupancy> occupancies = new ArrayList<>();
+    private List<Occupancy> convertedOccupancies = new ArrayList<>();
+    private List<FloorUnit> units = new ArrayList<>();
+    private List<DARoom> daRooms = new ArrayList<>();
+    private List<Ramp> ramps = new ArrayList<>();
+    private List<VehicleRamp> vehicleRamps = new ArrayList<>();
+    private List<Lift> lifts = new ArrayList<>();
+    private List<Lift> daLifts = new ArrayList<>();
+    private Measurement exterior;
+    // private List<Measurement> openSpaces = new ArrayList<>();
+    // this is for differently able people
+    private List<Measurement> specialWaterClosets = new ArrayList<>();
+    private List<Measurement> coverageDeduct = new ArrayList<>();
+    private String name;
+    private Integer number;
+    private List<BigDecimal> exitWidthDoor = new ArrayList<>();
+    private List<BigDecimal> exitWidthStair = new ArrayList<>();
+    private List<MezzanineFloor> mezzanineFloor = new ArrayList<>();
+    private List<Hall> halls = new ArrayList<>();
+    private List<FireStair> fireStairs = new ArrayList<>();
+    private List<GeneralStair> generalStairs = new ArrayList<>();
+    private List<SpiralStair> spiralStairs = new ArrayList<>();
+    private ParkingDetails parking = new ParkingDetails();
+    private List<BigDecimal> floorHeights;
+    private List<Room> acRooms = new ArrayList<>();
+    private List<Room> regularRooms = new ArrayList<>();
+    private List<Room> habitationRooms = new ArrayList<>();
+    private List<Room> storeRooms = new ArrayList<>();
+    // Doors for version 1.1.1
+    private List<Door> doors = new ArrayList<>();
+    private List<Door> nonHabitationalDoors = new ArrayList<>();
+    
+    private List<Window> windows = new ArrayList<>();
 
-    public Occupancy getOccupancy() {
-        return occupancy;
+    private Room kitchen;
+    private Room bathRoom;
+    private Room waterClosets;
+    private List<Toilet> toilet;
+    private Room bathRoomWaterClosets;
+    private List<BigDecimal> heightFromTheFloorToCeiling;
+    private List<BigDecimal> heightOfTheCeilingOfUpperBasement;
+    private List<BigDecimal> levelOfBasementUnderGround;
+    private InteriorOpenSpace interiorOpenSpace = new InteriorOpenSpace();
+    private MeasurementWithHeight verandah = new MeasurementWithHeight();
+    private MeasurementWithHeight lightAndVentilation = new MeasurementWithHeight();
+    private MeasurementWithHeight bathVentilation = new MeasurementWithHeight();
+    private MeasurementWithHeight waterClosetVentilation = new MeasurementWithHeight();
+    private List<RoofArea> roofAreas = new ArrayList<>();
+
+    private List<Balcony> balconies = new ArrayList<>();
+    private Boolean isStiltFloor;
+
+    private List<Measurement> overHangs;
+
+    private List<Measurement> constructedAreas = new ArrayList<>();
+
+    private List<GlassFacadeOpening> glassFacadeOpenings = new ArrayList<>();
+    
+    private List<Cinema> cinemas = new ArrayList<>();
+    
+    
+    
+    public void addBuiltUpArea(Occupancy occupancy) {
+        if (occupancies == null) {
+            occupancies = new ArrayList<>();
+            occupancies.add(occupancy);
+        } else if (occupancies.contains(occupancy)) {
+            occupancies.get(occupancies.indexOf(occupancy))
+                    .setBuiltUpArea((occupancies.get(occupancies.indexOf(occupancy)).getBuiltUpArea() == null
+                            ? BigDecimal.ZERO
+                            : occupancies.get(occupancies.indexOf(occupancy)).getBuiltUpArea())
+                                    .add(occupancy.getBuiltUpArea()));
+            occupancies.get(occupancies.indexOf(occupancy)).setExistingBuiltUpArea(
+                    (occupancies.get(occupancies.indexOf(occupancy)).getExistingBuiltUpArea() == null ? BigDecimal.ZERO
+                            : occupancies.get(occupancies.indexOf(occupancy)).getExistingBuiltUpArea())
+                                    .add(occupancy.getExistingBuiltUpArea()));
+
+        } else
+            occupancies.add(occupancy);
+
     }
 
-    public void setOccupancy(Occupancy occupancy) {
-        this.occupancy = occupancy;
+    public void addCarpetArea(Occupancy occupancy) {
+        if (occupancies == null) {
+            occupancies = new ArrayList<>();
+            occupancies.add(occupancy);
+        } else if (occupancies.contains(occupancy)) {
+            occupancies.get(occupancies.indexOf(occupancy))
+                    .setCarpetArea((occupancies.get(occupancies.indexOf(occupancy)).getCarpetArea() == null
+                            ? BigDecimal.ZERO
+                            : occupancies.get(occupancies.indexOf(occupancy)).getCarpetArea())
+                                    .add(occupancy.getCarpetArea()));
+
+            occupancies.get(occupancies.indexOf(occupancy)).setExistingCarpetArea(
+                    (occupancies.get(occupancies.indexOf(occupancy)).getExistingCarpetArea() == null ? BigDecimal.ZERO
+                            : occupancies.get(occupancies.indexOf(occupancy)).getExistingCarpetArea())
+                                    .add(occupancy.getExistingCarpetArea()));
+        } else
+            occupancies.add(occupancy);
+
     }
 
-    public BigDecimal getTotalUnitDeduction() {
-        return totalUnitDeduction;
+    public void addDeductionArea(Occupancy occupancy) {
+        if (occupancies == null) {
+            occupancies = new ArrayList<>();
+            occupancies.add(occupancy);
+        } else {
+            List<Occupancy> collect = occupancies.stream().filter(o -> o.getTypeHelper() != null
+                    && (occupancy.getTypeHelper() != null && o.getTypeHelper().getType() != null
+                            && o.getTypeHelper().getType().getCode()
+                                    .equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())))
+                    .collect(Collectors.toList());
+            if (!collect.isEmpty()) {
+                collect.get(0)
+                        .setDeduction(collect.get(0).getDeduction() == null
+                                ? BigDecimal.ZERO
+                                : collect.get(0).getDeduction()
+                                        .add(occupancy.getDeduction()));
+                collect.get(0).setExistingDeduction(
+                        (collect.get(0).getExistingDeduction() == null ? BigDecimal.ZERO
+                                : collect.get(0).getExistingDeduction())
+                                        .add(occupancy.getExistingDeduction()));
+            } else
+                occupancies.add(occupancy);
+        }
+
     }
 
-    public void setTotalUnitDeduction(BigDecimal totalDeduction) {
-        this.totalUnitDeduction = totalDeduction;
+    public void addCarpetDeductionArea(Occupancy occupancy) {
+        if (occupancies == null) {
+            occupancies = new ArrayList<>();
+            occupancies.add(occupancy);
+        } else {
+            List<Occupancy> collect = occupancies.stream().filter(o -> o.getTypeHelper() != null
+                    && (o.getTypeHelper().getType().getCode()
+                            .equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())))
+                    .collect(Collectors.toList());
+            if (!collect.isEmpty()) {
+                collect.get(0)
+                        .setCarpetAreaDeduction(collect.get(0).getCarpetAreaDeduction() == null
+                                ? BigDecimal.ZERO
+                                : collect.get(0).getCarpetAreaDeduction()
+                                        .add(occupancy.getCarpetAreaDeduction()));
+                collect.get(0).setExistingCarpetAreaDeduction(
+                        (collect.get(0).getExistingCarpetAreaDeduction() == null ? BigDecimal.ZERO
+                                : collect.get(0).getExistingCarpetAreaDeduction())
+                                        .add(occupancy.getExistingCarpetAreaDeduction()));
+            } else
+                occupancies.add(occupancy);
+        }
+
     }
 
-    public List<Measurement> getDeductions() {
-        return deductions;
-    }
+	public Occupancy getOccupancy() {
+		return occupancy;
+	}
 
-    public void setDeductions(List<Measurement> deductions) {
-        this.deductions = deductions;
-    }
+	public void setOccupancy(Occupancy occupancy) {
+		this.occupancy = occupancy;
+	}
+
+	public List<Measurement> getDeductions() {
+		return deductions;
+	}
+
+	public void setDeductions(List<Measurement> deductions) {
+		this.deductions = deductions;
+	}
+
+	public BigDecimal getTotalUnitDeduction() {
+		return totalUnitDeduction;
+	}
+
+	public void setTotalUnitDeduction(BigDecimal totalUnitDeduction) {
+		this.totalUnitDeduction = totalUnitDeduction;
+	}
+
+	public Floor getDwellingUnit() {
+		return dwellingUnit;
+	}
+
+	public void setDwellingUnit(Floor dwellingUnit) {
+		this.dwellingUnit = dwellingUnit;
+	}
+
+	public Integer getUnitNo() {
+		return unitNo;
+	}
+
+	public void setUnitNo(Integer unitNo) {
+		this.unitNo = unitNo;
+	}
+
+	public List<Occupancy> getOccupancies() {
+		return occupancies;
+	}
+
+	public void setOccupancies(List<Occupancy> occupancies) {
+		this.occupancies = occupancies;
+	}
+
+	public List<Occupancy> getConvertedOccupancies() {
+		return convertedOccupancies;
+	}
+
+	public void setConvertedOccupancies(List<Occupancy> convertedOccupancies) {
+		this.convertedOccupancies = convertedOccupancies;
+	}
+
+	public List<FloorUnit> getUnits() {
+		return units;
+	}
+
+	public void setUnits(List<FloorUnit> units) {
+		this.units = units;
+	}
+
+	public List<DARoom> getDaRooms() {
+		return daRooms;
+	}
+
+	public void setDaRooms(List<DARoom> daRooms) {
+		this.daRooms = daRooms;
+	}
+
+	public List<Ramp> getRamps() {
+		return ramps;
+	}
+
+	public void setRamps(List<Ramp> ramps) {
+		this.ramps = ramps;
+	}
+
+	public List<VehicleRamp> getVehicleRamps() {
+		return vehicleRamps;
+	}
+
+	public void setVehicleRamps(List<VehicleRamp> vehicleRamps) {
+		this.vehicleRamps = vehicleRamps;
+	}
+
+	public List<Lift> getLifts() {
+		return lifts;
+	}
+
+	public void setLifts(List<Lift> lifts) {
+		this.lifts = lifts;
+	}
+
+	public List<Lift> getDaLifts() {
+		return daLifts;
+	}
+
+	public void setDaLifts(List<Lift> daLifts) {
+		this.daLifts = daLifts;
+	}
+
+	public Measurement getExterior() {
+		return exterior;
+	}
+
+	public void setExterior(Measurement exterior) {
+		this.exterior = exterior;
+	}
+
+	public List<Measurement> getSpecialWaterClosets() {
+		return specialWaterClosets;
+	}
+
+	public void setSpecialWaterClosets(List<Measurement> specialWaterClosets) {
+		this.specialWaterClosets = specialWaterClosets;
+	}
+
+	public List<Measurement> getCoverageDeduct() {
+		return coverageDeduct;
+	}
+
+	public void setCoverageDeduct(List<Measurement> coverageDeduct) {
+		this.coverageDeduct = coverageDeduct;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Integer getNumber() {
+		return number;
+	}
+
+	public void setNumber(Integer number) {
+		this.number = number;
+	}
+
+	public List<BigDecimal> getExitWidthDoor() {
+		return exitWidthDoor;
+	}
+
+	public void setExitWidthDoor(List<BigDecimal> exitWidthDoor) {
+		this.exitWidthDoor = exitWidthDoor;
+	}
+
+	public List<BigDecimal> getExitWidthStair() {
+		return exitWidthStair;
+	}
+
+	public void setExitWidthStair(List<BigDecimal> exitWidthStair) {
+		this.exitWidthStair = exitWidthStair;
+	}
+
+	public List<MezzanineFloor> getMezzanineFloor() {
+		return mezzanineFloor;
+	}
+
+	public void setMezzanineFloor(List<MezzanineFloor> mezzanineFloor) {
+		this.mezzanineFloor = mezzanineFloor;
+	}
+
+	public List<Hall> getHalls() {
+		return halls;
+	}
+
+	public void setHalls(List<Hall> halls) {
+		this.halls = halls;
+	}
+
+	public List<FireStair> getFireStairs() {
+		return fireStairs;
+	}
+
+	public void setFireStairs(List<FireStair> fireStairs) {
+		this.fireStairs = fireStairs;
+	}
+
+	public List<GeneralStair> getGeneralStairs() {
+		return generalStairs;
+	}
+
+	public void setGeneralStairs(List<GeneralStair> generalStairs) {
+		this.generalStairs = generalStairs;
+	}
+
+	public List<SpiralStair> getSpiralStairs() {
+		return spiralStairs;
+	}
+
+	public void setSpiralStairs(List<SpiralStair> spiralStairs) {
+		this.spiralStairs = spiralStairs;
+	}
+
+	public ParkingDetails getParking() {
+		return parking;
+	}
+
+	public void setParking(ParkingDetails parking) {
+		this.parking = parking;
+	}
+
+	public List<BigDecimal> getFloorHeights() {
+		return floorHeights;
+	}
+
+	public void setFloorHeights(List<BigDecimal> floorHeights) {
+		this.floorHeights = floorHeights;
+	}
+
+	public List<Room> getAcRooms() {
+		return acRooms;
+	}
+
+	public void setAcRooms(List<Room> acRooms) {
+		this.acRooms = acRooms;
+	}
+
+	public List<Room> getRegularRooms() {
+		return regularRooms;
+	}
+
+	public void setRegularRooms(List<Room> regularRooms) {
+		this.regularRooms = regularRooms;
+	}
+
+	public List<Room> getHabitationRooms() {
+		return habitationRooms;
+	}
+
+	public void setHabitationRooms(List<Room> habitationRooms) {
+		this.habitationRooms = habitationRooms;
+	}
+
+	public List<Room> getStoreRooms() {
+		return storeRooms;
+	}
+
+	public void setStoreRooms(List<Room> storeRooms) {
+		this.storeRooms = storeRooms;
+	}
+
+	public List<Door> getDoors() {
+		return doors;
+	}
+
+	public void setDoors(List<Door> doors) {
+		this.doors = doors;
+	}
+
+	
+
+	public List<Door> getNonHabitationalDoors() {
+		return nonHabitationalDoors;
+	}
+
+	public void setNonHabitationalDoors(List<Door> nonHabitationalDoors) {
+		this.nonHabitationalDoors = nonHabitationalDoors;
+	}
+
+	public List<Window> getWindows() {
+		return windows;
+	}
+
+	public void setWindows(List<Window> windows) {
+		this.windows = windows;
+	}
+
+	public Room getKitchen() {
+		return kitchen;
+	}
+
+	public void setKitchen(Room kitchen) {
+		this.kitchen = kitchen;
+	}
+
+	public Room getBathRoom() {
+		return bathRoom;
+	}
+
+	public void setBathRoom(Room bathRoom) {
+		this.bathRoom = bathRoom;
+	}
+
+	public Room getWaterClosets() {
+		return waterClosets;
+	}
+
+	public void setWaterClosets(Room waterClosets) {
+		this.waterClosets = waterClosets;
+	}
+
+	public List<Toilet> getToilet() {
+		return toilet;
+	}
+
+	public void setToilet(List<Toilet> toilet) {
+		this.toilet = toilet;
+	}
+
+	public Room getBathRoomWaterClosets() {
+		return bathRoomWaterClosets;
+	}
+
+	public void setBathRoomWaterClosets(Room bathRoomWaterClosets) {
+		this.bathRoomWaterClosets = bathRoomWaterClosets;
+	}
+
+	public List<BigDecimal> getHeightFromTheFloorToCeiling() {
+		return heightFromTheFloorToCeiling;
+	}
+
+	public void setHeightFromTheFloorToCeiling(List<BigDecimal> heightFromTheFloorToCeiling) {
+		this.heightFromTheFloorToCeiling = heightFromTheFloorToCeiling;
+	}
+
+	public List<BigDecimal> getHeightOfTheCeilingOfUpperBasement() {
+		return heightOfTheCeilingOfUpperBasement;
+	}
+
+	public void setHeightOfTheCeilingOfUpperBasement(List<BigDecimal> heightOfTheCeilingOfUpperBasement) {
+		this.heightOfTheCeilingOfUpperBasement = heightOfTheCeilingOfUpperBasement;
+	}
+
+	public List<BigDecimal> getLevelOfBasementUnderGround() {
+		return levelOfBasementUnderGround;
+	}
+
+	public void setLevelOfBasementUnderGround(List<BigDecimal> levelOfBasementUnderGround) {
+		this.levelOfBasementUnderGround = levelOfBasementUnderGround;
+	}
+
+	public InteriorOpenSpace getInteriorOpenSpace() {
+		return interiorOpenSpace;
+	}
+
+	public void setInteriorOpenSpace(InteriorOpenSpace interiorOpenSpace) {
+		this.interiorOpenSpace = interiorOpenSpace;
+	}
+
+	public MeasurementWithHeight getVerandah() {
+		return verandah;
+	}
+
+	public void setVerandah(MeasurementWithHeight verandah) {
+		this.verandah = verandah;
+	}
+
+	public MeasurementWithHeight getLightAndVentilation() {
+		return lightAndVentilation;
+	}
+
+	public void setLightAndVentilation(MeasurementWithHeight lightAndVentilation) {
+		this.lightAndVentilation = lightAndVentilation;
+	}
+
+	public MeasurementWithHeight getBathVentilation() {
+		return bathVentilation;
+	}
+
+	public void setBathVentilation(MeasurementWithHeight bathVentilation) {
+		this.bathVentilation = bathVentilation;
+	}
+
+	public MeasurementWithHeight getWaterClosetVentilation() {
+		return waterClosetVentilation;
+	}
+
+	public void setWaterClosetVentilation(MeasurementWithHeight waterClosetVentilation) {
+		this.waterClosetVentilation = waterClosetVentilation;
+	}
+
+	public List<RoofArea> getRoofAreas() {
+		return roofAreas;
+	}
+
+	public void setRoofAreas(List<RoofArea> roofAreas) {
+		this.roofAreas = roofAreas;
+	}
+
+	public List<Balcony> getBalconies() {
+		return balconies;
+	}
+
+	public void setBalconies(List<Balcony> balconies) {
+		this.balconies = balconies;
+	}
+
+	public Boolean getIsStiltFloor() {
+		return isStiltFloor;
+	}
+
+	public void setIsStiltFloor(Boolean isStiltFloor) {
+		this.isStiltFloor = isStiltFloor;
+	}
+
+	public List<Measurement> getOverHangs() {
+		return overHangs;
+	}
+
+	public void setOverHangs(List<Measurement> overHangs) {
+		this.overHangs = overHangs;
+	}
+
+	public List<Measurement> getConstructedAreas() {
+		return constructedAreas;
+	}
+
+	public void setConstructedAreas(List<Measurement> constructedAreas) {
+		this.constructedAreas = constructedAreas;
+	}
+
+	public List<GlassFacadeOpening> getGlassFacadeOpenings() {
+		return glassFacadeOpenings;
+	}
+
+	public void setGlassFacadeOpenings(List<GlassFacadeOpening> glassFacadeOpenings) {
+		this.glassFacadeOpenings = glassFacadeOpenings;
+	}
+
+	public List<Cinema> getCinemas() {
+		return cinemas;
+	}
+
+	public void setCinemas(List<Cinema> cinemas) {
+		this.cinemas = cinemas;
+	}
+    
+    
 
 }

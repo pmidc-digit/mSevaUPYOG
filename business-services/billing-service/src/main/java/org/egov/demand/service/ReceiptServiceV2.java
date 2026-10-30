@@ -30,6 +30,7 @@ import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.DemandRequest;
 import org.egov.demand.web.validator.DemandValidatorV1;
 import org.egov.mdms.model.MdmsCriteriaReq;
+import org.egov.demand.repository.BillRepositoryV2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -50,6 +51,9 @@ public class ReceiptServiceV2 {
 	
 	@Autowired
 	private Util util;
+
+	@Autowired
+	private BillRepositoryV2 billRepoV2;
 
 
 	public void updateDemandFromReceipt(BillRequestV2 billReq, Boolean isReceiptCancellation) {
@@ -95,8 +99,19 @@ public class ReceiptServiceV2 {
 		for (BillV2 bill : bills) {
 			String advanceTaxhead = getAdvanceTaxhead(bill.getBusinessService(), mdmsData);
 			mapOfBillIdAndStatus.put(bill.getId(), bill.getStatus().toString());
-			for (BillDetailV2 billDetail : bill.getBillDetails())
-				updateDemandFromBillDetail(billDetail, demandIdMap.get(billDetail.getDemandId()), isReceiptCancellation,advanceTaxhead);
+			for (BillDetailV2 billDetail : bill.getBillDetails()) {
+				Demand demand = demandIdMap.get(billDetail.getDemandId());
+				if (demand != null) {
+					updateDemandFromBillDetail(billDetail, demand, isReceiptCancellation, advanceTaxhead);
+				} else {
+					log.warn("Demand not found in demandIdMap for demandId: {}", billDetail.getDemandId());
+				}
+			}
+			try {
+				billRepoV2.updateBillStatusBYId(bill.getId(), bill.getStatus().toString());
+			} catch (Exception e) {
+				log.error("Failed to update bill status for billId: {}", bill.getId(), e);
+			}
 		}
 
 		String paymentId = util.getValueFromAdditionalDetailsForKey(bills.get(0).getAdditionalDetails(),

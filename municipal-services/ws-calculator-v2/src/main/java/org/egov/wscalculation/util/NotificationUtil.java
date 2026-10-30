@@ -69,8 +69,12 @@ public class NotificationUtil {
 			tenantId = tenantId.split("\\.")[0];
 
 		String locale = WSCalculationConstant.NOTIFICATION_LOCALE;
-		if (!StringUtils.isEmpty(requestInfo.getMsgId()) && requestInfo.getMsgId().split("|").length >= 2)
-			locale = requestInfo.getMsgId().split("\\|")[1];
+		if (!StringUtils.isEmpty(requestInfo.getMsgId()) && requestInfo.getMsgId().contains("|")) {
+			String[] parts = requestInfo.getMsgId().split("\\|");
+			if (parts.length >= 2 && !StringUtils.isEmpty(parts[1])) {
+				locale = parts[1];
+			}
+		}
 
 		StringBuilder uri = new StringBuilder();
 		uri.append(config.getLocalizationHost()).append(config.getLocalizationContextPath())

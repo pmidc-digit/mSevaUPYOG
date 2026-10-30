@@ -15,6 +15,7 @@ import org.egov.pt.models.Unit;
 import org.egov.pt.models.collection.BillDetail;
 import org.egov.pt.models.collection.BillResponse;
 import org.egov.pt.models.enums.CreationReason;
+import org.egov.pt.models.enums.Source;
 import org.egov.pt.models.enums.Status;
 import org.egov.pt.models.user.UserDetailResponse;
 import org.egov.pt.models.user.UserSearchRequest;
@@ -359,7 +360,17 @@ public class PropertyService {
 			else if (state.getIsTerminateState()
 					&& !state.getApplicationStatus().equalsIgnoreCase(Status.ACTIVE.toString())) {
 
-				terminateWorkflowAndReInstatePreviousRecord(request, propertyFromSearch);
+				if (propertyFromSearch.getStatus().equals(Status.PENDINGWS) 
+						|| propertyFromSearch.getSource().equals(Source.WATER_CHARGES)) {
+					/*
+					 * PENDINGWS properties were created fresh from W&S — there is no previous
+					 * ACTIVE record to reinstate. Simply persist the terminal status (INACTIVE /
+					 * REJECTED) returned by the workflow engine.
+					 */
+					producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
+				} else {
+					terminateWorkflowAndReInstatePreviousRecord(request, propertyFromSearch);
+				}
 			} else {
 				/*
 				 * If property is In Workflow then continue

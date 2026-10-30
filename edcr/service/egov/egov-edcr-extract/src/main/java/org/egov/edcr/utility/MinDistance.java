@@ -381,10 +381,10 @@ public class MinDistance {
 
     }
     
-    public BigDecimal getYardMinDistanceV2(PlanDetail pl, String name, String level, DXFDocument doc) {
+    public BigDecimal getYardMinDistanceV2(PlanDetail pl, String name, String level, DXFDocument doc, Block block) {
         DXFLWPolyline plotBoundary = ((PlotDetail) pl.getPlot()).getPolyLine();
         DXFLWPolyline yardPolyline = null;
-        Block blockByName = resolveSetbackBlock(pl, name, level);
+        Block blockByName = block != null ? block : resolveSetbackBlock(pl, name, level); 
         if (blockByName == null) {
             pl.getErrors().put("Set back calculation Error " + name,
                     "Unable to identify block for setback layer " + name);
@@ -1072,5 +1072,29 @@ public class MinDistance {
         return mid;
     }
 
+    /** True if the yard touches this setback's footprint and does not enter it. Records no errors. */
+    public boolean isYardAssociatedWithSetBack(DXFLWPolyline yard, SetBack setBack) {
+        if (yard == null || setBack == null || setBack.getBuildingFootPrint() == null) return false;
+        DXFLWPolyline fp = ((MeasurementDetail) setBack.getBuildingFootPrint()).getPolyLine();
+        if (fp == null) return false;
+
+        List<Point> yardPts = Util.pointsOnPolygon(yard);
+        List<Point> fpPts = Util.pointsOnPolygon(fp);
+        if (yardPts == null || fpPts == null) return false;
+
+        // Yard must not enter the footprint
+        for (Point p : yardPts) if (Util.isPointStrictlyInsidePolygon(fp, p)) return false;
+        for (Point p : fpPts) if (Util.isPointStrictlyInsidePolygon(yard, p)) return false;
+        for (int i = 0; i < yardPts.size() - 1; i++) {
+            Point mid = getMidPoint(yardPts.get(i), yardPts.get(i + 1), 6);
+            if (Util.isPointStrictlyInsidePolygon(fp, mid)) return false;
+        }
+
+        // Yard must share at least 2 points with the footprint
+        List<Point> shared = new ArrayList<>();
+        for (Point p : yardPts) if (Util.isPointInsideOrOnPolygon(fp, p) && !shared.contains(p)) shared.add(p);
+        for (Point p : fpPts) if (Util.isPointInsideOrOnPolygon(yard, p) && !shared.contains(p)) shared.add(p);
+        return shared.size() > 1;
+    }
     
 }

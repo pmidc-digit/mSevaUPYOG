@@ -40,7 +40,7 @@ public class SearchController {
 		}
 		Object searchResult = searchService.searchData(searchRequest,moduleName,searchName);
 		
-		log.info("Result of search query " + searchResult);
+		//log.info("Result of search query " + searchResult);
 		try {
 		    Type type = new TypeToken<Map<String, Object>>() {}.getType();
 			Gson gson = new Gson();

@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
@@ -83,9 +84,39 @@ public class UserService {
 		// Try to find existing user by multiple search methods
 			UserDetailResponse userDetailResponse = null;
 			org.egov.rl.services.models.user.User existingUser = null;
+		// Method 0: the owner already belongs to a user (the request carries its userUuid). Resolve THAT user
+		// first: a mobile number can carry several citizen users, and resolving by mobile would pick whichever one
+		// the user search returns first, silently moving the owner (and every application linking to that user)
+		// onto another person. Accepted only when it is the same person, i.e. that user still holds this mobile -
+		// a replaced owner carries another number and therefore falls through to the mobile search below.
+			if (u.getUserUuid() != null) {
+				UserDetailResponse ownerUuidSearch = searchByUuid(u.getUserUuid(), allotmentDetails.getTenantId());
+				if (ownerUuidSearch != null && !CollectionUtils.isEmpty(ownerUuidSearch.getUser())) {
+					org.egov.rl.services.models.user.User userByUuid = ownerUuidSearch.getUser().get(0);
+					if (sameMobileNumber(userByUuid.getMobileNumber(), u.getMobileNo())) {
+						existingUser = userByUuid;
+						userDetailResponse = ownerUuidSearch;
+					} else {
+						log.info("Owner userUuid {} carries mobile {} while that user holds {}: treated as a new owner "
+								+ "and resolved by its mobile number.", u.getUserUuid(), u.getMobileNo(),
+								userByUuid.getMobileNumber());
+					}
+				}
+			}
 		// Method 1: Search by mobile number
 			UserDetailResponse mobileSearch = userExists(owner, requestInfo);
-			if (mobileSearch != null && !CollectionUtils.isEmpty(mobileSearch.getUser())) {
+			if (existingUser == null && mobileSearch != null && !CollectionUtils.isEmpty(mobileSearch.getUser())) {
+				if (mobileSearch.getUser().size() > 1) {
+					// Several citizen users share this mobile number (duplicate registrations). Which person owns the
+					// application is then undefined - the first user returned is used and no profile is overwritten.
+					// The client can choose explicitly by sending ownerInfo[].userUuid (resolved by Method 0 above).
+					log.warn("Mobile {} is registered to {} citizen users ({}): the owner is linked to {} - send "
+							+ "ownerInfo[].userUuid to choose a specific user.", owner.getMobileNumber(),
+							mobileSearch.getUser().size(),
+							mobileSearch.getUser().stream().map(org.egov.rl.services.models.user.User::getUuid)
+									.collect(Collectors.toList()),
+							mobileSearch.getUser().get(0).getUuid());
+				}
 				existingUser = 	Optional.ofNullable(mobileSearch.getUser().get(0)).orElse(null);
 				userDetailResponse = mobileSearch;
 			}
@@ -109,9 +140,22 @@ public class UserService {
 			}
 			org.egov.rl.services.models.user.User existingUsers=null;
 			if (existingUser != null) {
-				// User exists - update it
-				userDetailResponse = updateExistingUser(allotmentDetails, requestInfo, roles.get(0), owner, existingUser);
-				existingUsers=userDetailResponse.getUser().get(0);
+				// A mobile number is shared by one citizen user, but the name/mobile/gender/email of an owner are not
+				// columns of eg_rl_owner_info - they are read from user-service through the owner row's userUuid. So
+				// rewriting the user found for a mobile also changes the owner shown by EVERY application linked to it
+				// (the "older applications get updated" symptom). The profile is therefore only updated when the request
+				// really IS that user: it carries the same userUuid. Every other case (a create, or a replaced owner
+				// whose mobile belongs to somebody else) only LINKS to the existing user and never overwrites its profile.
+				if (isSameUser(u, existingUser)) {
+					// User exists and is the one this owner refers to - update it
+					userDetailResponse = updateExistingUser(allotmentDetails, requestInfo, roles.get(0), owner, existingUser);
+					existingUsers=userDetailResponse.getUser().get(0);
+				} else {
+					log.info("Mobile {} already belongs to user {} but the request carries userUuid {} - the owner is linked "
+							+ "to the existing user without overwriting its profile, so no other application is affected.",
+							owner.getMobileNumber(), existingUser.getUuid(), u.getUserUuid());
+					existingUsers = existingUser;
+				}
 			} else {
 				// User doesn't exist - create new user
 				setUserName(owner);
@@ -125,6 +169,37 @@ public class UserService {
 			return u;
 		}).collect(Collectors.toList());
 		allotmentRequest.getAllotment().get(0).setOwnerInfo(ownerInfos);
+
+		if (allotmentDetails.getAdditionalDetails() != null) {
+			com.fasterxml.jackson.databind.JsonNode addnl = allotmentDetails.getAdditionalDetails();
+			if (addnl.has("alternateMobileNumber") && !addnl.get("alternateMobileNumber").isNull()) {
+				String alternateMobileNumber = addnl.get("alternateMobileNumber").asText();
+				if (StringUtils.isNotBlank(alternateMobileNumber)) {
+					Owner altOwner = Owner.builder()
+							.name("Tenant")
+							.mobileNumber(alternateMobileNumber)
+							.roles(getCitizenRole())
+							.userName(alternateMobileNumber)
+							.tenantId(allotmentDetails.getTenantId())
+							.build();
+					addUserDefaultFields(allotmentDetails.getTenantId(), getCitizenRole().get(0), altOwner);
+					UserDetailResponse mobileSearch = userExists(altOwner, requestInfo);
+					org.egov.rl.services.models.user.User existingUser = null;
+					if (mobileSearch != null && !CollectionUtils.isEmpty(mobileSearch.getUser())) {
+						existingUser = mobileSearch.getUser().get(0);
+					} else {
+						UserDetailResponse userNameSearch = searchByUserName(alternateMobileNumber, allotmentDetails.getTenantId());
+						if (userNameSearch != null && !CollectionUtils.isEmpty(userNameSearch.getUser())) {
+							existingUser = userNameSearch.getUser().get(0);
+						}
+					}
+					if (existingUser == null) {
+						setUserName(altOwner);
+						createUser(requestInfo, altOwner);
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -148,6 +223,34 @@ public class UserService {
 			throw new CustomException("INVALID USER RESPONSE", "The user updated has uuid as null");
 		}
 		return userDetailResponse;
+	}
+
+	/**
+	 * True only when the owner in the request is the very user user-service returned for its mobile number, i.e. the
+	 * request carries that user's uuid. The same mobile with no uuid (a new application) or with the uuid of another
+	 * person means the mobile already belongs to somebody else - that user's profile must not be overwritten, because
+	 * every application linked to it reads the owner's name/mobile from it.
+	 */
+	private static boolean isSameUser(OwnerInfo ownerInfo, org.egov.rl.services.models.user.User user) {
+		return ownerInfo != null && user != null && ownerInfo.getUserUuid() != null
+				&& ownerInfo.getUserUuid().equals(user.getUuid());
+	}
+
+	/**
+	 * Two mobile numbers belong to the same person when their last ten digits match - a 12 digit value is the same
+	 * number written with a country code (91xxxxxxxxxx), and the stored user may use either form.
+	 */
+	public static boolean sameMobileNumber(String first, String second) {
+		if (first == null || second == null) {
+			return false;
+		}
+		String firstDigits = first.replaceAll("\\D", "");
+		String secondDigits = second.replaceAll("\\D", "");
+		if (firstDigits.length() < 10 || secondDigits.length() < 10) {
+			return firstDigits.equals(secondDigits);
+		}
+		return firstDigits.substring(firstDigits.length() - 10)
+				.equals(secondDigits.substring(secondDigits.length() - 10));
 	}
 
 	private UserDetailResponse createUser(RequestInfo requestInfo, Owner owner) {

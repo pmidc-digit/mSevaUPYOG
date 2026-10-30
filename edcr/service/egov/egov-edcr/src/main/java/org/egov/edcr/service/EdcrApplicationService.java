@@ -14,21 +14,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 import java.util.Collections;
+import org.egov.common.entity.edcr.Building;
+import org.egov.common.entity.edcr.PageLayoutInfo;
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -167,6 +174,9 @@ public class EdcrApplicationService {
     private static final DateTimeFormatter TS_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     
+    private static final Set<String> DEFAULT_ALLOWED_OUTSIDE_LAYERS =
+            new LinkedHashSet<>(Arrays.asList("DUMMY_ALLOWED_LAYER_1", "DUMMY_ALLOWED_LAYER_2"));
+    
     @Autowired
     protected SecurityUtils securityUtils;
 
@@ -211,7 +221,6 @@ public class EdcrApplicationService {
     @Autowired
     private PlanReportServiceV2 planReportServiceV2;
     
-
     public Session getCurrentSession() {
         return entityManager.unwrap(Session.class);
     }
@@ -597,9 +606,16 @@ public class EdcrApplicationService {
 
         try {
             Map<String, Object> finalReportData = extractFinalReportData(pl, dcrApplication);
-            if(!CollectionUtils.isEmpty(pl.getBlocks())) {
-            	finalReportData.put("buildingHeight", pl.getBlocks().get(0).getBuilding().getBuildingHeightExcludingMP().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
-            	finalReportData.put("totalBuildingHeight", pl.getBlocks().get(0).getBuilding().getBuildingHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+            if (!CollectionUtils.isEmpty(pl.getBlocks()) && pl.getBlocks().get(0).getBuilding() != null) {
+                Building firstBuilding = pl.getBlocks().get(0).getBuilding();
+                if (firstBuilding.getBuildingHeightExcludingMP() != null) {
+                    finalReportData.put("buildingHeight", firstBuilding.getBuildingHeightExcludingMP()
+                            .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+                }
+                if (firstBuilding.getBuildingHeight() != null) {
+                    finalReportData.put("totalBuildingHeight", firstBuilding.getBuildingHeight()
+                            .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS));
+                }
             }
             if (finalReportData == null || finalReportData.isEmpty()) {
                 LOG.warn("finalReportData is empty. Building minimal overlay JSON.");
@@ -650,6 +666,15 @@ public class EdcrApplicationService {
         if (fileNumber != null && details.path("applicationDetails").isObject()) {
             ((ObjectNode) details.get("applicationDetails")).put("fileNumber", fileNumber);
         }
+        
+        // Proposed Site Address
+        String proposedSiteAddress = meaningfulText(patchRoot, "proposedSiteAddress");
+        if (proposedSiteAddress == null) {
+        	proposedSiteAddress = meaningfulText(patchRoot.path("applicationDetails"), "proposedSiteAddress");
+        }
+        if (proposedSiteAddress != null && details.path("applicationDetails").isObject()) {
+            ((ObjectNode) details.get("applicationDetails")).put("proposedSiteAddress", proposedSiteAddress);
+        }
 
         // Office Use patch
         JsonNode officeUsePatch = patchRoot.path("officeUse");
@@ -683,50 +708,52 @@ public class EdcrApplicationService {
         }
     }
 
-    private JsonNode buildLateFieldPatch(String fileNumber,
-                                         String examinedBy,
-                                         String approvedSanctionedBy,
-                                         String approvalSanctionDate,
-                                         String validTill,
-                                         String signatoryName,
-                                         String designation,
-                                         String zone) {
-        final ObjectMapper mapper = new ObjectMapper();
-        final ObjectNode root = mapper.createObjectNode();
-        final ObjectNode details = mapper.createObjectNode();
-        root.set("details", details);
+	private JsonNode buildLateFieldPatch(String fileNumber, String examinedBy, String approvedSanctionedBy,
+			String approvalSanctionDate, String validTill, String signatoryName, String designation, String zone,
+			String proposedSiteAddress) {
+		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectNode root = mapper.createObjectNode();
+		final ObjectNode details = mapper.createObjectNode();
+		root.set("details", details);
 
-        if (StringUtils.isNotBlank(fileNumber)) {
-            String trimmed = fileNumber.trim();
-            if (isMeaningfulPatchText(trimmed)) {
-                details.put("fileNumber", trimmed);
-            }
-        }
+		if (StringUtils.isNotBlank(fileNumber)) {
+			String trimmed = fileNumber.trim();
+			if (isMeaningfulPatchText(trimmed)) {
+				details.put("fileNumber", trimmed);
+			}
+		}
+		
+		if (StringUtils.isNotBlank(proposedSiteAddress)) {
+			String trimmed = proposedSiteAddress.trim();
+			if (isMeaningfulPatchText(trimmed)) {
+				details.put("proposedSiteAddress", trimmed);
+			}
+		}
 
-        ObjectNode officeUse = mapper.createObjectNode();
-        //putIfNotBlank(officeUse, "examinedBy", examinedBy);
-        putIfNotBlank(officeUse, "approvedSanctionedBy", approvedSanctionedBy);
-        putIfNotBlank(officeUse, "approvalSanctionDate", approvalSanctionDate);
-        putIfNotBlank(officeUse, "validTill", validTill);
-        if (officeUse.size() > 0) {
-            details.set("officeUse", officeUse);
-        }
+		ObjectNode officeUse = mapper.createObjectNode();
+		// putIfNotBlank(officeUse, "examinedBy", examinedBy);
+		putIfNotBlank(officeUse, "approvedSanctionedBy", approvedSanctionedBy);
+		putIfNotBlank(officeUse, "approvalSanctionDate", approvalSanctionDate);
+		putIfNotBlank(officeUse, "validTill", validTill);
+		if (officeUse.size() > 0) {
+			details.set("officeUse", officeUse);
+		}
 
-        if (StringUtils.isNotBlank(signatoryName) || StringUtils.isNotBlank(designation)) {
-            ArrayNode eSign = mapper.createArrayNode();
-            ObjectNode row = mapper.createObjectNode();
-            putIfNotBlank(row, "signatoryName", signatoryName);
-            putIfNotBlank(row, "designation", designation);
-            if (row.size() > 0) {
-                eSign.add(row);
-                details.set("eSign", eSign);
-            }
-        }
-        
-        details.put("zone", zone);
+		if (StringUtils.isNotBlank(signatoryName) || StringUtils.isNotBlank(designation)) {
+			ArrayNode eSign = mapper.createArrayNode();
+			ObjectNode row = mapper.createObjectNode();
+			putIfNotBlank(row, "signatoryName", signatoryName);
+			putIfNotBlank(row, "designation", designation);
+			if (row.size() > 0) {
+				eSign.add(row);
+				details.set("eSign", eSign);
+			}
+		}
 
-        return root;
-    }
+		details.put("zone", zone);
+
+		return root;
+	}
 
     private void putIfNotBlank(ObjectNode node, String key, String value) {
         if (node != null && StringUtils.isNotBlank(value) && isMeaningfulPatchText(value.trim())) {
@@ -785,10 +812,10 @@ public class EdcrApplicationService {
         n.put("nameOfApplicant", txt(frd, "applicantName"));
         n.put("fileNumber", txt(frd, "fileNumber"));
         n.put("edcrNumber", txt(frd, "dcrNo"));
-        n.put("ulbName", txt(frd, "district"));
+        n.put("ulbName", txt(pi, "ulbName"));
         n.put("ulbType", txt(frd, "ulbType"));
         n.put("buildingCategory", txt(pi, "occupancy"));
-        n.put("proposedSiteAddress", txt(pi, "city"));
+        n.put("proposedSiteAddress", txt(pi, "proposedSiteAddress"));
         n.put("khasraNo", txt(pi, "khasraNo"));
         n.put("zone", zone);
         return n;
@@ -806,13 +833,19 @@ public class EdcrApplicationService {
         return n;
     }
 
-    private ObjectNode buildBuiltUpArea(ObjectMapper mapper, JsonNode frd) {
-        ObjectNode n = mapper.createObjectNode();
-        n.put("existingBuiltUpArea", 0.0d);
-        n.put("proposedBuiltUpArea", num(frd, "totalBuiltUpArea"));
-        n.put("totalBuiltUpArea", num(frd, "totalBuiltUpArea"));
-        return n;
-    }
+	private ObjectNode buildBuiltUpArea(ObjectMapper mapper, JsonNode frd) {
+		ObjectNode n = mapper.createObjectNode();
+		BigDecimal existingBuiltUpArea = BigDecimal.valueOf(num(frd, "totalExistingBuiltUpArea"));
+		BigDecimal totalBuiltUpArea = BigDecimal.valueOf(num(frd, "totalBuiltUpArea"));
+		BigDecimal proposedBuiltUpArea = totalBuiltUpArea;
+		if (existingBuiltUpArea.compareTo(BigDecimal.ZERO) > 0) {
+			proposedBuiltUpArea = totalBuiltUpArea.subtract(existingBuiltUpArea);
+			n.put("existingBuiltUpArea", existingBuiltUpArea);
+		}
+		n.put("proposedBuiltUpArea", proposedBuiltUpArea);
+		n.put("totalBuiltUpArea", totalBuiltUpArea);
+		return n;
+	}
 
     private ObjectNode buildFarDetails(ObjectMapper mapper, JsonNode frd) {
         ObjectNode n = mapper.createObjectNode();
@@ -1308,9 +1341,9 @@ public class EdcrApplicationService {
 
 	private void updateFileNew(Plan pl, EdcrApplication edcrApplication, String fileNumber, String examinedBy,
 			String approvedSanctionedBy, String approvalSanctionDate, String validTill, String signatoryName,
-			String designation, String tenantId, String zone) {
+			String designation, String tenantId, String zone, String proposedSiteAddress) {
 		JsonNode patchFields = buildLateFieldPatch(fileNumber, examinedBy, approvedSanctionedBy, approvalSanctionDate,
-				validTill, signatoryName, designation, zone);
+				validTill, signatoryName, designation, zone, proposedSiteAddress);
 		updateFileV4(pl, edcrApplication, patchFields, tenantId);
 	}
     
@@ -1406,11 +1439,9 @@ public class EdcrApplicationService {
 
 			tempPdf = File.createTempFile("scrutinized_", ".pdf");
 
+			List<PageLayoutInfo> usedLayouts;
 			try (FileInputStream dxfInput = new FileInputStream(edcrApplication.getSavedDxfFile())) {
-
-				DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false);
-
-				LOG.info("DXF converted successfully.");
+			    usedLayouts = DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false, pl.getPageLayouts());
 			}
 
 			File signatureFile = fetchSignatureFile(pl);
@@ -1418,7 +1449,7 @@ public class EdcrApplicationService {
 			JsonNode additionalDetails = buildJsonNode(pl, signatureFile, patchFields, edcrApplication);
 
 			tempPdf = pdfOverlayTemplateService.impose(tempPdf, tempPdf.getAbsolutePath(), additionalDetails,
-					EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP);
+			        EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP, usedLayouts);
 			validateGeneratedPdf(tempPdf);
 
 			FileStoreMapper fileStoreMapper = fileStoreService.store(tempPdf, newFileName, "application/pdf",
@@ -1527,10 +1558,9 @@ public class EdcrApplicationService {
         try {
             tempPdf = File.createTempFile("scrutinized_", ".pdf");
 
-            try (FileInputStream dxfInput =
-                         new FileInputStream(edcrApplication.getSavedDxfFile())) {
-                DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false); // false = don't save SVG
-                LOG.info("DXF to PDF conversion completed: {} bytes", tempPdf.length());
+            List<PageLayoutInfo> usedLayouts;
+            try (FileInputStream dxfInput = new FileInputStream(edcrApplication.getSavedDxfFile())) {
+                usedLayouts = DxfToPdfConverterv2.convertDxfToPdf(dxfInput, tempPdf, false, pl.getPageLayouts());
             }
 
             String uuid = pl.getEdcrRequest().getRequestInfo().getUserInfo().getUuid();
@@ -1550,14 +1580,8 @@ public class EdcrApplicationService {
             additionalDetails = buildJsonNode(pl, uploadedDiagramFile, patchFields,edcrApplication);
 
             // Overlay the information onto the DXF-converted PDF using template renderer
-            tempPdf = pdfOverlayTemplateService.impose(
-                    tempPdf,
-                    tempPdf.getAbsolutePath(),
-                    additionalDetails,
-                    EXPAND_RIGHT,
-                    EXPAND_BOTTOM,
-                    GAP_DRAWING_TO_TABLES,
-                    GAP_TOP);
+            tempPdf = pdfOverlayTemplateService.impose(tempPdf, tempPdf.getAbsolutePath(), additionalDetails,
+                    EXPAND_RIGHT, EXPAND_BOTTOM, GAP_DRAWING_TO_TABLES, GAP_TOP, usedLayouts);
 
             validateGeneratedPdf(tempPdf);
 
@@ -2051,7 +2075,7 @@ public class EdcrApplicationService {
     
 	public FileStoreMapper updateDXFOutput(String fileNo, String examinedBy, String approvedBy, String approvedDate,
 			String validDate, String edcrNo, Boolean isSelfCertification, String eSign, String eSignName,
-			String tenantId, String zone) throws IOException {
+			String tenantId, String zone, String proposedSiteAddress) throws IOException {
 
 		if (StringUtils.isBlank(edcrNo)) {
 			throw new IllegalArgumentException("EDCR Number is mandatory.");
@@ -2112,7 +2136,7 @@ public class EdcrApplicationService {
 		edcrApplication.setSavedDxfFile(dxfFile);
 
 		updateFileNew(pl, edcrApplication, fileNo, examinedBy, approvedBy, approvedDate, validDate, eSignName, eSign,
-				tenantId, zone);
+				tenantId, zone, proposedSiteAddress);
 
 		FileStoreMapper mapper = appDetail.getScrutinizedDxfFileId();
 
@@ -2212,6 +2236,12 @@ public class CustomMultipartFile implements MultipartFile {
                 StandardCopyOption.REPLACE_EXISTING);
     }
 }
+
+static Set<String> getAllowedOutsideLayers() {
+    return Collections.emptySet(); // or read from config / request later
+}
+
+
 
 }
 

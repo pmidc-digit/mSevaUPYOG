@@ -128,10 +128,16 @@ public class GrievanceService {
 		pGRProducer.push(saveTopic, producerKey(request), request);
 
 		// Only push to DGR if this complaint did NOT originate from DGR (dgr_grievance_id is absent)
+		// and does NOT belong to the test tenant (pb.testing)
 		boolean hasDgrId = request.getServices().stream()
 				.anyMatch(service -> service.getDgrPgrId() != null && !service.getDgrPgrId().trim().isEmpty());
 
-		if (!hasDgrId) {
+		boolean isTestTenant = request.getServices().stream()
+				.anyMatch(service -> service.getTenantId() != null && PGRConstants.TEST_TENANT.equalsIgnoreCase(service.getTenantId().trim()));
+
+		if (isTestTenant) {
+			log.info("Complaint belongs to test tenant [{}]. Skipping push to DGR topic.", PGRConstants.TEST_TENANT);
+		} else if (!hasDgrId) {
 			// Dual-topic routing: complaints with media → with-media queue (waits for DGR upload)
 			//                     complaints without media → no-media queue (instant CreateGrievance)
 			boolean hasMedia = request.getActionInfo() != null

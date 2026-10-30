@@ -20,6 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.config.Config;
 import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentDetail;
+import org.egov.collection.model.PaymentResettleBatchAudit;
+import org.egov.collection.model.PaymentResettleDetailAudit;
 import org.egov.collection.model.PaymentSearchCriteria;
 import org.egov.collection.repository.querybuilder.PaymentQueryBuilder;
 import org.egov.collection.repository.rowmapper.BillRowMapper;
@@ -323,11 +325,20 @@ public class PaymentRepository {
         	query.append(" WHERE id in (select paymentid from egcl_paymentdetail WHERE createdtime between :fromDate and :toDate) ");
         	preparedStatementValues.put("fromDate", paymentSearchCriteria.getFromDate());
                 preparedStatementValues.put("toDate", paymentSearchCriteria.getToDate());
+        } 
+        
+        if(paymentSearchCriteria.getBusinessServices() != null && isTenantPresent && whereCluaseApplied) {
+        	if(whereCluaseApplied) {
+            	query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
+                preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
+                preparedStatementValues.put("businessservice", paymentSearchCriteria.getBusinessServices());
+
+        	}
         }
         
         if(paymentSearchCriteria.getBusinessService() != null && isTenantPresent && whereCluaseApplied) {
             log.info("In side the repo before query: " + paymentSearchCriteria.getBusinessService() );
-           query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice IN (:businessservice)) ");
+           query.append(" AND id in (select paymentid from egcl_paymentdetail where tenantid=:tenantid AND businessservice=:businessservice) ");
             preparedStatementValues.put("tenantid", paymentSearchCriteria.getTenantId());
             preparedStatementValues.put("businessservice", paymentSearchCriteria.getBusinessService());
         }
@@ -1249,7 +1260,8 @@ public List<String> fetchConsumerCodeByReceiptNumber(String receiptnumber) {
 		return PTConnections;
 	}
 	
-	public String fetchPaymentByReceiptNumberTenantAndConsumercode(String receiptNumber, String tenantId, String consumerCode) {
+	public String fetchPaymentByReceiptNumberTenantAndConsumercode(String receiptNumber, String tenantId,
+			String consumerCode) {
 
 		String query = "SELECT ep.paymentid FROM egcl_paymentdetail ep "
 				+ "JOIN egcl_bill eb ON ep.billid = eb.id WHERE ep.receiptnumber = :receiptNumber "
@@ -1260,12 +1272,146 @@ public List<String> fetchConsumerCodeByReceiptNumber(String receiptnumber) {
 		params.put("tenantId", tenantId);
 		params.put("consumerCode", consumerCode);
 
-		try {
-			return namedParameterJdbcTemplate.queryForObject(query, params, String.class);
-		}catch (Exception e) {
-			log.error("Exception while fetching payment for receiptNumber: {}", receiptNumber, e);
-			return null;
+		return namedParameterJdbcTemplate.queryForObject(query, params, String.class);
+	}
+
+	public List<String> fetchCandidatePaymentIdsForAutoResettle(Long fromTime, Long toTime, String tenantId,
+			String businessService, Integer limit) {
+
+		StringBuilder query = new StringBuilder("SELECT py.id FROM egcl_payment py ");
+		query.append("WHERE UPPER(py.paymentstatus) IN ('DEPOSITED', 'NEW') ");
+		query.append("AND py.createdtime >= :fromTime AND py.createdtime <= :toTime ");
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("fromTime", fromTime);
+		params.put("toTime", toTime);
+		params.put("limit", (limit != null && limit > 0) ? limit : 50);
+
+		if (StringUtils.isNotBlank(tenantId)) {
+			if (tenantId.split("\\.").length > 1) {
+				query.append("AND py.tenantid = :tenantId ");
+				params.put("tenantId", tenantId);
+			} else {
+				query.append("AND py.tenantid LIKE :tenantId ");
+				params.put("tenantId", tenantId + "%");
+			}
 		}
+
+		if (StringUtils.isNotBlank(businessService)) {
+			query.append("AND py.id IN (SELECT paymentid FROM egcl_paymentdetail WHERE businessservice = :businessService) ");
+			params.put("businessService", businessService);
+		}
+
+		query.append("ORDER BY py.createdtime DESC LIMIT :limit");
+
+		log.info("fetchCandidatePaymentIdsForAutoResettle query: {}", query.toString());
+		return namedParameterJdbcTemplate.query(query.toString(), params, new SingleColumnRowMapper<>(String.class));
+	}
+
+	private static final String INSERT_RESETTLE_BATCH_SQL = "INSERT INTO egcl_resettle_batch("
+			+ "id, batch_id, tenantid, businessservice, from_time, to_time, "
+			+ "total_found, total_settled, total_skipped, total_failed, status, createdtime, createdby) "
+			+ "VALUES (:id, :batchId, :tenantId, :businessService, :fromTime, :toTime, "
+			+ ":totalFound, :totalSettled, :totalSkipped, :totalFailed, :status, :createdTime, :createdBy);";
+
+	private static final String INSERT_RESETTLE_DETAIL_SQL = "INSERT INTO egcl_resettle_detail("
+			+ "id, batch_id, paymentid, consumercode, businessservice, billid, tenantid, "
+			+ "resettle_status, failure_reason, createdtime, createdby) "
+			+ "VALUES (:id, :batchId, :paymentId, :consumerCode, :businessService, :billId, :tenantId, "
+			+ ":resettleStatus, :failureReason, :createdTime, :createdBy);";
+
+	public void saveResettleBatchAudit(PaymentResettleBatchAudit batchAudit) {
+		try {
+			Map<String, Object> params = new HashMap<>();
+			params.put("id", batchAudit.getId());
+			params.put("batchId", batchAudit.getBatchId());
+			params.put("tenantId", batchAudit.getTenantId());
+			params.put("businessService", batchAudit.getBusinessService());
+			params.put("fromTime", batchAudit.getFromTime());
+			params.put("toTime", batchAudit.getToTime());
+			params.put("totalFound", batchAudit.getTotalFound());
+			params.put("totalSettled", batchAudit.getTotalSettled());
+			params.put("totalSkipped", batchAudit.getTotalSkipped());
+			params.put("totalFailed", batchAudit.getTotalFailed());
+			params.put("status", batchAudit.getStatus());
+			params.put("createdTime", batchAudit.getCreatedTime());
+			params.put("createdBy", batchAudit.getCreatedBy());
+
+			namedParameterJdbcTemplate.update(INSERT_RESETTLE_BATCH_SQL, params);
+		} catch (Exception e) {
+			log.error("Failed to save resettle batch audit", e);
+		}
+	}
+
+	public void saveResettleDetailAudit(List<PaymentResettleDetailAudit> detailAudits) {
+		if (CollectionUtils.isEmpty(detailAudits)) {
+			return;
+		}
+		try {
+			List<MapSqlParameterSource> sources = new ArrayList<>();
+			for (PaymentResettleDetailAudit detail : detailAudits) {
+				MapSqlParameterSource source = new MapSqlParameterSource();
+				source.addValue("id", detail.getId());
+				source.addValue("batchId", detail.getBatchId());
+				source.addValue("paymentId", detail.getPaymentId());
+				source.addValue("consumerCode", detail.getConsumerCode());
+				source.addValue("businessService", detail.getBusinessService());
+				source.addValue("billId", detail.getBillId());
+				source.addValue("tenantId", detail.getTenantId());
+				source.addValue("resettleStatus", detail.getResettleStatus());
+				source.addValue("failureReason", detail.getFailureReason());
+				source.addValue("createdTime", detail.getCreatedTime());
+				source.addValue("createdBy", detail.getCreatedBy());
+				sources.add(source);
+			}
+			namedParameterJdbcTemplate.batchUpdate(INSERT_RESETTLE_DETAIL_SQL, sources.toArray(new MapSqlParameterSource[0]));
+		} catch (Exception e) {
+			log.error("Failed to save resettle detail audit batch", e);
+		}
+	}
+
+	public List<PaymentResettleBatchAudit> fetchResettleBatchAudits(String tenantId, Integer limit) {
+		StringBuilder query = new StringBuilder("SELECT id, batch_id as batchId, tenantid as tenantId, "
+				+ "businessservice as businessService, from_time as fromTime, to_time as toTime, "
+				+ "total_found as totalFound, total_settled as totalSettled, total_skipped as totalSkipped, "
+				+ "total_failed as totalFailed, status, createdtime as createdTime, createdby as createdBy "
+				+ "FROM egcl_resettle_batch ");
+		Map<String, Object> params = new HashMap<>();
+		params.put("limit", (limit != null && limit > 0) ? limit : 20);
+
+		if (StringUtils.isNotBlank(tenantId)) {
+			query.append("WHERE tenantid = :tenantId ");
+			params.put("tenantId", tenantId);
+		}
+		query.append("ORDER BY createdtime DESC LIMIT :limit");
+
+		return namedParameterJdbcTemplate.query(query.toString(), params, new BeanPropertyRowMapper<>(PaymentResettleBatchAudit.class));
+	}
+
+	public List<PaymentResettleDetailAudit> fetchResettleDetailAudits(String batchId, String paymentId, String status, Integer limit) {
+		StringBuilder query = new StringBuilder("SELECT id, batch_id as batchId, paymentid as paymentId, "
+				+ "consumercode as consumerCode, businessservice as businessService, billid as billId, "
+				+ "tenantid as tenantId, resettle_status as resettleStatus, failure_reason as failureReason, "
+				+ "createdtime as createdTime, createdby as createdBy "
+				+ "FROM egcl_resettle_detail WHERE 1=1 ");
+		Map<String, Object> params = new HashMap<>();
+		params.put("limit", (limit != null && limit > 0) ? limit : 50);
+
+		if (StringUtils.isNotBlank(batchId)) {
+			query.append("AND batch_id = :batchId ");
+			params.put("batchId", batchId);
+		}
+		if (StringUtils.isNotBlank(paymentId)) {
+			query.append("AND paymentid = :paymentId ");
+			params.put("paymentId", paymentId);
+		}
+		if (StringUtils.isNotBlank(status)) {
+			query.append("AND resettle_status = :status ");
+			params.put("status", status);
+		}
+		query.append("ORDER BY createdtime DESC LIMIT :limit");
+
+		return namedParameterJdbcTemplate.query(query.toString(), params, new BeanPropertyRowMapper<>(PaymentResettleDetailAudit.class));
 	}
 	
 }

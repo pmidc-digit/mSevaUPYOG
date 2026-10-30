@@ -477,12 +477,16 @@ public class MeterServicesImpl implements MeterService {
 	 */
 	@Override
 	public List<MeterReading> searchMeterReadings(MeterReadingSearchCriteria criteria, RequestInfo requestInfo) {
-		return wSCalculationDao.searchMeterReadings(criteria);
+		List<MeterReading> meterReadings = wSCalculationDao.searchMeterReadings(criteria);
+		enrichmentService.enrichUserNames(meterReadings, requestInfo, criteria.getTenantId());
+		return meterReadings;
 	}
 
 
 	public List<BulkMeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria, RequestInfo requestInfo) {
-		return wSCalculationDao.searchMeterReadingsV2(criteria);
+		List<BulkMeterReading> bulkMeterReadings = wSCalculationDao.searchMeterReadingsV2(criteria);
+		enrichmentService.enrichBulkMeterUserNames(bulkMeterReadings, requestInfo, criteria.getTenantId());
+		return bulkMeterReadings;
 	}
 
 }

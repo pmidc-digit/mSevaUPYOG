@@ -27,7 +27,10 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -241,7 +244,8 @@ public class ccAvanueGateway implements Gateway {
     public Transaction fetchStatus(Transaction currentStatus, Map<String, String> params) {
        		 Transaction txn =null;     
              String vResponse="";
- 		 
+             JSONObject jsonResponse= null;
+             String encResp = params.get("encResp");
 	         AesUtil aesUtilenc=new AesUtil(MERCHANT_WORKING_KEY);
 
 	         String txnId = currentStatus.getTxnId(); 
@@ -261,15 +265,21 @@ public class ccAvanueGateway implements Gateway {
 	                           "&version=" + PgConstants.CCAVENUE_VERSION +
 	                           "&from_date=" + formattedDate);
   	     try {
-  	    	 
-			  vResponse = processUrlConnectionReq(wsDataBuff.toString(), MERCHANT_URL_STATUS);
-	  	      String[] keyValuePairs = vResponse.toString().split("&");
-	      	  String resp = keyValuePairs[1];
-	          String decResp = aesUtilenc.decrypt(resp.substring(13, resp.length()));
-	       
-	          JSONObject jsonResponse = new JSONObject(decResp);
+             if (encResp != null && !encResp.trim().isEmpty()) {
+                 String decryptedResponse = aesUtilenc.decrypt(encResp);
+                 jsonResponse = convertEncRespToOrderStatus(decryptedResponse);
+             }
+             else {
+                 log.info("Merchant Fetch Status URL: {}", MERCHANT_URL_STATUS);
+                 log.info("Request Body: {}", wsDataBuff.toString());
+                 vResponse = processUrlConnectionReq(wsDataBuff.toString(), MERCHANT_URL_STATUS);
+                 log.info("Enc response From Merchant: {}", vResponse.toString());
+                 String[] keyValuePairs = vResponse.toString().split("&");
+                 String resp = keyValuePairs[1];
+                 String decResp = aesUtilenc.decrypt(resp.substring(13, resp.length()));
+                 jsonResponse = new JSONObject(decResp);
+             }
 
-	   
 	       		 txn =  transformRawResponseNew(jsonResponse,currentStatus); 
 	         	 return txn; 
   	     
@@ -412,7 +422,7 @@ public static String processUrlConnectionReq(String pBankData,String pBankUrl) t
 
         JSONArray orderStatusList = response.optJSONArray("order_Status_List");
         JSONObject lastSuccessfulOrder = null;
-
+        log.info("Decrypted Response From Merchant: {}",response.toString());
         // Check if any order status is "Shipped" or "Successful"
         if (orderStatusList != null) {
             for (int i = 0; i < orderStatusList.length(); i++) {
@@ -563,4 +573,129 @@ public static String processUrlConnectionReq(String pBankData,String pBankUrl) t
 		return null;
 	}
 
+
+    public JSONObject convertEncRespToOrderStatus(String decryptedResponse) {
+
+        Map<String, String> responseMap = new HashMap<>();
+
+        String[] pairs = decryptedResponse.split("&");
+
+        for (String pair : pairs) {
+            String[] keyValue = pair.split("=", 2);
+
+            if (keyValue.length == 2) {
+                String key = keyValue[0].trim();
+                String value = keyValue[1].trim();
+
+                responseMap.put(key, value);
+            }
+        }
+
+        JSONObject order = new JSONObject();
+
+        order.put("reference_no", responseMap.getOrDefault("tracking_id", ""));
+        order.put("order_no", responseMap.getOrDefault("order_id", ""));
+        order.put("order_currncy", responseMap.getOrDefault("currency", ""));
+
+        order.put("order_amt",
+                Double.parseDouble(responseMap.getOrDefault("amount", "0")));
+
+        order.put("order_bill_name", responseMap.getOrDefault("billing_name", ""));
+        order.put("order_bill_address", responseMap.getOrDefault("billing_address", ""));
+        order.put("order_bill_city", responseMap.getOrDefault("billing_city", ""));
+        order.put("order_bill_state", responseMap.getOrDefault("billing_state", ""));
+        order.put("order_bill_zip", responseMap.getOrDefault("billing_zip", ""));
+        order.put("order_bill_country", responseMap.getOrDefault("billing_country", ""));
+        order.put("order_bill_tel", responseMap.getOrDefault("billing_tel", ""));
+        order.put("order_bill_email", responseMap.getOrDefault("billing_email", ""));
+
+        order.put("order_ship_name", responseMap.getOrDefault("delivery_name", ""));
+        order.put("order_ship_address", responseMap.getOrDefault("delivery_address", ""));
+        order.put("order_ship_city", responseMap.getOrDefault("delivery_city", ""));
+        order.put("order_ship_state", responseMap.getOrDefault("delivery_state", ""));
+        order.put("order_ship_zip", responseMap.getOrDefault("delivery_zip", ""));
+        order.put("order_ship_country", responseMap.getOrDefault("delivery_country", ""));
+        order.put("order_ship_tel", responseMap.getOrDefault("delivery_tel", ""));
+        order.put("order_ship_email", "");
+
+        order.put("order_card_name", responseMap.getOrDefault("card_name", ""));
+        order.put("order_bank_ref_no", responseMap.getOrDefault("bank_ref_no", ""));
+        order.put("order_bank_response", responseMap.getOrDefault("status_message", ""));
+
+        order.put("payment_mode", responseMap.getOrDefault("payment_mode", ""));
+        order.put("card_type", responseMap.getOrDefault("payment_mode", ""));
+
+        order.put("order_discount",
+                Double.parseDouble(responseMap.getOrDefault("discount_value", "0")));
+
+        order.put("order_capt_amt",
+                Double.parseDouble(responseMap.getOrDefault("amount", "0")));
+
+        order.put("order_gross_amt",
+                Double.parseDouble(responseMap.getOrDefault("amount", "0")));
+
+        String transactionDate = responseMap.getOrDefault("trans_date", "");
+
+        if (!transactionDate.isEmpty()) {
+            try {
+                SimpleDateFormat inputFormat =
+                        new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
+                SimpleDateFormat outputFormat =
+                        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
+                Date date = inputFormat.parse(transactionDate);
+
+                order.put("order_status_date_time", outputFormat.format(date));
+
+            } catch (Exception e) {
+                order.put("order_status_date_time", "");
+            }
+        }
+
+        String paymentStatus = responseMap.getOrDefault("order_status", "");
+
+        if ("Success".equalsIgnoreCase(paymentStatus)) {
+            order.put("order_status", "Shipped");
+        } else if ("Failure".equalsIgnoreCase(paymentStatus)) {
+            order.put("order_status", "Unsuccessful");
+        } else if ("Aborted".equalsIgnoreCase(paymentStatus)) {
+            order.put("order_status", "Aborted");
+        } else {
+            order.put("order_status", paymentStatus);
+        }
+
+        for (int i = 1; i <= 5; i++) {
+            String key = "merchant_param" + i;
+            order.put(key, responseMap.getOrDefault(key, ""));
+        }
+
+        order.put("order_bin_country", responseMap.getOrDefault("bin_country", ""));
+        order.put("order_notes", responseMap.getOrDefault("billing_notes", ""));
+        order.put("order_fraud_status", "NA");
+        order.put("order_bank_arn_no", responseMap.getOrDefault("auth_ref_num", ""));
+
+        JSONArray orderStatusList = new JSONArray();
+        orderStatusList.put(order);
+
+        JSONObject finalResponse = new JSONObject();
+
+        finalResponse.put("order_Status_List", orderStatusList);
+        finalResponse.put("page_count", 1);
+        finalResponse.put("total_records", 1);
+
+        boolean success = "Success".equalsIgnoreCase(paymentStatus);
+        boolean failure = "Failure".equalsIgnoreCase(paymentStatus);
+
+        finalResponse.put("successful_trans_count", success ? 1 : 0);
+        finalResponse.put("failure_trans_count", failure ? 1 : 0);
+        finalResponse.put("awaited_trans_count", 0);
+        finalResponse.put("dropped_trans_count", 0);
+        finalResponse.put("fraud_trans_count", 0);
+
+        finalResponse.put("error_desc", "");
+        finalResponse.put("error_code", "");
+
+        return finalResponse;
+    }
 }

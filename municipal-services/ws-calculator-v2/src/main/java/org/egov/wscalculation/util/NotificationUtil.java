@@ -391,4 +391,60 @@ public class NotificationUtil {
 		return userInfo;
 	}
 
+	/**
+	 * Extracts official email addresses of the given tenants from MDMS (tenant.tenants).
+	 *
+	 * @param tenantIds Collection of tenant IDs (e.g. ["pb.nangal", "pb.amargarh"])
+	 * @param requestInfo RequestInfo object
+	 * @return Set of email addresses
+	 */
+	public Set<String> getTenantEmailIds(Collection<String> tenantIds, RequestInfo requestInfo) {
+		Set<String> emailIds = new HashSet<>();
+		if (CollectionUtils.isEmpty(tenantIds)) {
+			return emailIds;
+		}
+
+		String rootTenant = tenantIds.iterator().next().split("\\.")[0];
+		StringBuilder uri = new StringBuilder();
+		uri.append(config.getMdmsHost()).append(config.getMdmsEndPoint());
+
+		MasterDetail masterDetail = MasterDetail.builder().name("tenants").build();
+		ModuleDetail moduleDetail = ModuleDetail.builder().moduleName("tenant")
+				.masterDetails(Collections.singletonList(masterDetail)).build();
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+				.tenantId(rootTenant)
+				.moduleDetails(Collections.singletonList(moduleDetail))
+				.build();
+		MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder()
+				.requestInfo(requestInfo != null ? requestInfo : new RequestInfo())
+				.mdmsCriteria(mdmsCriteria)
+				.build();
+
+		try {
+			Object response = serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq);
+			if (response != null) {
+				List<Map<String, Object>> tenantsList = JsonPath.read(response, "$.MdmsRes.tenant.tenants");
+				if (!CollectionUtils.isEmpty(tenantsList)) {
+					Set<String> targetTenantSet = new HashSet<>(tenantIds);
+					for (Map<String, Object> tenantObj : tenantsList) {
+						String code = (String) tenantObj.get("code");
+						String email = (String) tenantObj.get("emailId");
+						if (targetTenantSet.contains(code) && StringUtils.isNotBlank(email)) {
+							for (String e : email.split(",")) {
+								if (StringUtils.isNotBlank(e)) {
+									emailIds.add(e.trim());
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Exception while fetching tenant emails from MDMS for tenants {}: ", tenantIds, e);
+		}
+
+		log.info("Fetched tenant email(s) from MDMS for {}: {}", tenantIds, emailIds);
+		return emailIds;
+	}
+
 }

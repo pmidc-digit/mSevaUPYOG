@@ -132,8 +132,18 @@ public class DemandSchedulerNotificationService {
 			body = customizedMsg;
 		}
 
+		Set<String> tenantIds = summaries.stream()
+				.map(TenantDemandSummary::getTenantId)
+				.filter(StringUtils::isNotBlank)
+				.collect(Collectors.toSet());
+		Set<String> toRecipients = notificationUtil.getTenantEmailIds(tenantIds, requestInfo);
+		if (toRecipients == null || toRecipients.isEmpty()) {
+			log.warn("⚠️ No MDMS emailId found for tenants {}. Falling back to default mail recipients.", tenantIds);
+			toRecipients = getToRecipients();
+		}
+
 		Email email = Email.builder()
-				.emailTo(getToRecipients())
+				.emailTo(toRecipients)
 				.emailCc(getCcRecipients())
 				.subject(subject)
 				.body(body)
@@ -141,7 +151,7 @@ public class DemandSchedulerNotificationService {
 				.build();
 
 		wsCalculationProducer.push(configs.getEmailNotifyTopic(), EmailRequest.builder().requestInfo(requestInfo).email(email).build());
-		log.info("📧 Consolidated start email pushed to Kafka topic {} (To: {}, Cc: {})", configs.getEmailNotifyTopic(), getToRecipients(), getCcRecipients());
+		log.info("📧 Consolidated start email pushed to Kafka topic {} (To: {}, Cc: {})", configs.getEmailNotifyTopic(), toRecipients, getCcRecipients());
 	}
 
 	public void sendStartEmail(String tenantId, Long from, Long to, int totalCount, RequestInfo requestInfo) {
@@ -313,8 +323,14 @@ public class DemandSchedulerNotificationService {
 				body = customizedMsg;
 			}
 
+			Set<String> toRecipients = notificationUtil.getTenantEmailIds(Collections.singleton(tenantId), requestInfo);
+			if (toRecipients == null || toRecipients.isEmpty()) {
+				log.warn("⚠️ No MDMS emailId found for tenant {}. Falling back to default mail recipients.", tenantId);
+				toRecipients = getToRecipients();
+			}
+
 			Email email = Email.builder()
-					.emailTo(getToRecipients())
+					.emailTo(toRecipients)
 					.emailCc(getCcRecipients())
 					.subject(subject)
 					.body(body)
@@ -322,7 +338,7 @@ public class DemandSchedulerNotificationService {
 					.build();
 
 			wsCalculationProducer.push(configs.getEmailNotifyTopic(), EmailRequest.builder().requestInfo(requestInfo).email(email).build());
-			log.info("📧 Completion email notification pushed to Kafka for tenant: {} (To: {}, Cc: {})", tenantId, getToRecipients(), getCcRecipients());
+			log.info("📧 Completion email notification pushed to Kafka for tenant: {} (To: {}, Cc: {})", tenantId, toRecipients, getCcRecipients());
 		} catch (Exception e) {
 			log.error("❌ Failed to process and send completion email for tenant: {} | {}", tenantId, e.getMessage(), e);
 		}

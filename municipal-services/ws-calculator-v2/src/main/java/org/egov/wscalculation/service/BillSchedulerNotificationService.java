@@ -314,8 +314,14 @@ public class BillSchedulerNotificationService {
 				body = customizedMsg;
 			}
 
+			Set<String> toRecipients = notificationUtil.getTenantEmailIds(distinctTenantIds, requestInfo);
+			if (toRecipients == null || toRecipients.isEmpty()) {
+				log.warn("⚠️ No MDMS emailId found for tenants {}. Falling back to default mail recipients.", distinctTenantIds);
+				toRecipients = getToRecipients();
+			}
+
 			Email email = Email.builder()
-					.emailTo(getToRecipients())
+					.emailTo(toRecipients)
 					.emailCc(getCcRecipients())
 					.subject(subject)
 					.body(body)
@@ -324,7 +330,7 @@ public class BillSchedulerNotificationService {
 
 			wsCalculationProducer.push(configs.getEmailNotifyTopic(), EmailRequest.builder().requestInfo(requestInfo).email(email).build());
 			log.info("📧 Bill generation completion email notification pushed to Kafka topic {} (To: {}, Cc: {})",
-					configs.getEmailNotifyTopic(), getToRecipients(), getCcRecipients());
+					configs.getEmailNotifyTopic(), toRecipients, getCcRecipients());
 		} catch (Exception e) {
 			log.error("❌ Failed to construct and send bill generation completion email: {}", e.getMessage(), e);
 		}

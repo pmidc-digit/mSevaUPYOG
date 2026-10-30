@@ -49,6 +49,7 @@ package org.egov.edcr.feature;
 
 import static org.egov.edcr.constants.DxfFileConstants.A;
 import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+import static org.egov.edcr.constants.DxfFileConstants.A_AIF;
 import static org.egov.edcr.constants.DxfFileConstants.A_SA;
 import static org.egov.edcr.constants.DxfFileConstants.B;
 import static org.egov.edcr.constants.DxfFileConstants.D;
@@ -119,22 +120,8 @@ public class Plantation extends FeatureProcess {
                 plantationPer = totalArea.divide(plotArea, DECIMALDIGITS_MEASUREMENTS, ROUNDMODE_MEASUREMENTS);
                 
                  
-            if ( A.equals(type) ||  A_AF.equals(subType)  || A_SA.equals(subType) || B.equals(type) || D.equals(type) || G.equals(type)) {
-            	
-//                if (plantationPer.compareTo(new BigDecimal("0.10")) < 0) {
-//                    details.put(REQUIRED, ">= 10%");
-//                    details.put(PROVIDED, plantationPer.multiply(new BigDecimal(100)).toString() + "%");
-//                    details.put(STATUS, Result.Not_Accepted.getResultVal());
-//                    scrutinyDetail.getDetail().add(details);
-//                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-//                } else {
-//                    details.put(REQUIRED, ">= 10%");
-//                    details.put(PROVIDED, plantationPer.multiply(new BigDecimal(100)).toString() + "%");
-//                    details.put(STATUS, Result.Accepted.getResultVal());
-//                    scrutinyDetail.getDetail().add(details);
-//                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-//                }
-          //  } else {
+            if ( A.equals(type) ||  A_AF.equals(subType)  ||  A_AIF.equals(subType) || A_SA.equals(subType) || 
+            		B.equals(type) || D.equals(type) || G.equals(type)) {
                 if (plantationPer.compareTo(new BigDecimal("0.05")) >= 0) {
                     details.put(REQUIRED, ">= 5%");
                     details.put(PROVIDED, plantationPer.multiply(new BigDecimal(100)).toString() + "%");

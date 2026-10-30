@@ -35,6 +35,9 @@ public class Document   {
   @SafeHtml
   @JsonProperty("documentUid")
   private String documentUid = null;
+  
+  @JsonProperty("order")
+  private Integer order = null;
 
 //  @JsonProperty("additionalDetails")
 //  private Object additionalDetails = null;
@@ -123,24 +126,24 @@ public class Document   {
     this.documentUid = documentUid;
   }
 
-//  public Document additionalDetails(Object additionalDetails) {
-//    this.additionalDetails = additionalDetails;
-//    return this;
-//  }
-
   /**
-   * Json object to capture any extra information which is not accommodated by model
-   * @return additionalDetails
+   * Document Order.
+   * @return Order
   **/
-//  @ApiModelProperty(value = "Json object to capture any extra information which is not accommodated by model")
-//
-//    public Object getAdditionalDetails() {
-//    return additionalDetails;
-//  }
-//
-//  public void setAdditionalDetails(Object additionalDetails) {
-//    this.additionalDetails = additionalDetails;
-//  }
+  @ApiModelProperty(value = "Document Order.")
+  
+    public Integer getOrder() {
+    return order;
+  }
+
+  public void setOrder(Integer order) {
+    this.order = order;
+  }
+
+  public Document order(Integer order) {
+    this.order = order;
+    return this;
+  }
 
 
   @Override

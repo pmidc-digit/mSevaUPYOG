@@ -106,19 +106,39 @@ public class EstimationService {
 				.estimateAmount(sewerageCharge.setScale(2, 2)).build());
 
 		/// DISPOSAL DISCHARGE CHARGES
-		HashMap<String, String> add_details = ((HashMap<String, String>) connection.getAdditionalDetails());
-		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection") != null) {
+		Map<String, Object> add_details = null;
+		if (connection.getAdditionalDetails() != null) {
+			try {
+				add_details = mapper.convertValue(connection.getAdditionalDetails(), HashMap.class);
+			} catch (Exception e) {
+				log.error("Error converting additional details in getEstimatesForTax", e);
+			}
+		}
+		if (add_details == null) {
+			add_details = new HashMap<>();
+		}
 
-			if (add_details.get("dischargeConnection").equalsIgnoreCase("true")) {
+		String dischargeConnectionStr = null;
+		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection") != null) {
+			dischargeConnectionStr = String.valueOf(add_details.get("dischargeConnection"));
+		}
+
+		if (dischargeConnectionStr != null) {
+
+			if (dischargeConnectionStr.equalsIgnoreCase("true")) {
 				// BigDecimal disposal_charge=new BigDecimal(200.0);
 				BigDecimal disposal_charge;
 				try {
-					if (add_details.containsKey("dischargeFee")) // if dischargeFee attribute is present in
-																	// additionalDetails then use give dischargeFee else
-																	// fix dischagefee to 200
-						disposal_charge = new BigDecimal(add_details.get("dischargeFee"));
-					else
+					Object dischargeFeeObj = add_details.get("dischargeFee");
+					if (dischargeFeeObj != null) {
+						if (dischargeFeeObj instanceof Number) {
+							disposal_charge = BigDecimal.valueOf(((Number) dischargeFeeObj).doubleValue());
+						} else {
+							disposal_charge = new BigDecimal(String.valueOf(dischargeFeeObj));
+						}
+					} else {
 						disposal_charge = new BigDecimal(200.0);
+					}
 				} catch (Exception ex) {
 					disposal_charge = new BigDecimal(200.0);
 				}
@@ -223,7 +243,22 @@ public class EstimationService {
 	    }
 
 	    if (applicableBillSlab != null && applicableSlab != null) {
-	        sewerageCharge = BigDecimal.valueOf(applicableSlab.getCharge());
+
+	        Double slabCharge = applicableSlab.getCharge();
+	        /* PI-21135 Sewrage Seat Based Billing Logic */ 
+
+	        if (SWCalculationConstant.PLOT_SEAT_BASED.equalsIgnoreCase(calculationAttribute)) {
+
+	            Integer noOfUnits = sewerageConnection.getNoOfToilets() != null
+	                    ? sewerageConnection.getNoOfToilets()
+	                    : 1;
+
+	            sewerageCharge = BigDecimal.valueOf(slabCharge * noOfUnits);
+	            /* PI-21135 Sewrage Seat Based Billing Logic */ 
+
+	        } else {
+	            sewerageCharge = BigDecimal.valueOf(slabCharge);
+	        }
 	        request.setTaxPeriodFrom(criteria.getFrom());
 	        request.setTaxPeriodTo(criteria.getTo());
 
@@ -362,6 +397,20 @@ public class EstimationService {
 				return new Double(sewerageConnection.getNoOfToilets());
 			
 		}
+		/* PI-21135 Sewrage Seat Based Billing Logic */ 
+		else if (sewerageConnection.getConnectionType().equals(SWCalculationConstant.nonMeterdConnection)
+		        && calculationAttribute.equalsIgnoreCase(SWCalculationConstant.PLOT_SEAT_BASED)) {
+
+		    return (property.getLandArea() != null && property.getLandArea() > 0)
+		            ? property.getLandArea()
+		            : (property.getSuperBuiltUpArea() != null 
+		                && property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0)
+		                ? property.getSuperBuiltUpArea().doubleValue()
+		                : (sewerageConnection.getNoOfToilets() != null 
+		                    ? new Double(sewerageConnection.getNoOfToilets()) 
+		                    : 0.0);
+		}
+		/* PI-21135 Sewrage Seat Based Billing Logic */ 
 		
 		else if (sewerageConnection.getConnectionType().equals(SWCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(SWCalculationConstant.noOfWaterClosets)) {
@@ -426,6 +475,38 @@ public class EstimationService {
 
 		JSONObject feeObj = mapper.convertValue(feeSlab.get(0), JSONObject.class);
 		BigDecimal formFee = BigDecimal.ZERO;
+		// ----- create estimates list -----
+	    List<TaxHeadEstimate> estimates = new ArrayList<>();
+
+	 // ========= NEW LOGIC FOR DISCONNECTION ===========
+	    String applicationType = criteria.getSewerageConnection().getApplicationType();
+	    if ("DISCONNECT_SEWERAGE_CONNECTION".equalsIgnoreCase(applicationType)) {
+	    	log.info("Available Masters in masterData map: {}", masterData.keySet());
+
+	        JSONArray disConnMaster = (JSONArray) masterData
+	                .getOrDefault(SWCalculationConstant.SC_DISCONNECTION_MASTER, null);
+	        
+
+	        if (disConnMaster == null || disConnMaster.isEmpty())
+	            throw new CustomException("DISCONNECTION_FEE_NOT_FOUND",
+	                    "Disconnection Fee not found!");
+
+
+	        JSONObject disConnObj = mapper.convertValue(disConnMaster.get(0), JSONObject.class);
+
+	     // Use a different variable name
+	     Object disconnFeeObj = disConnObj.get("disconnectionFee");
+	     BigDecimal disconnectionFee = (disconnFeeObj != null) ? new BigDecimal(disconnFeeObj.toString()) : BigDecimal.ZERO;
+
+	     // ADD TAX HEAD
+	     estimates.add(TaxHeadEstimate.builder()
+	             .taxHeadCode(SWCalculationConstant.SW_DISCONNECTION_FEE)
+	             .estimateAmount(disconnectionFee.setScale(2, 2))
+	             .category(TaxHeadCategory.FEE)
+	             .build());
+
+	     return estimates; // stop further fee processing
+	    }
 		if (feeObj.get(SWCalculationConstant.FORM_FEE_CONST) != null) {
 			formFee = new BigDecimal(feeObj.getAsNumber(SWCalculationConstant.FORM_FEE_CONST).toString());
 		}
@@ -612,7 +693,6 @@ public class EstimationService {
 //				.add(roadPlotCharge).add(usageTypeCharge);
 		BigDecimal tax = totalCharge.multiply(taxAndCessPercentage.divide(SWCalculationConstant.HUNDRED));
 		//
-		List<TaxHeadEstimate> estimates = new ArrayList<>();
 		// BigDecimal otherCharges=BigDecimal.ZERO;
 		
 		/*

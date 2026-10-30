@@ -14,6 +14,7 @@ import org.egov.wscalculation.repository.builder.WSCalculatorQueryBuilder;
 import org.egov.wscalculation.web.models.MeterConnectionRequests;
 import org.egov.wscalculation.repository.rowmapper.BillSearchRowMapper;
 import org.egov.wscalculation.repository.rowmapper.BillSearchRowMappers;
+import org.egov.wscalculation.repository.rowmapper.BulkMeterReadingRowMapper;
 import org.egov.wscalculation.repository.rowmapper.DemandSchedulerRowMapper;
 import org.egov.wscalculation.repository.rowmapper.Demandcancelwrapper;
 import org.egov.wscalculation.repository.rowmapper.MeterReadingCurrentReadingRowMapper;
@@ -23,6 +24,7 @@ import org.egov.wscalculation.repository.rowmapper.WaterDemandRowMapper;
 import org.egov.wscalculation.repository.rowmapper.WaterRowMapper;
 import org.egov.wscalculation.web.models.BillSearch;
 import org.egov.wscalculation.web.models.BillSearchs;
+import org.egov.wscalculation.web.models.BulkMeterReading;
 import org.egov.wscalculation.web.models.CancelDemand;
 import org.egov.wscalculation.web.models.CancelDemandReq;
 import org.egov.wscalculation.web.models.Canceldemandsearch;
@@ -55,6 +57,9 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 
 	@Autowired
 	private MeterReadingRowMapper meterReadingRowMapper;
+	
+	@Autowired
+	private BulkMeterReadingRowMapper bulkMeterReadingRowMapper;
 
 	@Autowired
 	private MeterReadingCurrentReadingRowMapper currentMeterReadingRowMapper;
@@ -366,13 +371,20 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	@Override
-	public List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String connectionType, Long taxPeriodFrom,
+	public List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String locality, String connectionType, Long taxPeriodFrom,
 			Long taxPeriodTo, String cone) {
-		
+
+            String query;
 			List<Object> preparedStatement = new ArrayList<>();
-			String query = queryBuilder.getConnectionNumberList(tenantId, connectionType,
-					WSCalculationConstant.ACTIVE_CONNECTION, taxPeriodFrom, taxPeriodTo, cone, preparedStatement);
-			log.info("preparedStatement: " + preparedStatement + " connection type: " + connectionType
+            if(locality!=null && !locality.trim().isEmpty()) {
+                query = queryBuilder.getConnectionNumberList(tenantId, locality, connectionType,
+                        WSCalculationConstant.ACTIVE_CONNECTION, taxPeriodFrom, taxPeriodTo, cone, preparedStatement);
+            }
+            else{
+                query = queryBuilder.getConnectionNumberList(tenantId, null, connectionType,
+                        WSCalculationConstant.ACTIVE_CONNECTION, taxPeriodFrom, taxPeriodTo, cone, preparedStatement);
+            }
+        log.info("preparedStatement: " + preparedStatement + " connection type: " + connectionType
 					+ " connection list : " + query);
 			return jdbcTemplate.query(query, preparedStatement.toArray(), demandSchedulerRowMapper);
 		
@@ -393,9 +405,9 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 	
 	
 	@Override
-	public List<Map<String, Object>> getCollection(String tenantId, Long taxPeriodFrom, Long taxPeriodTo, String consumerCode) {
+	public List<Map<String, Object>> getCollection(String tenantId, Long taxPeriodFrom, Long taxPeriodTo, String consumerCode,String businessService) {
 	    List<Object> preparedStatement = new ArrayList<>();
-	    String query = queryBuilder.getCollection(tenantId, taxPeriodFrom, taxPeriodTo, consumerCode, preparedStatement);
+	    String query = queryBuilder.getCollection(tenantId, taxPeriodFrom, taxPeriodTo, consumerCode,businessService, preparedStatement);
 
 	    log.info("preparedStatement: {} | query: {}", preparedStatement, query);
 
@@ -516,6 +528,32 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 	}
 
 
+	/**
+	 * 
+	 * @param criteria would be meter reading criteria
+	 * @return List of meter readings based on criteria
+	 */
+	@Override
+	public List<BulkMeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria) {
+		List<Object> preparedStatement = new ArrayList<>();
+		String query = queryBuilder.getSearchQueryStringV2(criteria, preparedStatement);
+		if (query == null)
+			return Collections.emptyList();
+		log.debug("Query: " + query);
+		log.debug("Prepared Statement" + preparedStatement.toString());
+		return jdbcTemplate.query(query, preparedStatement.toArray(), bulkMeterReadingRowMapper);
+	}
+
+	@Override
+	public Boolean cancelDemandAndExpiryBills(CancelDemandReq demandId) {
+		try {
+			wSCalculationProducer.push(cancelMeterConnection, demandId);
+			return true;
+		} catch (Exception e) {
+			log.error("Error while sending cancel demand to Persister", e);
+			return false;
+		}
+	}
 
 	
 	

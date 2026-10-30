@@ -5,6 +5,7 @@ import static org.egov.edcr.constants.DxfFileConstants.OPENING_ABOVE_2_1_ON_SIDE
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class PlanInfoFeatureExtractLocalTest extends FeatureExtract {
 	public static final String MSG_ERROR_MANDATORY = "msg.error.mandatory.object.not.defined";
 	private String digitsRegex = "[^\\d.]";
 	private static final BigDecimal ONEHUDREDTWENTYFIVE = BigDecimal.valueOf(125);
+	public static final BigDecimal HIGH_RISE_BUILDING_HEIGHT = BigDecimal.valueOf(21);
 	@Autowired
 	private LayerNames layerNames;
 	@Autowired
@@ -139,8 +141,10 @@ public class PlanInfoFeatureExtractLocalTest extends FeatureExtract {
 			b.setHeight(height);
 			b.getBuilding().setBuildingHeight(height);
 			b.getBuilding().setDeclaredBuildingHeight(height);
-			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
-				b.getBuilding().setIsHighRise(true);
+//			if (height.compareTo(BigDecimal.valueOf(15)) > 0)
+//				b.getBuilding().setIsHighRise(true);
+			if (height.compareTo(HIGH_RISE_BUILDING_HEIGHT) > 0)
+	              b.getBuilding().setIsHighRise(true);
 		}
 	}
 
@@ -208,10 +212,14 @@ public class PlanInfoFeatureExtractLocalTest extends FeatureExtract {
 			plotArea = plotArea.replaceAll(digitsRegex, "");
 			BigDecimal numericValue = getNumericValue(plotArea, pl, DxfFileConstants.PLOT_AREA);
 			if (numericValue != null) {
+				numericValue = numericValue.setScale(2, RoundingMode.HALF_UP);
 				pi.setPlotArea(numericValue);
 				plot.setArea(numericValue);
 				if (numericValue.compareTo(ONEHUDREDTWENTYFIVE) <= 0)
 					plot.setSmallPlot(true);
+			} else {
+				pl.addError(DxfFileConstants.PLOT_AREA,
+						DxfFileConstants.PLOT_AREA + " is null or invalid in the Plan Information Layer");
 			}
 			plot.setPresentInDxf(true);
 			pl.setPlot(plot);

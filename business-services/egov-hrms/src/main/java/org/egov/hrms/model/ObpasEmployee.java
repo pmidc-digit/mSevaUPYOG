@@ -1,10 +1,11 @@
 package org.egov.hrms.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 
 @Data
 @AllArgsConstructor
@@ -18,7 +19,19 @@ public class ObpasEmployee {
     private String subcategory;
     private String zone;
     private String assignedTenantId;
-    
-    private AuditDetails auditDetails; // add this field
+
+    @JsonProperty("modulename")
+    @JsonAlias({"modulename", "moduleName"})
+    private String modulename;
+    private String roles;
+    private AuditDetails auditDetails;
+
+    public String getModulename() {
+        return modulename;
+    }
+
+    public void setModulename(String modulename) {
+        this.modulename = modulename;
+    }
 
 }

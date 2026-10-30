@@ -6,7 +6,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MdmsConfiguration {
 
-    @Value("${mdms.host:}")
+    //@Value("${mdms.host:}")    
+    @Value("${egov.mdms.host:}")
     private String mdmsHost;
 
     @Value("${mdms.searchurl:}")

@@ -36,6 +36,9 @@ public class WSCalculationConstant {
 
 	public static final String MDMS_FINANCIALYEAR = "FinancialYear";
 	public static final String MDMS_NO_FILTER_TAXPERIOD = "$.MdmsRes.BillingService.TaxPeriod.*";
+	
+	public static final String WS_DISCONNECTION_FEE = "WS_DISCONNECTION_FEE";
+
 	/*
 	 * Module names
 	 */
@@ -227,6 +230,12 @@ public class WSCalculationConstant {
 	public static final String WC_FEESLAB_MASTER = "FeeSlab";
 	
 	public static final String WC_ROADTYPE_MASTER = "RoadType";
+	
+	public static final String WC_DISCONNECTION_MASTER = "DisconnectionFee";
+	
+	public static final String PENDING_FOR_FIELD_INSPECTION = "PENDING_FOR_FIELD_INSPECTION";
+
+
 	
 	public static final String SUCCESS = "Success";
 
@@ -457,7 +466,23 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 
 	public static final String WS_DUPLICATE_BILL_SCHEDULER_MSG = "WS_DUPLICATE_BILL_SCHEDULER_MSG";
 	
+	public static final String METERED_WATER_SEWERAGE_MAPPING = "meteredWaterSewerageMapping"; 
+	
 	public static final String METER_READING_MAPPING = "meterReadingMapping"; 
+
+	public static final String WATER_EQUAL_TO_SEWERAGE_KEY = "waterequaltosewerage";
+
+	public static final String CRITERIA_KEY = "criteria";
+
+	public static final String CRITERIA_USAGE_CATEGORY = "USAGE_CATEGORY";
+
+	public static final String CRITERIA_PLOT_SIZE = "PLOT_SIZE";
+
+	public static final String CRITERIA_LOCALITY = "LOCALITY";
+
+	public static final String CRITERIA_WATER_SOURCE = "WATER_SOURCE";
+
+	public static final String CRITERIA_PIPE_SIZE = "PIPE_SIZE";
 	
 	public static final String USAGE_CATEGORY_NONRESIDENTIAL_COMMERCIAL = "NONRESIDENTIAL.COMMERCIAL";
 	
@@ -468,4 +493,19 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 	public static final String WS_ADVANCE_CARRYFORWARD = "WS_ADVANCE_CARRYFORWARD";
 
 	public static final String SW_ADVANCE_CARRYFORWARD = "SW_ADVANCE_CARRYFORWARD";
+
+	public static final String WS_DISCHARGE_CHARGES = "WS_DISCHARGE_CHARGES";
+	
+	//  Meter Reset status constant
+	public static final String RESET = "Reset";
+	
+	// MDMS billingPeriod master key and field names for Reset meter logic
+	public static final String BILLING_PERIOD_MASTER_KEY        = "billingPeriod";
+	
+	public static final String METER_MAX_READING_KEY            = "meterMaxReading";
+	
+	public static final String BULK_METER_MAX_READING_KEY       = "bulkMeterMaxReading";
+ 
+	//Safe fallback defaults (used only if MDMS entry is missing)
+
 }

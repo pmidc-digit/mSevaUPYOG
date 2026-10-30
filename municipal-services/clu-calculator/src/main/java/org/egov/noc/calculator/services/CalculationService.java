@@ -105,10 +105,27 @@ public class CalculationService {
 					builtUpArea = new BigDecimal(siteDetails.getOrDefault("totalFloorArea", "0").toString().trim());
 				if(siteDetails.get("basementArea") != null)
 					basementArea = new BigDecimal(siteDetails.getOrDefault("basementArea", "0").toString().trim());
-				if(siteDetails.get("buildingCategory") != null) {
-					LinkedHashMap<String, Object> buildingCategory = (LinkedHashMap<String, Object>) siteDetails.get("buildingCategory");
-					category = (String) buildingCategory.get("name");
+				Object catObj = siteDetails.get("appliedCluCategory");
+				if (catObj == null) catObj = siteDetails.get("appliedCategory");
+				if (catObj == null) catObj = siteDetails.get("cluCategory");
+				if (catObj == null) catObj = siteDetails.get("buildingCategory");
+				if (catObj != null) {
+					if (catObj instanceof Map) {
+						Map<String, Object> catMap = (Map<String, Object>) catObj;
+						category = catMap.get("code") != null ? catMap.get("code").toString() : (catMap.get("name") != null ? catMap.get("name").toString() : "");
+					} else {
+						category = catObj.toString();
+					}
+				}
 
+				if (siteDetails.get("roadType") != null) {
+					Object rtObj = siteDetails.get("roadType");
+					if (rtObj instanceof Map) {
+						Map<String, Object> rtMap = (Map<String, Object>) rtObj;
+						roadTypeVal = rtMap.get("code") != null ? rtMap.get("code").toString() : (rtMap.get("name") != null ? rtMap.get("name").toString() : "");
+					} else {
+						roadTypeVal = rtObj.toString();
+					}
 				}
 				
 				LocalDate today = LocalDate.now();
@@ -118,9 +135,6 @@ public class CalculationService {
 					finYear = (today.getYear()-1) + "-" + (today.getYear()) % 2000;
 				
 			}
-			Map<String, Object> siteDetails1 = (Map<String, Object>)((Map<String, Object>)criteria.getLayout().getLayoutDetails().getAdditionalDetails()).get("siteDetails");
-			LinkedHashMap<String, Object> roadType = (LinkedHashMap<String, Object>) siteDetails1.get("roadType");
-			roadTypeVal = (String) roadType.get("name");
 
 			Object mdmsData = mdmsService.getMDMSSanctionFeeCharges(calculationReq.getRequestInfo(), tenantId, CLUConstants.MDMS_CHARGES_TYPE_CODE, category, finYear, criteria.getFeeType());
 			
@@ -197,16 +211,29 @@ public class CalculationService {
 							.add(new BigDecimal(chargesType.containsKey("fee") ? (Double) chargesType.get("fee") : 0.0))
 							.setScale(0, RoundingMode.CEILING);
 				}
+				break;
 			case CLUConstants.CLU_CHARGES:
+			case CLUConstants.CLU_CLU_FEE:
 				if(chargesType.containsKey("slabs")) {
 					Map<String,Double> slabAmountMap = ((List<Map<String, Object>>)chargesType.get("slabs")).stream()
-							.collect(Collectors.toMap(slab -> slab.get("roadType").toString(), slab -> (Double)slab.get("rate")));
-					Double cluSlabAmount = slabAmountMap.containsKey(roadType) ? slabAmountMap.get(roadType) : slabAmountMap.get("Other Road");
-					amount = BigDecimal.valueOf(cluSlabAmount).multiply(plotArea).setScale(0, RoundingMode.CEILING);
+							.collect(Collectors.toMap(slab -> slab.get("roadType").toString().toUpperCase().replace(" ", "_").replace("/", "_"), slab -> (Double)slab.get("rate")));
+					String searchRoadType = roadType != null ? roadType.toUpperCase().replace(" ", "_").replace("/", "_") : "OTHER_ROAD";
+					Double cluSlabAmount = slabAmountMap.containsKey(searchRoadType) ? slabAmountMap.get(searchRoadType) : slabAmountMap.get("OTHER_ROAD");
+					if (cluSlabAmount == null) {
+						cluSlabAmount = 0.0;
+					}
+					amount = BigDecimal.valueOf(cluSlabAmount).multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
 				}
 				break;
 			case CLUConstants.CLU_EXTERNAL_DEVELOPMENT_CHARGES:
-				amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.CEILING);
+				amount=rate.multiply(builtUpArea).setScale(0, RoundingMode.HALF_UP);
+				break;
+			case CLUConstants.CLU_EDC_FEE:
+			case CLUConstants.CLU_LF_FEE:
+			case CLUConstants.CLU_UDC_FEE:
+			case CLUConstants.CLU_OTHER1_FEE:
+			case CLUConstants.CLU_OTHER2_FEE:
+				amount = rate.multiply(plotArea).setScale(0, RoundingMode.HALF_UP);
 				break;
 			default:
 				amount = BigDecimal.ZERO;

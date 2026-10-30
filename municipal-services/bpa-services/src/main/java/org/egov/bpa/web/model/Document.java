@@ -47,6 +47,9 @@ public class Document   {
   
   @JsonProperty("auditDetails")
   private AuditDetails auditDetails = null;
+  
+  @JsonProperty("order")
+  private Integer order = null;
 
   public Document id(String id) {
     this.id = id;
@@ -163,6 +166,24 @@ public class Document   {
     this.auditDetails = auditDetails;
   }
 
+  /**
+   * unique document order
+   * @return order
+  **/
+  @ApiModelProperty(value = "unique document Order.")
+  
+    public Integer getOrder() {
+    return order;
+  }
+
+  public void setOrder(Integer order) {
+    this.order = order;
+  }
+
+  public Document order(Integer order) {
+    this.order = order;
+    return this;
+  }
 
   @Override
   public boolean equals(java.lang.Object o) {

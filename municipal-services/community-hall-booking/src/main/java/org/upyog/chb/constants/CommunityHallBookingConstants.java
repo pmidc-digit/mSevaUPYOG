@@ -73,6 +73,8 @@ public class CommunityHallBookingConstants {
 
 	public static final String CHANNEL_NAME_EMAIL = "EMAIL";
 	
+	public static final String CHANNEL_NAME_EMAIL_MSG = "email_chb_booking_success";
+	
 	public static final String MODULE = "module";
 
 	public static final String ACTION = "action";
@@ -110,6 +112,8 @@ public class CommunityHallBookingConstants {
 	public static final String SGST_CALCULATION_TYPE = "SGST";
 	
 	public static final String SECURITY_DEPOSIT = "SECURITY_DEPOSIT";
+
+	public static final String CHB_ROUND_OFF = "CHB_ROUND_OFF";
 	
 	
 	public static final String CHB_APPLICANT_DETAIL_ENCRYPTION_KEY = "CHBApplicantDetail";

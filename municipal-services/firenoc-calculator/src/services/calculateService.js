@@ -101,6 +101,7 @@ const calculateForSingleReq = async (
     requestInfo,
     next
   );
+  //console.log("feeEstimate",feeEstimate)
   calculation.taxHeadEstimates.push(feeEstimate);
   if (calculateCriteria.fireNOC.fireNOCDetails.additionalDetail.adhocPenalty) {
     const adhocPenaltyEstimate = calculateAdhocPenalty(calculateCriteria);
@@ -128,6 +129,7 @@ const calculateNOCFee = async (
 ) => {
   let nocfee = 0;
   let buidingnocfees = [];
+  let validityYears ;
   for (
     let i = 0;
     i < calculateCriteria.fireNOC.fireNOCDetails.buildings.length;
@@ -175,6 +177,7 @@ const calculateNOCFee = async (
         });
         return;
       }
+      validityYears = billingslabs[0]? billingslabs[0].validityyears : 1;
       if( billingslabs[0].calculationType==="FLAT"){
       let fullrate = Number(billingslabs[0].rate);
           if (calculateCriteria.fireNOC.fireNOCDetails.fireNOCType === "PROVISIONAL")
@@ -251,7 +254,8 @@ const calculateNOCFee = async (
   const feeEstimate = {
     category: "FEE",
     taxHeadCode: "FIRENOC_FEES",
-    estimateAmount: nocfee
+    estimateAmount: nocfee,
+    validityYears : validityYears
   };
   return feeEstimate;
 };

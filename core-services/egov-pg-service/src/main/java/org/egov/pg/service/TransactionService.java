@@ -87,13 +87,19 @@ public class TransactionService {
         else{
             URI uri = gatewayService.initiateTxn(transaction);
             transaction.setRedirectUrl(uri.toString());
-	if (uri.getRawQuery() != null && transaction.getGateway().equals("RAZORPAY")) {
-				String param = uri.getRawQuery();
-				String[] orderId = param.split("orderId=");
-				if (orderId!=null && orderId.length > 1)
-					transaction.setGatewayTxnId(orderId[1]);
-			}
-            dump.setTxnRequest(uri.toString());
+	if (uri.getRawQuery() != null && (transaction.getGateway().equals("RAZORPAY") || transaction.getGateway().equals("OBPASRAZORPAY"))) {
+        String param = uri.getRawQuery();
+        String[] orderId = param.split("orderId=");
+        if (orderId!=null && orderId.length > 1)
+            transaction.setGatewayTxnId(orderId[1]);
+    }
+    if (transaction.getGateway().equals("PAYU") ||
+            (uri.getRawQuery() != null && transaction.getGateway().equals("CCAVANUE"))) {
+        dump.setTxnRequest(transaction.getRedirectUrl());
+    }
+    else{
+        dump.setTxnRequest(transaction.getGatewayRequest().toString());
+    }
         }
 
         // Persist transaction and transaction dump objects
@@ -175,8 +181,9 @@ public class TransactionService {
        	        .auditDetails(newTxn.getAuditDetails());
 
        	if (newTxn.getResponseJson() != null) {
-       	    dumpBuilder.txnResponse(newTxn.getResponseJson());
-       	}
+       	    dumpBuilder.txnResponse(newTxn.getResponseJson().toString());
+       	}else
+       		dumpBuilder.txnResponse(requestParams);
 
        	TransactionDump dump = dumpBuilder.build();
         log.info("dumps "+dump);

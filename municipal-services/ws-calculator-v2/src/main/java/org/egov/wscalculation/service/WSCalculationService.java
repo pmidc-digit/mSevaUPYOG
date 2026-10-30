@@ -1,0 +1,33 @@
+package org.egov.wscalculation.service;
+
+import java.util.List;
+
+import org.egov.common.contract.request.RequestInfo;
+import org.egov.wscalculation.web.models.BulkBillCriteria;
+import org.egov.wscalculation.web.models.BulkDemandCriteria;
+import org.egov.wscalculation.web.models.Calculation;
+import org.egov.wscalculation.web.models.CalculationReq;
+import org.egov.wscalculation.web.models.CancelDemand;
+import org.egov.wscalculation.web.models.SingleDemand;
+import org.egov.wscalculation.web.models.WaterConnection;
+import org.egov.wscalculation.web.models.WaterServiceSchedulerRequest;
+
+public interface WSCalculationService {
+
+	List<Calculation> getCalculation(CalculationReq calculationReq);
+
+	void jobScheduler();
+	
+	void generateDemandBasedOnTimePeriod(RequestInfo requestInfo);
+	String  generateSingleDemand(SingleDemand singledemand);
+	
+//	String cancelDemand(CancelDemand cancelDemand);
+	void generateBillBasedLocalityOrTenant(WaterServiceSchedulerRequest waterServiceSchedulerRequest);
+	
+	void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkDemandCriteria bulkDemandCriteria);
+	
+	String generateDemandForConsumerCodeBasedOnTimePeriod(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria);
+	
+	List<WaterConnection> getConnnectionWithPendingDemand(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria);
+
+}

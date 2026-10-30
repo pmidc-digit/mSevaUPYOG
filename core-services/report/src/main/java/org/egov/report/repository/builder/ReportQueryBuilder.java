@@ -73,6 +73,7 @@ public class ReportQueryBuilder {
 
         baseQuery = baseQuery.replaceAll("\\$tenantid", ":tenantId");
 
+        baseQuery = baseQuery.replaceAll("\\$serviceID", ":serviceID");
         baseQuery = baseQuery.replaceAll("\\$userid", ":userId");
 
         for (SearchParam searchParam : searchParams) {
@@ -421,42 +422,50 @@ public class ReportQueryBuilder {
     }
 
     private StringBuffer addSearchClause(List<SearchParam> searchParams, ReportDefinition reportDefinition,
-                                         StringBuffer query) {
-        for (SearchParam searchParam : searchParams) {
+			StringBuffer query) {
+		String reportName = reportDefinition.getReportName();
+		boolean isServiceOrAuthority = "service".equalsIgnoreCase(reportName)
+				|| "authority".equalsIgnoreCase(reportName);
 
-            String name = searchParam.getName();
+		for (SearchParam searchParam : searchParams) {
+			String name = searchParam.getName();
 
-            //If name starts with a capital character auto append at the end of the query
-            // will be disabled
-            if(name.startsWith("_"))
-                continue;
+// Skip params starting with underscore
+			if (name.startsWith("_"))
+				continue;
 
-            for (SearchColumn sc : reportDefinition.getSearchParams()) {
-                if (name.equals(sc.getName())) {
-                    if (sc.getSearchClause() != null) {
-                        if (searchParam.getInput() instanceof ArrayList<?>) {
-                            log.info("Coming in to the instance of ArrayList ");
-                            ArrayList<?> list = new ArrayList<>();
-                            list = (ArrayList) (searchParam.getInput());
-                            log.info("Check the list is empty " + list.size());
-                            if (list.size() > 0) {
+			Object input = searchParam.getInput();
 
-                                query.append(" " + sc.getSearchClause());
+// Handle exclusion of serviceId / authorityId when input is 0 or "0"
+			if (isServiceOrAuthority && ("serviceId".equalsIgnoreCase(name) || "authorityId".equalsIgnoreCase(name)
+					|| "tenantId".equalsIgnoreCase(name))) {
 
-                            }
+				if ("0".equals(input) || Integer.valueOf(0).equals(input)) {
+					log.info("Skipping " + name + " with value 0 for report: " + reportName);
+					continue; // SKIP appending clause
+				}
+			}
 
-                        } else {
-                            query.append(" " + sc.getSearchClause());
-                        }
+			for (SearchColumn sc : reportDefinition.getSearchParams()) {
+				if (name.equals(sc.getName())) {
+					String clause = sc.getSearchClause();
+					if (clause != null) {
+						if (input instanceof ArrayList<?>) {
+							ArrayList<?> list = (ArrayList<?>) input;
+							if (!list.isEmpty()) {
+								query.append(" ").append(clause);
+							}
+						} else {
+							query.append(" ").append(clause);
+						}
+					}
+				}
+			}
+		}
 
-                    }
-                }
-            }
+		return query;
+	}
 
-
-        }
-        return query;
-    }
 
 
     public String buildInlineQuery(Object json) throws Exception {

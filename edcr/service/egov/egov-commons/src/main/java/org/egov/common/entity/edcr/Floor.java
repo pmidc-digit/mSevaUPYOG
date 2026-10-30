@@ -49,8 +49,11 @@ package org.egov.common.entity.edcr;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.egov.common.entity.edcr.Cinema;
 
 public class Floor extends Measurement {
 
@@ -113,12 +116,31 @@ public class Floor extends Measurement {
     private List<Measurement> constructedAreas = new ArrayList<>();
 
     private List<GlassFacadeOpening> glassFacadeOpenings = new ArrayList<>();
-   
+    
+    private List<Cinema> cinemas = new ArrayList<>();
+    
+    public List<Cinema> getCinemas() {
+		return cinemas;
+	}
 
-    // From 2.0.0 version
+	public void setCinemas(List<Cinema> cinemas) {
+		this.cinemas = cinemas;
+	}
+
+	// From 2.0.0 version
     private List<BigDecimal> heightFromFloorToBottomOfBeam;
+    
+    private Map<String, BigDecimal> floordeductions = new HashMap<>();
 
-    public List<FireStair> getFireStairs() {
+    public Map<String, BigDecimal> getFloordeductions() {
+		return floordeductions;
+	}
+
+	public void setFloordeductions(Map<String, BigDecimal> floordeductions) {
+		this.floordeductions = floordeductions;
+	}
+
+	public List<FireStair> getFireStairs() {
         return fireStairs;
     }
 

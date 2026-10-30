@@ -131,6 +131,7 @@ public class Employee {
     public List<String> subcategories;
     public List<String> zones;
     public List<String> assignedtenattids;
+    public List<String> modulenames;
     @Valid
     @NotNull
     private User user;

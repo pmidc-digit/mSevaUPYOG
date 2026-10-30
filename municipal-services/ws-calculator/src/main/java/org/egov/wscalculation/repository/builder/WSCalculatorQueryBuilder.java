@@ -55,7 +55,7 @@ public class WSCalculatorQueryBuilder {
 	
 	private static final String getDemandId = "SELECT DISTINCT d.id AS demandId, d.status AS Status, dd.collectionamount as amountCollected FROM egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 
-	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
+	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode, d.ispaymentcompleted, dd.collectionamount, dd.taxamount from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 	private static final String connectionNoListQueryUpdate = "UPDATE egbs_demand_v1 set ";
 	
 	private static final String connectionNoListQuerybill = "UPDATE egbs_bill_v1 " +
@@ -142,6 +142,13 @@ public class WSCalculatorQueryBuilder {
 			+ "VALUES (?,?,?,?,?,?,?,?,?,?);";
 	
 	public static final String RELATED_SW_CONNECTION_SEARCH_QUERY = "SELECT conn.relatedSwConn from eg_ws_connection conn ";
+	
+	public static final String METERREADINGQUERY = "SELECT DISTINCT ON (mr.connectionNo) mr.id, mr.connectionNo as connectionId, epp.usagecategory as usageCategory, mr.billingPeriod, mr.meterStatus, mr.lastReading, mr.lastReadingDate, mr.currentReading,"
+			+ " mr.currentReadingDate, mr.createdBy as mr_createdBy, mr.tenantid, mr.lastModifiedBy as mr_lastModifiedBy, mr.createdTime as mr_createdTime, mr.lastModifiedTime as mr_lastModifiedTime , "
+			+ " ebm.zonecode as zonecode , ebm.blockcode AS blockcode , ebm.localitycode as localityCode , conn.additionaldetails->>'groups' as groups FROM eg_ws_meterreading mr "
+			+ INNER_JOIN_STRING + " eg_ws_connection conn  ON mr.connectionno = conn.connectionno  AND mr.tenantid = conn.tenantid  "
+			+ INNER_JOIN_STRING +" eg_ws_service ews  ON conn.id = ews.connection_id " + INNER_JOIN_STRING +" eg_pt_property epp  ON conn.property_id = epp.propertyid "
+			+ INNER_JOIN_STRING +" eg_pt_address epa  ON epa.propertyid = epp.id " + INNER_JOIN_STRING + " eg_bndry_mohalla ebm ON ebm.tenantid = conn.tenantid AND ebm.localitycode = epa.locality";
 
 	public String getDistinctTenantIds() {
 		return distinctTenantIdsCriteria;
@@ -211,6 +218,9 @@ public class WSCalculatorQueryBuilder {
 		if (criteria.getLimit() != null && criteria.getLimit() > config.getMeterReadingDefaultLimit())
 			limit = config.getMeterReadingDefaultLimit();
 
+		if(config.getBulkMeterLimit() != null && query.toString().startsWith(METERREADINGQUERY) )
+			limit = Integer.valueOf(config.getBulkMeterLimit());
+		
 		if (criteria.getOffset() != null)
 			offset = criteria.getOffset();
 
@@ -351,9 +361,10 @@ public class WSCalculatorQueryBuilder {
 		return query.toString();
 	}
 
-	public String getConnectionNumberList(String tenantId, String connectionType, String status, Long taxPeriodFrom,
+	public String getConnectionNumberList(String tenantId, String locality, String connectionType, String status, Long taxPeriodFrom,
 			Long taxPeriodTo, String cone, List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoListQuery);
+        query.append(" INNER JOIN eg_pt_property p ON conn.property_id = p.propertyid INNER JOIN eg_pt_address a ON a.propertyid = p.id ");
 
 		// Add connection type
 		addClauseIfRequired(preparedStatement, query);
@@ -376,6 +387,11 @@ public class WSCalculatorQueryBuilder {
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
 
+        if (locality != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" a.locality = ? ");
+            preparedStatement.add(locality);
+        }
 //		 Test with connection number
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" conn.connectionno = '0603000900' ");
@@ -770,7 +786,7 @@ StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
 	
 	
 	
-	public String getCollection( String tenantId,   Long taxperiodfrom,Long taxPeriodTo,String consumerCode,
+	public String getCollection( String tenantId,   Long taxperiodfrom,Long taxPeriodTo,String consumerCode,String businessService,
 			List<Object> preparedStatement) {
 StringBuilder query = new StringBuilder(getDemandId);
 		
@@ -790,12 +806,22 @@ StringBuilder query = new StringBuilder(getDemandId);
 		preparedStatement.add(consumerCode);
 		
 		
-		query.append("AND d.businessservice = 'WS' ");
+		addClauseIfRequired(preparedStatement, query);
+        query.append(" d.businessservice = ? ");
+        if (businessService == null || businessService.isEmpty() || "WS".equalsIgnoreCase(businessService)) {
+            preparedStatement.add("WS");
+        } else {
+            preparedStatement.add("SW");
+        }
 		
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" dd.collectionamount = '0' ");
 		
 		addClauseIfRequired(preparedStatement, query);
+        query.append(" d.status = ? ");
+        preparedStatement.add("ACTIVE");
+        
+        addClauseIfRequired(preparedStatement, query);
 		query.append(" d.ispaymentcompleted = 'false' ");
 				
 		//Add taxperiodfrom
@@ -833,7 +859,8 @@ StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
 		query.append(" d.status = 'ACTIVE' ");
 		
 		addClauseIfRequired(preparedStatement, query);
-		query.append(" d.ispaymentcompleted = 'false' ");
+//		query.append(" d.ispaymentcompleted = 'false' ");
+		query.append(" (d.ispaymentcompleted = 'false' OR (d.ispaymentcompleted = 'true' AND dd.taxamount = dd.collectionamount and dd.taxamount = '0')) ");
 				
 		return query.toString();
 	}
@@ -1019,7 +1046,14 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 	public String searchBillGenerationSchedulerQuery(BillGenerationSearchCriteria criteria,
 			List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(billGenerationSchedulerSearchQuery);
-		query.append("egws inner join eg_bndry_mohalla egbm on egws.locality = egbm.localitycode ");
+		if (StringUtils.isEmpty(criteria.getGroup())) {
+			query.append("egws inner join eg_bndry_mohalla egbm on egws.locality = egbm.localitycode ");
+		}else {
+			query.append(" egws ");
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" egws.groups = ? ");
+	        preparedStatement.add(criteria.getGroup());
+		}
 		
 		if (!StringUtils.isEmpty(criteria.getTenantId())) {
 	        addClauseIfRequired(preparedStatement, query);
@@ -1119,11 +1153,69 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 		}
 		
 		addClauseIfRequired(preparedStatement, query);
-		query.append(" conn.applicationstatus = 'CONNECTION_ACTIVATED' ");
+		query.append(" conn.applicationstatus IN ('CONNECTION_ACTIVATED', 'APPROVED') ");
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.status = 'Active' ");
 		
 		return query.toString();
 		
+	}
+	
+	/**
+	 * 
+	 * @param criteria          would be meter reading criteria
+	 * @param preparedStatement Prepared SQL Statement
+	 * @return Query for given criteria
+	 */
+	public String getSearchQueryStringV2(MeterReadingSearchCriteria criteria, List<Object> preparedStatement) {
+		if (criteria.isEmpty()) {
+			return null;
+		}
+		StringBuilder query = new StringBuilder(METERREADINGQUERY);
+		
+		if (!StringUtils.isEmpty(criteria.getTenantId())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" mr.tenantid= ? ");
+			preparedStatement.add(criteria.getTenantId());
+		}
+		if (!StringUtils.isEmpty(criteria.getLocality())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" ebm.localitycode= ? ");
+			preparedStatement.add(criteria.getLocality());
+		}
+		
+		if (!StringUtils.isEmpty(criteria.getBlock())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" ebm.blockcode= ? ");
+			preparedStatement.add(criteria.getBlock());
+		}
+		
+		if (!StringUtils.isEmpty(criteria.getZone())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" ebm.zonecode= ? ");
+			preparedStatement.add(criteria.getZone());
+		}
+		
+		if (!StringUtils.isEmpty(criteria.getGroups())) {
+	        addClauseIfRequired(preparedStatement, query);
+	        query.append(" conn.additionaldetails->>'groups' = ? ");
+	        preparedStatement.add(criteria.getGroups());
+	    }
+		
+		addClauseIfRequired(preparedStatement, query);
+		query.append(" ews.connectiontype = 'Metered' \r\n");
+		addClauseIfRequired(preparedStatement, query);
+		query.append(" conn.status = 'Active' \r\n");
+		addClauseIfRequired(preparedStatement, query);
+		query.append(" conn.applicationstatus IN ('CONNECTION_ACTIVATED', 'APPROVED') \r\n");
+		
+		if (!CollectionUtils.isEmpty(criteria.getConnectionNos())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" mr.connectionNo IN (").append(createQuery(criteria.getConnectionNos())).append(" )");
+			addToPreparedStatement(preparedStatement, criteria.getConnectionNos());
+		}
+		query.append(" ORDER BY mr.connectionNo ASC, mr.currentReadingDate DESC \r\n");
+		return query.toString();
+//		return addPaginationWrapper(query, preparedStatement, criteria);
 	}
 }

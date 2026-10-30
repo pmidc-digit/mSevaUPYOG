@@ -1,0 +1,1327 @@
+package org.egov.edcr.service;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.egov.common.entity.edcr.Block;
+import org.egov.common.entity.edcr.Building;
+import org.egov.common.entity.edcr.DcrReportBlockDetail;
+import org.egov.common.entity.edcr.DcrReportFloorDetail;
+import org.egov.common.entity.edcr.Floor;
+import org.egov.common.entity.edcr.Occupancy;
+import org.egov.common.entity.edcr.Plan;
+import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.common.entity.edcr.TypicalFloor;
+import org.egov.edcr.autonumber.DcrApplicationNumberGenerator;
+import org.egov.edcr.autonumber.OCPlanScrutinyNumberGenerator;
+import org.egov.edcr.entity.ApplicationType;
+import org.egov.edcr.entity.EdcrApplication;
+import org.egov.edcr.entity.EdcrApplicationDetail;
+import org.egov.edcr.feature.RoadWidth;
+import org.egov.edcr.utility.DcrConstants;
+import org.egov.infra.config.core.ApplicationThreadLocals;
+import org.egov.infra.security.utils.SecureCodeUtils;
+import org.egov.infra.utils.DateUtils;
+import org.joda.time.LocalDate;
+
+import java.net.URL;
+import java.util.Base64;
+import java.util.logging.Level;
+
+import com.openhtmltopdf.util.XRLog;
+import org.w3c.dom.Document;
+
+@Service
+public class PlanReportServiceV2 {
+
+    private final RoadWidth roadWidth;
+
+    private static final Logger LOG = LogManager.getLogger(PlanReportServiceV2.class);
+
+    @Autowired
+    private TemplateEngine templateEngine;
+    @Autowired
+    private DcrApplicationNumberGenerator dcrApplicationNumberGenerator;
+    @Autowired
+    private OCPlanScrutinyNumberGenerator ocPlanScrutinyNumberGenerator;
+
+    private static final BigDecimal Fire_Tender_Movement = BigDecimal.valueOf(21);
+
+    // -----------------------------------------------------------------------
+    // Setback feature key constants — mirrors PlanReportService
+    // -----------------------------------------------------------------------
+    public static final String FRONT_YARD_DESC   = "Front Setback";
+    public static final String REAR_YARD_DESC    = "Rear Setback";
+    public static final String SIDE_YARD_DESC    = "Side Setback";
+
+    static {
+        XRLog.listRegisteredLoggers()
+                .forEach(logger -> XRLog.setLevel(logger, Level.WARNING));
+    }
+    
+    PlanReportServiceV2(RoadWidth roadWidth) {
+        this.roadWidth = roadWidth;
+    }
+
+    // -----------------------------------------------------------------------
+    // buildReportModel (V1 — kept as-is, not changed)
+    // -----------------------------------------------------------------------
+    public Map<String, Object> buildReportModel(Plan plan, EdcrApplication dcrApplication) {
+        Map<String, Object> model = new HashMap<>();
+
+        String applicationNumber = StringUtils.isNotBlank(dcrApplication.getApplicationNumber())
+                ? dcrApplication.getApplicationNumber() : "NA";
+        String applicationDate = DateUtils.toDefaultDateFormat(dcrApplication.getApplicationDate());
+
+        StringBuilder errors = new StringBuilder();
+        boolean finalReportStatus = true;
+        if (plan.getErrors() != null && plan.getErrors().size() > 0) {
+            int i = 1;
+            for (Map.Entry<String, String> entry : plan.getErrors().entrySet()) {
+                errors.append(String.valueOf(i)).append(". ");
+                errors.append(entry.getValue());
+                errors.append("\n");
+                i++;
+                finalReportStatus = false;
+            }
+        }
+
+        int count = 1;
+
+        model.put("ulbName", ApplicationThreadLocals.getMunicipalityName());
+        model.put("applicantName", dcrApplication.getApplicantName());
+        model.put("licensee", dcrApplication.getArchitectInformation());
+        model.put("applicationNumber", applicationNumber);
+        model.put("applicationDate", applicationDate);
+        model.put("errors", plan.getErrors());
+        model.put("errorString", errors.toString());
+        model.put("nocs", plan.getNoObjectionCertificates());
+        model.put("reportGeneratedDate", DateUtils.toDefaultDateTimeFormat(new Date()));
+        model.put("currentYear", new LocalDate().getYear());
+        model.put("far", plan.getFarDetails() != null ? plan.getFarDetails().getProvidedFar() : "");
+        model.put("coverage", plan.getCoverage());
+        model.put("totalFloorArea",
+                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalFloorArea() : BigDecimal.valueOf(0));
+        model.put("totalBuiltUpArea",
+                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalBuitUpArea() : BigDecimal.valueOf(0));
+        model.put("blockCount",
+                plan.getBlocks() != null && !plan.getBlocks().isEmpty() ? plan.getBlocks().size() : 0);
+        model.put("surrenderRoadArea", plan.getTotalSurrenderRoadArea());
+        
+        ClassPathResource logoResource = new ClassPathResource("images/logo_dep.png");
+        ClassPathResource footerLogoResource = new ClassPathResource("images/mseva.png");        
+
+        try {
+            model.put("logo", logoResource.getURL().toString());
+            model.put("egovLogo", footerLogoResource.getURL().toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        model.put("numberOfFloors", plan.getPlanInformation().getNumberOfFloors());
+        model.put("ulbType", plan.getPlanInformation().getUlbType());
+        model.put("district", plan.getPlanInformation().getDistrict());
+        model.put("roadType", plan.getPlanInformation().getRoadType());
+
+        List<ScrutinyDetail> allDetails = plan.getReportOutput().getScrutinyDetails();
+
+        List<Map<String, Object>> commonSections = new ArrayList<>();
+        List<ScrutinyDetail> commonScrutinyDetails = allDetails.stream()
+                .filter(sc -> !sc.getKey().toLowerCase().startsWith("block"))
+                .collect(Collectors.toList());
+
+        for (ScrutinyDetail sd : commonScrutinyDetails) {
+            Map<String, Object> section = new HashMap<>();
+            List<String> columns = new ArrayList<>();
+            sd.getColumnHeading().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(e -> columns.add(e.getValue().name));
+            section.put("columns", columns);
+            section.put("rows", sd.getDetail());
+            section.put("remarks", sd.getRemarks());
+            String[] keyArr = sd.getKey().split("_");
+            section.put("heading", count + "." + keyArr[keyArr.length - 1]);
+            count++;
+            commonSections.add(section);
+        }
+        model.put("commonSections", commonSections);
+
+        Map<String, Map<String, List<ScrutinyDetail>>> grouped = new LinkedHashMap<>();
+        for (ScrutinyDetail sd : allDetails) {
+            if (!sd.getKey().startsWith("Block")) continue;
+            String key = sd.getKey();
+            String[] parts = key.split("_");
+            String block = parts[1];
+            String featureRaw = key.substring(key.indexOf(parts[2]));
+            String feature = featureRaw.toLowerCase().contains("setback") ? "Setback" : featureRaw;
+            grouped.computeIfAbsent(block, k -> new LinkedHashMap<>())
+                    .computeIfAbsent(feature, k -> new ArrayList<>())
+                    .add(sd);
+        }
+
+        List<Map<String, Object>> blocks = new ArrayList<>();
+        for (String blockKey : grouped.keySet()) {
+            Map<String, Object> blockMap = new HashMap<>();
+            blockMap.put("name", "Block " + blockKey);
+            List<Map<String, Object>> features = new ArrayList<>();
+            for (String featureKey : grouped.get(blockKey).keySet()) {
+                List<ScrutinyDetail> list = grouped.get(blockKey).get(featureKey);
+                Map<String, Object> feature = new HashMap<>();
+                feature.put("heading", featureKey);
+                List<Map<String, Object>> rows = new ArrayList<>();
+                List<String> columns = new ArrayList<>();
+                if ("Setback".equals(featureKey)) {
+                    columns.add("Section"); columns.add("Setback"); columns.add("Occupancy");
+                    columns.add("Level"); columns.add("Required"); columns.add("Provided"); columns.add("Status");
+                    for (ScrutinyDetail sd : list) {
+                        for (Map<String, String> d : sd.getDetail()) {
+                            Map<String, Object> row = new HashMap<>();
+                            if (sd.getKey().toLowerCase().contains("front")) {
+                                d.put("Setback", "Front");
+                            } else if (sd.getKey().toLowerCase().contains("rear")) {
+                                d.put("Setback", "Rear");
+                            } else {
+                                d.put("Setback", d.getOrDefault("Side Number", "Side"));
+                            }
+                            for (String col : columns) row.put(col, d.getOrDefault(col, ""));
+                            rows.add(row);
+                        }
+                    }
+                } else {
+                    ScrutinyDetail first = list.get(0);
+                    first.getColumnHeading().entrySet().stream()
+                            .sorted(Map.Entry.comparingByKey())
+                            .forEach(e -> columns.add(e.getValue().name));
+                    for (ScrutinyDetail sd : list) {
+                        for (Map<String, String> d : sd.getDetail()) {
+                            Map<String, Object> row = new HashMap<>();
+                            for (String col : columns) row.put(col, d.getOrDefault(col, ""));
+                            rows.add(row);
+                        }
+                    }
+                }
+                feature.put("columns", columns);
+                feature.put("rows", rows);
+                features.add(feature);
+            }
+            blockMap.put("features", features);
+            blocks.add(blockMap);
+        }
+        model.put("blocks", blocks);
+        return model;
+    }
+
+    // -----------------------------------------------------------------------
+    // buildReportModelV2 — the main method used by generateReport()
+    // -----------------------------------------------------------------------
+    public Map<String, Object> buildReportModelV2(Plan plan, EdcrApplication dcrApplication) {
+        Map<String, Object> model = new HashMap<>();
+
+        String applicationNumber = StringUtils.isNotBlank(dcrApplication.getApplicationNumber())
+                ? dcrApplication.getApplicationNumber() : "NA";
+        String applicationDate = DateUtils.toDefaultDateFormat(dcrApplication.getApplicationDate());
+
+        boolean finalReportStatus = true;
+        if (plan.getErrors() != null && plan.getErrors().size() > 0)
+            finalReportStatus = false;
+
+        if(plan.getPlanInformation().getCity()!=null)
+        	model.put("ulbName", ApplicationThreadLocals.getMunicipalityName() + ", "+ plan.getPlanInformation().getCity() );
+        else
+        	model.put("ulbName", ApplicationThreadLocals.getMunicipalityName());
+        
+        ClassPathResource logoResource = new ClassPathResource("images/logo_dep.png");    
+        ClassPathResource footerLogoResource = new ClassPathResource("images/mseva.png"); 
+
+        try {
+            model.put("logo", logoResource.getURL().toString());    
+            model.put("egovLogo", footerLogoResource.getURL().toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        String applicationTypeVal = null;
+        if (dcrApplication != null && dcrApplication.getApplicationType() != null) {
+            applicationTypeVal = dcrApplication.getApplicationType().getApplicationTypeVal();
+        }
+        if (StringUtils.isBlank(applicationTypeVal)
+                && dcrApplication != null
+                && dcrApplication.getEdcrApplicationDetails() != null
+                && !dcrApplication.getEdcrApplicationDetails().isEmpty()
+                && dcrApplication.getEdcrApplicationDetails().get(0).getApplication() != null
+                && dcrApplication.getEdcrApplicationDetails().get(0).getApplication().getApplicationType() != null) {
+            applicationTypeVal = dcrApplication.getEdcrApplicationDetails().get(0)
+                    .getApplication().getApplicationType().getApplicationTypeVal();
+        }
+        if (StringUtils.isBlank(applicationTypeVal)) applicationTypeVal = "NA";
+        model.put("applicationType", applicationTypeVal);
+
+        model.put("reportHeading", "AUTOMATED BUILDING PERMIT APPROVAL SYSTEM");
+        model.put("reportType",    "PLAN DOCUMENT SCRUTINY REPORT");
+
+        model.put("applicantName",      dcrApplication.getApplicantName());
+        model.put("licensee",           dcrApplication.getArchitectInformation());
+        model.put("applicationNumber",  applicationNumber);
+        model.put("applicationDate",    applicationDate);
+        model.put("errors",             plan.getErrors());
+        model.put("nocs",               plan.getNoObjectionCertificates());
+        model.put("reportGeneratedDate", DateUtils.toDefaultDateTimeFormat(new Date()));
+        model.put("currentYear",        new LocalDate().getYear());
+        model.put("far",                plan.getFarDetails() != null ? plan.getFarDetails().getProvidedFar() : "");
+        model.put("coverage",           plan.getCoverage());
+        model.put("totalFloorArea",
+                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalFloorArea() : BigDecimal.valueOf(0));
+        model.put("totalBuiltUpArea",
+                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalBuitUpArea() : BigDecimal.valueOf(0));
+        model.put("blockCount",
+                plan.getBlocks() != null && !plan.getBlocks().isEmpty() ? plan.getBlocks().size() : 0);
+        model.put("surrenderRoadArea",  plan.getTotalSurrenderRoadArea());
+        model.put("numberOfFloors",     plan.getPlanInformation().getNumberOfFloors());
+        model.put("ulbType",            plan.getPlanInformation().getUlbType());
+        model.put("district",           plan.getPlanInformation().getDistrict());
+        model.put("roadType",           plan.getPlanInformation().getRoadType());
+        model.put("planInformation",    plan.getPlanInformation());
+        model.put("plot",               plan.getPlot());
+        model.put("plotBndryArea",
+                plan.getPlot() != null ? plan.getPlot().getPlotBndryArea(): BigDecimal.ZERO);
+        
+        model.put("totalExistingBuiltUpArea",
+                plan.getVirtualBuilding() != null ? plan.getVirtualBuilding().getTotalExistingBuiltUpArea() : BigDecimal.ZERO);
+
+        Map<String, String> serviceTypeList = new ConcurrentHashMap<>();
+        serviceTypeList.put("NEW_CONSTRUCTION", "New Construction");
+        if (StringUtils.isNotBlank(dcrApplication.getServiceType())) {
+            model.put("serviceType", serviceTypeList.getOrDefault(dcrApplication.getServiceType(),
+                    dcrApplication.getServiceType()));
+        } else {
+            model.put("serviceType", "NA");
+        }
+
+        if (plan.getVirtualBuilding() != null && !plan.getVirtualBuilding().getOccupancyTypes().isEmpty()) {
+            List<String> occupancies = new ArrayList<>();
+            plan.getVirtualBuilding().getOccupancyTypes().forEach(occ -> {
+                String occType    = occ.getType()    != null ? occ.getType().getName()    : "";
+                String subOccType = occ.getSubtype() != null ? occ.getSubtype().getName() : "";
+                if (!occType.isEmpty() && !subOccType.isEmpty()) {
+                    occupancies.add(occType + " (" + subOccType + ")");
+                } else if (!occType.isEmpty()) {
+                    occupancies.add(occType);
+                }
+            });
+            Set<String> distinctOccupancies = new HashSet<>();
+            if (!occupancies.isEmpty()) distinctOccupancies.add(occupancies.get(0));
+            plan.getPlanInformation().setOccupancy(
+                    distinctOccupancies.stream().map(String::new).collect(Collectors.joining(",")));
+        }
+
+        List<ScrutinyDetail> allDetails = new ArrayList<>();
+        if (plan.getReportOutput() != null && plan.getReportOutput().getScrutinyDetails() != null) {
+            allDetails = getDistinctScrutinyDetails(plan.getReportOutput().getScrutinyDetails());
+        }
+        normalizeTypicalFloorDetails(allDetails, plan);
+
+        Map<String, Map<String, ScrutinyDetail>> sections = new LinkedHashMap<>();
+
+        // 1. Overall Summary & Block Summaries (Including Existing & Proposed Blocks)
+        if (plan.getBlocks() != null && plan.getBlocks().size() > 0) {
+            sections.put("Overall Summary", getOverallSummaryBlock(plan));
+
+            // Existing block-wise summary
+            List<DcrReportBlockDetail> existingBlockDetails = buildBlockWiseExistingInfo(plan);
+            if (existingBlockDetails != null && !existingBlockDetails.isEmpty()) {
+                addExistingBlockWiseSummary(existingBlockDetails, sections);
+            }
+
+            // Proposed block-wise summary
+            List<DcrReportBlockDetail> proposedBlockDetails = buildBlockWiseProposedInfo(plan);
+            addBlockWiseSummary(proposedBlockDetails, sections);
+        }
+
+        Map<String, String> prefixSummaryNameMap = new LinkedHashMap<>();
+        prefixSummaryNameMap.put("Common_", "Common - Scrutiny Details");
+        if (plan.getBlocks() != null && plan.getBlocks().size() > 0) {
+            for (int i = 1; i <= plan.getBlocks().size(); i++) {
+                prefixSummaryNameMap.put("Block_" + i, "Block " + i + " - Scrutiny Details");
+            }
+        }
+
+        prefixSummaryNameMap.forEach((prefix, name) ->
+                sections.put(name, new LinkedHashMap<>()));
+
+        addSummarySections(allDetails, sections, prefixSummaryNameMap);
+
+        if (Boolean.TRUE.equals(plan.getEdcrRequest().getSiteReserved())
+                && Boolean.TRUE.equals(plan.getEdcrRequest().getApprovedCS())) {
+            /*
+             * Site Reserved = true and Approved Control Sheet = true.
+             * In this case, mark every section/detail status as Accepted.
+             */
+            sections.entrySet().stream()
+                    .flatMap(entry -> entry.getValue().entrySet().stream())
+                    .map(e -> e.getValue().getDetail())
+                    .flatMap(List::stream)
+                    .filter(d -> d.containsKey("Status"))
+                    .forEach(d -> d.put("Status", "Accepted"));
+        	//plan.getErrors().clear();
+        }
+        
+        long notFulfilledCount = sections.entrySet().stream()
+                .flatMap(entry -> entry.getValue().entrySet().stream())
+                .map(e -> e.getValue().getDetail())
+                .flatMap(List::stream)
+                .filter(d -> d.containsKey("Status") && d.get("Status").equalsIgnoreCase("Not Accepted"))
+                .count();
+
+        if (notFulfilledCount > 0) finalReportStatus = false;
+
+        if (ApplicationType.OCCUPANCY_CERTIFICATE.equals(dcrApplication.getApplicationType())
+                && StringUtils.isNotBlank(dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber())) {
+            plan.setMainDcrPassed(finalReportStatus);
+            finalReportStatus = finalReportStatus && (dcrApplication.getDeviationStatus().equalsIgnoreCase("Accepted"));
+        }
+        
+        if (finalReportStatus) {
+            String dcrApplicationNumber = "";
+            EdcrApplicationDetail edcrApplicationDetail = dcrApplication.getEdcrApplicationDetails().get(0);
+            if(StringUtils.isEmpty(edcrApplicationDetail.getDcrNumber())) {
+                if (ApplicationType.OCCUPANCY_CERTIFICATE.equals(dcrApplication.getApplicationType()))
+                    dcrApplicationNumber = ocPlanScrutinyNumberGenerator.generateEdcrApplicationNumber();
+                else
+                    dcrApplicationNumber = dcrApplicationNumberGenerator.generateEdcrApplicationNumber(dcrApplication);
+                edcrApplicationDetail.setDcrNumber(dcrApplicationNumber);
+            }
+            dcrApplicationNumber = edcrApplicationDetail.getDcrNumber();
+            if (StringUtils.isEmpty(dcrApplicationNumber)) dcrApplicationNumber = "NA";
+            model.put("dcrNo", dcrApplicationNumber);
+
+            String qrContent = "DCR Number : " + dcrApplicationNumber + "\n"
+                    + "Application Number : " + applicationNumber + "\n"
+                    + "Application Date : " + applicationDate + "\n"
+                    + "Report Status : Fulfilled\n";
+            model.put("qrCode", SecureCodeUtils.generatePDF417CodeV2(qrContent));
+        } else {
+            model.put("dcrNo", "NA");
+            model.put("qrCode", null);
+        }
+
+        model.put("sections",      sections);
+        model.put("reportStatus",  finalReportStatus ? "Fulfilled" : "Not Fulfilled");
+        plan.setEdcrPassed(finalReportStatus);
+        return model;
+    }
+
+    private Map<String, ScrutinyDetail> getOverallSummaryBlock(Plan plan) {
+        Map<String, ScrutinyDetail> overallSummaryDetails = new LinkedHashMap<>();
+
+        if (plan.getVirtualBuilding() != null) {
+            ScrutinyDetail groundCoverageTable = new ScrutinyDetail();
+            groundCoverageTable.setKey("Ground Coverage");
+            groundCoverageTable.setHeading("Ground Coverage (in m²)");
+            groundCoverageTable.addColumnHeading(1, "Total Plot Area");
+            groundCoverageTable.addColumnHeading(2, "Ground Coverage");
+            groundCoverageTable.addColumnHeading(3, "Built Up Area");
+
+            Map<String, String> details = new HashMap<>();
+            details.put("Total Plot Area",
+                    plan.getVirtualBuilding().getTotalFloorArea() != null
+                            ? plan.getPlot().getArea().setScale(2, RoundingMode.HALF_UP).toString()
+                            : "0");
+            details.put("Ground Coverage",
+                    plan.getVirtualBuilding().getTotalCoverageArea() != null
+                            ? plan.getVirtualBuilding().getTotalCoverageArea().setScale(2, RoundingMode.HALF_UP).toString()
+                            : "0");
+            details.put("Built Up Area",
+                    plan.getVirtualBuilding().getTotalBuitUpArea() != null
+                            ? plan.getVirtualBuilding().getTotalBuitUpArea().setScale(2, RoundingMode.HALF_UP).toString()
+                            : "0");
+
+            groundCoverageTable.addDetail(details);
+            overallSummaryDetails.put("Ground Coverage", groundCoverageTable);
+        }
+
+        return overallSummaryDetails;
+    }
+
+    private List<ScrutinyDetail> getDistinctScrutinyDetails(List<ScrutinyDetail> scrutinyDetails) {
+        if (CollectionUtils.isEmpty(scrutinyDetails)) {
+            return new ArrayList<>();
+        }
+
+        Set<ScrutinyDetail> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        List<ScrutinyDetail> distinctDetails = new ArrayList<>();
+        for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
+            if (scrutinyDetail != null && seen.add(scrutinyDetail)) {
+                distinctDetails.add(scrutinyDetail);
+            }
+        }
+        return distinctDetails;
+    }
+
+    private void normalizeTypicalFloorDetails(List<ScrutinyDetail> scrutinyDetails, Plan plan) {
+        if (CollectionUtils.isEmpty(scrutinyDetails) || plan == null || CollectionUtils.isEmpty(plan.getBlocks())) {
+            return;
+        }
+
+        Map<String, List<TypicalFloor>> typicalFloorsByBlock = new HashMap<>();
+        for (Block block : plan.getBlocks()) {
+            if (block.getNumber() != null && !CollectionUtils.isEmpty(block.getTypicalFloor())) {
+                typicalFloorsByBlock.put(block.getNumber(), block.getTypicalFloor());
+            }
+        }
+        if (typicalFloorsByBlock.isEmpty()) {
+            return;
+        }
+
+        for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
+            if (scrutinyDetail.getKey() == null || !scrutinyDetail.getKey().startsWith("Block_")
+                    || scrutinyDetail.getKey().contains("_UnitFA-")
+                    || scrutinyDetail.getKey().contains("_Dwelling Unit-")
+                    || CollectionUtils.isEmpty(scrutinyDetail.getDetail())) {
+                continue;
+            }
+
+            String blockNo = getBlockNoFromScrutinyKey(scrutinyDetail.getKey());
+            if (blockNo == null || !typicalFloorsByBlock.containsKey(blockNo)) {
+                continue;
+            }
+
+            for (TypicalFloor typicalFloor : typicalFloorsByBlock.get(blockNo)) {
+                normalizeTypicalFloorRows(scrutinyDetail, typicalFloor);
+            }
+        }
+    }
+
+    private String getBlockNoFromScrutinyKey(String key) {
+        String[] parts = key.split("_");
+        if (parts.length < 2) {
+            return null;
+        }
+        return parts[1];
+    }
+
+    private void normalizeTypicalFloorRows(ScrutinyDetail scrutinyDetail, TypicalFloor typicalFloor) {
+        if (typicalFloor == null || typicalFloor.getModelFloorNo() == null
+                || CollectionUtils.isEmpty(typicalFloor.getRepetitiveFloorNos())) {
+            return;
+        }
+
+        List<Map<String, String>> normalizedRows = new ArrayList<>();
+        List<Map<String, String>> modelFloorRows = new ArrayList<>();
+        Set<String> modelRowSignatures = new HashSet<>();
+        boolean typicalRowsAdded = false;
+
+        for (Map<String, String> row : scrutinyDetail.getDetail()) {
+            String floorValue = getFloorValue(row);
+            Integer rowFloorNo = getFloorNo(floorValue);
+            boolean modelFloorRow = rowFloorNo != null && rowFloorNo.equals(typicalFloor.getModelFloorNo());
+            boolean repetitiveFloorRow = rowFloorNo != null && typicalFloor.getRepetitiveFloorNos().contains(rowFloorNo);
+            boolean existingTypicalRow = isTypicalFloorLabel(floorValue);
+
+            if (existingTypicalRow) {
+                Map<String, String> modelRow = new HashMap<>(row);
+                modelRow.put("Floor", typicalFloor.getModelFloorNo().toString());
+                String signature = getTypicalRowSignature(modelRow);
+                if (modelRowSignatures.add(signature)) {
+                    normalizedRows.add(modelRow);
+                    modelFloorRows.add(modelRow);
+                }
+                continue;
+            }
+
+            if (modelFloorRow) {
+                Map<String, String> modelRow = new HashMap<>(row);
+                modelRow.put("Floor", typicalFloor.getModelFloorNo().toString());
+                normalizedRows.add(modelRow);
+                String signature = getTypicalRowSignature(modelRow);
+                if (modelRowSignatures.add(signature)) {
+                    modelFloorRows.add(modelRow);
+                }
+                continue;
+            }
+
+            if (repetitiveFloorRow) {
+                continue;
+            }
+
+            if (!typicalRowsAdded && !modelFloorRows.isEmpty()) {
+                addTypicalRows(normalizedRows, modelFloorRows, typicalFloor, scrutinyDetail.getKey());
+                typicalRowsAdded = true;
+            }
+            normalizedRows.add(row);
+        }
+
+        if (!typicalRowsAdded && !modelFloorRows.isEmpty()) {
+            addTypicalRows(normalizedRows, modelFloorRows, typicalFloor, scrutinyDetail.getKey());
+        }
+
+        if (!normalizedRows.isEmpty()) {
+            scrutinyDetail.getDetail().clear();
+            scrutinyDetail.getDetail().addAll(normalizedRows);
+        }
+    }
+
+    private void addTypicalRows(List<Map<String, String>> normalizedRows, List<Map<String, String>> modelFloorRows,
+            TypicalFloor typicalFloor, String scrutinyKey) {
+        String typicalFloorLabel = "Typical Floor " + formatFloorRange(typicalFloor.getRepetitiveFloorNos());
+        if (isStairScrutinyKey(scrutinyKey)) {
+            normalizedRows.add(buildSingleTypicalStairRow(modelFloorRows, typicalFloor, typicalFloorLabel));
+            return;
+        }
+
+        for (Map<String, String> modelRow : modelFloorRows) {
+            Map<String, String> typicalRow = new HashMap<>(modelRow);
+            if (typicalRow.containsKey("Provided")) {
+                if (typicalRow.containsKey("Floor")) {
+                    typicalRow.put("Floor", typicalFloorLabel);
+                    typicalRow.put("Provided", "Same as Floor " + typicalFloor.getModelFloorNo()
+                            + " (" + typicalFloorLabel + ")");
+                } else {
+                    typicalRow.put("Provided", "Same as Floor " + typicalFloor.getModelFloorNo()
+                            + " (" + typicalFloorLabel + ")");
+                }
+            } else {
+                typicalRow.put("Floor", typicalFloorLabel);
+            }
+            normalizedRows.add(typicalRow);
+        }
+    }
+
+    private boolean isStairScrutinyKey(String scrutinyKey) {
+        return StringUtils.isNotBlank(scrutinyKey)
+                && (scrutinyKey.contains("_Fire Stair -") || scrutinyKey.contains("_General Stair -"));
+    }
+
+    private Map<String, String> buildSingleTypicalStairRow(List<Map<String, String>> modelFloorRows,
+            TypicalFloor typicalFloor, String typicalFloorLabel) {
+        if (modelFloorRows == null || modelFloorRows.isEmpty()) {
+            Map<String, String> typicalRow = new HashMap<>();
+            typicalRow.put("Floor", typicalFloorLabel);
+            typicalRow.put("Description", "Same as Floor " + typicalFloor.getModelFloorNo());
+            typicalRow.put("Provided", "Same as Floor " + typicalFloor.getModelFloorNo() + " (" + typicalFloorLabel + ")");
+            typicalRow.put("Status", "Accepted");
+            return typicalRow;
+        }
+        Map<String, String> firstRow = modelFloorRows.get(0);
+        Map<String, String> typicalRow = new HashMap<>(firstRow);
+        typicalRow.put("Floor", typicalFloorLabel);
+        if (typicalRow.containsKey("Description")) {
+            typicalRow.put("Description", "Same as Floor " + typicalFloor.getModelFloorNo());
+        }
+        if (typicalRow.containsKey("Provided")) {
+            typicalRow.put("Provided", "Same as Floor " + typicalFloor.getModelFloorNo()
+                    + " (" + typicalFloorLabel + ")");
+        }
+        if (typicalRow.containsKey("Status")) {
+            typicalRow.put("Status", getTypicalStatus(modelFloorRows));
+        }
+        return typicalRow;
+    }
+
+    private String getTypicalStatus(List<Map<String, String>> modelFloorRows) {
+        for (Map<String, String> modelRow : modelFloorRows) {
+            if ("Not Accepted".equalsIgnoreCase(modelRow.get("Status"))
+                    || "Not Fulfilled".equalsIgnoreCase(modelRow.get("Status"))) {
+                return modelRow.get("Status");
+            }
+        }
+        return modelFloorRows.get(0).getOrDefault("Status", "");
+    }
+
+    private String getTypicalRowSignature(Map<String, String> row) {
+        return row.entrySet().stream()
+                .filter(entry -> !"Floor".equals(entry.getKey()))
+                .filter(entry -> !"Provided".equals(entry.getKey()))
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .sorted()
+                .collect(Collectors.joining("|"));
+    }
+
+    private Integer getFloorNo(String floorValue) {
+        if (StringUtils.isBlank(floorValue)) {
+            return null;
+        }
+
+        String trimmedFloorValue = floorValue.trim();
+        StringBuilder numericPrefix = new StringBuilder();
+        for (int i = 0; i < trimmedFloorValue.length(); i++) {
+            char ch = trimmedFloorValue.charAt(i);
+            if (Character.isDigit(ch) || (i == 0 && ch == '-')) {
+                numericPrefix.append(ch);
+            } else {
+                break;
+            }
+        }
+
+        if (numericPrefix.length() == 0 || "-".contentEquals(numericPrefix)) {
+            return getFloorNoAfterFloorText(trimmedFloorValue);
+        }
+
+        try {
+            return Integer.valueOf(numericPrefix.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String getFloorValue(Map<String, String> row) {
+        if (row.containsKey("Floor")) {
+            return row.get("Floor");
+        }
+        return row.get("Provided");
+    }
+
+    private Integer getFloorNoAfterFloorText(String text) {
+        String lowerText = text.toLowerCase();
+        int floorIndex = lowerText.indexOf("floor");
+        if (floorIndex < 0) {
+            return null;
+        }
+
+        StringBuilder digits = new StringBuilder();
+        for (int i = floorIndex + "floor".length(); i < text.length(); i++) {
+            char ch = text.charAt(i);
+            if (Character.isDigit(ch)) {
+                digits.append(ch);
+            } else if (digits.length() > 0) {
+                break;
+            }
+        }
+
+        if (digits.length() == 0) {
+            return null;
+        }
+
+        try {
+            return Integer.valueOf(digits.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private boolean isTypicalFloorLabel(String floorValue) {
+        return StringUtils.isNotBlank(floorValue)
+                && floorValue.toLowerCase().contains("typical floor");
+    }
+
+    private String formatFloorRange(List<Integer> floorNos) {
+        if (floorNos.size() == 1) {
+            return floorNos.get(0).toString();
+        }
+
+        Integer minFloorNo = floorNos.get(0);
+        Integer maxFloorNo = floorNos.get(0);
+        for (Integer floorNo : floorNos) {
+            if (floorNo < minFloorNo) {
+                minFloorNo = floorNo;
+            }
+            if (floorNo > maxFloorNo) {
+                maxFloorNo = floorNo;
+            }
+        }
+        return minFloorNo + " to " + maxFloorNo;
+    }
+
+//    private void addSummarySections(List<ScrutinyDetail> scrutinyDetails,
+//                                    Map<String, Map<String, ScrutinyDetail>> sections,
+//                                    Map<String, String> prefixSummaryNameMap) {
+//
+//        final String SETBACK_KEY = "Setback";
+//
+//        final String[] setbackColumns = {
+//                "Section", "Setback", "Occupancy", "Level", "Permissible", "Provided", "Status"
+//        };
+//
+//        for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
+//            if (scrutinyDetail.getKey() == null) continue;
+//
+//            String[] keyArr   = scrutinyDetail.getKey().split("_");
+//            String detailsHeading = keyArr[keyArr.length - 1];
+//
+//            prefixSummaryNameMap.forEach((prefix, summaryName) -> {
+//                if (!scrutinyDetail.getKey().toLowerCase().startsWith(prefix.toLowerCase())) return;
+//
+//                boolean isSetback = scrutinyDetail.getKey().toLowerCase().contains("setback")
+//                        && !CollectionUtils.isEmpty(scrutinyDetail.getDetail());
+//
+//                if (isSetback) {
+//                    if (!sections.get(summaryName).containsKey(SETBACK_KEY)) {
+//                        ScrutinyDetail setbackSd = new ScrutinyDetail();
+//                        setbackSd.setKey(SETBACK_KEY);
+//                        for (int i = 0; i < setbackColumns.length; i++)
+//                            setbackSd.addColumnHeading(i + 1, setbackColumns[i]);
+//                        sections.get(summaryName).put(SETBACK_KEY, setbackSd);
+//                    }
+//
+//                    for (Map<String, String> srcRow : scrutinyDetail.getDetail()) {
+//                        Map<String, String> row = new HashMap<>();
+//                        String sdKeyLower = scrutinyDetail.getKey().toLowerCase();
+//                        if (sdKeyLower.contains("front")) {
+//                            row.put("Setback", "Front");
+//                        } else if (sdKeyLower.contains("rear")) {
+//                            row.put("Setback", "Rear");
+//                        } else {
+//                            String sideNum = srcRow.getOrDefault("Side Number", "");
+//                            if (StringUtils.isNotBlank(sideNum)) {
+//                                row.put("Setback", "Side Setback " + sideNum.trim().charAt(sideNum.trim().length() - 1));
+//                            } else {
+//                                row.put("Setback", scrutinyDetail.getHeading() != null
+//                                        ? scrutinyDetail.getHeading() : "Side");
+//                            }
+//                        }
+//
+//                        for (String col : setbackColumns) {
+//                            if (!"Setback".equals(col)) {
+//                                row.put(col, srcRow.getOrDefault(col, ""));
+//                            }
+//                        }
+//
+//                        sections.get(summaryName).get(SETBACK_KEY).addDetail(row);
+//                    }
+//
+//                } else {
+//                    sections.get(summaryName).put(detailsHeading, scrutinyDetail);
+//                }
+//            });
+//        }
+//    }
+    
+	private void addSummarySections(List<ScrutinyDetail> scrutinyDetails,
+			Map<String, Map<String, ScrutinyDetail>> sections, Map<String, String> prefixSummaryNameMap) {
+
+		final String SETBACK_KEY = "Setback";
+
+		final String[] setbackColumns = { "Section", "Setback", "Occupancy", "Level", "Permissible", "Provided",
+				"Status" };
+
+		for (ScrutinyDetail scrutinyDetail : scrutinyDetails) {
+			if (scrutinyDetail.getKey() == null)
+				continue;
+
+			String[] keyArr = scrutinyDetail.getKey().split("_");
+			String detailsHeading = keyArr[keyArr.length - 1];
+
+			prefixSummaryNameMap.forEach((prefix, summaryName) -> {
+				if (!scrutinyDetail.getKey().toLowerCase().startsWith(prefix.toLowerCase()))
+					return;
+
+				boolean isSetback = scrutinyDetail.getKey().toLowerCase().contains("setback")
+						&& !CollectionUtils.isEmpty(scrutinyDetail.getDetail());
+
+				if (isSetback) {
+					if (!sections.get(summaryName).containsKey(SETBACK_KEY)) {
+						ScrutinyDetail setbackSd = new ScrutinyDetail();
+						setbackSd.setKey(SETBACK_KEY);
+						for (int i = 0; i < setbackColumns.length; i++)
+							setbackSd.addColumnHeading(i + 1, setbackColumns[i]);
+						sections.get(summaryName).put(SETBACK_KEY, setbackSd);
+					}
+
+					for (Map<String, String> srcRow : scrutinyDetail.getDetail()) {
+						Map<String, String> row = new HashMap<>();
+						String sdKeyLower = scrutinyDetail.getKey().toLowerCase();
+						if (sdKeyLower.contains("front")) {
+							row.put("Setback", "Front");
+						} else if (sdKeyLower.contains("rear") && sdKeyLower.contains("side")) {
+							row.put("Setback", "Rear and Side Setback"); // combined row
+						} else if (sdKeyLower.contains("rear")) {
+							row.put("Setback", "Rear");
+						} else {
+							String sideNum = srcRow.getOrDefault("Side Number", "");
+							if (StringUtils.isNotBlank(sideNum)) {
+								row.put("Setback",
+										"Side Setback " + sideNum.trim().charAt(sideNum.trim().length() - 1));
+							} else {
+								row.put("Setback",
+										scrutinyDetail.getHeading() != null ? scrutinyDetail.getHeading() : "Side");
+							}
+						}
+
+						for (String col : setbackColumns) {
+							if (!"Setback".equals(col)) {
+								row.put(col, srcRow.getOrDefault(col, ""));
+							}
+						}
+
+						sections.get(summaryName).get(SETBACK_KEY).addDetail(row);
+					}
+
+				} else {
+					sections.get(summaryName).put(detailsHeading, scrutinyDetail);
+				}
+			});
+		}
+	}
+
+    private void addBlockWiseSummary(List<DcrReportBlockDetail> proposedBlockDetails,
+                                     Map<String, Map<String, ScrutinyDetail>> sections) {
+
+        sections.put("Block Wise Summary", new LinkedHashMap<>());
+
+        proposedBlockDetails.forEach(proposedBlockDetail -> {
+            BigDecimal totalBuiltUpArea  = BigDecimal.ZERO;
+            BigDecimal totalDeductionArea = BigDecimal.ZERO;
+            BigDecimal totalFloorArea    = BigDecimal.ZERO;
+
+            String heading = "Block No " + proposedBlockDetail.getBlockNo() + " - Proposed Details";
+            ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+            scrutinyDetail.setKey(heading);
+            scrutinyDetail.addColumnHeading(1, "Floor");
+            scrutinyDetail.addColumnHeading(2, "Occupancy/Sub Occupancy");
+            scrutinyDetail.addColumnHeading(3, "Built Up Area in m²");
+            scrutinyDetail.addColumnHeading(4, "Deduction Area in m²");
+            scrutinyDetail.addColumnHeading(5, "Floor Area in m²");
+
+            for (DcrReportFloorDetail floor : proposedBlockDetail.getDcrReportFloorDetails()) {
+                totalBuiltUpArea   = totalBuiltUpArea.add(floor.getBuiltUpArea());
+                totalDeductionArea = totalDeductionArea.add(floor.getBuiltUpDeductionArea());
+                totalFloorArea     = totalFloorArea.add(floor.getFloorArea());
+
+                Map<String, String> details = new HashMap<>();
+                details.put("Floor",                    floor.getFloorNo());
+                details.put("Occupancy/Sub Occupancy",  floor.getOccupancy());
+                details.put("Built Up Area in m²",      floor.getBuiltUpArea().toString());
+                details.put("Deduction Area in m²",     floor.getBuiltUpDeductionArea().toString());
+                details.put("Floor Area in m²",         floor.getFloorArea().toString());
+                scrutinyDetail.addDetail(details);
+            }
+
+            Map<String, String> totalRow = new HashMap<>();
+            totalRow.put("Occupancy/Sub Occupancy", "Total-colspan-2");
+            totalRow.put("Built Up Area in m²",     totalBuiltUpArea.toString());
+            totalRow.put("Deduction Area in m²",    totalDeductionArea.toString());
+            totalRow.put("Floor Area in m²",        totalFloorArea.toString());
+            scrutinyDetail.addDetail(totalRow);
+
+            StringBuilder text = new StringBuilder();
+            text.append("1. Ground Coverage Area is ")
+                    .append(proposedBlockDetail.getCoverageArea() != null
+                            ? proposedBlockDetail.getCoverageArea()
+                              .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
+                            : BigDecimal.ZERO)
+                    .append(" m²");
+            text.append("\n2. Height of building is ")
+                    .append(proposedBlockDetail.getBuildingHeightExcludingMP() != null
+                            ? proposedBlockDetail.getBuildingHeightExcludingMP()
+                              .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
+                            : BigDecimal.ZERO)
+                    .append(" m");
+            text.append("\n3. Total Height of building is ")
+                    .append(proposedBlockDetail.getBuildingHeight() != null
+                            ? proposedBlockDetail.getBuildingHeight()
+                              .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
+                            : BigDecimal.ZERO)
+                    .append(" m");
+
+            if (proposedBlockDetail.getConstructedArea().compareTo(BigDecimal.ZERO) > 0) {
+                text.append("\n4. Already constructed area is ")
+                        .append(proposedBlockDetail.getConstructedArea()
+                                .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS))
+                        .append(" m²");
+            }
+
+            scrutinyDetail.setRemarks(text.toString());
+            sections.get("Block Wise Summary").put(heading, scrutinyDetail);
+        });
+    }
+
+    private void addExistingBlockWiseSummary(List<DcrReportBlockDetail> existingBlockDetails,
+                                           Map<String, Map<String, ScrutinyDetail>> sections) {
+
+        sections.put("Existing Block Wise Summary", new LinkedHashMap<>());
+
+        BigDecimal grandTotalBuiltUpArea = BigDecimal.ZERO;
+        BigDecimal grandTotalDeductionArea = BigDecimal.ZERO;
+        BigDecimal grandTotalFloorArea   = BigDecimal.ZERO;
+
+        for (DcrReportBlockDetail existingBlockDetail : existingBlockDetails) {
+            BigDecimal totalBuiltUpArea = BigDecimal.ZERO;
+            BigDecimal totalDeductionArea = BigDecimal.ZERO;    // NEW
+            BigDecimal totalFloorArea   = BigDecimal.ZERO;
+
+            String heading = "Block No " + existingBlockDetail.getBlockNo() + " - Existing Details";
+            ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+            scrutinyDetail.setKey(heading);
+            scrutinyDetail.addColumnHeading(1, "Floor");
+            scrutinyDetail.addColumnHeading(2, "Occupancy/Sub Occupancy");
+            scrutinyDetail.addColumnHeading(3, "Built Up Area in m²");
+            scrutinyDetail.addColumnHeading(4, "Deduction Area in m²");   // NEW
+            scrutinyDetail.addColumnHeading(5, "Floor Area in m²");
+
+            if (existingBlockDetail.getDcrReportFloorDetails() != null) {
+                for (DcrReportFloorDetail floor : existingBlockDetail.getDcrReportFloorDetails()) {
+                	BigDecimal ded = floor.getBuiltUpDeductionArea() != null
+                            ? floor.getBuiltUpDeductionArea() : BigDecimal.ZERO;
+                    totalBuiltUpArea = totalBuiltUpArea.add(floor.getBuiltUpArea()).setScale(2, RoundingMode.HALF_UP);
+                    totalDeductionArea = totalDeductionArea.add(ded).setScale(2, RoundingMode.HALF_UP);   // NEW
+                    totalFloorArea   = totalFloorArea.add(floor.getFloorArea()).setScale(2, RoundingMode.HALF_UP);
+
+                    Map<String, String> details = new HashMap<>();
+                    details.put("Floor", floor.getFloorNo());
+                    details.put("Occupancy/Sub Occupancy", floor.getOccupancy());
+                    details.put("Built Up Area in m²", floor.getBuiltUpArea().toString());
+                    details.put("Deduction Area in m²", ded.setScale(2, RoundingMode.HALF_UP).toString()); // NEW
+                    details.put("Floor Area in m²", floor.getFloorArea().toString());
+                    scrutinyDetail.addDetail(details);
+                }
+            }
+
+            // ✅ Yahan -colspan-1 ki jagah -colspan-2 karein taaki pehle do columns merge ho jayein
+            Map<String, String> totalRow = new HashMap<>();
+            totalRow.put("Occupancy/Sub Occupancy", "Total-colspan-2");
+            totalRow.put("Built Up Area in m²", totalBuiltUpArea.toString());
+            totalRow.put("Deduction Area in m²", totalDeductionArea.toString());   // NEW
+            totalRow.put("Floor Area in m²", totalFloorArea.toString());
+            scrutinyDetail.addDetail(totalRow);
+
+            sections.get("Existing Block Wise Summary").put(heading, scrutinyDetail);
+
+            grandTotalBuiltUpArea = grandTotalBuiltUpArea.add(totalBuiltUpArea).setScale(2, RoundingMode.HALF_UP);
+            grandTotalDeductionArea = grandTotalDeductionArea.add(totalDeductionArea).setScale(2, RoundingMode.HALF_UP); // NEW
+            grandTotalFloorArea   = grandTotalFloorArea.add(totalFloorArea).setScale(2, RoundingMode.HALF_UP);
+        }
+
+        ScrutinyDetail totalExisting = new ScrutinyDetail();
+        totalExisting.setKey("Total Existing Details");
+        totalExisting.addColumnHeading(1, "Built Up Area in m²");
+        totalExisting.addColumnHeading(2, "Deduction Area in m²");   // NEW
+        totalExisting.addColumnHeading(3, "Floor Area in m²");
+        Map<String, String> totalExistingRow = new HashMap<>();
+        totalExistingRow.put("Built Up Area in m²", grandTotalBuiltUpArea.toString());
+        totalExistingRow.put("Deduction Area in m²", grandTotalDeductionArea.toString()); // NEW
+        totalExistingRow.put("Floor Area in m²", grandTotalFloorArea.toString());
+        totalExisting.addDetail(totalExistingRow);
+        sections.get("Existing Block Wise Summary").put("Total Existing Details", totalExisting);
+    }
+
+    private List<DcrReportBlockDetail> buildBlockWiseProposedInfo(Plan plan) {
+        List<DcrReportBlockDetail> dcrReportBlockDetails = new ArrayList<>();
+        List<Block> blocks = plan.getBlocks();
+
+        if (!blocks.isEmpty()) {
+            for (Block block : blocks) {
+                Building building = block.getBuilding();
+                if (building != null) {
+                    DcrReportBlockDetail dcrReportBlockDetail = new DcrReportBlockDetail();
+                    dcrReportBlockDetail.setBlockNo(block.getNumber());
+                    dcrReportBlockDetail.setCoverageArea(building.getCoverageArea());
+                    dcrReportBlockDetail.setBuildingHeight(building.getBuildingHeight());
+                    dcrReportBlockDetail.setBuildingHeightExcludingMPt(building.getBuildingHeightExcludingMP());
+                    dcrReportBlockDetail.setConstructedArea(building.getTotalConstructedArea());
+
+                    List<Floor> floors = building.getFloors();
+                    BigDecimal buildingHeightExMumpty = (building.getBuildingHeightExcludingMP() != null)
+                            ? building.getBuildingHeightExcludingMP().setScale(2, RoundingMode.HALF_UP)
+                            : null;
+                    if (buildingHeightExMumpty != null &&
+                            buildingHeightExMumpty.compareTo(Fire_Tender_Movement) > 0) {
+                        LOG.info("building height exclude mumpty : " + buildingHeightExMumpty);
+                    }
+
+                    if (!floors.isEmpty()) {
+                        List<DcrReportFloorDetail> dcrReportFloorDetails = new ArrayList<>();
+                        for (Floor floor : floors) {
+                            List<Occupancy> occupancies = floor.getOccupancies();
+                            if (!occupancies.isEmpty()) {
+                                for (Occupancy occupancy : occupancies) {
+                                    String occupancyName = "";
+                                    if (occupancy.getTypeHelper() != null) {
+                                        if (occupancy.getTypeHelper().getSubtype() != null) {
+                                            occupancyName = occupancy.getTypeHelper().getSubtype().getName();
+                                        } else if (occupancy.getTypeHelper().getType() != null) {
+                                            occupancyName = occupancy.getTypeHelper().getType().getName();
+                                        }
+                                    }
+
+                                    DcrReportFloorDetail dcrReportFloorDetail = new DcrReportFloorDetail();
+                                    String floorNo;
+                                    if (floor.getTerrace()) {
+                                        floorNo = "Terrace";
+                                    } else if (occupancy.getIsMezzanine()) {
+                                        floorNo = floor.getNumber() + " (Mezzanine " + floor.getNumber() + ")";
+                                    } else {
+                                        floorNo = String.valueOf(floor.getNumber());
+                                    }
+                                    dcrReportFloorDetail.setFloorNo(floorNo);
+                                    dcrReportFloorDetail.setOccupancy(occupancyName);
+
+                                    BigDecimal builtUpArea = occupancy.getExistingBuiltUpArea()
+                                            .compareTo(BigDecimal.ZERO) > 0
+                                            ? occupancy.getBuiltUpArea().subtract(occupancy.getExistingBuiltUpArea())
+                                            : occupancy.getBuiltUpArea();
+                                    dcrReportFloorDetail.setBuiltUpArea(
+                                            builtUpArea.setScale(2, BigDecimal.ROUND_HALF_UP));
+
+                                    if (floor.getIsStiltFloor()) {
+                                        dcrReportFloorDetail.setFloorArea(BigDecimal.valueOf(0.0));
+                                        dcrReportFloorDetail.setOccupancy(occupancyName + "(Stilt)");
+                                    } else {
+                                        dcrReportFloorDetail.setOccupancy(occupancyName);
+                                        BigDecimal floorArea = occupancy.getExistingFloorArea()
+                                                .compareTo(BigDecimal.ZERO) > 0
+                                                ? occupancy.getFloorArea().subtract(occupancy.getExistingFloorArea())
+                                                : occupancy.getFloorArea();
+                                        dcrReportFloorDetail.setFloorArea(
+                                                floorArea.setScale(2, BigDecimal.ROUND_HALF_UP));
+                                    }
+
+                                    BigDecimal builtUpDeductionArea = occupancy.getDeduction() == null
+                                            ? BigDecimal.ZERO : occupancy.getDeduction();
+                                    dcrReportFloorDetail.setBuiltUpDeductionArea(
+                                            builtUpDeductionArea.setScale(2, BigDecimal.ROUND_HALF_UP));
+
+                                    if (dcrReportFloorDetail.getBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) {
+                                        dcrReportFloorDetails.add(dcrReportFloorDetail);
+                                    }
+                                }
+                            }
+                        }
+                        dcrReportFloorDetails = dcrReportFloorDetails.stream()
+                                .sorted(Comparator.comparingInt(PlanReportServiceV2::getFloorSortOrder)
+                                        .thenComparing(DcrReportFloorDetail::getFloorNo, Comparator.nullsLast(String::compareTo)))
+                                .collect(Collectors.toList());
+                        dcrReportBlockDetail.setDcrReportFloorDetails(dcrReportFloorDetails);
+                    }
+                    dcrReportBlockDetails.add(dcrReportBlockDetail);
+                }
+            }
+        }
+        return dcrReportBlockDetails;
+    }
+
+    private List<DcrReportBlockDetail> buildBlockWiseExistingInfo(Plan plan) {
+        List<DcrReportBlockDetail> dcrReportBlockDetails = new ArrayList<>();
+        List<Block> blocks = plan.getBlocks();
+
+        if (!blocks.isEmpty()) {
+            for (Block block : blocks) {
+                Building building = block.getBuilding();
+                if (building != null && building.getTotalExistingBuiltUpArea() != null
+                        && building.getTotalExistingBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) {
+
+                    DcrReportBlockDetail dcrReportBlockDetail = new DcrReportBlockDetail();
+                    dcrReportBlockDetail.setBlockNo(block.getNumber());
+
+                    List<Floor> floors = building.getFloors();
+
+                    if (!floors.isEmpty()) {
+                        List<DcrReportFloorDetail> dcrReportFloorDetails = new ArrayList<>();
+                        for (Floor floor : floors) {
+                            List<Occupancy> occupancies = floor.getOccupancies();
+
+                            if (!occupancies.isEmpty()) {
+                                for (Occupancy occupancy : occupancies) {
+                                    String occupancyName = "";
+                                    if (occupancy.getTypeHelper() != null) {
+                                        if (occupancy.getTypeHelper().getSubtype() != null)
+                                            occupancyName = occupancy.getTypeHelper().getSubtype().getName();
+                                        else if (occupancy.getTypeHelper().getType() != null)
+                                            occupancyName = occupancy.getTypeHelper().getType().getName();
+                                    }
+                                    if (occupancy != null
+                                            && occupancy.getExistingBuiltUpArea() != null
+                                            && occupancy.getExistingBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) {
+                                        try {
+                                            DcrReportFloorDetail dcrReportFloorDetail = new DcrReportFloorDetail();
+                                            dcrReportFloorDetail.setFloorNo(
+                                                    floor.getTerrace() ? "Terrace" : floor.getNumber().toString());
+                                            dcrReportFloorDetail.setOccupancy(occupancyName);
+
+                                            // all three values rounded to 2 decimals, null-safe
+                                            dcrReportFloorDetail.setBuiltUpArea(scale2(occupancy.getExistingBuiltUpArea()));
+                                            dcrReportFloorDetail.setFloorArea(scale2(occupancy.getExistingFloorArea()));
+                                            dcrReportFloorDetail.setBuiltUpDeductionArea(scale2(occupancy.getExistingDeduction()));
+
+                                            dcrReportFloorDetails.add(dcrReportFloorDetail);
+                                        } catch (Exception e) {
+                                            LOG.error("Error building existing floor detail for block {}, floor {}: {}",
+                                                    block.getNumber(), floor.getNumber(), e.getMessage(), e);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        dcrReportFloorDetails = dcrReportFloorDetails.stream()
+                                .sorted(Comparator.comparingInt(PlanReportServiceV2::getFloorSortOrder)
+                                        .thenComparing(DcrReportFloorDetail::getFloorNo,
+                                                Comparator.nullsLast(String::compareTo)))
+                                .collect(Collectors.toList());
+                        dcrReportBlockDetail.setDcrReportFloorDetails(dcrReportFloorDetails);
+                    }
+                    dcrReportBlockDetails.add(dcrReportBlockDetail);
+                }
+            }
+        }
+        return dcrReportBlockDetails;
+    }
+
+    private static int getFloorSortOrder(DcrReportFloorDetail floorDetail) {
+        if (floorDetail == null || StringUtils.isBlank(floorDetail.getFloorNo())) {
+            return Integer.MAX_VALUE;
+        }
+
+        String floorNo = floorDetail.getFloorNo().trim();
+        if ("Terrace".equalsIgnoreCase(floorNo)) {
+            return Integer.MAX_VALUE;
+        }
+
+        StringBuilder numericPrefix = new StringBuilder();
+        for (int i = 0; i < floorNo.length(); i++) {
+            char ch = floorNo.charAt(i);
+            if (Character.isDigit(ch) || (i == 0 && ch == '-')) {
+                numericPrefix.append(ch);
+            } else {
+                break;
+            }
+        }
+
+        if (numericPrefix.length() == 0 || "-".contentEquals(numericPrefix)) {
+            return Integer.MAX_VALUE - 1;
+        }
+
+        try {
+            return Integer.parseInt(numericPrefix.toString());
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE - 1;
+        }
+    }
+
+    public byte[] generatePdf(Map<String, Object> model) throws Exception {
+        Context context = new Context();
+        context.setVariables(model);
+        String html = templateEngine.process("report2", context);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PdfRendererBuilder builder = new PdfRendererBuilder();
+        builder.useTransformerFactoryImplementationClass(null);
+        builder.useDocumentBuilderFactoryImplementationClass(null);
+        
+        Document document = PdfOverlayTemplateService.createSecureW3cDocument(html);
+
+        builder.withW3cDocument(document, null);
+        builder.toStream(os);
+        builder.run();
+        return os.toByteArray();
+    }
+
+    public static void replaceStatusWithFulfillTerms(Map<String, Object> model) {
+        LOG.info("Replacing 'Accepted/Not Accepted' with 'Fulfilled/Not Fulfilled'...");
+
+        if (model.containsKey("reportStatus")) {
+            Object val = model.get("reportStatus");
+            if (val instanceof String) {
+                model.put("reportStatus", swapStatus((String) val));
+            }
+        }
+
+        Object sectionsObj = model.get("sections");
+        if (sectionsObj instanceof Map) {
+            for (Object sectionVal : ((Map<?, ?>) sectionsObj).values()) {
+                if (!(sectionVal instanceof Map)) continue;
+                for (Object sdObj : ((Map<?, ?>) sectionVal).values()) {
+                    if (!(sdObj instanceof ScrutinyDetail)) continue;
+                    for (Map<String, String> row : ((ScrutinyDetail) sdObj).getDetail()) {
+                        if (row.containsKey("Status")) {
+                            row.put("Status", swapStatus(row.get("Status")));
+                        }
+                    }
+                }
+            }
+        }
+
+        LOG.info("Status terminology update completed.");
+    }
+    
+    public static String imageUrlToBase64(String imageUrl) {
+        try (InputStream inputStream = new URL(imageUrl).openStream();
+             ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                baos.write(buffer, 0, bytesRead);
+            }
+
+            byte[] imageBytes = baos.toByteArray();
+            String base64 = Base64.getEncoder().encodeToString(imageBytes);
+
+            return "data:image/png;base64," + base64;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to convert image URL to Base64", e);
+        }
+    }
+
+    private static String swapStatus(String status) {
+        if (status == null) return null;
+        return status.replace("Not Accepted", "Not Fulfilled")
+                .replace("Accepted",     "Fulfilled");
+    }
+
+    public InputStream generateReport(Plan plan, EdcrApplication dcrApplication) {
+        try {
+            LOG.info("Generating report for application: {}", dcrApplication.getApplicationNumber());
+            Map<String, Object> model = buildReportModelV2(plan, dcrApplication);
+            replaceStatusWithFulfillTerms(model);
+            
+            try {
+                java.lang.reflect.Method m = plan.getClass().getMethod("setFinalReportData", java.util.Map.class);
+                m.invoke(plan, model);
+            } catch (NoSuchMethodException ignored) {
+                LOG.debug("Plan does not expose setFinalReportData(Map). Skipping.");
+            }
+
+            byte[] pdfBytes = generatePdf(model);
+
+            InputStream reportStream = new ByteArrayInputStream(pdfBytes);
+            LOG.info("Report generated successfully for application: {}", dcrApplication.getApplicationNumber());
+            return reportStream;
+        } catch (Exception e) {
+            LOG.error("Error occurred while generating report for application: {} - Error: {}",
+                    dcrApplication.getApplicationNumber(), e.getMessage(), e);
+            String msg = (e.getMessage() != null && !e.getMessage().trim().isEmpty() && !e.getMessage().equalsIgnoreCase("null"))
+                    ? e.getMessage().trim()
+                    : (e.getClass().getSimpleName() + (e.getStackTrace() != null && e.getStackTrace().length > 0
+                            ? " at " + e.getStackTrace()[0].getClassName() + "." + e.getStackTrace()[0].getMethodName() + "(line " + e.getStackTrace()[0].getLineNumber() + ")"
+                            : ""));
+            throw new RuntimeException("Failed to generate report: " + msg, e);
+        }
+    }
+    
+    private static BigDecimal scale2(BigDecimal value) {
+        return value == null
+                ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
+                : value.setScale(2, RoundingMode.HALF_UP);
+    }
+    
+}

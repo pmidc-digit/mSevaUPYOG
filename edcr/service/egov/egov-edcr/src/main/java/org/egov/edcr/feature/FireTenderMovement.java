@@ -67,8 +67,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class FireTenderMovement extends FeatureProcess {
     private static final Logger LOG = LogManager.getLogger(FireTenderMovement.class);
-    private static final BigDecimal FIFTEEN = BigDecimal.valueOf(15);
-    private static final BigDecimal THREE_POINTSIXSIX = BigDecimal.valueOf(3.66);
+    private static final BigDecimal Building_Height_Check = BigDecimal.valueOf(21);
+    private static final BigDecimal THREE_POINTSIXSIX = BigDecimal.valueOf(6);
     private static final String RULE_36_3 = "36-3";
 
     @Override
@@ -90,10 +90,13 @@ public class FireTenderMovement extends FeatureProcess {
             scrutinyDetail.addColumnHeading(5, STATUS);
             scrutinyDetail.setKey("Block_" + block.getNumber() + "_" + "Fire Tender Movement");
 
+//            if (block.getBuilding() != null
+//                    && block.getBuilding().getBuildingHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+//                            DcrConstants.ROUNDMODE_MEASUREMENTS).compareTo(FIFTEEN) > 0) {
             if (block.getBuilding() != null
-                    && block.getBuilding().getBuildingHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-                            DcrConstants.ROUNDMODE_MEASUREMENTS).compareTo(FIFTEEN) > 0) {
-                org.egov.common.entity.edcr.FireTenderMovement fireTenderMovement = block.getFireTenderMovement();
+                    && block.getBuilding().getBuildingHeightExcludingMP().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+                            DcrConstants.ROUNDMODE_MEASUREMENTS).compareTo(Building_Height_Check) > 0) {    
+            	org.egov.common.entity.edcr.FireTenderMovement fireTenderMovement = block.getFireTenderMovement();
                 if (fireTenderMovement != null) {
                     List<BigDecimal> widths = fireTenderMovement.getFireTenderMovements().stream()
                             .map(fireTenderMovmnt -> fireTenderMovmnt.getWidth()).collect(Collectors.toList());

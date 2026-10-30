@@ -3,10 +3,12 @@ package org.egov.layout.repository.rowmapper;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.egov.layout.web.model.bpa.Relationship;
 
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -224,6 +226,36 @@ public class LayoutRowMapper implements ResultSetExtractor<List<Layout>> {
 
 						if (adMap != null && !adMap.isEmpty()) {
 							oi.setAdditionalDetails(adMap);
+						}
+
+						// Extract isPrimaryOwner
+						Object isPrimaryOwnerObj = raw.get("isPrimaryOwner");
+						if (isPrimaryOwnerObj instanceof Boolean) {
+							oi.setIsPrimaryOwner((Boolean) isPrimaryOwnerObj);
+						} else if (isPrimaryOwnerObj instanceof String) {
+							oi.setIsPrimaryOwner(Boolean.parseBoolean((String) isPrimaryOwnerObj));
+						}
+
+						// Extract ownerType
+						Object ownerTypeObj = raw.get("ownerType");
+						if (ownerTypeObj instanceof String) {
+							oi.setOwnerType((String) ownerTypeObj);
+						}
+
+						// Extract ownerShipPercentage
+						Object ownerShipPercentageObj = raw.get("ownerShipPercentage");
+						if (ownerShipPercentageObj instanceof Number) {
+							oi.setOwnerShipPercentage(BigDecimal.valueOf(((Number) ownerShipPercentageObj).doubleValue()));
+						} else if (ownerShipPercentageObj instanceof String) {
+							try {
+								oi.setOwnerShipPercentage(new BigDecimal((String) ownerShipPercentageObj));
+							} catch (Exception ignore) {}
+						}
+
+						// Extract relationship
+						Object relationshipObj = raw.get("relationship");
+						if (relationshipObj instanceof String) {
+							oi.setRelationship(Relationship.fromValue((String) relationshipObj));
 						}
 					}
 

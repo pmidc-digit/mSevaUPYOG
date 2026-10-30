@@ -69,16 +69,27 @@ public class LayoutSearchCriteria {
     @JsonProperty("accountId")
     private List<String> accountId;
     
+    @JsonProperty("applicationStatus")
+    private String applicationStatus;
+
     @JsonProperty("status")
     private List<String> status;
 
     @SafeHtml
-    @Size(min = 1, max = 15)
+//    @Size(min = 1, max = 15)
     @JsonProperty("vasikaNumber")
     private String vasikaNumber = null;
 
     @JsonProperty("vasikaDate")
     private String vasikaDate = null;
+
+    @SafeHtml
+    @JsonProperty("ownerName")
+    private String ownerName;
+
+    @SafeHtml
+    @JsonProperty("address")
+    private String address;
 
     public boolean isEmpty() {
         return (this.tenantId == null && this.ids == null && this.applicationNo == null

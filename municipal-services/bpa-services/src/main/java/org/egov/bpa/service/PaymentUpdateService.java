@@ -5,9 +5,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.egov.bpa.config.BPAConfiguration;
 import org.egov.bpa.repository.BPARepository;
+import org.egov.bpa.service.notification.BPANotificationService;
 import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.util.BPAErrorConstants;
 import org.egov.bpa.web.model.BPA;
@@ -50,11 +52,14 @@ public class PaymentUpdateService {
 	
 	private UserService userService;
 	
+	private BPANotificationService notificationService;
+	
 
 	@Autowired
 	public PaymentUpdateService(BPAConfiguration config, BPARepository repository,
 			WorkflowIntegrator wfIntegrator, EnrichmentService enrichmentService, ObjectMapper mapper,
-			WorkflowService workflowService, UserService userService) {
+			WorkflowService workflowService, UserService userService,
+			BPANotificationService notificationService) {
 		this.config = config;
 		this.repository = repository;
 		this.wfIntegrator = wfIntegrator;
@@ -62,6 +67,7 @@ public class PaymentUpdateService {
 		this.mapper = mapper;
 		this.workflowService = workflowService;
 		this.userService = userService;
+		this.notificationService = notificationService;
 
 	}
 
@@ -77,10 +83,10 @@ public class PaymentUpdateService {
 	 * @param record
 	 *            The incoming message from receipt create consumer
 	 */
-	public void process(HashMap<String, Object> record) {
+	public void process(String record) {
 
 		try {
-			PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
+			PaymentRequest paymentRequest = mapper.readValue(record, PaymentRequest.class);
 			RequestInfo requestInfo = paymentRequest.getRequestInfo();
 			List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
 			String tenantId = paymentRequest.getPayment().getTenantId();
@@ -122,18 +128,22 @@ public class PaymentUpdateService {
 								.filter(act -> act.getAction().equalsIgnoreCase(bpa.getWorkflow().getAction()))
 								.findFirst().orElse(new Action()).getNextState();
 						State nextState = busSer.getStates().stream().filter(st -> st.getUuid().equalsIgnoreCase(nextStateId)).findFirst().orElse(null);
-						
-						String action = bpa.getWorkflow() != null ? bpa.getWorkflow().getAction() : "";
-						
+												
+						List<String> roles = new ArrayList<String>();
+		    			if(nextState != null && !CollectionUtils.isEmpty(nextState.getActions()))
+		    				roles = nextState.getActions().stream()
+		    				.filter(stateAction -> !stateAction.getNextState().equalsIgnoreCase(nextStateId))
+		    				.flatMap(stateAction -> stateAction.getRoles().stream())
+		    				.distinct()
+		    				.filter(r -> !r.equalsIgnoreCase("OBPAS_UPDATE_ZONE")
+		    						&& !r.equalsIgnoreCase("SYSTEM"))
+		    				.collect(Collectors.toList());
 						if (nextState != null 
-								&& (nextState.getState().equalsIgnoreCase(BPAConstants.PENDINGINITIALVERIFICATION_STATE) 
-										|| nextState.getState().equalsIgnoreCase(BPAConstants.FI_STATUS))
-								&& BPAConstants.ACTION_PAY.equalsIgnoreCase(action)) {
-							List<String> roles = new ArrayList<>();
-							nextState.getActions().forEach(stateAction -> {
-								roles.addAll(stateAction.getRoles());
-							});
-							List<String> assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo);
+								&& CollectionUtils.isEmpty(bpa.getWorkflow().getAssignes())
+								&& !CollectionUtils.isEmpty(nextState.getActions())) {
+							List<String> assignee = null;
+							if(!CollectionUtils.isEmpty(roles))
+								assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, false);
 							bpa.getWorkflow().setAssignes(assignee);
 							
 						}
@@ -142,7 +152,8 @@ public class PaymentUpdateService {
 					/*
 					 * calling workflow to update status
 					 */
-					wfIntegrator.callWorkFlow(updateRequest);
+					String hrmsSearchPath = userService.getEmployeeSearchPATH(updateRequest.getBPA().getTenantId(), (Map<String, String>)updateRequest.getBPA().getAdditionalDetails());
+					wfIntegrator.callWorkFlow(updateRequest,"");
 
 					log.debug(" the status of the application is : " + updateRequest.getBPA().getStatus());
 
@@ -152,6 +163,7 @@ public class PaymentUpdateService {
 					enrichmentService.postStatusEnrichment(updateRequest);
 					
 					repository.update(updateRequest, true);
+					notificationService.process(updateRequest, record);
 
 				}
 			}

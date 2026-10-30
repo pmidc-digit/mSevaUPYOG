@@ -5,7 +5,13 @@ import static java.lang.Math.min;
 
 import java.math.BigDecimal;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 public class RayCast {
+	private static final Logger LOG = LogManager.getLogger(RayCast.class);
+
 
     private static final int DECIMALDIGITS = 8;
 
@@ -13,8 +19,8 @@ public class RayCast {
 
     public static boolean intersects(double[] A, double[] B, double[] P) {
         /*
-         * System.out.println("\n checking for point"+P[0]+","+P[1]); System.out.println("A:"+A[0]+","+A[1]);
-         * System.out.println("B:"+B[0]+","+B[1]);
+         * LOG.info("\n checking for point"+P[0]+","+P[1]); LOG.info("A:"+A[0]+","+A[1]);
+         * LOG.info("B:"+B[0]+","+B[1]);
          */
 
         if (A[1] > B[1])
@@ -24,27 +30,27 @@ public class RayCast {
             P[1] += 0.000000001;
 
         if (P[1] > B[1] || P[1] < A[1] || P[0] >= max(A[0], B[0]))
-            // System.out.println("return false");
+            // LOG.info("return false");
             return false;
 
         if (P[0] <= min(A[0], B[0]))
-            // System.out.println("return true");
+            // LOG.info("return true");
             return true;
 
         double red = (P[1] - A[1]) / (P[0] - A[0]);
         double blue = (B[1] - A[1]) / (B[0] - A[0]);
-        // System.out.println("red"+red+",blue"+blue);
+        // LOG.info("red"+red+",blue"+blue);
         BigDecimal redB = BigDecimal.valueOf(blue).setScale(DECIMALDIGITS, BigDecimal.ROUND_DOWN);
         BigDecimal redR = BigDecimal.valueOf(red).setScale(8, BigDecimal.ROUND_DOWN);
-        // System.out.println("red"+redR+",blue"+redB);
-        // System.out.println("Compare"+redR.compareTo(redB));
+        // LOG.info("red"+redR+",blue"+redB);
+        // LOG.info("Compare"+redR.compareTo(redB));
         return redR.compareTo(redB) >= 0;
 
     }
 
     public static boolean intersectsForSide(double[] A, double[] B, double[] P) {
-        // System.out.println("P:"+P[0]+",A:"+A[0]+",B:"+B[0]);
-        // System.out.println(P[1]+","+A[1]+","+B[1]);
+        // LOG.info("P:"+P[0]+",A:"+A[0]+",B:"+B[0]);
+        // LOG.info(P[1]+","+A[1]+","+B[1]);
         if (A[1] > B[1])
             return intersects(B, A, P);
 
@@ -60,11 +66,11 @@ public class RayCast {
         i++;
         double red = (P[1] - A[1]) / (P[0] - A[0]);
         BigDecimal redb = BigDecimal.valueOf(red);
-        System.out.println("red--" + i + "--" + red);
+        LOG.info("red--" + i + "--" + red);
         double blue = (B[1] - A[1]) / (B[0] - A[0]);
         BigDecimal blueb = BigDecimal.valueOf(blue);
-        System.out.println("blue--" + blue);
-        System.out.println(redb.compareTo(blueb) >= 0);
+        LOG.info("blue--" + blue);
+        LOG.info(redb.compareTo(blueb) >= 0);
         // return redb.compareTo(blueb) >=0 ;
         return red >= blue;
 
@@ -74,10 +80,10 @@ public class RayCast {
         boolean inside = false;
         int len = shape.length;
         for (int i = 0; i < len; i++)
-            // System.out.println("contains "+shape[i][0]+","+shape[i][1]+" and "+shape[(i + 1) % len][0]+","+shape[(i + 1) %
+            // LOG.info("contains "+shape[i][0]+","+shape[i][1]+" and "+shape[(i + 1) % len][0]+","+shape[(i + 1) %
             // len][1]);
             if (intersects(shape[i], shape[(i + 1) % len], pnt))
-                // System.out.println("---------------------got true ");
+                // LOG.info("---------------------got true ");
                 inside = true;
         return inside;
     }
@@ -95,7 +101,7 @@ public class RayCast {
 
         /*
          * for (int[][] shape : shapes) { for (double[] pnt : testPoints) System.out.printf("%7s ", contains(shape, pnt));
-         * System.out.println(); }
+         * LOG.info(); }
          */
     }
 

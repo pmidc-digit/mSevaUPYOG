@@ -26,7 +26,7 @@
  * 
  * @Test public final void testExtract() { pl = pi.extract(pl); pl =
  * feature.extract(pl); //hr.extract(pl); for (Block b : pl.getBlocks()) {
- * System.out.println( b.getName() + " Number of Floors = " +
+ * LOG.info( b.getName() + " Number of Floors = " +
  * b.getBuilding().getFloors().size()); } //mezz.extract(pl); }
  * 
  * 

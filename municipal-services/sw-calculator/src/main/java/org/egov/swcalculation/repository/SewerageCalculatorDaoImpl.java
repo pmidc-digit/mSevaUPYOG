@@ -76,7 +76,7 @@ public class SewerageCalculatorDaoImpl implements SewerageCalculatorDao {
 		return jdbcTemplate.query(query, preparedStatement.toArray(), sewerageRowMapper);
 	}
 	@Override
-	public List<SewerageDetails> getConnectionsNoListsingle(String tenantId, String connectionType,Long fromDate, Long toDate, String Connectionno) {
+	public List<SewerageDetails> getConnectionsNoListsingle(String tenantId, String locality, String connectionType,Long fromDate, Long toDate, String Connectionno) {
 		List<Object> preparedStatement = new ArrayList<>();
 		List<Object> preparedStatementTwo = new ArrayList<>();
 		//String query = queryBuilder.getConnectionNumberListsingle(tenantId, connectionType, preparedStatement, fromDate, toDate,Connectionno);
@@ -85,14 +85,14 @@ public class SewerageCalculatorDaoImpl implements SewerageCalculatorDao {
 		List<SewerageDetails> sewerageDetails = null;
 //		List<SewerageDetails> sewerageDetailsTwo =  null;
 		if((tenantId.equals("pb.amritsar"))) {
-			 query = queryBuilder.getConnectionNumberListForNonCommercial(tenantId, connectionType,SWCalculationConstant.ACTIVE, fromDate, toDate, Connectionno, preparedStatement);
+			 query = queryBuilder.getConnectionNumberListForNonCommercial(tenantId, locality, connectionType,SWCalculationConstant.ACTIVE, fromDate, toDate, Connectionno, preparedStatement);
 //		         queryTwo = queryBuilder.getConnectionNumberListForCommercialOnlySewerage(tenantId, connectionType,SWCalculationConstant.ACTIVE, fromDate, toDate, Connectionno, preparedStatementTwo);  
 //			 // log.info("Demand will not generate for water metered connections in Amritsar: "+query);
 			 sewerageDetails= jdbcTemplate.query(query, preparedStatement.toArray(), demandSchedulerRowMapper);
 //			 sewerageDetailsTwo=jdbcTemplate.query(queryTwo, preparedStatement.toArray(), demandSchedulerRowMapper);
 //			 sewerageDetails.addAll(sewerageDetailsTwo);
 		}else {
-			query = queryBuilder.getConnectionNumberListsingle(tenantId, connectionType, preparedStatement, fromDate, toDate,Connectionno);
+			query = queryBuilder.getConnectionNumberListsingle(tenantId, locality, connectionType, preparedStatement, fromDate, toDate,Connectionno);
 			sewerageDetails= jdbcTemplate.query(query, preparedStatement.toArray(), demandSchedulerRowMapper);
 		}
 		
@@ -275,6 +275,17 @@ public Boolean getexpiryBills(List billSearchsss) {
 		jdbcTemplate.update(query, preparedStatement.toArray());	
 		return true;
 }
+
+    public String getRelatedConnection(String tenantId, String consumerCode) {
+        List<Object> preparedStatement = new ArrayList<>();
+        String query = queryBuilder.getRelatedConn(tenantId, consumerCode, preparedStatement);
+        log.info("preparedStatement: {} Query for water connection: {}", preparedStatement, query);
+        List<String> relatedConnections = jdbcTemplate.query(query, preparedStatement.toArray(), (rs, rowNum) -> rs.getString("connectionno"));
+        if (relatedConnections == null || relatedConnections.isEmpty()) {
+            return null;
+        }
+        return relatedConnections.get(0);
+    }
 	
 	
 }

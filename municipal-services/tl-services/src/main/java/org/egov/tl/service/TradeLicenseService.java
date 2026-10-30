@@ -166,7 +166,7 @@ public class TradeLicenseService {
                         if (!StringUtils.equals(result.getApplicationNumber(), license.getApplicationNumber()) && 
                         		!(StringUtils.equals(result.getStatus(),STATUS_REJECTED) || 
                         				StringUtils.equals(result.getStatus(),STATUS_EXPIRED) || 
-                        				STATUS_INACTIVE.equalsIgnoreCase(license.getAction()) ||
+                        				STATUS_INACTIVE.equalsIgnoreCase(result.getStatus()) ||
                         				(validToDate != null && (validToDate - currentTime) <= reminderPeriods && APPLICATION_TYPE_RENEWAL.equalsIgnoreCase(applicationType)))) {
                             tradeTypeResultforSameMobNo.add(result.getTradeLicenseDetail().getTradeUnits().get(0).getTradeType().split("\\.")[0]);
                         }
@@ -355,7 +355,8 @@ public class TradeLicenseService {
             if ((license.getStatus() != null) && (license.getStatus().equalsIgnoreCase(endstates.get(i))
             		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_BLACKLISTED)
             		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_EXPIRED)
-            		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_INACTIVE) )) {
+            		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_INACTIVE)
+            		|| license.getStatus().equalsIgnoreCase(TLConstants.STATUS_CITIZEN_ACTION_REQUIRED) )) {
                 licensesToAddRoles.add(license);
             }
         }

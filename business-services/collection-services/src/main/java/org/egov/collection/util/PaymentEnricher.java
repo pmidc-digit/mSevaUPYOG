@@ -214,7 +214,7 @@ public class PaymentEnricher {
 			payment.setInstrumentStatus(InstrumentStatusEnum.APPROVED);
 
 		payment.setTransactionDate(new Date().getTime());
-		if(paymentMode.equalsIgnoreCase(CASH.name())||paymentMode.equalsIgnoreCase(BBPS.name()) || paymentMode.equalsIgnoreCase(CARD.name()) || paymentMode.equalsIgnoreCase(ONLINE.name())
+		if(paymentMode.equalsIgnoreCase(CASH.name())|| paymentMode.equalsIgnoreCase(CARD.name()) || paymentMode.equalsIgnoreCase(ONLINE.name())
 				|| paymentMode.equalsIgnoreCase(ONLINE_NEFT.name()) || paymentMode.equalsIgnoreCase(ONLINE_RTGS.name())) {
 			payment.setInstrumentDate(payment.getTransactionDate());
 		}

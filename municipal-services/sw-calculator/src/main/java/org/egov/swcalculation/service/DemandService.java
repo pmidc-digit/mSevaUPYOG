@@ -35,6 +35,7 @@ import org.egov.swcalculation.util.CalculatorUtils;
 import org.egov.swcalculation.util.SWCalculationUtil;
 import org.egov.swcalculation.validator.SWCalculationWorkflowValidator;
 import org.egov.swcalculation.web.models.BulkBillCriteria;
+import org.egov.swcalculation.web.models.BillDetailV2;
 import org.egov.swcalculation.web.models.BillResponseV2;
 import org.egov.swcalculation.web.models.BillSearch;
 import org.egov.swcalculation.web.models.BillSearchs;
@@ -146,7 +147,7 @@ public class DemandService {
 	/**
 	 * Creates or updates Demand
 	 * 
-	 * @param requestInfo The RequestInfo of the calculation request
+//	 * @param requestInfo The RequestInfo of the calculation request
 	 * @param calculations The Calculation Objects for which demand has to be generated or updated
 	 */
 	public List<Demand> generateDemand(CalculationReq request, List<Calculation> calculations,
@@ -219,7 +220,7 @@ public class DemandService {
 	/**
 	 * Creates demand for the given list of calculations
 	 * 
-	 * @param requestInfo
+//	 * @param requestInfo
 	 *            The RequestInfo of the calculation request
 	 * @param calculations
 	 *            List of calculation object
@@ -581,7 +582,7 @@ public class DemandService {
 	/**
 	 * Updates demand for the given list of calculations
 	 * 
-	 * @param requestInfo
+//	 * @param requestInfo
 	 *            The RequestInfo of the calculation request
 	 * @param calculations
 	 *            List of calculation object
@@ -715,101 +716,328 @@ public class DemandService {
 	 * @param requestInfoWrapper contains request info wrapper
 	 * @return updated demand response
 	 */
-	public List<Demand> updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper, Boolean isCallFromBulkGen) {
-
-		if (getBillCriteria.getAmountExpected() == null)
-			getBillCriteria.setAmountExpected(BigDecimal.ZERO);
-		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
-		Map<String, JSONArray> billingSlabMaster = new HashMap<>();
-
-		Map<String, JSONArray> timeBasedExemptionMasterMap = new HashMap<>();
-		masterDataService.setSewerageConnectionMasterValues(requestInfoWrapper.getRequestInfo(), getBillCriteria.getTenantId(), billingSlabMaster,
-				timeBasedExemptionMasterMap);
-
-		if (CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes()))
-			getBillCriteria.setConsumerCodes(Collections.singletonList(getBillCriteria.getConnectionNumber()));
-
-		DemandResponse res = mapper.convertValue(
-				repository.fetchResult(utils.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
-				DemandResponse.class);
-		if (CollectionUtils.isEmpty(res.getDemands())) {
-			return Collections.emptyList();
-		}
-		List<Demand> demands = res.getDemands();
-		Demand oldDemand = demands.get(0);
-
+//	public List<Demand> updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper, Boolean isCallFromBulkGen) {
+//
+//		if (getBillCriteria.getAmountExpected() == null)
+//			getBillCriteria.setAmountExpected(BigDecimal.ZERO);
+//		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+//		Map<String, JSONArray> billingSlabMaster = new HashMap<>();
+//
+//		Map<String, JSONArray> timeBasedExemptionMasterMap = new HashMap<>();
+//		masterDataService.setSewerageConnectionMasterValues(requestInfoWrapper.getRequestInfo(), getBillCriteria.getTenantId(), billingSlabMaster,
+//				timeBasedExemptionMasterMap);
+//
+//		if (CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes()))
+//			getBillCriteria.setConsumerCodes(Collections.singletonList(getBillCriteria.getConnectionNumber()));
+//
+//		DemandResponse res = mapper.convertValue(
+//				repository.fetchResult(utils.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+//				DemandResponse.class);
+//		if (CollectionUtils.isEmpty(res.getDemands())) {
+//			return Collections.emptyList();
+//		}
+//		List<Demand> demands = res.getDemands();
+//		Demand oldDemand = demands.get(0);
+//
+//	
+//		demands = demands.stream()
+//				.filter(i -> !SWCalculationConstant.DEMAND_CANCELLED_STATUS.equalsIgnoreCase(i.getStatus().toString()))
+//				.collect(Collectors.toList());
+//
+//		log.info("Demands are of size " + res.getDemands().size());
+//
+//		Map<String, Demand> consumerCodeToDemandMap = demands.stream()
+//				.collect(Collectors.toMap(Demand::getId, Function.identity()));
+//		List<Demand> demandsToBeUpdated = new LinkedList<>();
+//		boolean isMigratedCon = isMigratedConnection(getBillCriteria.getConsumerCodes().get(0),
+//				getBillCriteria.getTenantId());
+//		log.info("-------updateDemands------------isMigratedCon--------" + isMigratedCon);
+//
+//		// Loop through the consumerCodes and re-calculate the time base applicable
+//
+//		demands.sort((d1, d2) -> d1.getTaxPeriodFrom().compareTo(d2.getTaxPeriodFrom()));
+//		log.info("-------updateDemands------------demands--------" + demands);
+//		
+//		log.info("-------updateDemands------------oldDemand--------" + oldDemand);
+//		String tenantId = getBillCriteria.getTenantId();
+//
+//		List<TaxPeriod> taxPeriods = masterDataService.getTaxPeriodList(requestInfoWrapper.getRequestInfo(), getBillCriteria.getTenantId(), SWCalculationConstant.SERVICE_FIELD_VALUE_SW);
+//		consumerCodeToDemandMap.forEach((id, demand) ->{
+//			BigDecimal totalTax = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
+//					.reduce(BigDecimal.ZERO, BigDecimal::add);
+//			BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
+//					.reduce(BigDecimal.ZERO, BigDecimal::add);
+//			List<String> taxHeadMasterCodes = demand.getDemandDetails().stream().map(DemandDetail::getTaxHeadMasterCode)
+//					.collect(Collectors.toList());
+//			log.info("Demand Id: "+ demand.getId());
+//			log.info(" taxHeadMasterCodes "+taxHeadMasterCodes );
+//			
+//			log.info(" isMigratedCon "+ isMigratedCon);
+//			log.info(" oldDemand.getId().equalsIgnoreCase(demand.getId()) "+ !oldDemand.getId().equalsIgnoreCase(demand.getId()));
+//			log.info(" Payment Completed  "+ demand.getIsPaymentCompleted());
+//			log.info("Total Tax "+ totalTax);
+//			log.info("Total totalCollection "+ totalCollection);
+//			Boolean abc=totalTax.compareTo(totalCollection) > 0;
+//			
+//			log.info(" tax condition "+ abc);
+//			log.info(" penalty taxhead code "+	taxHeadMasterCodes.contains(SWCalculationConstant.SW_TIME_PENALTY));
+//			if (!(isMigratedCon && oldDemand.getId().equalsIgnoreCase(demand.getId()))) {
+//				log.info("-------updateDemands-----inside if-------demand.getId()--------" + demand.getId()
+//						+ "-------oldDemand.getId()---------" + oldDemand.getId());
+//				if (!demand.getIsPaymentCompleted() 
+//						&& totalTax.compareTo(totalCollection) > 0
+//						&& !taxHeadMasterCodes.contains(SWCalculationConstant.SW_TIME_PENALTY))
+//				{
+//						if (demand.getStatus() != null
+//								&& SWCalculationConstant.DEMAND_CANCELLED_STATUS.equalsIgnoreCase(demand.getStatus().toString()))
+//							throw new CustomException(SWCalculationConstant.EG_SW_INVALID_DEMAND_ERROR,
+//									SWCalculationConstant.EG_SW_INVALID_DEMAND_ERROR_MSG);
+//						User owner = getPlainOwnerDetails(requestInfo,demand.getPayer().getUuid(), tenantId);
+//						demand.setPayer(owner);
+//						applyTimeBasedApplicables(demand, requestInfoWrapper, timeBasedExemptionMasterMap, taxPeriods);
+//						addRoundOffTaxHead(getBillCriteria.getTenantId(), demand.getDemandDetails());
+//						demandsToBeUpdated.add(demand);
+//				}
+//				else
+//				{
+//					addRoundOffTaxHead(getBillCriteria.getTenantId(), demand.getDemandDetails());
+//					demandsToBeUpdated.add(demand);
+//				}	
+//			}
+//		});
+//		// Call demand update in bulk to update the interest or penalty
+//		if(!isCallFromBulkGen)
+//			repository.fetchResult(utils.getUpdateDemandUrl(),
+//					DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfoWrapper.getRequestInfo()).build());
+//
+//		return demandsToBeUpdated;
+//	}
 	
-		demands = demands.stream()
-				.filter(i -> !SWCalculationConstant.DEMAND_CANCELLED_STATUS.equalsIgnoreCase(i.getStatus().toString()))
-				.collect(Collectors.toList());
+	
+/*	PI-19980 Patiala Penalty not apply in W/S*/
+	
+	public List<Demand> updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper,
+	        Boolean isCallFromBulkGen) {
 
-		log.info("Demands are of size " + res.getDemands().size());
+	    if (getBillCriteria.getAmountExpected() == null)
+	        getBillCriteria.setAmountExpected(BigDecimal.ZERO);
 
-		Map<String, Demand> consumerCodeToDemandMap = demands.stream()
-				.collect(Collectors.toMap(Demand::getId, Function.identity()));
-		List<Demand> demandsToBeUpdated = new LinkedList<>();
-		boolean isMigratedCon = isMigratedConnection(getBillCriteria.getConsumerCodes().get(0),
-				getBillCriteria.getTenantId());
-		log.info("-------updateDemands------------isMigratedCon--------" + isMigratedCon);
+	    RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
 
-		// Loop through the consumerCodes and re-calculate the time base applicable
+	    Map<String, JSONArray> billingSlabMaster = new HashMap<>();
+	    Map<String, JSONArray> timeBasedExemptionMasterMap = new HashMap<>();
 
-		demands.sort((d1, d2) -> d1.getTaxPeriodFrom().compareTo(d2.getTaxPeriodFrom()));
-		log.info("-------updateDemands------------demands--------" + demands);
-		
-		log.info("-------updateDemands------------oldDemand--------" + oldDemand);
-		String tenantId = getBillCriteria.getTenantId();
+	    masterDataService.setSewerageConnectionMasterValues(requestInfo, getBillCriteria.getTenantId(),
+	            billingSlabMaster, timeBasedExemptionMasterMap);
 
-		List<TaxPeriod> taxPeriods = masterDataService.getTaxPeriodList(requestInfoWrapper.getRequestInfo(), getBillCriteria.getTenantId(), SWCalculationConstant.SERVICE_FIELD_VALUE_SW);
-		consumerCodeToDemandMap.forEach((id, demand) ->{
-			BigDecimal totalTax = demand.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			BigDecimal totalCollection = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			List<String> taxHeadMasterCodes = demand.getDemandDetails().stream().map(DemandDetail::getTaxHeadMasterCode)
-					.collect(Collectors.toList());
-			log.info("Demand Id: "+ demand.getId());
-			log.info(" taxHeadMasterCodes "+taxHeadMasterCodes );
-			
-			log.info(" isMigratedCon "+ isMigratedCon);
-			log.info(" oldDemand.getId().equalsIgnoreCase(demand.getId()) "+ !oldDemand.getId().equalsIgnoreCase(demand.getId()));
-			log.info(" Payment Completed  "+ demand.getIsPaymentCompleted());
-			log.info("Total Tax "+ totalTax);
-			log.info("Total totalCollection "+ totalCollection);
-			Boolean abc=totalTax.compareTo(totalCollection) > 0;
-			
-			log.info(" tax condition "+ abc);
-			log.info(" penalty taxhead code "+	taxHeadMasterCodes.contains(SWCalculationConstant.SW_TIME_PENALTY));
-			if (!(isMigratedCon && oldDemand.getId().equalsIgnoreCase(demand.getId()))) {
-				log.info("-------updateDemands-----inside if-------demand.getId()--------" + demand.getId()
-						+ "-------oldDemand.getId()---------" + oldDemand.getId());
-				if (!demand.getIsPaymentCompleted() 
-						&& totalTax.compareTo(totalCollection) > 0
-						&& !taxHeadMasterCodes.contains(SWCalculationConstant.SW_TIME_PENALTY))
-				{
-						if (demand.getStatus() != null
-								&& SWCalculationConstant.DEMAND_CANCELLED_STATUS.equalsIgnoreCase(demand.getStatus().toString()))
-							throw new CustomException(SWCalculationConstant.EG_SW_INVALID_DEMAND_ERROR,
-									SWCalculationConstant.EG_SW_INVALID_DEMAND_ERROR_MSG);
-						User owner = getPlainOwnerDetails(requestInfo,demand.getPayer().getUuid(), tenantId);
-						demand.setPayer(owner);
-						applyTimeBasedApplicables(demand, requestInfoWrapper, timeBasedExemptionMasterMap, taxPeriods);
-						addRoundOffTaxHead(getBillCriteria.getTenantId(), demand.getDemandDetails());
-						demandsToBeUpdated.add(demand);
-				}
-				else
-				{
-					addRoundOffTaxHead(getBillCriteria.getTenantId(), demand.getDemandDetails());
-					demandsToBeUpdated.add(demand);
-				}	
-			}
-		});
-		// Call demand update in bulk to update the interest or penalty
-		if(!isCallFromBulkGen)
-			repository.fetchResult(utils.getUpdateDemandUrl(),
-					DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfoWrapper.getRequestInfo()).build());
+	    if (CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes()))
+	        getBillCriteria.setConsumerCodes(Collections.singletonList(getBillCriteria.getConnectionNumber()));
 
-		return demandsToBeUpdated;
+	    /* -----------------------------------------------------------
+	       1. Fetch Demands
+	     ----------------------------------------------------------- */
+
+	    DemandResponse res = mapper.convertValue(
+	            repository.fetchResult(utils.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+	            DemandResponse.class);
+
+	    if (CollectionUtils.isEmpty(res.getDemands())) {
+
+	        Map<String, String> map = new HashMap<>();
+	        map.put(SWCalculationConstant.EMPTY_DEMAND_ERROR_CODE,
+	        		SWCalculationConstant.EMPTY_DEMAND_ERROR_MESSAGE);
+
+	        throw new CustomException(map);
+	    }
+
+	    List<Demand> demands = res.getDemands().stream()
+	            .filter(i -> !SWCalculationConstant.DEMAND_CANCELLED_STATUS
+	                    .equalsIgnoreCase(i.getStatus().toString()))
+	            .collect(Collectors.toList());
+
+	    log.info("Total demands found: {}", demands.size());
+
+	    /* -----------------------------------------------------------
+	       2. Fetch Bills
+	     ----------------------------------------------------------- */
+
+	    BillResponseV2 billRes = null;
+
+	    try {
+
+	        Object billResult = repository.fetchResult(utils.getBillSearchUrl(getBillCriteria), requestInfoWrapper);
+
+	        if (billResult != null)
+	            billRes = mapper.convertValue(billResult, BillResponseV2.class);
+
+	    } catch (Exception e) {
+
+	        log.error("Error fetching bills", e);
+	    }
+
+	    List<BillV2> bills = (billRes != null && billRes.getBill() != null)
+	            ? billRes.getBill()
+	            : new ArrayList<>();
+
+	    /* -----------------------------------------------------------
+	       3. Find Latest Bill
+	     ----------------------------------------------------------- */
+
+	    BillV2 latestBill = bills.stream()
+
+	            // Ignore PAID and CANCELLED bills
+	            .filter(bill -> bill.getStatus() != null
+	                    && !bill.getStatus().toString().equalsIgnoreCase("PAID")
+	                    && !bill.getStatus().toString().equalsIgnoreCase("CANCELLED"))
+
+	            // Pick latest bill
+	            .max(Comparator.comparing(
+	                    b -> b.getAuditDetails() != null
+	                            ? b.getAuditDetails().getLastModifiedTime()
+	                            : 0L)) 
+
+	            .orElse(null);
+
+	    if (latestBill != null) {
+
+	        log.info("Latest Bill Selected: {}", latestBill.getBillNumber());
+
+	    } else {
+
+	        log.info("No previous bill found for consumer {}",
+	                getBillCriteria.getConsumerCodes().get(0));
+	    }
+
+	    /* -----------------------------------------------------------
+	       4. Build Demand Expiry Map (FIX)
+	     ----------------------------------------------------------- */
+
+	    Map<String, Long> demandExpiryMap = new HashMap<>();
+	    long currentTime = System.currentTimeMillis();
+
+	    if (latestBill != null && !CollectionUtils.isEmpty(latestBill.getBillDetails())) {
+
+	        for (BillDetailV2 billDetail : latestBill.getBillDetails()) {
+
+	            demandExpiryMap.put(
+	                    billDetail.getDemandId(),
+	                    billDetail.getExpiryDate()
+	            );
+	        }
+
+	        log.info("Demand Expiry Map: {}", demandExpiryMap);
+	    }
+
+	    /* -----------------------------------------------------------
+	       5. Setup Other Required Data
+	     ----------------------------------------------------------- */
+
+	    boolean isMigratedCon = isMigratedConnection(
+	            getBillCriteria.getConsumerCodes().get(0),
+	            getBillCriteria.getTenantId());
+
+	    demands.sort((d1, d2) -> d1.getTaxPeriodFrom().compareTo(d2.getTaxPeriodFrom()));
+
+	    Demand oldDemand = demands.get(0);
+
+	    String tenantId = getBillCriteria.getTenantId();
+
+	    List<TaxPeriod> taxPeriods = masterDataService.getTaxPeriodList(
+	            requestInfoWrapper.getRequestInfo(),
+	            tenantId,
+	            SWCalculationConstant.SERVICE_FIELD_VALUE_SW);
+
+	    List<Demand> demandsToBeUpdated = new LinkedList<>();
+
+	    /* -----------------------------------------------------------
+	       6. Loop Through Demands
+	     ----------------------------------------------------------- */
+
+	    for (Demand demand : demands) {
+	    	
+	    	/* Skip Payment Completed demand */
+
+	        if (demand.getIsPaymentCompleted()) {
+
+	            log.info("Skipping Payment Completed demand {}", demand.getId());
+	            continue;
+	        }
+
+	        BigDecimal totalTax = demand.getDemandDetails()
+	                .stream()
+	                .map(DemandDetail::getTaxAmount)
+	                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+	        BigDecimal totalCollection = demand.getDemandDetails()
+	                .stream()
+	                .map(DemandDetail::getCollectionAmount)
+	                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+	        List<String> taxHeadMasterCodes = demand.getDemandDetails()
+	                .stream()
+	                .map(DemandDetail::getTaxHeadMasterCode)
+	                .collect(Collectors.toList());
+
+	        log.info("Processing DemandId: {}", demand.getId());
+
+	        /* Skip migrated first demand */
+
+	        if (isMigratedCon && oldDemand.getId().equalsIgnoreCase(demand.getId())) {
+
+	            log.info("Skipping migrated demand {}", demand.getId());
+	            continue;
+	        }
+
+	        /* -------------------------------------------------------
+	           Check Expiry for THIS demand
+	         ------------------------------------------------------- */
+
+	        Long expiryTime = demandExpiryMap.get(demand.getId());
+
+	        boolean isDemandExpired = expiryTime != null && expiryTime < currentTime;
+
+	        log.info("Demand {} expiryTime {} expired {}",
+	                demand.getId(), expiryTime, isDemandExpired);
+
+	        /* -------------------------------------------------------
+	           Apply Penalty
+	         ------------------------------------------------------- */
+
+	        if (!demand.getIsPaymentCompleted()
+	                && totalTax.compareTo(totalCollection) > 0
+	                && demandExpiryMap.containsKey(demand.getId())
+	                && isDemandExpired
+	                && !taxHeadMasterCodes.contains(SWCalculationConstant.SW_TIME_PENALTY)) {
+
+	            log.info("Applying penalty on demand {}", demand.getId());
+
+	            applyTimeBasedApplicables(
+	                    demand,
+	                    requestInfoWrapper,
+	                    timeBasedExemptionMasterMap,
+	                    taxPeriods);
+	        }
+
+	        addRoundOffTaxHead(tenantId, demand.getDemandDetails());
+
+	        demandsToBeUpdated.add(demand);
+	    }
+
+	    /* -----------------------------------------------------------
+	       7. Update Demands
+	     ----------------------------------------------------------- */
+
+	    if (!isCallFromBulkGen && !CollectionUtils.isEmpty(demandsToBeUpdated)) {
+
+	        DemandRequest request = DemandRequest.builder()
+	                .demands(demandsToBeUpdated)
+	                .requestInfo(requestInfo)
+	                .build();
+
+	        repository.fetchResult(utils.getUpdateDemandUrl(), request);
+	    }
+
+	    return demandsToBeUpdated;
 	}
 	private boolean isMigratedConnection(final String connectionNumber, final String tenantId) {
 
@@ -831,6 +1059,85 @@ public class DemandService {
 
 	}
 	
+	private boolean applyTimeBasedApplicables(Demand demand, RequestInfoWrapper requestInfoWrapper,
+			Map<String, JSONArray> timeBasedExemptionMasterMap, List<TaxPeriod> taxPeriods) {
+
+		String tenantId = demand.getTenantId();
+		String demandId = demand.getId();
+		Long expiryDate = demand.getBillExpiryTime();
+		long currentTime = System.currentTimeMillis();
+
+		TaxPeriod taxPeriod = taxPeriods.stream().filter(t -> demand.getTaxPeriodFrom().compareTo(t.getFromDate()) >= 0
+				&& demand.getTaxPeriodTo().compareTo(t.getToDate()) <= 0).findAny().orElse(null);
+
+		if (taxPeriod == null) return false;
+
+		// FIX: Correct isCurrentDemand logic
+		boolean isCurrentDemand = (taxPeriod.getFromDate() <= currentTime && taxPeriod.getToDate() >= currentTime);
+
+		if (expiryDate != null && expiryDate < currentTime) {
+			
+			BigDecimal waterChargeApplicable = BigDecimal.ZERO;
+			for (DemandDetail detail : demand.getDemandDetails()) {
+				if (SWCalculationConstant.TAX_APPLICABLE.contains(detail.getTaxHeadMasterCode())) {
+					waterChargeApplicable = waterChargeApplicable.add(detail.getTaxAmount());
+				}
+			}
+
+			Map<String, BigDecimal> estimates = payService.applyPenaltyRebateAndInterest(
+					waterChargeApplicable, taxPeriod.getFinancialYear(), timeBasedExemptionMasterMap, expiryDate,
+					demand);
+
+			BigDecimal penalty = estimates.get(SWCalculationConstant.SW_TIME_PENALTY);
+			BigDecimal interest = estimates.get(SWCalculationConstant.SW_TIME_INTEREST);
+			BigDecimal rebate = estimates.get(SWCalculationConstant.SW_TIME_REBATE);
+
+			List<DemandDetail> details = demand.getDemandDetails();
+			boolean isPenaltyUpdated = false;
+			boolean isInterestUpdated = false;
+
+			// FIX: Match Method Signature (Pass the Wrapper object)
+			if (interest != null && interest.compareTo(BigDecimal.ZERO) != 0) {
+				DemandDetailAndCollection wrapper = utils.getLatestDemandDetailByTaxHead(SWCalculationConstant.SW_TIME_INTEREST, details);
+				if (wrapper != null && wrapper.getLatestDemandDetail() != null) {
+					updateTaxAmount(interest, wrapper);
+					isInterestUpdated = true;
+				}
+			}
+
+			if (penalty != null && penalty.compareTo(BigDecimal.ZERO) != 0) {
+				DemandDetailAndCollection wrapper = utils.getLatestDemandDetailByTaxHead(SWCalculationConstant.SW_TIME_PENALTY, details);
+				if (wrapper != null && wrapper.getLatestDemandDetail() != null) {
+					updateTaxAmount(penalty, wrapper);
+					isPenaltyUpdated = true;
+				}
+			}
+
+			// Add new details logic... (kept existing builder logic)
+			if (!isPenaltyUpdated && penalty != null && penalty.compareTo(BigDecimal.ZERO) > 0)
+				details.add(DemandDetail.builder().taxAmount(penalty.setScale(2, 2))
+						.taxHeadMasterCode(SWCalculationConstant.SW_TIME_PENALTY).demandId(demandId).tenantId(tenantId)
+						.build());
+		}
+		return isCurrentDemand;
+	}
+	
+	private void updateTaxAmount(BigDecimal newAmount, DemandDetailAndCollection latestDetailInfo) {
+	    // Math: New Penalty - Total existing Penalty = Difference to add to the latest row
+	    BigDecimal diff = newAmount.subtract(latestDetailInfo.getTaxAmountForTaxHead());
+	    BigDecimal newTaxAmountForLatestDemandDetail = latestDetailInfo.getLatestDemandDetail().getTaxAmount()
+	            .add(diff);
+	    
+	    // Update the actual DemandDetail object inside the wrapper
+	    latestDetailInfo.getLatestDemandDetail().setTaxAmount(newTaxAmountForLatestDemandDetail.setScale(2, 2));
+	}
+
+	private void updateRebate(BigDecimal newAmount, DemandDetailAndCollection latestDetailInfo) {
+	    // For Rebate, we usually just override the latest value
+	    log.info("Updating Rebate to: " + newAmount);
+	    latestDetailInfo.getLatestDemandDetail().setTaxAmount(newAmount.setScale(2, 2));
+	}
+	
 	/**
 	 * Updates the amount in the latest demandDetail by adding the diff between
 	 * new and old amounts to it
@@ -840,12 +1147,12 @@ public class DemandService {
 	 * @param latestDetailInfo
 	 *            The latest demandDetail for the particular taxHead
 	 */
-	private void updateTaxAmount(BigDecimal newAmount, DemandDetailAndCollection latestDetailInfo) {
-		BigDecimal diff = newAmount.subtract(latestDetailInfo.getTaxAmountForTaxHead());
-		BigDecimal newTaxAmountForLatestDemandDetail = latestDetailInfo.getLatestDemandDetail().getTaxAmount()
-				.add(diff);
-		latestDetailInfo.getLatestDemandDetail().setTaxAmount(newTaxAmountForLatestDemandDetail);
-	}
+//	private void updateTaxAmount(BigDecimal newAmount, DemandDetailAndCollection latestDetailInfo) {
+//		BigDecimal diff = newAmount.subtract(latestDetailInfo.getTaxAmountForTaxHead());
+//		BigDecimal newTaxAmountForLatestDemandDetail = latestDetailInfo.getLatestDemandDetail().getTaxAmount()
+//				.add(diff);
+//		latestDetailInfo.getLatestDemandDetail().setTaxAmount(newTaxAmountForLatestDemandDetail);
+//	}
 
 	
 	/**
@@ -853,130 +1160,130 @@ public class DemandService {
 	 * 
 	 * If applied already then the demand details will be updated
 	 * 
-	 * @param demand - Demand Object
-	 * @param requestInfoWrapper - Request Info Object
-	 * @param timeBasedExemptionMasterMap - List of Time based exemptions
-	 * @param taxPeriods - List of Tax Periods
+//	 * @param demand - Demand Object
+//	 * @param requestInfoWrapper - Request Info Object
+//	 * @param timeBasedExemptionMasterMap - List of Time based exemptions
+//	 * @param taxPeriods - List of Tax Periods
 	 * @return - Returns TRUE or FALSE
 	 */
-	
-	private boolean applyTimeBasedApplicables(Demand demand, RequestInfoWrapper requestInfoWrapper,
-											  Map<String, JSONArray> timeBasedExemptionMasterMap, List<TaxPeriod> taxPeriods) {
-
-		TaxPeriod taxPeriod = taxPeriods.stream().filter(t -> demand.getTaxPeriodFrom().compareTo(t.getFromDate()) >= 0
-				&& demand.getTaxPeriodTo().compareTo(t.getToDate()) <= 0).findAny().orElse(null);
-		if (taxPeriod == null) {
-			log.info("Demand Expired!!");
-			return false;
-		}
-
-		boolean isCurrentDemand = false;
-		if (!(taxPeriod.getFromDate() <= System.currentTimeMillis()
-				&& taxPeriod.getToDate() >= System.currentTimeMillis()))
-			isCurrentDemand = true;
-		
-		if(demand.getBillExpiryTime() < System.currentTimeMillis()) {
-		BigDecimal sewerageChargeApplicable = BigDecimal.ZERO;
-		BigDecimal oldPenalty = BigDecimal.ZERO;
-		BigDecimal oldInterest = BigDecimal.ZERO;
-		BigDecimal oldRebate = BigDecimal.ZERO;
-
-
-		for (DemandDetail detail : demand.getDemandDetails()) {
-			if (SWCalculationConstant.TAX_APPLICABLE.contains(detail.getTaxHeadMasterCode())) {
-				sewerageChargeApplicable = sewerageChargeApplicable.add(detail.getTaxAmount());
-			}
-			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(SWCalculationConstant.SW_TIME_PENALTY)) {
-				oldPenalty = oldPenalty.add(detail.getTaxAmount());
-			}
-			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(SWCalculationConstant.SW_TIME_INTEREST)) {
-				oldInterest = oldInterest.add(detail.getTaxAmount());
-			}
-			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(SWCalculationConstant.SW_TIME_REBATE)) {
-				oldRebate = oldRebate.add(detail.getTaxAmount());
-			}
-		}
-		
-		boolean isPenaltyUpdated = false;
-		boolean isInterestUpdated = false;
-		boolean isRebateUpdated = false;
-
-		List<DemandDetail> details = demand.getDemandDetails();
-
-		Map<String, BigDecimal> interestPenaltyRebateEstimates = payService.applyPenaltyRebateAndInterest(
-				sewerageChargeApplicable, taxPeriod.getFinancialYear(), timeBasedExemptionMasterMap, demand.getBillExpiryTime(),demand);
-		log.info("old penalty amount is " + oldPenalty);
-		log.info("old interest amount is " + oldInterest);
-		log.info("old rebate amount is " + oldRebate);
-	
-		BigDecimal penalty  = interestPenaltyRebateEstimates.get(SWCalculationConstant.SW_TIME_PENALTY);
-		BigDecimal interest = interestPenaltyRebateEstimates.get(SWCalculationConstant.SW_TIME_INTEREST);
-		BigDecimal rebate   = interestPenaltyRebateEstimates.get(SWCalculationConstant.SW_TIME_REBATE);
-		log.info("penalty amount after calculation is " + penalty);
-		log.info("interest amount after calculation  is " + interest);
-		log.info("rebate amount after calculation is " + rebate);
-		if(penalty == null)
-			penalty = BigDecimal.ZERO;
-		if(interest == null)
-			interest = BigDecimal.ZERO;
-		if(rebate == null)
-			rebate = BigDecimal.ZERO;
-		DemandDetailAndCollection latestPenaltyDemandDetail, latestInterestDemandDetail,latestRebateDemandDetail;
-
-		if (interest.compareTo(BigDecimal.ZERO) != 0) {
-			latestInterestDemandDetail = utils.getLatestDemandDetailByTaxHead(SWCalculationConstant.SW_TIME_INTEREST,
-					demand.getDemandDetails());
-			if (latestInterestDemandDetail != null) {
-				updateTaxAmount(interest, latestInterestDemandDetail);
-				isInterestUpdated = true;
-			}
-		}
-
-		if (penalty.compareTo(BigDecimal.ZERO) != 0) {
-			latestPenaltyDemandDetail = utils.getLatestDemandDetailByTaxHead(SWCalculationConstant.SW_TIME_PENALTY,
-					demand.getDemandDetails());
-			if (latestPenaltyDemandDetail != null) {
-				updateTaxAmount(penalty, latestPenaltyDemandDetail);
-				isPenaltyUpdated = true;
-			}
-		}
-
-		if (oldRebate.compareTo(BigDecimal.ZERO) != 0 || rebate.compareTo(BigDecimal.ZERO) != 0) {
-			latestRebateDemandDetail = utils.getLatestDemandDetailByTaxHead(SWCalculationConstant.SW_TIME_REBATE,
-					details);
-			if (latestRebateDemandDetail != null) {
-				updateRebate(rebate, latestRebateDemandDetail);
-				isRebateUpdated = true;
-			}
-		}
-		if (!isPenaltyUpdated && penalty.compareTo(BigDecimal.ZERO) > 0)
-			demand.getDemandDetails().add(
-					DemandDetail.builder().taxAmount(penalty.setScale(2, 2)).taxHeadMasterCode(SWCalculationConstant.SW_TIME_PENALTY)
-							.demandId(demand.getId()).tenantId(demand.getTenantId()).build());
-		if (!isInterestUpdated && interest.compareTo(BigDecimal.ZERO) > 0)
-			demand.getDemandDetails().add(
-					DemandDetail.builder().taxAmount(interest.setScale(2, 2)).taxHeadMasterCode(SWCalculationConstant.SW_TIME_INTEREST)
-							.demandId(demand.getId()).tenantId(demand.getTenantId()).build());
-		
-		if (!isRebateUpdated && rebate.compareTo(BigDecimal.ZERO) != 0)
-			details.add(
-					DemandDetail.builder().taxAmount(rebate.setScale(2, 2)).taxHeadMasterCode(SWCalculationConstant.SW_TIME_REBATE)
-							.demandId(demand.getId()).tenantId(demand.getTenantId()).build());
-		}
-		return isCurrentDemand;
-	}
-	
-	private void updateRebate(BigDecimal newAmount, DemandDetailAndCollection latestDetailInfo) {
-		BigDecimal diff =BigDecimal.ZERO;
-		if(newAmount.compareTo(BigDecimal.ZERO)==0)
-			diff=BigDecimal.ZERO;
-		else
-			diff= newAmount;
-		
-		log.info("Rebate after calculation is "+ diff);
-		
-		latestDetailInfo.getLatestDemandDetail().setTaxAmount(diff);
-	}
+//	
+//	private boolean applyTimeBasedApplicables(Demand demand, RequestInfoWrapper requestInfoWrapper,
+//											  Map<String, JSONArray> timeBasedExemptionMasterMap, List<TaxPeriod> taxPeriods) {
+//
+//		TaxPeriod taxPeriod = taxPeriods.stream().filter(t -> demand.getTaxPeriodFrom().compareTo(t.getFromDate()) >= 0
+//				&& demand.getTaxPeriodTo().compareTo(t.getToDate()) <= 0).findAny().orElse(null);
+//		if (taxPeriod == null) {
+//			log.info("Demand Expired!!");
+//			return false;
+//		}
+//
+//		boolean isCurrentDemand = false;
+//		if (!(taxPeriod.getFromDate() <= System.currentTimeMillis()
+//				&& taxPeriod.getToDate() >= System.currentTimeMillis()))
+//			isCurrentDemand = true;
+//		
+//		if(demand.getBillExpiryTime() < System.currentTimeMillis()) {
+//		BigDecimal sewerageChargeApplicable = BigDecimal.ZERO;
+//		BigDecimal oldPenalty = BigDecimal.ZERO;
+//		BigDecimal oldInterest = BigDecimal.ZERO;
+//		BigDecimal oldRebate = BigDecimal.ZERO;
+//
+//
+//		for (DemandDetail detail : demand.getDemandDetails()) {
+//			if (SWCalculationConstant.TAX_APPLICABLE.contains(detail.getTaxHeadMasterCode())) {
+//				sewerageChargeApplicable = sewerageChargeApplicable.add(detail.getTaxAmount());
+//			}
+//			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(SWCalculationConstant.SW_TIME_PENALTY)) {
+//				oldPenalty = oldPenalty.add(detail.getTaxAmount());
+//			}
+//			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(SWCalculationConstant.SW_TIME_INTEREST)) {
+//				oldInterest = oldInterest.add(detail.getTaxAmount());
+//			}
+//			if (detail.getTaxHeadMasterCode().equalsIgnoreCase(SWCalculationConstant.SW_TIME_REBATE)) {
+//				oldRebate = oldRebate.add(detail.getTaxAmount());
+//			}
+//		}
+//		
+//		boolean isPenaltyUpdated = false;
+//		boolean isInterestUpdated = false;
+//		boolean isRebateUpdated = false;
+//
+//		List<DemandDetail> details = demand.getDemandDetails();
+//
+//		Map<String, BigDecimal> interestPenaltyRebateEstimates = payService.applyPenaltyRebateAndInterest(
+//				sewerageChargeApplicable, taxPeriod.getFinancialYear(), timeBasedExemptionMasterMap, demand.getBillExpiryTime(),demand);
+//		log.info("old penalty amount is " + oldPenalty);
+//		log.info("old interest amount is " + oldInterest);
+//		log.info("old rebate amount is " + oldRebate);
+//	
+//		BigDecimal penalty  = interestPenaltyRebateEstimates.get(SWCalculationConstant.SW_TIME_PENALTY);
+//		BigDecimal interest = interestPenaltyRebateEstimates.get(SWCalculationConstant.SW_TIME_INTEREST);
+//		BigDecimal rebate   = interestPenaltyRebateEstimates.get(SWCalculationConstant.SW_TIME_REBATE);
+//		log.info("penalty amount after calculation is " + penalty);
+//		log.info("interest amount after calculation  is " + interest);
+//		log.info("rebate amount after calculation is " + rebate);
+//		if(penalty == null)
+//			penalty = BigDecimal.ZERO;
+//		if(interest == null)
+//			interest = BigDecimal.ZERO;
+//		if(rebate == null)
+//			rebate = BigDecimal.ZERO;
+//		DemandDetailAndCollection latestPenaltyDemandDetail, latestInterestDemandDetail,latestRebateDemandDetail;
+//
+//		if (interest.compareTo(BigDecimal.ZERO) != 0) {
+//			latestInterestDemandDetail = utils.getLatestDemandDetailByTaxHead(SWCalculationConstant.SW_TIME_INTEREST,
+//					demand.getDemandDetails());
+//			if (latestInterestDemandDetail != null) {
+//				updateTaxAmount(interest, latestInterestDemandDetail);
+//				isInterestUpdated = true;
+//			}
+//		}
+//
+//		if (penalty.compareTo(BigDecimal.ZERO) != 0) {
+//			latestPenaltyDemandDetail = utils.getLatestDemandDetailByTaxHead(SWCalculationConstant.SW_TIME_PENALTY,
+//					demand.getDemandDetails());
+//			if (latestPenaltyDemandDetail != null) {
+//				updateTaxAmount(penalty, latestPenaltyDemandDetail);
+//				isPenaltyUpdated = true;
+//			}
+//		}
+//
+//		if (oldRebate.compareTo(BigDecimal.ZERO) != 0 || rebate.compareTo(BigDecimal.ZERO) != 0) {
+//			latestRebateDemandDetail = utils.getLatestDemandDetailByTaxHead(SWCalculationConstant.SW_TIME_REBATE,
+//					details);
+//			if (latestRebateDemandDetail != null) {
+//				updateRebate(rebate, latestRebateDemandDetail);
+//				isRebateUpdated = true;
+//			}
+//		}
+//		if (!isPenaltyUpdated && penalty.compareTo(BigDecimal.ZERO) > 0)
+//			demand.getDemandDetails().add(
+//					DemandDetail.builder().taxAmount(penalty.setScale(2, 2)).taxHeadMasterCode(SWCalculationConstant.SW_TIME_PENALTY)
+//							.demandId(demand.getId()).tenantId(demand.getTenantId()).build());
+//		if (!isInterestUpdated && interest.compareTo(BigDecimal.ZERO) > 0)
+//			demand.getDemandDetails().add(
+//					DemandDetail.builder().taxAmount(interest.setScale(2, 2)).taxHeadMasterCode(SWCalculationConstant.SW_TIME_INTEREST)
+//							.demandId(demand.getId()).tenantId(demand.getTenantId()).build());
+//		
+//		if (!isRebateUpdated && rebate.compareTo(BigDecimal.ZERO) != 0)
+//			details.add(
+//					DemandDetail.builder().taxAmount(rebate.setScale(2, 2)).taxHeadMasterCode(SWCalculationConstant.SW_TIME_REBATE)
+//							.demandId(demand.getId()).tenantId(demand.getTenantId()).build());
+//		}
+//		return isCurrentDemand;
+//	}
+//	
+//	private void updateRebate(BigDecimal newAmount, DemandDetailAndCollection latestDetailInfo) {
+//		BigDecimal diff =BigDecimal.ZERO;
+//		if(newAmount.compareTo(BigDecimal.ZERO)==0)
+//			diff=BigDecimal.ZERO;
+//		else
+//			diff= newAmount;
+//		
+//		log.info("Rebate after calculation is "+ diff);
+//		
+//		latestDetailInfo.getLatestDemandDetail().setTaxAmount(diff);
+//	}
 	
 	public String SingleDemandGenerate(String tenantId, SingleDemand singledemand) {
 		singledemand.getRequestInfo().getUserInfo().setTenantId(tenantId);
@@ -1107,7 +1414,7 @@ public class DemandService {
 	 * 
 	 * @param tenantId TenantId for getting master data.
 	 */
-	public void generateDemandForTenantId(String tenantId, RequestInfo requestInfo) {
+	public void generateDemandForTenantId(String tenantId, String locality, RequestInfo requestInfo) {
 		requestInfo.getUserInfo().setTenantId(tenantId);
 		Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterData(requestInfo, tenantId);
 		long taxPeriodFrom = billingMasterData.get("taxPeriodFrom") == null ? 0l
@@ -1117,12 +1424,12 @@ public class DemandService {
 			throw new CustomException("NO_BILLING_PERIODS","MDMS Billing Period does not available for tenant: "+ tenantId);
 		}
 		
-		generateDemandForULB(billingMasterData, requestInfo, tenantId, taxPeriodFrom, taxPeriodTo);
+		generateDemandForULB(billingMasterData, requestInfo, tenantId, locality, taxPeriodFrom, taxPeriodTo);
 	}
 	
 	/**
 	 * 
-	 * @param master - List of MDMS master data
+//	 * @param master - List of MDMS master data
 	 * @param requestInfo - Request Info Object
 	 * @param tenantId - Tenant Id
 	 * @param bulkBillCriteria - Critera for bulk bill generation
@@ -1214,7 +1521,7 @@ public class DemandService {
 	 * @param tenantId    - Tenant Id
 	 */
 	@SuppressWarnings("unchecked")
-	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId,
+	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId, String locality,
 			Long taxPeriodFrom, Long taxPeriodTo) {
 		try {
 			List<Role> roles = requestInfo.getUserInfo().getRoles()	!= null ? requestInfo.getUserInfo().getRoles() : new ArrayList<Role>();
@@ -1224,29 +1531,39 @@ public class DemandService {
 			log.info("requestInfo After removing Anonymous User: {}", mapper.writeValueAsString(requestInfo));
 
 			List<TaxPeriod> taxPeriods = calculatorUtils.getTaxPeriodsFromMDMS(requestInfo, tenantId);
-			
-			int generateDemandToIndex = IntStream.range(0, taxPeriods.size())
-				     .filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate()))
-				     .findFirst().getAsInt();
+
+            int generateDemandToIndex;
+            try {
+                generateDemandToIndex = IntStream.range(0, taxPeriods.size())
+                        .filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate()))
+                        .findFirst().getAsInt();
+            } catch (Exception e) {
+                log.error("❌ taxPeriodFrom {} not found in taxPeriods for tenant: {} | {}",
+                        taxPeriodFrom, tenantId, e.getMessage());
+                return;
+            }
 			
 			log.info("Billing master data values for non metered connection:: {}", master);
 			String cone=requestInfo.getKey();
-			List<SewerageDetails> connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId,SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo,cone);
-
+            List<SewerageDetails> connectionNos = null;
+            if(locality!=null && !locality.trim().isEmpty()) {
+                connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId, locality, SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+            }
+            else{
+                connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId, null, SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+            }
 
 			//Generate bulk demands for connections in below count
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
 
-			int connectionNosCount = 0;
 			int totalRecordsPushedToKafka = 0;
-			int threadSleepCount = 0;
+			int connectionCount = 0;
 			List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 			for (int connectionNosIndex = 0; connectionNosIndex < connectionNos.size(); connectionNosIndex++) {
 				SewerageDetails sewConnDetails = connectionNos.get(connectionNosIndex);
-				connectionNosCount++;
-				int billingCycleCount = 0;
+				log.info("Connection Number: {}", sewConnDetails.getConnectionNo());
 
 				try {
 					int generateDemandFromIndex = 0;
@@ -1259,9 +1576,13 @@ public class DemandService {
 						generateDemandFromIndex++;
 					}
 
-					for (int taxPeriodIndex = generateDemandFromIndex; generateDemandFromIndex <= generateDemandToIndex; taxPeriodIndex++) {
-						generateDemandFromIndex++;
-						billingCycleCount++;
+					List<CalculationCriteria> connectionCriteriaList = new ArrayList<>();
+					for (int taxPeriodIndex = generateDemandFromIndex; taxPeriodIndex <= generateDemandToIndex; taxPeriodIndex++) {
+						if (taxPeriods == null || taxPeriods.isEmpty() || taxPeriodIndex < 0 || taxPeriodIndex >= taxPeriods.size()) {
+							log.warn("⚠️ taxPeriodIndex {} out of bounds (size: {}) or taxPeriods is empty for connectionNo: {} — breaking.",
+									taxPeriodIndex, taxPeriods != null ? taxPeriods.size() : 0, sewConnDetails.getConnectionNo());
+							break;
+						}
 						TaxPeriod taxPeriod = taxPeriods.get(taxPeriodIndex);
 //						log.info("FromPeriod: {} and ToPeriod: {}",taxPeriod.getFromDate(),taxPeriod.getToDate());
 						log.info("taxPeriodIndex: {} and generateDemandFromIndex: {} and generateDemandToIndex: {}",taxPeriodIndex, generateDemandFromIndex, generateDemandToIndex);
@@ -1270,24 +1591,26 @@ public class DemandService {
 								requestInfo);
 						if (isValidBillingCycle) {
 
-							CalculationCriteria calculationCriteria = CalculationCriteria.builder()
+							connectionCriteriaList.add(CalculationCriteria.builder()
 									.tenantId(tenantId)
 									.assessmentYear(taxPeriod.getFinancialYear())
 									.from(taxPeriod.getFromDate())
 									.to(taxPeriod.getToDate())
 									.connectionNo(sewConnDetails.getConnectionNo())
-									.build();
-							calculationCriteriaList.add(calculationCriteria);
+									.build());
 							log.info("connectionNosIndex: {} and connectionNos.size(): {}",connectionNosIndex, connectionNos.size());
 
 						}
 						
 					}
-					if(calculationCriteriaList == null || calculationCriteriaList.isEmpty())
-						continue;
+
+					if (!connectionCriteriaList.isEmpty()) {
+						calculationCriteriaList.addAll(connectionCriteriaList);
+						connectionCount++;
+					}
 					
-					if(billingCycleCount > 10 || connectionNosCount == bulkSaveDemandCount) {
-						log.info("Controller entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}",connectionNosCount, connectionNos.size());
+					if (connectionCount == bulkSaveDemandCount) {
+						log.info("Controller entered into producer logic, connectionCount: {} and connectionNos.size(): {}", connectionCount, connectionNos.size());
 						MigrationCount migrationCount = MigrationCount.builder()
 								.tenantid(tenantId)
 								.businessService("SW")
@@ -1309,48 +1632,43 @@ public class DemandService {
 					    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
 					    
 						totalRecordsPushedToKafka++;
-						billingCycleCount=0;
 						calculationCriteriaList.clear();
-						connectionNosCount=0;
-						if(threadSleepCount == 3) {
-						    Thread.sleep(1000); // Sleep for 1 second
-							threadSleepCount=0;
-						}
-						threadSleepCount++;
-
-					} else if(connectionNosIndex == connectionNos.size()-1) {
-						log.info("Last connection entered into producer logic, connectionNosCount: {} and connectionNos.size(): {}",connectionNosCount, connectionNos.size());
-						MigrationCount migrationCount = MigrationCount.builder()
-								.tenantid(tenantId)
-								.businessService("SW")
-								.limit((long)1.00)
-								.id(UUID.randomUUID().toString())
-								.offset((long)1.00)								
-								.createdTime(System.currentTimeMillis())
-								.recordCount(Long.valueOf(connectionNos.size()))
-								.build();
-						CalculationReq calculationReq = CalculationReq.builder()
-								.calculationCriteria(calculationCriteriaList)
-								.requestInfo(requestInfo)
-								.isconnectionCalculation(true)
-								.migrationCount(migrationCount)
-								.build();
-						log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
-						String key = sewConnDetails.getConnectionNo();
-					    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
-						totalRecordsPushedToKafka++;
-						calculationCriteriaList.clear();
-						connectionNosCount=0;
-
+						connectionCount = 0;
 					}
 
 				}catch (Exception e) {
 					log.error("Exception occurred while generating demand for sewerage connectionno: "+sewConnDetails.getConnectionNo() + " tenantId: "+tenantId);
 				}
 			}
+
+			if (!calculationCriteriaList.isEmpty()) {
+				log.info("Last connection entered into producer logic, connectionCount: {} and connectionNos.size(): {}", connectionCount, connectionNos.size());
+				MigrationCount migrationCount = MigrationCount.builder()
+						.tenantid(tenantId)
+						.businessService("SW")
+						.limit((long)1.00)
+						.id(UUID.randomUUID().toString())
+						.offset((long)1.00)								
+						.createdTime(System.currentTimeMillis())
+						.recordCount(Long.valueOf(connectionNos.size()))
+						.build();
+				CalculationReq calculationReq = CalculationReq.builder()
+						.calculationCriteria(calculationCriteriaList)
+						.requestInfo(requestInfo)
+						.isconnectionCalculation(true)
+						.migrationCount(migrationCount)
+						.build();
+				log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
+				String key = calculationCriteriaList.get(0).getConnectionNo();
+			    kafkaTemplate.send(configs.getCreateDemand(), key,calculationReq);
+				totalRecordsPushedToKafka++;
+				calculationCriteriaList.clear();
+			}
+
 			log.info("totalConnRecordsPushedToKafka: {}", totalRecordsPushedToKafka);
-		}catch (Exception e) {
-			log.error("Exception occurred while processing the demand generation for tenantId: "+tenantId);
+
+		} catch (Exception e) {
+			log.error("Exception occurred while processing the demand generation for tenantId: " + tenantId);
 		}
 	}
 
@@ -1429,10 +1747,23 @@ public class DemandService {
 		        String tenantId = cancelList.gettenantId();
 		        String demandid = cancelList.getdemandid();
 		        List<Canceldemandsearch> demandlists = sewerageCalculatorDao.getConnectionCancels(tenantId, demandid);
-		        
-		        if (demandlists.isEmpty()) {
-		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
-		        }
+
+              if (!demandlists.isEmpty()) {
+                  String consumerCode = demandlists.get(0).getConsumercode();
+                  String collectionamount=demandlists.get(0).getCollectionamount();
+                  String taxamount=demandlists.get(0).getTaxamount();
+
+                  if (Double.parseDouble(collectionamount) > 0 && Double.parseDouble(taxamount) > 0) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for collectionamount > 0.");
+                  }
+
+                  String wsConnection= sewerageCalculatorDao.getRelatedConnection(tenantId, consumerCode);
+                  if (StringUtils.isNotBlank(wsConnection)) {
+                      throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for water related sewerage connection.");
+                  }
+              }else {
+                  throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
+              }
 
 		        Boolean cancels = sewerageCalculatorDao.getUpdates(demandlists);
 
@@ -1441,6 +1772,10 @@ public class DemandService {
 		        }
 
 		        List<BillSearchs> billSearchsss = sewerageCalculatorDao.getBillss(tenantId, demandid);
+		        
+		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
+		        	continue; // Skip bill cancellation if there are no bills and payment is completed
+		        
 		        boolean billCancelled = sewerageCalculatorDao.getexpiryBills(billSearchsss);
 
 		        if (!billCancelled) {
@@ -1472,7 +1807,7 @@ public class DemandService {
 			
 			log.info("Billing master data values for non metered connection:: {}", master);
 		
-			List<SewerageDetails> connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId,SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo,singleDemand.getConsumercode());
+			List<SewerageDetails> connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId,null,SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo,singleDemand.getConsumercode());
 
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
@@ -1552,7 +1887,7 @@ public class DemandService {
 						log.info("Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
 						
 						String key = sewConnDetails.getConnectionNo();
-						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
+						kafkaTemplate.send(configs.getCreateSingleDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						billingCycleCount=0;
 						calculationCriteriaList.clear();
@@ -1581,7 +1916,7 @@ public class DemandService {
 								.migrationCount(migrationCount).build();
 						log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
 						String key = sewConnDetails.getConnectionNo();
-						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
+						kafkaTemplate.send(configs.getCreateSingleDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						calculationCriteriaList.clear();
 						connectionNosCount=0;
@@ -1857,7 +2192,7 @@ public List<String> fetchBillSchedulerBatch(Set<String> consumerCodes,String ten
 	/**
 	 * 
 	 * @param requestInfo  RequestInfo
-	 * @param calculations List of Calculation
+//	 * @param calculations List of Calculation
 	 * @param masterMap    Master MDMS Data
 	 * @return Returns list of demands
 	 */

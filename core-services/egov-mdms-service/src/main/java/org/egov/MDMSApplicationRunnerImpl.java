@@ -12,12 +12,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
 import com.fasterxml.jackson.core.type.*;
 import org.apache.commons.io.*;
+import org.egov.infra.mdms.service.MdmsCacheService;
 import org.egov.infra.mdms.utils.MDMSConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,15 +51,21 @@ public class MDMSApplicationRunnerImpl {
     @Value("${egov.mdms.stopOnAnyConfigError:true}")
     public boolean stopOnAnyConfigError;
 
-    private static Map<String, Map<String, Map<String, JSONArray>>> tenantMap = new HashMap<>();
+    @Autowired
+    private MdmsCacheService mdmsCacheService;
 
-    private static Map<String, Map<String, Object>> masterConfigMap = new HashMap<>();
+    private static Map<String, Map<String, Map<String, JSONArray>>> tenantMap = new ConcurrentHashMap<>();
+
+    private static Map<String, Map<String, Object>> masterConfigMap = new ConcurrentHashMap<>();
+
+    private static Set<String> mastersWithTopLevelIdInCache = ConcurrentHashMap.newKeySet();
 
     ObjectMapper objectMapper = new ObjectMapper();
 
     @PostConstruct
     public void run() {
         try {
+            // Step 1: Load data from files (existing logic)
             log.info("Reading files from: " + mdmsFileDirectory);
             LinkedList<String> errorFilesList = new LinkedList<>();
             readMdmsConfigFiles(masterConfigUrl);
@@ -67,6 +75,8 @@ public class MDMSApplicationRunnerImpl {
                 log.info("Stopping as all files could not be loaded");
                 System.exit(1);
             }
+            // Step 2: Load data from database and merge into cache (optional/legacy)
+            mdmsCacheService.loadAndMergeDbData();
         } catch (Exception e) {
             log.error("Exception while loading yaml files: ", e);
         }
@@ -157,6 +167,7 @@ public class MDMSApplicationRunnerImpl {
                 tenantMap.put(tenantId, tenantModule);
             }
             masterDataMap.put(masterName, masterDataJsonArray);
+            refreshMasterTopLevelIdState(tenantId, moduleName, masterName, masterDataJsonArray);
         }
     }
 
@@ -201,6 +212,64 @@ public class MDMSApplicationRunnerImpl {
 
     public static Map<String, Map<String, Object>> getMasterConfigMap() {
         return masterConfigMap;
+    }
+
+    public static void replaceTenantMap(Map<String, Map<String, Map<String, JSONArray>>> newTenantMap) {
+        tenantMap.putAll(newTenantMap);
+        clearTopLevelIdTracking();
+        for (Map.Entry<String, Map<String, Map<String, JSONArray>>> tenantEntry : newTenantMap.entrySet()) {
+            String tenantId = tenantEntry.getKey();
+            for (Map.Entry<String, Map<String, JSONArray>> moduleEntry : tenantEntry.getValue().entrySet()) {
+                String moduleName = moduleEntry.getKey();
+                for (Map.Entry<String, JSONArray> masterEntry : moduleEntry.getValue().entrySet()) {
+                    refreshMasterTopLevelIdState(tenantId, moduleName, masterEntry.getKey(), masterEntry.getValue());
+                }
+            }
+        }
+    }
+
+    private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+
+    public static boolean isRandomUuid(Object idObj) {
+        if (idObj == null) {
+            return false;
+        }
+        String idStr = String.valueOf(idObj).trim();
+        return UUID_PATTERN.matcher(idStr).matches();
+    }
+
+    public static void refreshMasterTopLevelIdState(String tenantId, String moduleName, String masterName,
+                                                    JSONArray masterData) {
+        String masterKey = getMasterKey(tenantId, moduleName, masterName);
+        if (containsTopLevelId(masterData)) {
+            mastersWithTopLevelIdInCache.add(masterKey);
+        } else {
+            mastersWithTopLevelIdInCache.remove(masterKey);
+        }
+    }
+
+    public static boolean hasTopLevelIdInCache(String tenantId, String moduleName, String masterName) {
+        return mastersWithTopLevelIdInCache.contains(getMasterKey(tenantId, moduleName, masterName));
+    }
+
+    public static void clearTopLevelIdTracking() {
+        mastersWithTopLevelIdInCache.clear();
+    }
+
+    private static String getMasterKey(String tenantId, String moduleName, String masterName) {
+        return tenantId + "|" + moduleName + "|" + masterName;
+    }
+
+    private static boolean containsTopLevelId(JSONArray masterDataJsonArray) {
+        for (Object record : masterDataJsonArray) {
+            if (record instanceof Map) {
+                Object idObj = ((Map<?, ?>) record).get("id");
+                if (idObj != null && !isRandomUuid(idObj)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

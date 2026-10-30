@@ -1,0 +1,453 @@
+package org.egov.rl.services.service;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.egov.common.contract.request.RequestInfo;
+import org.egov.rl.services.config.RentLeaseConfiguration;
+import org.egov.rl.services.models.Address;
+import org.egov.rl.services.models.AllotmentCriteria;
+import org.egov.rl.services.models.AllotmentDetails;
+import org.egov.rl.services.models.AllotmentRequest;
+import org.egov.rl.services.models.AuditDetails;
+import org.egov.rl.services.models.Document;
+import org.egov.rl.services.models.OwnerInfo;
+import org.egov.rl.services.models.RentRevision;
+import org.egov.rl.services.models.RLProperty;
+import org.egov.rl.services.models.enums.Status;
+import org.egov.rl.services.util.RentLeaseUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+@Service
+public class AllotmentEnrichmentService {
+
+	@Autowired
+	private RentLeaseUtil propertyutil;
+
+	@Autowired
+	private RentLeaseConfiguration config;
+
+	@Autowired
+	private UserService userService;
+
+	@Autowired
+	private AllotmentService allotmentService;
+
+	@Autowired
+	private BoundaryService boundaryService;
+
+	@Autowired
+	private ObjectMapper mapper;
+
+	/**
+	 * Assigns UUIDs to all id fields and also assigns acknowledgement-number and
+	 * assessment-number generated from id-gen
+	 * 
+	 * @param request PropertyRequest received for property creation
+	 */
+
+	public void enrichCreateRequest(AllotmentRequest allotmentRequest) {
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
+
+		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), true);
+		allotmentDetails.setAuditDetails(auditDetails);
+		enrichUuidsForOwnerCreate(requestInfo, allotmentRequest);
+		setIdgenIds(allotmentRequest);
+		if(allotmentRequest.getAllotment().get(0).getPreviousApplicationNumber()==null) {
+		 setRegistrationNumber(allotmentRequest);
+		}
+		
+		enrichTaxApplicability(requestInfo, allotmentDetails);
+		enrichAdditionalDetails(allotmentDetails);
+		enrichRentRevision(allotmentRequest, auditDetails);
+	}
+
+
+
+	private void enrichTaxApplicability(RequestInfo requestInfo, AllotmentDetails allotmentDetails) {
+		try {
+			ArrayNode taxRates = propertyutil.fetchTaxRatesFromMdms(requestInfo, allotmentDetails.getTenantId());
+			if (taxRates != null) {
+				for (JsonNode taxRate : taxRates) {
+					String taxType = taxRate.path("taxType").asText();
+					boolean isActive = taxRate.path("isActive").asBoolean(false);
+					if (isActive) {
+						if ("RL_CGST_FEE".equals(taxType) || "RL_SGST_FEE".equals(taxType)) {
+							allotmentDetails.setGSTApplicable(true);
+						}
+						if ("RL_COWCESS_FEE".equals(taxType)) {
+							allotmentDetails.setCowCessApplicable(true);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("Error enriching tax applicability from MDMS: " + e.getMessage());
+		}
+	}
+
+	private void enrichAdditionalDetails(AllotmentDetails allotmentDetails) {
+		ObjectNode additionalDetailsNode;
+		if (allotmentDetails.getAdditionalDetails() != null && allotmentDetails.getAdditionalDetails().isObject()) {
+			additionalDetailsNode = (com.fasterxml.jackson.databind.node.ObjectNode) allotmentDetails.getAdditionalDetails();
+		} else {
+			additionalDetailsNode = mapper.createObjectNode();
+		}
+		
+		if (additionalDetailsNode.has("propertyDetails") && additionalDetailsNode.get("propertyDetails").isArray()) {
+			ArrayNode propertyDetailsArray = (ArrayNode) additionalDetailsNode.get("propertyDetails");
+			for (JsonNode propertyNode : propertyDetailsArray) {
+				if (propertyNode.isObject()) {
+					ObjectNode propObj = (ObjectNode) propertyNode;
+					if (!propObj.has("propertyType") || propObj.get("propertyType").isNull() || propObj.get("propertyType").asText().isEmpty()) {
+						propObj.put("propertyType", "Commercial");
+					}
+				}
+			}
+		}
+		
+		if (!additionalDetailsNode.has("gstAmount")) {
+			additionalDetailsNode.put("gstAmount", 0);
+		}
+		if (!additionalDetailsNode.has("rebatePercentage")) {
+			additionalDetailsNode.put("rebatePercentage", 0);
+		}
+		
+		allotmentDetails.setAdditionalDetails(additionalDetailsNode);
+	}
+
+	/**
+	 * Assigns UUID for new fields that are added and sets propertyDetail and
+	 * address id from propertyId
+	 * 
+	 * @param request        PropertyRequest received for property update
+	 * @param propertyFromDb Properties returned from DB
+	 */
+	public void enrichUpdateRequest(AllotmentRequest allotmentRequest) {
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
+
+		AllotmentCriteria allotmentCriteria = new AllotmentCriteria();
+		Set<String> id = new HashSet<>();
+		id.add(allotmentRequest.getAllotment().get(0).getId());
+		allotmentCriteria.setAllotmentIds(id);
+		allotmentCriteria.setTenantId(allotmentRequest.getAllotment().get(0).getTenantId());
+		
+		AllotmentDetails allotmentDbDetails = allotmentService.searchAllotedApplications(allotmentRequest.getRequestInfo(), allotmentCriteria).stream().findFirst().orElse(null);		
+		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
+		auditDetails.setCreatedBy(allotmentDbDetails.getCreatedBy());
+		auditDetails.setCreatedTime(allotmentDbDetails.getCreatedTime());
+
+		allotmentDbDetails.setAuditDetails(auditDetails);
+		allotmentDbDetails.setStartDate(allotmentDetails.getStartDate());
+		allotmentDbDetails.setEndDate(allotmentDetails.getEndDate());
+		allotmentDbDetails.setGSTApplicable(allotmentDetails.isGSTApplicable());
+		allotmentDbDetails.setCowCessApplicable(allotmentDetails.isCowCessApplicable());
+		allotmentDbDetails.setRefundApplicableOnDiscontinuation(allotmentDetails.isRefundApplicableOnDiscontinuation());
+		allotmentDbDetails.setWitnessDetails(allotmentDetails.getWitnessDetails());
+		allotmentDbDetails.setTermAndCondition(allotmentDetails.getTermAndCondition());
+		allotmentDbDetails.setPenaltyType(allotmentDetails.getPenaltyType());
+		allotmentDbDetails.setOwnerInfo(allotmentDetails.getOwnerInfo());
+		allotmentDbDetails.setDocuments(allotmentDetails.getDocuments());
+
+		// Editable fields that were previously dropped: without these an operator's change on a draft (renewed
+		// rent, closure notes, registration numbers) never reached the stored application. Each one is copied only
+		// when the request actually carries a value, so a partial draft payload never wipes what is stored.
+		if (allotmentDetails.getRentRevisions() != null) {
+			allotmentDbDetails.setRentRevisions(allotmentDetails.getRentRevisions());
+		}
+		if (allotmentDetails.getReasonForClosure() != null) {
+			allotmentDbDetails.setReasonForClosure(allotmentDetails.getReasonForClosure());
+		}
+		if (allotmentDetails.getNotesComments() != null) {
+			allotmentDbDetails.setNotesComments(allotmentDetails.getNotesComments());
+		}
+		if (allotmentDetails.getRegistrationNumber() != null) {
+			allotmentDbDetails.setRegistrationNumber(allotmentDetails.getRegistrationNumber());
+		}
+		if (allotmentDetails.getTradeLicenseNumber() != null) {
+			allotmentDbDetails.setTradeLicenseNumber(allotmentDetails.getTradeLicenseNumber());
+		}
+		if (allotmentDetails.getPreviousApplicationNumber() != null) {
+			allotmentDbDetails.setPreviousApplicationNumber(allotmentDetails.getPreviousApplicationNumber());
+		}
+		
+		// Keep the stored status when the request carries none: overwriting it with null would wipe the state the
+		// application is actually in, and the caller relies on it before the workflow transition runs.
+		String incomingStatus = (allotmentDetails.getWorkflow() != null)
+				? allotmentDetails.getWorkflow().getStatus() : null;
+		if (incomingStatus != null && !incomingStatus.trim().isEmpty()) {
+			allotmentDbDetails.setStatus(incomingStatus);
+		}
+		allotmentDbDetails.setWorkflow(allotmentDetails.getWorkflow());
+		allotmentDbDetails.setAdditionalDetails(allotmentDetails.getAdditionalDetails());
+		allotmentDbDetails.setApplicationNumber(allotmentDetails.getApplicationNumber());
+		allotmentDbDetails.setPropertyId(allotmentDetails.getPropertyId());
+		allotmentDbDetails.setTenantId(allotmentDetails.getTenantId());
+		allotmentDbDetails.setAmountToBeDeducted(allotmentDetails.getAmountToBeDeducted());
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDbDetails));
+		enrichUuidsForOwnerUpdate(requestInfo, allotmentRequest, allotmentDbDetails);
+
+	}
+
+	private void enrichUuidsForOwnerCreate(RequestInfo requestInfo, AllotmentRequest allotmentRequest) {
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		String allotmentId = UUID.randomUUID().toString();
+
+		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
+			m.setOwnerId(UUID.randomUUID().toString());
+			m.setStatus(Status.ACTIVE);
+			m.setAllotmentId(allotmentId);
+			return m;
+		}).collect(Collectors.toList());
+		allotmentDetails.setOwnerInfo(lst);
+		allotmentDetails.setId(allotmentId);
+		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
+		allotmentDetails2.add(allotmentDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
+
+	}
+
+	private void enrichUuidsForOwnerUpdate(RequestInfo requestInfo, AllotmentRequest allotmentRequest,
+			AllotmentDetails allotmentDbDetails) {
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		AuditDetails auditDbDetails = allotmentDbDetails.getAuditDetails();
+		String allotmentId = allotmentDetails.getId();
+		AuditDetails auditDetails = propertyutil.getAuditDetails(requestInfo.getUserInfo().getUuid().toString(), false);
+		auditDetails.setCreatedBy(auditDbDetails.getCreatedBy());
+		auditDetails.setCreatedTime(auditDbDetails.getCreatedTime());
+
+		List<OwnerInfo> lst = allotmentDetails.getOwnerInfo().stream().map(m -> {
+			m.setOwnerId(m.getOwnerId() == null ? UUID.randomUUID().toString() : m.getOwnerId());
+			m.setStatus(Status.ACTIVE);
+			m.setAllotmentId(allotmentId);
+			return m;
+		}).collect(Collectors.toList());
+		allotmentDetails.setOwnerInfo(lst);
+		allotmentDetails.setId(allotmentId);
+		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
+		allotmentDetails2.add(allotmentDetails);
+		updateDocument(allotmentDetails, allotmentId, auditDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
+
+	}
+
+	private void updateDocument(AllotmentDetails allotmentDetails, String allotmentId, AuditDetails auditDetails) {
+		if (allotmentDetails.getDocuments() != null && allotmentDetails.getDocuments().size() > 0) {
+			List<Document> docList = allotmentDetails.getDocuments().stream().map(doc -> {
+				Document document = doc;
+				document.setDocumentUid(allotmentId);
+				document.setId(doc.getId() == null ? UUID.randomUUID().toString() : doc.getId());
+				document.setStatus(Status.ACTIVE);
+				document.setAuditDetails(auditDetails);
+				return document;
+			}).collect(Collectors.toList());
+			allotmentDetails.setDocuments(docList);
+		}
+	}
+
+	/**
+	 * Sets the acknowledgement and assessment Numbers for given PropertyRequest
+	 * 
+	 * @param request PropertyRequest which is to be created
+	 */
+	private void setIdgenIds(AllotmentRequest allotmentRequest) {
+
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		String tenantId = allotmentDetails.getTenantId();
+		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
+
+		if (config.getIsWorkflowEnabled()) {
+			allotmentDetails.setStatus(allotmentRequest.getAllotment().get(0).getWorkflow().getStatus());
+		}
+		String applicationNumber = propertyutil.getIdList(requestInfo, tenantId,
+				config.getAllotmentApplicationNummberGenName(), config.getAllotmentApplicationNummberGenNameFormat(), 1)
+				.get(0);
+		allotmentDetails.setApplicationNumber(applicationNumber);
+		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
+		allotmentDetails2.add(allotmentDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
+
+	}
+
+	private void setRegistrationNumber(AllotmentRequest allotmentRequest) {
+
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		String tenantId = allotmentDetails.getTenantId();
+		RequestInfo requestInfo = allotmentRequest.getRequestInfo();
+		String registrationNumber = propertyutil.getIdList(requestInfo, tenantId,
+				config.getRlRegistrationNumber(), config.getRlRegistrationNumberFormat(), 1)
+				.get(0);
+		allotmentDetails.setRegistrationNumber(registrationNumber);
+		List<AllotmentDetails> allotmentDetails2 = new ArrayList();
+		allotmentDetails2.add(allotmentDetails);
+		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
+
+	}
+
+	public void enrichOwnerDetailsFromUserService(List<AllotmentDetails> allotmentDetails, RequestInfo requestInfo) {
+		allotmentDetails.stream().map(d -> {
+			return d.getOwnerInfo().stream().map(ownerInfo -> {
+				try {
+					// Fetch user details from user service using the stored UUID
+					org.egov.rl.services.models.user.UserSearchRequest userSearchRequest = userService
+							.getBaseUserSearchRequest(d.getTenantId(), requestInfo);
+					userSearchRequest.setUuid(java.util.Collections.singleton(ownerInfo.getUserUuid()));
+
+					org.egov.rl.services.models.user.UserDetailResponse userDetailResponse = userService
+							.getUser(userSearchRequest);
+
+					if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+						org.egov.rl.services.models.user.User user = userDetailResponse.getUser().get(0);
+						ownerInfo.setUserUuid(user.getUuid());
+//						ownerInfo.setUserName(user.getUserName());
+						ownerInfo.setName(user.getName());
+						ownerInfo.setGender(user.getGender());
+						ownerInfo.setMobileNo(user.getMobileNumber());
+						ownerInfo.setEmailId(user.getEmailId());
+						
+						ownerInfo.setPermanentAddress(Address.builder().addressId(user.getPermanentAddress())
+								.pincode(user.getPermanentPincode()).addressLine1(null).city(user.getPermanentCity())
+								.build());
+						ownerInfo.setCorrespondenceAddress(Address.builder().addressId(user.getCorrespondenceAddress())
+								.pincode(user.getCorrespondencePincode()).addressLine1(null)
+								.city(user.getCorrespondenceCity()).build());
+						ownerInfo.setActive(user.getActive());
+						ownerInfo.setDob(user.getDob());
+						ownerInfo.setLocale(user.getLocale());
+						ownerInfo.setType(user.getType());
+						ownerInfo.setRoles(user.getRoles());
+						ownerInfo.setFatherOrHusbandName(user.getFatherOrHusbandName());
+						ownerInfo.setTenantId(user.getTenantId());
+					}
+				} catch (Exception e) {
+					// Log error but don't fail the search
+					System.err.println("Error fetching user details for owner: " + ownerInfo.getUserUuid() + ", Error: "
+							+ e.getMessage());
+				}
+				return ownerInfo;
+			}).collect(Collectors.toList());
+		}).collect(Collectors.toList());
+	}
+
+	private void enrichRentRevision(AllotmentRequest allotmentRequest, AuditDetails auditDetails) {
+		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+		com.fasterxml.jackson.databind.JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+		
+		String baseRentStr = null;
+		if (additionalDetails != null) {
+			JsonNode propDetails = additionalDetails.path("propertyDetails");
+			if (propDetails.isArray() && propDetails.size() > 0) {
+				JsonNode propertyNode = propDetails.get(0);
+				if (propertyNode.has("baseRent")) {
+					baseRentStr = propertyNode.get("baseRent").asText();
+				}
+			}
+		}
+
+		if (baseRentStr == null) {
+			try {
+				List<RLProperty> properties = boundaryService.allPropertyList(allotmentRequest);
+				if (!CollectionUtils.isEmpty(properties)) {
+					baseRentStr = properties.get(0).getBaseRent();
+				}
+			} catch (Exception e) {
+				System.err.println("Error fetching property for rent revision enrichment: " + e.getMessage());
+			}
+		}
+
+		if (org.apache.commons.lang3.StringUtils.isBlank(baseRentStr) || "null".equalsIgnoreCase(baseRentStr)) {
+			return;
+		}
+
+		BigDecimal baseRent = new BigDecimal(baseRentStr);
+
+		Long revisionDate = null;
+		int incrementPeriodMonths = 12;
+		BigDecimal incrementPercentage = null;
+
+		if (additionalDetails != null) {
+			JsonNode propDetails = additionalDetails.path("propertyDetails");
+			JsonNode targetNode = (propDetails.isArray() && propDetails.size() > 0) ? propDetails.get(0) : additionalDetails;
+
+			if (additionalDetails.has("lastrevisiondate") && !additionalDetails.get("lastrevisiondate").isNull()) {
+				revisionDate = additionalDetails.get("lastrevisiondate").asLong();
+			} else if (additionalDetails.has("lastRevisionDate") && !additionalDetails.get("lastRevisionDate").isNull()) {
+				revisionDate = additionalDetails.get("lastRevisionDate").asLong();
+			} else if (additionalDetails.has("lastRentRevisedDate") && !additionalDetails.get("lastRentRevisedDate").isNull()) {
+				revisionDate = additionalDetails.get("lastRentRevisedDate").asLong();
+			} else if (targetNode.has("lastrevisiondate") && !targetNode.get("lastrevisiondate").isNull()) {
+				revisionDate = targetNode.get("lastrevisiondate").asLong();
+			} else if (targetNode.has("lastRevisionDate") && !targetNode.get("lastRevisionDate").isNull()) {
+				revisionDate = targetNode.get("lastRevisionDate").asLong();
+			} else if (targetNode.has("lastRentRevisedDate") && !targetNode.get("lastRentRevisedDate").isNull()) {
+				revisionDate = targetNode.get("lastRentRevisedDate").asLong();
+			}
+
+			if (additionalDetails.has("incrementPeriodMonths") && !additionalDetails.get("incrementPeriodMonths").isNull()) {
+				incrementPeriodMonths = additionalDetails.get("incrementPeriodMonths").asInt();
+			} else if (targetNode.has("incrementPeriodMonths") && !targetNode.get("incrementPeriodMonths").isNull()) {
+				incrementPeriodMonths = targetNode.get("incrementPeriodMonths").asInt();
+			}
+
+			if (additionalDetails.has("incrementPercentage") && !additionalDetails.get("incrementPercentage").isNull()) {
+				String incStr = additionalDetails.get("incrementPercentage").asText();
+				if (org.apache.commons.lang3.StringUtils.isNotBlank(incStr) && !"null".equalsIgnoreCase(incStr)) {
+					incrementPercentage = new java.math.BigDecimal(incStr);
+				}
+			} else if (targetNode.has("incrementPercentage") && !targetNode.get("incrementPercentage").isNull()) {
+				String incStr = targetNode.get("incrementPercentage").asText();
+				if (org.apache.commons.lang3.StringUtils.isNotBlank(incStr) && !"null".equalsIgnoreCase(incStr)) {
+					incrementPercentage = new java.math.BigDecimal(incStr);
+				}
+			}
+		}
+
+		if (revisionDate == null) {
+			revisionDate = allotmentDetails.getStartDate();
+		}
+		if (revisionDate == null) {
+			revisionDate = System.currentTimeMillis();
+		}
+
+		if (incrementPeriodMonths <= 0) {
+			incrementPeriodMonths = 12;
+		}
+
+		long nextRevisionDate = Instant.ofEpochMilli(revisionDate)
+				.atZone(java.time.ZoneId.of("Asia/Kolkata"))
+				.toLocalDate()
+				.plusMonths(incrementPeriodMonths)
+				.atStartOfDay(java.time.ZoneId.of("Asia/Kolkata"))
+				.toInstant()
+				.toEpochMilli();
+
+		RentRevision initialRevision = RentRevision.builder()
+				.id(UUID.randomUUID().toString())
+				.allotmentId(allotmentDetails.getId())
+				.revisedRent(baseRent)
+				.revisionDate(revisionDate)
+				.nextRevisionDate(nextRevisionDate)
+				.incrementPercentage(incrementPercentage)
+				.tenantId(allotmentDetails.getTenantId())
+				.active(true)
+				.auditDetails(auditDetails)
+				.build();
+
+		allotmentDetails.addRentRevisionsItem(initialRevision);
+	}
+}

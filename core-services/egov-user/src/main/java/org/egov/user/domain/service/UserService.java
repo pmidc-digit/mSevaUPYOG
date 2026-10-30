@@ -234,6 +234,13 @@ public class UserService {
      */
     public User createUser(User user, RequestInfo requestInfo) {
         user.setUuid(UUID.randomUUID().toString());
+        if (UserType.CITIZEN.equals(user.getType())) {
+            if (user.getUserName() == null || isEmpty(user.getUserName()) || StringUtils.isBlank(user.getUserName())) {
+                user.setUserName(UUID.randomUUID().toString());
+            } else {
+                handleCitizenDuplicateCheck(user, requestInfo);
+            }
+        }
         user.validateNewUser(createUserValidateName);
         if (!CLIENT_ID.equals(user.getClientId())) {
             conditionallyValidateOtp(user);
@@ -269,6 +276,129 @@ public class UserService {
             return tenantId.split("\\.")[0];
         else
             return tenantId;
+    }
+
+    private void handleCitizenDuplicateCheck(User user, RequestInfo requestInfo) {
+        String stateTenant = getStateLevelTenantForCitizen(user.getTenantId(), user.getType());
+        if (!userRepository.isUserPresent(user.getUserName(), stateTenant, user.getType())) {
+            return;
+        }
+
+        try {
+            UserSearchCriteria userSearchCriteria = UserSearchCriteria.builder()
+                    .userName(user.getUserName())
+                    .tenantId(stateTenant)
+                    .type(UserType.CITIZEN)
+                    .build();
+            userSearchCriteria = encryptionDecryptionUtil.encryptObject(userSearchCriteria, "UserSearchCriteria", UserSearchCriteria.class);
+            List<User> existingUsers = userRepository.findAll(userSearchCriteria);
+
+            if (!CollectionUtils.isEmpty(existingUsers)) {
+                User existingUser = encryptionDecryptionUtil.decryptObject(existingUsers.get(0), null, User.class, requestInfo);
+                if (isSameCitizen(user, existingUser)) {
+                    log.info("Citizen with userName {} already exists with matching details. Throwing duplicate user exception.", user.getUserName());
+                    throw new DuplicateUserNameException(UserSearchCriteria.builder()
+                            .userName(user.getUserName())
+                            .type(user.getType())
+                            .tenantId(user.getTenantId())
+                            .build());
+                } else {
+                    String newUuidUserName = UUID.randomUUID().toString();
+                    log.info("Citizen with userName {} already exists but details differ. Assigning new random UUID userName: {}", user.getUserName(), newUuidUserName);
+                    user.setUserName(newUuidUserName);
+                }
+            } else {
+                String newUuidUserName = UUID.randomUUID().toString();
+                log.warn("Citizen userName {} is present in DB but findAll returned empty. Assigning new UUID: {}", user.getUserName(), newUuidUserName);
+                user.setUserName(newUuidUserName);
+            }
+        } catch (DuplicateUserNameException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error occurred while checking citizen duplicates for userName: " + user.getUserName(), e);
+            throw e;
+        }
+    }
+
+    private boolean isSameCitizen(User newUser, User existingUser) {
+        if (existingUser == null) {
+            return false;
+        }
+
+        boolean mobileMatches = isMobileMatching(newUser.getMobileNumber(), existingUser.getMobileNumber());
+        boolean nameMatches = isFuzzyMatching(newUser.getName(), existingUser.getName());
+        boolean guardianMatches = isGuardianMatching(newUser.getGuardian(), existingUser.getGuardian());
+
+        return mobileMatches && nameMatches && guardianMatches;
+    }
+
+    private boolean isMobileMatching(String m1, String m2) {
+        if (StringUtils.isBlank(m1) || StringUtils.isBlank(m2)) {
+            return false;
+        }
+        String clean1 = m1.replaceAll("[^0-9]", "");
+        String clean2 = m2.replaceAll("[^0-9]", "");
+        if (clean1.length() > 10) clean1 = clean1.substring(clean1.length() - 10);
+        if (clean2.length() > 10) clean2 = clean2.substring(clean2.length() - 10);
+        return !clean1.isEmpty() && clean1.equals(clean2);
+    }
+
+    private boolean isGuardianMatching(String g1, String g2) {
+        if (StringUtils.isBlank(g1) && StringUtils.isBlank(g2)) {
+            return true;
+        }
+        if (StringUtils.isBlank(g1) || StringUtils.isBlank(g2)) {
+            return true;
+        }
+        return isFuzzyMatching(g1, g2);
+    }
+
+    private boolean isFuzzyMatching(String s1, String s2) {
+        if (StringUtils.isBlank(s1) && StringUtils.isBlank(s2)) {
+            return true;
+        }
+        if (StringUtils.isBlank(s1) || StringUtils.isBlank(s2)) {
+            return false;
+        }
+        String norm1 = normalizeString(s1).toLowerCase();
+        String norm2 = normalizeString(s2).toLowerCase();
+
+        if (norm1.equals(norm2)) {
+            return true;
+        }
+
+        String[] tokens1 = norm1.split("\\s+");
+        String[] tokens2 = norm2.split("\\s+");
+
+        if (tokens1.length > 0 && tokens2.length > 0) {
+            String firstName1 = tokens1[0];
+            String firstName2 = tokens2[0];
+            if (!isWordClose(firstName1, firstName2)) {
+                return false;
+            }
+        }
+
+        int maxLen = Math.max(norm1.length(), norm2.length());
+        int distance = StringUtils.getLevenshteinDistance(norm1, norm2);
+        return distance <= 2 && ((double) distance / maxLen) <= 0.20;
+    }
+
+    private boolean isWordClose(String w1, String w2) {
+        if (w1.equals(w2)) {
+            return true;
+        }
+        int maxLen = Math.max(w1.length(), w2.length());
+        if (maxLen <= 3) {
+            return false;
+        }
+        int dist = StringUtils.getLevenshteinDistance(w1, w2);
+        return dist <= 1;
+    }
+
+    private String normalizeString(String input) {
+        if (input == null) return "";
+        String cleaned = input.replaceAll("(?i)\\b(mr|mrs|ms|shri|smt|dr)\\.?\\b", "");
+        return cleaned.replaceAll("[^a-zA-Z0-9\\s]", " ").trim().replaceAll("\\s+", " ");
     }
 
     /**

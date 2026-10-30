@@ -88,7 +88,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
     if (unit.id) {
       let res = {
         id: unit?.id,
-        hierarchy: typeof unit?.hierarchy === 'string',
+        hierarchy: typeof unit?.hierarchy === 'string' ? unit.hierarchy : unit?.hierarchy?.code,
         boundaryType: unit?.boundaryType?.label,
         boundary: unit?.boundary?.code,
         tenantId: unit?.boundary?.code,
@@ -98,17 +98,12 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
       };
       res = cleanup(res);
       if (unit?.roles) {
-        res["roles"] = unit?.roles.map((ele) => {
-          delete ele.description;
-          return ele;
-        });
+        // Drop description from copies, so the roles in form state are not changed
+        res["roles"] = unit.roles.map(({ description, ...role }) => role);
       }
-      setInactiveJurisdictions([...inactiveJurisdictions, res]);
+      setInactiveJurisdictions((prev) => [...prev, res]);
     }
     setjurisdictions((prev) => prev.filter((el) => el.key !== unit.key));
-    if (FormData.errors?.Jurisdictions?.type == unit.key) {
-      clearErrors("Jurisdictions");
-    }
     reviseIndexKeys();
   };
   let hierarchylist = [];
@@ -116,7 +111,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   const [focusIndex, setFocusIndex] = useState(-1);
 
   function gethierarchylistdata() {
-    return data?.MdmsRes?.["egov-location"]["TenantBoundary"].map((ele) => ele.hierarchyType);
+    return (data?.MdmsRes?.["egov-location"]?.TenantBoundary || []).map((ele) => ele.hierarchyType);
   }
 
   function getboundarydata() {
@@ -124,7 +119,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   }
 
   function getroledata() {
-    return data?.MdmsRes?.["ACCESSCONTROL-ROLES"].roles.map((role) => {
+    return (data?.MdmsRes?.["ACCESSCONTROL-ROLES"]?.roles || []).map((role) => {
       return { code: role.code, name: role?.name ? role?.name : " ", labelKey: "ACCESSCONTROL_ROLES_ROLES_" + role.code };
     });
   }
@@ -164,7 +159,7 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   return (
     <div>
       {jurisdictions?.map((jurisdiction, index) => (
-        <div>
+        <div key={jurisdiction.key}>
         {formData?.employeeType?.code === "OBPS_EMP"?
         <JurisdictionOBPAS
           t={t}
@@ -282,8 +277,8 @@ function Jurisdiction({
       ? jurisdiction?.hierarchy 
       : jurisdiction?.hierarchy?.code;
 
-    if (hierarchyCode && data?.MdmsRes?.["egov-location"]["TenantBoundary"]) {
-      const boundaryTypes = data?.MdmsRes?.["egov-location"]["TenantBoundary"]
+    if (hierarchyCode && data?.MdmsRes?.["egov-location"]?.TenantBoundary) {
+      const boundaryTypes = data.MdmsRes["egov-location"].TenantBoundary
         .filter((ele) => {
           return ele?.hierarchyType?.code == hierarchyCode;
         })
@@ -293,16 +288,10 @@ function Jurisdiction({
       selectBoundaryType(boundaryTypes);
     }
   }, [jurisdiction?.hierarchy, data?.MdmsRes]);
-  const tenant = Digit.ULBService.getCurrentTenantId();
-
-  const { data: roleGroups = [], isLoading: roleGroupsLoading } = Digit.Hooks.useCustomMDMS(tenantId, "ACCESSCONTROL-ROLES", [
-    { name: "roleGroups" },
-  ]);
-
+  const { data: roleGroups = [] } = Digit.Hooks.useCustomMDMS(tenantId, "ACCESSCONTROL-ROLES", [{ name: "roleGroups" }]);
 
   // Initialize boundary object only once on mount if needed
   useEffect(() => {
-
     // Only run if this is the correct component instance for this jurisdiction key
     if (jurisdictionKeyRef.current !== jurisdiction.key) {
       // Jurisdiction data has changed, reset initialization
@@ -312,10 +301,9 @@ function Jurisdiction({
 
     // Only run if not already initialized and boundary exists
     if (!isInitialized && Boundary?.length > 0 && jurisdiction?.boundary) {
-      const boundaryCode = typeof jurisdiction?.boundary === 'string' 
-        ? jurisdiction?.boundary 
+      const boundaryCode = typeof jurisdiction?.boundary === 'string'
+        ? jurisdiction?.boundary
         : jurisdiction?.boundary?.code;
-
 
       // Only convert string to object, don't update if already an object
       if (boundaryCode && typeof jurisdiction?.boundary === 'string') {
@@ -385,7 +373,7 @@ function Jurisdiction({
 
     const groupId = value?.groupId;
 
-    const rolesData = data?.MdmsRes?.["ACCESSCONTROL-ROLES"].roles;
+    const rolesData = data?.MdmsRes?.["ACCESSCONTROL-ROLES"]?.roles;
 
 
     const filterData = rolesData?.filter((item) => item?.groupId == groupId);
@@ -609,7 +597,7 @@ function JurisdictionOBPAS({
   const boundaryTypeOptions = BOUNDARY_TYPE.map((bt) => ({
     ...bt,
     label: bt.name,
-    i18text: t(bt.name) || bt.name,
+    i18text: t(bt.name),
   }));
 
   useEffect(() => {
@@ -627,7 +615,7 @@ function JurisdictionOBPAS({
       const regionOptions = REGION_DATA.map((region) => ({
         code: region.code,
         name: region.regionName,
-        i18text: t(region.regionName) || region.regionName,
+        i18text: t(region.regionName),
       }));
       selectboundary(regionOptions);
     } else if (typeLower === "district") {
@@ -638,7 +626,7 @@ function JurisdictionOBPAS({
             districtOptions.push({
               code: district.code,
               name: district.districtName,
-              i18text: t(district.districtName) || district.districtName,
+              i18text: t(district.districtName),
             });
           }
         });
@@ -675,11 +663,7 @@ function JurisdictionOBPAS({
     return boundaryData?.find(b => String(b.code).toLowerCase() === searchVal || String(b.name).toLowerCase() === searchVal) || null;
   };
 
-  const tenant = Digit.ULBService.getCurrentTenantId();
-
-  const { data: roleGroups = [], isLoading: roleGroupsLoading } = Digit.Hooks.useCustomMDMS(tenantId, "ACCESSCONTROL-ROLES", [
-    { name: "roleGroups" },
-  ]);
+  const { data: roleGroups = [] } = Digit.Hooks.useCustomMDMS(tenantId, "ACCESSCONTROL-ROLES", [{ name: "roleGroups" }]);
 
 
   // Initialize boundary object only once on mount if needed
@@ -772,7 +756,7 @@ function JurisdictionOBPAS({
 
     const groupId = value?.groupId;
 
-    const rolesData = data?.MdmsRes?.["ACCESSCONTROL-ROLES"].roles;
+    const rolesData = data?.MdmsRes?.["ACCESSCONTROL-ROLES"]?.roles;
 
 
     const filterData = rolesData?.filter((item) => item?.groupId == groupId);

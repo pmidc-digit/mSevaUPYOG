@@ -1,16 +1,29 @@
-import React, { useState } from "react";
+import React from "react";
 import { useParams } from "react-router-dom";
 import EditForm from "./EditForm";
-import { Loader } from "@mseva/digit-ui-react-components";
-const EditEmpolyee = ({ parentUrl, heading }) => {
+import { Loader, Header } from "@mseva/digit-ui-react-components";
+import { useTranslation } from "react-i18next";
+
+const EditEmpolyee = () => {
+  const { t } = useTranslation();
   const isupdate = Digit.SessionStorage.get("isupdate");
-  const { id: employeeId } = useParams();
-  const { tenantId: tenantId } = useParams();
-  const { isLoading, isError, error, data, ...rest } = Digit.Hooks.hrms.useHRMSSearch({ codes: employeeId }, tenantId, isupdate);
+  const { id: employeeId, tenantId } = useParams();
+  const { isLoading, isError, data } = Digit.Hooks.hrms.useHRMSSearch({ codes: employeeId }, tenantId, null, isupdate);
+
   if (isLoading) {
     return <Loader />;
   }
-  return <EditForm data={data?.Employees[0]} tenantId={tenantId} />;
+
+  const employee = data?.Employees?.[0];
+  if (isError || !employee) {
+    return (
+      <div className="hrms-emp-mapping__no-data">
+        <Header>{t("HR_NO_EMPLOYEE_FOUND")}</Header>
+      </div>
+    );
+  }
+
+  return <EditForm data={employee} tenantId={tenantId} />;
 };
 
 export default EditEmpolyee;

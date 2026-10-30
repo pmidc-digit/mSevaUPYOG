@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useRef, useState, useMemo } from "react";
+import React, { useEffect, useReducer, useRef, useState } from "react";
 // import { ArrowDown, CheckSvg } from "./svgindex";
 import { useTranslation } from "react-i18next";
 
@@ -81,8 +81,9 @@ const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, def
   }
 
   Digit.Hooks.useClickOutside(dropdownRef, handleOutsideClickAndSubmitSimultaneously , active, {capture: true} );
-  const filtOptns =
-      searchQuery?.length > 0 ? options.filter((option) => t(option[optionsKey]&&typeof option[optionsKey]=="string" && option[optionsKey].toUpperCase()).toLowerCase().indexOf(searchQuery.toLowerCase()) >= 0) : options;
+  // Matches the translated label, which is what the user sees
+  const matchesSearch = (option) => (typeof option[optionsKey] === "string" ? t(option[optionsKey]) : "").toLowerCase().indexOf(searchQuery.toLowerCase()) >= 0;
+  const filtOptns = searchQuery?.length > 0 ? options.filter(matchesSearch) : options;
     
   function onSearch(e) {
     setSearchQuery(e.target.value);
@@ -126,30 +127,31 @@ const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, def
      }
       e.preventDefault();
     }else if(e.key=="Enter"){
-      onSelectToAddToQueue(e,filtOptns[optionIndex]);
-    } 
+      // Enter toggles the highlighted option. The synthetic target gives the reducer the checked state a click would give.
+      const option = filtOptns[optionIndex];
+      if (option) {
+        const isAlreadySelected = alreadyQueuedSelectedState.some((selected) => selected[optionsKey] === option[optionsKey]);
+        onSelectToAddToQueue({ target: { checked: !isAlreadySelected } }, option);
+      }
+    }
   }
 
-  const MenuItem = ({ option, index }) => {
+  // Plain render helper, not a component: a component declared inside this function is remounted on every render
+  const renderMenuItem = (option, index) => {
     // Check if this is the "Select All" option
     const isSelectAllOption = option.code === "ALL" || option[optionsKey] === "Select All";
-    
-    // Use useMemo to recalculate when alreadyQueuedSelectedState changes
-    const isChecked = useMemo(() => {
-      if (isSelectAllOption) {
-        // "Select All" is checked if ALL non-Select-All items are selected
-        const nonSelectAllOptions = filtOptns.filter(opt => opt.code !== "ALL" && opt[optionsKey] !== "Select All");
-        if (nonSelectAllOptions.length === 0) return false;
-        const allSelected = nonSelectAllOptions.every(opt => 
-          alreadyQueuedSelectedState.some(selected => selected[optionsKey] === opt[optionsKey])
-        );
-        return allSelected;
-      }
-      
-      const found = alreadyQueuedSelectedState.find((selectedOption) => selectedOption[optionsKey] === option[optionsKey]);
-      return !!found;
-    }, [option, alreadyQueuedSelectedState, isSelectAllOption]);
-    
+
+    let isChecked;
+    if (isSelectAllOption) {
+      // "Select All" is checked if ALL non-Select-All items are selected
+      const nonSelectAllOptions = filtOptns.filter(opt => opt.code !== "ALL" && opt[optionsKey] !== "Select All");
+      isChecked = nonSelectAllOptions.length > 0 && nonSelectAllOptions.every(opt =>
+        alreadyQueuedSelectedState.some(selected => selected[optionsKey] === opt[optionsKey])
+      );
+    } else {
+      isChecked = alreadyQueuedSelectedState.some((selectedOption) => selectedOption[optionsKey] === option[optionsKey]);
+    }
+
     // Handle click
     const handleClick = (e) => {
       if (isSelectAllOption) {
@@ -168,7 +170,7 @@ const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, def
     };
     
     return (
-      <div key={index} style={isOBPSMultiple ? (index%2 !== 0 ?{background : "#EEEEEE"}:{}):{}}>
+      <div style={isOBPSMultiple ? (index%2 !== 0 ?{background : "#EEEEEE"}:{}):{}}>
         <input
           type="checkbox"
           value={option[optionsKey]}
@@ -187,15 +189,8 @@ const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, def
     );
   };
 
-  const Menu = () => {
-    const filteredOptions =
-      searchQuery?.length > 0 ? options.filter((option) => t(option[optionsKey]&&typeof option[optionsKey]=="string" && option[optionsKey].toUpperCase()).toLowerCase().indexOf(searchQuery.toLowerCase()) >= 0) : options;
-    
-    // Force re-render when alreadyQueuedSelectedState changes by using its length
-    const _ = alreadyQueuedSelectedState.length;
-    
-    return filteredOptions?.map((option, index) => <MenuItem option={option} key={`${option[optionsKey]}-${index}`} index={index} />);
-  };
+  const renderMenu = () =>
+    filtOptns?.map((option, index) => <React.Fragment key={`${option[optionsKey]}-${index}`}>{renderMenuItem(option, index)}</React.Fragment>);
 
   return (
     <div className="multi-select-dropdown-wrap" ref={dropdownRef}>
@@ -208,7 +203,7 @@ const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, def
       </div>
       {active ? (
         <div className="server" id="jk-dropdown-unique" style={ServerStyle?ServerStyle:{}}>
-          <Menu />
+          {renderMenu()}
         </div>
       ) : null}
     </div>

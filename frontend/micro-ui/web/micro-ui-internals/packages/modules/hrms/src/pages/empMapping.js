@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Header, Card, CardLabel, Dropdown, Toast, Modal, CardLabelError, Loader } from "@mseva/digit-ui-react-components";
 import MultiSelectDropdown from "../components/MultiSelectDropdown";
@@ -15,11 +15,51 @@ import {
   calculatePagination,
 } from "../utils/empMappingUtils";
 
+const MODAL_TOAST_DURATION = 5000;
+const EMPLOYEE_BATCH_SIZE = 100;
+// Upper bound on batches, so a misbehaving API cannot make the employee list load forever
+const MAX_EMPLOYEE_BATCHES = 50;
+
+const emptyForm = () => ({
+  employeeCode: null,
+  designationCode: null,
+  roleNames: "",
+  category: [],
+  subCategory: [],
+  zone: [],
+  module: [],
+  role: [],
+});
+
+const toEmployeeOption = (emp) => ({
+  code: emp.code,
+  name: `${emp.user?.name || emp.code} (${emp.code}) (${emp.assignments?.[0]?.designation || "N/A"})`,
+  uuid: emp.uuid,
+  department: emp.assignments?.[0]?.department || "N/A",
+  employeeObj: emp,
+});
+
+// Collects every employee with the given roles, not just the first API page
+const fetchAllEmployees = async (tenantCode, roleCodes) => {
+  const allEmployees = [];
+  for (let batch = 0; batch < MAX_EMPLOYEE_BATCHES; batch++) {
+    const response = await Digit.HRMSService.search(tenantCode, {
+      tenantId: tenantCode,
+      roles: roleCodes.join(","),
+      limit: EMPLOYEE_BATCH_SIZE,
+      offset: batch * EMPLOYEE_BATCH_SIZE,
+    });
+    const employees = response?.Employees || [];
+    allEmployees.push(...employees);
+    if (employees.length < EMPLOYEE_BATCH_SIZE) break;
+  }
+  return allEmployees;
+};
+
 const EmpMaping = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const isMobile = window.Digit.Utils.browser.isMobile();
 
   // Search Filter States
   const [filterULB, setFilterULB] = useState(null);
@@ -30,16 +70,7 @@ const EmpMaping = () => {
   // Modal Form States
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedULB, setSelectedULB] = useState(null);
-  const [formData, setFormData] = useState({
-    employeeCode: null,
-    designationCode: null,
-    roleNames: "",
-    category: [],
-    subCategory: [],
-    zone: [],
-    module: [],
-    role: [],
-  });
+  const [formData, setFormData] = useState(emptyForm);
   const [formErrors, setFormErrors] = useState({});
   const [mappingsToCreate, setMappingsToCreate] = useState([]);
 
@@ -55,6 +86,15 @@ const EmpMaping = () => {
   // UI States
   const [showToast, setShowToast] = useState(null);
   const [modalToast, setModalToast] = useState(null);
+  const toastTimer = useRef(null);
+
+  const showModalToast = (toast) => {
+    setModalToast(toast);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setModalToast(null), MODAL_TOAST_DURATION);
+  };
+
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   // Fetch MDMS data for categories and subcategories
   const { data: mdmsDataBPA, isLoading: isBPALoading } = Digit.Hooks.useCommonMDMS(stateId, "BPA", ["Category", "SubCategory"]);
@@ -66,12 +106,10 @@ const EmpMaping = () => {
   const { zones: filterZones } = Digit.Hooks.hrms.useZones(stateId, filterULB);
   const { zones: modalZones } = Digit.Hooks.hrms.useZones(stateId, selectedULB || filterULB);
 
-  // modules
-  const { data: moduleNames = [], isLoading: moduleLoading } = Digit.Hooks.useCustomMDMS("pb", "common-masters", [{ name: "obpasmodules" }]);
-  //
-  const { data: roleGroups = [], isLoading: roleGroupsLoading } = Digit.Hooks.useCustomMDMS("pb", "ACCESSCONTROL-ROLES", [{ name: "roleGroups" }]);
-
-  const { data: roles = [], isLoading: rolesLoading } = Digit.Hooks.useCustomMDMS("pb", "ACCESSCONTROL-ROLES", [{ name: "roles" }]);
+  // modules and roles are read for the state, not a hardcoded tenant
+  const { data: moduleNames = [] } = Digit.Hooks.useCustomMDMS(stateId, "common-masters", [{ name: "obpasmodules" }]);
+  const { data: roleGroups = [] } = Digit.Hooks.useCustomMDMS(stateId, "ACCESSCONTROL-ROLES", [{ name: "roleGroups" }]);
+  const { data: roles = [] } = Digit.Hooks.useCustomMDMS(stateId, "ACCESSCONTROL-ROLES", [{ name: "roles" }]);
 
   // Fetch search employee list separately
   useEffect(() => {
@@ -81,39 +119,24 @@ const EmpMaping = () => {
       return;
     }
 
-    const fetchEmployees = async () => {
-      try {
-        const response = await Digit.HRMSService.search(filterULB.code, {
-          tenantId: filterULB.code,
-          roles: obpsRoles.codes.join(","),
-          limit: 100,
-          offset: 0,
-        });
-
-        if (response?.Employees) {
-          const employeeOptions = response.Employees.map((emp) => ({
-            code: emp.code,
-            name: `${emp.user?.name || emp.code} (${emp.code}) (${emp.assignments?.[0]?.designation || "N/A"})`,
-            uuid: emp.uuid,
-            department: emp.assignments?.[0]?.department || "N/A",
-            employeeObj: emp,
-          }));
-          setSearchEmployeeList(employeeOptions);
-        }
-      } catch (error) {
-        setSearchEmployeeList([]);
-      }
+    // Ignore a response that arrives after the ULB has changed again
+    let ignore = false;
+    fetchAllEmployees(filterULB.code, obpsRoles.codes)
+      .then((employees) => {
+        if (!ignore) setSearchEmployeeList(employees.map(toEmployeeOption));
+      })
+      .catch(() => {
+        if (!ignore) setSearchEmployeeList([]);
+      });
+    return () => {
+      ignore = true;
     };
-
-    fetchEmployees();
   }, [filterULB, obpsRoles.codes]);
 
   // Sync filterEmployee reference when searchEmployeeList updates
   useEffect(() => {
     if (filterEmployee && searchEmployeeList.length > 0) {
-      const match = searchEmployeeList.find(
-        (e) => e.code === filterEmployee.code || e.uuid === filterEmployee.uuid
-      );
+      const match = searchEmployeeList.find((e) => e.code === filterEmployee.code || e.uuid === filterEmployee.uuid);
       if (match && match !== filterEmployee) {
         setFilterEmployee(match);
       }
@@ -172,6 +195,7 @@ const EmpMaping = () => {
       return { ...prev, role: nextRoles };
     });
   }, [filteredRoles]);
+
   // Lookup maps for human-readable names and grouping
   const categoryMap = useMemo(() => {
     if (!mdmsDataBPA?.BPA?.Category) return {};
@@ -222,9 +246,10 @@ const EmpMaping = () => {
     return transformMappingData(rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap);
   }, [rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap]);
 
-  const { totalRecords, currentPage, totalPages } = useMemo(() => {
-    return calculatePagination(mappingData.length, pageSize, pageOffset);
-  }, [mappingData.length, pageSize, pageOffset]);
+  // Counted on the raw API rows, since grouping by employee can make the table shorter than the page
+  const { currentPage, hasNextPage } = useMemo(() => {
+    return calculatePagination(rawEmployees.length, pageSize, pageOffset);
+  }, [rawEmployees.length, pageSize, pageOffset]);
 
   // Add "Select All" to all dropdown options
   const categoriesWithSelectAll = useMemo(() => addSelectAllOption(categories), [categories]);
@@ -247,13 +272,13 @@ const EmpMaping = () => {
       roleNames = getEmployeeOBPSRoles(employee.employeeObj, obpsRoles.map);
     }
 
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       employeeCode: employee,
       designationCode: designation,
       roleNames: roleNames,
-    });
-    setFormErrors({ ...formErrors, employeeCode: null });
+    }));
+    setFormErrors((prev) => ({ ...prev, employeeCode: null }));
   };
 
   // Auto-deselect invalid subcategories when categories change
@@ -295,12 +320,7 @@ const EmpMaping = () => {
       }
 
       const response = await Digit.HRMSService.SearchEmpMap(searchTenantId, filters);
-
-      if (response?.Employees) {
-        setRawEmployees(response.Employees);
-      } else {
-        setRawEmployees([]);
-      }
+      setRawEmployees(response?.Employees || []);
     } catch (error) {
       setShowToast({ key: true, label: "Failed to load employee data", error: true });
       setRawEmployees([]);
@@ -329,9 +349,13 @@ const EmpMaping = () => {
       setShowToast({ key: true, label: "Please select a ULB to search", error: true });
       return;
     }
-    setPageOffset(0);
     setHasSearched(true);
-    await fetchMappingData({ pageOffset: 0 });
+    if (pageOffset === 0) {
+      await fetchMappingData({ pageOffset: 0 });
+    } else {
+      // Moving to page 1 changes pageOffset, and the pagination effect fetches it
+      setPageOffset(0);
+    }
   };
 
   // Clear filters handler
@@ -350,16 +374,7 @@ const EmpMaping = () => {
     if (filterULB && !selectedULB) {
       setSelectedULB(filterULB);
     }
-    setFormData({
-      employeeCode: null,
-      designationCode: null,
-      roleNames: "",
-      category: [],
-      subCategory: [],
-      zone: [],
-      module: [],
-      role: [],
-    });
+    setFormData(emptyForm());
     setFormErrors({});
     setMappingsToCreate([]);
     setShowAddModal(true);
@@ -367,16 +382,7 @@ const EmpMaping = () => {
 
   const closeAddModal = () => {
     setShowAddModal(false);
-    setFormData({
-      employeeCode: null,
-      designationCode: null,
-      roleNames: "",
-      category: [],
-      subCategory: [],
-      zone: [],
-      module: [],
-      role: [],
-    });
+    setFormData(emptyForm());
     setFormErrors({});
     setMappingsToCreate([]);
     setModalToast(null);
@@ -385,10 +391,7 @@ const EmpMaping = () => {
   // Add mappings to preview list (cartesian product)
   const handleAddToList = () => {
     if (!formData.employeeCode) {
-      setModalToast({ key: true, label: "Please select an employee", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
+      showModalToast({ key: true, label: "Please select an employee", error: true });
       return;
     }
 
@@ -397,47 +400,21 @@ const EmpMaping = () => {
     const actualZones = filterSelectAll(formData.zone);
     const actualModules = filterSelectAll(formData.module);
     const actualRoles = filterSelectAll(formData.role);
-
-    if (!actualCategories.length) {
-      setModalToast({ key: true, label: "Please select at least one category", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
-      return;
-    }
-    if (!actualSubCategories.length) {
-      setModalToast({ key: true, label: "Please select at least one sub-category", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
-      return;
-    }
-    if (!actualZones.length) {
-      setModalToast({ key: true, label: "Please select at least one zone", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
-      return;
-    }
-    if (!actualModules.length) {
-      setModalToast({ key: true, label: "Please select at least one module", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
-      return;
-    }
-
-    if (!actualRoles.length) {
-      setModalToast({ key: true, label: "Please select at least one role", error: true });
-      return;
-    }
     const groups = roleGroups?.["ACCESSCONTROL-ROLES"]?.roleGroups || [];
-    if (
-      actualModules.some(
-        (module) => !actualRoles.some((role) => groups.some((group) => group.groupCode === module.code && group.groupId === role.groupId))
-      )
-    ) {
-      setModalToast({ key: true, label: "Please select at least one role for each selected module", error: true });
+
+    const failedCheck = [
+      [!actualCategories.length, "Please select at least one category"],
+      [!actualSubCategories.length, "Please select at least one sub-category"],
+      [!actualZones.length, "Please select at least one zone"],
+      [!actualModules.length, "Please select at least one module"],
+      [!actualRoles.length, "Please select at least one role"],
+      [
+        actualModules.some((module) => !actualRoles.some((role) => groups.some((group) => group.groupCode === module.code && group.groupId === role.groupId))),
+        "Please select at least one role for each selected module",
+      ],
+    ].find(([isInvalid]) => isInvalid);
+    if (failedCheck) {
+      showModalToast({ key: true, label: failedCheck[1], error: true });
       return;
     }
 
@@ -461,10 +438,7 @@ const EmpMaping = () => {
       module: [],
       role: [],
     }));
-    setModalToast({ key: true, label: `${newMappings.length} mapping(s) added to list` });
-    setTimeout(() => {
-      setModalToast(null);
-    }, 5000);
+    showModalToast({ key: true, label: `${newMappings.length} mapping(s) added to list` });
   };
 
   const handleRemoveFromList = (mappingId) => {
@@ -478,17 +452,11 @@ const EmpMaping = () => {
   // Submit all mappings
   const handleAddSubmit = async () => {
     if (!mappingsToCreate.length) {
-      setModalToast({ key: true, label: "Please add at least one mapping to the list", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
+      showModalToast({ key: true, label: "Please add at least one mapping to the list", error: true });
       return;
     }
     if (!selectedULB) {
-      setModalToast({ key: true, label: "Please select a ULB first", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
+      showModalToast({ key: true, label: "Please select a ULB first", error: true });
       return;
     }
 
@@ -531,17 +499,14 @@ const EmpMaping = () => {
           pageOffset: 0,
         });
       } else {
-        setModalToast({ key: true, label: "Failed to create employee mappings", error: true });
+        showModalToast({ key: true, label: "Failed to create employee mappings", error: true });
       }
     } catch (error) {
-      setModalToast({
+      showModalToast({
         key: true,
         label: error?.response?.data?.Errors?.[0]?.message || "Failed to create employee mappings",
         error: true,
       });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
     } finally {
       setLoading(false);
     }
@@ -549,7 +514,7 @@ const EmpMaping = () => {
 
   // Multi-select handler with "Select All" logic
   const handleSelectWithAll = (selectedItems, allItems, field) => {
-    const newSelection = handleSelectAllLogic(selectedItems, allItems, formData[field]);
+    const newSelection = handleSelectAllLogic(selectedItems, allItems || [], formData[field]);
     setFormData((prev) => ({ ...prev, [field]: newSelection }));
     setFormErrors((prev) => ({ ...prev, [field]: null }));
     return newSelection;
@@ -561,7 +526,8 @@ const EmpMaping = () => {
     setPageOffset(0);
   };
 
-  if (isBPALoading || loading) return <Loader />;
+  // Only the first load shows a full-page loader, so the filters and the open modal stay mounted during searches
+  if (isBPALoading) return <Loader />;
 
   return (
     <React.Fragment>
@@ -570,11 +536,11 @@ const EmpMaping = () => {
 
         {/* Search Filters */}
         <Card className="hrms-emp-mapping__search-card">
-          <h3 className="hrms-emp-mapping__search-heading">{t("COMMON_SEARCH_FILTERS") || "Search Filters"}</h3>
+          <h3 className="hrms-emp-mapping__search-heading">{t("COMMON_SEARCH_FILTERS")}</h3>
           <div className="hrms-emp-mapping__filter-grid">
             <div>
               <CardLabel>
-                {t("HR_ULB_LABEL") || "ULB"} <span className="hrms-emp-mapping__required-asterisk">*</span>
+                {t("HR_ULB_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
               </CardLabel>
               <Dropdown
                 t={t}
@@ -585,7 +551,7 @@ const EmpMaping = () => {
                   setFilterULB(ulb);
                   setFilterEmployee(null);
                 }}
-                placeholder={t("COMMON_SELECT_ULB") || "Select ULB"}
+                placeholder={t("COMMON_SELECT_ULB")}
               />
             </div>
 
@@ -597,7 +563,7 @@ const EmpMaping = () => {
                 optionKey="name"
                 selected={filterEmployee}
                 select={setFilterEmployee}
-                placeholder={t("COMMON_SELECT_EMPLOYEE") || "Select Employee"}
+                placeholder={t("COMMON_SELECT_EMPLOYEE")}
                 disabled={!filterULB}
               />
             </div>
@@ -632,7 +598,7 @@ const EmpMaping = () => {
                   !filterULB && !filterEmployee && !filterCategory ? "hrms-emp-mapping__clear-button--disabled" : ""
                 }`}
               >
-                {t("COMMON_CLEAR_FILTERS") || "Clear Filters"}
+                {t("COMMON_CLEAR_FILTERS")}
               </button>
             </div>
 
@@ -645,10 +611,14 @@ const EmpMaping = () => {
         {/* Results Table */}
         <Card className="hrms-emp-mapping__results-card">
           <h3 className="hrms-emp-mapping__results-heading">
-            {t("HR_MAPPING_RESULTS")} ({totalRecords})
+            {t("HR_MAPPING_RESULTS")} ({mappingData.length})
           </h3>
 
-          <MappingTable t={t} mappingData={mappingData} hasSearched={hasSearched} filterULB={filterULB} tenantId={tenantId} />
+          {loading ? (
+            <Loader />
+          ) : (
+            <MappingTable t={t} mappingData={mappingData} hasSearched={hasSearched} filterULB={filterULB} tenantId={tenantId} />
+          )}
 
           {/* Pagination */}
           {hasSearched && mappingData.length > 0 && (
@@ -656,9 +626,9 @@ const EmpMaping = () => {
               t={t}
               pageOffset={pageOffset}
               pageSize={pageSize}
-              totalRecords={totalRecords}
+              rowCount={mappingData.length}
               currentPage={currentPage}
-              totalPages={totalPages}
+              hasNextPage={hasNextPage}
               onPrevious={() => setPageOffset((prev) => prev - pageSize)}
               onNext={() => setPageOffset((prev) => prev + pageSize)}
               onPageSizeChange={handlePageSizeChange}
@@ -690,7 +660,7 @@ const EmpMaping = () => {
                   optionKey="name"
                   selected={selectedULB}
                   select={setSelectedULB}
-                  placeholder={t("COMMON_SELECT_ULB") || "Select ULB"}
+                  placeholder={t("COMMON_SELECT_ULB")}
                 />
               </div>
 
@@ -710,30 +680,9 @@ const EmpMaping = () => {
                 {formErrors.employeeCode && <CardLabelError>{formErrors.employeeCode}</CardLabelError>}
               </div>
 
-              {/* Designation  */}
-              {/* <div style={{ marginBottom: "20px" }}>
-                <CardLabel>
-                  {t("HR_DESIGNATION_CODE")} <span style={{ color: "red" }}>*</span>
-                </CardLabel>
-                <input
-                  type="text"
-                  value={formData.designationCode}
-                  readOnly
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    background: "#f9f9f9",
-                    fontSize: "14px",
-                  }}
-                />
-                {formErrors.designationCode && <CardLabelError>{formErrors.designationCode}</CardLabelError>}
-              </div> */}
-
               {/* Role(s) - Read-only */}
               <div className="hrms-emp-mapping__form-group">
-                <CardLabel className="hrms-emp-mapping__label">{t("HR_ROLES_LABEL") || "Role(s)"}</CardLabel>
+                <CardLabel className="hrms-emp-mapping__label">{t("HR_ROLES_LABEL")}</CardLabel>
                 <input type="text" value={formData.roleNames || "No OBPS Roles"} readOnly className="hrms-emp-mapping__input" disabled />
               </div>
 
@@ -747,8 +696,8 @@ const EmpMaping = () => {
                   optionsKey="name"
                   selected={formData.category}
                   onSelect={(items) => handleSelectWithAll(items, categories, "category")}
-                  defaultLabel={t("COMMON_SELECT_CATEGORY") || "Select Categories"}
-                  defaultUnit={t("HR_CATEGORIES_SELECTED") || "selected"}
+                  defaultLabel={t("COMMON_SELECT_CATEGORY")}
+                  defaultUnit={t("HR_CATEGORIES_SELECTED")}
                 />
                 {formErrors.category && <CardLabelError>{formErrors.category}</CardLabelError>}
               </div>
@@ -763,12 +712,8 @@ const EmpMaping = () => {
                   optionsKey="name"
                   selected={formData.subCategory}
                   onSelect={(items) => handleSelectWithAll(items, filteredSubCategories, "subCategory")}
-                  defaultLabel={
-                    formData.category?.length > 0
-                      ? t("COMMON_SELECT_SUB_CATEGORY") || "Select Sub-Categories"
-                      : t("HR_SELECT_CATEGORY_FIRST") || "Select category first"
-                  }
-                  defaultUnit={t("HR_SUB_CATEGORIES_SELECTED") || "selected"}
+                  defaultLabel={formData.category?.length > 0 ? t("COMMON_SELECT_SUB_CATEGORY") : t("HR_SELECT_CATEGORY_FIRST")}
+                  defaultUnit={t("HR_SUB_CATEGORIES_SELECTED")}
                 />
                 {formErrors.subCategory && <CardLabelError>{formErrors.subCategory}</CardLabelError>}
               </div>
@@ -779,15 +724,14 @@ const EmpMaping = () => {
                   {t("Module")} <span className="hrms-emp-mapping__required-asterisk">*</span>
                 </CardLabel>
                 <MultiSelectDropdown
-                  // options={moduleNames?.["common-masters"]?.obpasmodules}
                   options={modulesWithSelectAll}
                   optionsKey="name"
                   selected={formData.module}
                   onSelect={(items) => {
                     handleSelectWithAll(items, moduleNames?.["common-masters"]?.obpasmodules, "module");
                   }}
-                  defaultLabel={t("Select Module") || "Select Module"}
-                  defaultUnit={t("Module Selected") || "selected"}
+                  defaultLabel={t("Select Module")}
+                  defaultUnit={t("Module Selected")}
                 />
                 {formErrors.module && <CardLabelError>{formErrors.module}</CardLabelError>}
               </div>
@@ -818,17 +762,15 @@ const EmpMaping = () => {
                   optionsKey="name"
                   selected={formData.zone}
                   onSelect={(items) => handleSelectWithAll(items, modalZones, "zone")}
-                  defaultLabel={t("COMMON_SELECT_ZONE") || "Select Zones"}
-                  defaultUnit={t("HR_ZONES_SELECTED") || "selected"}
+                  defaultLabel={t("COMMON_SELECT_ZONE")}
+                  defaultUnit={t("HR_ZONES_SELECTED")}
                 />
                 {formErrors.zone && <CardLabelError>{formErrors.zone}</CardLabelError>}
               </div>
 
               {/* Modal Toast for Errors */}
               {modalToast && (
-                <div
-                  className={`hrms-emp-mapping__toast ${modalToast.error ? "hrms-emp-mapping__toast--error" : "hrms-emp-mapping__toast--success"}`}
-                >
+                <div className={`hrms-emp-mapping__toast ${modalToast.error ? "hrms-emp-mapping__toast--error" : "hrms-emp-mapping__toast--success"}`}>
                   <span className="hrms-emp-mapping__toast-message">{modalToast.label}</span>
                   <button onClick={() => setModalToast(null)} className="hrms-emp-mapping__toast-close-btn">
                     ✖
@@ -839,7 +781,7 @@ const EmpMaping = () => {
               {/* Add to List Button */}
               <div className="hrms-emp-mapping__form-group">
                 <button onClick={handleAddToList} className="hrms-emp-mapping__add-to-list-button">
-                  + {t("HR_ADD_TO_LIST") || "Add to List"}
+                  + {t("HR_ADD_TO_LIST")}
                 </button>
               </div>
 
@@ -848,10 +790,10 @@ const EmpMaping = () => {
                 <div className="hrms-emp-mapping__preview-section">
                   <div className="hrms-emp-mapping__preview-header">
                     <h3 className="hrms-emp-mapping__preview-heading">
-                      {t("HR_MAPPINGS_TO_CREATE") || "Mappings to Create"} ({mappingsToCreate.length})
+                      {t("HR_MAPPINGS_TO_CREATE")} ({mappingsToCreate.length})
                     </h3>
                     <button onClick={handleClearList} className="hrms-emp-mapping__clear-list-button">
-                      {t("COMMON_CLEAR_ALL") || "Clear All"}
+                      {t("COMMON_CLEAR_ALL")}
                     </button>
                   </div>
                   <div className="hrms-emp-mapping__preview-table-wrapper">
@@ -868,7 +810,7 @@ const EmpMaping = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {mappingsToCreate.map((mapping, index) => (
+                        {mappingsToCreate.map((mapping) => (
                           <tr key={mapping.id}>
                             <td>{mapping.employeeCode}</td>
                             <td>{mapping.category.name}</td>

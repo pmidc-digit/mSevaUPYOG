@@ -2,6 +2,9 @@ import React from "react";
 import { UploadFile, Dropdown } from "@mseva/digit-ui-react-components";
 import { convertEpochToDate } from "../Utils/index";
 
+// Local calendar date, so the default is today for the user and not yesterday in timezones ahead of UTC
+const today = () => convertEpochToDate(Date.now());
+
 export const configEmployeeApplication = ({ t, action, selectFile, uploadedFile, setUploadedFile, selectedReason, Reasons, selectReason }) => {
   return {
     label: {
@@ -34,9 +37,9 @@ export const configEmployeeApplication = ({ t, action, selectFile, uploadedFile,
             populators: {
               error: t("HR_EFFECTIVE_DATE_INVALID"),
               name: "effectiveFrom",
-              min: convertEpochToDate(new Date().toJSON().slice(0, 10).replace(/-/g, "/")),
-              max: convertEpochToDate(new Date().toJSON().slice(0, 10).replace(/-/g, "/")),
-              defaultValue: convertEpochToDate(new Date().toJSON().slice(0, 10).replace(/-/g, "/")),
+              min: today(),
+              max: today(),
+              defaultValue: today(),
             },
           },
           {

@@ -1,14 +1,15 @@
+// Recursively drops null and undefined properties. Arrays and Dates are kept as they are instead of being turned into plain objects
 const cleanup = (payload) => {
-  if (payload) {
-    return Object.keys(payload).reduce((acc, key) => {
-      if (payload[key] === undefined) {
-        return acc;
-      }
+  if (payload === null || payload === undefined) return undefined;
+  if (typeof payload !== "object" || payload instanceof Date) return payload;
+  if (Array.isArray(payload)) return payload.map(cleanup);
 
-      // todo: find a better way to check object
-      acc[key] = typeof payload[key] === "object" ? cleanup(payload[key]) : payload[key];
-      return acc;
-    }, {});
-  }
+  return Object.keys(payload).reduce((acc, key) => {
+    const value = cleanup(payload[key]);
+    if (value !== undefined) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
 };
 export default cleanup;

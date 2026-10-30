@@ -27,7 +27,7 @@ const SelectEmployeeId = ({ t, config, onSelect, formData = {}, userType, regist
     <div>
       {inputs?.map((input, index) => (
         <React.Fragment key={index}>
-          {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
+          {errors?.[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller hrms-text-transform-none">
               {t(input.label)}

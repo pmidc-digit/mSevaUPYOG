@@ -4,18 +4,52 @@ import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 //
 import { newConfig } from "../components/config/config";
+import { hasAssignmentOverlap } from "../utils/employeeUtils";
 import { onSubmit } from "../utils/onSubmitCreateEmployee";
+
+const isJurisdictionComplete = (juris) => Boolean(juris?.boundary && juris?.boundaryType && juris?.hierarchy && juris?.tenantId && juris?.roles?.length > 0);
+
+const isAssignmentComplete = (assignment) => Boolean(assignment?.department && assignment?.designation && assignment?.fromDate && (assignment?.toDate || assignment?.isCurrentAssignment));
+
+const checkMailNameNum = (formData) => {
+  const email = formData?.SelectEmployeeEmailId?.emailId || "";
+  const name = formData?.SelectEmployeeName?.employeeName || "";
+  const address = formData?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress || "";
+  const validEmail = email.length === 0 ? true : email.match(Digit.Utils.getPattern("Email"));
+  return Boolean(validEmail && name.match(Digit.Utils.getPattern("Name")) && address.match(Digit.Utils.getPattern("Address")));
+};
+
+// Evaluated from the latest form values and the async phone check, so it never lags one change behind
+const isFormValid = (formData, phonecheck) => {
+  if (!formData) return false;
+  const jurisdictions = formData.Jurisdictions || [];
+  const assignments = formData.Assignments || [];
+  return Boolean(
+    formData?.SelectDateofEmployment?.dateOfAppointment &&
+      formData?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress &&
+      formData?.SelectEmployeeGender?.gender?.code &&
+      formData?.SelectEmployeeName?.employeeName &&
+      formData?.SelectEmployeeType?.code &&
+      formData?.SelectEmployeePhoneNumber?.mobileNumber &&
+      jurisdictions.length > 0 &&
+      jurisdictions.every(isJurisdictionComplete) &&
+      assignments.length > 0 &&
+      assignments.every(isAssignmentComplete) &&
+      !hasAssignmentOverlap(assignments) &&
+      phonecheck &&
+      checkMailNameNum(formData)
+  );
+};
 
 const CreateEmployee = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [canSubmit, setSubmitValve] = useState(false);
+  const [formValues, setFormValues] = useState(null);
   const [mobileNumber, setMobileNumber] = useState(null);
   const [showToast, setShowToast] = useState(null);
   const [phonecheck, setPhonecheck] = useState(false);
-  const [checkfield, setcheck] = useState(false);
   const { t } = useTranslation();
   const history = useHistory();
-  const isMobile = window.Digit.Utils.browser.isMobile();
 
   const { data: mdmsData, isLoading } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "egov-hrms", ["CommonFieldsConfig"], {
     select: (data) => {
@@ -24,11 +58,10 @@ const CreateEmployee = () => {
       };
     },
     retry: false,
-    enable: false,
   });
-  const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_HAPPENED", false);
-  const [errorInfo, setErrorInfo, clearError] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_ERROR_DATA", false);
-  const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_SUCCESS_DATA", false);
+  const [, setMutationHappened] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_HAPPENED", false);
+  const [, , clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_SUCCESS_DATA", false);
+  const [, , clearError] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_ERROR_DATA", false);
 
   useEffect(() => {
     setMutationHappened(false);
@@ -36,28 +69,35 @@ const CreateEmployee = () => {
     clearError();
   }, []);
 
-  const checkMailNameNum = (formData) => {
-    const email = formData?.SelectEmployeeEmailId?.emailId || "";
-    const name = formData?.SelectEmployeeName?.employeeName || "";
-    const address = formData?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress || "";
-    const validEmail = email.length == 0 ? true : email.match(Digit.Utils.getPattern("Email"));
-    return validEmail && name.match(Digit.Utils.getPattern("Name")) && address.match(Digit.Utils.getPattern("Address"));
-  };
   useEffect(() => {
-    if (mobileNumber && mobileNumber.length == 10 && mobileNumber.match(Digit.Utils.getPattern("MobileNo"))) {
-      setShowToast(null);
-      Digit.HRMSService.search(tenantId, null, { phone: mobileNumber }).then((result, err) => {
-        if (result.Employees.length > 0) {
-          setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_MOB" });
-          setPhonecheck(false);
-        } else {
-          setPhonecheck(true);
-        }
-      });
-    } else {
+    if (!(mobileNumber && mobileNumber.length === 10 && mobileNumber.match(Digit.Utils.getPattern("MobileNo")))) {
       setPhonecheck(false);
+      return;
     }
+    setShowToast(null);
+    // Ignore responses for a number the user has since changed
+    let ignore = false;
+    Digit.HRMSService.search(tenantId, null, { phone: mobileNumber })
+      .then((result) => {
+        if (ignore) return;
+        const exists = result?.Employees?.length > 0;
+        if (exists) {
+          setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_MOB" });
+        }
+        setPhonecheck(!exists);
+      })
+      .catch(() => {
+        if (!ignore) setPhonecheck(false);
+      });
+    return () => {
+      ignore = true;
+    };
   }, [mobileNumber]);
+
+  // Re-evaluated when the form changes or when the phone check resolves
+  useEffect(() => {
+    setSubmitValve(isFormValid(formValues, phonecheck));
+  }, [formValues, phonecheck]);
 
   const defaultValues = {
     Jurisdictions: [
@@ -75,58 +115,13 @@ const CreateEmployee = () => {
   };
 
   const onFormValueChange = (setValue = true, formData) => {
-
-    if (formData?.SelectEmployeePhoneNumber?.mobileNumber) {
-      setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
-    } else {
-      setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
-    }
-    for (let i = 0; i < formData?.Jurisdictions?.length; i++) {
-      let key = formData?.Jurisdictions[i];
-      if (!(key?.boundary && key?.boundaryType && key?.hierarchy && key?.tenantId && key?.roles?.length > 0)) {
-        setcheck(false);
-        break;
-      } else {
-        setcheck(true);
-      }
-    }
-
-    let setassigncheck = false;
-    for (let i = 0; i < formData?.Assignments?.length; i++) {
-      let key = formData?.Assignments[i];
-      if (
-        !(key.department && key.designation && key.fromDate && (formData?.Assignments[i].toDate || formData?.Assignments[i]?.isCurrentAssignment))
-      ) {
-        setassigncheck = false;
-        break;
-      } else if (formData?.Assignments[i].toDate == null && formData?.Assignments[i]?.isCurrentAssignment == false) {
-        setassigncheck = false;
-        break;
-      } else {
-        setassigncheck = true;
-      }
-    }
-    if (
-      formData?.SelectDateofEmployment?.dateOfAppointment &&
-      formData?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress &&
-      formData?.SelectEmployeeGender?.gender.code &&
-      formData?.SelectEmployeeName?.employeeName &&
-      formData?.SelectEmployeeType?.code &&
-      formData?.SelectEmployeePhoneNumber?.mobileNumber &&
-      checkfield &&
-      setassigncheck &&
-      phonecheck &&
-      checkMailNameNum(formData)
-    ) {
-      setSubmitValve(true);
-    } else {
-      setSubmitValve(false);
-    }
+    setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
+    setFormValues(formData);
   };
 
   const handleSubmit = (data) => {
     onSubmit(data, tenantId, setShowToast, history);
-  }; 
+  };
 
   if (isLoading) {
     return <Loader />;

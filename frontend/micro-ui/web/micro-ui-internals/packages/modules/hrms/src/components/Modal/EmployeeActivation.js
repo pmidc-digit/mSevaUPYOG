@@ -1,9 +1,13 @@
 import { Dropdown, UploadFile } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { convertEpochToDate } from "../Utils/index";
+import { getLatestDeactivation } from "../../utils/employeeUtils";
 
-export const configEmployeeActiveApplication = ({ t, action, selectFile, uploadedFile, setUploadedFile, selectedReason, Reasons, selectReason, employees = { } }) => {
-  employees.deactivationDetails = employees?.deactivationDetails?.sort((y, x) => x?.auditDetails?.createdDate - y?.auditDetails?.createdDate);
+// Local calendar date, so the default is today for the user and not yesterday in timezones ahead of UTC
+const today = () => convertEpochToDate(Date.now());
+
+export const configEmployeeActiveApplication = ({ t, action, selectFile, uploadedFile, setUploadedFile, selectedReason, Reasons, selectReason, employees = {} }) => {
+  const latestDeactivation = getLatestDeactivation(employees?.deactivationDetails);
   return {
     label: {
       heading: `HR_ACTIVATE_EMPLOYEE_HEAD`,
@@ -31,13 +35,13 @@ export const configEmployeeActiveApplication = ({ t, action, selectFile, uploade
             label: t("HR_EFFECTIVE_DATE"),
             type: "date",
             isMandatory: true,
-            disable: true,   /* Disabled date and set defaultvalue */
+            disable: true /* Disabled date and set defaultvalue */,
             populators: {
               error: t("HR_EFFECTIVE_DATE_INVALID"),
               name: "effectiveFrom",
-              min: convertEpochToDate(employees?.deactivationDetails?.[0].effectiveFrom),
-              max: convertEpochToDate(new Date().toJSON().slice(0, 10).replace(/-/g, "/")),
-              defaultValue: convertEpochToDate(new Date().toJSON().slice(0, 10).replace(/-/g, "/")),
+              min: convertEpochToDate(latestDeactivation?.effectiveFrom),
+              max: today(),
+              defaultValue: today(),
             },
           },
           {

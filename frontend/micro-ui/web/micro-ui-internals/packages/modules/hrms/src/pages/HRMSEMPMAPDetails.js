@@ -1,22 +1,26 @@
-import { ActionBar, Card, CardSubHeader, DocumentSVG, Header, Loader, Menu, Row, StatusTable, SubmitBar, Table, Toast } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState, useMemo, useCallback, Fragment } from "react";
+import { Card, CardSubHeader, Header, Loader, Row, StatusTable, Table, Toast } from "@mseva/digit-ui-react-components";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory, useParams } from "react-router-dom";
-import ActionModal from "../components/Modal";
-import { convertEpochFormateToDate, pdfDownloadLink } from "../components/Utils";
+import { useParams } from "react-router-dom";
+import { convertEpochFormateToDate } from "../components/Utils";
 
+const MAPPING_BATCH_SIZE = 100;
+// Upper bound on batches while collecting all mappings, so a misbehaving API cannot loop forever
+const MAX_MAPPING_BATCHES = 100;
 
+// Asks the employee's own tenant first, then falls back to the ULB tenant from the URL
+const requestMappings = async ({ userUUID, tenantId, userTenantId, offset, limit }) => {
+  const params = { userUUID, limit, offset, assignedTenantId: tenantId };
+  const response = await Digit.HRMSService.EmpMapDetails(userTenantId, params);
+  if ((!response?.Employees || response.Employees.length === 0) && userTenantId !== tenantId) {
+    return Digit.HRMSService.EmpMapDetails(tenantId, params);
+  }
+  return response;
+};
 
 const HRMSEMPMAPDetails = () => {
-  const activeworkflowActions = ["DEACTIVATE_EMPLOYEE_HEAD", "COMMON_EDIT_EMPLOYEE_HEADER"];
-  const deactiveworkflowActions = ["ACTIVATE_EMPLOYEE_HEAD"];
-  const [selectedAction, setSelectedAction] = useState(null);
-  const [showModal, setShowModal] = useState(false);
   const { t } = useTranslation();
-  const { id: employeeId, uuid: userUUID, userTenantId: urlUserTenantId } = useParams();
-  const { tenantId: tenantId } = useParams();
-  const history = useHistory();
-  const [displayMenu, setDisplayMenu] = useState(false);
+  const { id: employeeId, uuid: userUUID, userTenantId: urlUserTenantId, tenantId } = useParams();
   const isupdate = Digit.SessionStorage.get("isupdate");
   const stateId = Digit.ULBService.getStateId();
 
@@ -30,31 +34,26 @@ const HRMSEMPMAPDetails = () => {
   // Fallback: if profileTenantId itself found nothing (e.g. old URL without userTenantId segment),
   // try with the ULB tenantId from the URL.
   const fallbackEnabled =
-    !primarySearch.isLoading &&
-    (!primarySearch.data?.Employees || primarySearch.data.Employees.length === 0) &&
-    profileTenantId !== tenantId;
+    !primarySearch.isLoading && (!primarySearch.data?.Employees || primarySearch.data.Employees.length === 0) && profileTenantId !== tenantId;
 
-  const fallbackSearch = Digit.Hooks.hrms.useHRMSSearch(
-    { codes: employeeId },
-    tenantId,
-    null,
-    isupdate,
-    { enabled: fallbackEnabled }
-  );
+  const fallbackSearch = Digit.Hooks.hrms.useHRMSSearch({ codes: employeeId }, tenantId, null, isupdate, { enabled: fallbackEnabled });
 
   // isLoading must stay true while fallbackSearch is pending, since disabled queries report isLoading=false
   const isLoading = primarySearch.isLoading || (fallbackEnabled && (fallbackSearch.isLoading || fallbackSearch.isFetching));
+  const isError = primarySearch.isError && fallbackSearch.isError;
   const data = primarySearch.data?.Employees?.length > 0 ? primarySearch.data : fallbackSearch.data;
-  const [errorInfo, setErrorInfo, clearError] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_ERROR_DATA", false);
-  const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_HAPPENED", false);
-  const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_SUCCESS_DATA", false);
-  const isMobile = window.Digit.Utils.browser.isMobile();
+  const employee = data?.Employees?.[0];
+
+  const [, , clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_SUCCESS_DATA", false);
+  const [, setMutationHappened] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_HAPPENED", false);
+  const [, , clearError] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_ERROR_DATA", false);
   const [mappingData, setMappingData] = useState([]);
   const [mappingLoading, setMappingLoading] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [totalRecords, setTotalRecords] = useState(0);
+  // The mapping API returns no total, so only "is there another page" is known
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [refreshCounter, setRefreshCounter] = useState(0);
 
   // Fetch MDMS data for BPA Category and SubCategory
@@ -62,11 +61,9 @@ const HRMSEMPMAPDetails = () => {
   const { obpsRoles } = Digit.Hooks.hrms.useOBPSRoles(stateId);
   const obpsRoleMap = useMemo(() => obpsRoles?.map || {}, [obpsRoles]);
 
-  // Create lookup maps for categories and subcategories
   const categoryMap = useMemo(() => {
-    if (!mdmsDataBPA?.BPA?.Category) return {};
     const map = {};
-    mdmsDataBPA.BPA.Category.forEach((cat) => {
+    (mdmsDataBPA?.BPA?.Category || []).forEach((cat) => {
       map[cat.categoryId] = cat.categoryName;
       if (cat.code) map[cat.code] = cat.categoryName;
     });
@@ -74,14 +71,19 @@ const HRMSEMPMAPDetails = () => {
   }, [mdmsDataBPA]);
 
   const subCategoryMap = useMemo(() => {
-    if (!mdmsDataBPA?.BPA?.SubCategory) return {};
     const map = {};
-    mdmsDataBPA.BPA.SubCategory.forEach((sub) => {
+    (mdmsDataBPA?.BPA?.SubCategory || []).forEach((sub) => {
       map[sub.subCategoryId] = sub.subCategoryName;
       if (sub.code) map[sub.code] = sub.subCategoryName;
     });
     return map;
   }, [mdmsDataBPA]);
+
+  // Same roles for all mappings, since they belong to the employee
+  const employeeRoleNames = useMemo(() => {
+    const roles = (employee?.user?.roles || []).filter((role) => obpsRoleMap[role.code]).map((role) => obpsRoleMap[role.code]);
+    return roles.length > 0 ? roles.join(", ") : "No OBPS Roles";
+  }, [employee, obpsRoleMap]);
 
   useEffect(() => {
     setMutationHappened(false);
@@ -89,7 +91,6 @@ const HRMSEMPMAPDetails = () => {
     clearError();
   }, []);
 
-  // Fetch mapping data with pagination
   const fetchMappingData = useCallback(async () => {
     if (!userUUID) {
       return;
@@ -97,98 +98,52 @@ const HRMSEMPMAPDetails = () => {
 
     try {
       setMappingLoading(true);
-
-      // Use profileTenantId (from URL or derived from data) for the mapping API call
-      const empUserTenantId = data?.Employees?.[0]?.user?.tenantId || profileTenantId;
-      let response = await Digit.HRMSService.EmpMapDetails(empUserTenantId, {
-        userUUID: userUUID,
-        limit: pageSize,
+      const response = await requestMappings({
+        userUUID,
+        tenantId,
+        userTenantId: employee?.user?.tenantId || profileTenantId,
         offset: pageOffset,
-        assignedTenantId: tenantId,
+        limit: pageSize,
       });
 
-      // Fallback: If no records found with empUserTenantId and empUserTenantId !== tenantId, try with tenantId
-      if ((!response?.Employees || response.Employees.length === 0) && empUserTenantId !== tenantId) {
-        response = await Digit.HRMSService.EmpMapDetails(tenantId, {
-          userUUID: userUUID,
-          limit: pageSize,
-          offset: pageOffset,
-          assignedTenantId: tenantId,
-        });
-      }
-
       if (response?.Employees) {
-        // Get employee's OBPS roles from main data object (calculated once for all mappings)
-        let roleNames = "No OBPS Roles";
-        if (data?.Employees?.[0]?.user?.roles && obpsRoleMap && Object.keys(obpsRoleMap).length > 0) {
-          const empRoles = data.Employees[0].user.roles
-            .filter((role) => obpsRoleMap[role.code])
-            .map((role) => obpsRoleMap[role.code]);
-          roleNames = empRoles.length > 0 ? empRoles.join(", ") : "No OBPS Roles";
-        }
-
-        const transformedData = response.Employees.map((emp, index) => {
-          return {
-            id: emp.uuid || emp.id,
-            displayId: String(pageOffset + index + 1),
-            employeeUUID: emp.uuid,
-            userUUID: emp.userUUID,
-            category: categoryMap[emp.category] || emp.category || "N/A",
-            subCategory: subCategoryMap[emp.subcategory] || emp.subcategory || "N/A",
-            ward: emp.assignedTenantId || "N/A",
-            zone: emp.zone || "N/A",
-            roles: roleNames, // Same roles for all mappings since it's per employee
-          };
-        });
+        const transformedData = response.Employees.map((emp, index) => ({
+          id: emp.uuid || emp.id,
+          displayId: String(pageOffset + index + 1),
+          employeeUUID: emp.uuid,
+          userUUID: emp.userUUID,
+          category: categoryMap[emp.category] || emp.category || "N/A",
+          subCategory: subCategoryMap[emp.subcategory] || emp.subcategory || "N/A",
+          ward: emp.assignedTenantId || "N/A",
+          zone: emp.zone || "N/A",
+          roles: employeeRoleNames,
+        }));
         setMappingData(transformedData);
-
-        // Since API doesn't return total count, handle pagination based on fetched data
-        if (transformedData.length < pageSize) {
-          // Last page - set exact total
-          setTotalRecords(pageOffset + transformedData.length);
-        } else {
-          // More pages might exist - set total to allow next page
-          setTotalRecords(pageOffset + transformedData.length + 1);
-        }
+        // A full page means there may be more; a short page is the last one
+        setHasNextPage(response.Employees.length >= pageSize);
       } else {
         setMappingData([]);
-        setTotalRecords(0);
+        setHasNextPage(false);
       }
     } catch (error) {
       console.error("Error fetching mapping data:", error);
       setMappingData([]);
-      setTotalRecords(0);
+      setHasNextPage(false);
     } finally {
       setMappingLoading(false);
     }
-  }, [userUUID, tenantId, pageOffset, pageSize, data?.Employees?.[0]?.user?.tenantId, obpsRoleMap, categoryMap, subCategoryMap]);
+  }, [userUUID, tenantId, profileTenantId, employee, pageOffset, pageSize, employeeRoleNames, categoryMap, subCategoryMap]);
 
   useEffect(() => {
     fetchMappingData();
   }, [fetchMappingData, refreshCounter]);
 
-  function onActionSelect(action) {
-    setSelectedAction(action);
-    setDisplayMenu(false);
-  }
-
-  const closeModal = () => {
-    setSelectedAction(null);
-    setShowModal(false);
-  };
-  const handleDownload = async (document) => {
-    const res = await Digit.UploadServices.Filefetch([document?.documentId], Digit.ULBService.getStateId());
-    let documentLink = pdfDownloadLink(res.data, document?.documentId);
-    window.open(documentLink, "_blank");
-  };
-
-  // ==================== PAGINATION HANDLERS ====================
-  const fetchNextPage = () => {
-    setPageOffset((prevState) => prevState + pageSize);
-  };
-
   const fetchPrevPage = () => {
     setPageOffset((prevState) => prevState - pageSize);
+  };
+
+  const fetchNextPage = () => {
+    setPageOffset((prevState) => prevState + pageSize);
   };
 
   const handlePageSizeChange = (e) => {
@@ -196,132 +151,105 @@ const HRMSEMPMAPDetails = () => {
     setPageOffset(0);
   };
 
-  const totalPages = Math.ceil(totalRecords / pageSize);
-  const currentPage = Math.floor(pageOffset / pageSize);
+  const deleteMappings = async (mappings) => {
+    const payload = {
+      Employees: mappings.map((mapping) => ({
+        tenantId,
+        uuid: mapping.uuid,
+      })),
+    };
+    return Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
+  };
 
-  const submitAction = (data) => { };
-   // ==================== MODAL ACTIONS ====================
+  const showDeleteResult = (response, successLabel, failureLabel) => {
+    if (response?.ResponseInfo?.status === "successful") {
+      setRefreshCounter((prev) => prev + 1);
+      setShowToast({ key: true, label: successLabel });
+    } else {
+      setShowToast({ key: true, label: failureLabel, error: true });
+    }
+  };
+
+  const showDeleteError = (error, failureLabel) => {
+    setShowToast({
+      key: true,
+      label: error?.response?.data?.Errors?.[0]?.message || failureLabel,
+      error: true,
+    });
+  };
+
+  // Collects every mapping of the employee across all API pages, not just the one on screen
+  const fetchAllMappings = async () => {
+    const allMappings = [];
+    for (let batch = 0; batch < MAX_MAPPING_BATCHES; batch++) {
+      const response = await requestMappings({
+        userUUID,
+        tenantId,
+        userTenantId: employee?.user?.tenantId || profileTenantId,
+        offset: batch * MAPPING_BATCH_SIZE,
+        limit: MAPPING_BATCH_SIZE,
+      });
+      const mappings = response?.Employees || [];
+      allMappings.push(...mappings);
+      if (mappings.length < MAPPING_BATCH_SIZE) break;
+    }
+    return allMappings;
+  };
+
   const handleDeleteAll = async () => {
-    if (window.confirm("Are you sure you want to delete ALL mappings for this employee?")) {
-      try {
-        setMappingLoading(true);
-
-        // Prepare payload - send ALL mapping UUIDs, not the user UUID
-        const payload = {
-          Employees: mappingData.map(mapping => ({
-            tenantId: tenantId,
-            uuid: mapping.employeeUUID, // Use each mapping's UUID
-          })),
-        };
-
-        // Call DELETE API for each mapping
-        const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
-
-        if (response?.ResponseInfo?.status === "successful") {
-          // Trigger refresh through useEffect to ensure proper data flow
-          setRefreshCounter(prev => prev + 1);
-          setShowToast({ key: true, label: "All mappings deleted successfully!" });
-        } else {
-          setShowToast({ key: true, label: "Failed to delete mappings", error: true });
-        }
-      } catch (error) {
-
-        setShowToast({ 
-          key: true, 
-          label: error?.response?.data?.Errors?.[0]?.message || "Failed to delete mappings", 
-          error: true 
-        });
-      } finally {
-        setMappingLoading(false);
+    if (!window.confirm("Are you sure you want to delete ALL mappings for this employee?")) {
+      return;
+    }
+    try {
+      setMappingLoading(true);
+      const allMappings = await fetchAllMappings();
+      if (allMappings.length === 0) {
+        setShowToast({ key: true, label: "No mappings to delete", error: true });
+        return;
       }
+      const response = await deleteMappings(allMappings.map((mapping) => ({ uuid: mapping.uuid })));
+      showDeleteResult(response, "All mappings deleted successfully!", "Failed to delete mappings");
+    } catch (error) {
+      showDeleteError(error, "Failed to delete mappings");
+    } finally {
+      setMappingLoading(false);
     }
   };
 
-  const handleDelete = async (mappingId, employeeUUID) => {
-    if (window.confirm(t("HR_CONFIRM_DELETE_MAPPING") || "Are you sure you want to delete this mapping?")) {
+  const handleDelete = useCallback(
+    async (mappingUuid) => {
+      if (!window.confirm(t("HR_CONFIRM_DELETE_MAPPING") || "Are you sure you want to delete this mapping?")) {
+        return;
+      }
       try {
         setMappingLoading(true);
-
-        // Prepare payload for DELETE API (as per CURL format)
-        const payload = {
-          Employees: [
-            {
-              tenantId: tenantId,
-              uuid: employeeUUID,
-            },
-          ],
-        };
-
-        // Call DELETE API using service
-        const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
-
-        if (response?.ResponseInfo?.status === "successful") {
-          // Trigger refresh through useEffect to ensure proper data flow
-          setRefreshCounter(prev => prev + 1);
-          setShowToast({ key: true, label: "Mapping deleted successfully!" });
-        } else {
-          setShowToast({ key: true, label: "Failed to delete mapping", error: true });
-        }
+        const response = await deleteMappings([{ uuid: mappingUuid }]);
+        showDeleteResult(response, "Mapping deleted successfully!", "Failed to delete mapping");
       } catch (error) {
-
-        setShowToast({ 
-          key: true, 
-          label: error?.response?.data?.Errors?.[0]?.message || "Failed to delete mapping", 
-          error: true 
-        });
+        showDeleteError(error, "Failed to delete mapping");
       } finally {
         setMappingLoading(false);
       }
-    }
-  };
-  // Table columns for mapping data
+    },
+    [tenantId]
+  );
+
   const mappingColumns = useMemo(
     () => [
       {
         Header: t("HR_CATEGORY_LABEL"),
         accessor: "category",
-        Cell: ({ value }) => (
-          <span className="hrms-badge hrms-badge--category">
-            {value}
-          </span>
-        ),
+        Cell: ({ value }) => <span className="hrms-badge hrms-badge--category">{value}</span>,
       },
       {
         Header: t("HR_SUB_CATEGORY_LABEL"),
         accessor: "subCategory",
-        Cell: ({ value }) => (
-          <span className="hrms-badge hrms-badge--subcategory">
-            {value}
-          </span>
-        ),
+        Cell: ({ value }) => <span className="hrms-badge hrms-badge--subcategory">{value}</span>,
       },
-      // {
-      //   Header: t("HR_WARD_LABEL"),
-      //   accessor: "ward",
-      //   Cell: ({ value }) => (
-      //     <span
-      //       style={{
-      //         display: "inline-block",
-      //         padding: "4px 12px",
-      //         backgroundColor: "#D1FAE5",
-      //         color: "#047857",
-      //         borderRadius: "12px",
-      //         fontSize: "13px",
-      //         fontWeight: "500",
-      //       }}
-      //     >
-      //       {value}
-      //     </span>
-      //   ),
-      // },
       {
         Header: t("HR_ZONE_LABEL"),
         accessor: "zone",
-        Cell: ({ value }) => (
-          <span className="hrms-badge hrms-badge--zone">
-            {value}
-          </span>
-        ),
+        Cell: ({ value }) => <span className="hrms-badge hrms-badge--zone">{value}</span>,
       },
       {
         Header: t("HR_ROLES_LABEL") || "Role(s)",
@@ -330,10 +258,9 @@ const HRMSEMPMAPDetails = () => {
           if (!value || value === "No OBPS Roles") {
             return <span className="hrms-text-secondary">{value || "No OBPS Roles"}</span>;
           }
-          const roleArray = value.split(", ");
           return (
             <div className="hrms-badge-container">
-              {roleArray.map((role, idx) => (
+              {value.split(", ").map((role, idx) => (
                 <span key={idx} className="hrms-badge hrms-badge--role">
                   {role}
                 </span>
@@ -347,11 +274,7 @@ const HRMSEMPMAPDetails = () => {
         accessor: "actions",
         disableSortBy: true,
         Cell: ({ row }) => (
-          <button
-            onClick={() => handleDelete(row.original.id, row.original.employeeUUID)}
-            className="hrms-btn hrms-btn--delete"
-            disabled={mappingLoading}
-          >
+          <button onClick={() => handleDelete(row.original.employeeUUID)} className="hrms-btn hrms-btn--delete" disabled={mappingLoading}>
             {t("COMMON_DELETE")}
           </button>
         ),
@@ -360,59 +283,54 @@ const HRMSEMPMAPDetails = () => {
     [t, handleDelete, mappingLoading]
   );
 
-  useEffect(() => {
-    switch (selectedAction) {
-      case "DEACTIVATE_EMPLOYEE_HEAD":
-        return setShowModal(true);
-      case "ACTIVATE_EMPLOYEE_HEAD":
-        return setShowModal(true);
-      case "COMMON_EDIT_EMPLOYEE_HEADER":
-        return history.push(`/digit-ui/employee/hrms/edit/${tenantId}/${employeeId}`);
-      default:
-        break;
-    }
-  }, [selectedAction]);
-
   if (isLoading || isBPALoading) {
     return <Loader />;
   }
+
+  const currentPage = Math.floor(pageOffset / pageSize);
 
   return (
     <React.Fragment>
       <div className="hrms-emp-mapping__header">
         <Header>{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</Header>
       </div>
-      {!isLoading && (data?.Employees?.length > 0 || mappingData?.length > 0) ? (
+      {isError || (!employee && mappingData.length === 0) ? (
+        <div className="hrms-emp-mapping__no-data">
+          <p>{t("HR_NO_EMPLOYEE_FOUND")}</p>
+        </div>
+      ) : (
         <div>
           <Card>
-            {data?.Employees?.length > 0 && (
+            {employee && (
               <>
                 <StatusTable>
                   <Row
                     label={<CardSubHeader className="card-section-header">{t("HR_EMP_STATUS_LABEL")} </CardSubHeader>}
-                    text={
-                      data?.Employees?.[0]?.isActive ? <div className="sla-cell-success"> {t("ACTIVE")} </div> : <div className="sla-cell-error">{t("INACTIVE")}</div>
-                    }
+                    text={employee.isActive ? <div className="sla-cell-success"> {t("ACTIVE")} </div> : <div className="sla-cell-error">{t("INACTIVE")}</div>}
                     textStyle={{ fontWeight: "bold", maxWidth: "7.5rem" }}
                   />
                 </StatusTable>
                 <CardSubHeader className="card-section-header">{t("HR_PERSONAL_DETAILS_FORM_HEADER")} </CardSubHeader>
                 <StatusTable>
-                  <Row label={t("HR_NAME_LABEL")} text={data?.Employees?.[0]?.user?.name || "NA"} textStyle={{ whiteSpace: "pre" }} />
-                  <Row label={t("HR_MOB_NO_LABEL")} text={data?.Employees?.[0]?.user?.mobileNumber || "NA"} textStyle={{ whiteSpace: "pre" }} />
-                  <Row label={t("HR_GENDER_LABEL")} text={t(data?.Employees?.[0]?.user?.gender) || "NA"} />
-                  <Row label={t("HR_EMAIL_LABEL")} text={data?.Employees?.[0]?.user?.emailId || "NA"} />
-                  <Row label={t("HR_CORRESPONDENCE_ADDRESS_LABEL")} text={data?.Employees?.[0]?.user?.correspondenceAddress || "NA"} />
+                  <Row label={t("HR_NAME_LABEL")} text={employee.user?.name || "NA"} textStyle={{ whiteSpace: "pre" }} />
+                  <Row label={t("HR_MOB_NO_LABEL")} text={employee.user?.mobileNumber || "NA"} textStyle={{ whiteSpace: "pre" }} />
+                  <Row label={t("HR_GENDER_LABEL")} text={t(employee.user?.gender) || "NA"} />
+                  <Row label={t("HR_EMAIL_LABEL")} text={employee.user?.emailId || "NA"} />
+                  <Row label={t("HR_CORRESPONDENCE_ADDRESS_LABEL")} text={employee.user?.correspondenceAddress || "NA"} />
                 </StatusTable>
                 <CardSubHeader className="card-section-header">{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</CardSubHeader>
                 <StatusTable>
-                  <Row label={t("HR_EMPLOYMENT_TYPE_LABEL")} text={t(data?.Employees?.[0]?.employeeType ? `EGOV_HRMS_EMPLOYEETYPE_${data?.Employees?.[0]?.employeeType}` : "NA")} textStyle={{ whiteSpace: "pre" }} />
                   <Row
-                    label={t("HR_APPOINTMENT_DATE_LABEL")}
-                    text={convertEpochFormateToDate(data?.Employees?.[0]?.dateOfAppointment) || "NA"}
+                    label={t("HR_EMPLOYMENT_TYPE_LABEL")}
+                    text={t(employee.employeeType ? `EGOV_HRMS_EMPLOYEETYPE_${employee.employeeType}` : "NA")}
                     textStyle={{ whiteSpace: "pre" }}
                   />
-                  <Row label={t("HR_EMPLOYEE_ID_LABEL")} text={data?.Employees?.[0]?.code} />
+                  <Row
+                    label={t("HR_APPOINTMENT_DATE_LABEL")}
+                    text={convertEpochFormateToDate(employee.dateOfAppointment) || "NA"}
+                    textStyle={{ whiteSpace: "pre" }}
+                  />
+                  <Row label={t("HR_EMPLOYEE_ID_LABEL")} text={employee.code} />
                 </StatusTable>
               </>
             )}
@@ -424,12 +342,8 @@ const HRMSEMPMAPDetails = () => {
               {/* Page Size Selector */}
               {mappingData.length > 0 && (
                 <div className="hrms-page-size">
-                  <span className="hrms-text--secondary">{t("COMMON_ROWS_PER_PAGE") || "Rows per page:"}:</span>
-                  <select
-                    value={pageSize}
-                    onChange={handlePageSizeChange}
-                    className="hrms-select"
-                  >
+                  <span className="hrms-text--secondary">{`${t("COMMON_ROWS_PER_PAGE")}:`}</span>
+                  <select value={pageSize} onChange={handlePageSizeChange} className="hrms-select">
                     <option value={10}>10</option>
                     <option value={20}>20</option>
                     <option value={30}>30</option>
@@ -442,11 +356,7 @@ const HRMSEMPMAPDetails = () => {
             {/* Delete All Button */}
             {mappingData.length > 0 && (
               <div className="hrms-flex hrms-flex--end hrms-spacing--section-bottom">
-                <button
-                  onClick={handleDeleteAll}
-                  disabled={mappingLoading}
-                  className={`hrms-btn hrms-btn--primary ${mappingLoading ? 'disabled' : ''}`}
-                >
+                <button onClick={handleDeleteAll} disabled={mappingLoading} className={`hrms-btn hrms-btn--primary ${mappingLoading ? "disabled" : ""}`}>
                   {t("HR_DELETE_ALL_MAPPINGS") || "Delete All Mappings"}
                 </button>
               </div>
@@ -477,7 +387,9 @@ const HRMSEMPMAPDetails = () => {
                         <div className="hrms-badge-container">
                           {mapping.roles && mapping.roles !== "No OBPS Roles" ? (
                             mapping.roles.split(", ").map((role, idx) => (
-                              <span key={idx} className="hrms-badge hrms-badge--role">{role}</span>
+                              <span key={idx} className="hrms-badge hrms-badge--role">
+                                {role}
+                              </span>
                             ))
                           ) : (
                             <span className="hrms-text-secondary">No OBPS Roles</span>
@@ -485,7 +397,7 @@ const HRMSEMPMAPDetails = () => {
                         </div>
                       </div>
                       <button
-                        onClick={() => handleDelete(mapping.id, mapping.employeeUUID)}
+                        onClick={() => handleDelete(mapping.employeeUUID)}
                         className="hrms-btn hrms-btn--delete hrms-mobile-card__delete-btn"
                         disabled={mappingLoading}
                       >
@@ -519,27 +431,19 @@ const HRMSEMPMAPDetails = () => {
             {mappingData.length > 0 && (
               <div className="hrms-pagination-container">
                 <div className="hrms-text--secondary">
-                  {t("COMMON_SHOWING")} {pageOffset + 1} {t("COMMON_TO")} {Math.min(pageOffset + pageSize, totalRecords)} {t("COMMON_OF")} {totalRecords}
+                  {t("COMMON_SHOWING")} {pageOffset + 1} {t("COMMON_TO")} {pageOffset + mappingData.length}
                 </div>
 
                 <div className="hrms-flex hrms-flex--gap-10 hrms-flex--center">
-                  <button
-                    onClick={fetchPrevPage}
-                    disabled={pageOffset === 0}
-                    className={`hrms-btn hrms-btn--pagination ${pageOffset === 0 ? 'disabled' : ''}`}
-                  >
+                  <button onClick={fetchPrevPage} disabled={pageOffset === 0} className={`hrms-btn hrms-btn--pagination ${pageOffset === 0 ? "disabled" : ""}`}>
                     ← {t("COMMON_PREVIOUS")}
                   </button>
 
                   <span className="hrms-text--secondary">
-                    {t("COMMON_PAGE")} {currentPage + 1} {t("COMMON_OF")} {totalPages || 1}
+                    {t("COMMON_PAGE")} {currentPage + 1}
                   </span>
 
-                  <button
-                    onClick={fetchNextPage}
-                    disabled={pageOffset + pageSize >= totalRecords}
-                    className={`hrms-btn hrms-btn--pagination ${pageOffset + pageSize >= totalRecords ? 'disabled' : ''}`}
-                  >
+                  <button onClick={fetchNextPage} disabled={!hasNextPage} className={`hrms-btn hrms-btn--pagination ${!hasNextPage ? "disabled" : ""}`}>
                     {t("COMMON_NEXT")} →
                   </button>
                 </div>
@@ -547,32 +451,10 @@ const HRMSEMPMAPDetails = () => {
             )}
           </Card>
         </div>
-      ) : null}
-      {showModal ? (
-        <ActionModal t={t} action={selectedAction} tenantId={tenantId} applicationData={data} closeModal={closeModal} submitAction={submitAction} />
-      ) : null}
-
-      {/* Toast Notification */}
-      {showToast && (
-        <Toast
-          error={showToast.error}
-          label={showToast.label}
-          onClose={() => setShowToast(null)}
-          isDleteBtn
-        />
       )}
 
-      {/* <ActionBar>
-        {displayMenu && data ? (
-          <Menu
-            localeKeyPrefix="HR"
-            options={data?.Employees?.[0]?.isActive ? activeworkflowActions : deactiveworkflowActions}
-            t={t}
-            onSelect={onActionSelect}
-          />
-        ) : null}
-        <SubmitBar label={t("HR_COMMON_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-      </ActionBar> */}
+      {/* Toast Notification */}
+      {showToast && <Toast error={showToast.error} label={showToast.label} onClose={() => setShowToast(null)} isDleteBtn />}
     </React.Fragment>
   );
 };

@@ -14,9 +14,6 @@ const SummaryStep = ({ config, onGoNext, onBackClick, t }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const formData = useSelector((state) => state.hrms.employeeForm.formData);
 
-  useEffect(()=>{
-  },[formData]);
-
   // Auto-close toast
   useEffect(() => {
     if (showToast) {
@@ -58,8 +55,8 @@ const SummaryStep = ({ config, onGoNext, onBackClick, t }) => {
             if (typeLower === "region") {
               const region = REGION_DATA.find(r => r.code?.toLowerCase() === boundaryLower || r.regionName?.toLowerCase() === boundaryLower);
               if (region) {
-                region.districts.forEach(district => {
-                  district.cities.forEach(city => {
+                (region.districts || []).forEach(district => {
+                  (district.cities || []).forEach(city => {
                     transformedJurisdictions.push({
                       ...juris,
                       boundaryType: "City",
@@ -83,7 +80,7 @@ const SummaryStep = ({ config, onGoNext, onBackClick, t }) => {
                 }
               }
               if (foundDistrict) {
-                foundDistrict.cities.forEach(city => {
+                (foundDistrict.cities || []).forEach(city => {
                   transformedJurisdictions.push({
                     ...juris,
                     boundaryType: "City",
@@ -130,9 +127,10 @@ const SummaryStep = ({ config, onGoNext, onBackClick, t }) => {
       await onSubmit(data, tenantId, setShowToast, history);
       
     } catch (error) {
-      setShowToast({ 
-        key: true, 
-        label: error.message || "HR_EMPLOYEE_CREATION_FAILED" 
+      // The message is an unknown error, not a translation key, so a fixed key is shown instead
+      setShowToast({
+        key: true,
+        label: "HR_EMPLOYEE_CREATION_FAILED",
       });
     } finally {
       setIsLoading(false);

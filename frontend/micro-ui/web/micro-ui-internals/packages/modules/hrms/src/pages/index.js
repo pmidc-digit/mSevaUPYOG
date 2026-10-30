@@ -1,12 +1,11 @@
 import { PrivateRoute, BreadCrumb } from "@mseva/digit-ui-react-components";
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, Switch, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const mobileView = innerWidth <= 640;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const inboxInitialState = {
     searchParams: {
@@ -24,6 +23,25 @@ const EmployeeApp = ({ path, url, userType }) => {
   const HRMSEmployeewiseReport = Digit?.ComponentRegistryService?.getComponent("HRMSEmployeewiseReport");
   const EmpMaping = Digit?.ComponentRegistryService?.getComponent("EmpMaping");
 
+  // Route components are created once per dependency change. An inline component type would be
+  // remounted on every render of this app, which discards form state on the page.
+  const routes = useMemo(
+    () => ({
+      Inbox: () => (
+        <Inbox parentRoute={path} businessService="hrms" filterComponent="HRMS_INBOX_FILTER" initialStates={inboxInitialState} isInbox={true} />
+      ),
+      CreateEmployee: () => <CreateEmployee />,
+      CreateEmployeeStepForm: () => <CreateEmployeeStepForm />,
+      Response: (props) => <HRMSResponse {...props} parentRoute={path} />,
+      Details: () => <HRMSDetails />,
+      MappingDetails: () => <HRMSEMPMAPDetails />,
+      Edit: () => <EditEmpolyee />,
+      Report: () => <HRMSEmployeewiseReport />,
+      EmpMapping: () => <EmpMaping />,
+    }),
+    [path, tenantId, Inbox, CreateEmployee, CreateEmployeeStepForm, HRMSResponse, HRMSDetails, HRMSEMPMAPDetails, EditEmpolyee, HRMSEmployeewiseReport, EmpMaping]
+  );
+
   // Dynamic breadcrumbs based on current route
   const getBreadcrumbs = () => {
     const baseCrumbs = [
@@ -34,7 +52,7 @@ const EmployeeApp = ({ path, url, userType }) => {
       },
       {
         path: `${path}/inbox`,
-        content: t("HR_INBOX_HEADER") || "Inbox",
+        content: t("HR_INBOX_HEADER"),
         show: true,
       },
     ];
@@ -49,7 +67,7 @@ const EmployeeApp = ({ path, url, userType }) => {
     else if (pathname.includes("/create")) {
       baseCrumbs.push({
         path: `${path}/create`,
-        content: t("HR_CREATE_EMPLOYEE") || "Create Employee",
+        content: t("HR_CREATE_EMPLOYEE"),
         show: true,
         isclickable: false,
       });
@@ -58,18 +76,18 @@ const EmployeeApp = ({ path, url, userType }) => {
     else if (pathname.includes("/empMaping")) {
       baseCrumbs.push({
         path: `${path}/empMaping`,
-        content: t("HR_EMPLOYEE_MAPPING") || "Employee Mapping",
+        content: t("HR_EMPLOYEE_MAPPING"),
         show: true,
         isclickable: false,
       });
     }
-    // Mapping Details
+    // Mapping Details: /Mapdetails/:tenantId/:id/:uuid/:userTenantId?
     else if (pathname.includes("/Mapdetails/")) {
       const pathParts = pathname.split("/");
-      const employeeId = pathParts[pathParts.length - 2];
+      const employeeId = pathParts[pathParts.indexOf("Mapdetails") + 2];
       baseCrumbs.push({
         path: `${path}/empMaping`,
-        content: t("HR_EMPLOYEE_MAPPING") || "Employee Mapping",
+        content: t("HR_EMPLOYEE_MAPPING"),
         show: true,
       });
       baseCrumbs.push({
@@ -81,22 +99,18 @@ const EmployeeApp = ({ path, url, userType }) => {
     }
     // Edit Employee
     else if (pathname.includes("/edit/")) {
-      const pathParts = pathname.split("/");
-      const employeeId = pathParts[pathParts.length - 1];
       baseCrumbs.push({
         path: pathname,
-        content: t("HR_EDIT_EMPLOYEE") || `Edit Employee - ${employeeId}`,
+        content: t("HR_EDIT_EMPLOYEE"),
         show: true,
         isclickable: false,
       });
     }
     // Employee Details
     else if (pathname.includes("/details/")) {
-      const pathParts = pathname.split("/");
-      const employeeId = pathParts[pathParts.length - 1];
       baseCrumbs.push({
         path: pathname,
-        content: t("HR_EMPLOYEE_DETAILS") || `Employee Details - ${employeeId}`,
+        content: t("HR_EMPLOYEE_DETAILS"),
         show: true,
         isclickable: false,
       });
@@ -105,7 +119,7 @@ const EmployeeApp = ({ path, url, userType }) => {
     else if (pathname.includes("/response")) {
       baseCrumbs.push({
         path: pathname,
-        content: t("HR_RESPONSE") || "Response",
+        content: t("HR_RESPONSE"),
         show: true,
         isclickable: false,
       });
@@ -114,7 +128,7 @@ const EmployeeApp = ({ path, url, userType }) => {
     else if (pathname.includes("/report/")) {
       baseCrumbs.push({
         path: pathname,
-        content: t("HR_REPORTS") || "Reports",
+        content: t("HR_REPORTS"),
         show: true,
         isclickable: false,
       });
@@ -126,32 +140,20 @@ const EmployeeApp = ({ path, url, userType }) => {
   const crumbs = getBreadcrumbs();
 
   return (
-    <Switch>
-      <React.Fragment>
-        <div className="ground-container">
-          <div className="hrms-breadcrumb-wrapper">
-            <BreadCrumb 
-              crumbs={crumbs}
-              className="hrms-breadcrumb"
-            />
-          </div>
-          <PrivateRoute
-            path={`${path}/inbox`}
-            component={() => (
-              <Inbox parentRoute={path} businessService="hrms" filterComponent="HRMS_INBOX_FILTER" initialStates={inboxInitialState} isInbox={true} />
-            )}
-          />
-          <PrivateRoute path={`${path}/create1`} component={() => <CreateEmployee />} />
-          <PrivateRoute path={`${path}/create`} component={() => <CreateEmployeeStepForm />} />
-          <PrivateRoute path={`${path}/response`} component={(props) => <HRMSResponse {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/details/:tenantId/:id`} component={() => <HRMSDetails />} />
-          <PrivateRoute path={`${path}/Mapdetails/:tenantId/:id/:uuid/:userTenantId?`} component={() => <HRMSEMPMAPDetails />} />
-          <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />
-          <PrivateRoute path={`${path}/report/rainmaker-hrms/HRMSEmployeewiseReport`} component={() => <HRMSEmployeewiseReport />} />
-          <PrivateRoute path={`${path}/empMaping`} component={() => <EmpMaping />} />
-        </div>
-      </React.Fragment>
-    </Switch>
+    <div className="ground-container">
+      <div className="hrms-breadcrumb-wrapper">
+        <BreadCrumb crumbs={crumbs} className="hrms-breadcrumb" />
+      </div>
+      <PrivateRoute path={`${path}/inbox`} component={routes.Inbox} />
+      <PrivateRoute path={`${path}/create1`} component={routes.CreateEmployee} />
+      <PrivateRoute path={`${path}/create`} component={routes.CreateEmployeeStepForm} />
+      <PrivateRoute path={`${path}/response`} component={routes.Response} />
+      <PrivateRoute path={`${path}/details/:tenantId/:id`} component={routes.Details} />
+      <PrivateRoute path={`${path}/Mapdetails/:tenantId/:id/:uuid/:userTenantId?`} component={routes.MappingDetails} />
+      <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={routes.Edit} />
+      <PrivateRoute path={`${path}/report/rainmaker-hrms/HRMSEmployeewiseReport`} component={routes.Report} />
+      <PrivateRoute path={`${path}/empMaping`} component={routes.EmpMapping} />
+    </div>
   );
 };
 

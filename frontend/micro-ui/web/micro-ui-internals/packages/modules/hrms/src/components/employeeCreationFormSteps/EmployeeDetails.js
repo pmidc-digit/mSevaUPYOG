@@ -7,6 +7,9 @@ import { FormComposer } from "../../../../../react-components/src/hoc/FormCompos
 import { updateEmployeeForm } from "../../redux/actions/employeeFormActions";
 import { CardHeader } from "@mseva/digit-ui-react-components";
 
+// Stable fallback so useSelector does not return a new object on every store update
+const EMPTY_STEP_DATA = {};
+
 const EmployeeDetails = ({ config, onGoNext, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);
   function goNext(data) {
@@ -25,14 +28,7 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
     checkConditions(data);
   };
 
-  var currentStepData = useSelector(function (state) {
-    return state.hrms &&
-           state.hrms.employeeForm &&
-           state.hrms.employeeForm.formData &&
-           state.hrms.employeeForm.formData[config.key] !== undefined
-        ? state.hrms.employeeForm.formData[config.key] 
-        : {};
-});
+  const currentStepData = useSelector((state) => state.hrms?.employeeForm?.formData?.[config.key] || EMPTY_STEP_DATA);
   const dispatch = useDispatch();
 
   const [mobileNumber, setMobileNumber] = useState(null);
@@ -133,7 +129,7 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
     if (
       formData?.SelectEmployeeName?.employeeName &&
       formData?.SelectEmployeePhoneNumber?.mobileNumber &&
-      formData?.SelectEmployeeGender?.gender.code &&
+      formData?.SelectEmployeeGender?.gender?.code &&
       formData?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress &&
       formData?.SelectDateofEmployment?.dateOfAppointment &&
       formData?.SelectEmployeeType?.code &&     

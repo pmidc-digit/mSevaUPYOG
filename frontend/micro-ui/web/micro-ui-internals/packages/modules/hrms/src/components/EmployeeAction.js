@@ -1,61 +1,59 @@
 import { FormComposer, Loader, Modal } from "@mseva/digit-ui-react-components";
+import cloneDeep from "lodash/cloneDeep";
 import set from "lodash/set";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { configEmployeeActiveApplication } from "./Modal/EmployeeActivation";
 import { configEmployeeApplication } from "./Modal/EmployeeAppliaction";
 
-const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applicationData, billData }) => {
+const EmployeeAction = ({ t, action, tenantId, closeModal, applicationData }) => {
   const history = useHistory();
-  const [config, setConfig] = useState({});
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [error, setError] = useState(null);
-  const [Reasons, setReasons] = useState([]);
-  const [selectedReason, selecteReason] = useState("");
-  const { isLoading, isError, errors, data, ...rest } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "DeactivationReason");
+  const [selectedReason, selectReason] = useState("");
+  const { data } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "DeactivationReason");
 
-  useEffect(() => {
+  // Built from the MDMS response without mutating it, so the i18n key does not leak into the cache
+  const Reasons = useMemo(
+    () =>
+      (data?.["egov-hrms"]?.DeactivationReason || []).map((ele) => ({
+        ...ele,
+        i18key: "EGOV_HRMS_DEACTIVATIONREASON_" + ele.code,
+      })),
+    [data]
+  );
+
+  function selectFile(e) {
+    setFile(e.target.files[0]);
+  }
+
+  // Derived on every render so the dropdown and the modal always see the current selection
+  const config = useMemo(() => {
     switch (action) {
       case "DEACTIVATE_EMPLOYEE_HEAD":
-        return setConfig(
-          configEmployeeApplication({
-            t,
-            action,
-            selectFile,
-            uploadedFile,
-            setUploadedFile,
-            selectedReason,
-            Reasons,
-            selectReason,
-          })
-        );
+        return configEmployeeApplication({ t, action, selectFile, uploadedFile, setUploadedFile, selectedReason, Reasons, selectReason });
       case "ACTIVATE_EMPLOYEE_HEAD":
-        return setConfig(
-          configEmployeeActiveApplication({
-            t,
-            action,
-            selectFile,
-            uploadedFile,
-            setUploadedFile,
-            selectedReason,
-            Reasons,
-            selectReason,
-            employees: applicationData?.Employees[0] || {}
-          })
-        );
+        return configEmployeeActiveApplication({
+          t,
+          action,
+          selectFile,
+          uploadedFile,
+          setUploadedFile,
+          selectedReason,
+          Reasons,
+          selectReason,
+          employees: applicationData?.Employees?.[0] || {},
+        });
       default:
-        break;
+        return {};
     }
-  }, [action, uploadedFile, Reasons]);
+  }, [action, uploadedFile, Reasons, selectedReason]);
 
   const Heading = (props) => {
     return <h1 className="heading-m">{props.label}</h1>;
   };
 
-  function selectReason(e) {
-    selecteReason(e);
-  }
   const Close = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
       <path d="M0 0h24v24H0V0z" fill="none" />
@@ -70,18 +68,6 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
       </div>
     );
   };
-
-  function selectFile(e) {
-    setFile(e.target.files[0]);
-  }
-  useEffect(() => {
-    setReasons(
-      data?.["egov-hrms"]?.DeactivationReason.map((ele) => {
-        ele["i18key"] = "EGOV_HRMS_DEACTIVATIONREASON_" + ele.code;
-        return ele;
-      })
-    );
-  }, [data]);
 
   useEffect(() => {
     (async () => {
@@ -106,62 +92,51 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
     })();
   }, [file]);
 
-  function submit(data) {
-    // useHRMSUpdate
-    //debugger
-    data.effectiveFrom = new Date(data.effectiveFrom).getTime();
-    data.reasonForDeactivation = selectedReason.code;
-    let Employees = [...applicationData.Employees];
-    if (action !== "ACTIVATE_EMPLOYEE_HEAD") {
-      if (file) {
-        let documents = {
-          referenceType: "DEACTIVATION",
-          documentId: uploadedFile,
-          documentName: file.name,
-        };
-        applicationData.Employees[0]["documents"].push(documents);
-      }
+  function submit(formData) {
+    // The effective date shown in the form is the one that gets saved
+    const effectiveFrom = formData.effectiveFrom ? new Date(formData.effectiveFrom).getTime() : Date.now();
+    const reasonForDeactivation = selectedReason.code;
+    // Copy the employee so the react-query cache is not changed by the edits below
+    const Employees = [cloneDeep(applicationData.Employees[0])];
+    const isActivation = action === "ACTIVATE_EMPLOYEE_HEAD";
+    const detailsKey = isActivation ? "reactivationDetails" : "deactivationDetails";
+    const referenceType = isActivation ? "ACTIVATION" : "DEACTIVATION";
 
-      set(Employees[0], 'deactivationDetails[0].effectiveFrom', new Date()?.getTime());
-      set(Employees[0], 'deactivationDetails[0].orderNo', data?.orderNo);
-      set(Employees[0], 'deactivationDetails[0].reasonForDeactivation', data?.reasonForDeactivation);
-      set(Employees[0], 'deactivationDetails[0].remarks', data?.remarks);
-
-      Employees[0].isActive = false;
-      history.replace("/digit-ui/employee/hrms/response", { Employees, key: "UPDATE", action: "DEACTIVATION" });
-    } else {
-      if (file) {
-        let documents = {
-          referenceType: "ACTIVATION",
-          documentId: uploadedFile,
-          documentName: file.name,
-        };
-        applicationData.Employees[0]["documents"].push(documents);
-      }
-
-      set(Employees[0], 'reactivationDetails[0].effectiveFrom', new Date()?.getTime());
-      set(Employees[0], 'reactivationDetails[0].orderNo', data?.orderNo);
-      set(Employees[0], 'reactivationDetails[0].reasonForDeactivation', data?.reasonForDeactivation);
-      set(Employees[0], 'reactivationDetails[0].remarks', data?.remarks);
-      Employees[0].isActive = true;
-
-      history.replace("/digit-ui/employee/hrms/response", { Employees, key: "UPDATE", action: "ACTIVATION" });
+    if (file) {
+      const document = {
+        referenceType,
+        documentId: uploadedFile,
+        documentName: file.name,
+      };
+      Employees[0].documents = [...(Employees[0].documents || []), document];
     }
+
+    set(Employees[0], `${detailsKey}[0].effectiveFrom`, effectiveFrom);
+    set(Employees[0], `${detailsKey}[0].orderNo`, formData?.orderNo);
+    set(Employees[0], `${detailsKey}[0].reasonForDeactivation`, reasonForDeactivation);
+    set(Employees[0], `${detailsKey}[0].remarks`, formData?.remarks);
+    Employees[0].isActive = isActivation;
+
+    history.replace("/digit-ui/employee/hrms/response", {
+      Employees,
+      key: "UPDATE",
+      action: isActivation ? "ACTIVATION" : "DEACTIVATION",
+    });
   }
 
   return action && config?.form ? (
     <div className="hrms-modalbutton-disable">
-    <Modal
-      headerBarMain={<Heading label={t(config?.label?.heading)} />}
-      headerBarEnd={<CloseBtn onClick={closeModal} />}
-      actionCancelOnSubmit={closeModal}
-      actionSaveLabel={t(config?.label?.submit)}
-      actionSaveOnSubmit={() => { }}
-      formId="modal-action"
-      isDisabled={!selectedReason}
-    >
-      <FormComposer config={config?.form} noBoxShadow inline disabled={true} childrenAtTheBottom onSubmit={submit} formId="modal-action" />
-    </Modal>
+      <Modal
+        headerBarMain={<Heading label={t(config?.label?.heading)} />}
+        headerBarEnd={<CloseBtn onClick={closeModal} />}
+        actionCancelOnSubmit={closeModal}
+        actionSaveLabel={t(config?.label?.submit)}
+        actionSaveOnSubmit={() => {}}
+        formId="modal-action"
+        isDisabled={!selectedReason}
+      >
+        <FormComposer config={config?.form} noBoxShadow inline disabled={true} childrenAtTheBottom onSubmit={submit} formId="modal-action" />
+      </Modal>
     </div>
   ) : (
     <Loader />

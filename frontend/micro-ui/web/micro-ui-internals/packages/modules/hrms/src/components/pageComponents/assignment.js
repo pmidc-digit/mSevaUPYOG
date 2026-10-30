@@ -102,9 +102,6 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
 
   const handleRemoveUnit = (unit) => {
     setassignments((prev) => prev.filter((el) => el.key !== unit.key));
-    if (FormData.errors?.Assignments?.type == unit.key) {
-      clearErrors("Jurisdictions");
-    }
     reviseIndexKeys();
   };
 
@@ -152,17 +149,18 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
   let designation = [];
   const [focusIndex, setFocusIndex] = useState(-1);
 
+  // Copies the MDMS entries, so the cached response is not changed and the label follows the current language
   function getdepartmentdata() {
-    return data?.MdmsRes?.["common-masters"]?.Department.map((ele) => {
-      ele["i18key"] = t("COMMON_MASTERS_DEPARTMENT_" + ele.code);
-      return ele;
-    });
+    return (data?.MdmsRes?.["common-masters"]?.Department || []).map((ele) => ({
+      ...ele,
+      i18key: t("COMMON_MASTERS_DEPARTMENT_" + ele.code),
+    }));
   }
   function getdesignationdata() {
-    return data?.MdmsRes?.["common-masters"]?.Designation.map((ele) => {
-      ele["i18key"] = t("COMMON_MASTERS_DESIGNATION_" + ele.code);
-      return ele;
-    });
+    return (data?.MdmsRes?.["common-masters"]?.Designation || []).map((ele) => ({
+      ...ele,
+      i18key: t("COMMON_MASTERS_DESIGNATION_" + ele.code),
+    }));
   }
   
   // Helper function to get department value for dropdown
@@ -198,7 +196,6 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
         <Assignment
           t={t}
           key={index}
-          keys={index.key}
           formData={formData}
           assignment={assignment}
           setassignments={setassignments}
@@ -327,9 +324,6 @@ function Assignment({
     );
   };
 
-  const ValidateDatePickers = (value) => {
-    assignments;
-  };
   return (
     <div key={index + 1} style={{ marginBottom: "16px" }}>
       <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px" }}>

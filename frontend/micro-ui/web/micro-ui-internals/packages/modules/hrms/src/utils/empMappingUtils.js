@@ -1,43 +1,6 @@
 // Constants
 export const OBPS_GROUP_ID = "025";
 
-// Utility: Fetch and cache OBPS roles
-export const fetchOBPSRoles = async (stateId) => {
-  try {
-    // Check sessionStorage first
-    const cachedRoles = sessionStorage.getItem("OBPS_ROLES");
-    if (cachedRoles) {
-      return JSON.parse(cachedRoles);
-    }
-
-    // Fetch from MDMS
-    const response = await Digit.MDMSService.getMultipleTypes(stateId, "ACCESSCONTROL-ROLES", ["roles"]);
-    const allRoles = response?.["ACCESSCONTROL-ROLES"]?.roles || [];
-
-    // Filter OBPS roles (groupId === "025")
-    const obpsRoles = allRoles.filter((role) => role.groupId === OBPS_GROUP_ID);
-    const obpsRoleCodes = obpsRoles.map((role) => role.code);
-
-    // Create a map for quick lookup: code -> name
-    const obpsRoleMap = {};
-    obpsRoles.forEach((role) => {
-      obpsRoleMap[role.code] = role.name;
-    });
-
-    const cacheData = {
-      codes: obpsRoleCodes,
-      map: obpsRoleMap,
-    };
-
-    // Cache in sessionStorage
-    sessionStorage.setItem("OBPS_ROLES", JSON.stringify(cacheData));
-    return cacheData;
-  } catch (error) {
-    console.error("Error fetching OBPS roles:", error);
-    return { codes: [], map: {} };
-  }
-};
-
 // Utility: Get employee's OBPS role names
 export const getEmployeeOBPSRoles = (employee, obpsRoleMap) => {
   if (!employee?.user?.roles || !obpsRoleMap) return "No OBPS Roles";
@@ -130,14 +93,7 @@ export const createMappingCombinations = (employeeData, categories, subCategorie
 };
 
 // Utility: Transform API response to table data
-export const transformMappingData = (
-  employees = [],
-  pageOffset = 0,
-  categoryMap = {},
-  subCategoryMap = {},
-  zoneMap = {},
-  employeeMap = {}
-) => {
+export const transformMappingData = (employees = [], pageOffset = 0, categoryMap = {}, subCategoryMap = {}, zoneMap = {}, employeeMap = {}) => {
   if (!Array.isArray(employees) || employees.length === 0) return [];
 
   // Check if response is flat mapping records from /egov-hrms/obpass/employees/_search
@@ -195,21 +151,9 @@ export const transformMappingData = (
   // Already grouped or standard format
   return employees.map((emp, index) => {
     const empInfo = employeeMap[emp.uuid] || employeeMap[emp.userUUID];
-    const rawCategories = Array.isArray(emp.categories)
-      ? emp.categories
-      : emp.category
-      ? [emp.category]
-      : [];
-    const rawSubCategories = Array.isArray(emp.subcategories)
-      ? emp.subcategories
-      : emp.subcategory
-      ? [emp.subcategory]
-      : [];
-    const rawZones = Array.isArray(emp.zones)
-      ? emp.zones
-      : emp.zone
-      ? [emp.zone]
-      : [];
+    const rawCategories = Array.isArray(emp.categories) ? emp.categories : emp.category ? [emp.category] : [];
+    const rawSubCategories = Array.isArray(emp.subcategories) ? emp.subcategories : emp.subcategory ? [emp.subcategory] : [];
+    const rawZones = Array.isArray(emp.zones) ? emp.zones : emp.zone ? [emp.zone] : [];
 
     const categoryNames = rawCategories.map((c) => categoryMap[c] || c);
     const subCategoryNames = rawSubCategories.map((s) => subCategoryMap[s] || s);
@@ -229,11 +173,10 @@ export const transformMappingData = (
   });
 };
 
-// Utility: Calculate pagination values
-export const calculatePagination = (dataLength, pageSize, pageOffset) => {
-  const totalRecords = dataLength < pageSize ? pageOffset + dataLength : pageOffset + dataLength + 1;
-  const currentPage = Math.floor(pageOffset / pageSize);
-  const totalPages = Math.ceil(totalRecords / pageSize);
-
-  return { totalRecords, currentPage, totalPages };
+// The mapping API returns no total count. A full page means another page may exist, a short page is the last one.
+export const calculatePagination = (rowCount, pageSize, pageOffset) => {
+  return {
+    currentPage: Math.floor(pageOffset / pageSize),
+    hasNextPage: rowCount >= pageSize,
+  };
 };

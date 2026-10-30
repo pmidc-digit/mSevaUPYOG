@@ -400,7 +400,7 @@ public class WorkflowService {
         		.getActions()
         		.stream()
         		.map(action -> action.getRoles()).flatMap(List::stream).distinct()
-        		.filter(role -> !systemRole.getCode().equalsIgnoreCase(role))
+        		.filter(role -> !systemRole.getCode().equalsIgnoreCase(role) && !"OBPAS_UPDATE_ZONE".equalsIgnoreCase(role))
         		.collect(Collectors.toList());
         
         if(CollectionUtils.isEmpty(nextActionRoles))

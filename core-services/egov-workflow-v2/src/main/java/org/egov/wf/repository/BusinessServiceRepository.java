@@ -104,9 +104,43 @@ public class BusinessServiceRepository {
 
             String tenantId = businessService.getTenantId();
 
+            // Collect all roles present in this business service (from any state's actions)
+            Set<String> rolesInService = new HashSet<>();
+            businessService.getStates().forEach(st -> {
+                if(!CollectionUtils.isEmpty(st.getActions())){
+                    st.getActions().forEach(ac -> {
+                        if(!CollectionUtils.isEmpty(ac.getRoles())){
+                            rolesInService.addAll(ac.getRoles());
+                        }
+                    });
+                }
+            });
+
             for(State state : businessService.getStates()){
 
                 String uuid = state.getUuid();
+
+                // Ensure terminate states are also counted (they usually have no actions/roles)
+                if (Boolean.TRUE.equals(state.getIsTerminateState())) {
+                    // Add terminate state to all roles seen in this business service
+                    for (String role : rolesInService) {
+                        Map<String, List<String>> tenantToStatusMap = roleTenantAndStatusMapping.get(role);
+                        if (tenantToStatusMap == null) {
+                            tenantToStatusMap = new HashMap<>();
+                            roleTenantAndStatusMapping.put(role, tenantToStatusMap);
+                        }
+
+                        List<String> statuses = tenantToStatusMap.get(tenantId);
+                        if (statuses == null) {
+                            statuses = new LinkedList<>();
+                            tenantToStatusMap.put(tenantId, statuses);
+                        }
+
+                        if (!statuses.contains(uuid)) {
+                            statuses.add(uuid);
+                        }
+                    }
+                }
 
                 if(!CollectionUtils.isEmpty(state.getActions())){
 

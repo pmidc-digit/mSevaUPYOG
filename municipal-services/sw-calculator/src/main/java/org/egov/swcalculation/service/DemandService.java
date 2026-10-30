@@ -1660,7 +1660,7 @@ public class DemandService {
 						log.info("Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
 						
 						String key = sewConnDetails.getConnectionNo();
-						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
+						kafkaTemplate.send(configs.getCreateSingleDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						billingCycleCount=0;
 						calculationCriteriaList.clear();
@@ -1689,7 +1689,7 @@ public class DemandService {
 								.migrationCount(migrationCount).build();
 						log.info("Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}", calculationCriteriaList.size());
 						String key = sewConnDetails.getConnectionNo();
-						kafkaTemplate.send(configs.getCreateDemand(), key, calculationReq);
+						kafkaTemplate.send(configs.getCreateSingleDemand(), key, calculationReq);
 						totalRecordsPushedToKafka++;
 						calculationCriteriaList.clear();
 						connectionNosCount=0;

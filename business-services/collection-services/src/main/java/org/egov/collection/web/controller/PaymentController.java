@@ -62,6 +62,9 @@ import org.egov.collection.web.contract.PaymentAutoResettleRequest;
 import org.egov.collection.web.contract.PaymentAutoResettleResponse;
 import org.egov.collection.web.contract.PaymentResettleRequest;
 import org.egov.collection.web.contract.PaymentResettleResponse;
+import org.egov.collection.web.contract.PaymentReplayRequest;
+import org.egov.collection.web.contract.PaymentReplayResponse;
+
 import org.egov.collection.web.contract.PaymentWorkflowRequest;
 import org.egov.collection.web.contract.factory.RequestInfoUpdateWrapper;
 import org.egov.collection.web.contract.factory.RequestInfoWrapper;
@@ -167,6 +170,13 @@ public class PaymentController {
         Payment payment = paymentService.vaidateProvisonalPayment(paymentRequest);;
         return getSuccessResponse(Collections.singletonList(payment), paymentRequest.getRequestInfo());
 
+    }
+
+@RequestMapping(value = "/_replay", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<PaymentReplayResponse> replayPayment(@RequestBody @Valid PaymentReplayRequest replayRequest) {
+        PaymentReplayResponse response = paymentResettleService.replayPayment(replayRequest);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/_resettle", method = RequestMethod.POST)

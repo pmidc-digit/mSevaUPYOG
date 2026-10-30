@@ -143,7 +143,7 @@ public class BPAService {
 			landService.addLandInfoToBPA(bpaRequest);
 		}
 		enrichmentService.enrichBPACreateRequest(bpaRequest, mdmsData, values);
-		wfIntegrator.callWorkFlow(bpaRequest);
+		wfIntegrator.callWorkFlow(bpaRequest,"");
 		//nocService.createNocRequest(bpaRequest, mdmsData);
 //		this.addCalculation(applicationType, bpaRequest);
 		repository.save(bpaRequest);
@@ -530,8 +530,9 @@ public class BPAService {
 						assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, false);
 						bpa.getWorkflow().setAssignes(assignee);
 					}
-
-					wfIntegrator.callWorkFlow(bpaRequest);
+					
+					String hrmsSearchPath = userService.getEmployeeSearchPATH(bpaRequest.getBPA().getTenantId(), additionalDetails);
+					wfIntegrator.callWorkFlow(bpaRequest,hrmsSearchPath);
 					log.debug("===> workflow done =>" + bpaRequest.getBPA().getStatus());
 					enrichmentService.postStatusEnrichment(bpaRequest);
 					

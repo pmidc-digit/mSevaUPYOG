@@ -21,6 +21,7 @@ import NewNOCStepFormThree from "./pageComponents/NewNOCStepper/NewNOCStepFormTh
 import NewNOCStepFormFour from "./pageComponents/NewNOCStepper/NewNOCStepFormFour";
 
 import NOCApplicantDetails from "./pageComponents/NOCApplicantDetails";
+import NOCNewApplicantDetails from "./pageComponents/NOCNewApplicantDetails";
 import NOCProfessionalDetails from "./pageComponents/NOCProfessionalDetails";
 import NOCSiteDetails from "./pageComponents/NOCSiteDetails";
 import NOCSpecificationDetails from "./pageComponents/NOCSpecificationDetails";
@@ -96,6 +97,7 @@ const componentsToRegister = {
   NewNOCStepFormThree,
   NewNOCStepFormFour,
   NOCApplicantDetails,
+  NOCNewApplicantDetails,
   NOCProfessionalDetails,
   NOCSiteDetails,
   NOCFeeTable,

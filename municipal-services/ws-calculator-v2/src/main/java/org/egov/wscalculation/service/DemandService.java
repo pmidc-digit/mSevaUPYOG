@@ -25,7 +25,7 @@ import org.egov.mdms.model.MdmsCriteria;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.tracer.model.CustomException;
-import org.egov.mdms.model.MdmsCriteriaReq;
+import org.egov.tracer.model.ServiceCallException;
 import org.egov.wscalculation.config.WSCalculationConfiguration;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.producer.WSCalculationProducer;
@@ -43,6 +43,7 @@ import org.egov.wscalculation.web.models.*;
 import org.egov.wscalculation.web.models.Demand.StatusEnum;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.*;
 
@@ -84,6 +85,9 @@ public class DemandService {
 
 	@Autowired
 	private WSCalculationConfiguration configs;
+
+	@Autowired
+	private DemandSchedulerNotificationService demandSchedulerNotificationService;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
@@ -134,8 +138,11 @@ public class DemandService {
 	public List<Demand> generateDemand(CalculationReq request, List<Calculation> calculations,
 			Map<String, Object> masterMap, boolean isForConnectionNo) {
 		@SuppressWarnings("unchecked")
-		Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
-				.get(WSCalculationConstant.BILLING_PERIOD);
+		Map<String, Object> financialYearMaster = masterMap != null ? (Map<String, Object>) masterMap
+				.get(WSCalculationConstant.BILLING_PERIOD) : null;
+		if (financialYearMaster == null) {
+			throw new CustomException("NO_BILLING_PERIODS", "Billing Period is not configured in MDMS master data");
+		}
 		Long fromDate = (Long) financialYearMaster.get(WSCalculationConstant.STARTING_DATE_APPLICABLES);
 		Long toDate = (Long) financialYearMaster.get(WSCalculationConstant.ENDING_DATE_APPLICABLES);
 		if (request.getIsDisconnectionRequest() != null && request.getIsDisconnectionRequest()) {
@@ -215,19 +222,21 @@ public class DemandService {
 			}
 		}
 		List<Demand> createdDemands = new ArrayList<>();
-		if (!CollectionUtils.isEmpty(createCalculations))
-			createdDemands = createDemand(request, createCalculations, masterMap, isForConnectionNo);
+		if (!CollectionUtils.isEmpty(createCalculations)) {
+			createdDemands.addAll(createDemand(request, createCalculations, masterMap, isForConnectionNo));
+		}
 
-		if (!CollectionUtils.isEmpty(updateCalculations))
-			createdDemands = updateDemandForCalculation(request.getRequestInfo(), updateCalculations, fromDate, toDate,
-					isForConnectionNo, request.getIsDisconnectionRequest(), request.getIsReconnectionRequest());
+		if (!CollectionUtils.isEmpty(updateCalculations)) {
+			createdDemands.addAll(updateDemandForCalculation(request.getRequestInfo(), updateCalculations, fromDate, toDate,
+					isForConnectionNo, request.getIsDisconnectionRequest(), request.getIsReconnectionRequest()));
+		}
 		return createdDemands;
 	}
 
 	/**
 	 * Creates or updates Demand
 	 * 
-	 * @param requestInfo  The RequestInfo of the calculation request
+//	 * @param requestInfo  The RequestInfo of the calculation request
 	 * @param calculations The Calculation Objects for which demand has to be
 	 *                     generated or updated
 	 */
@@ -275,20 +284,22 @@ public class DemandService {
 							calculation != null ? calculation.getConnectionNo() : "null", e.getMessage(), e);
 					
 					// Construct and push DemandGenerationError to the dead-letter error topic
-					try {
-						DemandGenerationError error = new DemandGenerationError();
-						error.setConnectionNo(calculation.getConnectionNo());
-						error.setTenantId(calculation.getTenantId());
-						error.setToDate(calculation.getTo());
-						error.setFromDate(calculation.getFrom());
-						if (calculation.getWaterConnection() != null) {
-							error.setPropertyId(calculation.getWaterConnection().getPropertyId());
+					if (calculation != null) {
+						try {
+							DemandGenerationError error = new DemandGenerationError();
+							error.setConnectionNo(calculation.getConnectionNo());
+							error.setTenantId(calculation.getTenantId());
+							error.setToDate(calculation.getTo());
+							error.setFromDate(calculation.getFrom());
+							if (calculation.getWaterConnection() != null) {
+								error.setPropertyId(calculation.getWaterConnection().getPropertyId());
+							}
+							error.setErrorMessage("Error during demand generation: " + e.getMessage());
+							wsCalculationProducer.push(configs.getDemandGenerationErrorTopic(), error);
+						} catch (Exception ex) {
+							log.error("❌ Failed to push demand generation error to Kafka for connectionNo {}: {}",
+									calculation.getConnectionNo(), ex.getMessage(), ex);
 						}
-						error.setErrorMessage("Error during demand generation: " + e.getMessage());
-						wsCalculationProducer.push(configs.getDemandGenerationErrorTopic(), error);
-					} catch (Exception ex) {
-						log.error("❌ Failed to push demand generation error to Kafka for connectionNo {}: {}",
-								calculation != null ? calculation.getConnectionNo() : "null", ex.getMessage(), ex);
 					}
 				}
 			}
@@ -349,7 +360,7 @@ public class DemandService {
 	 * @param calculations List of Calculation
 	 * @param masterMap    Master MDMS Data
 	 * @return Returns list of demands
-	 * @throws IOException
+//	 * @throws IOException
 	 * @throws JsonMappingException
 	 */
 	private List<Demand> createDemand(RequestInfo requestInfo, List<Calculation> calculations,
@@ -377,6 +388,10 @@ public class DemandService {
 
 			String tenantId = calculation.getTenantId();
 			String consumerCode = isForConnectionNO ? calculation.getConnectionNo() : calculation.getApplicationNO();
+			if (property == null || CollectionUtils.isEmpty(property.getOwners())) {
+				throw new CustomException("PROPERTY_NOT_FOUND",
+						"Property or owners not found for connection: " + consumerCode);
+			}
 			User owner = property.getOwners().get(0).toCommonUser();
 			if (!CollectionUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionHolders())) {
 				owner = waterConnectionRequest.getWaterConnection().getConnectionHolders().get(0).toCommonUser();
@@ -404,16 +419,13 @@ public class DemandService {
 					: WSCalculationConstant.ONE_TIME_FEE_SERVICE_FIELD;
 			ObjectMapper obj = new ObjectMapper();
 
-			String json = "{ \"connectionType\" : \"" + connection.getConnectionType() + "\"}";
 			JsonNode additionalDetail = null;
 			try {
-				additionalDetail = obj.readTree(json);
-			} catch (JsonMappingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (JsonProcessingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				com.fasterxml.jackson.databind.node.ObjectNode jsonNode = obj.createObjectNode();
+				jsonNode.put("connectionType", connection.getConnectionType());
+				additionalDetail = jsonNode;
+			} catch (Exception e) {
+				log.error("Error building additionalDetail JSON for connection {}: {}", consumerCode, e.getMessage(), e);
 			}
 
 			addRoundOffTaxHead(calculation.getTenantId(), demandDetails);
@@ -469,9 +481,11 @@ public class DemandService {
 			} else {
 				demandReq.add(demand);
 			}
-			List<String> consumerCodes = new ArrayList<String>();
-			consumerCodes.add(sewConsumerCode);
-			waterCalculatorDao.updateBillStatus(consumerCodes, "SW", "EXPIRED");
+			if (!sewConsumerCode.isEmpty()) {
+				List<String> consumerCodes = new ArrayList<String>();
+				consumerCodes.add(sewConsumerCode);
+				waterCalculatorDao.updateBillStatus(consumerCodes, "SW", "EXPIRED");
+			}
 
 		}
 		// Save the bulk demands for metered connections
@@ -533,14 +547,19 @@ public class DemandService {
 			owner = getPlainOwnerDetails(requestInfo, owner.getUuid(), tenantId);
 			List<DemandDetail> demandDetails = new LinkedList<>();
 			List<DemandDetail> demandDetails1 = new LinkedList<>();
-			calculation.getTaxHeadEstimates().forEach(taxHeadEstimate -> {
-				demandDetails.add(DemandDetail.builder().taxAmount(taxHeadEstimate.getEstimateAmount())
-						.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).collectionAmount(BigDecimal.ZERO)
-						.tenantId(tenantId).build());
-			});
+			if (calculation.getTaxHeadEstimates() != null) {
+				calculation.getTaxHeadEstimates().forEach(taxHeadEstimate -> {
+					demandDetails.add(DemandDetail.builder().taxAmount(taxHeadEstimate.getEstimateAmount())
+							.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).collectionAmount(BigDecimal.ZERO)
+							.tenantId(tenantId).build());
+				});
+			}
 			@SuppressWarnings("unchecked")
-			Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
-					.get(WSCalculationConstant.BILLING_PERIOD);
+			Map<String, Object> financialYearMaster = masterMap != null ? (Map<String, Object>) masterMap
+					.get(WSCalculationConstant.BILLING_PERIOD) : null;
+			if (financialYearMaster == null) {
+				throw new CustomException("NO_BILLING_PERIODS", "Billing Period is not configured in MDMS master data");
+			}
 
 			Long fromDate = (Long) financialYearMaster.get(WSCalculationConstant.STARTING_DATE_APPLICABLES);
 			Long toDate = (Long) financialYearMaster.get(WSCalculationConstant.ENDING_DATE_APPLICABLES);
@@ -674,60 +693,67 @@ public class DemandService {
 		DemandNotificationObj notificationObj = DemandNotificationObj.builder().requestInfo(requestInfo)
 				.tenantId(calculations.get(0).getTenantId()).waterConnectionIds(waterConnectionIds)
 				.billingCycle(billingcycle).build();
-		List<Demand> demandRes = null ;
+		List<Demand> demandRes = new ArrayList<>();
 		for(Demand demand : demandReq){
 			log.info("Demand Input for WSREconnection is " + demand);
-			demandRes = demandRepository.saveDemand(requestInfo, Collections.singletonList(demand), notificationObj);
+			List<Demand> saved = demandRepository.saveDemand(requestInfo, Collections.singletonList(demand), notificationObj);
+			if (!CollectionUtils.isEmpty(saved)) {
+				demandRes.addAll(saved);
+			}
 			log.info("Demand Response for WSREconnection is " + demand);
 		}
-		if (calculationReq.getIsReconnectionRequest())
-			fetchBillForReconnect(demandRes, requestInfo, masterMap);
-		else if (isForConnectionNO && !calculationReq.getIsReconnectionRequest())
-			fetchBill(demandRes, requestInfo, masterMap);
+		if (!demandRes.isEmpty()) {
+			if (calculationReq.getIsReconnectionRequest())
+				fetchBillForReconnect(demandRes, requestInfo, masterMap);
+			else if (isForConnectionNO && !calculationReq.getIsReconnectionRequest())
+				fetchBill(demandRes, requestInfo, masterMap);
+		}
 
 		return demandRes;
 	}
 
 	private User getPlainOwnerDetails(RequestInfo requestInfo, String uuid, String tenantId) {
 		User userInfoCopy = requestInfo.getUserInfo();
-		StringBuilder uri = new StringBuilder();
-		uri.append(configs.getUserHost()).append(configs.getUserSearchEndpoint());
-		Map<String, Object> userSearchRequest = new HashMap<>();
-		tenantId = tenantId.split("\\.")[0];
-
-		Role role = Role.builder().name("Internal Microservice Role").code("INTERNAL_MICROSERVICE_ROLE")
-				.tenantId(tenantId).build();
-
-		User userInfo = User.builder().uuid(configs.getEgovInternalMicroserviceUserUuid()).type("SYSTEM")
-				.roles(Collections.singletonList(role)).id(0L).build();
-
-		requestInfo.setUserInfo(userInfo);
-
-		userSearchRequest.put("RequestInfo", requestInfo);
-		userSearchRequest.put("tenantId", tenantId);
-		userSearchRequest.put("uuid", Collections.singletonList(uuid));
-		User user = null;
 		try {
-			LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) serviceRequestRepository
-					.fetchResult(uri, userSearchRequest);
+			StringBuilder uri = new StringBuilder();
+			uri.append(configs.getUserHost()).append(configs.getUserSearchEndpoint());
+			Map<String, Object> userSearchRequest = new HashMap<>();
+			tenantId = tenantId.split("\\.")[0];
 
-			List<LinkedHashMap<String, Object>> users = (List<LinkedHashMap<String, Object>>) responseMap.get("user");
-			String dobFormat = "yyyy-MM-dd";
-			notificationUtil.parseResponse(responseMap, dobFormat);
-			user = mapper.convertValue(users.get(0), User.class);
+			Role role = Role.builder().name("Internal Microservice Role").code("INTERNAL_MICROSERVICE_ROLE")
+					.tenantId(tenantId).build();
 
-		} catch (Exception e) {
-			throw new CustomException("EG_USER_SEARCH_ERROR", "Service returned null while fetching user");
+			User userInfo = User.builder().uuid(configs.getEgovInternalMicroserviceUserUuid()).type("SYSTEM")
+					.roles(Collections.singletonList(role)).id(0L).build();
+
+			requestInfo.setUserInfo(userInfo);
+
+			userSearchRequest.put("RequestInfo", requestInfo);
+			userSearchRequest.put("tenantId", tenantId);
+			userSearchRequest.put("uuid", Collections.singletonList(uuid));
+			User user = null;
+			try {
+				LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) serviceRequestRepository
+						.fetchResult(uri, userSearchRequest);
+
+				List<LinkedHashMap<String, Object>> users = (List<LinkedHashMap<String, Object>>) responseMap.get("user");
+				String dobFormat = "yyyy-MM-dd";
+				notificationUtil.parseResponse(responseMap, dobFormat);
+				user = mapper.convertValue(users.get(0), User.class);
+
+			} catch (Exception e) {
+				throw new CustomException("EG_USER_SEARCH_ERROR", "Service returned null while fetching user");
+			}
+			return user;
+		} finally {
+			requestInfo.setUserInfo(userInfoCopy);
 		}
-		requestInfo.setUserInfo(userInfoCopy);
-		return user;
 	}
 
 	private Demand createDemandForNonMeteredInBulk(RequestInfo requestInfo, Calculation calculation,
 			Map<String, Object> masterMap, boolean isForConnectionNO, long taxPeriodFrom, long taxPeriodTo) {
 
 		WaterConnection connection = calculation.getWaterConnection();
-		connection.setConnectionHolders(null);
 		if (connection == null) {
 			throw new CustomException("INVALID_WATER_CONNECTION",
 					"Demand cannot be generated for "
@@ -743,19 +769,29 @@ public class DemandService {
 
 		String tenantId = calculation.getTenantId();
 		String consumerCode = isForConnectionNO ? calculation.getConnectionNo() : calculation.getApplicationNO();
+		if (property == null || CollectionUtils.isEmpty(property.getOwners())) {
+			throw new CustomException("PROPERTY_NOT_FOUND",
+					"Property or owners not found for connection: " + consumerCode);
+		}
 		User owner = property.getOwners().get(0).toCommonUser();
 		if (!CollectionUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionHolders())) {
 			owner = waterConnectionRequest.getWaterConnection().getConnectionHolders().get(0).toCommonUser();
 		}
 		List<DemandDetail> demandDetails = new LinkedList<>();
-		calculation.getTaxHeadEstimates().forEach(taxHeadEstimate -> {
-			demandDetails.add(DemandDetail.builder().taxAmount(taxHeadEstimate.getEstimateAmount())
-					.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).collectionAmount(BigDecimal.ZERO)
-					.tenantId(tenantId).build());
-		});
+		if (calculation.getTaxHeadEstimates() != null) {
+			calculation.getTaxHeadEstimates().forEach(taxHeadEstimate -> {
+				demandDetails.add(DemandDetail.builder().taxAmount(taxHeadEstimate.getEstimateAmount())
+						.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).collectionAmount(BigDecimal.ZERO)
+						.tenantId(tenantId).build());
+			});
+		}
 		@SuppressWarnings("unchecked")
-		Map<String, Object> financialYearMaster = (Map<String, Object>) masterMap
-				.get(WSCalculationConstant.BILLING_PERIOD);
+		Map<String, Object> financialYearMaster = masterMap != null ? (Map<String, Object>) masterMap
+				.get(WSCalculationConstant.BILLING_PERIOD) : null;
+
+		if (financialYearMaster == null) {
+			throw new CustomException("NO_BILLING_PERIODS", "Billing Period is not configured in MDMS master data");
+		}
 
 		if (taxPeriodFrom == 0 && taxPeriodTo == 0) {
 			taxPeriodFrom = (Long) financialYearMaster.get(WSCalculationConstant.STARTING_DATE_APPLICABLES);
@@ -1261,6 +1297,14 @@ public class DemandService {
 	     ----------------------------------------------------------- */
 
 	    for (Demand demand : demands) {
+	    	
+	    	/* Skip Payment Completed demand */
+
+	        if (demand.getIsPaymentCompleted()) {
+
+	            log.info("Skipping Payment Completed demand {}", demand.getId());
+	            continue;
+	        }
 
 	        BigDecimal totalTax = demand.getDemandDetails()
 	                .stream()
@@ -1664,7 +1708,7 @@ public class DemandService {
 	 * 
 	 * @param tenantId TenantId for getting master data.
 	 */
-	public void generateDemandForTenantId(String tenantId, RequestInfo requestInfo) {
+	public void generateDemandForTenantId(String tenantId, String locality, RequestInfo requestInfo) {
 		requestInfo.getUserInfo().setTenantId(tenantId);
 		Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterData(requestInfo, tenantId);
 		long taxPeriodFrom = billingMasterData.get("taxPeriodFrom") == null ? 0l
@@ -1678,12 +1722,16 @@ public class DemandService {
 					"MDMS Billing Period does not available for tenant: " + tenantId);
 		}
 
-		if (waterCalculatorDao.isBatchDemandExecuted(tenantId, taxPeriodFrom, taxPeriodTo)) {
-			log.info("Demand generation already successfully executed for tenant: " + tenantId + " period: " + taxPeriodFrom + " - " + taxPeriodTo + ". Skipping.");
-			return;
+        if (waterCalculatorDao.isBatchDemandExecuted(tenantId, locality, taxPeriodFrom, taxPeriodTo)) {
+            log.info("Demand generation already successfully executed for tenant: " + tenantId +" locality: "+ locality + " period: " + taxPeriodFrom + " - " + taxPeriodTo + ". Skipping.");			return;
 		}
 
-		generateDemandForULB(billingMasterData, requestInfo, tenantId, taxPeriodFrom, taxPeriodTo);
+        if(locality!=null && !locality.trim().isEmpty()){
+            generateDemandForULB(billingMasterData, requestInfo, tenantId, locality, taxPeriodFrom, taxPeriodTo);
+        }
+        else{
+            generateDemandForULB(billingMasterData, requestInfo, tenantId,null, taxPeriodFrom, taxPeriodTo);
+        }
 	}
 
 	public String generateDemandForConsumerCode(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria) {
@@ -1804,7 +1852,7 @@ public class DemandService {
 					.filter(p -> taxPeriodFrom.equals(taxPeriods.get(p).getFromDate())).findFirst().getAsInt();
 			String cone = singleDemand.getConsumercode();
 			log.info("Billing master data values for non metered connection:: {}", master);
-			List<WaterDetails> connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId,
+			List<WaterDetails> connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId, null,
 					WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			log.info("Total Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
@@ -1870,7 +1918,7 @@ public class DemandService {
 								"Pushing calculation req to the kafka topic with bulk data of calculationCriteriaList size: {}",
 								calculationCriteriaList.size());
 
-						wsCalculationProducer.push(configs.getCreateDemand(), calculationReq);
+						wsCalculationProducer.push(configs.getCreateSingleDemand(), calculationReq);
 						totalRecordsPushedToKafka = totalRecordsPushedToKafka + calculationCriteriaList.size();
 						calculationCriteriaList.clear();
 						connectionNosCount = 0;
@@ -1894,7 +1942,7 @@ public class DemandService {
 								"Pushing calculation last req to the kafka topic with bulk data of calculationCriteriaList size: {}",
 								calculationCriteriaList.size());
 
-						wsCalculationProducer.push(configs.getCreateDemand(), calculationReq);
+						wsCalculationProducer.push(configs.getCreateSingleDemand(), calculationReq);
 						totalRecordsPushedToKafka = totalRecordsPushedToKafka + calculationCriteriaList.size();
 						calculationCriteriaList.clear();
 						connectionNosCount = 0;
@@ -1982,9 +2030,10 @@ public class DemandService {
 	 * @param requestInfo Request Info
 	 * @param tenantId    Tenant Id
 	 */
-	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId,
+	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId, String locality,
 			Long taxPeriodFrom, Long taxPeriodTo) {
-		log.info("generateDemandForULB:: {} taxPeriodFrom:: {} taxPeriodTo {}", tenantId, taxPeriodFrom, taxPeriodTo);
+		long startTime = System.currentTimeMillis();
+		log.info("generateDemandForULB:: {} Locality:: {}  taxPeriodFrom:: {} taxPeriodTo {}", tenantId, locality, taxPeriodFrom, taxPeriodTo);
 		try {
 
 			// ── Step 1: load tax periods from MDMS ───────────────────────────────
@@ -2018,8 +2067,14 @@ public class DemandService {
 			// ── Step 3: fetch connections from DB ─────────────────────────────────
 			List<WaterDetails> connectionNos;
 			try {
-				connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId,
-						WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+                if(locality!=null && !locality.trim().isEmpty()) {
+                    connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId, locality,
+                            WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+                }
+                else{
+                    connectionNos = waterCalculatorDao.getConnectionsNoListforsingledemand(tenantId, null,
+                            WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
+                }
 			} catch (Exception e) {
 				log.error("\u274C DB fetch failed for connections (tenant: {}) | {}", tenantId, e.getMessage(), e);
 				return;
@@ -2040,6 +2095,7 @@ public class DemandService {
 					BatchDemandLog startLog = BatchDemandLog.builder()
 							.id(UUID.randomUUID().toString())
 							.tenantId(tenantId)
+                            .locality(locality)
 							.taxPeriodFrom(taxPeriodFrom)
 							.taxPeriodTo(taxPeriodTo)
 							.insertionTime(System.currentTimeMillis())
@@ -2047,8 +2103,9 @@ public class DemandService {
 							.isDemandExecuted(true)
 							.build();
 					wsCalculationProducer.push(configs.getSaveBatchDemandLogTopic(), startLog);
+//					demandSchedulerNotificationService.sendStartEmail(tenantId, taxPeriodFrom, taxPeriodTo, connectionNos.size(), requestInfo);
 				} catch (Exception e) {
-					log.error("\u26A0\uFE0F Non-fatal: failed to push start BatchDemandLog for tenant: {} | {}",
+					log.error("⚠️ Non-fatal: failed to push start BatchDemandLog or send start email for tenant: {} | {}",
 							tenantId, e.getMessage(), e);
 					// do NOT return — demand generation must continue
 				}
@@ -2113,6 +2170,7 @@ public class DemandService {
 					BatchDemandLog endLog = BatchDemandLog.builder()
 							.id(UUID.randomUUID().toString())
 							.tenantId(tenantId)
+                            .locality(locality)
 							.taxPeriodFrom(taxPeriodFrom)
 							.taxPeriodTo(taxPeriodTo)
 							.insertionTime(System.currentTimeMillis())
@@ -2121,8 +2179,16 @@ public class DemandService {
 							.build();
 					wsCalculationProducer.push(configs.getSaveBatchDemandLogTopic(), endLog);
 				} catch (Exception e) {
-					log.error("\u26A0\uFE0F Non-fatal: failed to push end BatchDemandLog for tenant: {} | {}",
+					log.error("⚠️ Non-fatal: failed to push end BatchDemandLog for tenant: {} | {}",
 							tenantId, e.getMessage(), e);
+				}
+
+				// Send Completion Email & Poll
+				try {
+					List<String> allConnNos = connectionNos.stream().map(WaterDetails::getConnectionNo).collect(Collectors.toList());
+					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, startTime, requestInfo);
+				} catch (Exception e) {
+					log.error("❌ Failed to send completion email for tenant: {} | {}", tenantId, e.getMessage(), e);
 				}
 			}
 
@@ -2146,6 +2212,7 @@ public class DemandService {
 			AtomicInteger totalPushed) {
 
 		List<CalculationCriteria> batchList = new ArrayList<>(); // local to this thread — no sharing
+		int connectionCount = 0;
 
 		for (WaterDetails waterConnection : connections) {
 			if (waterConnection == null) {
@@ -2171,6 +2238,7 @@ public class DemandService {
 					startIndex = 0; // safe fallback — do not skip the connection entirely
 				}
 
+				List<CalculationCriteria> connectionCriteriaList = new ArrayList<>();
 				// ── iterate over tax periods for this connection ──────────────────
 				for (int taxPeriodIndex = startIndex; taxPeriodIndex <= generateDemandToIndex; taxPeriodIndex++) {
 					// Guard against out-of-bounds — prevents infinite-loop-style crashes
@@ -2184,27 +2252,13 @@ public class DemandService {
 						if (isValidBillingCycle(waterConnection, requestInfo, tenantId,
 								taxPeriod.getFromDate(), taxPeriod.getToDate())) {
 
-							batchList.add(CalculationCriteria.builder()
+							connectionCriteriaList.add(CalculationCriteria.builder()
 									.tenantId(tenantId)
 									.assessmentYear(taxPeriod.getFinancialYear())
 									.from(taxPeriod.getFromDate())
 									.to(taxPeriod.getToDate())
 									.connectionNo(waterConnection.getConnectionNo())
 									.build());
-
-							// Push to Kafka when batch is full
-							if (batchList.size() == bulkSaveDemandCount) {
-								try {
-									pushBatchToKafka(batchList, requestInfo);
-									totalPushed.addAndGet(batchList.size());
-								} catch (Exception e) {
-									log.error("\u274C Kafka push failed ({} items, tenant: {}, connectionNo: {}): {}",
-											batchList.size(), tenantId,
-											waterConnection.getConnectionNo(), e.getMessage(), e);
-								} finally {
-									batchList.clear(); // ALWAYS clear — never re-push the same batch
-								}
-							}
 						} else {
 							log.debug("\u26A0\uFE0F Invalid billing cycle: connectionNo={} period={}",
 									waterConnection.getConnectionNo(), taxPeriod.getFinancialYear());
@@ -2213,6 +2267,26 @@ public class DemandService {
 						log.error("\u274C Error at taxPeriod index {} for connectionNo: {} (tenant: {}): {}",
 								taxPeriodIndex, waterConnection.getConnectionNo(), tenantId, e.getMessage(), e);
 						// continue to next taxPeriod — do NOT break the loop
+					}
+				}
+
+				if (!connectionCriteriaList.isEmpty()) {
+					batchList.addAll(connectionCriteriaList);
+					connectionCount++;
+				}
+
+				// Push to Kafka when batch connection count matches configs
+				if (connectionCount == bulkSaveDemandCount) {
+					try {
+						pushBatchToKafka(batchList, requestInfo);
+						totalPushed.addAndGet(batchList.size());
+					} catch (Exception e) {
+						log.error("\u274C Kafka push failed ({} items, tenant: {}, connectionNo: {}): {}",
+								batchList.size(), tenantId,
+								waterConnection.getConnectionNo(), e.getMessage(), e);
+					} finally {
+						batchList.clear(); // ALWAYS clear — never re-push the same batch
+						connectionCount = 0;
 					}
 				}
 			} catch (Exception e) {
@@ -2357,10 +2431,10 @@ public class DemandService {
 	    List<String> successConsumerCodes = new ArrayList<>();
 
 	    for (String consumerCode : consumerCodes) {
-			List<BillV2> bills =null;
+			List<BillV2> bills = null;
 
 	        try {
-	        	
+
 	            StringBuilder fetchBillURL = calculatorUtils.getFetchBillURL(tenantId, consumerCode);
 
 	            Object result = serviceRequestRepository.fetchResult(
@@ -2372,79 +2446,83 @@ public class DemandService {
 	            if (billResponse == null) {
 	                log.warn("⚠️ BillResponseV2 is null after conversion.");
 	                billGeneratorDao.updateBillSchedulerConnectionStatus(
-	            			  consumerCode,
-			            		 schedlerId,
-		  				        localitycode,
-		  				        WSCalculationConstant.FAILURE,
-		  				        tenantId,
-		  				        "BillResponseV2 is null after conversion.",
-		  				      System.currentTimeMillis()
-		  				    );
+	                        consumerCode, schedlerId, localitycode,
+	                        WSCalculationConstant.FAILURE, tenantId,
+	                        "BillResponseV2 is null after conversion.",
+	                        System.currentTimeMillis());
 	            } else if (billResponse.getBill() == null) {
 	                log.warn("⚠️ Bill list is null in BillResponseV2.");
 	                billGeneratorDao.updateBillSchedulerConnectionStatus(
-	            			  consumerCode,
-			            		 schedlerId,
-		  				        localitycode,
-		  				        WSCalculationConstant.FAILURE,
-		  				        tenantId,
-		  				        "Bill list is null in BillResponseV2.",
-		  				      System.currentTimeMillis()
-		  				    );
+	                        consumerCode, schedlerId, localitycode,
+	                        WSCalculationConstant.FAILURE, tenantId,
+	                        "Bill list is null in BillResponseV2.",
+	                        System.currentTimeMillis());
 	            } else {
 	                bills = billResponse.getBill();
 	            }
-	        	
-	            
-	            if (bills != null && !bills.isEmpty()) {
-	            	
-	            	
-	            	  billGeneratorDao.updateBillSchedulerConnectionStatus(
-	            			  consumerCode,
-		            		 schedlerId,
-	  				        localitycode,
-	  				        WSCalculationConstant.SUCCESS,
-	  				        tenantId,
-	  				        WSCalculationConstant.SUCCESS_MESSAGE,
-	  				      System.currentTimeMillis()
-	  				    );
 
-	            	 
-	            	
+	            if (bills != null && !bills.isEmpty()) {
+
+	                // Sum total amount from all bills for this consumer code and persist
+	                BigDecimal billAmount = bills.stream()
+	                        .map(b -> b.getTotalAmount() != null ? b.getTotalAmount() : BigDecimal.ZERO)
+	                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+	                billGeneratorDao.updateBillSchedulerConnectionStatus(
+	                        consumerCode, schedlerId, localitycode,
+	                        WSCalculationConstant.SUCCESS, tenantId,
+	                        WSCalculationConstant.SUCCESS_MESSAGE,
+	                        System.currentTimeMillis(), billAmount);
+
 	                successConsumerCodes.addAll(
-	                    bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList())
-	                
-	                		);
-	                log.info("✅ Bill generated successfully for consumerCode: {}", consumerCode);
+	                        bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList()));
+	                log.info("✅ Bill generated successfully for consumerCode: {} amount: {}", consumerCode, billAmount);
+
 	            } else {
-	            	  billGeneratorDao.updateBillSchedulerConnectionStatus(
-	            			  consumerCode,
-			            		 schedlerId,
-		  				        localitycode,
-		  				        WSCalculationConstant.FAILURE,
-		  				        tenantId,
-		  				        WSCalculationConstant.FAILURE_MESSAGE,
-		  				      System.currentTimeMillis()
-		  				    );
+	                billGeneratorDao.updateBillSchedulerConnectionStatus(
+	                        consumerCode, schedlerId, localitycode,
+	                        WSCalculationConstant.FAILURE, tenantId,
+	                        WSCalculationConstant.FAILURE_MESSAGE,
+	                        System.currentTimeMillis());
 
 	                failureCollector.add(consumerCode);
 	                log.warn("⚠️ No bills returned for consumerCode: {}", consumerCode);
 	            }
 
 	        } catch (Exception ex) {
-	        	  billGeneratorDao.updateBillSchedulerConnectionStatus(
-	        			  consumerCode,
-		            		 schedlerId,
-	  				        localitycode,
-	  				        WSCalculationConstant.FAILURE,
-	  				        tenantId,
-	  				      WSCalculationConstant.FAILURE_MESSAGE + " | Error Msg: " + ex.getMessage(),
-	  				      System.currentTimeMillis()
-	  				    );
+	            // Extract the real API error message.
+	            // ServiceCallException stores the HTTP response body in getError(), not getMessage().
+	            String errorReason = WSCalculationConstant.FAILURE_MESSAGE;
+	            try {
+	                if (ex instanceof ServiceCallException) {
+	                    String errorBody = ((ServiceCallException) ex).getError();
+	                    if (errorBody != null && !errorBody.isEmpty()) {
+	                        JsonNode root = mapper.readTree(errorBody);
+	                        // Response body: {"ResponseInfo":null,"Errors":[{"code":"...","message":"..."}]}
+	                        JsonNode errors = root.path("Errors");
+	                        if (errors.isArray() && errors.size() > 0) {
+	                            String code = errors.get(0).path("code").asText("");
+	                            String msg  = errors.get(0).path("message").asText("");
+	                            errorReason = code.isEmpty() ? msg : (code + ": " + msg);
+	                        } else {
+	                            errorReason = errorBody;
+	                        }
+	                    }
+	                } else if (ex.getMessage() != null) {
+	                    errorReason = WSCalculationConstant.FAILURE_MESSAGE + " | Error Msg: " + ex.getMessage();
+	                }
+	            } catch (Exception parseEx) {
+	                log.warn("⚠️ Failed to parse ServiceCallException error body: {}", parseEx.getMessage());
+	            }
+
+	            billGeneratorDao.updateBillSchedulerConnectionStatus(
+	                    consumerCode, schedlerId, localitycode,
+	                    WSCalculationConstant.FAILURE, tenantId,
+	                    errorReason,
+	                    System.currentTimeMillis());
 
 	            failureCollector.add(consumerCode);
-	            log.error("❌ Fetch Bill failed for consumerCode: {} Exception: {}", consumerCode, ex.getMessage(), ex);
-	            
+	            log.error("❌ Fetch Bill failed for consumerCode: {} Reason: {}", consumerCode, errorReason, ex);
 	        }
 	    }
 
@@ -2715,6 +2793,5 @@ public class DemandService {
 
 	    return url;
 	}
-
 
 }

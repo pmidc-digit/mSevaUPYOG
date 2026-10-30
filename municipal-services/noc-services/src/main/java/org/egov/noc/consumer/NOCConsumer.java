@@ -25,7 +25,6 @@ public class NOCConsumer {
 
 	@KafkaListener(
 			topics = {
-					"${persister.save.noc.topic}",
 					"${persister.update.noc.topic}",
 					"${persister.update.noc.workflow.topic}"
 			},

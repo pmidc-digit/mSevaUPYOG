@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.egov.wscalculation.web.models.BillScheduler.StatusEnum;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.minidev.json.JSONArray;
@@ -99,7 +100,11 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	private WaterCessUtil waterCessUtil;
 
 	@Autowired
-	private MasterDataService mDataService;
+	private DemandSchedulerNotificationService demandSchedulerNotificationService;
+
+	@Autowired
+	private BillSchedulerNotificationService billSchedulerNotificationService;
+
 
 	/**
 	 * Get CalculationReq and Calculate the Tax Head on Water Charge And Estimation
@@ -178,11 +183,7 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	
 	
 	
-	public List<Calculation> bulkbillgeneration(CalculationReq request, Map<String, Object> masterMap) {
-		List<Calculation> calculations = getCalculations(request, masterMap);
-		demandService.generateDemandForBillingCycleInBulk(request, calculations, masterMap, true);
-		return calculations;
-	}
+
 	
 	
 	
@@ -567,8 +568,10 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	        try {
 	            Map<String, List> estimationMap = estimationService.getEstimationMap(criteria, request, masterMap);
 	            ArrayList<?> billingFrequencyMap = (ArrayList<?>) masterMap.get(WSCalculationConstant.Billing_Period_Master);
-	            masterDataService.enrichBillingPeriod(criteria, billingFrequencyMap, masterMap,
-	                    criteria.getWaterConnection().getConnectionType());
+	            if (criteria != null && criteria.getWaterConnection() != null) {
+	                masterDataService.enrichBillingPeriod(criteria, billingFrequencyMap, masterMap,
+	                        criteria.getWaterConnection().getConnectionType());
+	            }
 
 	            Calculation calculation = null;
 
@@ -588,7 +591,9 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	                calculation = getCalculation(request.getRequestInfo(), criteria, estimationMap, masterMap, true, false);
 	            }
 
-	            calculations.add(calculation);
+	            if (calculation != null) {
+	                calculations.add(calculation);
+	            }
 
 	        } catch (Exception ex) {
 	        	   log.error("Error processing calculation for applicationNo {}: {}", 
@@ -697,15 +702,43 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	/**
 	 * Generate Demand Based on Time (Monthly, Quarterly, Yearly)
 	 */
-	public void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria) {
+	public void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkDemandCriteria bulkDemandCriteria) {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		LocalDateTime date = LocalDateTime.now();
 		log.info("Time schedule start for water demand generation on : " + date.format(dateTimeFormatter));
-//		List<String> tenantIds = wSCalculationDao.getTenantId();
 		List<String> tenantIds = new ArrayList<>();
-		String tenat = requestInfo.getMsgId();
+        List<String> localities = new ArrayList<>();
+		String tenant = null;
+		String locality = null;
 
-		if (!tenat.contains("pb")) {
+		// ── Step 1: Check BulkDemandCriteria first (explicit request payload) ──
+		if (bulkDemandCriteria != null) {
+			if (StringUtils.isNotBlank(bulkDemandCriteria.getTenantId())) {
+				tenant = bulkDemandCriteria.getTenantId().trim();
+				log.info("Tenant resolved from BulkDemandCriteria: {}", tenant);
+			}
+			locality = bulkDemandCriteria.getLocality();
+		}
+
+		// ── Step 2: If no tenantId in criteria, try userInfo (must be a child tenant like pb.nangal) ──
+		if (StringUtils.isBlank(tenant)) {
+			if (requestInfo != null && requestInfo.getUserInfo() != null
+					&& StringUtils.isNotBlank(requestInfo.getUserInfo().getTenantId())
+					&& requestInfo.getUserInfo().getTenantId().contains(".")) {
+				tenant = requestInfo.getUserInfo().getTenantId().trim();
+				log.info("Tenant resolved from userInfo: {}", tenant);
+			} else if (requestInfo != null && StringUtils.isNotBlank(requestInfo.getMsgId())
+					&& requestInfo.getMsgId().contains(".")) {
+				tenant = requestInfo.getMsgId().split("\\|")[0].trim();
+				log.info("Tenant resolved from msgId: {}", tenant);
+			}
+		}
+
+		// ── Step 3: If still no valid child tenant, fall back to MDMS (all tenants) ──
+		// A valid child tenant must contain "." (e.g. pb.nangal). State-level "pb" is NOT valid.
+		boolean isValidChildTenant = StringUtils.isNotBlank(tenant) && tenant.contains(".");
+		if (!isValidChildTenant) {
+			log.info("No specific child tenantId found (tenant={}). Fetching ALL tenants from MDMS.", tenant);
 			MdmsCriteriaReq mdmsCriteriaReq = calculatorUtil.gettenants(requestInfo);
 			StringBuilder url = calculatorUtil.getMdmsSearchUrl();
 			Object res = repository.fetchResult(url, mdmsCriteriaReq);
@@ -719,31 +752,97 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				Object mdmsResObj = resMap.get("MdmsRes");
 				Map<String, Object> mdmsRes = (Map<String, Object>) mdmsResObj;
 				Object tenantObj = mdmsRes.get("tenant");
-				Map<String, Object> tenant = (Map<String, Object>) tenantObj;
-				Object waterSewerageObj = tenant.get("waterSewerage");
+				Map<String, Object> tenantMap = (Map<String, Object>) tenantObj;
+				Object waterSewerageObj = tenantMap.get("waterSewerage");
 				List<Object> waterSewerageList = (List<Object>) waterSewerageObj;
 				for (Object obj : waterSewerageList) {
-					if (obj instanceof Map) {
-						Map<String, Object> waterSewerageMap = (Map<String, Object>) obj;
-						Object codeObj = waterSewerageMap.get("code");
-						if (codeObj != null) {
-							String code = codeObj.toString();
-							tenantIds.add(code);
-						}
-					}
-				}
-
+                    if (obj instanceof Map) {
+                        Map<String, Object> waterSewerageMap = (Map<String, Object>) obj;
+                        Object codeObj = waterSewerageMap.get("code");
+                        Object localitiesObj = waterSewerageMap.get("localities");
+                        if (codeObj != null) {
+                            String code = codeObj.toString();
+                            tenantIds.add(code);
+                        }
+                        if (localitiesObj != null) {
+                            String local = localitiesObj.toString();
+                            localities.add(local);
+                        }
+                    }
+                }
 			}
 
 		} else {
-			tenantIds.add(tenat);
-
+			tenantIds.add(tenant);
+            localities.add(locality);
 		}
 		if (tenantIds.isEmpty()) {
 			log.info("No tenants are found for generating demand");
 			return;
 		}
-		log.info("Tenant Ids : " + tenantIds.toString());
+		log.info("Tenant Ids resolved for demand generation: " + tenantIds.toString());
+
+		// ── Step: Compute pre-generation counts and trigger consolidated start email ──
+		try {
+			List<TenantDemandSummary> summaries = new ArrayList<>();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+			for (String tId : tenantIds) {
+				try {
+					RequestInfo clonedInfo = mapper.readValue(mapper.writeValueAsString(requestInfo), RequestInfo.class);
+					clonedInfo.getUserInfo().setTenantId(tId);
+					Map<String, Object> billingMasterData = calculatorUtil.loadBillingFrequencyMasterData(clonedInfo, tId);
+					long taxPeriodFrom = billingMasterData.get("taxPeriodFrom") == null ? 0L : (long) billingMasterData.get("taxPeriodFrom");
+					long taxPeriodTo = billingMasterData.get("taxPeriodTo") == null ? 0L : (long) billingMasterData.get("taxPeriodTo");
+
+					String billingCycle = (taxPeriodFrom > 0 && taxPeriodTo > 0)
+							? dateFormat.format(new Date(taxPeriodFrom)) + " to " + dateFormat.format(new Date(taxPeriodTo))
+							: "Current Period";
+
+					int connCount = 0;
+					String status = "Scheduled";
+
+					if (taxPeriodFrom == 0 || taxPeriodTo == 0) {
+						status = "Billing Period Missing";
+					} else if (wSCalculationDao.isBatchDemandExecuted(tId, null, taxPeriodFrom, taxPeriodTo)) {
+						status = "Already Executed";
+					} else {
+						List<WaterDetails> connList = wSCalculationDao.getConnectionsNoListforsingledemand(
+								tId, null, WSCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, null);
+						connCount = connList != null ? connList.size() : 0;
+						if (connCount == 0) {
+							status = "No Eligible Connections";
+						}
+					}
+
+					String cityName = tId.contains(".") ? tId.substring(tId.indexOf('.') + 1) : tId;
+					cityName = cityName.substring(0, 1).toUpperCase() + cityName.substring(1).toLowerCase();
+
+					summaries.add(TenantDemandSummary.builder()
+							.tenantId(tId)
+							.cityName(cityName)
+							.billingCycle(billingCycle)
+							.taxPeriodFrom(taxPeriodFrom)
+							.taxPeriodTo(taxPeriodTo)
+							.connectionCount(connCount)
+							.status(status)
+							.build());
+				} catch (Exception ex) {
+					log.error("⚠️ Error calculating pre-demand summary for tenant {}: {}", tId, ex.getMessage());
+					String cityName = tId.contains(".") ? tId.substring(tId.indexOf('.') + 1) : tId;
+					summaries.add(TenantDemandSummary.builder()
+							.tenantId(tId)
+							.cityName(cityName)
+							.billingCycle("N/A")
+							.connectionCount(0)
+							.status("Scheduled")
+							.build());
+				}
+			}
+			demandSchedulerNotificationService.sendConsolidatedStartEmail(summaries, requestInfo);
+		} catch (Exception e) {
+			log.error("⚠️ Non-fatal: Failed to prepare/send consolidated start email: {}", e.getMessage(), e);
+		}
+
 		int tenantPoolSize = configs.getTenantThreadPoolSize() != null ? configs.getTenantThreadPoolSize() : 5;
 		int actualTenantThreads = Math.min(tenantPoolSize, tenantIds.size());
 		log.info("\uD83D\uDE80 Starting parallel demand generation for {} tenants using {} threads.",
@@ -766,9 +865,17 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 				try {
-					log.info("\u25B6\uFE0F  Demand generation started for tenant: {}", tenantId);
-					demandService.generateDemandForTenantId(tenantId, tenantRequestInfo);
-					log.info("\u2705 Demand generation completed for tenant: {}", tenantId);
+                    if(!localities.isEmpty()){
+                        localities.forEach(localty -> {
+                        	demandService.generateDemandForTenantId(
+                        		    tenantId,
+                        		    localty,
+                        		    tenantRequestInfo
+                        		);
+                        	});
+                    } else {
+                        demandService.generateDemandForTenantId(tenantId, null, tenantRequestInfo);
+                    }
 				} catch (Exception e) {
 					// Catch everything — one tenant failure must NOT block others
 					log.error("\u274C Demand generation failed for tenant: {} | {}", tenantId, e.getMessage(), e);
@@ -847,7 +954,8 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	/**
 	 * Generate bill Based on Time (Monthly, Quarterly, Yearly)
 	 */
-	public void generateBillBasedLocality(RequestInfo requestInfo) {
+	public void generateBillBasedLocalityOrTenant(WaterServiceSchedulerRequest waterServiceSchedulerRequest) {
+		long billStartTime = System.currentTimeMillis();
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		LocalDateTime date = LocalDateTime.now();
 		log.info("Time schedule start for water bill generation on : " + date.format(dateTimeFormatter));
@@ -859,6 +967,7 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 Additionally, from the group-based list for Patiala, we now pick only those entries where: The group is not configured (i.e., group is null or empty), and The status is also "INITIATED".
 So, both lists are now filtered to include only records with INITIATED status, with an extra condition for Patiala that the group should not be present.  */		
   
+		SchedulerLevel schedulerLevel = waterServiceSchedulerRequest.getSchedulerLevel();
 		List<BillScheduler> billSchedularLocality = billGeneratorService.getBillGenerationDetails(criteria);
 		List<BillScheduler> billSchedulargrouplist = billGeneratorService.getBillGenerationGroup(criteria);
 		List<BillScheduler> billSchedularList = new ArrayList<>();
@@ -877,35 +986,44 @@ So, both lists are now filtered to include only records with INITIATED status, w
 		    }
 		}
 		
+		String tenantId = waterServiceSchedulerRequest.getTenantId();		
+		if (schedulerLevel == SchedulerLevel.TENANT) {
+			criteria.setTenantId(tenantId);
+			List<BillScheduler> billSchedarTenantList = billGeneratorService.getBillGenerationByTenant(criteria);
+			for (BillScheduler scheduler : billSchedarTenantList) {
+				if (scheduler.getId() != null && seenIds.add(scheduler.getId())) {
+					billSchedularList.add(scheduler);
+				}
+			}
+		}
+		
 		if (billSchedularList.isEmpty())
 			return;
 		log.info("billSchedularList count : " + billSchedularList.size());
 		for (BillScheduler billSchedular : billSchedularList) {
 			try {
-
-				billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
-				log.info("Updated Bill Schedular Status To INPROGRESS");
-				List<String> connectionNos = null;
-				requestInfo.getUserInfo().setTenantId(billSchedular.getTenantId() != null ? billSchedular.getTenantId()
-						: requestInfo.getUserInfo().getTenantId());
-				RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 				
-				if ("pb.patiala".equalsIgnoreCase(billSchedular.getTenantId()) &&
-					    billSchedular.getGrup() != null && !billSchedular.getGrup().isEmpty()) {
-					    
-					    connectionNos = wSCalculationDao.getConnectionsNoByGroups(
-					        billSchedular.getTenantId(),
-					        WSCalculationConstant.nonMeterdConnection,
-					        billSchedular.getGrup()
-					    );
+				List<String> connectionNos = null;
+				RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder()
+						.requestInfo(waterServiceSchedulerRequest.getRequestInfo()).build();
 
-					} else {
-					    connectionNos = wSCalculationDao.getConnectionsNoByLocality(
-					        billSchedular.getTenantId(),
-					        WSCalculationConstant.nonMeterdConnection,
-					        billSchedular.getLocality()
-					    );
-					}
+				if (billSchedular.getGrup() != null && !billSchedular.getGrup().isEmpty()) {
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
+					log.info("Updated Bill Schedular Status To INPROGRESS");
+					connectionNos = wSCalculationDao.getConnectionsNoByGroups(billSchedular.getTenantId(),
+							WSCalculationConstant.nonMeterdConnection, billSchedular.getGrup());
+
+				} else if (schedulerLevel == SchedulerLevel.TENANT) {
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
+					log.info("Updated Bill Schedular Status To INPROGRESS");
+					connectionNos = wSCalculationDao.getConnectionsNoByTenant(billSchedular.getTenantId(),
+							WSCalculationConstant.nonMeterdConnection);
+				} else {
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
+					log.info("Updated Bill Schedular Status To INPROGRESS");
+					connectionNos = wSCalculationDao.getConnectionsNoByLocality(billSchedular.getTenantId(),
+							WSCalculationConstant.nonMeterdConnection, billSchedular.getLocality());
+				}
 				// connectionNos.add("0603000002");
 				// connectionNos.add("0603009718");
 				// connectionNos.add("0603000001");
@@ -938,7 +1056,7 @@ So, both lists are now filtered to include only records with INITIATED status, w
 					}
 					
 					int batchCount = count;       
-					String tenantId = billSchedular.getTenantId();
+					tenantId = billSchedular.getTenantId();
 					String cityName = "Unknown";
 
 					if (tenantId != null && tenantId.contains(".")) {
@@ -971,6 +1089,16 @@ So, both lists are now filtered to include only records with INITIATED status, w
 						+ " and locality: " + billSchedular.getLocality());
 			}
 
+		}
+
+		// Trigger background monitoring and email notification for the processed bill schedulers
+		if (!billSchedularList.isEmpty()) {
+			try {
+				billSchedulerNotificationService.monitorAndSendBillCompletionEmail(
+						billSchedularList, billStartTime, waterServiceSchedulerRequest.getRequestInfo());
+			} catch (Exception ex) {
+				log.error("⚠️ Non-fatal: Failed to initiate bill completion email monitoring: {}", ex.getMessage(), ex);
+			}
 		}
 	}
 
@@ -1060,7 +1188,7 @@ So, both lists are now filtered to include only records with INITIATED status, w
 			List<Object> waterCessMasterList = timeBasedExemptionMasterMap
 					.get(WSCalculationConstant.WC_WATER_CESS_MASTER);
 
-			Map<String, Object> CessMap = mDataService.getApplicableMasterCess(WSCalculationConstant.Assessment_Year,
+			Map<String, Object> CessMap = masterDataService.getApplicableMasterCess(WSCalculationConstant.Assessment_Year,
 					waterCessMasterList);
 			waterCess = waterCessUtil.calculateWaterCess(finalWaterCharge, CessMap);
 

@@ -294,4 +294,12 @@ public class CollectionServiceConstants {
     
     public static final String EMAIL_MESSAGE = "notification.collection.receipt.email";
 
+    public static final String COMMON_MASTERS_MODULE = "common-masters";
+
+    public static final String UI_COMMON_PAY_MASTER = "uiCommonPay";
+
+    public static final String UI_COMMON_PAY_PATH = "$.MdmsRes.common-masters.uiCommonPay";
+
+    public static final String DEFAULT_RECEIPT_KEY = "consolidatedreceipt";
+
 }

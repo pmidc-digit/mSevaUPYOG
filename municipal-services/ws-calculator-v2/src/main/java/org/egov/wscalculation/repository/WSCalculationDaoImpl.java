@@ -304,7 +304,15 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 	@Override
 	public List<String> getConnectionsNoByLocality(String tenantId, String connectionType, String locality) {
 		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getConnectionsNoByLocality(tenantId, connectionType,WSCalculationConstant.ACTIVE_CONNECTION, locality,null, preparedStatement);
+		String query = queryBuilder.getConnectionsNoByLocalityTenantOrGroup(tenantId, connectionType,WSCalculationConstant.ACTIVE_CONNECTION, locality,null, preparedStatement);
+		log.info("preparedStatement: " + preparedStatement + " query : " + query);
+		return jdbcTemplate.queryForList(query, preparedStatement.toArray(), String.class);
+	}
+	
+	@Override
+	public List<String> getConnectionsNoByTenant(String tenantId, String connectionType) {
+		List<Object> preparedStatement = new ArrayList<>();
+		String query = queryBuilder.getConnectionsNoByLocalityTenantOrGroup(tenantId, connectionType,WSCalculationConstant.ACTIVE_CONNECTION,null,null, preparedStatement);
 		log.info("preparedStatement: " + preparedStatement + " query : " + query);
 		return jdbcTemplate.queryForList(query, preparedStatement.toArray(), String.class);
 	}
@@ -312,7 +320,7 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 	@Override
 	public List<String> getConnectionsNoByGroups(String tenantId, String connectionType, String group) {
 		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getConnectionsNoByLocality(tenantId, connectionType,WSCalculationConstant.ACTIVE_CONNECTION, null,group, preparedStatement);
+		String query = queryBuilder.getConnectionsNoByLocalityTenantOrGroup(tenantId, connectionType,WSCalculationConstant.ACTIVE_CONNECTION, null,group, preparedStatement);
 		log.info("preparedStatement: " + preparedStatement + " query : " + query);
 		return jdbcTemplate.queryForList(query, preparedStatement.toArray(), String.class);
 	}
@@ -371,14 +379,21 @@ public class WSCalculationDaoImpl implements WSCalculationDao {
 		jdbcTemplate.update(queryStr, preparedStmtList.toArray());
 	}
 	@Override
-	public List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String connectionType, Long taxPeriodFrom,
+	public List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String locality, String connectionType, Long taxPeriodFrom,
 			Long taxPeriodTo, String cone) {
-		
+
+            String query;
 			List<Object> preparedStatement = new ArrayList<>();
-			String query = queryBuilder.getConnectionNumberList(tenantId, connectionType,
-					WSCalculationConstant.ACTIVE_CONNECTION, taxPeriodFrom, taxPeriodTo, cone, preparedStatement);
-			log.info("preparedStatement: " + preparedStatement + " connection type: " + connectionType
-					+ " connection list : " + query);
+        if(locality!=null && !locality.trim().isEmpty()){
+            query = queryBuilder.getConnectionNumberList(tenantId, locality, connectionType,
+                    WSCalculationConstant.ACTIVE_CONNECTION, taxPeriodFrom, taxPeriodTo, cone, preparedStatement);
+        }
+        else {
+            query = queryBuilder.getConnectionNumberList(tenantId, null, connectionType,
+                    WSCalculationConstant.ACTIVE_CONNECTION, taxPeriodFrom, taxPeriodTo, cone, preparedStatement);
+            log.info("preparedStatement: " + preparedStatement + " connection type: " + connectionType
+                    + " connection list : " + query);
+        }
 			return jdbcTemplate.query(query, preparedStatement.toArray(), demandSchedulerRowMapper);
 		
 	}
@@ -538,11 +553,18 @@ public List<BillSearchs> getBillss(String tenantId, String demandid) {
 	}
 
 	@Override
-	public Boolean isBatchDemandExecuted(String tenantId, Long taxPeriodFrom, Long taxPeriodTo) {
+	public Boolean isBatchDemandExecuted(String tenantId, String locality, Long taxPeriodFrom, Long taxPeriodTo) {
 		try {
-			String query = "SELECT EXISTS (SELECT 1 FROM eg_ws_batch_demand_log WHERE tenantid = ? AND taxperiodfrom = ? AND taxperiodto = ? AND isdemandexecuted = true)";
-			return jdbcTemplate.queryForObject(query, new Object[]{tenantId, taxPeriodFrom, taxPeriodTo}, Boolean.class);
-		} catch (Exception e) {
+            String query = "SELECT EXISTS (SELECT 1 FROM eg_ws_batch_demand_log WHERE tenantid = ? AND taxperiodfrom = ? AND taxperiodto = ? AND isdemandexecuted = true";
+            StringBuilder sb = new StringBuilder(query);
+            if (locality != null && !locality.trim().isEmpty()) {
+                sb.append(" AND locality = ?)");
+                String query_locality = sb.toString();
+                return jdbcTemplate.queryForObject(query_locality, new Object[]{tenantId, taxPeriodFrom, taxPeriodTo, locality}, Boolean.class);
+            }
+            sb.append(" AND locality IS null)");
+            String query_tenant = sb.toString();
+            return jdbcTemplate.queryForObject(query_tenant, new Object[]{tenantId, taxPeriodFrom, taxPeriodTo}, Boolean.class);		} catch (Exception e) {
 			log.error("Error checking batch demand execution status for tenantId: " + tenantId, e);
 			return false;
 		}

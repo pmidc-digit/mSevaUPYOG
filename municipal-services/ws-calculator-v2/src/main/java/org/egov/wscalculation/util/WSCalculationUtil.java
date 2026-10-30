@@ -15,14 +15,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Getter
+@Slf4j
 public class WSCalculationUtil {
+
+	@Autowired
+	private RestTemplate restTemplate;
 
 	@Autowired
 	private WSCalculationConfiguration configurations;
@@ -95,7 +105,7 @@ public class WSCalculationUtil {
 					.append(getBillCriteria.getConnectionNumber())
 					.append(WSCalculationConstant.SEPARATER)
 					.append(WSCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
-					.append("WS")
+                    .append(WSCalculationConstant.SERVICE_FIELD_VALUE_WS)
 				
 						;
 
@@ -108,7 +118,7 @@ public class WSCalculationUtil {
 					.append(StringUtils.join(getBillCriteria.getConsumerCodes(), ","))
 					.append(WSCalculationConstant.SEPARATER)
 					.append(WSCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
-					.append("WS");
+                     .append(WSCalculationConstant.SERVICE_FIELD_VALUE_WS);
 
 			 if(getBillCriteria.getIsPaymentCompleted() != null)
 				 url.append(WSCalculationConstant.SEPARATER)
@@ -163,6 +173,7 @@ public class WSCalculationUtil {
 	 *            WaterConnectionRequest containing property
 	 * @return List of Property
 	 */
+
 	public List<Property> propertySearch(WaterConnectionRequest waterConnectionRequest) {
 		PropertyCriteria propertyCriteria = new PropertyCriteria();
 		HashSet<String> propertyIds = new HashSet<>();
@@ -178,29 +189,14 @@ public class WSCalculationUtil {
 		return propertyList;
 	}
 
-
-	/**
-	 * 
-	 * @param waterConnectionRequest
-	 *            WaterConnectionRequest containing property
-	 * @return List of Property
-	 */
 	public List<Property> propertySearch(RequestInfo requestInfo, Set<String> propertyIds, String tenantId, Long limit) {
-
-		PropertyCriteria propertyCriteria = PropertyCriteria.builder()
-				.propertyIds(propertyIds)
-				.tenantId(tenantId)
-				.limit(limit)
-				.build();
-
-		StringBuilder url = getPropertyURL(propertyCriteria);
-		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder()
-				.requestInfo(requestInfo)
-				.build();
-
-		Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper);
-		List<Property> propertyList = getPropertyDetails(result);
-		return propertyList;
+		PropertyCriteria propertyCriteria = new PropertyCriteria();
+		propertyCriteria.setPropertyIds(propertyIds);
+		propertyCriteria.setTenantId(tenantId);
+		propertyCriteria.setLimit(limit);
+		Object result = serviceRequestRepository.fetchResult(getPropertyURL(propertyCriteria),
+				RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+		return getPropertyDetails(result);
 	}
 	
 	/**

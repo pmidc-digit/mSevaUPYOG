@@ -104,6 +104,7 @@ public class AdditionalFeature extends FeatureProcess {
     private static final String RULE_47 = "47";
     private static final String RULE_50 = "50";
     private static final String RULE_56 = "56";
+    private static final String HEIGHT_EXC_MUMTY = "4.4.4";
     private static final BigDecimal TWO = BigDecimal.valueOf(2);
     private static final BigDecimal ONE_POINTFIVE = BigDecimal.valueOf(1.5);
     private static final BigDecimal THREE = BigDecimal.valueOf(3);
@@ -211,7 +212,8 @@ public class AdditionalFeature extends FeatureProcess {
         if (StringUtils.isNotBlank(typeOfArea) && roadWidth != null) {
             validateNumberOfFloors(pl, errors, typeOfArea, roadWidth);
             validateHeightOfBuilding(pl, errors, typeOfArea, roadWidth);
-            validateHeightOfFloors(pl, errors);
+            //validateHeightOfFloors(pl, errors);
+            validateHeightOfFloorsV2(pl, errors);
         }
 
         validatePlinthHeight(pl, errors);
@@ -419,6 +421,73 @@ public class AdditionalFeature extends FeatureProcess {
         }
     }
     
+	private void validateHeightOfFloorsV2(Plan pl, HashMap<String, String> errors) {
+
+		LOG.info("Inside height of floor validation");
+
+		for (Block block : pl.getBlocks()) {
+
+			if (block.getBuilding() == null) {
+				continue;
+			}
+
+			OccupancyTypeHelper occupancyTypeHelper = block.getBuilding().getMostRestrictiveFarHelper();
+
+			if (occupancyTypeHelper != null && occupancyTypeHelper.getSubtype() != null
+					&& Far.isPetrolOrCngOccupancy(occupancyTypeHelper.getSubtype().getCode())) {
+				continue;
+			}
+
+			ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+			scrutinyDetail.addColumnHeading(1, RULE_NO);
+			scrutinyDetail.addColumnHeading(2, FLOOR_NO);
+			scrutinyDetail.addColumnHeading(3, MIN_REQUIRED);
+			scrutinyDetail.addColumnHeading(5, PROVIDED);
+			scrutinyDetail.addColumnHeading(6, STATUS);
+			scrutinyDetail.setKey("Block_" + block.getNumber() + "_Height of Floor");
+
+			boolean hasDetails = false;
+
+			for (Floor floor : block.getBuilding().getFloors()) {
+
+				BigDecimal floorHeight = BigDecimal.ZERO;
+
+				if (floor.getFloorHeights() != null && !floor.getFloorHeights().isEmpty()
+						&& floor.getFloorHeights().get(0) != null) {
+
+					floorHeight = floor.getFloorHeights().get(0).setScale(2, RoundingMode.HALF_UP);
+				}
+
+				boolean isStilt = Boolean.TRUE.equals(floor.getIsStiltFloor());
+
+				String floorNumber = isStilt ? floor.getNumber() + "(Stilt)" : String.valueOf(floor.getNumber());
+
+				BigDecimal minHeight = isStilt ? BigDecimal.valueOf(2.50) : BigDecimal.valueOf(2.75);
+
+				boolean isAccepted = floorHeight.compareTo(minHeight) >= 0;
+
+				if (errors.isEmpty()) {
+
+					Map<String, String> details = new HashMap<>();
+
+					details.put(FLOOR_NO, floorNumber);
+					details.put(RULE_NO, RULE_38);
+					details.put(MIN_REQUIRED, minHeight.toPlainString() + DcrConstants.IN_M);
+					details.put(PROVIDED, floorHeight.toPlainString() + DcrConstants.IN_M);
+					details.put(STATUS,
+							isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
+
+					scrutinyDetail.getDetail().add(details);
+					hasDetails = true;
+				}
+			}
+
+			if (hasDetails) {
+				pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+			}
+		}
+	}
+    
     private void validateHeightOfFloors(Plan pl, HashMap<String, String> errors) {
     	LOG.info("inside height of floor");
 		for (Block block : pl.getBlocks()) {
@@ -562,7 +631,7 @@ public class AdditionalFeature extends FeatureProcess {
         for (Block block : pl.getBlocks()) {
 
             boolean isAccepted = false;
-            String ruleNo = RULE_38;
+            String ruleNo = HEIGHT_EXC_MUMTY;
             ScrutinyDetail scrutinyDetail = getNewScrutinyDetailRoadArea(
                     "Block_" + block.getNumber() + "_" + "Height of Building (excluding mumty)");
             String requiredBuildingHeight = StringUtils.EMPTY;
@@ -572,6 +641,8 @@ public class AdditionalFeature extends FeatureProcess {
             BigDecimal buildingHeight = block.getBuilding().getBuildingHeightExcludingMP();
             if (buildingHeight != null) {
                 buildingHeight = buildingHeight.setScale(2, RoundingMode.HALF_UP);
+            }else {
+            	pl.addError("Building Height Excluding Mumty Error ", "Building Height Excluding Mumty is not defined.");
             }
 
             // Get total building height
@@ -1161,7 +1232,5 @@ public class AdditionalFeature extends FeatureProcess {
                      .filter(Objects::nonNull) // skip null floors
                      .anyMatch(floor -> Boolean.TRUE.equals(floor.getIsStiltFloor()));
     }
-
-
     
   }

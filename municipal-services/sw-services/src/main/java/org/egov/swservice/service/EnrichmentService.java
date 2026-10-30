@@ -94,19 +94,19 @@ public class EnrichmentService {
 				.getAuditDetails(sewerageConnectionRequest.getRequestInfo().getUserInfo().getUuid(), true);
 		sewerageConnectionRequest.getSewerageConnection().setAuditDetails(auditDetails);
 		sewerageConnectionRequest.getSewerageConnection().setId(UUID.randomUUID().toString());
-		sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.ACTIVE);
-		String roleCodeName=null;
-		/*
-		 *Changing Hard coded channel and moving hardcoded part to constant
-		 *Moreover adding 3rd party channer config here on the basis  of role if it contains particular role.
-		 *Abhishek Rana -- 30-12-2024
-		 *		 */
-		
-		if (sewerageServicesUtil.isModifyConnectionRequest(sewerageConnectionRequest)){
+		if (sewerageConnectionRequest.isDisconnectRequest() 
+				|| (sewerageConnectionRequest.getSewerageConnection() != null 
+				    && sewerageConnectionRequest.getSewerageConnection().getApplicationType() != null 
+				    && sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.DISCONNECT_SEWERAGE_CONNECTION))) {
+			sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.ACTIVE);
+		} else if (sewerageServicesUtil.isModifyConnectionRequest(sewerageConnectionRequest)){
 			sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.INACTIVE);
+		} else {
+			sewerageConnectionRequest.getSewerageConnection().setStatus(StatusEnum.ACTIVE);
 		}
 		
-String userType = sewerageConnectionRequest.getRequestInfo().getUserInfo().getType().toUpperCase();
+		String roleCodeName = null;
+		String userType = sewerageConnectionRequest.getRequestInfo().getUserInfo().getType().toUpperCase();
 
 		
 		Object thirdPartyData = fetchThirdPartyIntegration(sewerageConnectionRequest.getRequestInfo(), config.getStateLevelTenantId(), SWConstants.MDMS_WC_ROLE_MODLENAME , SWConstants.MDMS_WC_ROLE_MASTERNAME, userType,true);
@@ -183,6 +183,7 @@ String userType = sewerageConnectionRequest.getRequestInfo().getUserInfo().getTy
 		}
 		// Application created date
 		additionalDetail.put(SWConstants.APP_CREATED_DATE, BigDecimal.valueOf(System.currentTimeMillis()));
+		enrichGuardianAndMobileDetails(sewerageConnectionRequest, additionalDetail, null);
 		sewerageConnectionRequest.getSewerageConnection().setAdditionalDetails(additionalDetail);
 		// Setting ApplicationType
 		String applicationType=null;
@@ -289,6 +290,7 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
 			}
 		}
 		log.info("Additional details2:"+ additionalDetail);
+		enrichGuardianAndMobileDetails(sewerageConnectionRequest, additionalDetail, null);
 		sewerageConnectionRequest.getSewerageConnection().setAdditionalDetails(additionalDetail);
 	}
 
@@ -350,7 +352,7 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
 	 */
 	public void enrichUpdateSewerageConnection(SewerageConnectionRequest sewerageConnectionRequest) {
 		AuditDetails auditDetails = sewerageServicesUtil
-				.getAuditDetails(sewerageConnectionRequest.getRequestInfo().getUserInfo().getUuid(), false);
+				.getAuditDetails(sewerageConnectionRequest.getRequestInfo().getUserInfo().getUuid(), true);
 		sewerageConnectionRequest.getSewerageConnection().setAuditDetails(auditDetails);
 		SewerageConnection connection = sewerageConnectionRequest.getSewerageConnection();
 		if (!CollectionUtils.isEmpty(connection.getDocuments())) {
@@ -595,6 +597,7 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
 				if(!CollectionUtils.isEmpty(ownerInfoList)){
 					additionalDetail.put("ownerName",ownerInfoList.get(0).getName());
 				}
+				enrichGuardianAndMobileDetails(null, additionalDetail, ownerInfoList);
 				sewerageConnection.setAdditionalDetails(additionalDetail);
 				finalConnectionList.add(sewerageConnection);
 			}
@@ -720,6 +723,46 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
 		userDetailResponse.setUser(sewerageConnection.getConnectionHolders());
 		enrichConnectionHolderInfo(userDetailResponse, sewerageConnectionList, requestInfo);
 		return userDetailResponse.getUser().get(0);
+	}
+
+	private void enrichGuardianAndMobileDetails(SewerageConnectionRequest request, Map<String, Object> additionalDetail, List<OwnerInfo> propertyOwners) {
+		String guardianName = null;
+		String mobileNumber = null;
+		String ownerName = null;
+		if (!CollectionUtils.isEmpty(propertyOwners) && propertyOwners.get(0) != null) {
+			guardianName = propertyOwners.get(0).getFatherOrHusbandName();
+			mobileNumber = propertyOwners.get(0).getMobileNumber();
+			ownerName = propertyOwners.get(0).getName();
+		}
+		if ((guardianName == null || mobileNumber == null || ownerName == null) && request != null) {
+			try {
+				List<Property> properties = sewerageServicesUtil.propertySearch(request);
+				if (!CollectionUtils.isEmpty(properties) && properties.get(0) != null 
+						&& !CollectionUtils.isEmpty(properties.get(0).getOwners()) 
+						&& properties.get(0).getOwners().get(0) != null) {
+					if (guardianName == null) {
+						guardianName = properties.get(0).getOwners().get(0).getFatherOrHusbandName();
+					}
+					if (mobileNumber == null) {
+						mobileNumber = properties.get(0).getOwners().get(0).getMobileNumber();
+					}
+					if (ownerName == null) {
+						ownerName = properties.get(0).getOwners().get(0).getName();
+					}
+				}
+			} catch (Exception e) {
+				log.error("Error fetching property for owner, guardian and mobile enrichment", e);
+			}
+		}
+		if (guardianName != null) {
+			additionalDetail.put("guardianName", guardianName);
+		}
+		if (mobileNumber != null) {
+			additionalDetail.put("mobileNumber", mobileNumber);
+		}
+		if (ownerName != null) {
+			additionalDetail.put("ownerName", ownerName);
+		}
 	}
 	
 }

@@ -20,7 +20,8 @@ const envVariables = {
 
     supportedLocales: process.env.SUPPORTED_LOCALES || 'en_IN',
 
-    googleAPIKey: process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyDjSk-Bw1OuiOE-5K7jsP6KGN2rbcN7iBk',
+    googleAPIKey: process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyB5xqCmrgz-IL-mPQiy7PI_mA4drmyr2fo',                           
+        //'AIzaSyDjSk-Bw1OuiOE-5K7jsP6KGN2rbcN7iBk',
 
     dateFormat: process.env.DATEFORMAT || 'DD/MM/YYYY',
     timeZone: process.env.TIMEZONE || 'Asia/Kolkata',
@@ -43,6 +44,10 @@ const envVariables = {
 
         kafkaConsumerEnabled: process.env.KAFKA_CONSUMER_ENABLED || true,
         kafkaConsumerGroupId: process.env.KAFKA_CONSUMER_GROUP_ID || 'xstate-chatbot',
+        pgrConsumerGroupId: process.env.KAFKA_PGR_CONSUMER_GROUP_ID || (process.env.KAFKA_CONSUMER_GROUP_ID ? process.env.KAFKA_CONSUMER_GROUP_ID + '-pgr' : 'xstate-chatbot-pgr'),
+        paymentConsumerGroupId: process.env.KAFKA_PAYMENT_CONSUMER_GROUP_ID || (process.env.KAFKA_CONSUMER_GROUP_ID ? process.env.KAFKA_CONSUMER_GROUP_ID + '-payment' : 'xstate-chatbot-payment'),
+        sessionTimeout: parseInt(process.env.KAFKA_SESSION_TIMEOUT) || 60000,
+        heartbeatInterval: parseInt(process.env.KAFKA_HEARTBEAT_INTERVAL) || 3000,
     },
 
     kaleyra: {
@@ -97,6 +102,8 @@ const envVariables = {
         collectonServicSearchEndpoint: process.env.COLLECTION_SERVICE_SEARCH_ENDPOINT || 'collection-services/payments/$module/_search',
         pgrCreateEndpoint: process.env.PGR_CREATE_ENDPOINT || 'pgr-services/v2/request/_create',
         pgrSearchEndpoint: process.env.PGR_SEARCH_ENDPOINT || 'pgr-services/v2/request/_search',
+        swachCreateEndpoint:process.env.SWACH_CREATE_ENDPOINT || "swach-services/v2/request/_create",
+        swachSearchEndpoint:process.env.SWACH_SEARCH_ENDPOINT || "swach-services/v2/request/_search",
         pgrv1CreateEndpoint: process.env.PGR_CREATE_ENDPOINT || 'rainmaker-pgr/v1/requests/_create',
         pgrv1SearchEndpoint: process.env.PGR_SEARCH_ENDPOINT || 'rainmaker-pgr/v1/requests/_search',
         waterConnectionSearch: process.env.WATER_CONNECTION_SEARCH || 'ws-services/wc/_search?searchType=CONNECTION',
@@ -109,7 +116,8 @@ const envVariables = {
         receiptdownladlink: process.env.RECEIPT_DOWNLOAD_LINK || 'citizen/withoutAuth/egov-common/download-receipt?status=success&consumerCode=$consumercode&tenantId=$tenantId&receiptNumber=$receiptnumber&businessService=$businessservice&smsLink=true&mobileNo=$mobilenumber&channel=whatsapp&redirectNumber=+$whatsAppBussinessNumber&locale=$locale',
         msgpaylink: process.env.MSG_PAY_LINK || 'citizen/withoutAuth/egov-common/pay?consumerCode=$consumercode&tenantId=$tenantId&businessService=$businessservice&redirectNumber=$redirectNumber&channel=whatsapp&locale=$locale',
         wsOpenSearch: process.env.WS_OPEN_SEARCH || 'citizen/withoutAuth/wns/public-search',
-        ptOpenSearch: process.env.PT_OPEN_SEARCH || 'citizen/withoutAuth/pt-mutation/public-search'
+        ptOpenSearch: process.env.PT_OPEN_SEARCH || 'citizen/withoutAuth/pt-mutation/public-search',
+        attendanceEndpoint: process.env.ATTENDANCE_ENDPOINT || 'swach-services/v2/request/image/_create',
     },
 
     userService: {
@@ -120,8 +128,14 @@ const envVariables = {
     pgrUseCase: {
         pgrVersion: process.env.PGR_VERSION || 'v2',
         complaintSearchLimit: process.env.COMPLAINT_SEARCH_LIMIT || 3,
-        informationImageFilestoreId: process.env.INFORMATION_IMAGE_FILESTORE_ID || '16dff22d-06dd-485d-a03d-6d11e8564dff',
+        informationImageFilestoreId: process.env.INFORMATION_IMAGE_FILESTORE_ID ||'5c3a93a0-e501-4b97-aa84-97f9b9b34517',                                            //'16dff22d-06dd-485d-a03d-6d11e8564dff',
         pgrUpdateTopic: process.env.PGR_UPDATE_TOPIC || 'update-pgr-request',
+        geoSearch: process.env.GEO_SEARCH || true
+    },
+
+    swachUseCase: {
+        complaintSearchLimit: process.env.COMPLAINT_SEARCH_LIMIT || 3,
+        informationImageFilestoreId: process.env.INFORMATION_IMAGE_FILESTORE_ID || '5c3a93a0-e501-4b97-aa84-97f9b9b34517',                   //'b7285c21-7f6e-4a71-9537-bd4d2c56b34c',
         geoSearch: process.env.GEO_SEARCH || true
     },
 

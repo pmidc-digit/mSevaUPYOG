@@ -1,5 +1,6 @@
 package org.egov.swcalculation.repository;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -71,6 +72,16 @@ public class BillGeneratorDao {
 		return jdbcTemplate.query(query, preparedStatement.toArray(), billGenerateSchedulerRowMapper);
 	}
 	
+	public List<BillScheduler> getBillGenerationByTenant(BillGenerationSearchCriteria criteria) {
+		List<Object> preparedStatement = new ArrayList<>();
+
+		String query = queryBuilder.searchBillGenerationSchedulerTenantQuery(criteria, preparedStatement);
+		if (query == null)
+			return Collections.emptyList();
+		log.debug("Prepared Statement" + preparedStatement.toString());
+		return jdbcTemplate.query(query, preparedStatement.toArray(), billGenerateSchedulerRowMapper);
+	}
+		
 	
 	public List<String> getConnectionsByStatus(String string, String status) {
 	    List<Object> preparedStatement = new ArrayList<>();
@@ -165,26 +176,38 @@ public class BillGeneratorDao {
 	
 	public void updateBillSchedulerConnectionStatus(String consumerCode, String schedulerId,
 	        String locality, String status, String tenantId, String reason, long modifiedTime) {
+	    updateBillSchedulerConnectionStatus(consumerCode, schedulerId, locality, status, tenantId, reason, modifiedTime, null);
+	}
+
+	public void updateBillSchedulerConnectionStatus(String consumerCode, String schedulerId,
+	        String locality, String status, String tenantId, String reason, long modifiedTime,
+	        BigDecimal billamount) {
 	    try {
-	        log.info("Entered into updateBillSchedulerConnectionStatus for consumerCode: {}", consumerCode);
+	        log.info("Entered into updateBillSchedulerConnectionStatus for consumerCode: {} amount: {}", consumerCode, billamount);
 
 	        if (consumerCode == null || consumerCode.isEmpty())
 	            return;
 	        
-	        String sql = "UPDATE eg_sw_bill_scheduler_connection_status "
-	                   + "SET status = ?, reason = ?, lastupdatedtime = ? "
-	                   + "WHERE status='Initiated' AND eg_sw_scheduler_id = ? AND tenantid = ? AND consumercode = ?";
+	        StringBuilder sql = new StringBuilder("UPDATE eg_sw_bill_scheduler_connection_status ")
+	                   .append("SET status = ?, reason = ?, lastupdatedtime = ? ");
+	        if (billamount != null) {
+	            sql.append(", billamount = ? ");
+	        }
+	        sql.append("WHERE status='Initiated' AND eg_sw_scheduler_id = ? AND tenantid = ? AND consumercode = ?");
 
-	        int rows = jdbcTemplate.update(sql, ps -> {
-	            ps.setString(1, status);
-	            ps.setString(2, reason);
-	            ps.setObject(3, modifiedTime);
-	            ps.setString(4, schedulerId);
-	            ps.setString(5, tenantId);
-	            ps.setString(6, consumerCode);
+	        int rows = jdbcTemplate.update(sql.toString(), ps -> {
+	            int idx = 1;
+	            ps.setString(idx++, status);
+	            ps.setString(idx++, reason);
+	            ps.setObject(idx++, modifiedTime);
+	            if (billamount != null) {
+	                ps.setBigDecimal(idx++, billamount);
+	            }
+	            ps.setString(idx++, schedulerId);
+	            ps.setString(idx++, tenantId);
+	            ps.setString(idx++, consumerCode);
 	        });
 
-	        
 	        log.info("Update result: consumerCode={} rowsUpdated={}", consumerCode, rows);
 
 	    } catch (Exception e) {

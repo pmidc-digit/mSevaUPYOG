@@ -316,7 +316,7 @@
 				<td class="tdNumber">6</td>
 				<td class="tdHeading">PLOT AREA (Measured)</td>
 				<td class="tdHeadingValue"
-				    th:text="${plot.getPlotBndryArea()}"></td>
+				    th:text="${plot != null ? plot.plotBndryArea : 0}"></td>
 			</tr>
 
 			<tr>

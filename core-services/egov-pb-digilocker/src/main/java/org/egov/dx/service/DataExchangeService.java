@@ -76,7 +76,7 @@ public class DataExchangeService {
             PullURIResponse.class, PullDocResponse.class, Certificate.class,
             Organization.class, Address.class, IssuedBy.class, IssuedTo.class,
             ResponseStatus.class, DocDetailsResponse.class, Person.class,
-            WaterSewerageBill.class
+            WaterSewerageBill.class, Persons.class
         });
         
         return xs;
@@ -111,6 +111,7 @@ public class DataExchangeService {
             }
             
             RequestInfoWrapper requestWrapper = prepareRequestInfo();
+            resolveCityFromMdms(searchCriteria, requestWrapper);
             String docType = searchCriteria.getDocType();
 
             log.info("Processing DigiLocker Request for DocType: {}", docType);
@@ -129,12 +130,12 @@ public class DataExchangeService {
                 return handleWaterSewerage(searchCriteria, isUriRequest, requestWrapper, docType);
             } else {
                 log.error("Unsupported DocType: {}", docType);
-                return generateErrorResponse(txnId, isUriRequest);
+                return generateErrorResponse(txnId, isUriRequest, "Unsupported DocType: " + docType, searchCriteria.getDigiLockerId());
             }
 
         } catch (Exception e) {
             log.error("Critical error during data exchange: ", e);
-            return generateErrorResponse(txnId, isUriRequest);
+            return generateErrorResponse(txnId, isUriRequest, "Critical error during data exchange: " + e.getMessage(), searchCriteria.getDigiLockerId());
         }
     }
 
@@ -148,7 +149,7 @@ public class DataExchangeService {
         List<Payment> payments = paymentService.getPayments(paymentCriteria, DIGILOCKER_DOCTYPE, wrapper);
         
         if (!isValidResponse(searchCriteria, payments)) {
-            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest, "No payment record found or payer name/mobile does not match for property: " + searchCriteria.getPropertyId(), searchCriteria.getDigiLockerId());
         }
         
         Payment payment = payments.get(0);
@@ -202,7 +203,9 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
         
         // 1. Fetch Connection List
         JsonNode connectionResponse = fetchWaterSewerageConnection(searchCriteria, docType, wrapper);
-        if (connectionResponse == null) return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+        if (connectionResponse == null) {
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest, "Failed to fetch connection details from " + docType + " service.", searchCriteria.getDigiLockerId());
+        }
 
         String arrayNodeName = "WS".equalsIgnoreCase(docType) ? "WaterConnection" : "SewerageConnections";
         JsonNode connections = connectionResponse.path(arrayNodeName);
@@ -219,31 +222,43 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
         // 3. Error if no Active connection exists
         if (activeConn == null) {
             log.error("No active connection found for consumer {}", searchCriteria.getPropertyId());
-            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest, "No active connection found for consumer: " + searchCriteria.getPropertyId(), searchCriteria.getDigiLockerId());
         }
 
         // 4. Chain to Property Search for Owner Details
         JsonNode propertyResponse = fetchPropertyDetails(activeConn.path("tenantId").asText(), activeConn.path("propertyId").asText(), wrapper);
         if (propertyResponse == null || propertyResponse.path("Properties").size() == 0) {
             log.error("Failed to fetch linked property details.");
-            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest, "Linked property details not found for connection: " + searchCriteria.getPropertyId(), searchCriteria.getDigiLockerId());
         }
         
         JsonNode firstProperty = propertyResponse.path("Properties").get(0);
-        String oName = firstProperty.path("owners").get(0).path("name").asText("");
-        String oMobile = firstProperty.path("owners").get(0).path("mobileNumber").asText("");
+        JsonNode owners = firstProperty.path("owners");
 
-        // 5. Validate Case-Insensitive Name and Mobile
-        if (!isValidWsResponse(searchCriteria, oName, oMobile)) {
+        // 5. Validate Case-Insensitive Name and Mobile against ANY owner
+        boolean ownerValid = false;
+        if ("FALSE".equalsIgnoreCase(configurations.getValidationFlag())) {
+            ownerValid = true;
+        } else {
+            for (JsonNode owner : owners) {
+                String ownerName = owner.path("name").asText("");
+                String ownerMobile = owner.path("mobileNumber").asText("");
+                if (isValidWsResponse(searchCriteria, ownerName, ownerMobile)) {
+                    ownerValid = true;
+                    break;
+                }
+            }
+        }
+        if (!ownerValid) {
             log.error("Owner validation failed against Property Master.");
-            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest, "Owner name or mobile number does not match with property records.", searchCriteria.getDigiLockerId());
         }
 
         // 6. Get existing PDF from sanctionFileStoreId
         String fileStoreId = activeConn.path("additionalDetails").path("sanctionFileStoreId").asText("");
         if (fileStoreId.isEmpty() || "null".equals(fileStoreId)) {
             log.error("sanctionFileStoreId is missing in additionalDetails");
-            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest);
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest, "Sanction certificate document is not available for this connection.", searchCriteria.getDigiLockerId());
         }
 
         // 7. Fetch the actual URL from the Filestore
@@ -259,14 +274,14 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
         }
 
         if (pdfUrl == null || pdfUrl.isEmpty() || "null".equals(pdfUrl)) {
-            throw new IOException("URL not found in Filestore response");
+            log.error("URL not found in Filestore response for fileStoreId: {}", fileStoreId);
+            return generateErrorResponse(searchCriteria.getTxn(), isUriRequest, "Unable to fetch certificate from filestore.", searchCriteria.getDigiLockerId());
         }
 
         // 8. Final Response Assembly
         String base64Pdf = downloadAndEncodePdf(pdfUrl);
         ResponseStatus status = new ResponseStatus(getFormattedNow(), searchCriteria.getTxn(), "1");
         
-        // Fixed: Use activeConn and connectionNo
         String actualConsumerCode = activeConn.path("connectionNo").asText("");
         String replacedConsumerCode = actualConsumerCode.replace("-", "QW");
         String customUri = String.format("%s-%s-%sQW%s", 
@@ -276,8 +291,7 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
         docDetails.setURI(customUri);
         docDetails.setDocContent(base64Pdf);
         
-        // Fixed: Use oName and oMobile
-        Certificate cert = populateWSCertificate(activeConn, docType, oName, oMobile);
+        Certificate cert = populateWSCertificate(activeConn, docType, owners);
         docDetails.setIssuedTo(cert.getIssuedTo());
         
         docDetails.setDataContent(Base64.getEncoder().encodeToString(xstream.toXML(cert).getBytes()));
@@ -294,12 +308,12 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
                   .append("?searchType=CONNECTION")
                   .append("&tenantId=").append(TENANT_PREFIX).append(sc.getCity());
                   
-        if (sc.getMobile() != null && !sc.getMobile().isEmpty()) {
-            urlBuilder.append("&mobileNumber=").append(sc.getMobile());
+        if (sc.getMobile() != null && !sc.getMobile().trim().isEmpty()) {
+            urlBuilder.append("&mobileNumber=").append(sc.getMobile().trim());
         }
         
-        if (sc.getPropertyId() != null && !sc.getPropertyId().isEmpty()) {
-            urlBuilder.append("&connectionNumber=").append(sc.getPropertyId());
+        if (sc.getPropertyId() != null && !sc.getPropertyId().trim().isEmpty()) {
+            urlBuilder.append("&connectionNumber=").append(sc.getPropertyId().trim());
         }
 
         Map<String, Object> requestBody = new HashMap<>();
@@ -340,7 +354,7 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
         return isNameMatch && isMobileMatch;
     }
 
-    private Certificate populateWSCertificate(JsonNode connection, String docType, String ownerName, String ownerMobile) {
+    private Certificate populateWSCertificate(JsonNode connection, String docType, JsonNode owners) {
         Certificate cert = new Certificate();
         cert.setLanguage(LANGUAGE_CODE); 
         cert.setname("WS".equalsIgnoreCase(docType) ? "Water Connection" : "Sewerage Connection");
@@ -382,49 +396,34 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
         issuer.setOrganisation(org);
         cert.setIssuedBy(issuer);
 
-        Person person = new Person();
-        person.setUid("");
-        person.setTitle("");
-        person.setName(ownerName); 
-        person.setDob("");
-        person.setAge("");
-        person.setSwd("");
-        person.setSwdIndicator("");
-        person.setMotherName("");
-        person.setGender("");
-        person.setMaritalStatus("");
-        person.setRelationWithHof("");
-        person.setDisabilityStatus("");
-        person.setCategory("");
-        person.setReligion("");
-        person.setPhone(ownerMobile);
-        person.setEmail("");
-        person.setPhoto("");
-        
-        Address pAddr = new Address();
-        pAddr.setType(PERSON_ADDR_TYPE); 
-        pAddr.setLine1("");
-        pAddr.setLine2("");
-        pAddr.setHouse("");
-        pAddr.setLandmark("");
-        pAddr.setLocality(connection.path("additionalDetails").path("locality").asText(""));
-        pAddr.setVtc("");
-        pAddr.setPin("");
-        pAddr.setDistrict(connection.path("tenantId").asText());
-        pAddr.setState(PERSON_STATE); 
-        pAddr.setCountry("IN");
-        person.setAddress(pAddr);
+        // Build Persons list with only primary details (name, dob, gender, phone)
+        Persons personsList = new Persons();
+        String firstOwnerName = "";
+        String firstOwnerMobile = "";
+        for (JsonNode owner : owners) {
+            Person person = new Person();
+            person.setName(owner.path("name").asText(""));
+            person.setDob(owner.path("dob").asText(""));
+            person.setGender(owner.path("gender").asText(""));
+            person.setPhone(owner.path("mobileNumber").asText(""));
+            personsList.addPerson(person);
+            
+            if (firstOwnerName.isEmpty()) {
+                firstOwnerName = owner.path("name").asText("");
+                firstOwnerMobile = owner.path("mobileNumber").asText("");
+            }
+        }
 
         IssuedTo issuedTo = new IssuedTo();
-        issuedTo.setPerson(person);
+        issuedTo.setPersons(personsList);
         cert.setIssuedTo(issuedTo);
 
         CertificateData data = new CertificateData();
         WaterSewerageBill wsBill = new WaterSewerageBill(); 
         
         wsBill.setConsumerNo(connection.path("connectionNo").asText(""));
-        wsBill.setConsumerName(ownerName);
-        wsBill.setMobileNumber(ownerMobile); 
+        wsBill.setConsumerName(firstOwnerName);
+        wsBill.setMobileNumber(firstOwnerMobile); 
         wsBill.setAddress(connection.path("additionalDetails").path("locality").asText(""));
         wsBill.setBillNumber(connection.path("applicationNo").asText("")); 
         wsBill.setBillAmount("0.0"); 
@@ -529,31 +528,47 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
     }
 
     private RequestInfoWrapper prepareRequestInfo() {
-        UserResponse user = userService.getUser();
+        UserResponse userResponse = userService.getUser();
         RequestInfo info = new RequestInfo();
         info.setApiId(API_ID);
         info.setMsgId(String.format(MSG_ID_PATTERN, System.currentTimeMillis()));
-        info.setAuthToken(user.getAuthToken());
-        info.setUserInfo(user.getUser());
+        info.setAuthToken(configurations.getAuthTokenVariable());
+        if (userResponse != null && userResponse.getUser() != null && !userResponse.getUser().isEmpty()) {
+            info.setUserInfo(userResponse.getUser().get(0));
+        }
         
         RequestInfoWrapper wrapper = new RequestInfoWrapper();
         wrapper.setRequestInfo(info);
         return wrapper;
     }
 
-    private String generateErrorResponse(String txnId, boolean isUriRequest) {
+    private String generateErrorResponse(String txnId, boolean isUriRequest, String errorMessage, String digiLockerId) {
         ResponseStatus status = new ResponseStatus(getFormattedNow(), txnId, "0");
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        
+        DocDetailsResponse docDetails = new DocDetailsResponse();
+        if (errorMessage != null && !errorMessage.trim().isEmpty()) {
+            docDetails.setDocContent(errorMessage);
+        }
+        if (digiLockerId != null && !digiLockerId.trim().isEmpty()) {
+            docDetails.setDigiLockerId(digiLockerId);
+        }
         
         if (isUriRequest) {
             PullURIResponse res = new PullURIResponse();
             res.setResponseStatus(status);
+            res.setDocDetails(docDetails);
             return xstream.toXML(res);
         } else {
             PullDocResponse res = new PullDocResponse();
             res.setResponseStatus(status);
+            res.setDocDetails(docDetails);
             return xstream.toXML(res);
         }
+    }
+
+    private String generateErrorResponse(String txnId, boolean isUriRequest, String errorMessage) {
+        return generateErrorResponse(txnId, isUriRequest, errorMessage, null);
     }
 
     private String getFormattedNow() {
@@ -664,5 +679,98 @@ private String handleWaterSewerage(SearchCriteria searchCriteria, boolean isUriR
         cert.setCertificateData(data);
 
         return cert;
+    }
+
+    private void resolveCityFromMdms(SearchCriteria searchCriteria, RequestInfoWrapper requestWrapper) {
+        if (searchCriteria.getCity() != null && !searchCriteria.getCity().trim().isEmpty()) {
+            log.info("City '{}' is already present in request criteria, skipping MDMS level lookup", searchCriteria.getCity());
+            return;
+        }
+
+        String level1 = searchCriteria.getLevel1();
+        String level2 = searchCriteria.getLevel2();
+
+        if (level1 == null || level1.trim().isEmpty() || level2 == null || level2.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            log.info("Resolving city from MDMS using level1='{}', level2='{}'", level1, level2);
+
+            Map<String, Object> masterDetail = new HashMap<>();
+            masterDetail.put("name", "tenants");
+            masterDetail.put("filter", String.format("[?(@.ulbCode=='%s' && @.districtCode=='%s')]", level2, level1));
+
+            Map<String, Object> moduleDetail = new HashMap<>();
+            moduleDetail.put("moduleName", "tenant");
+            moduleDetail.put("masterDetails", Collections.singletonList(masterDetail));
+
+            Map<String, Object> mdmsCriteria = new HashMap<>();
+            mdmsCriteria.put("tenantId", "pb");
+            mdmsCriteria.put("moduleDetails", Collections.singletonList(moduleDetail));
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("RequestInfo", requestWrapper.getRequestInfo());
+            requestBody.put("MdmsCriteria", mdmsCriteria);
+
+            String mdmsUrl = configurations.getMdmsHost() + configurations.getMdmsEndpoint();
+            JsonNode mdmsRes = restTemplate.postForObject(mdmsUrl, requestBody, JsonNode.class);
+
+            if (mdmsRes != null && mdmsRes.has("MdmsRes")) {
+                JsonNode tenantsNode = mdmsRes.path("MdmsRes").path("tenant").path("tenants");
+                if (tenantsNode.isArray() && tenantsNode.size() > 0) {
+                    JsonNode tenantObj = tenantsNode.get(0);
+                    String tenantCode = tenantObj.path("code").asText("");
+                    if (!tenantCode.isEmpty()) {
+                        String city = tenantCode.startsWith("pb.") ? tenantCode.substring(3) : tenantCode;
+                        searchCriteria.setCity(city);
+                        log.info("Successfully resolved city '{}' from MDMS (tenantCode: {})", city, tenantCode);
+                        return;
+                    }
+                }
+            }
+
+            // Fallback: Retry without MDMS filter if filter produced no matches
+            masterDetail.remove("filter");
+            mdmsRes = restTemplate.postForObject(mdmsUrl, requestBody, JsonNode.class);
+
+            if (mdmsRes != null && mdmsRes.has("MdmsRes")) {
+                JsonNode tenantsNode = mdmsRes.path("MdmsRes").path("tenant").path("tenants");
+                if (tenantsNode.isArray()) {
+                    for (JsonNode t : tenantsNode) {
+                        String tenantCode = t.path("code").asText("");
+                        
+                        String districtCode = t.path("districtCode").asText("");
+                        if (districtCode.isEmpty()) {
+                            districtCode = t.path("city").path("districtCode").asText("");
+                        }
+                        
+                        String ulbCode = t.path("ulbCode").asText("");
+                        if (ulbCode.isEmpty()) {
+                            ulbCode = t.path("city").path("ulbCode").asText("");
+                            if (ulbCode.isEmpty()) {
+                                ulbCode = t.path("city").path("code").asText("");
+                            }
+                        }
+
+                        boolean matchesDistrict = districtCode.equalsIgnoreCase(level1)
+                                || tenantCode.toLowerCase().contains(level1.toLowerCase());
+                        boolean matchesUlb = ulbCode.equalsIgnoreCase(level2)
+                                || tenantCode.equalsIgnoreCase(level2)
+                                || tenantCode.equalsIgnoreCase("pb." + level2)
+                                || tenantCode.toLowerCase().endsWith("." + level2.toLowerCase());
+
+                        if (matchesDistrict && matchesUlb) {
+                            String city = tenantCode.startsWith("pb.") ? tenantCode.substring(3) : tenantCode;
+                            searchCriteria.setCity(city);
+                            log.info("Successfully resolved city '{}' via fallback match from MDMS (tenantCode: {})", city, tenantCode);
+                            return;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to resolve city from MDMS for level1='{}', level2='{}': ", level1, level2, e);
+        }
     }
 }

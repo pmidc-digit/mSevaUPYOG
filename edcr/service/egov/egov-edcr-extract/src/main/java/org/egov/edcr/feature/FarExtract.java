@@ -101,7 +101,7 @@ public class FarExtract extends FeatureExtract {
                 layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + "%s" + "_"
                 + layerNames.getLayerName("LAYER_NAME_BUILT_UP_AREA")
-                + "_DEDUCT(?:_[A-Z]+(?:_\\d+)?)?";
+                + "_DEDUCT(?!_EXISTING(?:_|$))(?:_[A-Z]+(?:_\\d+)?)?";
 
         String stiltLayerRegex =
                 layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + "%s" + "_"
@@ -125,7 +125,7 @@ public class FarExtract extends FeatureExtract {
              * block.setSingleFamilyBuilding(false); }
              */
 
-            LOG.info(" Working on Block  " + block.getNumber());
+            LOG.info("Working on Block  " + block.getNumber());
             List<String> typicals = new ArrayList<>();
             List<DXFLWPolyline> polyLinesByLayer;
             String layerRegEx = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
@@ -148,34 +148,74 @@ public class FarExtract extends FeatureExtract {
                     floor = (FloorDetail) block.getBuilding().getFloorNumber(floorNo);
                 
                 // Checking stilt floor Occupancy 
-                if(floor.getIsStiltFloor()) {
-                    // --- Stilt floor check ---
-                	stiltFlrLayer = String.format(stiltFlrLayer, block.getNumber(), floor.getNumber());
+//                if(floor.getIsStiltFloor()) {
+//                    // --- Stilt floor check ---
+//                	stiltFlrLayer = String.format(stiltFlrLayer, block.getNumber(), floor.getNumber());
+//                    List<String> stiltParkLayerNames = Util.getLayerNamesLike(pl.getDoc(), stiltFlrLayer);
+//                    for (String stiltLayer1 : stiltParkLayerNames) {
+//                        List<DXFLWPolyline> stiltFloorPolyLinesByLayer;
+//                        stiltFloorPolyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), stiltLayer1);
+//                    	for (DXFLWPolyline pline : stiltFloorPolyLinesByLayer) {
+//                            BigDecimal occupancyArea = Util.getPolyLineArea(pline);
+//                            LOG.info(" Stilt Floor occupancyArea *************** " + occupancyArea);
+//                            OccupancyDetail occupancy = new OccupancyDetail();
+//                            occupancy.setPolyLine(pline);
+//                            occupancy.setBuiltUpArea(occupancyArea == null ? BigDecimal.ZERO : occupancyArea);
+//                            occupancy.setExistingBuiltUpArea(BigDecimal.ZERO);
+//                            occupancy.setType(Util.findOccupancyType(pline));
+//                            occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
+//                            LOG.info("Stilt Floor occupancy type " + occupancy.getType());
+////                            if ((Objects.isNull(occupancy.getTypeHelper().getType()) && 
+////                            		Objects.isNull(occupancy.getTypeHelper().getSubtype()))) {
+////                                pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
+////                            }else
+//                                floor.addBuiltUpArea(occupancy);
+//                        }
+//                    }
+//                    
+//                    if (block.getBuilding().getFloorNumber(floorNo) == null)
+//                        block.getBuilding().getFloors().add(floor);
+//                	
+//                }
+                if (floor.getIsStiltFloor()) {
+
+                    stiltFlrLayer = String.format(stiltFlrLayer, block.getNumber(), floor.getNumber());
                     List<String> stiltParkLayerNames = Util.getLayerNamesLike(pl.getDoc(), stiltFlrLayer);
+
+                    BigDecimal totalStiltArea = BigDecimal.ZERO;
+                    DXFLWPolyline firstPolyline = null;
+
                     for (String stiltLayer1 : stiltParkLayerNames) {
-                        List<DXFLWPolyline> stiltFloorPolyLinesByLayer;
-                        stiltFloorPolyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), stiltLayer1);
-                    	for (DXFLWPolyline pline : stiltFloorPolyLinesByLayer) {
+
+                        List<DXFLWPolyline> stiltFloorPolyLinesByLayer =
+                                Util.getPolyLinesByLayer(pl.getDoc(), stiltLayer1);
+
+                        for (DXFLWPolyline pline : stiltFloorPolyLinesByLayer) {
+
+                            if (firstPolyline == null) {
+                                firstPolyline = pline;
+                            }
+
                             BigDecimal occupancyArea = Util.getPolyLineArea(pline);
-                            LOG.info(" Stilt Floor occupancyArea *************** " + occupancyArea);
-                            OccupancyDetail occupancy = new OccupancyDetail();
-                            occupancy.setPolyLine(pline);
-                            occupancy.setBuiltUpArea(occupancyArea == null ? BigDecimal.ZERO : occupancyArea);
-                            occupancy.setExistingBuiltUpArea(BigDecimal.ZERO);
-                            occupancy.setType(Util.findOccupancyType(pline));
-                            occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
-                            LOG.info("Stilt Floor occupancy type " + occupancy.getType());
-//                            if ((Objects.isNull(occupancy.getTypeHelper().getType()) && 
-//                            		Objects.isNull(occupancy.getTypeHelper().getSubtype()))) {
-//                                pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
-//                            }else
-                                floor.addBuiltUpArea(occupancy);
+                            totalStiltArea = totalStiltArea.add(
+                                    occupancyArea == null ? BigDecimal.ZERO : occupancyArea);
                         }
                     }
-                    
+
+                    // Add only one occupancy record for the entire stilt floor
+                    if (firstPolyline != null) {
+                        OccupancyDetail occupancy = new OccupancyDetail();
+                        occupancy.setPolyLine(firstPolyline);
+                        occupancy.setBuiltUpArea(totalStiltArea);
+                        occupancy.setExistingBuiltUpArea(BigDecimal.ZERO);
+                        occupancy.setType(Util.findOccupancyType(firstPolyline));
+                        occupancy.setTypeHelper(Util.findOccupancyType(firstPolyline, pl));
+
+                        floor.addBuiltUpArea(occupancy);
+                    }
+
                     if (block.getBuilding().getFloorNumber(floorNo) == null)
                         block.getBuilding().getFloors().add(floor);
-                	
                 }
             }
             
@@ -183,14 +223,14 @@ public class FarExtract extends FeatureExtract {
             	// *** 1. INITIALIZE A NEW MAP FOR EACH FLOOR ***
                 Map<String, BigDecimal> deductionsMap = new HashMap<>();
                 String typical = "";
-                LOG.error("Working on Block  " + block.getNumber() + " For layer Name " + s);
+                LOG.info("Working on Block  " + block.getNumber() + " For layer Name " + s);
                 polyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), s);
 //                if (polyLinesByLayer.isEmpty())
 //                    continue;
                 String typicalStr = Util.getMtextByLayerName(pl.getDoc(), s);
 
                 if (typicalStr != null) {
-                    LOG.error(
+                    LOG.info(
                             "Typical found in  " + block.getNumber() + " in layer" + s + "with Details " + typicalStr);
                     if (typical.isEmpty()) {
                         typical = typicalStr;
@@ -213,14 +253,14 @@ public class FarExtract extends FeatureExtract {
                 // find builtup area
                 for (DXFLWPolyline pline : polyLinesByLayer) {
                     BigDecimal occupancyArea = Util.getPolyLineArea(pline);
-                    LOG.error(" occupancyArea *************** " + occupancyArea);
+                    LOG.info(" occupancyArea *************** " + occupancyArea);
                     OccupancyDetail occupancy = new OccupancyDetail();
                     occupancy.setPolyLine(pline);
                     occupancy.setBuiltUpArea(occupancyArea == null ? BigDecimal.ZERO : occupancyArea);
                     occupancy.setExistingBuiltUpArea(BigDecimal.ZERO);
                     occupancy.setType(Util.findOccupancyType(pline));
                     occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
-                    LOG.error(" occupancy type " + occupancy.getType());
+                    LOG.info(" occupancy type " + occupancy.getType());
                     if ((Objects.isNull(occupancy.getTypeHelper().getType()) && 
                     		Objects.isNull(occupancy.getTypeHelper().getSubtype()))) {
                         pl.addError(INVALID_COLOR_CODE, errorMessage(pline.getLayerName(),pline.getColor()));
@@ -320,10 +360,10 @@ public class FarExtract extends FeatureExtract {
                 List<DXFLWPolyline> polylines = Util.getPolyLinesByLayer(pl.getDoc(), layer);
                 if (polylines.isEmpty())
                     continue;
-                if(!polylines.isEmpty()) {
-                	//Code added for the layername with colorCode match
-            		Util.validateLayerColor(layer, Util.getColorByPolyLine(polylines), pl);
-                }
+//                if(!polylines.isEmpty()) {
+//                	//Code added for the layername with colorCode match
+//            		Util.validateLayerColor(layer, Util.getColorByPolyLine(polylines), pl);
+//                }
                 int floorNo = Integer.valueOf(layer.split("_")[3]);
                 if (block.getBuilding().getFloorNumber(floorNo) == null) {
                     floor = new FloorDetail();
@@ -354,10 +394,10 @@ public class FarExtract extends FeatureExtract {
                         floor.getNumber());
                 List<DXFLWPolyline> bldDeduct = Util.getPolyLinesByLayer(pl.getDoc(), deductLayerName);
                 for (DXFLWPolyline pline : bldDeduct) {
-                	if(!bldDeduct.isEmpty()) {
-                    	//Code added for the layername with colorCode match
-                		Util.validateLayerColor(layer, Util.getColorByPolyLine(bldDeduct), pl);
-                    }
+//                	if(!bldDeduct.isEmpty()) {
+//                    	//Code added for the layername with colorCode match
+//                		Util.validateLayerColor(layer, Util.getColorByPolyLine(bldDeduct), pl);
+//                    }
                     BigDecimal deductionArea = Util.getPolyLineArea(pline);
                     Occupancy occupancy = new Occupancy();
                     occupancy.setDeduction(deductionArea == null ? BigDecimal.ZERO : deductionArea);
@@ -448,10 +488,10 @@ public class FarExtract extends FeatureExtract {
          * if (polylines.isEmpty()) { pl.addError(existingCarpetAreaLayer, "Carpet area is not defined in layer " +
          * existingCarpetAreaLayer); } else {
          */
-        if(!polylines.isEmpty()) {
-        	//Code added for the layername with colorCode match
-    		Util.validateLayerColor(existingCarpetAreaLayer, Util.getColorByPolyLine(polylines), pl);
-        }
+//        if(!polylines.isEmpty()) {
+//        	//Code added for the layername with colorCode match
+//    		Util.validateLayerColor(existingCarpetAreaLayer, Util.getColorByPolyLine(polylines), pl);
+//        }
         
         for (DXFLWPolyline pline : polylines) {        	
             BigDecimal occupancyArea = Util.getPolyLineArea(pline);
@@ -478,10 +518,10 @@ public class FarExtract extends FeatureExtract {
 
         String deductLayerName = String.format(existingCarpetAreaDeductByFloor, block.getNumber(), floor.getNumber());
         List<DXFLWPolyline> bldDeduct = Util.getPolyLinesByLayer(pl.getDoc(), deductLayerName);
-        if(!bldDeduct.isEmpty()) {
-        	//Code added for the layername with colorCode match
-    		Util.validateLayerColor(existingCarpetAreaLayer, Util.getColorByPolyLine(bldDeduct), pl);
-        }
+//        if(!bldDeduct.isEmpty()) {
+//        	//Code added for the layername with colorCode match
+//    		Util.validateLayerColor(existingCarpetAreaLayer, Util.getColorByPolyLine(bldDeduct), pl);
+//        }
         for (DXFLWPolyline pline : bldDeduct) {
             BigDecimal deductionArea = Util.getPolyLineArea(pline);
             Occupancy occupancy = new Occupancy();
@@ -502,13 +542,13 @@ public class FarExtract extends FeatureExtract {
         String carpetAreaLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
                 + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + floor.getNumber() + "_"
                 + layerNames.getLayerName("LAYER_NAME_CRPT_UP_AREA");
-        LOG.error("Working on Block  " + block.getNumber() + " For layer Name " + carpetAreaLayer);
+        LOG.info("Working on Block  " + block.getNumber() + " For layer Name " + carpetAreaLayer);
         List<DXFLWPolyline> polyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), carpetAreaLayer);
         
-        if(!polyLinesByLayer.isEmpty()) {
-        	Util.validateLayerColor(carpetAreaLayer, 
-    			Util.getColorByPolyLine(polyLinesByLayer), pl);
-        }
+//        if(!polyLinesByLayer.isEmpty()) {
+//        	Util.validateLayerColor(carpetAreaLayer, 
+//    			Util.getColorByPolyLine(polyLinesByLayer), pl);
+//        }
         
         /*
          * if (polyLinesByLayer.isEmpty()) pl.addError(carpetAreaLayer, "Carpet area is not defined in layer " + carpetAreaLayer);
@@ -517,14 +557,14 @@ public class FarExtract extends FeatureExtract {
         // find carpet area
         for (DXFLWPolyline pline : polyLinesByLayer) {
             BigDecimal carpetArea = Util.getPolyLineArea(pline);
-            LOG.error(" carpetArea *************** " + carpetArea);
+            LOG.info(" carpetArea *************** " + carpetArea);
             OccupancyDetail occupancy = new OccupancyDetail();
             occupancy.setPolyLine(pline);
             occupancy.setCarpetArea(carpetArea == null ? BigDecimal.ZERO : carpetArea);
             occupancy.setExistingCarpetArea(BigDecimal.ZERO);
             occupancy.setType(Util.findOccupancyType(pline));
             occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
-            LOG.error(" occupancy type " + occupancy.getType());
+            LOG.info(" occupancy type " + occupancy.getType());
             if (occupancy.getTypeHelper() == null)
                 pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA, getLocaleMessage(VALIDATION_WRONG_COLORCODE_FLOORAREA,
                         String.valueOf(pline.getColor()), carpetAreaLayer));
@@ -543,21 +583,21 @@ public class FarExtract extends FeatureExtract {
 
         List<DXFLWPolyline> bldDeduct = Util.getPolyLinesByLayer(pl.getDoc(), deductLayerName);
         
-        if(!bldDeduct.isEmpty()) {
-        	Util.validateLayerColor(deductLayerName, 
-    			Util.getColorByPolyLine(bldDeduct), pl);
-        }
+//        if(!bldDeduct.isEmpty()) {
+//        	Util.validateLayerColor(deductLayerName, 
+//    			Util.getColorByPolyLine(bldDeduct), pl);
+//        }
         
         for (DXFLWPolyline pline : bldDeduct) {
             BigDecimal carpetAreaDeduction = Util.getPolyLineArea(pline);
-            LOG.error("carpet Area deduction *************** " + carpetAreaDeduction);
+            LOG.info("carpet Area deduction *************** " + carpetAreaDeduction);
 
             Occupancy occupancy = new Occupancy();
             occupancy.setCarpetAreaDeduction(carpetAreaDeduction == null ? BigDecimal.ZERO : carpetAreaDeduction);
             occupancy.setExistingCarpetAreaDeduction(BigDecimal.ZERO);
             occupancy.setType(Util.findOccupancyType(pline));
             occupancy.setTypeHelper(Util.findOccupancyType(pline, pl));
-            LOG.error(" occupancy type deduction " + occupancy.getType());
+            LOG.info(" occupancy type deduction " + occupancy.getType());
 
             if (occupancy.getTypeHelper() == null)
                 pl.addError(VALIDATION_WRONG_COLORCODE_FLOORAREA, getLocaleMessage(VALIDATION_WRONG_COLORCODE_FLOORAREA,

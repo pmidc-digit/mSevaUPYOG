@@ -96,18 +96,11 @@ public class GeneralStairExtract extends FeatureExtract {
 
 					if (!isBlank(floorHeight)) {
 						if (floorHeight.contains("=")) {
-							floorHeight = floorHeight.split("=")[1] != null
-									? floorHeight.split("=")[1].replaceAll("[^\\d.]", "")
-									: "";
-						} else
-							floorHeight = floorHeight.replaceAll("[^\\d.]", "");
-
-						if (!isBlank(floorHeight)) {
-							BigDecimal height = BigDecimal.valueOf(Double.parseDouble(floorHeight));
+							floorHeight = floorHeight.split("=")[1] != null ? floorHeight.split("=")[1] : "";
+						}
+						BigDecimal height = Util.extractBigDecimalFromText(floorHeight, pl, stairLayerName, "Floor height");
+						if (height != null) {
 							generalStair.setFloorHeight(height);
-						} else {
-							pl.addError(stairLayerName + "_FLR_HT_M",
-									"Floor height is not defined in layer " + stairLayerName);
 						}
 					} else {
 						pl.addError(stairLayerName + "_FLR_HT_M",

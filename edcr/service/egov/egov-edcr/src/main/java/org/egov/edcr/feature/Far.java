@@ -102,6 +102,7 @@ import static org.egov.edcr.utility.DcrConstants.ROUNDMODE_MEASUREMENTS;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -109,6 +110,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -224,6 +226,7 @@ public class Far extends FeatureProcess {
 																									// upper bound
 
 	public static final BigDecimal EXCLUDE_BALCONY_WIDTH_ABOVE_4_FEET_FROM_FAR = new BigDecimal("0.91");
+	public static final BigDecimal EXCLUDE_BALCONY_WIDTH_ABOVE_6_FEET_FROM_FAR = new BigDecimal("1.83");
 	
 	// Constants for Commercial
 	private static final BigDecimal COMMERCIAL_PLOTAREA_LIMIT_41_82   = BigDecimal.valueOf(41.82);
@@ -306,17 +309,17 @@ public class Far extends FeatureProcess {
 					 */
 					if(!flr.getIsStiltFloor()) {
 						bltUpArea = bltUpArea.add(
-								occupancy.getBuiltUpArea() == null ? BigDecimal.valueOf(0) : occupancy.getBuiltUpArea());
+								occupancy.getBuiltUpArea() == null ? BigDecimal.valueOf(0) : occupancy.getBuiltUpArea()).setScale(2, RoundingMode.HALF_UP);
 						existingBltUpArea = existingBltUpArea
 								.add(occupancy.getExistingBuiltUpArea() == null ? BigDecimal.valueOf(0)
-										: occupancy.getExistingBuiltUpArea());
+										: occupancy.getExistingBuiltUpArea().setScale(2, RoundingMode.HALF_UP));
 						flrArea = flrArea.add(occupancy.getFloorArea());
 						existingFlrArea = existingFlrArea.add(occupancy.getExistingFloorArea());
 						carpetArea = carpetArea.add(occupancy.getCarpetArea());
 						existingCarpetArea = existingCarpetArea.add(occupancy.getExistingCarpetArea());
 					}else {
 						bltUpArea = bltUpArea.add(
-								occupancy.getBuiltUpArea() == null ? BigDecimal.valueOf(0) : occupancy.getBuiltUpArea());
+								occupancy.getBuiltUpArea() == null ? BigDecimal.valueOf(0) : occupancy.getBuiltUpArea()).setScale(2, RoundingMode.HALF_UP);
 					}
 					
 				}
@@ -629,7 +632,7 @@ public class Far extends FeatureProcess {
 
 		pl.setOccupancies(occupanciesForPlan);
 		pl.getVirtualBuilding().setTotalFloorArea(totalFloorArea); //pl.getPlot().getArea()
-		pl.getVirtualBuilding().setTotalFloorArea(pl.getPlot().getArea());
+		//pl.getVirtualBuilding().setTotalFloorArea(pl.getPlot().getArea());
 		pl.getVirtualBuilding().setTotalCarpetArea(totalCarpetArea);
 		pl.getVirtualBuilding().setTotalExistingBuiltUpArea(totalExistingBuiltUpArea);
 		pl.getVirtualBuilding().setTotalExistingFloorArea(totalExistingFloorArea);
@@ -1540,15 +1543,28 @@ public class Far extends FeatureProcess {
 		        && occupancyType.getType().getCode() != null) {
 			//OccupancyHelperDetail subtype = occupancyType.getSubtype();
 			//occupancyName = subtype.getName();
-			if(DxfFileConstants.F_MPMT.equalsIgnoreCase(occupancyType.getSubtype().getCode())) {
-				BigDecimal permissibleFAR =  getPermissibleFAR(pl.getPlanInformation().getRoadWidth());
+			if(DxfFileConstants.F_MTP.equalsIgnoreCase(occupancyType.getSubtype().getCode())) {
+				BigDecimal permissibleFAR =  getPermissibleFARMTP(pl.getRoadReserveFront());
 				isAccepted = far != null
 				        && permissibleFAR != null
 				        && far.compareTo(permissibleFAR) <= 0;
 				String occupancyName = occupancyType.getType().getName();
-				buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
+				buildResult(pl, occupancyName, far, typeOfArea, roadWidth, permissibleFAR.toPlainString(), isAccepted);
+			}else if(DxfFileConstants.F_MIP.equalsIgnoreCase(occupancyType.getSubtype().getCode())){
+				BigDecimal permissibleFAR =  getPermissibleFARMIP(pl.getRoadReserveFront());
+				isAccepted = far != null
+				        && permissibleFAR != null
+				        && far.compareTo(permissibleFAR) <= 0;
+				String occupancyName = occupancyType.getType().getName();
+				buildResult(pl, occupancyName, far, typeOfArea, roadWidth, permissibleFAR.toPlainString(), isAccepted);
 			}else {
-				getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
+				if (isPetrolOrCngOccupancy(occupancyType.getSubtype().getCode())) {
+					validatePlotDimensions(occupancyType.getSubtype().getCode(), pl.getPlot().getLength(),
+							pl.getPlot().getWidth(), occupancyType.getSubtype().getName(), pl);
+					getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
+				} else {
+					getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
+				}
 			}
 		    
 		}
@@ -1579,7 +1595,7 @@ public class Far extends FeatureProcess {
 //	    }
 	}
 	
-	public static BigDecimal getPermissibleFAR(BigDecimal roadWidthInMeters) {
+	public static BigDecimal getPermissibleFARMTP(BigDecimal roadWidthInMeters) {
 
         if (roadWidthInMeters == null) {
             return BigDecimal.ZERO;
@@ -1611,6 +1627,36 @@ public class Far extends FeatureProcess {
 
         return BigDecimal.ZERO;
     }
+	
+	public static BigDecimal getPermissibleFARMIP(BigDecimal roadWidthInMeters) {
+
+	    if (roadWidthInMeters == null) {
+	        return BigDecimal.ZERO;
+	    }
+
+	    BigDecimal fifteenPointTwentyFour = new BigDecimal("15.24");
+	    BigDecimal eighteenPointTwentyEight = new BigDecimal("18.28");
+	    BigDecimal twentyFourPointThreeEightFour = new BigDecimal("24.384");
+
+	    // 15.24 M to < 18.28 M
+	    if (roadWidthInMeters.compareTo(fifteenPointTwentyFour) >= 0
+	            && roadWidthInMeters.compareTo(eighteenPointTwentyEight) < 0) {
+	        return new BigDecimal("2.00");
+	    }
+
+	    // 18.28 M to < 24.384 M
+	    if (roadWidthInMeters.compareTo(eighteenPointTwentyEight) >= 0
+	            && roadWidthInMeters.compareTo(twentyFourPointThreeEightFour) < 0) {
+	        return new BigDecimal("2.25");
+	    }
+
+	    // 24.384 M and Above
+	    if (roadWidthInMeters.compareTo(twentyFourPointThreeEightFour) >= 0) {
+	        return new BigDecimal("2.50");
+	    }
+
+	    return BigDecimal.ZERO;
+	}
 	
 	private void processFarCommercialByMBMS(Plan pl, OccupancyTypeHelper occupancyType, BigDecimal far,
 	        String typeOfArea, BigDecimal roadWidth, HashMap<String, String> errors,
@@ -2129,7 +2175,7 @@ public class Far extends FeatureProcess {
 //	}
 	
 	private void buildResult1(Plan pl, String occupancyName, Double totalProvidedFar, Double purchasableFar, String typeOfArea,
-			Double expectedResult, boolean isAccepted) {
+			Double expectedResult, boolean isAccepted, String ruleNo) {
 		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
 		scrutinyDetail.addColumnHeading(1, RULE_NO);
 		scrutinyDetail.addColumnHeading(2, OCCUPANCY);
@@ -2144,7 +2190,7 @@ public class Far extends FeatureProcess {
 		String totalProvidedFar1 = totalProvidedFar.toString();
 
 		Map<String, String> details = new HashMap<>();
-		details.put(RULE_NO, RULE);
+		details.put(RULE_NO, ruleNo);
 		details.put(OCCUPANCY, occupancyName);
 		details.put(AREA_TYPE, typeOfArea);
 	//	details.put(ROAD_WIDTH, roadWidth.toString());
@@ -2221,110 +2267,82 @@ public class Far extends FeatureProcess {
 		return new LinkedHashMap<>();
 	}
 	
-	private void updateFarAsPerBalconyWidth(Plan pl){
-		BigDecimal totalBuiltUpArea1 = pl.getVirtualBuilding().getTotalBuitUpArea();
-		//LOG.info("Far before new case added 0.91 > -> Far : " +  " totalBuildUpArea : " + totalBuiltUpArea);
-		// Code added for: Balcony width > 0.91m is included in FAR calculation
-		//BigDecimal totalBuiltUpArea1 = BigDecimal.ZERO;
+	private void updateFarAsPerBalconyWidth(Plan pl) {
+
+		BigDecimal totalBuiltUpArea = pl.getVirtualBuilding().getTotalBuitUpArea();
+		OccupancyHelperDetail occupancyType = Optional.ofNullable(pl).map(Plan::getVirtualBuilding)
+				.map(vb -> vb.getMostRestrictiveFarHelper())
+				.map(far -> far.getSubtype() != null ? far.getSubtype() : far.getType()).orElse(null);
+
+		final BigDecimal threshold = occupancyType != null
+				&& (DxfFileConstants.A_AF.equalsIgnoreCase(occupancyType.getCode())
+						|| DxfFileConstants.A_AIF.equalsIgnoreCase(occupancyType.getCode()))
+								? EXCLUDE_BALCONY_WIDTH_ABOVE_6_FEET_FROM_FAR
+								: EXCLUDE_BALCONY_WIDTH_ABOVE_4_FEET_FROM_FAR;
 
 		for (Block block : pl.getBlocks()) {
-		    for (Floor floor : block.getBuilding().getFloors()) {
-	            //BigDecimal floorArea = floor.getArea() != null ? floor.getArea() : BigDecimal.ZERO;
-	            
-	            //LOG.info("Floor Area : -> " + floorArea);
+			for (Floor floor : block.getBuilding().getFloors()) {
+				if (floor.getBalconies() == null || floor.getBalconies().isEmpty()) {
+					continue;
+				}
 
-		        for (org.egov.common.entity.edcr.Balcony balcony : floor.getBalconies()) {
-		        	
-		        	LOG.info("Data for Floor :::: " + floor.getNumber());
+				for (org.egov.common.entity.edcr.Balcony balcony : floor.getBalconies()) {
+					List<Measurement> measurements = balcony.getMeasurements();
+					List<BigDecimal> widths = balcony.getWidths();
+					if (measurements == null || measurements.isEmpty()) {
+						LOG.warn("No measurement found for balcony, skipping.");
+						continue;
+					}
 
-		            List<BigDecimal> widths = balcony.getWidths();
-		            List<Measurement> measurements = balcony.getMeasurements();
+					if (widths == null || widths.isEmpty()) {
+						LOG.warn("No width found for balcony, skipping.");
+						continue;
+					}
 
-		            // Skip if measurement list is empty
-		            if (measurements == null || measurements.isEmpty()) {
-		                LOG.warn("No measurement found for balcony, skipping.");
-		                continue;
-		            }
+					Measurement measurement = measurements.get(0);
+					BigDecimal area = Optional.ofNullable(measurement.getArea()).orElse(BigDecimal.ZERO)
+							.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS);
 
-		            Measurement m = measurements.get(0);
+					boolean includeInFar = false;
+					for (BigDecimal widthValue : widths) {
+						if (widthValue == null) {
+							continue;
+						}
+						BigDecimal width = widthValue.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+								DcrConstants.ROUNDMODE_MEASUREMENTS);
+						if (width.compareTo(threshold) > 0) {
+							includeInFar = true;
+							break;
+						}
+					}
 
-		            // Round measurement values once
-		            BigDecimal area = m.getArea() != null
-		                ? m.getArea().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
-		                : BigDecimal.ZERO;
-		            BigDecimal length = m.getLength() != null
-		                ? m.getLength().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
-		                : BigDecimal.ZERO;
-		            BigDecimal height = m.getHeight() != null
-		                ? m.getHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
-		                : BigDecimal.ZERO;
+					if (!includeInFar) {
+						LOG.info("Balcony width <= {}, excluded from FAR.", threshold);
+						continue;
+					}
 
-		            // Round threshold for comparison
-		            BigDecimal threshold = EXCLUDE_BALCONY_WIDTH_ABOVE_4_FEET_FROM_FAR.setScale(
-		                DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-		                DcrConstants.ROUNDMODE_MEASUREMENTS
-		            );
+					totalBuiltUpArea = totalBuiltUpArea.add(area);
+					if (floor.getOccupancies() != null) {
+						for (Occupancy occupancy : floor.getOccupancies()) {
+							BigDecimal floorArea = Optional.ofNullable(occupancy.getFloorArea())
+									.orElse(BigDecimal.ZERO);
+							BigDecimal builtUpArea = Optional.ofNullable(occupancy.getBuiltUpArea())
+									.orElse(BigDecimal.ZERO);
+							occupancy.setFloorArea(floorArea.add(area));
+							occupancy.setBuiltUpArea(builtUpArea.add(area));
+							LOG.info("Updated Occupancy [type={}] floorArea={}, builtUpArea={}", occupancy.getType(),
+									occupancy.getFloorArea(), occupancy.getBuiltUpArea());
+						}
+					}
 
-		            boolean addedToFar = false;
-
-		            for (BigDecimal rawWidth : widths) {
-		                BigDecimal width = rawWidth.setScale(
-		                    DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-		                    DcrConstants.ROUNDMODE_MEASUREMENTS
-		                );
-
-		                LOG.info("Balcony width above 0.91m, included in FAR: " + width);
-	                    LOG.info("Balcony area   : " + area);
-	                    LOG.info("Balcony length : " + length);
-	                    LOG.info("Balcony height : " + height);
-		                if (width.compareTo(threshold) > 0) {
-		                    
-
-		                    //totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
-		                    //providedFar = providedFar.add(area);
-		                    
-		                    // Add to this floor’s floor area
-	                        //floorArea = floorArea.add(area);
-		                    
-		                 // Add to total built-up area
-	                        totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
-
-	                        // ✅ Also distribute balcony area into each occupancy of this floor
-	                        for (Occupancy occ : floor.getOccupancies()) {
-	                            BigDecimal occFloorArea = occ.getFloorArea() != null ? occ.getFloorArea() : BigDecimal.ZERO;
-	                            BigDecimal occBuiltUpArea = occ.getBuiltUpArea() != null ? occ.getBuiltUpArea() : BigDecimal.ZERO;
-
-	                            LOG.info("Floor Area : " + occ.getFloorArea());
-	                            LOG.info("Floor Built Up Area : " + occ.getBuiltUpArea());
-
-	                            
-	                            occ.setFloorArea(occFloorArea.add(area));
-	                            occ.setBuiltUpArea(occBuiltUpArea.add(area));
-
-	                            LOG.info("Updated Occupancy [type=" + occ.getType() + "] floorArea=" + occ.getFloorArea()
-	                                    + ", builtUpArea=" + occ.getBuiltUpArea());
-	                        }
-		                    
-		                    addedToFar = true;
-		                    break; // Only add once per balcony
-		                }
-		            }
-
-		            if (!addedToFar) {
-		                LOG.info("Balcony width <= 0.91m, excluded from FAR.");
-		            }
-		        }
-		     // update floor area for current floor
-	            //floor.setArea(floorArea);
-	            //LOG.info("Updated floor area for Floor " + floor.getNumber() + " : " + floorArea);
-		    }
+					LOG.info("Balcony included in FAR. Area added={}, Threshold={}", area, threshold);
+				}
+			}
 		}
 
-		//pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea1);
+		pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea);
 
-
-		LOG.info("Far after new case added 0.91 > " + " totalBuildUpArea : " + totalBuiltUpArea1);
-		pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea1);
+		LOG.info("Updated Total Built Up Area={}", totalBuiltUpArea);
 	}
 	
 	static boolean shouldSkipValidation(EdcrRequest edcrRequest, String validationType) {
@@ -2409,86 +2427,10 @@ public class Far extends FeatureProcess {
 	    }
 	}
 	
-//	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
-//	        try {	           	  
-//	        	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
-//	            Optional<Double> normalFAR = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.NORMAL_FAR, Double.class);
-//	            normalFAR.ifPresent(normalFar -> LOG.info("normalFar get by mdms : " + normalFar));
-//				
-//				Optional<Double> purchasableFAR = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.PURCHASABLE_FAR, Double.class);
-//				purchasableFAR.ifPresent(purchasableFar -> LOG.info("purchasableFAR get by mdms : : " + purchasableFar));
-//
-//				Double regularPermissableFar = normalFAR.get();
-//	            Double purchasablePermissableFar = purchasableFAR.get();
-//	            Double providedFar = pl.getFarDetails() != null ? pl.getFarDetails().getProvidedFar() : 0.0;	                     
-//	            Double purchasableFar = 0.0;		           
-//	                        
-//		        if (Boolean.TRUE.equals(pl.getEdcrRequest().getPurchasableFar())) {	
-//			        // Step 1: Calculate purchasable FAR (if provided > regular)
-//			        if (providedFar != null && regularPermissableFar != null && providedFar > regularPermissableFar) {
-//			        	  purchasableFar = providedFar - regularPermissableFar;
-//			         }
-//	
-//		            // Step 2: Determine total permissible FAR conditionally
-//		            Double totalPermissableFar;
-//		            if (providedFar != null && regularPermissableFar != null && providedFar > regularPermissableFar) {
-//		                                // Provided FAR exceeds regular, allow adding purchasable permissible FAR
-//		                totalPermissableFar = (regularPermissableFar != null ? regularPermissableFar : 0.0)
-//		                                        + (purchasablePermissableFar != null ? purchasablePermissableFar : 0.0);
-//		            } else {
-//		                                // Provided FAR is within regular permissible, no need to add extra FAR
-//		                totalPermissableFar = regularPermissableFar != null ? regularPermissableFar : 0.0;
-//		            }
-//	
-//		            // Step 3: Round all values to 2 decimals
-//		            regularPermissableFar = BigDecimal.valueOf(regularPermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            purchasablePermissableFar = BigDecimal.valueOf(purchasablePermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            providedFar = BigDecimal.valueOf(providedFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            purchasableFar = BigDecimal.valueOf(purchasableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//		            totalPermissableFar = BigDecimal.valueOf(totalPermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
-//	
-//		            // Step 4: Check acceptance
-//		            boolean isAccepted = (providedFar <= totalPermissableFar);
-//	
-//		            // Step 5: Update FAR details in plan
-//		            pl.getFarDetails().setPermissableFar(regularPermissableFar);
-//		            pl.getFarDetails().setPurchasableFar(purchasablePermissableFar);
-//		            pl.getFarDetails().setProvidedPurchasableFar(purchasableFar);
-//		            pl.getFarDetails().setProvidedFar(providedFar);
-//	
-//		            // Step 6: Logging
-//		            LOG.info("Matched FAR -> OccupancyType: " + occType + ", PlotArea: " + plotArea);
-//		            LOG.info("Regular Permissible FAR: " + regularPermissableFar
-//		                    + ", Purchasable FAR Allowed: " + purchasablePermissableFar
-//		                    + ", Provided FAR: " + providedFar
-//		                    + ", Total Permissible FAR: " + totalPermissableFar
-//		                    + ", Accepted: " + isAccepted);
-//	
-//		            // Step 7: Build result
-//		            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasablePermissableFar,
-//		                                    typeOfArea, regularPermissableFar, isAccepted);	                           
-//
-//		        } else {
-//		        	LOG.info("Purchasable FAR is false, processing as normal Rules");
-//		            // If purchasable FAR is not enabled
-//		            boolean isAccepted = (providedFar <= regularPermissableFar);
-//		            pl.getFarDetails().setPermissableFar(regularPermissableFar);
-//		            pl.getFarDetails().setProvidedFar(providedFar);
-//		            pl.getFarDetails().setPurchasableFar(mdmsDataParser.toDouble(0.0));
-//		            pl.getFarDetails().setProvidedPurchasableFar(mdmsDataParser.toDouble(0.0));		                            
-//	
-//		            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasableFar,
-//	                                    typeOfArea, regularPermissableFar, isAccepted);	                            
-//	        }     
-//	        } catch (Exception e) {
-//	            LOG.error("Error while fetching FAR details from MDMS", e);
-//	        }
-//	    
-//	}
-
 	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
 	    try {
 	    	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
+	    	String ruleNo = "";
 	    	// --- 1. Fetch & Initialize FAR values ---
 	    	Double regularPermissibleFar = 0.0;
 	    	if(A_AIF.equals(occupancyType.getSubtype().getCode())) {
@@ -2498,6 +2440,12 @@ public class Far extends FeatureProcess {
 		        regularPermissibleFar = BpaMdmsUtil.extractMdmsValue(
 		                pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.NORMAL_FAR, Double.class)
 		                .orElse(0.0);
+	    	}
+	    	
+	    	if(A_AF.equals(occupancyType.getSubtype().getCode())) {
+	    		ruleNo = "4.6";
+	    	}else {
+	    		ruleNo = RULE;
 	    	}
 
 	        Double purchasablePermissibleFar = BpaMdmsUtil.extractMdmsValue(
@@ -2556,7 +2504,7 @@ public class Far extends FeatureProcess {
 
 	        // Build result (assuming buildResult1 is part of the class)
 	        buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasablePermissibleFar,
-	                     typeOfArea, regularPermissibleFar, isAccepted);
+	                     typeOfArea, regularPermissibleFar, isAccepted, ruleNo);
 
 	    } catch (Exception e) {
 	        LOG.error("Error while fetching FAR details from MDMS", e);	       
@@ -2700,13 +2648,125 @@ public class Far extends FeatureProcess {
 	        case "F-PFSS":
 	        case "F-CNGS":	        
 	            return new BigDecimal("1080");
-	        case "F-MPMT":	        
-	            return new BigDecimal("4046");
+	        
+	        case "F-MTP":	        
+	            return new BigDecimal("4046.856");
+	            
+	        case "F-MIP":	        
+	            return new BigDecimal("2000");
 
 	        default:
 	            return BigDecimal.ZERO; // or throw exception if needed
 	    }
 	}
 
+	private Map<String, BigDecimal> getPlotDimensions(String occupancyType) {
+
+	    Map<String, Map<String, BigDecimal>> dimensionsMap = new HashMap<>();
+
+	    // F-PFSF
+	    Map<String, BigDecimal> pfsf = new HashMap<>();
+	    pfsf.put("minLength", new BigDecimal("30"));
+	    pfsf.put("minBreadth", new BigDecimal("17"));
+	    pfsf.put("height", new BigDecimal("6"));
+	    dimensionsMap.put("F-PFSF", pfsf);
+
+	    // F-PFST
+	    Map<String, BigDecimal> pfst = new HashMap<>();
+	    pfst.put("minLength", new BigDecimal("18"));
+	    pfst.put("minBreadth", new BigDecimal("15"));
+	    pfst.put("height", new BigDecimal("6"));
+	    dimensionsMap.put("F-PFST", pfst);
+
+	    // F-PFSS
+	    Map<String, BigDecimal> pfss = new HashMap<>();
+	    pfss.put("minLength", new BigDecimal("36"));
+	    pfss.put("minBreadth", new BigDecimal("30"));
+	    pfss.put("maxLength", new BigDecimal("45"));
+	    pfss.put("maxBreadth", new BigDecimal("33"));
+	    pfss.put("height", new BigDecimal("6"));
+	    dimensionsMap.put("F-PFSS", pfss);
+
+	    // F-CNGS
+	    Map<String, BigDecimal> cngs = new HashMap<>();
+	    cngs.put("minLength", new BigDecimal("36"));
+	    cngs.put("minBreadth", new BigDecimal("30"));
+	    cngs.put("height", new BigDecimal("4.5"));
+	    dimensionsMap.put("F-CNGS", cngs);
+
+	 
+	    //F-PS	     
+	      Map<String, BigDecimal> ps = new HashMap<>();
+	      ps.put("minLength", new BigDecimal("30"));
+	      ps.put("minBreadth", new BigDecimal("17"));
+	      ps.put("height", new BigDecimal("6"));
+	     dimensionsMap.put("F-PS", ps);	     
+	     
+	    return dimensionsMap.getOrDefault(
+	            occupancyType,
+	            Collections.<String, BigDecimal>emptyMap()
+	    );
+	}
+
+	private void validatePlotDimensions(String occupancyCode, BigDecimal actualLength, BigDecimal actualBreadth,
+			String occName, Plan pl) {
+
+		if (actualLength == null || actualBreadth == null || pl.getMdmsMasterData() == null
+				|| pl.getMdmsMasterData().get("masterMdmsData") == null) {
+			return;
+		}
+
+		Object masterMdmsData = pl.getMdmsMasterData().get("masterMdmsData");
+
+		BigDecimal minLength = BpaMdmsUtil
+				.extractMdmsValue(masterMdmsData, MdmsFilter.MIN_PLOT_LENGTH, BigDecimal.class).orElse(null);
+
+		BigDecimal minBreadth = BpaMdmsUtil
+				.extractMdmsValue(masterMdmsData, MdmsFilter.MIN_PLOT_WIDTH, BigDecimal.class).orElse(null);
+
+		// Minimum length validation
+		if (minLength != null && actualLength.compareTo(minLength) < 0) {
+			pl.addError("Plot Length Error",
+					"For category " + occName + ", length must be greater than or equal to " + minLength + " m.");
+		}
+
+		// Minimum breadth validation
+		if (minBreadth != null && actualBreadth.compareTo(minBreadth) < 0) {
+			pl.addError("Plot Width Error",
+					"For category " + occName + ", width must be greater than or equal to " + minBreadth + " m.");
+		}
+
+		/*
+		 * Maximum validation is required ONLY for F-PFSS.
+		 */
+		if (DxfFileConstants.F_PFSS.equalsIgnoreCase(occupancyCode)) {
+
+			BigDecimal maxLength = BpaMdmsUtil
+					.extractMdmsValue(masterMdmsData, MdmsFilter.MAX_PLOT_LENGTH, BigDecimal.class).orElse(null);
+
+			BigDecimal maxBreadth = BpaMdmsUtil
+					.extractMdmsValue(masterMdmsData, MdmsFilter.MAX_PLOT_WIDTH, BigDecimal.class).orElse(null);
+
+			// Maximum length validation
+			if (maxLength != null && actualLength.compareTo(maxLength) > 0) {
+				pl.addError("Plot Length Error",
+						"For category " + occName + ", length must be less than or equal to " + maxLength + " m.");
+			}
+
+			// Maximum breadth validation
+			if (maxBreadth != null && actualBreadth.compareTo(maxBreadth) > 0) {
+				pl.addError("Plot Width Error",
+						"For category " + occName + ", width must be less than or equal to " + maxBreadth + " m.");
+			}
+		}
+	}
+	
+	static boolean isPetrolOrCngOccupancy(String occupancyCode) {
+        return DxfFileConstants.F_PFSF.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_PFST.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_PFSS.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_PS.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_CNGS.equalsIgnoreCase(occupancyCode);
+    }
 	
 }

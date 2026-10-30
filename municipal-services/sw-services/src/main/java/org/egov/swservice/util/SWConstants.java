@@ -321,6 +321,8 @@ public class SWConstants {
 
 	public static final String ACTIVE_STATUS = "Active";
 
+    public static final String EXPIRED = "EXPIRED";
+
 	public static final String DUES_ERROR_MESSAGE = "Please collect pending dues before proceeding to disconnect the connection";
 
 	public static final String PENDING_APPROVAL_FOR_CONNECTION_CODE = "PENDING_APPROVAL_FOR_CONNECTION";
@@ -408,6 +410,8 @@ public class SWConstants {
 	public static final String TENANTS_JSONPATH_ROOT = "$.MdmsRes.tenant.tenants";
 
 	public static final String INACTIVE_STATUS = "Inactive";
+
+	public static final String DISCONNECT_STATUS = "Disconnected";
 
 	public static final String SUCCESS_DISCONNECT_MSG = "Successfully disconnected sewerage connection";
 	public static final String ES_DATA_PATH = "$..Data";

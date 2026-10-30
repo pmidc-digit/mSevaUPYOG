@@ -32,6 +32,10 @@ import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 import static com.jayway.jsonpath.Criteria.where;
 import static com.jayway.jsonpath.Filter.filter;
@@ -120,6 +124,9 @@ public class SWCalculationUtil {
 					.append(configurations.getDemandSearchEndPoint()).append(SWCalculationConstant.URL_PARAMS_SEPARATER)
 					.append(SWCalculationConstant.TENANT_ID_FIELD_FOR_SEARCH_URL).append(getBillCriteria.getTenantId())
 					.append(SWCalculationConstant.SEPARATER)
+                    .append(SWCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
+                    .append(getBillCriteria.getBusinessService())
+                    .append(SWCalculationConstant.SEPARATER)
 					.append(SWCalculationConstant.CONSUMER_CODE_SEARCH_FIELD_NAME)
 					.append(getBillCriteria.getConnectionId()).append(SWCalculationConstant.SW_CONSUMER_CODE_SEPARATOR)
 					.append(getBillCriteria.getConnectionNumber());
@@ -129,6 +136,9 @@ public class SWCalculationUtil {
 					.append(configurations.getDemandSearchEndPoint()).append(SWCalculationConstant.URL_PARAMS_SEPARATER)
 					.append(SWCalculationConstant.TENANT_ID_FIELD_FOR_SEARCH_URL).append(getBillCriteria.getTenantId())
 					.append(SWCalculationConstant.SEPARATER)
+                    .append(SWCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
+                    .append(getBillCriteria.getBusinessService())
+                    .append(SWCalculationConstant.SEPARATER)
 					.append(SWCalculationConstant.CONSUMER_CODE_SEARCH_FIELD_NAME)
 					.append(StringUtils.join(getBillCriteria.getConsumerCodes(), ","));
 
@@ -143,21 +153,106 @@ public class SWCalculationUtil {
 
 
 	public List<Property> propertySearch(RequestInfo requestInfo, Set<String> propertyIds, String tenantId, Long limit) {
+		return searchPropertiesFromES(requestInfo, propertyIds, null, null, tenantId, limit);
+	}
 
+	private List<Property> searchPropertiesFromES(RequestInfo requestInfo, Set<String> propertyIds, String mobileNumber, Set<String> uuids, String tenantId, Long limit) {
+		List<Map<String, Object>> mustList = new ArrayList<>();
+
+		if (tenantId != null) {
+			mustList.add(Collections.singletonMap("term", Collections.singletonMap("Data.tenantId.keyword", tenantId)));
+		}
+		if (!CollectionUtils.isEmpty(propertyIds)) {
+			mustList.add(Collections.singletonMap("terms", Collections.singletonMap("Data.propertyId.keyword", propertyIds)));
+		}
+		if (mobileNumber != null) {
+			mustList.add(Collections.singletonMap("term", Collections.singletonMap("Data.owners.mobileNumber.keyword", mobileNumber)));
+		}
+		if (!CollectionUtils.isEmpty(uuids)) {
+			mustList.add(Collections.singletonMap("terms", Collections.singletonMap("Data.owners.uuid.keyword", uuids)));
+		}
+
+		Map<String, Object> queryMap = new HashMap<>();
+		if (!mustList.isEmpty()) {
+			Map<String, Object> boolMap = new HashMap<>();
+			boolMap.put("must", mustList);
+			queryMap.put("query", Collections.singletonMap("bool", boolMap));
+		} else {
+			queryMap.put("query", Collections.singletonMap("match_all", new HashMap<>()));
+		}
+		queryMap.put("size", limit != null ? limit : 50);
+
+		String host = configurations.getElasticsearchHost();
+		String index = configurations.getPropertyEsIndex();
+		String endpoint = configurations.getElasticsearchSearchEndpoint();
+		if (host == null) {
+			host = "http://localhost:9200/";
+		}
+		if (!host.endsWith("/")) {
+			host = host + "/";
+		}
+		if (index == null) {
+			index = "property-services";
+		}
+		if (endpoint == null) {
+			endpoint = "/_search";
+		}
+		if (endpoint.startsWith("/")) {
+			endpoint = endpoint.substring(1);
+		}
+		String esUrl = host + index + "/" + endpoint;
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		if (configurations.getElasticsearchUsername() != null && !configurations.getElasticsearchUsername().isEmpty() &&
+			configurations.getElasticsearchPassword() != null && !configurations.getElasticsearchPassword().isEmpty()) {
+			headers.setBasicAuth(configurations.getElasticsearchUsername(), configurations.getElasticsearchPassword());
+		}
+
+		HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(queryMap, headers);
+		try {
+			ResponseEntity<Map> response = restTemplate.postForEntity(esUrl, requestEntity, Map.class);
+			if (response.getBody() != null) {
+				Map hitsMap = (Map) response.getBody().get("hits");
+				if (hitsMap != null) {
+					List hitsList = (List) hitsMap.get("hits");
+					if (hitsList != null) {
+						List<Property> properties = new ArrayList<>();
+						for (Object hitObj : hitsList) {
+							Map hit = (Map) hitObj;
+							Map source = (Map) hit.get("_source");
+							if (source != null && source.get("Data") != null) {
+								Property property = objectMapper.convertValue(source.get("Data"), Property.class);
+								properties.add(property);
+							}
+						}
+						return properties;
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error occurred while fetching property from ElasticSearch, falling back to database REST API", e);
+		}
+
+		// Fallback to database REST API
 		PropertyCriteria propertyCriteria = PropertyCriteria.builder()
 				.propertyIds(propertyIds)
 				.tenantId(tenantId)
+				.mobileNumber(mobileNumber)
+				.uuids(uuids)
 				.limit(limit)
 				.build();
-
-		StringBuilder url = getPropertyURL(propertyCriteria);
-		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder()
-				.requestInfo(requestInfo)
-				.build();
-
-		Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper);
-		List<Property> propertyList = getPropertyDetails(result);
-		return propertyList;
+		try {
+			StringBuilder url = getPropertyURL(propertyCriteria);
+			RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder()
+					.requestInfo(requestInfo)
+					.build();
+			Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper);
+			return getPropertyDetails(result);
+		} catch (Exception ex) {
+			log.error("Failed to fetch property from database REST API during fallback", ex);
+			throw new CustomException("PROPERTY_SEARCH_ERROR", "Failed to fetch property from database REST API: " + ex.getMessage());
+		}
 	}
 	
 	/**
@@ -384,14 +479,17 @@ public class SWCalculationUtil {
 	 * @return List of Property
 	 */
 	public List<Property> propertySearch(SewerageConnectionRequest sewerageConnectionRequest) {
-		PropertyCriteria propertyCriteria = new PropertyCriteria();
-		HashSet<String> propertyIds = new HashSet<>();
-		propertyIds.add(sewerageConnectionRequest.getSewerageConnection().getPropertyId());
-		propertyCriteria.setPropertyIds(propertyIds);
-		propertyCriteria.setTenantId(sewerageConnectionRequest.getSewerageConnection().getTenantId());
-		Object result = serviceRequestRepository.fetchResult(getPropertyURL(propertyCriteria),
-				RequestInfoWrapper.builder().requestInfo(sewerageConnectionRequest.getRequestInfo()).build());
-		List<Property> propertyList = getPropertyDetails(result);
+		String propertyId = sewerageConnectionRequest.getSewerageConnection().getPropertyId();
+		String tenantId = sewerageConnectionRequest.getSewerageConnection().getTenantId();
+
+		List<Property> propertyList = searchPropertiesFromES(
+				sewerageConnectionRequest.getRequestInfo(),
+				Collections.singleton(propertyId),
+				null,
+				null,
+				tenantId,
+				1L
+		);
 		if (CollectionUtils.isEmpty(propertyList)) {
 			throw new CustomException("EG_SW_INVALID_PROPERTY_ID", "Failed to create Sewerage connection. Invalid Property Id");
 		}

@@ -61,8 +61,18 @@ public class Configurations {
 	private String rlServiceHost;
 	@Value("${egov.rl.search.endpoint}")
 	private String rlSearchEndpoint;
+	@Value("${update.rl.allotment:update-rl-allotment}")
+	private String updateAllotmentTopic;
 	@Value("${demand.generation.batch.size}")
 	private Integer demandGenerationBatchSize;
+
+	/**
+	 * Number of days a legacy arrear / back-dated demand stays payable from the moment it is created.
+	 * Back-dated periods have their due date in the past, so without this window the generated demand
+	 * (and the bill) would be created already expired.
+	 */
+	@Value("${egov.rl.arrear.payable.window.days:30}")
+	private Integer arrearPayableWindowDays;
 	
 	  //USER
     @Value("${egov.user.host}")
@@ -128,13 +138,4 @@ public class Configurations {
 
     @Value("${is.workflow.enabled}")
     private Boolean isWorkflowEnabled;
-
-
-
-
-
-
-
-
-
 }

@@ -19,6 +19,7 @@ import org.egov.filestore.domain.service.StorageService;
 import org.egov.filestore.repository.impl.minio.MinioConfig;
 import org.egov.filestore.repository.impl.minio.MinioRepository;
 import org.egov.filestore.utils.StorageUtil;
+import org.egov.filestore.validator.StorageValidator;
 import org.egov.filestore.web.contract.File;
 import org.egov.filestore.web.contract.FileStoreResponse;
 import org.egov.filestore.web.contract.GetFilesByTagResponse;
@@ -33,8 +34,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -54,15 +57,21 @@ public class StorageController {
 	private StorageService storageService;
 	private ResponseFactory responseFactory;
 	private StorageUtil storageUtil;
+	private StorageValidator storageValidator;
 	public static final Logger logger = LoggerFactory.getLogger(StorageController.class);
 	
 	@Autowired
 	public StorageController(StorageService storageService, ResponseFactory responseFactory,
-			StorageUtil storageUtil) {
+			StorageUtil storageUtil, StorageValidator storageValidator) {
 		this.storageService = storageService;
 		this.responseFactory = responseFactory;
 		this.storageUtil = storageUtil;
-		//this.fileStoreConfig = fileStoreConfig;
+		this.storageValidator = storageValidator;
+	}
+
+	public StorageController(StorageService storageService, ResponseFactory responseFactory,
+			StorageUtil storageUtil) {
+		this(storageService, responseFactory, storageUtil, null);
 	}
 
 	@GetMapping("/id")
@@ -118,10 +127,11 @@ public class StorageController {
 			@RequestParam(value = "tenantId") String tenantId,
 			@RequestParam(value = "module", required = true) String module,
 			@RequestParam(value = "tag", required = false) String tag,
-			@RequestParam(value = "requestInfo", required = false) String requestInfo
+			@RequestParam(value = "requestInfo", required = false) String requestInfo,
+			@RequestParam(value = "expiryDate", required = false) Long expiryDate
 			) {
 		RequestInfo reqInfo = storageUtil.getRequestInfo(requestInfo);
-		final List<String> fileStoreIds = storageService.save(files, module, tag, tenantId, reqInfo);
+		final List<String> fileStoreIds = storageService.save(files, module, tag, tenantId, reqInfo, expiryDate);
 		return getStorageResponse(fileStoreIds, tenantId);
 	}
 
@@ -153,6 +163,56 @@ public class StorageController {
 		responseMap.put("fileStoreIds", responses);
 		
 		return new ResponseEntity<>(responseMap, HttpStatus.OK);
+	}
+
+	@PostMapping(value = "/_delete", produces = APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> deleteFilesPost(
+			@RequestParam(value = "tenantId", required = false) String tenantId,
+			@RequestParam(value = "fileStoreIds", required = false) List<String> fileStoreIds,
+			@RequestParam(value = "requestInfo", required = false) String requestInfo,
+			@RequestBody(required = false) Map<String, Object> requestBody) {
+		if (storageValidator != null) {
+			storageValidator.validateDeleteRequest(requestBody, requestInfo);
+		}
+
+		String finalTenantId = tenantId;
+		List<String> finalFileStoreIds = fileStoreIds != null ? new ArrayList<>(fileStoreIds) : new ArrayList<>();
+
+		if (requestBody != null) {
+			if (org.springframework.util.StringUtils.isEmpty(finalTenantId) && requestBody.containsKey("tenantId")) {
+				finalTenantId = String.valueOf(requestBody.get("tenantId"));
+			}
+			if (finalFileStoreIds.isEmpty() && requestBody.containsKey("fileStoreIds")) {
+				Object idsObj = requestBody.get("fileStoreIds");
+				if (idsObj instanceof List) {
+					for (Object item : (List<?>) idsObj) {
+						if (item != null && !item.toString().trim().isEmpty()) {
+							finalFileStoreIds.add(item.toString().trim());
+						}
+					}
+				} else if (idsObj instanceof String) {
+					for (String id : ((String) idsObj).split(",")) {
+						if (!id.trim().isEmpty()) {
+							finalFileStoreIds.add(id.trim());
+						}
+					}
+				}
+			}
+		}
+
+		Map<String, Object> response = storageService.delete(finalFileStoreIds, finalTenantId);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@DeleteMapping(produces = APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> deleteFiles(
+			@RequestParam(value = "tenantId", required = false) String tenantId,
+			@RequestParam(value = "fileStoreIds", required = false) List<String> fileStoreIds,
+			@RequestParam(value = "requestInfo", required = false) String requestInfo,
+			@RequestBody(required = false) Map<String, Object> requestBody) {
+		return deleteFilesPost(tenantId, fileStoreIds, requestInfo, requestBody);
 	}
 	
 }

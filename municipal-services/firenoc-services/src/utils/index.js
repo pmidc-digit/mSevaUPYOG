@@ -4,6 +4,7 @@ import get from "lodash/get";
 import findIndex from "lodash/findIndex";
 import isEmpty from "lodash/isEmpty";
 import { httpRequest } from "./api";
+import { ownerAssignee } from "./create";
 import envVariables from "../envVariables";
 
 export const uuidv1 = () => {
@@ -32,82 +33,108 @@ export const requestInfoToResponseInfo = (requestinfo, success) => {
 };
 
 export const addIDGenId = async (requestInfo, idRequests) => {
-  let requestBody = {
-    RequestInfo: requestInfo,
-    idRequests
-  };
-  // console.log(JSON.stringify(requestBody));
-  let idGenResponse = await httpRequest({
-    hostURL: envVariables.EGOV_IDGEN_HOST,
-    endPoint: `${envVariables.EGOV_IDGEN_CONTEXT_PATH}${
-      envVariables.EGOV_IDGEN_GENERATE_ENPOINT
-    }`,
-    requestBody
-  });
-  // console.log("idgenresponse",idGenResponse);
-  return get(idGenResponse, "idResponses[0].id");
+  try {
+    let requestBody = {
+      RequestInfo: requestInfo,
+      idRequests
+    };
+    // console.log(JSON.stringify(requestBody));
+    let idGenResponse = await httpRequest({
+      hostURL: envVariables.EGOV_IDGEN_HOST,
+      endPoint: `${envVariables.EGOV_IDGEN_CONTEXT_PATH}${
+        envVariables.EGOV_IDGEN_GENERATE_ENPOINT
+      }`,
+      requestBody
+    });
+    // console.log("idgenresponse",idGenResponse);
+    return get(idGenResponse, "idResponses[0].id");
+  } catch (error) {
+    console.error("Error in addIDGenId:", error);
+    throw error;
+  }
 };
 
 export const getLocationDetails = async (requestInfo, tenantId) => {
-  let requestBody = {
-    RequestInfo: requestInfo
-  };
-   console.log(JSON.stringify(requestBody));
-  let locationResponse = await httpRequest({
-    hostURL: envVariables.EGOV_LOCATION_HOST,
-    endPoint: `${envVariables.EGOV_LOCATION_CONTEXT_PATH}${
-      envVariables.EGOV_LOCATION_SEARCH_ENDPOINT
-    }?hierarchyTypeCode=${
-      envVariables.EGOV_LOCATION_HIERARCHY_TYPE_CODE
-    }&boundaryType=${
-      envVariables.EGOV_LOCATION_BOUNDARY_TYPE_CODE
-    }&tenantId=${tenantId}`,
-    requestBody
-  });
-   console.log("idgenresponse",locationResponse);
-  return locationResponse;
+  try {
+    let requestBody = {
+      RequestInfo: requestInfo
+    };
+    console.log(JSON.stringify(requestBody));
+    let locationResponse = await httpRequest({
+      hostURL: envVariables.EGOV_LOCATION_HOST,
+      endPoint: `${envVariables.EGOV_LOCATION_CONTEXT_PATH}${
+        envVariables.EGOV_LOCATION_SEARCH_ENDPOINT
+      }?hierarchyTypeCode=${
+        envVariables.EGOV_LOCATION_HIERARCHY_TYPE_CODE
+      }&boundaryType=${
+        envVariables.EGOV_LOCATION_BOUNDARY_TYPE_CODE
+      }&tenantId=${tenantId}`,
+      requestBody
+    });
+    console.log("idgenresponse",locationResponse);
+    return locationResponse;
+  } catch (error) {
+    console.error("Error in getLocationDetails:", error);
+    throw error;
+  }
 };
 
 export const createWorkFlow = async body => {
-  //wfDocuments and comment should rework after that
+  try {
     console.log("WorkFlow Method Calling Now")
-  let processInstances = body.FireNOCs.map(fireNOC => {
-    return {
-      tenantId: fireNOC.tenantId,
-      businessService: envVariables.BUSINESS_SERVICE,
-      businessId: fireNOC.fireNOCDetails.applicationNumber,
-      action: fireNOC.fireNOCDetails.action,
-      comment: get(fireNOC.fireNOCDetails, "comment", null),
-      assignes: (fireNOC.fireNOCDetails.assignee 
-        && fireNOC.fireNOCDetails.assignee[0] != null 
-       && fireNOC.fireNOCDetails.assignee[0] !='')
-        ? [{ uuid: fireNOC.fireNOCDetails.assignee[0] }]
-        : null,
-      documents: get(fireNOC.fireNOCDetails, "wfDocuments", null),
-      sla: 0,
-      previousStatus: null,
-      moduleName: envVariables.BUSINESS_SERVICE
+
+    let processInstances = [];
+    for (let i = 0; i < body.FireNOCs.length; i++) {
+      let fireNOC = body.FireNOCs[i];
+      let assignesValue = null;
+
+      if (fireNOC.fireNOCDetails.action === 'SENDBACKTOCITIZEN') {
+        let owners = get(fireNOC, "fireNOCDetails.applicantDetails.owners", []);
+        assignesValue = await ownerAssignee(owners, body.RequestInfo);
+      } else {
+        assignesValue = (fireNOC.fireNOCDetails.assignee
+          && fireNOC.fireNOCDetails.assignee[0] != null
+          && fireNOC.fireNOCDetails.assignee[0] !== '')
+          ? [{ uuid: fireNOC.fireNOCDetails.assignee[0] }]
+          : null;
+      }
+
+      processInstances.push({
+        tenantId: fireNOC.tenantId,
+        businessService: envVariables.BUSINESS_SERVICE,
+        businessId: fireNOC.fireNOCDetails.applicationNumber,
+        action: fireNOC.fireNOCDetails.action,
+        comment: get(fireNOC.fireNOCDetails, "comment", null),
+        assignes: assignesValue,
+        documents: get(fireNOC.fireNOCDetails, "wfDocuments", null),
+        sla: 0,
+        previousStatus: null,
+        moduleName: envVariables.BUSINESS_SERVICE
+      });
+    }
+
+    var systemPaymentRole = {
+      code: "SYSTEM_PAYMENT",
+      tenantId: body.FireNOCs[0].tenantId
     };
-  });
-  
-  var systemPaymentRole = {
-    code: "SYSTEM_PAYMENT",
-    tenantId: body.FireNOCs[0].tenantId
-  };
-  body.RequestInfo.userInfo.roles.push(systemPaymentRole);
-  
-  let requestBody = {
-    RequestInfo: body.RequestInfo,
-    ProcessInstances: processInstances
-  };
-  console.log("Workflow requestBody", JSON.stringify(requestBody));
-  let workflowResponse = await httpRequest({
-    hostURL: envVariables.EGOV_WORKFLOW_HOST,
-    endPoint: envVariables.EGOV_WORKFLOW_TRANSITION_ENDPOINT,
-    requestBody
-  });
-  console.log("workflowResponse", JSON.stringify(workflowResponse));
-  return workflowResponse;
+    body.RequestInfo.userInfo.roles.push(systemPaymentRole);
+
+    let requestBody = {
+      RequestInfo: body.RequestInfo,
+      ProcessInstances: processInstances
+    };
+    console.log("Workflow requestBody", JSON.stringify(requestBody));
+    let workflowResponse = await httpRequest({
+      hostURL: envVariables.EGOV_WORKFLOW_HOST,
+      endPoint: envVariables.EGOV_WORKFLOW_TRANSITION_ENDPOINT,
+      requestBody
+    });
+    console.log("workflowResponse", JSON.stringify(workflowResponse));
+    return workflowResponse;
+  } catch (error) {
+    console.error("Error in createWorkFlow:", error);
+    throw error;
+  }
 };
 
 export const addQueryArg = (url, queries = []) => {
@@ -126,4 +153,10 @@ export const addQueryArg = (url, queries = []) => {
   } else {
     return url;
   }
+};
+export const getValidityYears = (validityYearValue) => {
+  if (!validityYearValue || validityYearValue === 'NA' || validityYearValue === '') {
+    return 1;
+  }
+  return validityYearValue;
 };

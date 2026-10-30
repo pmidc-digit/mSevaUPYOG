@@ -12,6 +12,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.layout.config.LAYOUTConfiguration;
 import org.egov.layout.repository.ServiceRequestRepository;
+import org.egov.layout.util.LAYOUTConstants;
 import org.egov.layout.web.model.*;
 import org.egov.tracer.model.CustomException;
 import org.json.JSONObject;
@@ -131,8 +132,13 @@ public class UserService {
 				map.put("createdDate", dateTolong((String) map.get("createdDate"), format1));
 				if ((String) map.get("lastModifiedDate") != null)
 					map.put("lastModifiedDate", dateTolong((String) map.get("lastModifiedDate"), format1));
-				if ((String) map.get("dob") != null && dobFormat != null)
-					map.put("dob", dateTolong((String) map.get("dob"), dobFormat));
+				if ((String) map.get("dob") != null && dobFormat != null) {
+					String dob = (String) map.get("dob");
+					if(dob.contains("/"))
+						map.put("dob", dateTolong((String) map.get("dob"), "dd/MM/yyyy"));
+					else if(dob.contains("-"))
+						map.put("dob", dateTolong((String) map.get("dob"), "yyyy-MM-dd"));
+				}
 				if ((String) map.get("pwdExpiryDate") != null)
 					map.put("pwdExpiryDate", dateTolong((String) map.get("pwdExpiryDate"), format1));
 			});
@@ -235,7 +241,7 @@ public class UserService {
 			uri.append("&assignedtenattids=").append(tenantId);
 			if(!org.springframework.util.StringUtils.isEmpty(zones))
 				uri.append("&zones=").append(zones);
-
+			uri.append("&modulename=").append(LAYOUTConstants.MODULENAME);
 		}
 
 		return uri;
@@ -281,8 +287,8 @@ public class UserService {
 				addUserDefaultFields(noc.getTenantId(), role, owner);
 
 				UserResponse existingUserResponse = userExists(owner, requestInfo);
-
-				if (!existingUserResponse.getUser().isEmpty()) {
+				existingUserResponse = new UserResponse();
+				if (!CollectionUtils.isEmpty(existingUserResponse.getUser())) {
 					OwnerInfo existingUser = existingUserResponse.getUser().get(0);
 					log.info("User already exists with UUID: " + existingUser.getUuid());
 					owner.setUuid(existingUser.getUuid());
@@ -291,6 +297,7 @@ public class UserService {
 //						  UserResponse userResponse = userExists(owner,requestInfo);
 					StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userCreateEndpoint);
 					setUserName(owner);
+					owner.setUserName(UUID.randomUUID().toString());
 					UserResponse userResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);
 					if (userResponse.getUser().get(0).getUuid() == null) {
 						throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");
@@ -312,6 +319,35 @@ public class UserService {
 			}
 		});
 
+	}
+	
+	public String getEmployeeSearchPATH(String tenantId, Map<String, String> additionalDetails, Object mdmsData) {
+		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone.code");
+
+		StringBuilder uri = new StringBuilder();
+
+		uri.append("assignedtenattids=").append(tenantId);
+		if (!org.springframework.util.StringUtils.isEmpty(zones))
+			uri.append("&zones=").append(zones);
+
+		String specificationBuildingCategory = JsonPath.read(additionalDetails,
+				"$.siteDetails.specificationBuildingCategory");
+//		if (!org.springframework.util.StringUtils.isEmpty(specificationBuildingCategory)) {
+//			List<String> categories = JsonPath.read(mdmsData, "$.MdmsRes.LAYOUT.BuildingCategory.[?(@.name == '"
+//					+ specificationBuildingCategory + "')].category");
+//			List<List<String>> subCategories = JsonPath.read(mdmsData,
+//					"$.MdmsRes.LAYOUT.BuildingCategory.[?(@.name == '" + specificationBuildingCategory
+//							+ "')].subCategory");
+//
+//			if (!CollectionUtils.isEmpty(categories))
+//				uri.append("&categories=").append(categories.get(0));
+//			if (!CollectionUtils.isEmpty(subCategories))
+//				uri.append("&subcategories=").append(String.join(",", subCategories.get(0)));
+//		}
+
+		uri.append("&modulename=").append(LAYOUTConstants.MODULENAME);
+
+		return uri.toString();
 	}
 
 }

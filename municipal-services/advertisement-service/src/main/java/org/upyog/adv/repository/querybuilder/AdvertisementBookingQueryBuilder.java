@@ -23,6 +23,7 @@ public class AdvertisementBookingQueryBuilder {
 			"SELECT ecbd.booking_id, booking_no, payment_date, application_date, tenant_id,\n"
 					+ "ecbd.advertisementId ,booking_status,receipt_no, ecbd.createdby, ecbd.createdtime, \n"
 					+ "ecbd.lastmodifiedby, ecbd.lastmodifiedtime,ecbd.permission_letter_filestore_id, ecbd.payment_receipt_filestore_id, \n"
+					+ "ecbd.booking_start_date, ecbd.booking_end_date, ecbd.additionaldetails, \n"
 					+ "appl.applicant_detail_id, applicant_name, applicant_email_id, applicant_mobile_no,\n"
 					+ "applicant_alternate_mobile_no, \n"
 					+ "address_id, door_no, house_no, address_line_1,address_line_2, \n"
@@ -56,6 +57,11 @@ public class AdvertisementBookingQueryBuilder {
 			+ " where booking_id = ?";
 
 	public static final String PAYMENT_TIMER_QUERY = "INSERT INTO eg_adv_payment_timer(booking_id, createdby, createdtime, status, booking_no, lastmodifiedby, lastmodifiedtime, add_type, location, face_area, night_light,advertisementId, booking_start_date, booking_end_date, booking_date) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?::DATE, ?::DATE, ?::DATE);\n";
+
+	// Insert that silently skips when another ACTIVE timer already holds the same slot+date.
+	// Backed by unique partial index uq_adv_timer_active_slot.
+	public static final String PAYMENT_TIMER_QUERY_ON_CONFLICT = "INSERT INTO eg_adv_payment_timer(booking_id, createdby, createdtime, status, booking_no, lastmodifiedby, lastmodifiedtime, add_type, location, face_area, night_light,advertisementId, booking_start_date, booking_end_date, booking_date) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?::DATE, ?::DATE, ?::DATE) "
+			+ "ON CONFLICT (advertisementId, booking_date, add_type, location, face_area, night_light) WHERE status = 'ACTIVE' DO NOTHING;\n";
 
 	public static final String DRAFT_QUERY = "INSERT INTO eg_adv_draft_detail(draft_id, tenant_id, user_uuid, draft_application_data, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?,CAST(? AS jsonb), ?, ?, ?, ?);\n";
 
@@ -96,6 +102,36 @@ public class AdvertisementBookingQueryBuilder {
 	public static final String INSERT_BOOKING_DETAIL_AUDIT_QUERY = 
 		    "INSERT INTO public.eg_adv_booking_detail_audit " +
 		    "SELECT * FROM public.eg_adv_booking_detail WHERE booking_id = ?";
+
+	// Check whether the same advertisement slot is already booked by another active booking.
+	public static final String CHECK_ACTIVE_SLOT_CONFLICT =
+		    "SELECT eabd.booking_id " +
+		    "FROM public.eg_adv_cart_detail eacd " +
+		    "JOIN public.eg_adv_booking_detail eabd ON eacd.booking_id = eabd.booking_id " +
+		    "WHERE eacd.advertisementid = ? " +
+		    "  AND eacd.booking_date = ?::DATE " +
+		    "  AND eacd.add_type = ? " +
+		    "  AND eacd.location = ? " +
+		    "  AND eacd.face_area = ? " +
+		    "  AND COALESCE(eacd.night_light, false) = ? " +
+		    "  AND eacd.booking_id != ? " +
+		    "  AND eabd.booking_status NOT IN ('CANCELLED', 'REJECTED', 'REMOVED', 'BOOKING_EXPIRED', 'PAYMENT_FAILED') " +
+		    "LIMIT 1";
+
+	// Check whether another user already has an active timer on the same slot.
+	public static final String CHECK_ACTIVE_TIMER_CONFLICT =
+		    "SELECT booking_id " +
+		    "FROM public.eg_adv_payment_timer " +
+		    "WHERE advertisementId = ? " +
+		    "  AND booking_date = ?::DATE " +
+		    "  AND add_type = ? " +
+		    "  AND location = ? " +
+		    "  AND face_area = ? " +
+		    "  AND COALESCE(night_light, false) = ? " +
+		    "  AND booking_id != ? " +
+		    "  AND createdby != ? " +
+		    "  AND status = 'ACTIVE' " +
+		    "LIMIT 1";
 
 	public static final String INSERT_CART_DETAIL_AUDIT_QUERY = 
 		    "INSERT INTO public.eg_adv_cart_detail_audit " +

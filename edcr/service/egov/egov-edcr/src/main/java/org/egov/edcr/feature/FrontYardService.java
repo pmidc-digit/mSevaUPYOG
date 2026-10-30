@@ -87,6 +87,7 @@ import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
+import org.egov.common.entity.edcr.Measurement;
 
 @Service
 public class FrontYardService extends GeneralRule {
@@ -94,13 +95,15 @@ public class FrontYardService extends GeneralRule {
 	private static final Logger LOG = LogManager.getLogger(FrontYardService.class);
 	private static final String RULE_35 = "35 Table-8";
 	private static final String RULE_36 = "36";
-	private static final String RULE_37_TWO_A = "37-2-A";
+	private static final String RULE_37_TWO_A = "4.4.4";
 	private static final String RULE_37_TWO_B = "37-2-B";
 	private static final String RULE_37_TWO_C = "37-2-C";
 	private static final String RULE_37_TWO_D = "37-2-D";
-	private static final String RULE_37_TWO_G = "37-2-G";
+	private static final String RULE_37_TWO_G = "4.14";
 	private static final String RULE_37_TWO_H = "37-2-H";
 	private static final String RULE_37_TWO_I = "37-2-I";
+	private static final String RULE_37_TWO_F = "4.7.4";
+	private static final String RULE_37_TWO_L = "4.18";
 	private static final String RULE = "4.4.4";
 
 	private static final String MINIMUMLABEL = "Minimum distance ";
@@ -160,7 +163,8 @@ public class FrontYardService extends GeneralRule {
 
 	// Front setback percentages
 	private static final BigDecimal INDUSTRIAL_FRONT_SETBACK_PERCENT_20 = BigDecimal.valueOf(0.20);
-	private static final BigDecimal INDUSTRIAL_FRONT_SETBACK_PERCENT_25 = BigDecimal.valueOf(0.25);
+	private static final BigDecimal PERCENT_25 = BigDecimal.valueOf(0.25);
+	private static final BigDecimal PERCENT_20 = BigDecimal.valueOf(0.20);
 	
 	private Boolean isNbcType=false;
 	
@@ -500,10 +504,10 @@ private class FrontYardResult {
 //			Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
 //			minPlotArea.ifPresent(min1 -> LOG.info("Min plot are required : " + min1));
 	        
-			if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-				errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
-		        pl.addErrors(errors);			        
-		    }
+//			if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
+//				errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
+//		        pl.addErrors(errors);			        
+//		    }
 			
 			if(pl.getMdmsMasterData().get("masterMdmsData")!=null) {					
 				Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH, BigDecimal.class);
@@ -532,35 +536,83 @@ private class FrontYardResult {
 	    return valid;
 	}
 
+//	private void validateFrontYard(Plan pl) {
+//		// Front yard may not be mandatory at each level. We can check whether in any
+//		// level front yard defined or not ?
+//		for (Block block : pl.getBlocks()) {
+//			if (!block.getCompletelyExisting()) {
+//				Boolean frontYardDefined = false;
+//				for (SetBack setback : block.getSetBacks()) {
+//					if (setback.getFrontYard() != null
+//							&& setback.getFrontYard().getMean().compareTo(BigDecimal.valueOf(0)) > 0) {
+//						frontYardDefined = true;
+//					}
+//				}
+//				if (!frontYardDefined) {
+//					HashMap<String, String> errors = new HashMap<>();
+//					if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {				
+//						errors.put(FRONT_YARD_DESC,
+//								prepareMessage(OBJECTNOTDEFINED, FRONT_YARD_DESC + " for Block " + block.getName()));
+//						pl.addErrors(errors);
+//                    }
+//					
+//				}
+//			}
+//
+//		}
+//
+//	}
+
 	private void validateFrontYard(Plan pl) {
 
-		// Front yard may not be mandatory at each level. We can check whether in any
-		// level front yard defined or not ?
+	    boolean isUnitFaPlan = pl.getBlocks().stream()
+	            .anyMatch(block -> Boolean.TRUE.equals(block.getIsUnitFa()));
 
-		for (Block block : pl.getBlocks()) {
-			if (!block.getCompletelyExisting()) {
-				Boolean frontYardDefined = false;
-				for (SetBack setback : block.getSetBacks()) {
-					if (setback.getFrontYard() != null
-							&& setback.getFrontYard().getMean().compareTo(BigDecimal.valueOf(0)) > 0) {
-						frontYardDefined = true;
-					}
-				}
-				if (!frontYardDefined) {
-					HashMap<String, String> errors = new HashMap<>();
-					if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {				
-						errors.put(FRONT_YARD_DESC,
-								prepareMessage(OBJECTNOTDEFINED, FRONT_YARD_DESC + " for Block " + block.getName()));
-						pl.addErrors(errors);
-                    }
-					
-				}
-			}
+	    // If any block is marked as UnitFA, skip block-wise
+	    // front setback mandatory validation.
+	    if (isUnitFaPlan) {
+	        return;
+	    }
 
-		}
+	    for (Block block : pl.getBlocks()) {
 
+	        if (!block.getCompletelyExisting()) {
+
+	            boolean frontYardDefined = false;
+
+	            for (SetBack setback : block.getSetBacks()) {
+
+	                if (setback.getFrontYard() != null
+	                        && setback.getFrontYard().getMean() != null
+	                        && setback.getFrontYard().getMean()
+	                                .compareTo(BigDecimal.ZERO) > 0) {
+
+	                    frontYardDefined = true;
+	                    break;
+	                }
+	            }
+
+	            if (!frontYardDefined) {
+
+	                HashMap<String, String> errors = new HashMap<>();
+
+	                if (!Far.shouldSkipValidation(
+	                        pl.getEdcrRequest(),
+	                        DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {
+
+	                    errors.put(
+	                            FRONT_YARD_DESC,
+	                            prepareMessage(
+	                                    OBJECTNOTDEFINED,
+	                                    FRONT_YARD_DESC + " for Block " + block.getName()));
+
+	                    pl.addErrors(errors);
+	                }
+	            }
+	        }
+	    }
 	}
-
+	
 	private Boolean checkFrontYardUptoSixteenMts(SetBack setback, Building building, BigDecimal blockBuildingHeight,
 			Plan pl, Integer level, Block block, Plot plot, String frontYardFieldName, BigDecimal min, BigDecimal mean,
 			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult,
@@ -843,26 +895,45 @@ private class FrontYardResult {
 		if (mostRestrictiveOccupancy.getType() != null
 				&& A.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
 			minVal = BigDecimal.ZERO;
-			subRule = RULE_37_TWO_H;
+			subRule = RULE_37_TWO_A;
 		}
 		// IT,ITES
 		if (mostRestrictiveOccupancy.getType() != null
 				&& F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
-			minVal = getMinValueForCommercialFromMdms(pl,plot.getArea(),errors, frontYardResult, buildingHeight);
-			subRule = RULE_37_TWO_I;
-			valid = validateMinimumAndMeanValue(min, setback.getFrontYard().getWidth(), minVal, meanVal);
-	    	if (setback.getFrontYard().getArea().compareTo(minVal) >= 0) {		    
+			 minVal = getMinValueForCommercialFromMdms(
+			            pl, plot.getArea(), errors, frontYardResult, buildingHeight, mostRestrictiveOccupancy);
+			    subRule = RULE_37_TWO_F;
+			    boolean isMiniplex = mostRestrictiveOccupancy.getSubtype() != null
+			            && F_MIP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode());
+			    Measurement frontYard = setback.getFrontYard();
+//			    BigDecimal providedValue = isMiniplex
+//			            ? frontYard.getMinimumDistance()
+//			            : frontYard.getWidth();
+			   
+			    BigDecimal compareValue = isMiniplex || Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())
+			            ? frontYard.getMinimumDistance()
+			            : frontYard.getArea();
+			    
+//			    valid = validateMinimumAndMeanValue(min, providedValue, minVal, meanVal);
+//			    if (valid && compareValue != null && compareValue.compareTo(minVal) < 0) {
+//			        valid = false;
+//			    }
+			    
+			    valid = compareValue != null && compareValue.compareTo(minVal) >= 0;
+	    	
+			if(isMiniplex || Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())) {
+		    	compareFrontYardResult(blockName, min, frontYard.getMinimumDistance(), mostRestrictiveOccupancy,
+		    			frontYardResult, valid, subRule, rule, minVal, meanVal, level);
 			}else {
-				valid=false;
+		    	compareFrontYardResult(blockName, min, setback.getFrontYard().getArea(), mostRestrictiveOccupancy,
+		    			frontYardResult, valid, subRule, rule, minVal, meanVal, level);
 			}
-	    	// Save result
-	    	compareFrontYardResult(blockName, min, setback.getFrontYard().getWidth(), mostRestrictiveOccupancy,
-	    			frontYardResult, valid, subRule, rule, minVal, meanVal, level);	 
+	    		 
 		}
 		if (mostRestrictiveOccupancy.getType() != null
 				&& G.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
 			minVal = getMinValueForIndustrial(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
-			subRule = RULE_37_TWO_I;
+			subRule = RULE_37_TWO_G;
 			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);	
 			compareFrontYardResultIndustry(blockName, setback.getFrontYard().getMinimumDistance(), mean, mostRestrictiveOccupancy,
 		    		frontYardResult, valid, subRule, rule, minVal, meanVal, level);	
@@ -870,7 +941,7 @@ private class FrontYardResult {
 		if (mostRestrictiveOccupancy.getType() != null
 				&& L.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
 			minVal = getMinValueForPublicBuildingByMDMS(pl,plot.getArea(), buildingHeight, mostRestrictiveOccupancy, errors, frontYardResult);
-			subRule = RULE_37_TWO_I;
+			subRule = RULE_37_TWO_L;
 			valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
 			if(L_NH.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
 				if (setback.getFrontYard().getArea().compareTo(minVal) >= 0) {		    
@@ -1214,7 +1285,7 @@ private class FrontYardResult {
 	}
 	
 	private BigDecimal getMinValueForCommercialFromMdms(Plan pl,BigDecimal plotArea, HashMap<String, String> errors, 
-			FrontYardResult frontYardResult, BigDecimal buildingHeight) {
+			FrontYardResult frontYardResult, BigDecimal buildingHeight, OccupancyTypeHelper mostRestrictiveOccupancy) {
 	    LOG.info("getMinValueForCommercialFromMdms for Commercial:");
 	    BigDecimal minVal = BigDecimal.ZERO;
 	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
@@ -1243,8 +1314,93 @@ private class FrontYardResult {
 	    	 /* ======================================================
 	         * LOW RISE BUILDINGS (Height ≤ 21 m)
 	         * ====================================================== */
-	    	minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_10); // 10%
-		    frontYardResult.setBackPercentage = "10";			
+	    	//minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_10); // 10%
+		    //frontYardResult.setBackPercentage = "10";		
+	    	
+	    	if(DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())){
+	    		Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	    		        pl.getMdmsMasterData().get("masterMdmsData"),
+	    		        MdmsFilter.LIST_FRONT_SETBACK_PATH,
+	    		        List.class);
+	    		if (fullListOpt.isPresent()) {
+	    		    List<Map<String, Object>> frontSetBacks =
+	    		            (List<Map<String, Object>>) fullListOpt.get();
+	    		    Optional<BigDecimal> tableSetbackOpt =
+	    		            BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+	    		    if (tableSetbackOpt.isPresent()) {
+	    		        BigDecimal tableSetback = tableSetbackOpt.get();
+	    		        // 25% of plot area
+	    		        BigDecimal plotAreaBasedSetback = plotArea
+	    		                .multiply(PERCENT_25)
+	    		                .setScale(2, RoundingMode.HALF_UP);
+	    		        // Whichever is more
+	    		        minVal = tableSetback.max(plotAreaBasedSetback);
+	    		        if (plotAreaBasedSetback.compareTo(tableSetback) >= 0) {
+	    		        	minVal = plotAreaBasedSetback;
+	    		        	frontYardResult.setBackPercentage = PERCENT_25
+	    		        	        .multiply(BigDecimal.valueOf(100))
+	    		        	        .stripTrailingZeros()
+	    		        	        .toPlainString();
+	    		        } else {
+	    		        	minVal = tableSetback;
+	    		            frontYardResult.setBackPercentage = tableSetback.toPlainString().concat("m");
+	    		        }
+	    		    }
+	    		}
+	    	}else if (DxfFileConstants.F_MIP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+	    		        Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(
+	    	    		        pl.getMdmsMasterData().get("masterMdmsData"),
+	    	    		        MdmsFilter.LIST_FRONT_SETBACK_PATH,
+	    	    		        List.class);
+	    	    		if (fullListOpt.isPresent()) {
+	    	    		    List<Map<String, Object>> frontSetBacks =
+	    	    		            (List<Map<String, Object>>) fullListOpt.get();
+	    	    		    Optional<BigDecimal> tableSetbackOpt =
+	    	    		            BpaMdmsUtil.findSetbackValueByHeight(frontSetBacks, buildingHeight);
+	    	    		    if (tableSetbackOpt.isPresent()) {
+	    	    		        BigDecimal tableSetback = tableSetbackOpt.get();
+	    	    		        minVal = tableSetback;
+	    	    		        frontYardResult.setBackPercentage = tableSetback.toPlainString().concat("m");	    	    		        
+	    	    		    }
+	    	    		}
+	    		        
+	    		        
+	    		
+	    	}else {
+	    		if(Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())) {
+	    			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+						Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+								pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH,
+								BigDecimal.class);
+						if (scOpt.isPresent()) {
+							BigDecimal setbackPercentage = scOpt.get();
+							LOG.info("Front Setback from MDMS : {} m ", setbackPercentage);
+							frontYardResult.setBackPercentage = setbackPercentage.toPlainString().concat("m");
+							minVal = setbackPercentage;
+							LOG.info("Plot Area: {}, Required Front Setback Value: {}", plotArea, minVal);
+						}
+					}
+	    		}else {
+	    			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+						Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+								pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.FRONT_SETBACK_PATH,
+								BigDecimal.class);
+						if (scOpt.isPresent()) {
+							BigDecimal setbackPercentage = scOpt.get();
+							LOG.info("Front Setback Percentage from MDMS : {}%", setbackPercentage);
+							frontYardResult.setBackPercentage = setbackPercentage.stripTrailingZeros().toPlainString();
+							// Calculate actual setback value = Plot Area × Percentage / 100
+							minVal = plotArea.multiply(setbackPercentage).divide(BigDecimal.valueOf(100), 2,
+									RoundingMode.HALF_UP);
+
+							LOG.info("Plot Area: {}, Required Front Setback Value: {}", plotArea, minVal);
+						}
+					}
+	    		}
+				
+			}
+		    
+		    
 	    }
 	    return minVal.setScale(2, RoundingMode.HALF_UP);
 	}

@@ -10,12 +10,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +31,18 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.egov.common.entity.dcr.helper.ErrorDetail;
+import org.egov.common.entity.edcr.Block;
+import org.egov.common.entity.edcr.Building;
 import org.egov.common.entity.edcr.EdcrPdfDetail;
+import org.egov.common.entity.edcr.Floor;
+import org.egov.common.entity.edcr.Occupancy;
+import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.PlanFeature;
 import org.egov.common.entity.edcr.PlanInformation;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
+import org.egov.commons.exception.EdcrException;
 import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.contract.ComparisonRequest;
@@ -60,14 +69,19 @@ import org.egov.infra.filestore.entity.FileStoreMapper;
 import org.egov.infra.filestore.service.FileStoreService;
 import org.egov.infra.microservice.models.RequestInfo;
 import org.egov.infra.microservice.models.Role;
+import org.python.antlr.PythonParser.print_stmt_return;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import static org.egov.edcr.constants.DxfFileConstants.*;
 
 @Service
 public class PlanService {
@@ -96,7 +110,56 @@ public class PlanService {
     
     @Autowired
     private PlanReportServiceV2 planReportServiceV2;
+    
+	private static final List<String> FAR_PRIORITY = Collections.unmodifiableList(
+			Arrays.asList(S_ECFG, A_FH, S_SAS, D_B, D_C, D_A, H_PP, E_NS, M_DFPAB, E_PS, E_SFMC, E_SFDAP, E_EARC, S_MCH,
+					S_BH, S_CRC, S_CA, S_SC, S_ICC, A2, E_CLG, M_OHF, M_VH, M_NAPI, A_SA, M_HOTHC, E_SACA,
 
+					C_MA, C_MIP, C_MOP,
+
+					F, A, C,
+
+					J_FS, J_FCSS, J_CNG, J,
+
+					A_AF, A_AIF,
+
+					G_G, G_F, G_S, G_HI, G_WT, G_RSI, G_GIP, G_GIF, G_ITP, G_ITF, G_TI, G_KI, G_SI,
+
+					L_GP, L_GO, L_NS, L_PS, L_CO, L_ERC, L_MP, L_NH, L_C,
+
+					R_R,
+
+					F_RB, F_HM, F_SCC, F_PO, F_B, F_LB, F_D, F_CA, F_VGP, F_BU, F_PFSF, F_PFST, F_PFSS, F_PS, F_CNGS));
+	
+	private static final String SOURCE_INVESTPUNJAB = "INVESTPUNJAB";
+	private static final String SOURCE_OBPAS = "OBPAS";
+	private static final String INVALID_SOURCE = "INVALID SOURCE";
+	
+	private static final String ERROR_MSG = 
+	        "Dear Investors,"
+	                + "Please be informed that with effect from 15.05.2025, all building plan applications under the following categories will no longer be accepted on the eNaksha Portal: https://enaksha.lgpunjab.gov.in and https://mseva.lgpunjab.gov.in/"
+	                + "• Industry • Hotel • Nursing Home / Hospital • Institutions"
+	                + "Instead, investors are requested to submit such applications exclusively through the Punjab Bureau of Investment Promotion (PBIP) Portal: https://fasttrack.punjab.gov.in/webportal/login We request all stakeholders to kindly take note of this change and plan submissions accordingly."
+	                + "Local Government Department, Government of Punjab.”";
+	
+	@Value("${source.validation}")
+	private Boolean sourceValidation;
+
+	@Value("${edcr.worksheet.validation.enabled:false}")
+	private boolean workSheetValidationEnabled;
+	
+	@Value("${edcr.pagesize.validation.enabled:false}")
+	private boolean pageSizeValidationEnabled;
+
+	@javax.annotation.PostConstruct
+	public void initWorkSheetValidationFlag() {
+	    Plan.setWorkSheetValidationEnabled(workSheetValidationEnabled);
+	    Plan.setPagesizeValidationEnabled(pageSizeValidationEnabled);
+	    LOG.info("WORK_SHEET validation enabled = {}", workSheetValidationEnabled);
+	    LOG.info("Page Size validation enabled = {}", pageSizeValidationEnabled);
+	}
+	
+	
     public Plan process(EdcrApplication dcrApplication, String applicationType) {
         Map<String, String> cityDetails = specificRuleService.getCityDetails();
       
@@ -213,169 +276,162 @@ public class PlanService {
         AmendmentService repo = (AmendmentService) specificRuleService.find("amendmentService");
         Amendment amd = repo.getAmendments();
 
-		List<PlanFeature> features = featureService.getFeatures();		
-
-//		if (edcrRequest.getAreaType().equalsIgnoreCase("SCHEME_AREA")) {
-//			// Get scheme name
-//			if (edcrRequest.getSchName() != null && !edcrRequest.getSchName().isEmpty()) {
-//				// Upload or Select layout + control sheet
-//				// Master is created for scheme-wise layout and control sheets for all ULBs
-//				if (edcrRequest.getSiteReserved()) {
-//					if (edcrRequest.getApprovedCS()) {
-//						// Exempt scrutiny
-//						// uploadPDF();
-//						// proceedToFormFill();
-//						// as of now not implemented the code for control sheet
-//					} else {
-//						// No approved control sheet
-//						// min plot area and road width not required
-//						// uploadDXF();
-//						Set<Class<?>> classesToRemove = new HashSet<>(Arrays.asList(PlotArea.class, RoadWidth.class));
-//
-//						features.removeIf(feature -> feature.getRuleClass() != null
-//								&& classesToRemove.contains(feature.getRuleClass()));
-//					}
-//				} else {
-//					// Not reserved
-//					// Mark as "Scrutiny as per PMBL"
-//					// uploadDXF();
-//					// process file normally
-//				}
-//			} else {
-//				LOG.info("Error: Scheme Name is required");
-//			}
-//
-//		} else if (edcrRequest.getAreaType().equalsIgnoreCase("NON_SCHEME_AREA")) {
-//			Set<Class<?>> classesToRemove = new HashSet<>();
-//			if (edcrRequest.getCluApprove()) {
-//				// Check for min plot area and road width
-//				// If both present, no scrutiny needed
-//				LOG.info("Min plot area and road width met. No scrutiny required.");
-//				classesToRemove.addAll(Arrays.asList(PlotArea.class, RoadWidth.class));
-//			}
-//
-//			if ("yes".equalsIgnoreCase(edcrRequest.getCoreArea())) {
-//				// Exempt plot coverage, front setback and ECS
-//				LOG.info("Core area: coverage, setback and ECS exempted.");
-//				classesToRemove.addAll(Arrays.asList(Coverage.class, Parking.class, FrontYardService.class));
-//			} else {
-//				// Not a core area
-//				// Scrutiny will be done as per PMBL
-//				LOG.info("Scrutiny as per PMBL.");
-//				// process normally
-//			}
-//
-//			features.removeIf(
-//					feature -> feature.getRuleClass() != null && classesToRemove.contains(feature.getRuleClass()));
-//
-//		} else {
-//			// Not CLU approved
-//			// Scrutiny will be done as per PMBL
-//			LOG.info("Scrutiny as per PMBL.");
-//			// process normally
-//		}
-//		
-//		LOG.info("*** Features for Processing Plan file start *** ");
-//		
-//		features.forEach(feature -> {
-//		    if (feature.getRuleClass() != null) {
-//		    	LOG.info("Feature name : " + feature.getRuleClass().getSimpleName());
-//		    } else {
-//		    	LOG.info("Feature name : " + feature.getName());
-//		    }
-//		});
-		
+		List<PlanFeature> features = featureService.getFeatures();
 		LOG.info("*** Features for Processing Plan file end *** ");
         Plan plan = extractService.extract(dcrApplication.getSavedDxfFile(), amd, asOnDate,
                 features, edcrRequest.getTenantId());
-        plan.setCoreArea(dcrApplication.getCoreArea());
-        LOG.info("coreArea : -> " + plan.getCoreArea());
         plan.setEdcrRequest(edcrRequest);
-        LOG.info("Competency Check Role Wise");
-        BigDecimal plotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
-
-        if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
-            // Valid case → pass actual plot area
-            extractService.validateRolesWisePlotArea(
-                    dcrApplication.getSavedDxfFile(),
-                    asOnDate,
-                    plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
-                    plotArea,
-                    plan
-            );
-        } else {
-            // Invalid case → pass ZERO explicitly
-            extractService.validateRolesWisePlotArea(
-                    dcrApplication.getSavedDxfFile(),
-                    asOnDate,
-                    plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
-                    BigDecimal.ZERO,
-                    plan
-            );
-        }
-
-        
-
-            //return (Plan) planDetail;
-        // remove requestInfo before plan processing
-        //edcrRequest.setRequestInfo(null);
-        //Setting edcr Data to Plan        
-        //plan.setEdcrRequest(edcrRequest);
-        // validate planInfo city and tenantId city
-        
-        String cityName = getCityFromTenant(plan.getEdcrRequest().getTenantId());
-        
-        if (plan.getPlanInformation().getCity() == null 
-                || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
-
-            plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
-        }        
-       
-        String ulbType = "";
-        String districtName = "";
-        try {
-            Object mdmsData = bpaMdmsUtil.getUlbTypeFromMdms(
-                    new RequestInfo(), plan.getEdcrRequest()
-            );
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> cityInfo =
-                    (Map<String, Object>) BpaMdmsUtil
-                            .extractMdmsValue(mdmsData,
-                                    MdmsFilter.ULB_TYPE_AND_DISTRICT_FILTER,
-                                    Map.class)
-                            .orElse(Collections.emptyMap());
-
-            ulbType = String.valueOf(cityInfo.getOrDefault("ulbType", ""));
-            districtName = String.valueOf(cityInfo.getOrDefault("districtName", ""));
-
-            if (ulbType.isEmpty()) {
-                LOG.warn("ULB Type not found in MDMS response for tenant : {}",
-                        plan.getEdcrRequest().getTenantId());
-            }
-
-        } catch (Exception e) {
-            LOG.error("Error while fetching ULB Type and District from MDMS", e);
-        }
-
-        plan.getPlanInformation().setUlbType(ulbType);
-        plan.getPlanInformation().setDistrict(districtName);
-
-        LOG.info("ULB Type value from MDMS : {}", ulbType);
-        LOG.info("District value from MDMS : {}", districtName);
-        
-        LOG.info("Setting mdms master data");
-        plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
-        LOG.info("mdms master data set successfully");
-//        plan = applyRules(plan, amd, cityDetails);
-        if(plan.getErrors().containsKey("Not authorized to scrutinize") || plan.getErrors().containsKey("Invalid ULB")) {
+        if(plan.getErrors().containsKey("units not in meters")) {
         	
         }else {
-        	plan = applyRules(plan, amd, cityDetails,features);
+        	//plan = applyRules(plan, amd, cityDetails,features);
+        	plan.setCoreArea(dcrApplication.getCoreArea());
+            LOG.info("coreArea : -> " + plan.getCoreArea());
+            
+            LOG.info("Competency Check Role Wise");
+            BigDecimal plotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
+
+            List<org.egov.infra.microservice.models.Role> userRoles = null;
+            if (plan.getEdcrRequest() != null 
+                    && plan.getEdcrRequest().getRequestInfo() != null 
+                    && plan.getEdcrRequest().getRequestInfo().getUserInfo() != null) {
+                userRoles = plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles();
+            }
+
+            if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
+                // Valid case → pass actual plot area
+                extractService.validateRolesWisePlotArea(
+                        dcrApplication.getSavedDxfFile(),
+                        asOnDate,
+                        userRoles,
+                        plotArea,
+                        plan
+                );
+            } else {
+                // Invalid case → pass ZERO explicitly
+                extractService.validateRolesWisePlotArea(
+                        dcrApplication.getSavedDxfFile(),
+                        asOnDate,
+                        userRoles,
+                        BigDecimal.ZERO,
+                        plan
+                );
+            }
+            
+            // validate Source of the request
+            if(sourceValidation) {
+            	LOG.info("Source validation : " +sourceValidation);
+            	validateSourcePortal(plan);
+            }        
+            
+            String roadType = getRoadTypeViaReflection(
+    				plan.getEdcrRequest() != null ? plan.getEdcrRequest().getAdditionalDetails() : null);
+            
+            if (roadType != null) {
+            	if (plan.getPlanInformation() != null) {
+            		plan.getPlanInformation().setRoadType(roadType);
+            	}
+            	if (plan.getPlanInfoProperties() != null) {
+            		plan.getPlanInfoProperties().put("ROAD_TYPE", roadType);
+            	}
+            } else {
+            	plan.getErrors().put("ROAD_TYPE NOT PROVIDED", "ROAD TYPE not provided");
+            }
+            
+            String cityName = getCityFromTenant(plan.getEdcrRequest() != null ? plan.getEdcrRequest().getTenantId() : null);
+            
+            if (plan.getPlanInformation() == null || plan.getPlanInformation().getCity() == null 
+                    || !plan.getPlanInformation().getCity().equalsIgnoreCase(cityName)) {
+                plan.getErrors().put("Invalid ULB", "Plan ULB and login ULB must be the same.");
+            }          
+           
+            // Check Measured and Declared plot area match
+            BigDecimal declaredPlotArea = (plan.getPlanInformation() != null) ? plan.getPlanInformation().getPlotArea() : null;
+            BigDecimal measuredPlotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
+
+            if (declaredPlotArea == null) {
+            	plan.getErrors().put("PLOT_AREA", "Declared plot area is not defined or null in Plan Information.");
+            } else if (measuredPlotArea == null) {
+            	plan.getErrors().put("PLOT_AREA", "Measured plot area is not defined or null in the drawing.");
+            } else if (declaredPlotArea.compareTo(measuredPlotArea) != 0) {
+            	plan.getErrors().put("Invalid Plot Area", "Declared plot area (" + declaredPlotArea + ") and Measured plot area (" + measuredPlotArea + ") must be the same.");
+            }
+            
+            String ulbType = "";
+            String districtName = "";
+            try {
+                Object mdmsData = bpaMdmsUtil.getUlbTypeFromMdms(
+                        new RequestInfo(), plan.getEdcrRequest()
+                );
+
+                @SuppressWarnings("unchecked")
+                Map<String, Object> cityInfo =
+                        (Map<String, Object>) BpaMdmsUtil
+                                .extractMdmsValue(mdmsData,
+                                        MdmsFilter.ULB_TYPE_AND_DISTRICT_FILTER,
+                                        Map.class)
+                                .orElse(Collections.emptyMap());
+
+                ulbType = String.valueOf(cityInfo.getOrDefault("ulbType", ""));
+                districtName = String.valueOf(cityInfo.getOrDefault("districtName", ""));
+
+                if (ulbType.isEmpty()) {
+                    LOG.warn("ULB Type not found in MDMS response for tenant : {}",
+                            plan.getEdcrRequest().getTenantId());
+                }
+
+            } catch (Exception e) {
+                LOG.error("Error while fetching ULB Type and District from MDMS", e);
+            }
+
+            if (plan.getPlanInformation() != null) {
+                plan.getPlanInformation().setUlbType(ulbType);
+                plan.getPlanInformation().setDistrict(districtName);
+                
+                if (cityName != null && !cityName.isEmpty()) {
+                    plan.getPlanInformation().setUlbName(capitalizeFirstLetter(cityName));
+                }
+                
+                String city = plan.getPlanInformation().getCity();
+                if (city != null && !city.isEmpty()) {
+                    plan.getPlanInformation().setCity(capitalizeFirstLetter(city));
+                }
+                
+                LOG.info("ULB Name value from edcr Request : {}", plan.getPlanInformation().getUlbName());
+            }
+            LOG.info("ULB Type value from MDMS : {}", ulbType);
+            LOG.info("District value from MDMS : {}", districtName);
+            
+            LOG.info("Setting mdms master data");
+            plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
+            LOG.info("mdms master data set successfully");
+            
+            if (plan.getDrawingPreference() != null
+                    && org.egov.infra.utils.StringUtils.isNotBlank(plan.getDrawingPreference().getUom())
+                    && !DxfFileConstants.METER_UOM.equalsIgnoreCase(plan.getDrawingPreference().getUom())) {
+
+                plan.getErrors().put("units not in meters", "The drawing units must be in meters only.");
+            }
+            
+            if(plan.getErrors().containsKey("Not authorized to scrutinize") || plan.getErrors().containsKey("Invalid ULB") 
+            		|| plan.getErrors().containsKey("INVALID SOURCE") || plan.getErrors().containsKey("INVALID SOURCE1")) {
+            	
+            }else {
+            	plan = applyRules(plan, amd, cityDetails,features);
+            }
+            
+            LOG.info("Competency Role Checked successfully ");
         }
         
-        LOG.info("Competency Role Checked successfully ");
         
+//        if (workSheetValidationEnabled) {
+//            int errorsBefore = plan.getErrors() == null ? 0 : plan.getErrors().size();
+//            DxfValidator.validate(dcrApplication.getSavedDxfFile(), plan);
+//            int errorsAfter = plan.getErrors() == null ? 0 : plan.getErrors().size();
+//            if (errorsAfter > errorsBefore) {
+//                LOG.warn("DXF preflight added {} issue(s): {}", errorsAfter - errorsBefore, plan.getErrors());
+//            }
+//        }
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
         if (ApplicationType.PERMIT.getApplicationTypeVal()
@@ -387,8 +443,36 @@ public class PlanService {
                         .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                         && StringUtils.isBlank(comparisonDcrNumber))
                 ) {
-            InputStream reportStream = generateReport(plan, amd, dcrApplication);
-            saveOutputReport(dcrApplication, reportStream, plan);
+        	
+        	InputStream reportStream;
+        	if (Boolean.TRUE.equals(plan.getEdcrRequest().getSiteReserved())
+        	        && Boolean.TRUE.equals(plan.getEdcrRequest().getApprovedCS())) {
+        	    MultipartFile controlSheetFile = dcrApplication.getControlSheetFile();
+        	    if (controlSheetFile == null || controlSheetFile.isEmpty()) {
+        	        throw new IllegalArgumentException(
+        	                "Control Sheet file is required when Site Reserved and Approved Control Sheet are selected");
+        	    }
+        	    if (plan.getErrors() != null && !plan.getErrors().isEmpty()) {
+        	        reportStream = generateReport(plan, amd, dcrApplication);
+        	        saveOutputReport(dcrApplication, reportStream, plan);
+        	    } else {
+        	        try {
+        	            generateReport(plan, amd, dcrApplication);
+        	            reportStream = controlSheetFile.getInputStream();
+        	            saveOutputReportV2(dcrApplication, reportStream, plan);
+        	        } catch (IOException ex) {
+        	            LOG.error("Error while reading Control Sheet file for application {}",
+        	                    dcrApplication.getApplicationNumber(), ex);
+        	            throw new RuntimeException("Unable to process Control Sheet file", ex);
+        	        }
+        	    }
+
+        	} else {
+        	    reportStream = generateReport(plan, amd, dcrApplication);
+        	    saveOutputReport(dcrApplication, reportStream, plan);
+        	}
+        	//saveOutputReport(dcrApplication, reportStream, plan);
+            
         } else if (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
                 .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                 && StringUtils.isNotBlank(comparisonDcrNumber)) {
@@ -466,8 +550,9 @@ public class PlanService {
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
             mapper.writeValue(f, plan);
+            String tenantId = plan.getEdcrRequest().getTenantId();
             detail.setPlanDetailFileStore(
-                    fileStoreService.store(f, f.getName(), "text/plain", DcrConstants.APPLICATION_MODULE_TYPE));
+                    fileStoreService.store(f, f.getName(), "text/plain", DcrConstants.APPLICATION_MODULE_TYPE,tenantId));
             oos.flush();
         } catch (IOException e) {
             LOG.error("Unable to serialize!!!!!!", e);
@@ -606,6 +691,7 @@ public class PlanService {
         if (feature != null) {
             for (PlanFeature ruleClass : feature) {
                 String featureName = "UnknownFeature";
+                FeatureProcess rule = null;
 
                 try {
                     if (ruleClass == null || ruleClass.getRuleClass() == null) {
@@ -613,7 +699,6 @@ public class PlanService {
                     }
 
                     featureName = ruleClass.getRuleClass().getSimpleName();
-                    FeatureProcess rule = null;
 
                     String beanName =
                             featureName.substring(0, 1).toLowerCase() + featureName.substring(1);
@@ -656,13 +741,13 @@ public class PlanService {
                     }
 
                 } catch (Exception e) {
-                    // FULL STACKTRACE logged
-                    LOG.error("Exception while processing feature: {}", featureName, e);
+                    String ruleClassName = rule != null ? rule.getClass().getSimpleName() : featureName;
+                    // FULL STACKTRACE logged with exact rule class name for developers
+                    LOG.error("Exception while processing rule in class [{}]: {}", ruleClassName, e.getMessage(), e);
 
-                    plan.getErrors().put(
-                            "Errors in \"" + featureName + "\"",
-                            "Errors in " + featureName + ". Please correct the file and try again."
-                    );
+                    String friendlyRuleName = humanizeRuleName(featureName);
+                    String friendlyMessage = buildUserFriendlyRuleMessage(ruleClassName, featureName, e);
+                    plan.getErrors().put(friendlyRuleName, friendlyMessage);
                 }
             }
         }
@@ -728,8 +813,27 @@ public class PlanService {
                 .fingByDcrApplicationId(edcrApplication.getId());
         final String fileName = edcrApplication.getApplicationNumber() + "-v" + edcrApplicationDetails.size() + ".pdf";
 
+//        final FileStoreMapper fileStoreMapper = fileStoreService.store(reportOutputStream, fileName, "application/pdf",
+//                DcrConstants.FILESTORE_MODULECODE);
         final FileStoreMapper fileStoreMapper = fileStoreService.store(reportOutputStream, fileName, "application/pdf",
-                DcrConstants.FILESTORE_MODULECODE);
+                DcrConstants.FILESTORE_MODULECODE,plan.getEdcrRequest().getTenantId(),true);
+
+        buildDocuments(edcrApplication, null, fileStoreMapper, plan);
+
+        PlanInformation planInformation = plan.getPlanInformation();
+        edcrApplication.getEdcrApplicationDetails().get(0).setPlanInformation(planInformation);
+        edcrApplicationDetailService.saveAll(edcrApplication.getEdcrApplicationDetails());
+    }
+    
+    @Transactional
+    public void saveOutputReportV2(EdcrApplication edcrApplication, InputStream reportOutputStream, Plan plan) {
+        FileStoreMapper fileStoreMapper = new FileStoreMapper(plan.getEdcrRequest().getControlSheet(),
+        		edcrApplication.getControlSheetFile().getOriginalFilename());
+        fileStoreMapper.setFileStoreId(plan.getEdcrRequest().getControlSheet());
+        fileStoreMapper.setTenantId(plan.getEdcrRequest().getTenantId());
+        
+        LOG.info("FileStoreId : {}", fileStoreMapper.getFileStoreId());
+        LOG.info("TenantId    : {}", fileStoreMapper.getTenantId());
 
         buildDocuments(edcrApplication, null, fileStoreMapper, plan);
 
@@ -782,8 +886,9 @@ public class PlanService {
 
                     File convertedPdf = edcrPdfDetail.getConvertedPdf();
                     if (convertedPdf != null && convertedPdf.length() > 0) {
+                    	String tenantId = plan.getEdcrRequest().getTenantId();
                         FileStoreMapper fileStoreMapper = fileStoreService.store(convertedPdf, convertedPdf.getName(),
-                                DcrConstants.PDF_EXT, DcrConstants.FILESTORE_MODULECODE);
+                                DcrConstants.PDF_EXT, DcrConstants.FILESTORE_MODULECODE,tenantId);
                         pdfDetail.setConvertedPdf(fileStoreMapper);
                         pdfDetail.setEdcrApplicationDetail(edcrApplicationDetail);
                         edcrPdfDetails.add(pdfDetail);
@@ -865,6 +970,216 @@ public class PlanService {
         return tenantId;
     }
     
+    
+    public OccupancyTypeHelper getOccTypeSubType(Plan plan) {
+
+    if (plan == null || plan.getBlocks() == null || plan.getBlocks().isEmpty()) {
+        return null;
+    }
+
+    Set<OccupancyTypeHelper> occupancyTypes = new HashSet<>();
+
+    for (Block block : plan.getBlocks()) {
+
+        Building building = block.getBuilding();
+        if (building == null || building.getFloors() == null) {
+            continue;
+        }
+
+        for (Floor floor : building.getFloors()) {
+            if (floor.getOccupancies() == null) {
+                continue;
+            }
+            for (Occupancy occupancy : floor.getOccupancies()) {
+                if (occupancy != null && occupancy.getTypeHelper() != null) {
+                    occupancyTypes.add(occupancy.getTypeHelper());
+                }
+            }
+        }
+    }
+
+    return getMostRestrictiveFar(occupancyTypes);
 }
+    
+	protected OccupancyTypeHelper getMostRestrictiveFar(Set<OccupancyTypeHelper> distinctOccupancyTypes) {
 
+	    if (distinctOccupancyTypes == null || distinctOccupancyTypes.isEmpty()) {
+	        return null;
+	    }
 
+	    Map<String, OccupancyTypeHelper> codeMap = new HashMap<>();
+
+	    for (OccupancyTypeHelper helper : distinctOccupancyTypes) {
+
+	        if (helper.getType() != null) {
+	            codeMap.put(helper.getType().getCode(), helper);
+	        }
+
+	        if (helper.getSubtype() != null) {
+	            codeMap.put(helper.getSubtype().getCode(), helper);
+	        }
+	    }
+
+	    for (String priorityCode : FAR_PRIORITY) {
+	        OccupancyTypeHelper helper = codeMap.get(priorityCode);
+	        if (helper != null) {
+	            return helper;
+	        }
+	    }
+
+	    return null;
+	}
+
+	private void validateSourcePortal(Plan pl) {
+	    try {
+	        OccupancyTypeHelper mostRestrictiveFar = getOccTypeSubType(pl);
+
+	        if (mostRestrictiveFar == null
+	                || mostRestrictiveFar.getType() == null
+	                || mostRestrictiveFar.getSubtype() == null
+	                || mostRestrictiveFar.getSubtype().getCode() == null) {
+	            LOG.info("validateSourcePortal: mostRestrictiveFar/type/subtype is null, skipping validation.");
+	            return;
+	        }
+
+	        String occTypeCode = mostRestrictiveFar.getType().getCode();
+	        String occSubTypeCode = mostRestrictiveFar.getSubtype().getCode();
+
+	        String sourceType = getSourceViaReflection(
+	                pl.getEdcrRequest() != null
+	                        ? pl.getEdcrRequest().getAdditionalDetails()
+	                        : null);
+
+	        LOG.info("validateSourcePortal: sourceType={}, occTypeCode={}, occSubTypeCode={}",
+	                sourceType, occTypeCode, occSubTypeCode);
+
+	        if (sourceType == null) {
+	            LOG.info("validateSourcePortal: sourceType is null, skipping validation.");
+	            return;
+	        }
+
+	        boolean isGorLOrCommHousing =
+	                G.equals(occTypeCode)
+	                        || (L.equals(occTypeCode) && !L_MP.equals(occSubTypeCode))
+	                        || (F.equals(occTypeCode) && F_HM.equals(occSubTypeCode));
+
+	        if (SOURCE_INVESTPUNJAB.equalsIgnoreCase(sourceType)) {
+
+	            // INVEST PUNJAB: Only G / L (except L-MP) / F-HM allowed
+	            if (!isGorLOrCommHousing) {
+	                String errorMsg = "Please process this file through the OBPAS portal.";
+
+	                LOG.info("validateSourcePortal: Validation failed. {}", errorMsg);
+
+	                pl.addError(INVALID_SOURCE, errorMsg);
+
+	                throw new EdcrException(
+	                        HttpStatus.BAD_REQUEST,
+	                        "EDCR-34",
+	                        errorMsg);
+	            }
+
+	        } else if (SOURCE_OBPAS.equalsIgnoreCase(sourceType)) {
+
+	            // OBPAS: G / L (except L-MP) / F-HM not allowed
+	            if (isGorLOrCommHousing) {
+	                LOG.info("validateSourcePortal: Validation failed. {}", ERROR_MSG);
+
+	                pl.addError(INVALID_SOURCE + "1", ERROR_MSG);
+
+	                throw new EdcrException(
+	                        HttpStatus.BAD_REQUEST,
+	                        "EDCR-34",
+	                        ERROR_MSG);
+	            }
+	        }
+
+	    } catch (EdcrException ex) {
+	        // Let the global exception handler handle it
+	        throw ex;
+
+	    } catch (Exception ex) {
+	        LOG.error("Unexpected error while validating source portal.", ex);
+
+	        throw new EdcrException(
+	        		HttpStatus.BAD_REQUEST,
+	                "EDCR-500",
+	                "Unexpected error occurred while validating source type.");
+	    }
+	}
+	
+	private String getSourceViaReflection(Object additionalDetails) {
+		if (additionalDetails == null) {
+			return null;
+		}
+		Map<String, Object> details = (Map<String, Object>) additionalDetails;
+		Object source = details.get("source");
+		if (source == null || StringUtils.isBlank(String.valueOf(source))) {
+			return null;
+		}
+
+		return (String) source;
+	}
+	
+	private String getRoadTypeViaReflection(Object additionalDetails) {
+		if (additionalDetails == null) {
+			return null;
+		}
+		Map<String, Object> details = (Map<String, Object>) additionalDetails;
+		Object source = details.get("roadType");
+		if (source == null || StringUtils.isBlank(String.valueOf(source))) {
+			return null;
+		}
+
+		return (String) source;
+	}
+
+	private String humanizeRuleName(String name) {
+		if (name == null || name.isEmpty()) return "Building Rule";
+		String clean = name.replaceAll("Rule$", "").replaceAll("Service$", "");
+		return clean.replaceAll("(?<=[a-z])(?=[A-Z])", " ").trim();
+	}
+
+	private String buildUserFriendlyRuleMessage(String ruleClassName, String featureName, Throwable e) {
+		String ruleLabel = humanizeRuleName(featureName);
+		if (e instanceof NullPointerException) {
+			if (ruleClassName != null && ruleClassName.contains("RoadWidth")) {
+				return "Road width not defined into the plan.";
+			} else if (ruleClassName != null && (ruleClassName.contains("Coverage") || ruleClassName.contains("Far"))) {
+				return "Plot area not defined into the plan.";
+			} else if (ruleClassName != null && (ruleClassName.contains("SetBack") || ruleClassName.contains("RearYard") || ruleClassName.contains("FrontYard") || ruleClassName.contains("SideYard"))) {
+				return ruleLabel + " not defined into the plan.";
+			} else if (ruleClassName != null && (ruleClassName.contains("Height") || ruleClassName.contains("BuildingHeight"))) {
+				return "Building height not defined into the plan.";
+			} else if (ruleClassName != null && (ruleClassName.contains("Stair") || ruleClassName.contains("GeneralStair") || ruleClassName.contains("FireStair"))) {
+				return ruleLabel + " not defined into the plan.";
+			} else if (ruleClassName != null && ruleClassName.contains("Parking")) {
+				return "Parking details not defined into the plan.";
+			} else {
+				return ruleLabel + " not defined into the plan.";
+			}
+		} else if (e instanceof IndexOutOfBoundsException || (e.getMessage() != null && e.getMessage().contains("Index:") && e.getMessage().contains("Size:"))) {
+			return ruleLabel + " details not defined into the plan (required entity or measurement missing in drawing).";
+		} else if (e instanceof java.util.NoSuchElementException) {
+			return ruleLabel + " details not defined into the plan.";
+		} else if (e instanceof ArithmeticException) {
+			return "Calculation for " + ruleLabel + " failed because required dimension cannot be 0 in the plan.";
+		} else if (e instanceof NumberFormatException) {
+			return "Dimension text for " + ruleLabel + " not defined correctly into the plan.";
+		} else if (e.getMessage() != null && !e.getMessage().trim().isEmpty() && !e.getMessage().equalsIgnoreCase("null") && !e.getMessage().startsWith("Index:")) {
+			return e.getMessage().trim();
+		} else {
+			return ruleLabel + " not defined into the plan.";
+		}
+	}
+	
+	public static String capitalizeFirstLetter(String str) {
+	    if (str == null || str.isEmpty()) {
+	        return str;
+	    }
+
+	    return str.substring(0, 1).toUpperCase()
+	            + str.substring(1).toLowerCase();
+	}
+	
+}

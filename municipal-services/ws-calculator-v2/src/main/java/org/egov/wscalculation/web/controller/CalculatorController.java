@@ -88,8 +88,8 @@ public class CalculatorController {
 	}
 	
 	@PostMapping("/_jobscheduler")
-	public void jobscheduler(@Valid @RequestBody BulkBillReq bulkBillReq) {
-		wSCalculationService.generateDemandBasedOnTimePeriod(bulkBillReq.getRequestInfo(), bulkBillReq.getBulkBillCriteria());
+	public void jobscheduler(@Valid @RequestBody BulkDemandReq bulkDemandReq) {
+		wSCalculationService.generateDemandBasedOnTimePeriod(bulkDemandReq.getRequestInfo(), bulkDemandReq.getBulkDemandCriteria());
 	}
 	
 	@PostMapping("/_singledemand")
@@ -119,9 +119,9 @@ public class CalculatorController {
 	}
 	
 	@PostMapping("/_jobbillscheduler")
-	public void jobbillscheduler(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) {
+	public void jobbillscheduler(@Valid @RequestBody WaterServiceSchedulerRequest waterServiceSchedulerRequest) {
 		log.info("_jobbillscheduler::");
-		wSCalculationService.generateBillBasedLocality(requestInfoWrapper.getRequestInfo());
+		wSCalculationService.generateBillBasedLocalityOrTenant(waterServiceSchedulerRequest);
 	}
 	
 	@PostMapping("/_getConnectionForDemand")

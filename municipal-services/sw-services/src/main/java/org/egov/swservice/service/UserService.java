@@ -6,6 +6,7 @@ import org.egov.common.contract.request.Role;
 import org.egov.swservice.config.SWConfiguration;
 import org.egov.swservice.repository.ServiceRequestRepository;
 import org.egov.swservice.web.models.*;
+import org.egov.swservice.web.models.users.User;
 import org.egov.swservice.web.models.users.UserDetailResponse;
 import org.egov.swservice.web.models.users.UserSearchRequest;
 import org.egov.tracer.model.CustomException;
@@ -75,11 +76,34 @@ public class UserService {
 	            setOwnerFields(holderInfo, createdUser, request.getRequestInfo());
 
 	        } else {
+	            OwnerInfo dbUser = existingUser.getUser().get(0);
+	            boolean isChanged = !Objects.equals(dbUser.getName(), holderInfo.getName()) ||
+	                                !Objects.equals(dbUser.getFatherOrHusbandName(), holderInfo.getFatherOrHusbandName()) ||
+	                                !Objects.equals(dbUser.getGender(), holderInfo.getGender()) ||
+	                                !Objects.equals(dbUser.getCorrespondenceAddress(), holderInfo.getCorrespondenceAddress()) ||
+	                                !Objects.equals(dbUser.getEmailId(), holderInfo.getEmailId());
+	                                
+	            if (isChanged) {
+	                holderInfo.setId(null);
+	                holderInfo.setUuid(null);
+	                holderInfo.setUserName(UUID.randomUUID().toString());
+	                
+	                StringBuilder uri = new StringBuilder(configuration.getUserHost())
+	                        .append(configuration.getUserContextPath())
+	                        .append(configuration.getUserCreateEndPoint());
+	                        
+	                ConnectionUserRequest userRequest = new ConnectionUserRequest(request.getRequestInfo(), holderInfo);
+	                UserDetailResponse createdUser = userCall(userRequest, uri);
+	                
+	                if (createdUser != null && !CollectionUtils.isEmpty(createdUser.getUser())) {
+	                    setOwnerFields(holderInfo, createdUser, request.getRequestInfo());
+	                }
+	            } else {
+	                holderInfo.setUuid(existingUser.getUser().get(0).getUuid());
+	                holderInfo.setId(existingUser.getUser().get(0).getId());
 
-	            holderInfo.setUuid(existingUser.getUser().get(0).getUuid());
-	            holderInfo.setId(existingUser.getUser().get(0).getId());
-
-	            setOwnerFields(holderInfo, existingUser, request.getRequestInfo());
+	                setOwnerFields(holderInfo, existingUser, request.getRequestInfo());
+	            }
 	        }
 
 	    });

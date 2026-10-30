@@ -36,7 +36,7 @@ public class SWCalculatorQueryBuilder {
 			+ " inner join eg_pt_property pt on conn.property_id= pt.propertyid ";
 	
 	
-	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
+	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode, d.ispaymentcompleted, dd.collectionamount, dd.taxamount from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
 	private static final String connectionNoListQueryUpdate = "UPDATE egbs_demand_v1 set ";
 	
 	private static final String connectionNoListQuerybill = "UPDATE egbs_bill_v1 " +
@@ -127,6 +127,8 @@ public class SWCalculatorQueryBuilder {
 	public static final String EG_SW_BILL_SCHEDULER_CONNECTION_STATUS_INSERT = "INSERT INTO eg_sw_bill_scheduler_connection_status "
 			+ "(id, eg_sw_scheduler_id, locality, module, createdtime, lastupdatedtime, status, tenantid, reason, consumercode) VALUES (?,?,?,?,?,?,?,?,?,?);";
 
+    private static final String relatedWSconnection = "SELECT egws.connectionno FROM eg_ws_connection egws";
+
 	public String getDistinctTenantIds() {
 		return distinctTenantIdsCriteria;
 	}
@@ -168,10 +170,11 @@ public class SWCalculatorQueryBuilder {
 	}
 	
 	
-	public String getConnectionNumberListsingle(String tenantId, String connectionType, List<Object> preparedStatement,  Long fromDate, Long toDate, String Connectionno) {
+	public String getConnectionNumberListsingle(String tenantId, String locality, String connectionType, List<Object> preparedStatement,  Long fromDate, Long toDate, String Connectionno) {
 		StringBuilder query = new StringBuilder(connectionNoListQuerysingle);
+        query.append(" INNER JOIN eg_pt_property p ON conn.property_id = p.propertyid INNER JOIN eg_pt_address a ON a.propertyid = p.id ");
 
-		addClauseIfRequired(preparedStatement, query);
+        addClauseIfRequired(preparedStatement, query);
 		query.append(" sw.connectiontype = ? ");
 		preparedStatement.add(connectionType);
 		
@@ -191,7 +194,12 @@ public class SWCalculatorQueryBuilder {
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
-		
+
+        if (locality != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" a.locality = ? ");
+            preparedStatement.add(locality);
+        }
 		//Added connection number for testing Anonymous User issue
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" conn.connectionno ='0603001817' ");
@@ -265,7 +273,14 @@ public class SWCalculatorQueryBuilder {
 	public String getBillGenerationSchedulerQuery(BillGenerationSearchCriteria criteria,
 			List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(billGenerationSchedulerSearchQuery);
-		query.append("egsw inner join eg_bndry_mohalla egbm on egsw.locality = egbm.localitycode ");
+		if (StringUtils.isEmpty(criteria.getGroup())) {
+			query.append("egsw inner join eg_bndry_mohalla egbm on egsw.locality = egbm.localitycode ");
+		}else {
+			query.append(" egsw ");
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" egsw.groups = ? ");
+	        preparedStatement.add(criteria.getGroup());
+		}
 		if (!StringUtils.isEmpty(criteria.getTenantId())) {
 		    addClauseIfRequired(preparedStatement, query);
 		    query.append(" egsw.tenantid = ? ");
@@ -392,7 +407,7 @@ public class SWCalculatorQueryBuilder {
 	/**
 	 * Bill expire query builder
 	 * 
-	 * @param billIds
+//	 * @param billIds
 	 * @param preparedStmtList
 	 */
 	public String getBillSchedulerUpdateQuery(String schedulerId, List<Object> preparedStmtList) {
@@ -517,9 +532,11 @@ public class SWCalculatorQueryBuilder {
 		return query.toString();
 	}
 	
-	public String getConnectionNumberListForNonCommercial(String tenantId, String connectionType, String status, Long taxPeriodFrom, Long taxPeriodTo, String cone, List<Object> preparedStatement) {
+	public String getConnectionNumberListForNonCommercial(String tenantId, String locality, String connectionType, String status, Long taxPeriodFrom, Long taxPeriodTo, String cone, List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoNonCommercialListQuery);
-		// Add connection type
+        query.append(" INNER JOIN eg_pt_address a ON a.propertyid = pt.id ");
+
+        // Add connection type
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" sw.connectiontype = ? ");
 		preparedStatement.add(connectionType);
@@ -541,8 +558,12 @@ public class SWCalculatorQueryBuilder {
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
-		
-		
+
+        if (locality != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" a.locality = ? ");
+            preparedStatement.add(locality);
+        }
 //		// add Not commercial for amritsar
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append("pt.usagecategory != ? ");
@@ -704,7 +725,8 @@ StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
 			query.append(" d.status = 'ACTIVE' ");
 			
 			addClauseIfRequired(preparedStatement, query);
-			query.append(" d.ispaymentcompleted = 'false' ");
+//			query.append(" d.ispaymentcompleted = 'false' ");
+			query.append(" (d.ispaymentcompleted = 'false' OR (d.ispaymentcompleted = 'true' AND dd.taxamount = dd.collectionamount and dd.taxamount = '0')) ");
 					
 			return query.toString();
 		}
@@ -876,6 +898,25 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 	
 		return query.toString();
 	}
+    public String getRelatedConn(String tenantId, String consumerCode,
+                                 List<Object> preparedStatement){
+
+        StringBuilder query = new StringBuilder(relatedWSconnection);
+
+        if (!tenantId.isEmpty()) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" egws.tenantId = ? ");
+            preparedStatement.add(tenantId);
+        }
+        if (!consumerCode.isEmpty()) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" egws.relatedswconn = ? ");
+            preparedStatement.add(consumerCode);
+        }
+
+        return query.toString();
+
+    }
 	
 }
 

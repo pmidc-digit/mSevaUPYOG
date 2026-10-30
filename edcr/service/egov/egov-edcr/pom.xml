@@ -40,20 +40,20 @@
 	</parent>
 	<artifactId>egov-edcr</artifactId>
 	<name>e-governments edcr</name>
-	<repositories>
+	<!--<repositories>
 		<repository>
 			<id>AsposeJavaAPI</id>
 			<name>Aspose Java API</name>
 			<url>https://releases.aspose.com/repo/</url>    
 		</repository>
 		
-	</repositories>
+	</repositories>-->
 	<dependencies>
-		<dependency>
+		<!--<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-cad</artifactId>
 			<version>20.10</version>
-		</dependency>
+		</dependency>-->
 		<!--<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-cad</artifactId>
@@ -75,6 +75,7 @@
 		<dependency>
 			<groupId>org.egov.edcr</groupId>
 			<artifactId>egov-commons</artifactId>
+			<version>2.1.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- <dependency>

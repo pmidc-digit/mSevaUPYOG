@@ -29,6 +29,7 @@ import org.egov.wscalculation.repository.WSCalculationDao;
 import org.egov.wscalculation.repository.WSCalculationDaoImpl;
 import org.egov.wscalculation.repository.WaterConnectionRepository;
 import org.egov.wscalculation.util.CalculatorUtil;
+import org.egov.wscalculation.util.MeterReadingUtil;
 import org.egov.wscalculation.util.NotificationUtil;
 import org.egov.wscalculation.util.WSCalculationUtil;
 import org.egov.wscalculation.validator.WSCalculationWorkflowValidator;
@@ -56,6 +57,9 @@ import static org.egov.wscalculation.constants.WSCalculationConstant.DISCONNECT_
 @Service
 @Slf4j
 public class DemandService {
+
+    @Autowired
+    private WSCalculationDao wSCalculationDao;
 
 	@Autowired
 	private ServiceRequestRepository repository;
@@ -113,6 +117,9 @@ public class DemandService {
 	
 	@Autowired
 	private WSCalculationDaoImpl dao;
+
+	@Autowired
+	private MeterReadingUtil meterReadingUtil;
 
 	
 	
@@ -508,20 +515,6 @@ public class DemandService {
 
 			addRoundOffTaxHead(calculation.getTenantId(), demandDetails);
 
-			List<Demand> existingWsDemands = searchDemandBasedOnConsumerCode(tenantId, consumerCode, requestInfo, businessService);
-			if (!CollectionUtils.isEmpty(existingWsDemands)) {
-				for (Demand existingWsDemand : existingWsDemands) {
-					if (StatusEnum.ACTIVE.equals(existingWsDemand.getStatus())) {
-						CancelDemandReq cancelDemandReq = new CancelDemandReq();
-						cancelDemandReq.setId(existingWsDemand.getId());
-						cancelDemandReq.setTenantId(tenantId);
-						cancelDemandReq.setConsumerCode(consumerCode);
-						cancelDemandReq.setBusinessService(businessService);
-						dao.cancelPreviousMeterReading(cancelDemandReq);
-					}
-				}
-			}
-
 			Map<String, String> additionalDetailsMap = new HashMap<>();
 			additionalDetailsMap.put("propertyId", property.getPropertyId());
 			demands.add(Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(owner)
@@ -531,92 +524,101 @@ public class DemandService {
 					.additionalDetails(additionalDetailsMap).build());
 			
 			
-			/*PI-19231
+			/*
+			 * Water = Sewerage logic (Configurable via MDMS)
 			 * 
-			 * Sharan_Gakhar
 			 * 
-			 * */
-			
-			Object mdmsResponse = null;
-	        String relatedSwConn = "";
-//	        List<String> matchingUsages = new ArrayList<>();
-	        boolean matchingUsages = false;
-	        List<String> dbUsageCategory = new ArrayList<>();
+			 * {
+  "tenantId": "pb.amritsar",
+  "moduleName": "ws-services-calculation",
+  "meteredWaterSewerageMapping": [
+    {
+      "waterequaltosewerage": true,
+      "criteria": "PIPE_SIZE",
+      "fromPipeSize": 1.0,
+      "toPipeSize": 5.0
+    }
+  ]
+}
+
+LOCALITY WISE 
+{
+  "tenantId": "pb.amritsar",
+  "moduleName": "ws-services-calculation",
+  "meteredWaterSewerageMapping": [
+    {
+      "waterequaltosewerage": true,
+      "criteria": "LOCALITY",
+      "wards": [
+        "WARD-1",
+        "WARD-2",
+        "WARD-5"
+      ]
+    }
+  ]
+}
 
 
-			List<String> mdmsUsageCategory = new ArrayList<>();
+WATER SOURCE 
 
-			try {
-			    mdmsResponse = getMdmsResponse(requestInfo, tenantId);
+{
+  "tenantId": "pb.amritsar",
+  "moduleName": "ws-services-calculation",
+  "meteredWaterSewerageMapping": [
+    {
+      "waterequaltosewerage": true,
+      "criteria": "WATER_SOURCE",
+      "waterSource": [
+        "GROUND_WATER",
+        "SURFACE_WATER"
+      ]
+    }
+  ]
+}
 
-			    if (mdmsResponse != null) {
-			        // Safely try to read usageCategory from MDMS
-			        try {
-			            mdmsUsageCategory = JsonPath.read(mdmsResponse, "$.MdmsRes.tenant.meterReadingMapping[0].usageCategory");
-			        } catch (Exception e) {
-			            log.error("Error reading usageCategory from MDMS response for tenantId: {} | Message: {}", tenantId, e.getMessage());
-			            mdmsUsageCategory = new ArrayList<>();
-			        }
-			    } else {
-			        log.error("MDMS response is null for tenantId: {}", tenantId);
-			        mdmsUsageCategory = new ArrayList<>();
-			    }
+			 */
+			boolean isWaterEqualSewerageApplicable = false;
+			String relatedSwConn = "";
 
-			} catch (Exception e) {
-			    log.error("Exception while fetching MDMS response for tenantId: {} | {}", tenantId, e.getMessage());
-			    mdmsUsageCategory = new ArrayList<>();
+			Map<String, Object> tenantMapping = getMeteredWaterSewerageMappingFromMDMS(requestInfo, tenantId);
+
+			if (tenantMapping != null) {
+				isWaterEqualSewerageApplicable = isWaterEqualToSewerageApplicable(tenantMapping, property, connection, consumerCode);
+				if (isWaterEqualSewerageApplicable) {
+					try {
+						relatedSwConn = dao.getSwConnection(tenantId, consumerCode);
+					} catch (Exception e) {
+						log.info("relatedSwConn not found in the table for consumerCode: {}", consumerCode);
+						relatedSwConn = "";
+					}
+				}
 			}
-			if (mdmsUsageCategory !=null && !mdmsUsageCategory.isEmpty()) {
-				 dbUsageCategory = waterCalculatorDao.fetchUsageCategory(consumerCode);
-				 matchingUsages = mdmsUsageCategory.stream().anyMatch(dbUsageCategory::contains);
-//		         matchingUsages2 = mdmsUsageCategory.stream().filter(dbUsageCategory::contains).collect(Collectors.toList());
-		        try {
-		            relatedSwConn = dao.getSwConnection(tenantId , consumerCode);
-		        } catch(Exception e){
-		            log.info("relatedSwConn not found in the table");
-		            relatedSwConn = "";
-		        }
-				
-			}
-			
-	        	 				additionalDetailsMap.put("connectionType", connection.getConnectionType());
 
-//	        List<String> sewConnectionList = waterCalculatorDao.fetchSewConnection(consumerCode); 
-//	        sewConsumerCode = sewConnectionList.isEmpty() ? "" : sewConnectionList.get(0).toString();
-	        
-//	        WSCalculationDaoImpl dao = new WSCalculationDaoImpl();
-	       
-        	
-	        if (matchingUsages && relatedSwConn != null && !relatedSwConn.isEmpty()) {
+			additionalDetailsMap.put("connectionType", connection.getConnectionType());
+
+			if (isWaterEqualSewerageApplicable && relatedSwConn != null && !relatedSwConn.isEmpty()) {
 	        	// For the metered connections demand has to create one by one
-
-                List<Demand> existingSwDemands = searchDemandBasedOnConsumerCode(tenantId, relatedSwConn, requestInfo, "SW");
-                if (!CollectionUtils.isEmpty(existingSwDemands)) {
-                    for (Demand existingSwDemand : existingSwDemands) {
-                        if (StatusEnum.ACTIVE.equals(existingSwDemand.getStatus())) {
-                            CancelDemandReq cancelDemandReq = new CancelDemandReq();
-                            cancelDemandReq.setId(existingSwDemand.getId());
-                            cancelDemandReq.setTenantId(tenantId);
-                            cancelDemandReq.setConsumerCode(relatedSwConn);
-                            cancelDemandReq.setBusinessService("SW");
-                            dao.cancelPreviousMeterReading(cancelDemandReq);
-                        }
-                    }
-                }
 
 	 			if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(connection.getConnectionType())) {
 	 				demandReq.addAll(demands);
 	 					businessServices = "SW";
 	 					for (DemandDetail ddSew : demandDetails) {
+	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_DISCHARGE_CHARGES)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_DISCHARGE_CHARGES")) {
+	 							continue;
+	 						}
 	 						DemandDetail dd1 = new DemandDetail();
-	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_CHARGE)) {
+	 						if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_CHARGE)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_CHARGE")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
-	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off)) {
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_Round_Off")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ROUND_OFF);
-	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_ADVANCE_CARRYFORWARD)) {
+	 						} else if (ddSew.getTaxHeadMasterCode().equalsIgnoreCase(WSCalculationConstant.WS_ADVANCE_CARRYFORWARD)
+	 								|| ddSew.getTaxHeadMasterCode().equalsIgnoreCase("WS_ADVANCE_CARRYFORWARD")) {
 	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_ADVANCE_CARRYFORWARD);
 	 						} else {
-	 							dd1.setTaxHeadMasterCode(WSCalculationConstant.SW_CHARGE);
+	 							continue;
 	 						}
 	 						dd1.setDemandId(ddSew.getDemandId());
 	 						dd1.setAuditDetails(ddSew.getAuditDetails());
@@ -626,8 +628,13 @@ public class DemandService {
 	 						dd1.setTenantId(ddSew.getTenantId());
 	 						demandDetails1.add(dd1);
 	 					}
+
+	 					BigDecimal sewMinimumPayableAmount = demandDetails1.stream()
+	 							.map(DemandDetail::getTaxAmount)
+	 							.reduce(BigDecimal.ZERO, BigDecimal::add);
+
 	 					demandsSw.add(Demand.builder().consumerCode(relatedSwConn).demandDetails(demandDetails1).payer(owner)
-	 							.minimumAmountPayable(minimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
+	 							.minimumAmountPayable(sewMinimumPayableAmount).tenantId(tenantId).taxPeriodFrom(fromDate)
 	 							.taxPeriodTo(toDate).consumerType("sewerageConnection").businessService(businessService)
 	 							.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate)
 	 							.additionalDetails(additionalDetailsMap).build());
@@ -1390,7 +1397,7 @@ public class DemandService {
 								.toCommonUser();
 					}
 					owner = getPlainOwnerDetails(requestInfo, owner.getUuid(), tenantId);
-					if (!(demand.getPayer().getUuid().equalsIgnoreCase(owner.getUuid())))
+					if (demand.getPayer() == null || !(demand.getPayer().getUuid().equalsIgnoreCase(owner.getUuid())))
 						demand.setPayer(owner);
 				}
 
@@ -1768,21 +1775,17 @@ public class DemandService {
 		                throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
 		        }
 
-		        Boolean cancels = waterCalculatorDao.getUpdates(demandlists);
-
-		        if (!cancels) {
-		            throw new CustomException("Update failed", "Failed to update demand records.");
-		        }
-
 		        List<BillSearchs> billSearchsss = waterCalculatorDao.getBillss(tenantId, demandid);
 		        
 		        if(CollectionUtils.isEmpty(billSearchsss) && demandlists.stream().anyMatch(demand -> demand.getIsPaymentCompleted() == true))
 		        	continue; // Skip bill cancellation if there are no bills and payment is completed
-		        
-		        boolean billCancelled = waterCalculatorDao.getexpiryBills(billSearchsss);
 
-		        if (!billCancelled) {
-		            throw new CustomException("Bill Cancellation Failed", "Failed to cancel bills for the given demand.");
+			  CancelDemandReq cancelDemandReq = new CancelDemandReq(demandid,tenantId,demandlists.get(0).getConsumercode(), "WS");
+
+			  boolean Cancelled = waterCalculatorDao.cancelDemandAndExpiryBills(cancelDemandReq);
+
+		        if (!Cancelled) {
+		            throw new CustomException("Cancel failed", "Failed to cancel demand and bills.");
 		        }
 		    }
 
@@ -2562,5 +2565,217 @@ public class DemandService {
 	    return url;
 	}
 
+public void validateNoCollectionBeforeCancel(String connectionNo, String relatedSwConn, List<Map<String, Object>> demandList, List<Map<String, Object>> demandListSw) {
+    double waterCollected = 0.0;
+    double swCollected = 0.0;
+
+    if (demandList != null && !demandList.isEmpty()) {
+        for (Map<String, Object> row : demandList) {
+            Object obj = row.get("amountcollected");
+            waterCollected = obj != null ? Double.parseDouble(obj.toString()) : 0.0;
+        }
+    }
+
+    if (demandListSw != null && !demandListSw.isEmpty()) {
+        for (Map<String, Object> row : demandListSw) {
+            Object obj = row.get("amountcollected");
+            swCollected = obj != null ? Double.parseDouble(obj.toString()) : 0.0;
+        }
+    }
+
+    if (swCollected > 0) {
+        throw new CustomException("CANCEL_NOT_ALLOWED", "Cancel demand is not allowed for water related sewerage connection " + relatedSwConn + " as collectionamount > 0.");
+    }
+}
+
+    public void cancelWaterAndRelatedSwDemand(String tenantId, String connectionNo, String relatedSwConn, List<Map<String, Object>> demandList, List<Map<String, Object>> demandListSw) {
+
+        if (demandList != null && !demandList.isEmpty()) {
+            for (Map<String, Object> row : demandList) {
+                String demandId = row.get("demandId") != null ? row.get("demandId").toString() : null;
+                if (demandId == null) {
+                    continue;
+                }
+                CancelDemandReq cancelDemandReq = new CancelDemandReq();
+                cancelDemandReq.setId(demandId);
+                cancelDemandReq.setTenantId(tenantId);
+                cancelDemandReq.setConsumerCode(connectionNo);
+                cancelDemandReq.setBusinessService("WS");
+
+                log.info("Synchronously cancelling existing WS demand {} for consumer {}", demandId, connectionNo);
+
+                wSCalculationDao.cancelPreviousMeterReading(cancelDemandReq);
+            }
+        }
+
+        if (demandListSw != null && !demandListSw.isEmpty()) {
+            for (Map<String, Object> row : demandListSw) {
+                String demandIdSw = row.get("demandId") != null ? row.get("demandId").toString() : null;
+                if (demandIdSw == null) {
+                    continue;
+                }
+                CancelDemandReq cancelSwDemandReq = new CancelDemandReq();
+                cancelSwDemandReq.setId(demandIdSw);
+                cancelSwDemandReq.setTenantId(tenantId);
+                cancelSwDemandReq.setConsumerCode(relatedSwConn);
+                cancelSwDemandReq.setBusinessService("SW");
+
+                log.info("Synchronously cancelling existing SW demand {} for consumer {}", demandIdSw, relatedSwConn);
+
+                wSCalculationDao.cancelPreviousMeterReading(cancelSwDemandReq);
+            }
+        }
+    }
+
+	/**
+	 * Fetches meteredWaterSewerageMapping from MDMS for the given tenantId.
+	 */
+	private Map<String, Object> getMeteredWaterSewerageMappingFromMDMS(RequestInfo requestInfo, String tenantId) {
+		try {
+			List<String> masters = Collections.singletonList(WSCalculationConstant.METERED_WATER_SEWERAGE_MAPPING);
+			MdmsCriteriaReq criteriaReq = meterReadingUtil.prepareMdMsRequest(tenantId, WSCalculationConstant.WS_TAX_MODULE, masters, null, requestInfo);
+			StringBuilder uri = calculatorUtils.getMdmsSearchUrl();
+			Object result = serviceRequestRepository.fetchResult(uri, criteriaReq);
+
+			if (result != null) {
+				List<Map<String, Object>> mappingList = JsonPath.read(result, "$.MdmsRes." + WSCalculationConstant.WS_TAX_MODULE + "." + WSCalculationConstant.METERED_WATER_SEWERAGE_MAPPING);
+				if (!CollectionUtils.isEmpty(mappingList)) {
+					for (Map<String, Object> mapping : mappingList) {
+						String status = mapping.get("status") != null ? (String) mapping.get("status") : "Active";
+						if ("Active".equalsIgnoreCase(status)) {
+							return mapping;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching meteredWaterSewerageMapping from MDMS for tenantId: {} | {}", tenantId, e.getMessage());
+		}
+		return null;
+	}
+
+	/**
+	 * Evaluates whether the Water = Sewerage charge rule is applicable based on MDMS config.
+	 */
+	private boolean isWaterEqualToSewerageApplicable(Map<String, Object> mapping, Property property, WaterConnection connection, String consumerCode) {
+		if (mapping == null) {
+			return false;
+		}
+
+		Object flagObj = mapping.get(WSCalculationConstant.WATER_EQUAL_TO_SEWERAGE_KEY);
+		if (flagObj != null && !Boolean.parseBoolean(flagObj.toString())) {
+			return false;
+		}
+
+		String criteria = mapping.get(WSCalculationConstant.CRITERIA_KEY) != null ? mapping.get(WSCalculationConstant.CRITERIA_KEY).toString() : null;
+
+		// Check USAGE_CATEGORY
+		if (WSCalculationConstant.CRITERIA_USAGE_CATEGORY.equalsIgnoreCase(criteria) || mapping.containsKey("usageCategory")) {
+			List<String> allowedCategories = null;
+			if (mapping.get("usageCategory") instanceof List) {
+				allowedCategories = (List<String>) mapping.get("usageCategory");
+			} else if (mapping.get("value") instanceof List) {
+				allowedCategories = (List<String>) mapping.get("value");
+			}
+			if (!CollectionUtils.isEmpty(allowedCategories)) {
+				List<String> propertyCategories = getPropertyUsageCategories(property, consumerCode);
+				return allowedCategories.stream().anyMatch(allowed ->
+					propertyCategories.stream().anyMatch(actual -> actual.equalsIgnoreCase(allowed) || actual.contains(allowed))
+				);
+			}
+		}
+
+		// Check PLOT_SIZE
+		if (WSCalculationConstant.CRITERIA_PLOT_SIZE.equalsIgnoreCase(criteria) || mapping.containsKey("from") || mapping.containsKey("fromPlotSize")) {
+			Double plotSize = getPropertyPlotSize(property);
+			if (plotSize == null || plotSize <= 0) {
+				log.warn("Plot size is zero or null for propertyId: {}", property != null ? property.getPropertyId() : "null");
+				return false;
+			}
+			Object fromObj = mapping.get("from") != null ? mapping.get("from") : mapping.get("fromPlotSize");
+			Object toObj = mapping.get("to") != null ? mapping.get("to") : mapping.get("toPlotSize");
+
+			Double from = fromObj != null ? Double.valueOf(fromObj.toString()) : 0.0;
+			Double to = toObj != null ? Double.valueOf(toObj.toString()) : Double.MAX_VALUE;
+
+			return plotSize >= from && plotSize <= to;
+		}
+
+		// Check LOCALITY
+		if (WSCalculationConstant.CRITERIA_LOCALITY.equalsIgnoreCase(criteria) || mapping.containsKey("locality") || mapping.containsKey("wards")) {
+			List<String> allowedWards = null;
+			if (mapping.get("locality") instanceof List) {
+				allowedWards = (List<String>) mapping.get("locality");
+			} else if (mapping.get("wards") instanceof List) {
+				allowedWards = (List<String>) mapping.get("wards");
+			}
+			if (!CollectionUtils.isEmpty(allowedWards)) {
+				String currentLocality = (property != null && property.getAddress() != null && property.getAddress().getLocality() != null)
+						? property.getAddress().getLocality().getCode() : "";
+				return allowedWards.stream().anyMatch(allowed -> currentLocality.equalsIgnoreCase(allowed));
+			}
+		}
+
+		// Check WATER_SOURCE
+		if (WSCalculationConstant.CRITERIA_WATER_SOURCE.equalsIgnoreCase(criteria) || mapping.containsKey("waterSource")) {
+			List<String> allowedSources = null;
+			if (mapping.get("waterSource") instanceof List) {
+				allowedSources = (List<String>) mapping.get("waterSource");
+			}
+			if (!CollectionUtils.isEmpty(allowedSources)) {
+				String currentSource = (connection != null && connection.getWaterSource() != null) ? connection.getWaterSource() : "";
+				return allowedSources.stream().anyMatch(allowed -> currentSource.equalsIgnoreCase(allowed));
+			}
+		}
+
+		// Check PIPE_SIZE
+		if (WSCalculationConstant.CRITERIA_PIPE_SIZE.equalsIgnoreCase(criteria) || mapping.containsKey("fromPipeSize")) {
+			Double pipeSize = (connection != null && connection.getPipeSize() != null) ? connection.getPipeSize() : 0.0;
+			if (pipeSize <= 0) return false;
+
+			Object fromObj = mapping.get("fromPipeSize") != null ? mapping.get("fromPipeSize") : mapping.get("from");
+			Object toObj = mapping.get("toPipeSize") != null ? mapping.get("toPipeSize") : mapping.get("to");
+
+			Double from = fromObj != null ? Double.valueOf(fromObj.toString()) : 0.0;
+			Double to = toObj != null ? Double.valueOf(toObj.toString()) : Double.MAX_VALUE;
+
+			return pipeSize >= from && pipeSize <= to;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Extracts plot size from property (landArea primary, superBuiltUpArea fallback).
+	 */
+	private Double getPropertyPlotSize(Property property) {
+		if (property == null) return 0.0;
+		if (property.getLandArea() != null && property.getLandArea() > 0) {
+			return property.getLandArea();
+		}
+		if (property.getSuperBuiltUpArea() != null && property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0) {
+			return property.getSuperBuiltUpArea().doubleValue();
+		}
+		return 0.0;
+	}
+
+	/**
+	 * Collects usage categories from Property and DB for matching.
+	 */
+	private List<String> getPropertyUsageCategories(Property property, String consumerCode) {
+		List<String> categories = new ArrayList<>();
+		if (property != null && !StringUtils.isEmpty(property.getUsageCategory())) {
+			categories.add(property.getUsageCategory());
+		}
+		try {
+			List<String> dbCategories = waterCalculatorDao.fetchUsageCategory(consumerCode);
+			if (!CollectionUtils.isEmpty(dbCategories)) {
+				categories.addAll(dbCategories);
+			}
+		} catch (Exception e) {
+			log.error("Error fetching usage category from DB for consumerCode: {}", consumerCode, e);
+		}
+		return categories;
+	}
 
 }

@@ -23,9 +23,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang3.StringUtils;
+import org.egov.tracer.model.ServiceCallException;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
@@ -2264,14 +2266,19 @@ public List<String> fetchBillSchedulerBatch(Set<String> consumerCodes,String ten
 			
 
 				if (bills != null && !bills.isEmpty()) {
+					// Sum total amount from all bills for this consumer code and persist
+					BigDecimal billAmount = bills.stream()
+							.map(b -> b.getTotalAmount() != null ? b.getTotalAmount() : BigDecimal.ZERO)
+							.reduce(BigDecimal.ZERO, BigDecimal::add);
+
 					billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,
 							SWCalculationConstant.SUCCESS, tenantId, SWCalculationConstant.SUCCESS_MESSAGE,
-							System.currentTimeMillis());
+							System.currentTimeMillis(), billAmount);
 
 					successConsumerCodes
 							.addAll(bills.stream().map(BillV2::getConsumerCode).collect(Collectors.toList()));
 
-					log.info("✅ Bill generated successfully for consumerCode: {}", consumerCode);
+					log.info("✅ Bill generated successfully for consumerCode: {} amount: {}", consumerCode, billAmount);
 				} else {
 					String failureMsg = SWCalculationConstant.FAILURE_MESSAGE + " | No bills returned";
 
@@ -2287,17 +2294,39 @@ public List<String> fetchBillSchedulerBatch(Set<String> consumerCodes,String ten
 				}
 
 			} catch (Exception ex) {
-				String errorMsg = SWCalculationConstant.FAILURE_MESSAGE + " | Exception: " + ex.getMessage();
+				// Extract the real API error message.
+				// ServiceCallException stores the HTTP response body in getError(), not getMessage().
+				String errorReason = SWCalculationConstant.FAILURE_MESSAGE;
+				try {
+					if (ex instanceof ServiceCallException) {
+						String errorBody = ((ServiceCallException) ex).getError();
+						if (errorBody != null && !errorBody.isEmpty()) {
+							JsonNode root = mapper.readTree(errorBody);
+							JsonNode errors = root.path("Errors");
+							if (errors.isArray() && errors.size() > 0) {
+								String code = errors.get(0).path("code").asText("");
+								String msg  = errors.get(0).path("message").asText("");
+								errorReason = code.isEmpty() ? msg : (code + ": " + msg);
+							} else {
+								errorReason = errorBody;
+							}
+						}
+					} else if (ex.getMessage() != null) {
+						errorReason = SWCalculationConstant.FAILURE_MESSAGE + " | Error Msg: " + ex.getMessage();
+					}
+				} catch (Exception parseEx) {
+					log.warn("⚠️ Failed to parse ServiceCallException error body: {}", parseEx.getMessage());
+				}
 
 				try {
 					billGeneratorDao.updateBillSchedulerConnectionStatus(consumerCode, schedulerId, localityCode,
-							SWCalculationConstant.FAILURE, tenantId, errorMsg, System.currentTimeMillis());
+							SWCalculationConstant.FAILURE, tenantId, errorReason, System.currentTimeMillis());
 				} catch (Exception dbEx) {
 					log.error("DB update failed for {} (exception case): {}", consumerCode, dbEx.getMessage());
 				}
 
 				failureCollector.add(consumerCode);
-				log.error("❌ Fetch Bill failed for consumerCode: {} Exception: {}", consumerCode, ex.getMessage(), ex);
+				log.error("❌ Fetch Bill failed for consumerCode: {} Reason: {}", consumerCode, errorReason, ex);
 			}
 		}
 

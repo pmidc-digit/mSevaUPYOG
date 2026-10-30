@@ -152,7 +152,8 @@ public class PaymentUpdateService {
 					/*
 					 * calling workflow to update status
 					 */
-					wfIntegrator.callWorkFlow(updateRequest);
+					String hrmsSearchPath = userService.getEmployeeSearchPATH(updateRequest.getBPA().getTenantId(), (Map<String, String>)updateRequest.getBPA().getAdditionalDetails());
+					wfIntegrator.callWorkFlow(updateRequest,"");
 
 					log.debug(" the status of the application is : " + updateRequest.getBPA().getStatus());
 

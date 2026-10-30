@@ -2,6 +2,7 @@ package com.ingestpipeline;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -19,8 +20,26 @@ public class IngestApp {
 	}
 	
 	@Bean
-	public RestTemplate restTemplate() {
-	    return new RestTemplate();
+	public RestTemplate restTemplate(@Value("${services.esindexer.username:}") String esUsername,
+									 @Value("${services.esindexer.password:}") String esPassword) {
+		RestTemplate restTemplate = new RestTemplate();
+		if (esUsername != null && !esUsername.isEmpty()) {
+			final String username = esUsername;
+			final String password = esPassword == null ? "" : esPassword;
+			org.springframework.http.client.ClientHttpRequestInterceptor authInterceptor = (request, body, execution) -> {
+				String uriStr = request.getURI().toString();
+				if (!request.getHeaders().containsKey("Authorization") && (uriStr.contains(":9200") || uriStr.contains("elastic"))) {
+					String auth = username + ":" + password;
+					String encodedAuth = java.util.Base64.getEncoder().encodeToString(auth.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+					request.getHeaders().add("Authorization", "Basic " + encodedAuth);
+				}
+				return execution.execute(request, body);
+			};
+			java.util.List<org.springframework.http.client.ClientHttpRequestInterceptor> interceptors = new java.util.ArrayList<>(restTemplate.getInterceptors());
+			interceptors.add(authInterceptor);
+			restTemplate.setInterceptors(interceptors);
+		}
+		return restTemplate;
 	}
 	
 	 @Bean

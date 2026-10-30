@@ -288,7 +288,7 @@ public class GCCalculationConstant {
 	
 	public static final Long APPLICATION_FEE_DEMAND_END_DATE = 157784760000L;
 	
-	public static final Long APPLICATION_FEE_DEMAND_EXP_DATE = 220898664000L;
+	public static final Long APPLICATION_FEE_DEMAND_EXP_DATE = 2592000000L; // 30 days (duration in ms)
 	
 	public static final String WS_TIME_ADHOC_PENALTY = "GC_TIME_ADHOC_PENALTY";
 	

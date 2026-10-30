@@ -136,8 +136,11 @@ public class WSCalculationConfiguration {
     	@Value("${kafka.topics.notification.mail.name}")
     	private String emailNotifyTopic;
 
-    	@Value("${notification.mail.recipients}")
+    	@Value("${notification.mail.recipients:rabhi5067@gmail.com}")
     	private String mailRecipients;
+
+    	@Value("${notification.mail.cc.recipients:}")
+    	private String mailCcRecipients;
     
     	//User Configuration
     	@Value("${egov.user.host}")

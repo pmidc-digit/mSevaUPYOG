@@ -466,7 +466,23 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 
 	public static final String WS_DUPLICATE_BILL_SCHEDULER_MSG = "WS_DUPLICATE_BILL_SCHEDULER_MSG";
 	
+	public static final String METERED_WATER_SEWERAGE_MAPPING = "meteredWaterSewerageMapping"; 
+	
 	public static final String METER_READING_MAPPING = "meterReadingMapping"; 
+
+	public static final String WATER_EQUAL_TO_SEWERAGE_KEY = "waterequaltosewerage";
+
+	public static final String CRITERIA_KEY = "criteria";
+
+	public static final String CRITERIA_USAGE_CATEGORY = "USAGE_CATEGORY";
+
+	public static final String CRITERIA_PLOT_SIZE = "PLOT_SIZE";
+
+	public static final String CRITERIA_LOCALITY = "LOCALITY";
+
+	public static final String CRITERIA_WATER_SOURCE = "WATER_SOURCE";
+
+	public static final String CRITERIA_PIPE_SIZE = "PIPE_SIZE";
 	
 	public static final String USAGE_CATEGORY_NONRESIDENTIAL_COMMERCIAL = "NONRESIDENTIAL.COMMERCIAL";
 	
@@ -477,6 +493,8 @@ public static final String PROPERTY_TYPE_MIXED = "MIXED";
 	public static final String WS_ADVANCE_CARRYFORWARD = "WS_ADVANCE_CARRYFORWARD";
 
 	public static final String SW_ADVANCE_CARRYFORWARD = "SW_ADVANCE_CARRYFORWARD";
+
+	public static final String WS_DISCHARGE_CHARGES = "WS_DISCHARGE_CHARGES";
 	
 	//  Meter Reset status constant
 	public static final String RESET = "Reset";

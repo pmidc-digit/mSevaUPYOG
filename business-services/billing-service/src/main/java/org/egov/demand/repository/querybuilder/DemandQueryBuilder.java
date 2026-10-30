@@ -203,7 +203,7 @@ public class DemandQueryBuilder {
 
         if (demandCriteria.getIsPaymentDone() != null && demandCriteria.getIsPaymentDone() == false) {
             addAndClause(demandQuery);
-            demandQuery.append("dmdl.collectionamount < dmdl.taxamount");
+            demandQuery.append("dmdl.collectionamount != dmdl.taxamount");
         }
 
 		//REVERTING BACK 

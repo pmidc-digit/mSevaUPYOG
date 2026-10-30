@@ -12,6 +12,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.layout.config.CLUConfiguration;
 import org.egov.layout.repository.ServiceRequestRepository;
+import org.egov.layout.util.CLUConstants;
 import org.egov.layout.web.model.*;
 import org.egov.tracer.model.CustomException;
 import org.json.JSONObject;
@@ -169,7 +170,7 @@ public class UserService {
 			uri.append("&assignedtenattids=").append(tenantId);
 			if(!org.springframework.util.StringUtils.isEmpty(zones))
 				uri.append("&zones=").append(zones);
-
+			uri.append("&modulename=").append(CLUConstants.MODULENAME);
 		}
 
 		return uri;
@@ -317,4 +318,18 @@ public class UserService {
 
 	}
 
+	
+	public String getEmployeeSearchPATH(String tenantId, Map<String, String> additionalDetails, Object mdmsData) {
+		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone.code");
+
+		StringBuilder uri = new StringBuilder();
+
+		uri.append("assignedtenattids=").append(tenantId);
+		if (!org.springframework.util.StringUtils.isEmpty(zones))
+			uri.append("&zones=").append(zones);
+		uri.append("&modulename=").append(CLUConstants.MODULENAME);
+
+		return uri.toString();
+	}
+	
 }

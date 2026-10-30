@@ -12,8 +12,9 @@ public class ConsoleEmailService implements EmailService {
     public void sendEmail(Email email) {
         System.out.println(
                 String.format(
-                        "Sending email to %s with subject %s and body %s",
+                        "Sending email to %s (cc: %s) with subject %s and body %s",
                         email.getEmailTo(),
+                        email.getEmailCc(),
                         email.getSubject(),
                         email.getBody()
                 )

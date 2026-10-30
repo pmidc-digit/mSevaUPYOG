@@ -44,6 +44,7 @@ public class ChallanGenerationController {
 		ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(challanRequest.getRequestInfo(), true);
 		ChallanResponse response = ChallanResponse.builder().challans(Arrays.asList(challan))
 				.responseInfo(resInfo)
+				.workflow(challan != null ? challan.getWorkflow() : null)
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -71,6 +72,7 @@ public class ChallanGenerationController {
 	     ChallanResponse response = ChallanResponse.builder().challans(challans).countOfServices(countOfServices)
 				 .totalAmountCollected(totalAmountCollected).validity(validity).totalCount(totalCount)
 				 .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
+				 .workflow(challans != null && challans.size() == 1 ? challans.get(0).getWorkflow() : null)
 				 .build();
 	     return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -81,6 +83,7 @@ public class ChallanGenerationController {
 		ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(challanRequest.getRequestInfo(), true);
 		ChallanResponse response = ChallanResponse.builder().challans(Arrays.asList(challan))
 				.responseInfo(resInfo)
+				.workflow(challan != null ? challan.getWorkflow() : null)
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 		}

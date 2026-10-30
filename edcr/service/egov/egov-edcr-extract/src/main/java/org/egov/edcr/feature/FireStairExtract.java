@@ -96,18 +96,11 @@ public class FireStairExtract extends FeatureExtract {
 
 					if (!isBlank(floorHeight)) {
 						if (floorHeight.contains("=")) {
-							floorHeight = floorHeight.split("=")[1] != null
-									? floorHeight.split("=")[1].replaceAll("[^\\d.]", "")
-									: "";
-						} else
-							floorHeight = floorHeight.replaceAll("[^\\d.]", "");
-
-						if (!isBlank(floorHeight)) {
-							BigDecimal height = BigDecimal.valueOf(Double.parseDouble(floorHeight));
+							floorHeight = floorHeight.split("=")[1] != null ? floorHeight.split("=")[1] : "";
+						}
+						BigDecimal height = Util.extractBigDecimalFromText(floorHeight, pl, fireStairLayerName, "Floor height");
+						if (height != null) {
 							fireStair.setFloorHeight(height);
-						} else {
-							pl.addError(fireStairLayerName + "_FLR_HT_M",
-									"Floor height is not defined in layer " + fireStairLayerName);
 						}
 					} else {
 						pl.addError(fireStairLayerName + "_FLR_HT_M",

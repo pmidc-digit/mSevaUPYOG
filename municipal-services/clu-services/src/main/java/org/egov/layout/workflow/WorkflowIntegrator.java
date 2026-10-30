@@ -13,6 +13,7 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
@@ -75,7 +76,7 @@ public class WorkflowIntegrator {
 	 *
 	 * @param nocRequest
 	 */
-	public void callWorkFlow(CluRequest nocRequest, String bussinessServiceValue) {
+	public void callWorkFlow(CluRequest nocRequest, String bussinessServiceValue, String hrmsSearchPath) {
 		String wfTenantId = nocRequest.getLayout().getTenantId();
 		JSONArray array = new JSONArray();
 		Clu noc = nocRequest.getLayout();
@@ -88,6 +89,10 @@ public class WorkflowIntegrator {
 		
 		if(noc.getWorkflow().getComment() != null)
 		  obj.put(COMMENTKEY, noc.getWorkflow().getComment());
+		
+		if (!StringUtils.isEmpty(hrmsSearchPath)){
+			obj.put("hrmsSearchPath", hrmsSearchPath);
+		}
 		
 		if (!CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
 			List<Map<String, String>> uuidmaps = new LinkedList<>();

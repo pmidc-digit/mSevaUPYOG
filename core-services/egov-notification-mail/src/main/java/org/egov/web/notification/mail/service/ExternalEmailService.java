@@ -107,11 +107,18 @@ public class ExternalEmailService implements EmailService {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setFrom(from);
         mailMessage.setTo(email.getEmailTo().toArray(new String[0]));
+        if (!CollectionUtils.isEmpty(email.getEmailCc())) {
+            mailMessage.setCc(email.getEmailCc().toArray(new String[0]));
+        }
+        if (!CollectionUtils.isEmpty(email.getEmailBcc())) {
+            mailMessage.setBcc(email.getEmailBcc().toArray(new String[0]));
+        }
         mailMessage.setSubject(email.getSubject());
         mailMessage.setText(email.getBody());
 
-        log.info("Sending text email from {} via {} to: {}",
-                from, sender.getHost(), String.join(", ", email.getEmailTo()));
+        log.info("Sending text email from {} via {} to: {} (cc: {})",
+                from, sender.getHost(), String.join(", ", email.getEmailTo()),
+                email.getEmailCc() != null ? String.join(", ", email.getEmailCc()) : "none");
 
         try {
             sender.send(mailMessage);
@@ -164,6 +171,12 @@ public class ExternalEmailService implements EmailService {
 
         helper.setFrom(from);
         helper.setTo(email.getEmailTo().toArray(new String[0]));
+        if (!CollectionUtils.isEmpty(email.getEmailCc())) {
+            helper.setCc(email.getEmailCc().toArray(new String[0]));
+        }
+        if (!CollectionUtils.isEmpty(email.getEmailBcc())) {
+            helper.setBcc(email.getEmailBcc().toArray(new String[0]));
+        }
         helper.setSubject(email.getSubject());
         helper.setText(email.getBody(), true);
 
@@ -179,7 +192,9 @@ public class ExternalEmailService implements EmailService {
 
         log.info("Handing over to SMTP Server ({}) for delivery...", sender.getHost());
         sender.send(message);
-        log.info("Email sent successfully to: {}", String.join(", ", email.getEmailTo()));
+        log.info("Email sent successfully to: {} (cc: {})",
+                String.join(", ", email.getEmailTo()),
+                email.getEmailCc() != null ? String.join(", ", email.getEmailCc()) : "none");
     }
 
  // --- FOR ECHALLAN (NEW) ---

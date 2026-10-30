@@ -32,9 +32,12 @@ public class IngestApp {
 			final String username = esUsername;
 			final String password = esPassword == null ? "" : esPassword;
 			ClientHttpRequestInterceptor authInterceptor = (request, body, execution) -> {
-				String auth = username + ":" + password;
-				String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
-				request.getHeaders().add("Authorization", "Basic " + encodedAuth);
+				String uriStr = request.getURI().toString();
+				if (!request.getHeaders().containsKey("Authorization") && (uriStr.contains(":9200") || uriStr.contains("elastic"))) {
+					String auth = username + ":" + password;
+					String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+					request.getHeaders().add("Authorization", "Basic " + encodedAuth);
+				}
 				return execution.execute(request, body);
 			};
 			List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>(restTemplate.getInterceptors());

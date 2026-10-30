@@ -421,7 +421,8 @@ public class EnrichmentService {
 		if (!(demandAmount.compareTo(BigDecimal.ZERO) > 0)) {
 			Workflow workflow = Workflow.builder().action(BPAConstants.ACTION_SKIP_PAY).build();
 			bpa.setWorkflow(workflow);
-			wfIntegrator.callWorkFlow(bpaRequest);
+			String hrmsSearchPath = userService.getEmployeeSearchPATH(bpaRequest.getBPA().getTenantId(), (Map<String, String>)bpaRequest.getBPA().getAdditionalDetails());
+			wfIntegrator.callWorkFlow(bpaRequest,hrmsSearchPath);
 		}
 	}
 

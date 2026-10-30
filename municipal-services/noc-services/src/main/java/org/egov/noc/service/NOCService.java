@@ -93,13 +93,13 @@ public class NOCService {
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
 //		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
 			String businessService = JsonPath.read(nocRequest.getNoc().getNocDetails().getAdditionalDetails(), "$.businessService");
-			wfIntegrator.callWorkFlow(nocRequest, businessService);
+			wfIntegrator.callWorkFlow(nocRequest, businessService,"");
 		}else{
 		  nocRequest.getNoc().setApplicationStatus(NOCConstants.CREATED_STATUS);
 		}
 
 
-			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
+		userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
 
 		if(nocRequest.getNoc().getOwners().get(0).getUuid() != null)
 			nocRequest.getNoc().setAccountId(nocRequest.getNoc().getOwners().get(0).getUuid());
@@ -246,13 +246,13 @@ public class NOCService {
 			if (nextState != null && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
 				List<String> assignee = null;
 				if(!CollectionUtils.isEmpty(roles))
-					assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), false);
+					assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), false, mdmsData);
 				noc.getWorkflow().setAssignes(assignee);
 			}
 
 			if(!CollectionUtils.isEmpty(roles)) {
 				List<String> assignee = null;
-				assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), true);
+				assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), true, mdmsData);
 				noc.getWorkflow().setAssignes(assignee);
 			}
 				
@@ -261,7 +261,9 @@ public class NOCService {
 					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
 
 
-				wfIntegrator.callWorkFlow(nocRequest, businessServiceName);
+				String hrmsSearchPath = userService.getEmployeeSearchPATH(noc.getTenantId(), additionalDetails, mdmsData);
+				wfIntegrator.callWorkFlow(nocRequest,businessServiceName,hrmsSearchPath);
+				
 				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
 						nocRequest.getRequestInfo(), businessServiceName);
@@ -316,29 +318,29 @@ public class NOCService {
 				if (nextState != null && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
 					List<String> assignee = null;
 					if (!CollectionUtils.isEmpty(roles))
-						assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), false);
+						assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), false, mdmsData);
 					noc.getWorkflow().setAssignes(assignee);
 				}
 
 				if (!CollectionUtils.isEmpty(roles)) {
-					List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), true);
+					List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), true, mdmsData);
 					if(CollectionUtils.isEmpty(assignee))
 						noc.getWorkflow().setAssignes(null);
 				}
 
-				if ("SENDBACKTOCITIZEN".equalsIgnoreCase(action) && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
-					String createdBy = null;
-					if (searchResult != null && searchResult.getAuditDetails() != null) {
-						createdBy = searchResult.getAuditDetails().getCreatedBy();
-					} else if (noc.getAuditDetails() != null) {
-						createdBy = noc.getAuditDetails().getCreatedBy();
-					}
-					if (!StringUtils.isEmpty(createdBy)) {
-						noc.getWorkflow().setAssignes(Collections.singletonList(createdBy));
-					}
-				}
-
-				wfIntegrator.callWorkFlow(nocRequest,businessServiceName);
+//				if (CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
+//					String createdBy = null;
+//					if (searchResult != null && searchResult.getAuditDetails() != null) {
+//						createdBy = searchResult.getAuditDetails().getCreatedBy();
+//					} else if (noc.getAuditDetails() != null) {
+//						createdBy = noc.getAuditDetails().getCreatedBy();
+//					}
+//					if (!StringUtils.isEmpty(createdBy)) {
+//						noc.getWorkflow().setAssignes(Collections.singletonList(createdBy));
+//					}
+//				}
+				String hrmsSearchPath = userService.getEmployeeSearchPATH(noc.getTenantId(), additionalDetails, mdmsData);
+				wfIntegrator.callWorkFlow(nocRequest,businessServiceName,hrmsSearchPath);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
 						nocRequest.getRequestInfo(), businessServiceName);

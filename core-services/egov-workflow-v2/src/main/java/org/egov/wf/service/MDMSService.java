@@ -261,5 +261,18 @@ public class MDMSService {
 		return wfModuleDtls;
 	}
 
+	public Object getMdmsData(RequestInfo requestInfo, String tenantId, String moduleName, String masterName) {
+		ModuleDetail wfMasterDetails = ModuleDetail.builder()
+				.masterDetails(Collections.singletonList(MasterDetail.builder().name(masterName).build()))
+				.moduleName(moduleName).build();
+
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Collections.singletonList(wfMasterDetails))
+				.tenantId(tenantId.split("\\.")[0]).build();
+
+		MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria).requestInfo(requestInfo)
+				.build();
+		Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+		return result;
+	}
 
 }

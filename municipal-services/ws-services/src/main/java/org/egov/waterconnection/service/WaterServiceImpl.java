@@ -71,6 +71,9 @@ public class WaterServiceImpl implements WaterService {
 
 	@Autowired
 	private WaterServicesUtil waterServiceUtil;
+	
+	@Autowired
+	private WSFuzzySearchService WSFuzzySearchService;
 
 	@Autowired
 	private CalculationService calculationService;
@@ -149,6 +152,13 @@ public class WaterServiceImpl implements WaterService {
 								.equalsIgnoreCase(WCConstants.DISCONNECT_WATER_CONNECTION))) {
 			reqType = WCConstants.DISCONNECT_CONNECTION;
 			validateDisconnectionRequest(waterConnectionRequest);
+			List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
+			if (!previousConnectionsList.isEmpty()) { 
+				for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
+					waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
+							WCConstants.DISCONNECT_STATUS); 
+				}
+			}
 		} else if (waterConnectionRequest.isReconnectRequest()
 				|| (waterConnectionRequest.getWaterConnection().getApplicationType() != null && waterConnectionRequest
 						.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
@@ -297,7 +307,15 @@ public class WaterServiceImpl implements WaterService {
 	 */
 	public List<WaterConnection> search(SearchCriteria criteria, RequestInfo requestInfo) {
 		List<WaterConnection> waterConnectionList;
-		waterConnectionList = getWaterConnectionsList(criteria, requestInfo);
+
+        if ((criteria.getOwnerName() != null && !criteria.getOwnerName().trim().isEmpty()) ||
+                (criteria.getGuardianName() != null && !criteria.getGuardianName().trim().isEmpty()) ||
+                (criteria.getDoorNo() != null && !criteria.getDoorNo().trim().isEmpty()) ||
+                (criteria.getLocality() != null && !criteria.getLocality().trim().isEmpty())) {
+            waterConnectionList = WSFuzzySearchService.getConnections(requestInfo, criteria);
+        }
+        else
+            waterConnectionList = getWaterConnectionsList(criteria, requestInfo);
 		log.info("Water Connection List Inside Search API call ::" + waterConnectionList);
 		log.info("Search Criteria ::" + criteria);
 		if (!StringUtils.isEmpty(criteria.getSearchType())
@@ -551,42 +569,58 @@ public class WaterServiceImpl implements WaterService {
 		  }
 		  return waterConnectionRequest;
 	}
-	
-	
-public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(WaterConnectionRequest waterConnectionRequest) {
-		
-		if(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction() != null 
-				  && waterConnectionRequest.getWaterConnection().getProcessInstance().getAction().equals(WCConstants.SUBMIT_APPLICATION_CONST)){
-			List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
-			if (previousConnectionsList.size() > 0) { 
-			  for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
-				  if(previousConnectionsListObj.getStatus().equals(StatusEnum.ACTIVE)){
-					  waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
-							  WCConstants.INACTIVE_STATUS); 
-				  	}
-			  	} 
-			  }
-		  waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.INACTIVE);
-		}
-		  
-		  if(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction() != null 
-				  && waterConnectionRequest.getWaterConnection().getProcessInstance().getAction().equals(WCConstants.ACTION_REJECT)){
-			  List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
-			  if (previousConnectionsList.size() > 0) { 
-				  Collections.sort(previousConnectionsList, Comparator.comparing((WaterConnection wc) -> wc.getAuditDetails().getLastModifiedTime()).reversed());
-				  for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
-					   if(previousConnectionsListObj.getApplicationStatus().equals(WCConstants.STATUS_APPROVED) 
-							   || previousConnectionsListObj.getApplicationStatus().equals(WCConstants.APPROVED)){
-						   waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
-									  WCConstants.ACTIVE_STATUS); 
-						   waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.INACTIVE);
-						   break;
-					   }
-				  }
+
+	public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(
+			WaterConnectionRequest waterConnectionRequest) {
+
+		String action = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
+		List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
+
+		if (action != null && (action.equalsIgnoreCase(WCConstants.APPROVE_DISCONNECTION_CONST)
+				|| action.equalsIgnoreCase(WCConstants.EXECUTE_DISCONNECTION))) {
+			// When approved / executed: make BOTH Disconnect
+			if (!previousConnectionsList.isEmpty()) {
+				for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
+					if (!previousConnectionsListObj.getId()
+							.equalsIgnoreCase(waterConnectionRequest.getWaterConnection().getId())) {
+						waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
+								WCConstants.DISCONNECT_STATUS);
+					}
+				}
 			}
-			  
-		  }
-		  return waterConnectionRequest;
+			waterDaoImpl.updateWaterApplicationStatus(waterConnectionRequest.getWaterConnection().getId(),
+					WCConstants.DISCONNECT_STATUS);
+			waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECTED);
+		} else if (action != null && action.equals(WCConstants.ACTION_REJECT)) {
+			// When rejected: restore old connection to Active, current application to Disconnect
+			if (!previousConnectionsList.isEmpty()) {
+				Collections.sort(previousConnectionsList, Comparator
+						.comparing((WaterConnection wc) -> wc.getAuditDetails().getLastModifiedTime()).reversed());
+				for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
+					if (previousConnectionsListObj.getApplicationStatus().equals(WCConstants.STATUS_APPROVED)
+							|| previousConnectionsListObj.getApplicationStatus().equals(WCConstants.APPROVED)) {
+						waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
+								WCConstants.ACTIVE_STATUS);
+						break;
+					}
+				}
+			}
+			waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.DISCONNECTED);
+		} else {
+			// When process in flow (SUBMIT, FORWARD, etc.): old connection → DISCONNECTED, current application → ACTIVE
+			if (!previousConnectionsList.isEmpty()) {
+				for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
+					if (!previousConnectionsListObj.getId()
+							.equalsIgnoreCase(waterConnectionRequest.getWaterConnection().getId())) {
+						waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
+								WCConstants.DISCONNECT_STATUS);
+					}
+				}
+			}
+			waterConnectionRequest.getWaterConnection().setStatus(StatusEnum.ACTIVE);
+		}
+
+		return waterConnectionRequest;
 	}
 	
 	public List<WaterConnection> updateWaterConnectionForDisconnectFlow(WaterConnectionRequest waterConnectionRequest) {
@@ -837,6 +871,14 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 		waterConnectionRequest.setWaterConnection(decryptConnectionDetails(waterConnectionRequest.getWaterConnection(),
 				waterConnectionRequest.getRequestInfo()));
 
+        UpdateDemandPayerRequest updateDemandPayerRequest= UpdateDemandPayerRequest.builder().consumer(waterConnectionRequest.getWaterConnection().getConnectionNo()).payer(property.getOwners().get(0).getUuid()).business(WATER_SERVICE_BUSINESS_ID).tenant(waterConnectionRequest.getWaterConnection().getTenantId()).build();
+
+        UpdateBillStatusReq updateBillStatusReq = UpdateBillStatusReq.builder().consumer(waterConnectionRequest.getWaterConnection().getConnectionNo()).business(WATER_SERVICE_BUSINESS_ID).status(EXPIRED).tenant(waterConnectionRequest.getWaterConnection().getTenantId()).build();
+
+        waterDao.updatePayerIDForDemand(updateDemandPayerRequest);
+
+        waterDao.updateOldBillStatus(updateBillStatusReq);
+
 		return Arrays.asList(waterConnectionRequest.getWaterConnection());
 	}
 
@@ -850,6 +892,14 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 				if (!waterConnection.getOldApplication()
 						&& !(waterConnection.getApplicationNo().equalsIgnoreCase(currentModifiedApplicationNo))) {
 					waterConnection.setOldApplication(Boolean.TRUE);
+					
+					/* 
+					 *Connectionholders status set to inactive of old 
+					 */
+					if (!CollectionUtils.isEmpty(waterConnection.getConnectionHolders())) {
+						waterConnection.getConnectionHolders().forEach(holder -> holder.setStatus(Status.INACTIVE));
+					}
+					
 					waterConnection = encryptConnectionDetails(waterConnection);
 					WaterConnectionRequest previousWaterConnectionRequest = WaterConnectionRequest.builder()
 							.requestInfo(waterConnectionRequest.getRequestInfo()).waterConnection(waterConnection)
@@ -876,7 +926,7 @@ public WaterConnectionRequest updateConnectionStatusBasedOnActionDisconnection(W
 				.collect(Collectors.toList());
 		validateDisconnectWaterConnection(waterConnectionList, connectionNo, requestInfo, tenantId,
 				activeWaterConnections);
-		waterDaoImpl.updateWaterApplicationStatus(activeWaterConnections.get(0).getId(), WCConstants.INACTIVE_STATUS);
+		waterDaoImpl.updateWaterApplicationStatus(activeWaterConnections.get(0).getId(), WCConstants.DISCONNECT_STATUS);
 
 	}
 

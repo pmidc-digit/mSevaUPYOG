@@ -5,9 +5,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class BPAConstants {
 
+	// Timezone
+	public static final String TIME_ZONE = "Asia/Kolkata";
+
 	// MDMS
 
 	public static final String BPA_MODULE = "BPA";
+
+	public static final String MODULENAME = "bpa-service";
 
 	public static final String BPA_BusinessService = "BPA";
 
@@ -175,6 +180,10 @@ public class BPAConstants {
 	public static final String STATUS_CANCELLED = "CANCELLED";
 
 	public static final String STATUS_PAID = "INPROGRESS";
+	
+	public static final String STATUS_ESIGN_PENDING = "ESIGN_PENDING";
+	
+	public static final String STATUS_DRAWING_ESIGN_PENDING = "DRAWING_ESIGN_PENDING";
 
 	public static final String BILL_AMOUNT = "$.Demands[0].demandDetails[0].taxAmount";
 
@@ -425,5 +434,7 @@ public class BPAConstants {
 	public static final Long DAY_TO_MILLISECOND = 86400000L;
 	
 	public static final String PROPERTY_USAGE = "PropertyUsage";
+	
+	public static final String EMAIL_SUBJECT = "Building Plan Approval - ";
 
 }

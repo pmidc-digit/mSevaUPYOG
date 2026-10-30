@@ -41,7 +41,7 @@ import org.egov.pt.calculator.web.models.property.Property;
 public class AssessmentRepository {
 	private static final String PROPERTY_SEARCH_QUERY = "select distinct prop.id,prop.propertyid,prop.acknowldgementNumber,prop.propertytype,prop.status,prop.ownershipcategory,prop.oldPropertyId,prop.createdby,prop.createdTime,prop.lastmodifiedby,prop.lastmodifiedtime,prop.tenantid from eg_pt_property prop inner join eg_pt_address addr ON prop.id = addr.propertyid and prop.tenantid=addr.tenantid left join eg_pt_unit unit ON prop.id = unit.propertyid and prop.tenantid=addr.tenantid where prop.status='ACTIVE' ";
 
-	private static final String PROPERTY_ACTIVE_SEARCH_QUERY = "select distinct prop.propertyid,prop.id,prop.acknowldgementNumber,prop.propertytype,prop.status,prop.ownershipcategory,prop.oldPropertyId,prop.createdby,prop.createdTime,prop.lastmodifiedby,prop.lastmodifiedtime,prop.tenantid from eg_pt_property prop where prop.status='ACTIVE' ";
+	private static final String PROPERTY_ACTIVE_SEARCH_QUERY = "select distinct prop.propertyid,prop.id,prop.acknowldgementNumber,prop.propertytype,prop.status,prop.ownershipcategory,prop.oldPropertyId,prop.createdby,prop.createdTime,prop.lastmodifiedby,prop.lastmodifiedtime,prop.additionaldetails,prop.tenantid from eg_pt_property prop where prop.status='ACTIVE' ";
 
 	private static final String PROPERTY_COUNT_ACTIVE = "select count(distinct prop.propertyid)	from eg_pt_property prop where prop.status='ACTIVE'";
 
@@ -147,12 +147,12 @@ public class AssessmentRepository {
 		return assessments;
 	}
 
-	public Integer getActivePropertyCount(CreateAssessmentRequest request) {
+	public Long getActivePropertyCount(CreateAssessmentRequest request) {
 		StringBuilder query = new StringBuilder(PROPERTY_COUNT_ACTIVE);
 		query.append(" and prop.tenantid=?");
 		List<Object> preparedStmtList = new ArrayList<>();
 		preparedStmtList.add(request.getTenantId());
-		Integer count = jdbcTemplate.queryForObject(query.toString(), preparedStmtList.toArray(), Integer.class);
+		Long count = jdbcTemplate.queryForObject(query.toString(), preparedStmtList.toArray(), Long.class);
 		return count;
 
 	}

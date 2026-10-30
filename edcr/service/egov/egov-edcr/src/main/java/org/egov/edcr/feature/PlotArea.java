@@ -75,7 +75,7 @@ public class PlotArea extends FeatureProcess {
     private static final Logger LOG = LogManager.getLogger(PlotArea.class);
     private static final String RULE_34 = "34-1";
     public static final String PLOTAREA_DESCRIPTION = "Minimum Plot Area";
-    public static final BigDecimal THREE_ZERO = BigDecimal.valueOf(300);
+    public static final BigDecimal THREE_ZERO = BigDecimal.valueOf(40);
     public static final BigDecimal FIVE_ZERO = BigDecimal.valueOf(500);
 
     @Override

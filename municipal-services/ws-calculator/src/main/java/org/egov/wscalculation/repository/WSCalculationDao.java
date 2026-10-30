@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.egov.wscalculation.web.models.BillSearch;
 import org.egov.wscalculation.web.models.BillSearchs;
+import org.egov.wscalculation.web.models.BulkMeterReading;
 import org.egov.wscalculation.web.models.CancelDemand;
 import org.egov.wscalculation.web.models.CancelDemandReq;
 import org.egov.wscalculation.web.models.Canceldemandsearch;
@@ -22,6 +23,8 @@ public interface WSCalculationDao {
 	
 	void updateMeterReading(MeterConnectionRequest meterConnectionRequest);
 	void cancelPreviousMeterReading(CancelDemandReq cancelDemandPayload);
+
+	Boolean cancelDemandAndExpiryBills(CancelDemandReq cancelDemandPayload);
 	
 	List<MeterReading> searchMeterReadings(MeterReadingSearchCriteria criteria);
 	
@@ -51,7 +54,7 @@ public interface WSCalculationDao {
 	
 	List<WaterConnection> getConnection(String tenantId, String consumerCode,String connectionType,Long fromDate, Long toDate);
 	List<String> getLocalityList(String tenantId, String locality); 
-	List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String connectionType, Long taxPeriodFrom,
+	List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String locality, String connectionType, Long taxPeriodFrom,
 			Long taxPeriodTo, String cone);
 
 	List<String> fetchUsageCategory(String consumerCodes);
@@ -63,7 +66,7 @@ public interface WSCalculationDao {
 	public List<Canceldemandsearch> getConnectionCancels( String tenantId, String demandid);
 	
 	public Boolean getUpdates(List demandlists);
-	public List<Map<String, Object>>  getCollection(String tenatId,Long fromDate, Long toDate, String connectionno);
+	public List<Map<String, Object>>  getCollection(String tenatId,Long fromDate, Long toDate, String connectionno,String businessService);
 
 	
 	public List<BillSearchs> getBillss (String tenantId, String demandid);
@@ -84,4 +87,10 @@ public interface WSCalculationDao {
 	String getSwConnection(String tenantId, String consumerCode);
 
 		
+	/**
+	 * 
+	 * @param criteria would be meter reading criteria
+	 * @return List of meter readings based on criteria
+	 */
+	List<BulkMeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria);
 }

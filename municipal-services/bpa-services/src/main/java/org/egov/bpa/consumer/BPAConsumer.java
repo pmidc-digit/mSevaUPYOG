@@ -3,6 +3,7 @@ package org.egov.bpa.consumer;
 import java.util.HashMap;
 
 import org.egov.bpa.service.notification.BPANotificationService;
+import org.egov.bpa.util.BPAConstants;
 import org.egov.bpa.web.model.BPARequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -21,22 +22,27 @@ public class BPAConsumer {
 	@Autowired
 	private BPANotificationService notificationService;
 	
-	@KafkaListener(topics = { "${persister.update.buildingplan.topic}", "${persister.save.buildingplan.topic}",
-			"${persister.update.buildingplan.workflow.topic}" },
-			concurrency = "${kafka.consumer.config.concurrency.count}"
+	@KafkaListener(
+			topics = {
+					"${persister.update.buildingplan.topic}",
+					"${persister.save.buildingplan.topic}",
+					"${kafka.consumer.config.concurrency.count}"
+			},
+			concurrency = "${kafka.consumer.config.concurrency.count}",
+			groupId = "${spring.kafka.consumer.group-id}"
 	)
 
-
-	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+	public void listen(final String rawRecord) {
 		ObjectMapper mapper = new ObjectMapper();
 		BPARequest bpaRequest = new BPARequest();
 		try {
-			log.debug("Consuming record: " + record);
-			bpaRequest = mapper.convertValue(record, BPARequest.class);
+			log.debug("Consuming record: " + rawRecord);
+			bpaRequest = mapper.readValue(rawRecord, BPARequest.class);
 		} catch (final Exception e) {
-			log.error("Error while listening to value: " + record + " on topic: " + topic + ": " + e);
+			log.error("Error while listening to value: " + rawRecord  + ": " + e);
 		}
-		log.debug("BPA Received: " + bpaRequest.getBPA().getApplicationNo());
-		notificationService.process(bpaRequest);
+		log.info("BPA Received: " + bpaRequest.getBPA().getApplicationNo());
+		if(!bpaRequest.getBPA().getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_PAY))
+			notificationService.process(bpaRequest, rawRecord);
 	}
 }

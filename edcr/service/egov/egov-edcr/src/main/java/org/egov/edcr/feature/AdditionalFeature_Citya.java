@@ -361,7 +361,7 @@ public class AdditionalFeature_Citya extends FeatureProcess {
     }
     
     private void validateHeightOfFloors(Plan pl, HashMap<String, String> errors) {
-    	System.out.println("inside height of floor");
+    	LOG.info("inside height of floor");
 		for (Block block : pl.getBlocks()) {
 			
 			boolean isAccepted = false;

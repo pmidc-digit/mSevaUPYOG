@@ -32,6 +32,7 @@ public class TicketMapper implements RowMapper<Ticket> {
 		ticket.setClosedDate(rs.getString("closed_date"));
 		ticket.setIssueCategoryName(rs.getString("issue_category"));
 		ticket.setReadStatus(rs.getInt("comment"));
+		ticket.setImageUrl(rs.getString("image_url"));
 		if (rs.getInt("issue_feedback_id") == 0) ticket.setIssueFeedbackName("Pending");
 		else ticket.setIssueFeedbackName(rs.getString("feedback"));
 		

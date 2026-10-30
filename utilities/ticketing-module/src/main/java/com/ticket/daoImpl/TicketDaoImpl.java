@@ -266,15 +266,15 @@ public class TicketDaoImpl extends HibernateConfig implements TicketDao {
 	}
 
 	@Override
-	public int insertTicketWithImg(Ticket ticket, User userobj) {
+	public int insertTicketWithImg(Ticket ticket, User userobj, String imageUrl) {
 		int status = 0;
 		try {
 
-			String INSERT = "INSERT INTO tickets (PROJECT_ID, TKT_TYPE_ID, ULB_ID, RAISED_BY_ID, ASSIGNED_TO_ID, TKT_SUMMARY, TKT_DESCRIPTION, ATTACHMENT, TKT_PRIORITY, ISSUE_CATEGORY_ID, RAISED_DATE) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			String INSERT = "INSERT INTO tickets (PROJECT_ID, TKT_TYPE_ID, ULB_ID, RAISED_BY_ID, ASSIGNED_TO_ID, TKT_SUMMARY, TKT_DESCRIPTION, ATTACHMENT, TKT_PRIORITY, ISSUE_CATEGORY_ID, RAISED_DATE, IMAGE_URL) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			status = getJdbcTemplate().update(INSERT,
 					new Object[] { ticket.getProjectId(), 1, userobj.getUlbId(), userobj.getUserId(),
 							ticket.getAssignedToId(), ticket.getTktSummary(), ticket.getTktDescription(),
-							ticket.getAttachment(), 1, ticket.getIssueCategoryId(), ticket.getRaisedDate() });
+							ticket.getAttachment(), 1, ticket.getIssueCategoryId(), ticket.getRaisedDate(), imageUrl });
 
 			/*
 			 * long tid = getJdbcTemplate()

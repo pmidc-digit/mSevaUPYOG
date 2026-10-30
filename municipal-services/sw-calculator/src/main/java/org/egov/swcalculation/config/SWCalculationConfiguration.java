@@ -68,6 +68,9 @@ public class SWCalculationConfiguration {
 	@Value("${egov.bill.gen.endpoint}")
 	private String billGenEndPoint;
 	
+	@Value("${egov.bill.search.endpoints}")
+	private String searchBillEndPoints;
+	
 	@Value("${egov.demand.billexpirytime}")
 	private Long demandBillExpiry;
 	
@@ -154,6 +157,9 @@ public class SWCalculationConfiguration {
 
 	@Value("${egov.seweragecalculatorservice.createdemand.topic}")
 	private String createDemand;
+
+    @Value("${egov.seweragecalculatorservice.createsingledemand.topic}")
+    private String createSingleDemand;
 	
     @Value("${persister.demand.based.dead.letter.topic.batch}")
     private String deadLetterTopicBatch;

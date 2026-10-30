@@ -232,12 +232,15 @@ public class EnrichmentService {
 //						.getIdResponses();
 //				noc.setNocNo(idResponses.get(0).getId());
 			}
+			if (state.equalsIgnoreCase("PENDINGPAYMENT") && noc.getWorkflow() != null && noc.getWorkflow().getAction().equalsIgnoreCase(NOCConstants.ACTION_APPROVE)) {
+				((Map<String, Object>) noc.getNocDetails().getAdditionalDetails()).put("approvalDate", Long.toString(System.currentTimeMillis()));
+			}
 			if (state.equalsIgnoreCase(NOCConstants.VOIDED_STATUS)) {
 				noc.setStatus(Status.INACTIVE);
 			}
 		}
 		
-		if (noc.getWorkflow() != null && noc.getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE)) {
+		if (noc.getApplicationStatus().equalsIgnoreCase(NOCConstants.FI_STATUS)) {
 			Map<String, String> details = (Map<String, String>) noc.getNocDetails().getAdditionalDetails();
 			details.put(NOCConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));
 

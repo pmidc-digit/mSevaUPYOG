@@ -63,10 +63,9 @@ public class ApplicationThreadLocals {
     private static ThreadLocal<String> districtName = new ThreadLocal<>();
     private static ThreadLocal<String> districtCode = new ThreadLocal<>();
     private static ThreadLocal<String> stateName = new ThreadLocal<>();
-    private static ThreadLocal<String> grade = new ThreadLocal<>();  
-   
- 
-    
+    private static ThreadLocal<String> grade = new ThreadLocal<>();
+    private static ThreadLocal<String> fullTenantID = new ThreadLocal<>();
+    private static ThreadLocal<String> filestoreTenantID = new ThreadLocal<>();
 
     public static String getGrade() {
 		return grade.get();
@@ -171,6 +170,22 @@ public class ApplicationThreadLocals {
         cityNameLocal.set(citiNameLocal);
     }
 
+    public static String getFullTenantID() {
+        return fullTenantID.get();
+    }
+
+    public static void setFullTenantID(String fullTenantId) {
+        fullTenantID.set(fullTenantId);
+    }
+    
+    public static String getFilestoreTenantID() {
+        return filestoreTenantID.get();
+    }
+
+    public static void setFilestoreTenantID(String filestoreTenant) {
+        filestoreTenantID.set(filestoreTenant);
+    }
+
     public static void clearValues() {
         domainName.remove();
         userId.remove();
@@ -186,7 +201,7 @@ public class ApplicationThreadLocals {
         districtCode.remove();
         districtName.remove();
         stateName.remove();
- 
-
+        fullTenantID.remove();
+        filestoreTenantID.remove();
     }
 }

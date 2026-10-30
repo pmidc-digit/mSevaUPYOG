@@ -1,6 +1,7 @@
 package org.egov.wscalculation.service;
 
 import java.io.IOException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.math.MathContext;
@@ -13,14 +14,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 import org.egov.common.contract.request.RequestInfo;
 
 import org.egov.tracer.model.CustomException;
+import org.egov.wscalculation.constants.MRConstants;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.web.models.*;
 import org.egov.wscalculation.util.CalculatorUtil;
 import org.egov.wscalculation.util.WSCalculationUtil;
 import org.egov.wscalculation.util.WaterCessUtil;
+import org.egov.wscalculation.validator.MDMSValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -34,6 +38,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+
 
 @Service
 @Slf4j
@@ -54,6 +59,8 @@ public class EstimationService {
 	@Autowired
 	private PayService payService;
 
+	@Autowired
+	private MDMSValidator mdmsValidator;
 	/**
 	 * Generates a List of Tax head estimates with tax head code, tax head category
 	 * and the amount to be collected for the key.
@@ -97,11 +104,14 @@ public class EstimationService {
 		// mDataService.setWaterConnectionMasterValues(requestInfo, tenantId,
 		// billingSlabMaster,
 		// timeBasedExemptionMasterMap);
+//		BigDecimal taxAmt = getWaterEstimationCharge(criteria.getWaterConnection(), criteria, billingSlabMaster,
+//				billingSlabIds, request);
+		
 		BigDecimal taxAmt = getWaterEstimationCharge(criteria.getWaterConnection(), criteria, billingSlabMaster,
-				billingSlabIds, request);
+						billingSlabIds, request, masterData);
 		List<TaxHeadEstimate> taxHeadEstimates = getEstimatesForTax(taxAmt, criteria.getWaterConnection(),
 				timeBasedExemptionMasterMap,
-				RequestInfoWrapper.builder().requestInfo(request.getRequestInfo()).build());
+				RequestInfoWrapper.builder().requestInfo(request.getRequestInfo()).build(), criteria);
 
 		Map<String, List> estimatesAndBillingSlabs = new HashMap<>();
 		estimatesAndBillingSlabs.put("estimates", taxHeadEstimates);
@@ -120,18 +130,35 @@ public class EstimationService {
 	 * @param connection                   - Connection Object
 	 * @param timeBasedExemptionsMasterMap List of Exemptions for the connection
 	 * @param requestInfoWrapper           - RequestInfo Wrapper object
+	 * @param criteria                     - CalculationCriteria object
 	 * @return - Returns list of TaxHeadEstimates
 	 */
 	private List<TaxHeadEstimate> getEstimatesForTax(BigDecimal waterCharge, WaterConnection connection,
-			Map<String, JSONArray> timeBasedExemptionsMasterMap, RequestInfoWrapper requestInfoWrapper) {
+			Map<String, JSONArray> timeBasedExemptionsMasterMap, RequestInfoWrapper requestInfoWrapper, CalculationCriteria criteria) {
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
-		HashMap<String, String> add_details = ((HashMap<String, String>) connection.getAdditionalDetails());
+		Map<String, Object> add_details = null;
+		if (connection.getAdditionalDetails() != null) {
+			try {
+				add_details = mapper.convertValue(connection.getAdditionalDetails(), HashMap.class);
+			} catch (Exception e) {
+				log.error("Error converting additional details in getEstimatesForTax", e);
+			}
+		}
+		if (add_details == null) {
+			add_details = new HashMap<>();
+		}
+
+		String dischargeConnectionStr = null;
+		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection") != null) {
+			dischargeConnectionStr = String.valueOf(add_details.get("dischargeConnection"));
+		}
+
 		// water_charge to be added only if dischargeConnection is not Onlydisposal
 		// (category 62 of Amritsar) means if the connection is only disposal that only
 		// discharge/disposal charges should be applicable
-		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection")!=null) {
-			if (add_details.get("dischargeConnection").equalsIgnoreCase("OnlyDischarge") == false)
+		if (dischargeConnectionStr != null) {
+			if (!dischargeConnectionStr.equalsIgnoreCase("OnlyDischarge"))
 				estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_CHARGE)
 						.estimateAmount(waterCharge.setScale(2, 2)).build());
 		} else
@@ -151,32 +178,38 @@ public class EstimationService {
 		// .estimateAmount(waterCess.setScale(2, 2)).build());
 
 		// DISPOSAL DISCHARGE CHARGES
-		if (add_details.containsKey("dischargeConnection") && add_details.get("dischargeConnection")!=null) {
+		if (dischargeConnectionStr != null) {
 
-			if (add_details.get("dischargeConnection").equalsIgnoreCase("true")
-					|| add_details.get("dischargeConnection").equalsIgnoreCase("OnlyDischarge")) {
+			if (dischargeConnectionStr.equalsIgnoreCase("true")
+					|| dischargeConnectionStr.equalsIgnoreCase("OnlyDischarge")) {
 				BigDecimal disposal_charge;
 				try {
-					if (add_details.containsKey("dischargeFee")) // if dischargeFee attribute is present in
-																	// additionalDetails then use give dischargeFee else
-																	// fix dischagefee to 200
-						disposal_charge = new BigDecimal(add_details.get("dischargeFee"));
-					else
+					Object dischargeFeeObj = add_details.get("dischargeFee");
+					if (dischargeFeeObj != null) {
+						if (dischargeFeeObj instanceof Number) {
+							disposal_charge = BigDecimal.valueOf(((Number) dischargeFeeObj).doubleValue());
+						} else {
+							disposal_charge = new BigDecimal(String.valueOf(dischargeFeeObj));
+						}
+					} else {
 						disposal_charge = new BigDecimal(200.0);
+					}
 				} catch (Exception ex) {
 					disposal_charge = new BigDecimal(200.0);
 				}
-				estimates.add(TaxHeadEstimate.builder().taxHeadCode("WS_DISCHARGE_CHARGES")
-						.estimateAmount(disposal_charge.setScale(2, 2)).build());
+
+				if (criteria != null && criteria.getFrom() != null && criteria.getTo() != null) {
+					long effectiveMonths = calculateEffectiveMonths(criteria.getFrom(), criteria.getTo());
+					double quarterRatio = effectiveMonths / 3.0;
+					disposal_charge = disposal_charge.multiply(BigDecimal.valueOf(quarterRatio)).setScale(2, RoundingMode.HALF_UP);
+				} else {
+					disposal_charge = disposal_charge.setScale(2, RoundingMode.HALF_UP);
+				}
+
+				estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_DISCHARGE_CHARGES)
+						.estimateAmount(disposal_charge).build());
 			}
 		}
-
-//		if (timeBasedExemptionsMasterMap.get(WSCalculationConstant.WC_REBATE_MASTER) != null) {
-//			BigDecimal rebate;
-//			rebate = payService.getApplicableRebate(waterCharge,null,  timeBasedExemptionsMasterMap.get(WSCalculationConstant.WC_REBATE_MASTER));
-//			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_TIME_REBATE)
-//					.estimateAmount(rebate.negate().setScale(2, 2)).build());
-//		}
 
 		return estimates;
 	}
@@ -186,162 +219,232 @@ public class EstimationService {
 	 * in the Water Details
 	 */
 
+	/**
+	 * ✅ UPDATED signature: accepts full masterData map so billingPeriod MDMS values
+	 * (meterMaxReading, bulkMeterMaxReading) can be read for Reset meter logic.
+	 * All non-Reset paths are completely unchanged.
+	 */
 	@SuppressWarnings("unchecked")
 	public BigDecimal getWaterEstimationCharge(WaterConnection waterConnection, CalculationCriteria criteria,
-	        Map<String, JSONArray> billingSlabMaster, ArrayList<String> billingSlabIds, CalculationReq request) {
+			Map<String, JSONArray> billingSlabMaster, ArrayList<String> billingSlabIds, CalculationReq request,
+			Map<String, Object> masterData) {
+ 
+		BigDecimal waterCharge = BigDecimal.ZERO;
+ 
+		HashMap<String, Object> additionalDetail = mapper.convertValue(waterConnection.getAdditionalDetails(),
+				HashMap.class);
+ 
+		try {
+			log.info("Water Connection Object in estimation service : " + mapper.writeValueAsString(waterConnection));
+		} catch (JsonProcessingException e1) {
+			e1.printStackTrace();
+		}
+ 
+		String billingType = (String) additionalDetail.getOrDefault(WSCalculationConstant.BILLINGTYPE, null);
+ 
+		// Custom billing for non-metered connection — unchanged
+		if (waterConnection.getConnectionType().equalsIgnoreCase(WSCalculationConstant.nonMeterdConnection)
+				&& WSCalculationConstant.CUSTOM.equalsIgnoreCase(billingType)) {
+ 
+			Object customAmountObj = additionalDetail.getOrDefault(WSCalculationConstant.CUSTOM_BILL_AMOUNT, 0);
+			Integer billingAmountInt = customAmountObj instanceof String
+					? Integer.parseInt((String) customAmountObj)
+					: (Integer) customAmountObj;
+ 
+			return BigDecimal.valueOf(Long.valueOf(billingAmountInt)).setScale(2, 2);
+		}
+ 
+		// Check billing slab master — unchanged
+		if (billingSlabMaster.get(WSCalculationConstant.WC_BILLING_SLAB_MASTER) == null)
+			throw new CustomException("BILLING_SLAB_NOT_FOUND", "Billing Slab are Empty");
+ 
+		List<BillingSlab> mappingBillingSlab;
+		try {
+			mappingBillingSlab = mapper.readValue(
+					billingSlabMaster.get(WSCalculationConstant.WC_BILLING_SLAB_MASTER).toJSONString(),
+					mapper.getTypeFactory().constructCollectionType(List.class, BillingSlab.class));
+		} catch (IOException e) {
+			throw new CustomException("PARSING_ERROR", "Billing Slab can not be parsed!");
+		}
+ 
+		Property property = wSCalculationUtil.getProperty(WaterConnectionRequest.builder()
+				.waterConnection(waterConnection)
+				.requestInfo(request.getRequestInfo())
+				.build());
+ 
+		JSONObject calculationAttributeMaster = new JSONObject();
+		calculationAttributeMaster.put(WSCalculationConstant.CALCULATION_ATTRIBUTE_CONST,
+				billingSlabMaster.get(WSCalculationConstant.CALCULATION_ATTRIBUTE_CONST));
+		String calculationAttribute = getCalculationAttribute(calculationAttributeMaster,
+				waterConnection.getConnectionType());
+ 
+		List<BillingSlab> billingSlabs = getSlabsFiltered(property, waterConnection, mappingBillingSlab,
+				calculationAttribute);
+ 
+		if (billingSlabs == null || billingSlabs.isEmpty())
+			throw new CustomException("BILLING_SLAB_NOT_FOUND", "Billing Slab are Empty");
+		
+		Double meterMaxReading = null;
+		Double bulkMeterMaxReading = null;
 
-	    BigDecimal waterCharge = BigDecimal.ZERO;
-	  
-	    HashMap<String, Object> additionalDetail = mapper.convertValue(waterConnection.getAdditionalDetails(), HashMap.class);
+		String meterStatus = criteria.getMeterStatus() != null
+		        ? criteria.getMeterStatus().toString()
+		        : "";
 
-	    try {
-	        log.info("Water Connection Object in estimation service : " + mapper.writeValueAsString(waterConnection));
-	    } catch (JsonProcessingException e1) {
-	        e1.printStackTrace();
-	    }
+		/*
+		 * Fetch max readings ONLY for RESET meters.
+		 * Avoids MDMS dependency for WORKING / LOCKED / NO_METER / BREAKDOWN.
+		 */
+		if (WSCalculationConstant.meteredConnectionType
+		        .equals(waterConnection.getConnectionType())
+		        && WSCalculationConstant.RESET.equalsIgnoreCase(meterStatus)) {
 
-	    String billingType = (String) additionalDetail.getOrDefault(WSCalculationConstant.BILLINGTYPE, null);
+		    meterMaxReading =
+		            getMaxMeterReadingFromMDMS(
+		                    request.getRequestInfo(),
+		                    waterConnection.getTenantId(),
+		                    false
+		            );
 
-	    // Custom billing for non-metered connection
-	    if (waterConnection.getConnectionType().equalsIgnoreCase(WSCalculationConstant.nonMeterdConnection)
-	            && WSCalculationConstant.CUSTOM.equalsIgnoreCase(billingType)) {
+		    bulkMeterMaxReading =
+		            getMaxMeterReadingFromMDMS(
+		                    request.getRequestInfo(),
+		                    waterConnection.getTenantId(),
+		                    true
+		            );
 
-	        Object customAmountObj = additionalDetail.getOrDefault(WSCalculationConstant.CUSTOM_BILL_AMOUNT, 0);
-	        Integer billingAmountInt = customAmountObj instanceof String
-	                ? Integer.parseInt((String) customAmountObj)
-	                : (Integer) customAmountObj;
+		    log.info(
+		            "MDMS billingPeriod → meterMaxReading={}, bulkMeterMaxReading={}",
+		            meterMaxReading,
+		            bulkMeterMaxReading
+		    );
+		} 
+		// ✅ Pass maxReadings into getUnitOfMeasurement
+		Double totalUOM = getUnitOfMeasurement(property, waterConnection, calculationAttribute, criteria,
+				meterMaxReading, bulkMeterMaxReading);
+ 
+		// Track all slab IDs but calculate water charge only once — unchanged
+		BillingSlab applicableBillSlab = null;
+		Slab applicableSlab = null;
+		String waterUsageType = (String) additionalDetail.getOrDefault(WSCalculationConstant.WATER_SUBUSAGE_TYPE, null);
 
-	        return BigDecimal.valueOf(Long.valueOf(billingAmountInt)).setScale(2, 2);
-	    }
+		for (BillingSlab billSlab : billingSlabs) {
+			billingSlabIds.add(billSlab.getId());
+ 
+			List<Slab> filteredSlabs = billSlab.getSlabs().stream()
+					.filter(slab -> slab.getFrom() <= totalUOM && slab.getTo() >= totalUOM
+							&& slab.getEffectiveFrom() <= System.currentTimeMillis()
+							&& slab.getEffectiveTo() >= System.currentTimeMillis())
+					.collect(Collectors.toList());
+		    if (filteredSlabs.isEmpty() || applicableBillSlab != null) {
+		        continue;
+		    }
+		    if (waterUsageType == null) {
+		        // No water usage type provided, pick the first matching BillingSlab
+		        applicableBillSlab = billSlab;
+		        applicableSlab = filteredSlabs.get(0);
+		    } else if (waterUsageType.equals(billSlab.getWaterSubUsageType())) {
+		        // Water usage type provided, pick only the matching BillingSlab
+		        applicableBillSlab = billSlab;
+		        applicableSlab = filteredSlabs.get(0);
+		    }
+		}
+ 
+		// PI-20289 Metered Breakdown penalty enable and working new logic
+		if (applicableBillSlab != null && applicableSlab != null) {
+			if (isRangeCalculation(calculationAttribute)) {
+ 
+				/* =======================
+				 * METERED CONNECTION
+				 * ======================= */
+				if (WSCalculationConstant.meteredConnectionType.equalsIgnoreCase(waterConnection.getConnectionType())) {
+					Boolean isMonthlyBillingEnabled = Boolean.TRUE.equals(applicableBillSlab.getIsmonthlybillingenabled());
+					long effectiveMonths = calculateEffectiveMonths(criteria.getFrom(), criteria.getTo());
+					Double meterReading = totalUOM;
 
-	    // Check billing slab master
-	    if (billingSlabMaster.get(WSCalculationConstant.WC_BILLING_SLAB_MASTER) == null)
-	        throw new CustomException("BILLING_SLAB_NOT_FOUND", "Billing Slab are Empty");
+					if (WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)
+							|| WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)) {
+						Object avgObj = additionalDetail.get(WSCalculationConstant.AVARAGEMETERREADING);
+						if (avgObj instanceof Number) {
+							double rawAvg = ((Number) avgObj).doubleValue();
+							if (isMonthlyBillingEnabled) {
+								double quarterRatio = effectiveMonths / 3.0;
+								meterReading = rawAvg * quarterRatio;
+							} else {
+								meterReading = rawAvg;
+							}
+						} else {
+							meterReading = totalUOM;
+						}
+					}
 
-	    List<BillingSlab> mappingBillingSlab;
-	    try {
-	        mappingBillingSlab = mapper.readValue(
-	                billingSlabMaster.get(WSCalculationConstant.WC_BILLING_SLAB_MASTER).toJSONString(),
-	                mapper.getTypeFactory().constructCollectionType(List.class, BillingSlab.class));
-	    } catch (IOException e) {
-	        throw new CustomException("PARSING_ERROR", "Billing Slab can not be parsed!");
-	    }
+					BigDecimal remainingConsumption = BigDecimal.valueOf(meterReading);
+					BigDecimal totalAmount = BigDecimal.ZERO;
 
-	    Property property = wSCalculationUtil.getProperty(WaterConnectionRequest.builder()
-	            .waterConnection(waterConnection)
-	            .requestInfo(request.getRequestInfo())
-	            .build());
+					// sort slabs by range
+					List<Slab> slabs = applicableBillSlab.getSlabs().stream()
+							.filter(s -> s.getEffectiveFrom() <= System.currentTimeMillis()
+									&& s.getEffectiveTo() >= System.currentTimeMillis())
+							.sorted(Comparator.comparing(Slab::getFrom))
+							.collect(Collectors.toList());
 
-	    JSONObject calculationAttributeMaster = new JSONObject();
-	    calculationAttributeMaster.put(WSCalculationConstant.CALCULATION_ATTRIBUTE_CONST,
-	            billingSlabMaster.get(WSCalculationConstant.CALCULATION_ATTRIBUTE_CONST));
-	    String calculationAttribute = getCalculationAttribute(calculationAttributeMaster, waterConnection.getConnectionType());
+					for (Slab slab : slabs) {
+						if (remainingConsumption.compareTo(BigDecimal.ZERO) <= 0) {
+							break;
+						}
+						double slabFrom = slab.getFrom() == 0 ? 1 : slab.getFrom();
+						double slabTo = slab.getTo();
+						BigDecimal slabRange = BigDecimal.valueOf(slabTo - slabFrom + 1);
+						BigDecimal billableUnits = remainingConsumption.min(slabRange);
+						BigDecimal slabAmount = billableUnits.multiply(BigDecimal.valueOf(slab.getCharge()));
 
-	    List<BillingSlab> billingSlabs = getSlabsFiltered(property, waterConnection, mappingBillingSlab, calculationAttribute);
+						totalAmount = totalAmount.add(slabAmount);
+						remainingConsumption = remainingConsumption.subtract(billableUnits);
+					}
 
-	    if (billingSlabs == null || billingSlabs.isEmpty())
-	        throw new CustomException("BILLING_SLAB_NOT_FOUND", "Billing Slab are Empty");
+					BigDecimal minimumCharge;
+					if (isMonthlyBillingEnabled) {
+						double monthlyRate = applicableBillSlab.getMinimumCharge() / 3.0;
+						minimumCharge = BigDecimal.valueOf(monthlyRate * effectiveMonths);
+					} else {
+						minimumCharge = BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
+					}
 
-	    Double totalUOM = getUnitOfMeasurement(property, waterConnection, calculationAttribute, criteria);
+					Boolean isMinChargeApplied = applicableBillSlab.getIsminimumchargeapplied();
+					Boolean isMinChargeNotApplied = applicableBillSlab.getIsminimumchargenotapplied();
+					List<String> isMeterStatusApplied = applicableBillSlab.getIsmeterstatusapplied();
 
-	    // Track all slab IDs but calculate water charge only once
-	    BillingSlab applicableBillSlab = null;
-	    Slab applicableSlab = null;
+					boolean isFeatureActive = Boolean.TRUE.equals(isMinChargeApplied) || Boolean.TRUE.equals(isMinChargeNotApplied);
 
-	    for (BillingSlab billSlab : billingSlabs) {
-	        billingSlabIds.add(billSlab.getId()); // collect all IDs
+					if (isFeatureActive) {
+						boolean isStatusMatched = false;
+						if (isMeterStatusApplied != null && !isMeterStatusApplied.isEmpty()) {
+							for (String status : isMeterStatusApplied) {
+								if (status != null && status.trim().equalsIgnoreCase(meterStatus.trim())) {
+									isStatusMatched = true;
+									break;
+								}
+							}
+						}
+						boolean isLockedStatus = WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus);
+						if (isLockedStatus) {
+							totalAmount = minimumCharge;
+						}
+					} else {
+						if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
+								|| totalAmount.compareTo(minimumCharge) < 0) {
+							totalAmount = minimumCharge;
+						}
+					}
 
-	        List<Slab> filteredSlabs = billSlab.getSlabs().stream()
-	                .filter(slab -> slab.getFrom() <= totalUOM && slab.getTo() >= totalUOM
-	                        && slab.getEffectiveFrom() <= System.currentTimeMillis()
-	                        && slab.getEffectiveTo() >= System.currentTimeMillis())
-	                .collect(Collectors.toList());
-
-	        if (!filteredSlabs.isEmpty() && applicableBillSlab == null) {
-	            applicableBillSlab = billSlab;
-	            applicableSlab = filteredSlabs.get(0);
-	        }
-	    }
-	    
-	    
-
-//	    PI-20289 Metered Breakdown penalty enable and working new logic
-	    
-	    
-	    if (applicableBillSlab != null && applicableSlab != null) {
-	    	 if (isRangeCalculation(calculationAttribute)) {
-
-	    	        /* =======================
-	    	         * METERED CONNECTION
-	    	         * ======================= */
-	    	        if (WSCalculationConstant.meteredConnectionType
-	    	                .equalsIgnoreCase(waterConnection.getConnectionType())) {
-
-	    	            Double meterReading = totalUOM;
-	    	            String meterStatus = criteria.getMeterStatus().toString();
-
-	    	            if (WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)
-	    	                    || WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)) {
-
-//	    	                meterReading = (Double) additionalDetail.getOrDefault(
-//	    	                        WSCalculationConstant.AVARAGEMETERREADING, totalUOM);
-	    	            	
-	    	            	
-	    	            	Object avgObj = additionalDetail.get(WSCalculationConstant.AVARAGEMETERREADING);
-
-	    	            	if (avgObj instanceof Number) {
-	    	            	    meterReading = ((Number) avgObj).doubleValue();
-	    	            	} else {
-	    	            	    meterReading = totalUOM;
-	    	            	}
-	    	            }
-
-	    	            BigDecimal remainingConsumption = BigDecimal.valueOf(meterReading);
-	    	            BigDecimal totalAmount = BigDecimal.ZERO;
-
-	    	            // sort slabs by range
-	    	            List<Slab> slabs = applicableBillSlab.getSlabs().stream()
-	    	                    .filter(s -> s.getEffectiveFrom() <= System.currentTimeMillis()
-	    	                            && s.getEffectiveTo() >= System.currentTimeMillis())
-	    	                    .sorted(Comparator.comparing(Slab::getFrom))
-	    	                    .collect(Collectors.toList());
-
-	    	            for (Slab slab : slabs) {
-
-	    	                if (remainingConsumption.compareTo(BigDecimal.ZERO) <= 0) {
-	    	                    break;
-	    	                }
-
-	    	                double slabFrom = slab.getFrom() == 0 ? 1 : slab.getFrom();
-	    	                double slabTo   = slab.getTo();
-
-	    	                BigDecimal slabRange = BigDecimal.valueOf(
-	    	                        slabTo - slabFrom + 1
-	    	                );
-
-	    	                BigDecimal billableUnits = remainingConsumption.min(slabRange);
-
-	    	                BigDecimal slabAmount = billableUnits
-	    	                        .multiply(BigDecimal.valueOf(slab.getCharge()));
-
-	    	                totalAmount = totalAmount.add(slabAmount);
-	    	                remainingConsumption = remainingConsumption.subtract(billableUnits);
-	    	            }
-
-	    	            BigDecimal minimumCharge =
-	    	                    BigDecimal.valueOf(applicableBillSlab.getMinimumCharge());
-
-	    	            if (WSCalculationConstant.LOCKED.equalsIgnoreCase(meterStatus)
-	    	                    || totalAmount.compareTo(minimumCharge) < 0) {
-
-	    	                totalAmount = minimumCharge;
-	    	            }
-
-	    	            waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
-//	    	    	    PI-20289 Metered Breakdown penalty enable and working new logic
-
-
-	            } else if (WSCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
+					if (WSCalculationConstant.BREAKDOWN.equalsIgnoreCase(meterStatus)
+							|| WSCalculationConstant.NO_METER.equalsIgnoreCase(meterStatus)) {
+						waterCharge = BigDecimal.valueOf(Math.round(totalAmount.doubleValue())).setScale(2, RoundingMode.HALF_UP);
+					} else {
+						waterCharge = totalAmount.setScale(2, RoundingMode.HALF_UP);
+					}
+					// PI-20289 Metered Breakdown penalty enable and working new logic
+				}  else if (WSCalculationConstant.nonMeterdConnection.equalsIgnoreCase(waterConnection.getConnectionType())) {
 	                request.setTaxPeriodFrom(criteria.getFrom());
 	                request.setTaxPeriodTo(criteria.getTo());
 
@@ -370,6 +473,67 @@ public class EstimationService {
 	    }
 
 	    return waterCharge;
+	}
+	
+	
+	private Double getMaxMeterReadingFromMDMS(
+	        RequestInfo requestInfo,
+	        String tenantId,
+	        Boolean isBulkMeter) {
+
+	    List<String> masters = new ArrayList<>(
+	            Arrays.asList(MRConstants.MDMS_MS_BILLING_PERIOD)
+	    );
+
+	    Map<String, List<String>> codes =
+	            mdmsValidator.getAttributeValues(
+	                    tenantId,
+	                    MRConstants.MDMS_WC_MOD_NAME,
+	                    masters,
+	                    "$.*",
+	                    MRConstants.JSONPATH_ROOT,
+	                    requestInfo
+	            );
+
+	    JSONObject obj = new JSONObject(codes);
+
+	    List<Map<String, Object>> billingArray =
+	            (List<Map<String, Object>>) obj.get(
+	                    MRConstants.MDMS_MS_BILLING_PERIOD
+	            );
+
+	    if (billingArray == null || billingArray.isEmpty()) {
+
+	        throw new RuntimeException(
+	                "billingPeriod MDMS configuration missing"
+	        );
+	    }
+
+	    for (Map<String, Object> billingObject : billingArray) {
+
+	        String connectionType =
+	                billingObject.get("connectionType").toString();
+
+	        if (MRConstants.METER_CONNECTION_TYPE
+	                .equalsIgnoreCase(connectionType)) {
+
+	            return Boolean.TRUE.equals(isBulkMeter)
+
+	                    ? Double.valueOf(
+	                            billingObject.get(
+	                                    MRConstants.BULK_METER_MAX_READING_KEY
+	                            ).toString())
+
+	                    : Double.valueOf(
+	                            billingObject.get(
+	                                    MRConstants.METER_MAX_READING_KEY
+	                            ).toString());
+	        }
+	    }
+
+	    throw new RuntimeException(
+	            "Metered billingPeriod configuration missing in MDMS"
+	    );
 	}
 
 
@@ -483,27 +647,93 @@ public class EstimationService {
 		return assessmentYear;
 	}
 
-	private Double getUnitOfMeasurement(Property property, WaterConnection waterConnection, String calculationAttribute,
-			CalculationCriteria criteria) {
-		Double totalUnit = 0.0;
-		if (waterConnection.getConnectionType().equals(WSCalculationConstant.meteredConnectionType)) {
-			totalUnit = (criteria.getCurrentReading() - criteria.getLastReading());
-			return totalUnit;
+	/**
+	 * ✅ UPDATED: getUnitOfMeasurement with Reset meter logic.
+	 * 
+	 * For meterStatus = "Reset" (meter rolled over):
+	 *   consumption = (maxReading - lastReading) + currentReading
+	 *   where maxReading comes from MDMS billingPeriod master:
+	 *     isBulkMeter=true  → bulkMeterMaxReading
+	 *     isBulkMeter=false → meterMaxReading
+	 *
+	 * All other meter statuses and non-metered logic are completely unchanged.
+	 */
+	private Double getUnitOfMeasurement(Property property, WaterConnection waterConnection,
+	        String calculationAttribute, CalculationCriteria criteria,
+	        Double meterMaxReading, Double bulkMeterMaxReading) {
+
+	    Double totalUnit = 0.0;
+
+	    if (waterConnection.getConnectionType()
+	            .equals(WSCalculationConstant.meteredConnectionType)) {
+
+	        String meterStatus = criteria.getMeterStatus() != null
+	                ? criteria.getMeterStatus().toString()
+	                : "";
+
+	        // ✅ Reset logic: meter display rolled over
+	        // Formula: (maxReading - lastReading) + currentReading
+	        if (WSCalculationConstant.RESET.equalsIgnoreCase(meterStatus)) {
+
+	            Boolean isBulkMeter = criteria.getIsBulkMeter();
+
+	            Double maxReading = Boolean.TRUE.equals(isBulkMeter)
+	                    ? bulkMeterMaxReading
+	                    : meterMaxReading;
+
+	            totalUnit =
+	                    (maxReading - criteria.getLastReading())
+	                            + criteria.getCurrentReading();
+
+	            // ✅ Safety validation
+	            if (totalUnit < 0) {
+
+	                throw new RuntimeException(
+	                        "Calculated reset consumption cannot be negative"
+	                );
+	            }
+
+	            log.info(
+	                    "Reset meter consumption | isBulkMeter={} | "
+	                            + "maxReading={} | lastReading={} | "
+	                            + "currentReading={} | consumption={}",
+	                    isBulkMeter,
+	                    maxReading,
+	                    criteria.getLastReading(),
+	                    criteria.getCurrentReading(),
+	                    totalUnit
+	            );
+
+	        } else {
+
+	            // ✅ Normal meter logic
+	            totalUnit =
+	                    (criteria.getCurrentReading()
+	                            - criteria.getLastReading());
+	        }
+
+	        return totalUnit;
+ 
 		} else if (waterConnection.getConnectionType().equals(WSCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(WSCalculationConstant.noOfTapsConst)) {
 			if (waterConnection.getNoOfTaps() != null && waterConnection.getNoOfTaps() > 0)
 				return new Double(waterConnection.getNoOfTaps());
+ 
 		} else if (waterConnection.getConnectionType().equals(WSCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(WSCalculationConstant.pipeSizeConst)) {
 			if (waterConnection.getPipeSize() == null && waterConnection.getPipeSize() > 0)
 				return waterConnection.getPipeSize();
+ 
 		} else if (waterConnection.getConnectionType().equals(WSCalculationConstant.nonMeterdConnection)
 				&& calculationAttribute.equalsIgnoreCase(WSCalculationConstant.plotBasedConst)) {
-				return  (property.getLandArea() != null && property.getLandArea() > 0)
-						? property.getLandArea()
-						: (property.getSuperBuiltUpArea() != null && property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0)
-						? property.getSuperBuiltUpArea().doubleValue() : 0.0 ;
+			return (property.getLandArea() != null && property.getLandArea() > 0)
+					? property.getLandArea()
+					: (property.getSuperBuiltUpArea() != null
+							&& property.getSuperBuiltUpArea().compareTo(BigDecimal.ZERO) > 0)
+							? property.getSuperBuiltUpArea().doubleValue()
+							: 0.0;
 		}
+ 
 		return 0.0;
 	}
 
@@ -574,6 +804,15 @@ public class EstimationService {
 		calendar.set(Calendar.MILLISECOND, 999);
 	}
 
+	public long calculateEffectiveMonths(Long fromDate, Long toDate) {
+		if (fromDate == null || toDate == null || toDate <= fromDate) {
+			return 1L;
+		}
+		double days = (toDate - fromDate) / (1000.0 * 60 * 60 * 24.0);
+		long months = Math.round(days / 30.0);
+		return months < 1 ? 1L : months;
+	}
+
 	/**
 	 * 
 	 * @param criteria    - Calculation Search Criteria
@@ -624,6 +863,39 @@ public class EstimationService {
 
 		JSONObject feeObj = mapper.convertValue(feeSlab.get(0), JSONObject.class);
 		BigDecimal formFee = BigDecimal.ZERO;
+		
+		// ----- create estimates list -----
+	    List<TaxHeadEstimate> estimates = new ArrayList<>();
+
+	 // ========= NEW LOGIC FOR DISCONNECTION ===========
+	    String applicationType = criteria.getWaterConnection().getApplicationType();
+	    if ("DISCONNECT_WATER_CONNECTION".equalsIgnoreCase(applicationType)) {
+	    	log.info("Available Masters in masterData map: {}", masterData.keySet());
+
+	        JSONArray disConnMaster = (JSONArray) masterData
+	                .getOrDefault(WSCalculationConstant.WC_DISCONNECTION_MASTER, null);
+	        
+
+	        if (disConnMaster == null || disConnMaster.isEmpty())
+	            throw new CustomException("DISCONNECTION_FEE_NOT_FOUND",
+	                    "Disconnection Fee not found!");
+
+
+	        JSONObject disConnObj = mapper.convertValue(disConnMaster.get(0), JSONObject.class);
+
+	     // Use a different variable name
+	     Object disconnFeeObj = disConnObj.get("disconnectionFee");
+	     BigDecimal disconnectionFee = (disconnFeeObj != null) ? new BigDecimal(disconnFeeObj.toString()) : BigDecimal.ZERO;
+
+	     // ADD TAX HEAD
+	     estimates.add(TaxHeadEstimate.builder()
+	             .taxHeadCode(WSCalculationConstant.WS_DISCONNECTION_FEE)
+	             .estimateAmount(disconnectionFee.setScale(2, 2))
+	             .category(TaxHeadCategory.FEE)
+	             .build());
+
+	     return estimates; // stop further fee processing
+	    }
 
 		if (feeObj.get(WSCalculationConstant.FORM_FEE_CONST) != null) {
 			formFee = new BigDecimal(feeObj.getAsNumber(WSCalculationConstant.FORM_FEE_CONST).toString());
@@ -798,7 +1070,6 @@ public class EstimationService {
 //				.add(roadPlotCharge).add(usageTypeCharge);
 		BigDecimal totalCharge = formFee.add(securityCharge).add(meterTestingFee).add(roadCuttingCharge);
 		BigDecimal tax = totalCharge.multiply(taxAndCessPercentage.divide(WSCalculationConstant.HUNDRED));
-		List<TaxHeadEstimate> estimates = new ArrayList<>();
 		//
 		
 		/*

@@ -90,6 +90,7 @@ public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
 						.additionalDetails(additionalDetails)
 						.businessService(rs.getString("businessService"))
 						.riskType(riskType)
+						.applicationType(rs.getString("applicationtype"))
 						.build();
 
 				buildingMap.put(id, currentbpa);
@@ -141,6 +142,7 @@ public class BPARowMapper implements ResultSetExtractor<List<BPA>> {
 					.fileStoreId(rs.getString("bpa_doc_filestore"))
 					.id(documentId)
 					.additionalDetails(docDetails)
+					.order(rs.getInt("doc_order"))
 					.documentUid(rs.getString("documentUid")).build();
 			bpa.addDocumentsItem(document);
 		}

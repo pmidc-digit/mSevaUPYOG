@@ -55,12 +55,63 @@ public class ReportRepository {
 
         return parameters;
     }
+    
+    private Map<String, Object>  getpdcQueryParameters(PdcRequest reportRequest) {
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        Long userId = reportRequest.getRequestInfo().getUserInfo() == null ? null : reportRequest.getRequestInfo().getUserInfo().getId();
+
+        parameters.put("tenantid", reportRequest.getTenantId());
+        parameters.put("userId",  userId);
+        parameters.put("currentTime",  System.currentTimeMillis());
+
+        for (SearchParam param :reportRequest.getSearchParams()) {
+            parameters.put(param.getName(), param.getInput());
+        }
+
+        return parameters;
+    }
 
     public String getQuery(ReportRequest reportRequest, ReportDefinition reportDefinition, String authToken) {
         Map<String, Object> parameters = getQueryParameters(reportRequest);
         String originalQuery = reportDefinition.getQuery();
         String query = originalQuery;
         Long userId = reportRequest.getRequestInfo().getUserInfo() == null ? null : reportRequest.getRequestInfo().getUserInfo().getId();
+
+        for (SearchColumn param: reportDefinition.getSearchParams()){
+            String value = "";
+            if (parameters.containsKey(param.getName())) {
+                value = param.getSearchClause();
+            }
+
+            query = query.replaceAll("\\$_" + param.getName(), value.replace("$","\\$"));
+            log.info(query);
+        }
+
+        reportDefinition.setQuery(query);
+
+        query = reportQueryBuilder.buildQuery(reportRequest.getSearchParams(), reportRequest.getTenantId(), reportDefinition, authToken, userId);
+        return query;
+    }
+    
+    
+    public String getpdcQuery(PdcRequest reportRequest, ReportDefinition reportDefinition, String authToken) {
+        Map<String, Object> parameters = getpdcQueryParameters(reportRequest);
+        String originalQuery = reportDefinition.getQuery();
+        String query = originalQuery;
+        Long userId = reportRequest.getRequestInfo().getUserInfo() == null ? null : reportRequest.getRequestInfo().getUserInfo().getId();
+        
+//        for (SearchParam param : reportRequest.getSearchParams()) {
+//            
+//            String paramName = String.valueOf(param.getName());
+//            String paramInput = String.valueOf(param.getInput());
+//
+//            
+//            if (("tenantId".equalsIgnoreCase(paramName) || "serviceID".equalsIgnoreCase(paramName)) 
+//                    && (paramInput == null || paramInput.isEmpty() || "0".equals(paramInput))) {
+//                return query;
+//            }
+//
+//        }
 
         for (SearchColumn param: reportDefinition.getSearchParams()){
             String value = "";
@@ -85,6 +136,42 @@ public class ReportRepository {
 
         String query = getQuery(reportRequest, reportDefinition, authToken);
         Map<String, Object> parameters = getQueryParameters(reportRequest);
+
+        MapSqlParameterSource params =  new MapSqlParameterSource(parameters);
+        log.info("final query:" + query);
+        try {
+
+            maps = namedParameterJdbcTemplate.queryForList(query, params);
+            // convert 'abc, xyz' -> ['abc','xyz'] to allow decryptions of each entity
+            convertStringArraystoListForEncryption(maps, reportDefinition.getSourceColumns());
+        } catch (DataAccessResourceFailureException ex) {
+            log.info("Query Execution Failed Due To Timeout: ", ex);
+            PSQLException cause = (PSQLException) ex.getCause();
+            if (cause != null && cause.getSQLState().equals("57014")) {
+                throw new CustomException("QUERY_EXECUTION_TIMEOUT", "Query failed, as it took more than: "+ (queryExecutionTimeout) + " seconds to execute");
+            } else {
+                throw ex;
+            }
+        } catch (Exception e) {
+            log.info("Query Execution Failed: ", e);
+            throw new CustomException("QUERY_EXEC_ERROR", "Error while executing query: " + e.getMessage());
+        }
+
+        Long endTime = new Date().getTime();
+        Long totalExecutionTime = endTime - startTime;
+        log.info("total query execution time taken in millisecount:" + totalExecutionTime);
+        if (endTime - startTime > maxExecutionTime)
+            log.error("Sql query is taking time query:" + query);
+        return maps;
+    }
+
+    public List<Map<String, Object>> getpdcData(PdcRequest reportRequest, ReportDefinition reportDefinition, String authToken) throws CustomException {
+
+        Long startTime = new Date().getTime();
+        List<Map<String, Object>> maps = null;
+
+        String query = getpdcQuery(reportRequest, reportDefinition, authToken);
+        Map<String, Object> parameters = getpdcQueryParameters(reportRequest);
 
         MapSqlParameterSource params =  new MapSqlParameterSource(parameters);
         log.info("final query:" + query);

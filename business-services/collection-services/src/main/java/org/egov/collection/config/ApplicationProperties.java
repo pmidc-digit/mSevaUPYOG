@@ -77,6 +77,9 @@ public class ApplicationProperties {
     @Value("${egov.services.hostname}")
     private String egovServiceHost;
 
+    @Value("${egov.filestore.hostname}")
+    private String fileStoreHost;
+    
     @Value("${egov.pdf.service.create}")
     private String egovPdfCreate;
 
@@ -121,6 +124,12 @@ public class ApplicationProperties {
 
     @Value("${egov.services.billing_service.search}")
     private String searchBill;
+
+    @Value("${egov.services.billing_service.cancelbill}")
+    private String billingServiceCancelBill;
+
+    @Value("${egov.services.billing_service.reactivatebill}")
+    private String billingServiceReactivateBill;
 
     @Value("${kafka.topics.update.receipt.workflowdetails}")
     private String kafkaUpdateWorkFlowDetailsTopic;
@@ -243,7 +252,8 @@ public class ApplicationProperties {
     @Value("${kafka.topics.notification.sms.key}")
     private String smsTopickey;
 
-
+    @Value("${kafka.topics.notification.email}")
+    private String emailTopic;
 
     //MDMS
 

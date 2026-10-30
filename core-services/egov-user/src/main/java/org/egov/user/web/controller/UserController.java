@@ -23,6 +23,8 @@ import org.egov.user.web.contract.UserRequest;
 import org.egov.user.web.contract.UserSearchRequest;
 import org.egov.user.web.contract.UserSearchResponse;
 import org.egov.user.web.contract.UserSearchResponseContent;
+import org.egov.user.web.contract.EmployeeLoginRequest;
+import org.egov.user.web.contract.UserUnlockRequest;
 import org.egov.user.web.contract.auth.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,10 +57,9 @@ public class UserController {
 
     @Value("${egov.user.search.default.size}")
     private Integer defaultSearchSize;
-    
+
     @Value("${egov.user.internal.search.default.size}")
     private Integer defaultInternalSearchSize;
-
 
     @Autowired
     public UserController(UserService userService, TokenService tokenService) {
@@ -95,7 +96,7 @@ public class UserController {
      */
     @PostMapping("/users/_createnovalidate")
     public UserDetailResponse createUserWithoutValidation(@RequestBody @Valid CreateUserRequest createUserRequest,
-                                                          @RequestHeader HttpHeaders headers) {
+            @RequestHeader HttpHeaders headers) {
 
         User user = createUserRequest.toDomain(true);
         user.setMobileValidationMandatory(isMobileValidationRequired(headers));
@@ -120,12 +121,12 @@ public class UserController {
         }
         return searchUsers(request, headers);
     }
-    
+
     @PostMapping("/_searchV2")
     public UserSearchResponse getV2(@RequestBody @Valid UserSearchRequest request, @RequestHeader HttpHeaders headers) {
 
         log.info("Received User search Request  " + request);
-     // Force active = null to disable filtering
+        // Force active = null to disable filtering
         request.setActive(null);
         log.info("Received User search Request  " + request);
         return searchUsers(request, headers);
@@ -154,7 +155,7 @@ public class UserController {
     public CustomUserDetails getUser(@RequestParam(value = "access_token") String accessToken) {
         final UserDetail userDetail = tokenService.getUser(accessToken);
         return new CustomUserDetails(userDetail);
-        //  no encrypt/decrypt
+        // no encrypt/decrypt
     }
 
     /**
@@ -166,7 +167,7 @@ public class UserController {
      */
     @PostMapping("/users/_updatenovalidate")
     public UpdateResponse updateUserWithoutValidation(@RequestBody final @Valid CreateUserRequest createUserRequest,
-                                                      @RequestHeader HttpHeaders headers) {
+            @RequestHeader HttpHeaders headers) {
         User user = createUserRequest.toDomain(false);
         user.setMobileValidationMandatory(isMobileValidationRequired(headers));
         final User updatedUser = userService.updateWithoutOtpValidation(user, createUserRequest.getRequestInfo());
@@ -187,6 +188,39 @@ public class UserController {
         return createResponseforUpdate(updatedUser);
     }
 
+    /**
+     * Authenticates an employee without generating a token.
+     * returns user object on success.
+     *
+     * @param loginRequest
+     * @return
+     */
+    @PostMapping("/employee/_login")
+    public UserDetailResponse employeeLogin(@RequestBody @Valid EmployeeLoginRequest loginRequest) {
+        log.info("Received Employee Login Request for: " + loginRequest.getUserName());
+        User authenticatedUser = userService.authenticateEmployee(
+                loginRequest.getUserName(),
+                loginRequest.getPassword(),
+                loginRequest.getTenantId(),
+                loginRequest.getRequestInfo());
+        return createResponse(authenticatedUser);
+    }
+
+    /**
+     * Endpoint to unlock a locked/blocked user account and clear failed login attempts.
+     *
+     * @param unlockRequest
+     * @return UserDetailResponse containing the unlocked user details
+     */
+    @PostMapping({"/users/_unlock", "/_unlock"})
+    public UserDetailResponse unlockUser(@RequestBody @Valid UserUnlockRequest unlockRequest) {
+        log.info("Received User Unlock Request for user: {}, uuid: {}",
+                unlockRequest != null ? unlockRequest.getUserName() : null,
+                unlockRequest != null ? unlockRequest.getUuid() : null);
+        User unlockedUser = userService.unlockUser(unlockRequest);
+        return createResponse(unlockedUser);
+    }
+
     private UserDetailResponse createResponse(User newUser) {
         UserRequest userRequest = new UserRequest(newUser);
         ResponseInfo responseInfo = ResponseInfo.builder().status(String.valueOf(HttpStatus.OK.value())).build();
@@ -204,13 +238,15 @@ public class UserController {
         UserSearchCriteria searchCriteria = request.toDomain();
 
         if (!isInterServiceCall(headers)) {
-            if ((isEmpty(searchCriteria.getId()) && isEmpty(searchCriteria.getUuid())) && (searchCriteria.getLimit() > defaultSearchSize
-                    || searchCriteria.getLimit() == 0))
+            if ((isEmpty(searchCriteria.getId()) && isEmpty(searchCriteria.getUuid()))
+                    && (searchCriteria.getLimit() > defaultSearchSize
+                            || searchCriteria.getLimit() == 0))
                 searchCriteria.setLimit(defaultSearchSize);
         } else if ((searchCriteria.getLimit() > defaultInternalSearchSize || searchCriteria.getLimit() == 0))
             searchCriteria.setLimit(defaultInternalSearchSize);
 
-        List<User> userModels = userService.searchUsers(searchCriteria, isInterServiceCall(headers), request.getRequestInfo());
+        List<User> userModels = userService.searchUsers(searchCriteria, isInterServiceCall(headers),
+                request.getRequestInfo());
         List<UserSearchResponseContent> userContracts = userModels.stream().map(UserSearchResponseContent::new)
                 .collect(Collectors.toList());
         ResponseInfo responseInfo = ResponseInfo.builder().status(String.valueOf(HttpStatus.OK.value())).build();

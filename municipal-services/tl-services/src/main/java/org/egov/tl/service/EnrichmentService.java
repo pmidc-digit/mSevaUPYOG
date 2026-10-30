@@ -583,7 +583,8 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
             }
             
             //Add Signature in 
-            if(StringUtils.isEmpty(tradeLicense.getTradeLicenseDetail().getOwners().get(0).getSignature())) {
+            if(StringUtils.isEmpty(tradeLicense.getTradeLicenseDetail().getOwners().get(0).getSignature())
+            		&& tradeLicense.getTradeLicenseDetail().getApplicationDocuments()!=null) {
             	String signatureId = tradeLicense.getTradeLicenseDetail().getApplicationDocuments().stream()
             	.filter(documnet -> documnet.getDocumentType().equalsIgnoreCase(SIGNATURE_DOC_TYPE))
             	.map(Document::getFileStoreId).findAny().orElse(null);

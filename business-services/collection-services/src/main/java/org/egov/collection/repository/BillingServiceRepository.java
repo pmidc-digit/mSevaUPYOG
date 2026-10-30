@@ -19,7 +19,11 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Collections;
 import java.util.List;
+
+import org.egov.collection.web.contract.BillList;
+import org.egov.collection.web.contract.CancelBillCriteria;
 
 import static java.util.Objects.isNull;
 
@@ -83,6 +87,75 @@ public class BillingServiceRepository {
         } catch (Exception e) {
             log.error("Unable to fetch bill for Bill ID: {} in tenant {}", billIds, tenantId, e);
             throw new CustomException("BILLING_SERVICE_ERROR", "Failed to fetch bill, unknown error occurred");
+        }
+    }
+
+    public List<Bill> searchBills(RequestInfo requestInfo, String tenantId, String consumerCode, String service, String status) {
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        queryParams.add("tenantId", tenantId);
+        if (consumerCode != null) queryParams.add("consumerCode", consumerCode);
+        if (service != null) queryParams.add("service", service);
+        if (status != null) queryParams.add("status", status);
+
+        String uri = UriComponentsBuilder
+                .fromHttpUrl(applicationProperties.getBillingServiceHostName())
+                .path(applicationProperties.getSearchBill())
+                .queryParams(queryParams)
+                .build()
+                .toUriString();
+
+        RequestInfoWrapper wrapper = new RequestInfoWrapper(requestInfo);
+
+        try {
+            BillResponse response = restTemplate.postForObject(uri, wrapper, BillResponse.class);
+            return (response != null && response.getBill() != null) ? response.getBill() : Collections.emptyList();
+        } catch (Exception e) {
+            log.error("Unable to search bills in tenant {} for consumerCode {}", tenantId, consumerCode, e);
+            return Collections.emptyList();
+        }
+    }
+
+    public void cancelBill(RequestInfo requestInfo, String tenantId, String consumerCode, String businessService) {
+        String uri = UriComponentsBuilder
+                .fromHttpUrl(applicationProperties.getBillingServiceHostName())
+                .path(applicationProperties.getBillingServiceCancelBill())
+                .build()
+                .toUriString();
+
+        BillList billList = BillList.builder()
+                .consumerCode(consumerCode)
+                .businessService(businessService)
+                .build();
+
+        CancelBillCriteria cancelBillCriteria = CancelBillCriteria.builder()
+                .requestInfo(requestInfo)
+                .tenantId(tenantId)
+                .billList(Collections.singletonList(billList))
+                .build();
+
+        try {
+            restTemplate.postForObject(uri, cancelBillCriteria, Object.class);
+            log.info("Bill cancelled successfully in billing-service for consumerCode: {} in tenant: {}", consumerCode, tenantId);
+        } catch (Exception e) {
+            log.error("Error while cancelling bill in billing-service for consumerCode: {} in tenant: {}", consumerCode, tenantId, e);
+        }
+    }
+
+    public void reactivateBill(RequestInfo requestInfo, String billId) {
+        String uri = UriComponentsBuilder
+                .fromHttpUrl(applicationProperties.getBillingServiceHostName())
+                .path(applicationProperties.getBillingServiceReactivateBill())
+                .queryParam("billId", billId)
+                .build()
+                .toUriString();
+
+        RequestInfoWrapper wrapper = new RequestInfoWrapper(requestInfo);
+
+        try {
+            restTemplate.postForObject(uri, wrapper, Object.class);
+            log.info("Bill {} reactivated successfully in billing-service", billId);
+        } catch (Exception e) {
+            log.error("Error while reactivating bill {} in billing-service", billId, e);
         }
     }
 }

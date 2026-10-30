@@ -79,6 +79,7 @@ import org.egov.infra.utils.DateUtils;
 import org.egov.infra.utils.NumberUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
@@ -88,7 +89,7 @@ public final class ReportUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportUtil.class);
     private static final EnumMap<ReportFormat, String> CONTENT_TYPES;
-
+   
     static {
         CONTENT_TYPES = new EnumMap<>(ReportFormat.class);
         CONTENT_TYPES.put(ReportFormat.PDF, "application/pdf");
@@ -114,7 +115,7 @@ public final class ReportUtil {
     public static String getImageURL(String imagePathWithContextRoot) {
         return getDomainURL() + imagePathWithContextRoot;
     }
-
+    
     public static String getCityName() {
         return getMunicipalityName();
     }

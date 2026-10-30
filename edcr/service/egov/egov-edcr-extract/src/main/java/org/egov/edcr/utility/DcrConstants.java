@@ -41,6 +41,7 @@ public class DcrConstants {
     public static final String OBJECTNOTDEFINED_DESC = " Not defined in the plan.";
     public static final String EXPECTEDRESULT = "msg.result.expected.actual";
     public static final String FLOOR_HEIGHT_DESC = "Floor height";
+    public static final String FLOOR_STILT_HEIGHT_DESC = "Floor stilt height";
 
     public static final String OBJECTDEFINED = "msg.object.defined";
     public static final String OBJECTNOTDEFINED = "msg.error.not.defined";
@@ -63,6 +64,7 @@ public class DcrConstants {
     public static final String BUILDING_FOOT_PRINT = "Building foot print";
     public static final String FRONT_YARD_DESC = "Front Setback";
     public static final String REAR_YARD_DESC = "Rear Setback";
+    public static final String REAR_AND_SIDE_YARD_DESC = "Rear and Side Setback";
     public static final String SIDE_YARD1_DESC = "Side Setback 1";
     public static final String SIDE_YARD2_DESC = "Side Setback 2";
     public static final String BSMT_FRONT_YARD_DESC = "Basement Front Setback";
@@ -80,6 +82,7 @@ public class DcrConstants {
     public static final String VERTICAL_ELECTRICLINE_DISTANCE = " Minimum Vertical line distance from electric line ";
     public static final String MAXIMUM_NUMBEROF_FLOOR = "Maximum Number of floor ";
     public static final String IN_METER = "(MTR)";
+    public static final String IN_M = " m";
     public static final String IN_KV = "(KV)";
     public static final String FILESTORE_MODULECODE = "Digit DCR";
     public static final String SEQ_ECDR_APPLICATIONNO = "SEQ_ECDR_APPLICATIONNO";
@@ -159,7 +162,8 @@ public class DcrConstants {
     public static final String OFBLOCK = " of Block ";
     public static final String FOROCCUPANCY = " for occupancy ";
     public static final String MEAN_OF_ACCESS = "Mean Of Access";
-    public static final String SQMTRS = "m2";
+//    public static final String SQMTRS = "m2";
+    public static final String SQMTRS = "m²";
     public static final String WELL_DISTANCE_FROMBOUNDARY = "Minimum distance from the well ";
     public static final String WASTE_DISPOSAL_DISTANCE_FROMBOUNDARY = "Minimum distance from the waste disposal ";
     public static final String RAINWATER_HARVES_TANKCAPACITY = "Rain Water Harvesting system storage tank capacity ";
@@ -195,5 +199,12 @@ public class DcrConstants {
     public static final String MDMS_EDCR_MODULE = "EDCR";
     public static final String PORTICO_DISTANCETO_EXTERIORWALL = "Block %s Portico %s Portico distance to exteriorwall";
     public static final String PDF_EXT = "application/pdf";
+    
+    //edcr skip validation constants
+    public static final String EDCR_SKIP_PLOT_AREA = "PlotArea";
+    public static final String EDCR_SKIP_ROAD_WIDTH = "RoadWidth";
+    public static final String EDCR_SKIP_PLOT_COVERAGE = "PlotCoverage";
+    public static final String EDCR_SKIP_FRONT_SETBACK = "FrontSetback";
+    public static final String EDCR_SKIP_ECS = "ECS";
 
 }

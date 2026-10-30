@@ -21,7 +21,10 @@ public interface WaterDao {
 	Integer getTotalApplications(SearchCriteria criteria);
 	
 	List<String> fetchWaterConnectionIds(SearchCriteria criteria);
-	
+
+    void updateOldBillStatus(UpdateBillStatusReq updateBillStatusReq);
+
+    void updatePayerIDForDemand(UpdateDemandPayerRequest updateDemandPayerRequest);
 
 	void updateEncryptionStatus(EncryptionCount encryptionCount);
 	

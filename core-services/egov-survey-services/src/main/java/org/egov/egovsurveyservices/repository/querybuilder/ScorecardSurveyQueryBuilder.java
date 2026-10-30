@@ -65,7 +65,10 @@ public class ScorecardSurveyQueryBuilder {
                     "question.lastmodifiedby AS question_lastmodifiedby, " +
                     "question.createdtime AS question_createdtime, " +
                     "question.lastmodifiedtime AS question_lastmodifiedtime, " +
+                    "question.qorder AS question_qorder, " +
                     "question.categoryid AS question_categoryid, " +
+                    "questionCategory.label AS question_category_label, " +
+                    "surveyCategory.label AS survey_category_label, " +
                     "question.tenantid AS question_tenantid, " +
 
                     // Question weightage fields
@@ -77,7 +80,9 @@ public class ScorecardSurveyQueryBuilder {
                     "questionOption.uuid AS option_uuid, " +
                     "questionOption.optiontext AS option_text, " +
                     "questionOption.optionorder as option_order, " +
-                    "questionOption.weightage AS option_weightage " +
+                    "questionOption.weightage AS option_weightage, " +
+                    "questionOption.createdtime AS option_createdtime, " +
+                    "questionOption.lastmodifiedtime AS option_lastmodifiedtime " +
 
             "FROM eg_ss_survey_entity AS survey " +
             "LEFT JOIN eg_ss_survey_section AS section " +
@@ -86,6 +91,8 @@ public class ScorecardSurveyQueryBuilder {
             "ON section.uuid = questionWeightage.sectionuuid " +
             "LEFT JOIN eg_ss_question AS question " +
             "ON questionWeightage.questionuuid = question.uuid "+
+            "LEFT JOIN eg_ss_category questionCategory ON question.categoryid = questionCategory.id " +
+            "LEFT JOIN eg_ss_category surveyCategory ON survey.category = surveyCategory.id " +
             "LEFT JOIN eg_ss_question_option AS questionOption " +
             "ON question.uuid = questionOption.questionuuid ";
 
@@ -127,6 +134,8 @@ public class ScorecardSurveyQueryBuilder {
             preparedStmtList.add(System.currentTimeMillis());
         }
         
+        // order using selected aliases so DISTINCT + ORDER BY is allowed
+        query.append(" ORDER BY survey_createdtime DESC, section_order ASC, question_weightage_qorder ASC, question_qorder ASC, option_order ASC ");
         return query.toString();
     }
 
@@ -240,8 +249,8 @@ public class ScorecardSurveyQueryBuilder {
     }
 
     public String getSurveyResponseDetails() {
-        return "SELECT uuid, surveyuuid, citizenid, tenantid, locality, coordinates, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime " +
-                "FROM eg_ss_survey_response WHERE surveyuuid = ? AND citizenid = ? AND tenantid = ? LIMIT 1";
+        return "SELECT uuid, surveyuuid, citizenid, tenantid, locality, coordinates, comments, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime " +
+            "FROM eg_ss_survey_response WHERE surveyuuid = ? AND citizenid = ? AND tenantid = ? LIMIT 1";
     }
 
     public String fetchTenantIdBasedOnSurveyId() {

@@ -1,10 +1,12 @@
 package org.egov.edcr.feature;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.edcr.Block;
+import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
 import org.egov.edcr.utility.Util;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class RoofTankExtract extends FeatureExtract {
     private static final Logger LOG = LogManager.getLogger(RoofTankExtract.class);
+    
+    public static final BigDecimal HIGH_RISE_BUILDING_HEIGHT = BigDecimal.valueOf(21);
     @Autowired
     private LayerNames layerNames;
 
@@ -28,11 +32,21 @@ public class RoofTankExtract extends FeatureExtract {
 
         for (Block block : planDetail.getBlocks()) {
             block.setRoofTanks(Util.getListOfDimensionValueByLayer(planDetail,
-                    String.format(layerNames.getLayerName("LAYER_NAME_ROOF_TANK"), block.getNumber())));
-
+                    String.format(layerNames.getLayerName("LAYER_NAME_ROOF_TANK"), block.getNumber())));	        
+            
             if (block.getRoofTanks() != null && !block.getRoofTanks().isEmpty()) {
                 minHeight = block.getRoofTanks().stream().reduce(BigDecimal::min).get();
                 if (minHeight.compareTo(new BigDecimal(1)) > 0) {
+                	Map<String, String> data = Util.getColorByDimensionByLayer(planDetail, 
+                    		String.format(layerNames.getLayerName("LAYER_NAME_ROOF_TANK"), block.getNumber()));
+                    
+                    if(!data.isEmpty()) {
+                    	String layer = data.get("layerName");
+            	        String color = data.get("colorCode");
+            	        
+            	      //Code added for the layername with colorCode match
+            			Util.validateLayerColor(layer, Integer.parseInt(color), planDetail);
+                    }
                     increasedHeight = block.getBuilding().getBuildingHeight()
                             .subtract(block.getBuilding().getDeclaredBuildingHeight());
                     if (minHeight.compareTo(increasedHeight) > 0) {
@@ -43,7 +57,9 @@ public class RoofTankExtract extends FeatureExtract {
                 }
             }
 
-            if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0)
+//            if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0)
+//                block.getBuilding().setIsHighRise(true);
+            if (block.getBuilding().getBuildingHeight().compareTo(HIGH_RISE_BUILDING_HEIGHT) > 0)
                 block.getBuilding().setIsHighRise(true);
         }
 

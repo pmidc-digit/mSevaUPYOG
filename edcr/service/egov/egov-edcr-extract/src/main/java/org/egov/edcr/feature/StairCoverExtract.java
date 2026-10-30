@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.edcr.Block;
+import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.service.LayerNames;
 import org.egov.edcr.utility.Util;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class StairCoverExtract extends FeatureExtract {
     private static final Logger LOG = LogManager.getLogger(StairCoverExtract.class);
+    public static final BigDecimal HIGH_RISE_BUILDING_HEIGHT = BigDecimal.valueOf(21);
+    
     @Autowired
     private LayerNames layerNames;
 
@@ -34,16 +37,19 @@ public class StairCoverExtract extends FeatureExtract {
                 if (minHeight.compareTo(new BigDecimal(3)) > 0) {
                     increasedHeight = block.getBuilding().getBuildingHeight()
                             .subtract(block.getBuilding().getDeclaredBuildingHeight());
-                    if (minHeight.compareTo(increasedHeight) > 0) {
-                        block.getBuilding()
-                                .setBuildingHeight(block.getBuilding().getDeclaredBuildingHeight().add(minHeight));
-                        block.getBuilding().setHeightIncreasedBy("Stair Cover");
-                    }
+//                    if (minHeight.compareTo(increasedHeight) > 0) {
+//                        block.getBuilding()
+//                                .setBuildingHeight(block.getBuilding().getDeclaredBuildingHeight().add(minHeight));
+//                        block.getBuilding().setHeightIncreasedBy("Stair Cover");
+//                    }
                 }
             }
 
-            if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0)
-                block.getBuilding().setIsHighRise(true);
+//            if (block.getBuilding().getBuildingHeight().compareTo(new BigDecimal(15)) > 0)
+//                block.getBuilding().setIsHighRise(true);
+            
+            if (block.getBuilding().getBuildingHeight().compareTo(HIGH_RISE_BUILDING_HEIGHT) > 0)
+              block.getBuilding().setIsHighRise(true);
         }
 
         return planDetail;

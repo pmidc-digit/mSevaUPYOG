@@ -21,6 +21,8 @@ import org.egov.swservice.web.models.EncryptionCount;
 import org.egov.swservice.web.models.SearchCriteria;
 import org.egov.swservice.web.models.SewerageConnection;
 import org.egov.swservice.web.models.SewerageConnectionRequest;
+import org.egov.swservice.web.models.UpdateBillStatusReq;
+import org.egov.swservice.web.models.UpdateDemandPayerRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -66,6 +68,12 @@ public class SewerageDaoImpl implements SewerageDao {
 
 	@Value("${egov.sewerageservice.update.oldData.topic}")
 	private String updateOldDataEncTopic;
+
+    @Value("${egov.updatebillstatus.topic}")
+    private String updateBillStatusTopic;
+
+    @Value("${egov.updatedemandpayer.topic}")
+    private String updateDemandPayerTopic;
 
 	@Override
 	public void saveSewerageConnection(SewerageConnectionRequest sewerageConnectionRequest) {
@@ -130,22 +138,19 @@ public class SewerageDaoImpl implements SewerageDao {
 		log.info("SW application request before update:" + sewerageConnectionRequest);
 		String reqAction = sewerageConnectionRequest.getSewerageConnection().getProcessInstance().getAction();
 		if (isStateUpdatable) {
-			if (SWConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction)) {
-				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.INACTIVE);
+			if (SWConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction) || SWConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(reqAction)) {
+				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.DISCONNECTED);
 			}
-			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
+			if ((sewerageConnectionRequest.isReconnectRequest() || (sewerageConnectionRequest.getSewerageConnection().getApplicationType() != null && sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION))) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
 				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.ACTIVE);
 			}
 			String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
 			sewarageConnectionProducer.push(updateSewarageConnection, key , sewerageConnectionRequest);
-		} else if (sewerageConnectionRequest.getSewerageConnection().getApplicationType()
+		} else if (sewerageConnectionRequest.getSewerageConnection().getApplicationType() != null && sewerageConnectionRequest.getSewerageConnection().getApplicationType()
 		        .equalsIgnoreCase(SWConstants.DISCONNECT_SEWERAGE_CONNECTION)) {
 
-		    if (SWConstants.APPROVE_CONNECTION.equalsIgnoreCase(reqAction)) {
-				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.INACTIVE);
-			}
-			if ((sewerageConnectionRequest.isReconnectRequest() || sewerageConnectionRequest.getSewerageConnection().getApplicationType().equalsIgnoreCase(SWConstants.SEWERAGE_RECONNECTION)) && SWConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(reqAction)) {
-				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.ACTIVE);
+		    if (SWConstants.APPROVE_CONNECTION.equalsIgnoreCase(reqAction) || SWConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(reqAction) || SWConstants.EXECUTE_DISCONNECTION.equalsIgnoreCase(reqAction)) {
+				sewerageConnectionRequest.getSewerageConnection().setStatus(Connection.StatusEnum.DISCONNECTED);
 			}
 			String key = sewerageConnectionRequest.getSewerageConnection().getConnectionNo();
 			sewarageConnectionProducer.push(updateSewarageConnection, key , sewerageConnectionRequest);
@@ -302,4 +307,24 @@ public class SewerageDaoImpl implements SewerageDao {
         return sewerageconnection;
     }
 
+    @Override
+    public void updateOldBillStatus(UpdateBillStatusReq updateBillStatusReq) {
+        String key = updateBillStatusReq.getConsumer();
+        try{
+            sewarageConnectionProducer.push(updateBillStatusTopic, key, updateBillStatusReq);
+        }catch (Exception e){
+            log.info("Exception",e);
+        }
+    }
+
+    @Override
+    public void updatePayerIDForDemand(UpdateDemandPayerRequest updateDemandPayerRequest) {
+        String key = updateDemandPayerRequest.getConsumer();
+        try{
+            sewarageConnectionProducer.push(updateDemandPayerTopic, key, updateDemandPayerRequest);
+        }catch (Exception e){
+            log.info("Exception",e);
+        }
+
+    }
 }

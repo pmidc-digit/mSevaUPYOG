@@ -81,35 +81,39 @@ public class StairCover extends FeatureProcess {
         scrutinyDetail.setKey("Common_Mumty");
         scrutinyDetail.addColumnHeading(1, RULE_NO);
         scrutinyDetail.addColumnHeading(2, DESCRIPTION);
-        scrutinyDetail.addColumnHeading(3, VERIFIED);
-        scrutinyDetail.addColumnHeading(4, ACTION);
+        scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
+        scrutinyDetail.addColumnHeading(4, PROVIDED);
         scrutinyDetail.addColumnHeading(5, STATUS);
 
         Map<String, String> details = new HashMap<>();
-        details.put(RULE_NO, RULE_44_C);
+        details.put(RULE_NO, "-");
 
         BigDecimal minHeight = BigDecimal.ZERO;
 
         for (Block b : pl.getBlocks()) {
             minHeight = BigDecimal.ZERO;
             if (b.getStairCovers() != null && !b.getStairCovers().isEmpty()) {
-                minHeight = b.getStairCovers().stream().reduce(BigDecimal::min).get();
+                minHeight = b.getStairCovers().stream()
+                        .min(BigDecimal::compareTo)
+                        .orElse(BigDecimal.ZERO);
 
-                if (minHeight.compareTo(new BigDecimal(3)) <= 0) {
-                    details.put(DESCRIPTION, STAIRCOVER_DESCRIPTION);
-                    details.put(VERIFIED, "Verified whether stair cover height is <= 3 meters");
-                    details.put(ACTION, "Not included stair cover height(" + minHeight + ") to building height");
-                    details.put(STATUS, Result.Accepted.getResultVal());
-                    scrutinyDetail.getDetail().add(details);
-                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-                } else {
-                    details.put(DESCRIPTION, STAIRCOVER_DESCRIPTION);
-                    details.put(VERIFIED, "Verified whether stair cover height is <= 3 meters");
-                    details.put(ACTION, "Included stair cover height(" + minHeight + ") to building height");
-                    details.put(STATUS, Result.Verify.getResultVal());
-                    scrutinyDetail.getDetail().add(details);
-                    pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-                }
+                details.put(DESCRIPTION, STAIRCOVER_DESCRIPTION);
+                details.put(PERMISSIBLE, "Stair cover height should be <= 3 meters");
+
+                boolean accepted = minHeight.compareTo(BigDecimal.valueOf(3)) <= 0;
+
+                details.put(PROVIDED,
+                        accepted
+                                ? "Stair cover height (" + minHeight + "m) is within permissible limit"
+                                : "Stair cover height (" + minHeight + "m) exceeds permissible limit");
+
+                details.put(STATUS,
+                        accepted
+                                ? Result.Accepted.getResultVal()
+                                : Result.Not_Accepted.getResultVal());
+
+                scrutinyDetail.getDetail().add(details);
+                pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
             }
 
         }

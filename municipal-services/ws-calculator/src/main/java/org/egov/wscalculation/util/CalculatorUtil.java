@@ -321,6 +321,8 @@ public class CalculatorUtil {
 				.filter("[?(@.isActive== " + true + ")]").build());
 		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_ROADTYPE_MASTER)
 				.filter("[?(@.isActive== " + true + ")]").build());
+		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_DISCONNECTION_MASTER)
+				.filter("[?(@.isActive== " + true + ")]").build());
 		ModuleDetail mdDtl = ModuleDetail.builder().masterDetails(details)
 				.moduleName(WSCalculationConstant.WS_TAX_MODULE).build();
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(mdDtl)).tenantId(tenantId)
@@ -650,4 +652,31 @@ public class CalculatorUtil {
 		        .mdmsCriteria(mdmsCriteria)
 		        .build();
 	}
+
+    public String getWaterConnectionType(RequestInfo requestInfo, String tenantId, String connectionNo ) {
+        Object result = serviceRequestRepository.fetchResult(getWaterSearchURL(tenantId, connectionNo )
+                        .append("&searchType=CONNECTION"),
+                RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+
+        try {
+            WaterConnectionResponse response = mapper.convertValue(result, WaterConnectionResponse.class);
+            if (response == null || CollectionUtils.isEmpty(response.getWaterConnection()))
+                return null;
+            WaterConnection connection = response.getWaterConnection().get(0);
+            return connection == null ? null : connection.getConnectionType();
+        } catch (Exception e) {
+            throw new CustomException("PARSING_ERROR", "Error while parsing response of Water Connection Search");
+        }
+    }
+
+    public StringBuilder getFetchBillURLWithBusinessService(String tenantId, String consumerCode, String businessService) {
+
+        return new StringBuilder().append(calculationConfig.getBillingServiceHost())
+                .append(calculationConfig.getFetchBillEndPoint()).append(WSCalculationConstant.URL_PARAMS_SEPARATER)
+                .append(WSCalculationConstant.TENANT_ID_FIELD_FOR_SEARCH_URL).append(tenantId)
+                .append(WSCalculationConstant.SEPARATER).append(WSCalculationConstant.CONSUMER_CODE_SEARCH_FIELD_NAME)
+                .append(consumerCode).append(WSCalculationConstant.SEPARATER)
+                .append(WSCalculationConstant.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
+                .append(businessService);
+    }
 }

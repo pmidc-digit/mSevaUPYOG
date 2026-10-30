@@ -15,6 +15,7 @@ import org.egov.bpa.util.NotificationUtil;
 import org.egov.bpa.web.model.*;
 import org.egov.bpa.web.model.landInfo.LandInfo;
 import org.egov.bpa.web.model.landInfo.LandSearchCriteria;
+import org.egov.bpa.web.model.landInfo.OwnerInfo;
 import org.egov.bpa.web.model.landInfo.Source;
 import org.egov.bpa.web.model.user.UserDetailResponse;
 import org.egov.common.contract.request.RequestInfo;
@@ -75,56 +76,23 @@ public class BPANotificationService {
 	}
 
 	/**
-	 * Creates and send the sms based on the bpaRequest
+	 * Creates and send the sms based on the NOCRequest
 	 * 
-	 * @param bpaRequest
-	 *            The bpaRequest consumed on the kafka topic
+	 * @param request
+	 *            The NOCRequest listenend on the kafka topic
 	 */
-	public void process(BPARequest bpaRequest) {
-		RequestInfo requestInfo = bpaRequest.getRequestInfo();
-		Map<String, String> mobileNumberToOwner = new HashMap<>();
-		String tenantId = bpaRequest.getBPA().getTenantId();
-		String action = bpaRequest.getBPA().getWorkflow().getAction();
-		List<String> configuredChannelNames =  fetchChannelList(new RequestInfo(), tenantId, BPA_BUSINESSSERVICE, action);
-		Set<String> mobileNumbers = new HashSet<>();
-		mobileNumberToOwner = getUserList(bpaRequest);
-
-		for (Map.Entry<String, String> entryset : mobileNumberToOwner.entrySet()) {
-			mobileNumbers.add(entryset.getKey());
-		}
-
-			if(configuredChannelNames.contains(CHANNEL_NAME_SMS)){
+	public void process(BPARequest bpaRequest, String rawRecord) {
+		log.info("Start BPA Consumer Process for Application No: - " + bpaRequest.getBPA().getApplicationNo());
 		List<SMSRequest> smsRequests = new LinkedList<>();
-		if (null != config.getIsSMSEnabled()) {
-			if (config.getIsSMSEnabled()) {
-				enrichSMSRequest(bpaRequest, smsRequests);
-				if (!CollectionUtils.isEmpty(smsRequests))
-					util.sendSMS(smsRequests, config.getIsSMSEnabled());
-			}
+		List<EmailRequest> emailRequests = new LinkedList<>();
+		if (null != config.getIsSMSEnabled() && config.getIsSMSEnabled()) {
+			enrichSMSRequest(bpaRequest, smsRequests, emailRequests, rawRecord);
+			if (!CollectionUtils.isEmpty(smsRequests))
+				util.sendSMS(smsRequests, config.getIsSMSEnabled());
 		}
-		}
-
-		if(configuredChannelNames.contains(CHANNEL_NAME_EVENT)){
-			if (null != config.getIsUserEventsNotificationEnabled()) {
-				if (config.getIsUserEventsNotificationEnabled()) {
-				EventRequest eventRequest = getEvents(bpaRequest);
-				if (null != eventRequest)
-					util.sendEventNotification(eventRequest);
-			    }
-		    }
-		}
-
-		if(configuredChannelNames.contains(CHANNEL_NAME_EMAIL)){
-//			EMAIL block TBD
-			if (null != config.getIsEmailNotificationEnabled()) {
-				if (config.getIsEmailNotificationEnabled()) {
-					Map<String, String> mapOfPhnoAndEmail = util.fetchUserEmailIds(mobileNumbers, requestInfo, tenantId);
-					String localizationMessages = util.getLocalizationMessages(tenantId, bpaRequest.getRequestInfo());
-					String message = util.getEmailCustomizedMsg(bpaRequest.getRequestInfo(), bpaRequest.getBPA(), localizationMessages);
-					List<EmailRequest> emailRequests = util.createEmailRequest(bpaRequest, message, mapOfPhnoAndEmail,mobileNumberToOwner);
-					util.sendEmail(emailRequests);
-				}
-			}
+		if (null != config.getIsEmailNotificationEnabled() && config.getIsEmailNotificationEnabled() && !CollectionUtils.isEmpty(smsRequests)) {
+			if (!CollectionUtils.isEmpty(emailRequests))
+				util.sendEmail(emailRequests);
 		}
 	}
 
@@ -142,7 +110,7 @@ public class BPANotificationService {
 		List<Event> events = new ArrayList<>();
 		String tenantId = bpaRequest.getBPA().getTenantId();
 		String localizationMessages = util.getLocalizationMessages(tenantId, bpaRequest.getRequestInfo()); // --need
-		Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA());
+		Map<String, String> edcrResponse = edcrService.getEDCRDetails(bpaRequest.getRequestInfo(), bpaRequest.getBPA(), null);
 		String applicationType = edcrResponse.get(BPAConstants.APPLICATIONTYPE);
 																											// changes.
 		String message = util.getEventsCustomizedMsg(bpaRequest.getRequestInfo(), bpaRequest.getBPA(), edcrResponse, localizationMessages); // --need localization service changes.
@@ -261,21 +229,24 @@ public class BPANotificationService {
 	/**
 	 * Enriches the smsRequest with the customized messages
 	 * 
-	 * @param bpaRequest
+	 * @param request
 	 *            The bpaRequest from kafka topic
 	 * @param smsRequests
 	 *            List of SMSRequets
 	 */
-	private void enrichSMSRequest(BPARequest bpaRequest, List<SMSRequest> smsRequests) {
-		String tenantId = bpaRequest.getBPA().getTenantId();
-		String localizationMessages = util.getLocalizationMessages(tenantId, bpaRequest.getRequestInfo());
-		String message = util.getCustomizedMsg(bpaRequest.getRequestInfo(), bpaRequest.getBPA(), localizationMessages);
-		Map<String, String> mobileNumberToOwner = getUserList(bpaRequest);
-		log.info("Final message is " +message);
-		log.info("mobileNumber is " +mobileNumberToOwner);
-		smsRequests.addAll(util.createSMSRequest(bpaRequest,message, mobileNumberToOwner));
-
+	private void enrichSMSRequest(BPARequest bpaRequest, List<SMSRequest> smsRequests, List<EmailRequest> emailRequests, String rawRecord) {
+	String tenantId = bpaRequest.getBPA().getTenantId();
+	String localizationMessages = util.getLocalizationMessages(tenantId, bpaRequest.getRequestInfo());
+	String message = util.getCustomizedMsg(bpaRequest.getRequestInfo(), bpaRequest.getBPA(), localizationMessages, rawRecord);
+	if(message != null){
+		Map<String, String> mobileNumberToOwner = new HashMap<>();
+		Map<String, String> emailToOwner = new HashMap<>();
+		getUserList(bpaRequest, message, mobileNumberToOwner, emailToOwner);
+		smsRequests.addAll(util.createSMSRequest(message, mobileNumberToOwner));
+		emailRequests.addAll(util.createEmailRequest(BPAConstants.EMAIL_SUBJECT + bpaRequest.getBPA().getApplicationNo(), message, emailToOwner.keySet(), bpaRequest.getRequestInfo()));
 	}
+	
+}
 
 	/**
 	 * To get the Users to whom we need to send the sms notifications or event
@@ -366,6 +337,34 @@ public class BPANotificationService {
 		mdmsCriteriaReq.setRequestInfo(requestInfo);
 
 		return mdmsCriteriaReq;
+	}
+	
+	/**
+	 * To get the Users to whom we need to send the sms notifications or event
+	 * notifications.
+	 * 
+	 * @param nocRequest
+	 * @return
+	 */
+	private void getUserList(BPARequest bpaRequest, String message, Map<String, String> mobileNumberToOwner, Map<String, String> emailToOwner) {
+		String tenantId = bpaRequest.getBPA().getTenantId();
+		String stakeUUID = bpaRequest.getBPA().getAccountId();
+		List<String> ownerId = new ArrayList<String>();
+		ownerId.add(stakeUUID);
+		ownerId.addAll(bpaRequest.getBPA().getLandInfo().getOwners().stream().map(OwnerInfo::getUuid).collect(Collectors.toList()));
+		
+		if(message.split("\n")[0].contains("/"))
+			ownerId.add(bpaRequest.getBPA().getAuditDetails().getCreatedBy());
+		
+		BPASearchCriteria bpaSearchCriteria = new BPASearchCriteria();
+		bpaSearchCriteria.setOwnerIds(ownerId);
+		bpaSearchCriteria.setTenantId(tenantId);
+		UserDetailResponse userDetailResponse = userService.getUser(bpaSearchCriteria, bpaRequest.getRequestInfo());
+		userDetailResponse.getUser().stream().forEach(owner -> {
+			mobileNumberToOwner.put(owner.getMobileNumber(), owner.getName());
+			if(!StringUtils.isEmpty(owner.getEmailId()))
+				emailToOwner.put(owner.getEmailId(), owner.getName());
+		});
 	}
 
 }

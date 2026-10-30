@@ -1,0 +1,1 @@
+ALTER TABLE public.eg_clu_document ADD COLUMN IF NOT EXISTS doc_order SMALLINT;

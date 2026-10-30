@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,10 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 
+import org.egov.collection.model.PaymentSearchCriteria;
+import org.egov.collection.service.MDMSService;
+import org.egov.collection.service.PaymentService;
+
 import static org.egov.collection.config.CollectionServiceConstants.*;
 
 @Slf4j
@@ -51,6 +56,13 @@ public class CollectionNotificationConsumer {
 	@Autowired
 	private RestTemplate restTemplate;
 
+	@Autowired
+	private MDMSService mdmsService;
+
+	@Autowired
+	private PaymentService paymentService;
+
+
 	@KafkaListener(topics = { "${kafka.topics.payment.create.name}", "${kafka.topics.payment.receiptlink.name}" },
 			concurrency =  "${kafka.topics.bankaccountservicemapping.concurreny.count}" )
 	public void listen(HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
@@ -61,27 +73,233 @@ public class CollectionNotificationConsumer {
 			log.error("Exception while reading from the queue: ", e);
 		}
 	}
-
 	private void sendNotification(PaymentRequest paymentRequest) {
-		Payment payment = paymentRequest.getPayment();
-		for (PaymentDetail paymentDetail : payment.getPaymentDetails()) {
-			String mobNo = payment.getMobileNumber();
-			String paymentStatus = (payment.getPaymentStatus().toString() == null ? "NEW"
-					: payment.getPaymentStatus().toString());
-			Bill bill = paymentDetail.getBill();
-			String message = buildSmsBody(bill, paymentDetail, paymentRequest.getRequestInfo(), paymentStatus);
-			if (!StringUtils.isEmpty(message)) {
-				HashMap<String, Object> request = new HashMap<>();
-				request.put("mobileNumber", mobNo);
-				request.put("message", message);
-				producer.producer(applicationProperties.getSmsTopic(), request);
-			} else {
-				log.error("Message not configured! No notification will be sent.");
-			}
-		}
+	    Payment payment = paymentRequest.getPayment();
+	    RequestInfo requestInfo = paymentRequest.getRequestInfo();
+	    
+	    for (PaymentDetail paymentDetail : payment.getPaymentDetails()) {
+	        Bill bill = paymentDetail.getBill();
+	        String mobNo = payment.getMobileNumber();
+	        String emailId = (bill != null) ? bill.getPayerEmail() : null;
 
+	        String paymentStatus = (payment.getPaymentStatus() == null) ? "NEW" : payment.getPaymentStatus().toString();
+	        
+	        // 1. Build the dynamic body content (text part used for SMS and [MAIL_CONTENT])
+	        String bodyContent = buildSmsBody(bill, paymentDetail, requestInfo, paymentStatus);
+	        
+	        if (!StringUtils.isEmpty(bodyContent)) {
+	            // --- SMS Notification ---
+	            HashMap<String, Object> smsRequest = new HashMap<>();
+	            smsRequest.put("mobileNumber", mobNo);
+	            smsRequest.put("message", bodyContent);
+	            producer.producer(applicationProperties.getSmsTopic(), smsRequest);
+
+	            // --- HTML Email Notification ---
+	            if (!StringUtils.isEmpty(emailId) && emailId.contains("@")) {
+	                String subject = "Payment Confirmation - " + paymentDetail.getReceiptNumber();
+	                
+	                // 2. Wrap the localized bodyContent inside the professional HTML Template
+	                String htmlContent = buildHtmlEmailFromLocalization(requestInfo, bill, paymentDetail, payment,subject, bodyContent);
+
+	                HashMap<String, Object> emailRequest = new HashMap<>();
+	                emailRequest.put("emailTo", emailId);
+	                emailRequest.put("body", htmlContent);
+	                emailRequest.put("subject", subject);
+	                emailRequest.put("isHTML", true);
+
+	                producer.producer(applicationProperties.getEmailTopic(), emailRequest);
+	            }
+	        } else {
+	            log.error("Message content empty! No notification sent for Receipt: " + paymentDetail.getReceiptNumber());
+	        }
+	    }
+	}
+	private String buildHtmlEmailFromLocalization(RequestInfo requestInfo, Bill bill, PaymentDetail paymentDetail, Payment payment, String subject, String bodyContent) {
+	    
+	    // 1. Fetch the Template
+	    String template = fetchContentFromLocalization(requestInfo, paymentDetail.getTenantId(),
+	            COLLECTION_LOCALIZATION_MODULE, EMAIL_MESSAGE );
+
+	    if (StringUtils.isEmpty(template)) {
+	        log.error("Email Template not found in localization!");
+	        return bodyContent; 
+	    }
+
+	    // 2. Fetch the actual PDF Download Link
+	    // We pass the payment as a list because the service expects a List<Payment>
+	    List<Payment> paymentList = Collections.singletonList(payment);
+	    String downloadUrl = getPublicReceiptUrl(paymentList, requestInfo);
+	    
+	    // Fallback if PDF service fails
+	    if (StringUtils.isEmpty(downloadUrl)) {
+	        downloadUrl = "https://mseva.lgpunjab.gov.in/digit-ui/citizen";
+	    }
+
+	    // 3. Map Service Type (Using your helper method)
+	    String serviceType = mapServiceCode(paymentDetail.getBusinessService());
+
+	    // 4. City Name Title Case (pb.amritsar -> Amritsar)
+	    String cityName = "Punjab";
+	    if (paymentDetail.getTenantId() != null && paymentDetail.getTenantId().contains(".")) {
+	        String rawCity = paymentDetail.getTenantId().split("\\.")[1];
+	        cityName = rawCity.substring(0, 1).toUpperCase() + rawCity.substring(1).toLowerCase();
+	    }
+
+	    // 5. BigDecimal Calculation for Balance
+	    java.math.BigDecimal totalDue = paymentDetail.getTotalDue() != null ? paymentDetail.getTotalDue() : java.math.BigDecimal.ZERO;
+	    java.math.BigDecimal amountPaid = paymentDetail.getTotalAmountPaid() != null ? paymentDetail.getTotalAmountPaid() : java.math.BigDecimal.ZERO;
+	    java.math.BigDecimal balance = totalDue.subtract(amountPaid);
+	    
+	    if (balance.compareTo(java.math.BigDecimal.ZERO) < 0) {
+	        balance = java.math.BigDecimal.ZERO;
+	    }
+
+	    // 6. Date formatting (IST)
+	    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd-MMM-yyyy HH:mm");
+	    sdf.setTimeZone(java.util.TimeZone.getTimeZone("Asia/Kolkata")); 
+	    String formattedDate = sdf.format(new java.util.Date(payment.getTransactionDate()));
+
+	    // Determine button text based on destination
+	    String actionButtonText = "Click to Login to View Receipt";
+	    if (downloadUrl != null && !downloadUrl.contains("digit-ui/citizen")) {
+	        actionButtonText = "Download Official Receipt";
+	    }
+
+	    // 7. Execute Replacements
+	    return template
+	            .replace("{cityName}", cityName)
+	            .replace("{serviceType}", serviceType)
+	            .replace("{ownerName}", (bill.getPayerName() != null) ? bill.getPayerName() : "Citizen")
+	            .replace("{consumerCode}", (bill.getConsumerCode() != null) ? bill.getConsumerCode() : "N/A")
+	            .replace("{referenceNo}", paymentDetail.getReceiptNumber())
+	            .replace("{transactionDate}", formattedDate)
+	            .replace("{paymentMode}", payment.getPaymentMode() != null ? payment.getPaymentMode().toString() : "CASH")
+	            .replace("{transactionId}", payment.getTransactionNumber() != null ? payment.getTransactionNumber() : "N/A")
+	            .replace("{totalPaid}", String.format("%.2f", amountPaid))
+	            .replace("{balanceAmount}", String.format("%.2f", balance))
+	            .replace("{actionButtonText}", actionButtonText)
+	            .replace("https://mseva.lgpunjab.gov.in/citizen", downloadUrl)
+	            .replace("https://mseva.lgpunjab.gov.in/digit-ui/citizen", downloadUrl);
+	}
+	
+	public String getPublicReceiptUrl(List<Payment> validatedPayments, RequestInfo requestInfo) {
+	    String defaultCitizenUrl = "https://mseva.lgpunjab.gov.in/digit-ui/citizen";
+	    if (CollectionUtils.isEmpty(validatedPayments)) return defaultCitizenUrl;
+
+	    String stateId = validatedPayments.get(0).getTenantId().split("\\.")[0];
+
+	    // 1. Check if the incoming Kafka payment message itself already has a fileStoreId
+	    if (!StringUtils.isEmpty(validatedPayments.get(0).getFileStoreId())) {
+	        String kafkaFileStoreId = validatedPayments.get(0).getFileStoreId();
+	        log.info("Kafka payment already contains fileStoreId: {}", kafkaFileStoreId);
+	        String publicUrl = getUrlFromFileStore(kafkaFileStoreId, stateId);
+	        if (!StringUtils.isEmpty(publicUrl)) return publicUrl;
+	    }
+
+	    String businessService = null;
+	    String receiptNumber = null;
+	    if (!CollectionUtils.isEmpty(validatedPayments.get(0).getPaymentDetails())) {
+	        businessService = validatedPayments.get(0).getPaymentDetails().get(0).getBusinessService();
+	        receiptNumber = validatedPayments.get(0).getPaymentDetails().get(0).getReceiptNumber();
+	    }
+
+	    // 2. Check if DB already has a fileStoreId
+	    if (!StringUtils.isEmpty(receiptNumber)) {
+	        try {
+	            PaymentSearchCriteria criteria = PaymentSearchCriteria.builder()
+	                    .tenantId(validatedPayments.get(0).getTenantId())
+	                    .receiptNumbers(Collections.singleton(receiptNumber))
+	                    .businessService(businessService)
+	                    .build();
+	            List<Payment> enrichedPayments = paymentService.getPayments(requestInfo, criteria, businessService);
+	            if (!CollectionUtils.isEmpty(enrichedPayments) && !StringUtils.isEmpty(enrichedPayments.get(0).getFileStoreId())) {
+	                String dbFileStoreId = enrichedPayments.get(0).getFileStoreId();
+	                log.info("DB search found existing fileStoreId: {}", dbFileStoreId);
+	                String publicUrl = getUrlFromFileStore(dbFileStoreId, stateId);
+	                if (!StringUtils.isEmpty(publicUrl)) return publicUrl;
+	            }
+	        } catch (Exception e) {
+	            log.error("Failed to query DB for fileStoreId: ", e);
+	        }
+	    }
+
+	    // No PDF create API call — directly point to citizen portal
+	    return defaultCitizenUrl;
 	}
 
+	/**
+	 * Helper method to fetch the public download URL from FileStore for a given fileStoreId.
+	 */
+	private String getUrlFromFileStore(String fileStoreId, String stateId) {
+	    if (StringUtils.isEmpty(fileStoreId)) return null;
+	    try {
+	        String fileStoreUri = applicationProperties.getFileStoreHost()  
+	                            + "/filestore/v1/files/url" 
+	                            + "?tenantId=" + stateId 
+	                            + "&fileStoreIds=" + fileStoreId;
+
+	        Map<String, Object> urlResponse = restTemplate.getForObject(fileStoreUri, Map.class);
+
+	        if (urlResponse != null && urlResponse.containsKey("fileStoreIds")) {
+	            List<Map<String, String>> fileDetails = (List<Map<String, String>>) urlResponse.get("fileStoreIds");
+	            if (!fileDetails.isEmpty()) {
+	                String publicUrl = fileDetails.get(0).get("url");
+	                log.info("Successfully fetched public receipt link from FileStore: " + publicUrl);
+	                return publicUrl;
+	            }
+	        }
+	    } catch (Exception e) {
+	        log.error("Error fetching URL from FileStore for fileStoreId {}: ", fileStoreId, e);
+	    }
+	    return null;
+	}
+
+
+	private String mapServiceCode(String code) {
+	    if (code == null || code.isEmpty()) return "General Municipal Service";
+	    
+	    String upperCode = code.toUpperCase();
+
+	    // 1. Direct Overrides for common/important codes
+	    switch (upperCode) {
+	        case "PT": return "Property Tax";
+	        case "WS": return "Water Supply";
+	        case "SW": return "Sewerage Service";
+	        case "BPA": return "Building Plan Approval";
+	        case "TL": return "Trade License";
+	        case "FIRENOC": return "Fire NOC";
+	        case "NDC": return "No Due Certificate";
+	        case "BPAREG": return "Building Plan Registration";
+	        case "ADVT.HOARDINGS": return "Advertisement Hoardings";
+	    }
+
+	    // 2. Prefix-Based Logic for the groups in your list
+	    if (upperCode.startsWith("NKS.")) return "Building Control (NKS)";
+	    if (upperCode.startsWith("CH.")) return "Enforcement Challan";
+	    if (upperCode.startsWith("RT.")) return "Municipal Rent/Lease";
+	    if (upperCode.startsWith("FTP.")) return "Town Planning (FTP)";
+	    if (upperCode.startsWith("ADVT.")) return "Advertisement Tax";
+	    if (upperCode.startsWith("OTHER.")) return "Miscellaneous Fees";
+	    if (upperCode.startsWith("TX.")) return "Tax & Revenue";
+	    if (upperCode.startsWith("FN.")) return "Finance/Account Deposit";
+	    if (upperCode.startsWith("SNT.")) return "Sanitation & Health";
+	    if (upperCode.startsWith("ADMN.")) return "Administration Fees";
+	    if (upperCode.startsWith("OM.")) return "Operations & Maintenance";
+	    if (upperCode.startsWith("WF.")) return "Works/Tender Fees";
+	    if (upperCode.startsWith("LAYOUT.")) return "Layout Approval";
+	    if (upperCode.startsWith("GC.")) return "Garbage Collection";
+
+	    // 3. Fallback: Clean up the code if no match (e.g., "BPA.NC_APP_FEE" -> "Bpa Nc App Fee")
+	    return formatCodeString(code);
+	}
+
+	// Helper to make raw codes readable if no mapping is found
+	private String formatCodeString(String code) {
+	    String formatted = code.replace("_", " ").replace(".", " - ");
+	    return formatted.substring(0, 1).toUpperCase() + formatted.substring(1).toLowerCase();
+	}
+	
+	
 	private String buildSmsBody(Bill bill, PaymentDetail paymentDetail, RequestInfo requestInfo, String paymentStatus) {
 		log.info("Inside BodySms");;
 		String message = null;
@@ -215,4 +433,7 @@ public class CollectionNotificationConsumer {
 		} else
 			return res;
 	}
+	
+	
+	
 }

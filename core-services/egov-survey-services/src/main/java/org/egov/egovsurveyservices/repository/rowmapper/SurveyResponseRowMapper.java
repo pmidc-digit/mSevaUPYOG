@@ -38,7 +38,8 @@ public class SurveyResponseRowMapper implements ResultSetExtractor<List<SurveyRe
                         .citizenId(rs.getString("citizenid"))
                         .tenantId(rs.getString("tenantid"))
                         .locality(rs.getString("locality"))
-                        .coordinates(rs.getString("coordinates"))
+                    .coordinates(rs.getString("coordinates"))
+                    .comments(rs.getString("comments"))
                         .status(SurveyStatus.fromValue(rs.getString("status")))
                         .build();
             }

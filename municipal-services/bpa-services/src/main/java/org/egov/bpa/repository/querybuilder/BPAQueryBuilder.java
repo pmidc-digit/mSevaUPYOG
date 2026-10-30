@@ -59,7 +59,7 @@ public class BPAQueryBuilder {
 
         StringBuilder builder = new StringBuilder(QUERY);
       
-        if (criteria.getTenantId() != null) {
+        if (criteria.getTenantId() != null && !criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
             if (criteria.getTenantId().split("\\.").length == 1) {
 
                 addClauseIfRequired(preparedStmtList, builder);
@@ -135,7 +135,7 @@ public class BPAQueryBuilder {
         if(applicationType != null) {
             List<String> applicationTypes = Arrays.asList(applicationType.split(","));
             addClauseIfRequired(preparedStmtList, builder);
-            builder.append(" bpa.additionaldetails ->>'applicationType' IN (").append(createQuery(applicationTypes)).append(")");
+            builder.append(" bpa.applicationtype IN (").append(createQuery(applicationTypes)).append(")");
             addToPreparedStatement(preparedStmtList, applicationTypes);
         }
         
@@ -308,7 +308,7 @@ public class BPAQueryBuilder {
 
         StringBuilder builder = new StringBuilder(QUERY);
 
-        if (criteria.getTenantId() != null) {
+        if (criteria.getTenantId() != null && !criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
             if (criteria.getTenantId().split("\\.").length == 1) {
 
                 addClauseIfRequired(preparedStmtList, builder);

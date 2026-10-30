@@ -123,10 +123,23 @@ public class PGRConstants {
 	    // =========================
 	    // Citizen defaults
 	    // =========================
+    	public static final String DEFAULT_DESCRIPTION_NAME = "No Description/Title(Subject) Is Provided By User in PMIDC";
+
 	    public static final String DEFAULT_CITIZEN_NAME = "No Name Is Provided By User in PMIDC";
 	    public static final String DEFAULT_CITIZEN_EMAIL = "temp@example.com";
 	    public static final String DEFAULT_CITIZEN_MOBILE = "0000000000";
 	    public static final String DEFAULT_ADDRESS = "No Address Provided By User in PMIDC";
+
+	    // =========================
+	    // DGR Integration Cutoff Date (7th Jan 2026 00:00:00 IST)
+	    // Complaints created before this date are NEVER pushed to DGR.
+	    // =========================
+	    public static final Long DGR_CUTOFF_DATE_EPOCH = 1767724200000L;
+
+	    // =========================
+	    // Test tenant (excluded from DGR)
+	    // =========================
+	    public static final String TEST_TENANT = "pb.testing";
 
 	    // =========================
 	    // Application info

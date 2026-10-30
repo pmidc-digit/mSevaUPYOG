@@ -13,6 +13,7 @@
 package org.egov.echallan.model;
 
 import org.egov.common.contract.response.ResponseInfo;
+import org.egov.echallan.web.models.workflow.ProcessInstance;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -55,6 +56,9 @@ public class ChallanResponse {
 
   private List<Challan> challans = null;
 
+  @JsonProperty("workflow")
+  private ProcessInstance workflow = null;
+
   @JsonProperty("totalCount")
    private int totalCount;
 
@@ -65,6 +69,11 @@ public class ChallanResponse {
 
   public ChallanResponse challans(List<Challan> challans) {
 	    this.challans = challans;
+	    return this;
+	  }
+
+  public ChallanResponse workflow(ProcessInstance workflow) {
+	    this.workflow = workflow;
 	    return this;
 	  }
 

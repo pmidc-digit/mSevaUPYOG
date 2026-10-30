@@ -567,8 +567,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                       type: "tel",
                       title: t("CORE_COMMON_PROFILE_NAME_ERROR_MESSAGE"),
                     })}
-                    // disable={editScreen || isUserArchitect}
-                    disable={editScreen}
+                    disable={true}
                   />
                 </div>
 

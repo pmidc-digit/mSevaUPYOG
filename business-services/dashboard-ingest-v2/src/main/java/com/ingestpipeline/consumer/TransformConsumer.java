@@ -37,7 +37,7 @@ public class TransformConsumer implements KafkaConsumer {
 	private ApplicationProperties applicationProperties; 
 
 	@Override
-	@KafkaListener(id = INTENT, groupId = INTENT, topics = { Constants.KafkaTopics.VALID_DATA }, containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
+	@KafkaListener(id = INTENT, groupId = "${kafka.consumer.group.transform:transform-v2}", topics = { Constants.KafkaTopics.VALID_DATA }, containerFactory = Constants.BeanContainerFactory.INCOMING_KAFKA_LISTENER)
 	public void processMessage(Map incomingData,
 							   @Header(KafkaHeaders.RECEIVED_TOPIC) final String topic) {
 		LOGGER.info("##KafkaMessageAlert## : key:" + topic + ":" + "value:" + incomingData.size());

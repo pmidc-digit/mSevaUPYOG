@@ -60,6 +60,22 @@ const formatDate = (dateString) => {
   return `${day}/${month}/${year}`;
 };
 
+export const isSameOwner = (a, b) => {
+  if (!a || !b) return false;
+  if (a.uuid && b.uuid && a.uuid === b.uuid) {
+    return true;
+  }
+  const mobA = String(a?.mobileNumber || a?.userName || "").trim();
+  const mobB = String(b?.mobileNumber || b?.userName || "").trim();
+  const nameA = String(a?.name || a?.ownerOrFirmName || "").trim().toLowerCase();
+  const nameB = String(b?.name || b?.ownerOrFirmName || "").trim().toLowerCase();
+
+  if (mobA && mobB && nameA && nameB) {
+    return mobA === mobB && nameA === nameB;
+  }
+  return false;
+};
+
 const areApplicantsEqual = (arr1, arr2) => {
   if (!arr1 && !arr2) return true;
   if (!arr1 || !arr2) return false;
@@ -123,7 +139,8 @@ const NOCNewApplicantDetails = (_props) => {
 
     // Restore property details card
     const savedPropDetails = currentStepData?.applicationDetails;
-    if (savedPropDetails?.propertyId && !propertyDetails) {
+    const isPropAvail = isPropertyAvailable ? isPropertyAvailable.value === true : savedPropAvail?.value === true;
+    if (isPropAvail && savedPropDetails?.propertyId && !propertyDetails) {
       setPropertyDetails({
         propertyId: savedPropDetails.propertyId,
         PropertyOwnerName: savedPropDetails.PropertyOwnerName || savedPropDetails.owners?.[0]?.PropertyOwnerName || "",
@@ -135,7 +152,7 @@ const NOCNewApplicantDetails = (_props) => {
       });
     }
 
-    if (isInitialized && areApplicantsEqual(reduxApplicants, selectedOwners)) {
+    if (isInitialized) {
       return;
     }
 
@@ -158,6 +175,8 @@ const NOCNewApplicantDetails = (_props) => {
         authorisedPerson: a.authorisedPerson || a.additionalDetails?.authorisedPerson || null,
         isPrimaryOwner: a.isPrimaryOwner,
         uuid: a.uuid !== undefined ? a.uuid : null,
+        propertyId: a.propertyId || "",
+        isFromProperty: a.isFromProperty !== undefined ? a.isFromProperty : Boolean(a.propertyId),
         status: a.status !== undefined ? a.status : true,
       }));
       setSelectedOwners(restoredOwners);
@@ -179,6 +198,8 @@ const NOCNewApplicantDetails = (_props) => {
         authorisedPerson: a.authorisedPerson || a.additionalDetails?.authorisedPerson || null,
         isPrimaryOwner: a.isPrimaryOwner !== undefined ? a.isPrimaryOwner : idx === 0,
         uuid: a.uuid !== undefined ? a.uuid : null,
+        propertyId: a.propertyId || "",
+        isFromProperty: a.isFromProperty !== undefined ? a.isFromProperty : Boolean(a.propertyId),
         status: a.status !== undefined ? a.status : true,
       }));
       setSelectedOwners(restoredOwners);
@@ -211,6 +232,8 @@ const NOCNewApplicantDetails = (_props) => {
           authorisedPerson: a.authorisedPerson || a.additionalDetails?.authorisedPerson || null,
           isPrimaryOwner: a.isPrimaryOwner !== undefined ? a.isPrimaryOwner : idx === 0,
           uuid: a.uuid !== undefined ? a.uuid : null,
+          propertyId: a.propertyId || "",
+          isFromProperty: a.isFromProperty !== undefined ? a.isFromProperty : Boolean(a.propertyId),
           status: a.status !== undefined ? a.status : true,
         };
       });
@@ -303,14 +326,15 @@ const NOCNewApplicantDetails = (_props) => {
           ? owner.aplicantType || { code: isFirm ? "FIRM" : "INDIVIDUAL", name: isFirm ? "Firm" : "Individual" }
           : null,
         authorisedPerson: isFirm && isOwnerPrimary ? derivedFirmName : null,
-        propertyId: propertyDetails?.propertyId || owner.propertyId || "",
-        PropertyOwnerName: propertyDetails?.PropertyOwnerName || owner.PropertyOwnerName || "",
-        PropertyOwnerMobileNumber: propertyDetails?.PropertyOwnerMobileNumber || owner.PropertyOwnerMobileNumber || "",
-        PropertyOwnerAddress: propertyDetails?.PropertyOwnerAddress || owner.PropertyOwnerAddress || "",
-        PropertyOwnerPlotArea: propertyDetails?.PropertyOwnerPlotArea || owner.PropertyOwnerPlotArea || null,
-        propertyVasikaNo: propertyDetails?.propertyVasikaNo || owner.propertyVasikaNo || null,
-        propertyVasikaDate: propertyDetails?.propertyVasikaDate || owner.propertyVasikaDate || null,
-        localityAreaType: propertyDetails?.localityAreaType || owner.localityAreaType || null,
+        propertyId: isPropertyAvailable?.value === true ? propertyDetails?.propertyId || owner.propertyId || "" : "",
+        isFromProperty: isPropertyAvailable?.value === true ? Boolean(owner.isFromProperty) : false,
+        PropertyOwnerName: isPropertyAvailable?.value === true ? propertyDetails?.PropertyOwnerName || owner.PropertyOwnerName || "" : "",
+        PropertyOwnerMobileNumber: isPropertyAvailable?.value === true ? propertyDetails?.PropertyOwnerMobileNumber || owner.PropertyOwnerMobileNumber || "" : "",
+        PropertyOwnerAddress: isPropertyAvailable?.value === true ? propertyDetails?.PropertyOwnerAddress || owner.PropertyOwnerAddress || "" : "",
+        PropertyOwnerPlotArea: isPropertyAvailable?.value === true ? propertyDetails?.PropertyOwnerPlotArea || owner.PropertyOwnerPlotArea || null : null,
+        propertyVasikaNo: isPropertyAvailable?.value === true ? propertyDetails?.propertyVasikaNo || owner.propertyVasikaNo || null : null,
+        propertyVasikaDate: isPropertyAvailable?.value === true ? propertyDetails?.propertyVasikaDate || owner.propertyVasikaDate || null : null,
+        localityAreaType: isPropertyAvailable?.value === true ? propertyDetails?.localityAreaType || owner.localityAreaType || null : null,
         additionalDetails: {
           ...owner.additionalDetails,
           ownerPhoto: photoId,
@@ -365,14 +389,15 @@ const NOCNewApplicantDetails = (_props) => {
             ? owner.aplicantType || { code: isFirm ? "FIRM" : "INDIVIDUAL", name: isFirm ? "Firm" : "Individual" }
             : null,
           authorisedPerson: isFirm && isOwnerPrimary ? derivedFirmName : null,
-          propertyId: propertyDetails?.propertyId || owner.propertyId || "",
-          PropertyOwnerName: propertyDetails?.PropertyOwnerName || owner.PropertyOwnerName || "",
-          PropertyOwnerMobileNumber: propertyDetails?.PropertyOwnerMobileNumber || owner.PropertyOwnerMobileNumber || "",
-          PropertyOwnerAddress: propertyDetails?.PropertyOwnerAddress || owner.PropertyOwnerAddress || "",
-          PropertyOwnerPlotArea: propertyDetails?.PropertyOwnerPlotArea || owner.PropertyOwnerPlotArea || null,
-          propertyVasikaNo: propertyDetails?.propertyVasikaNo || owner.propertyVasikaNo || null,
-          propertyVasikaDate: propertyDetails?.propertyVasikaDate || owner.propertyVasikaDate || null,
-          localityAreaType: propertyDetails?.localityAreaType || owner.localityAreaType || null,
+          propertyId: isPropertyAvailable?.value === true ? propertyDetails?.propertyId || owner.propertyId || "" : "",
+          isFromProperty: isPropertyAvailable?.value === true ? Boolean(owner.isFromProperty) : false,
+          PropertyOwnerName: isPropertyAvailable?.value === true ? propertyDetails?.PropertyOwnerName || owner.PropertyOwnerName || "" : "",
+          PropertyOwnerMobileNumber: isPropertyAvailable?.value === true ? propertyDetails?.PropertyOwnerMobileNumber || owner.PropertyOwnerMobileNumber || "" : "",
+          PropertyOwnerAddress: isPropertyAvailable?.value === true ? propertyDetails?.PropertyOwnerAddress || owner.PropertyOwnerAddress || "" : "",
+          PropertyOwnerPlotArea: isPropertyAvailable?.value === true ? propertyDetails?.PropertyOwnerPlotArea || owner.PropertyOwnerPlotArea || null : null,
+          propertyVasikaNo: isPropertyAvailable?.value === true ? propertyDetails?.propertyVasikaNo || owner.propertyVasikaNo || null : null,
+          propertyVasikaDate: isPropertyAvailable?.value === true ? propertyDetails?.propertyVasikaDate || owner.propertyVasikaDate || null : null,
+          localityAreaType: isPropertyAvailable?.value === true ? propertyDetails?.localityAreaType || owner.localityAreaType || null : null,
           additionalDetails: {
             ...(owner.additionalDetails || {}),
             ownerPhoto: photoId,
@@ -389,19 +414,20 @@ const NOCNewApplicantDetails = (_props) => {
       });
 
     // Update Redux form data
+    const isPropYes = isPropertyAvailable?.value === true;
     const updatedDetails = {
       ...currentStepData?.applicationDetails,
       isPropertyAvailable: isPropertyAvailable,
       ownerType: derivedOwnerType,
       firmName: isFirm ? derivedFirmName : "",
-      propertyId: propertyDetails?.propertyId || "",
-      PropertyOwnerName: propertyDetails?.PropertyOwnerName || "",
-      PropertyOwnerMobileNumber: propertyDetails?.PropertyOwnerMobileNumber || "",
-      PropertyOwnerAddress: propertyDetails?.PropertyOwnerAddress || "",
-      PropertyOwnerPlotArea: propertyDetails?.PropertyOwnerPlotArea || null,
-      propertyVasikaNo: propertyDetails?.propertyVasikaNo || null,
-      propertyVasikaDate: propertyDetails?.propertyVasikaDate || null,
-      localityAreaType: propertyDetails?.localityAreaType || null,
+      propertyId: isPropYes ? propertyDetails?.propertyId || "" : "",
+      PropertyOwnerName: isPropYes ? propertyDetails?.PropertyOwnerName || "" : "",
+      PropertyOwnerMobileNumber: isPropYes ? propertyDetails?.PropertyOwnerMobileNumber || "" : "",
+      PropertyOwnerAddress: isPropYes ? propertyDetails?.PropertyOwnerAddress || "" : "",
+      PropertyOwnerPlotArea: isPropYes ? propertyDetails?.PropertyOwnerPlotArea || null : null,
+      propertyVasikaNo: isPropYes ? propertyDetails?.propertyVasikaNo || null : null,
+      propertyVasikaDate: isPropYes ? propertyDetails?.propertyVasikaDate || null : null,
+      localityAreaType: isPropYes ? propertyDetails?.localityAreaType || null : null,
       owners: activeFormattedOwners,
     };
 
@@ -465,6 +491,7 @@ const NOCNewApplicantDetails = (_props) => {
         propertyVasikaNo: vasikaNo,
         propertyVasikaDate: vasikaDate,
         localityAreaType: locality,
+        propOwners: propOwners,
       };
 
       setPropertyDetails(newPropDetails);
@@ -487,18 +514,17 @@ const NOCNewApplicantDetails = (_props) => {
       // Populate details on the OWNER ADDITIONAL DETAILS modal (Step 2)
       // so the user can upload missing docs/photos/PAN and save
       if (propOwners.length > 0) {
-        const po = propOwners[0];
-        const ownerToComplete = {
+        const ownersToComplete = propOwners.map((po, idx) => ({
           ...po,
-          name: po?.name || allOwnerNames || "",
-          mobileNumber: po?.mobileNumber || allOwnerMobiles || "",
+          name: po?.name || (propOwners.length === 1 ? allOwnerNames : "") || "",
+          mobileNumber: po?.mobileNumber || (propOwners.length === 1 ? allOwnerMobiles : "") || "",
           fatherOrHusbandName: po?.fatherOrHusbandName || "",
           emailId: po?.emailId || "",
           permanentAddress: po?.permanentAddress || proposedAddress,
           address: po?.permanentAddress || proposedAddress,
           dob: po?.dob || po?.dateOfBirth || "",
           gender: po?.gender || null,
-          isPrimaryOwner: true,
+          isPrimaryOwner: idx === 0,
           propertyId: property.propertyId,
           PropertyOwnerName: allOwnerNames || po?.name || "",
           PropertyOwnerMobileNumber: allOwnerMobiles || po?.mobileNumber || "",
@@ -507,82 +533,98 @@ const NOCNewApplicantDetails = (_props) => {
           propertyVasikaNo: vasikaNo,
           propertyVasikaDate: vasikaDate,
           localityAreaType: locality,
+          isFromProperty: true,
           status: true,
-        };
+        }));
 
-        setEditingOwner(ownerToComplete);
+        setEditingOwner(ownersToComplete.length > 1 ? ownersToComplete : ownersToComplete[0]);
         setShowOwnerModal(true);
       }
     }
   };
 
   const handleSelectUserFromModal = (newUserData) => {
-    if (editingOwner) {
-      const existsInList = selectedOwners.some(
-        (owner) =>
-          (editingOwner.uuid && owner.uuid === editingOwner.uuid) ||
-          (editingOwner.mobileNumber && owner.mobileNumber === editingOwner.mobileNumber)
-      );
-
-      if (existsInList) {
-        setSelectedOwners((prev) =>
-          prev.map((owner) => {
-            const isMatch =
-              (editingOwner.uuid && owner.uuid === editingOwner.uuid) ||
-              (editingOwner.mobileNumber && owner.mobileNumber === editingOwner.mobileNumber);
-            if (isMatch) {
-              return {
-                ...owner,
-                ...editingOwner,
-                ...newUserData,
-                isPrimaryOwner: editingOwner.isPrimaryOwner !== undefined ? editingOwner.isPrimaryOwner : owner.isPrimaryOwner,
-                status: true,
-              };
-            }
-            return owner;
-          })
-        );
-      } else {
-        const active = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
-        const isFirst = active.length === 0;
-        const newOwner = {
-          ...editingOwner,
-          ...newUserData,
-          isPrimaryOwner: editingOwner.isPrimaryOwner !== undefined ? editingOwner.isPrimaryOwner : isFirst,
-          status: true,
-        };
-        setSelectedOwners((prev) => [...prev, newOwner]);
-      }
+    if (!newUserData) {
+      setShowOwnerModal(false);
       setEditingOwner(null);
-    } else {
-      const active = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
-      const isFirst = active.length === 0;
+      return;
+    }
 
-      const newOwner = {
-        ...newUserData,
-        isPrimaryOwner: isFirst ? true : null,
-        status: true,
-      };
+    const newOwnersList = Array.isArray(newUserData) ? newUserData : [newUserData];
+    if (newOwnersList.length === 0) {
+      setShowOwnerModal(false);
+      setEditingOwner(null);
+      return;
+    }
 
-      const existingIndex = selectedOwners.findIndex(
-        (o) => (newOwner.uuid && o.uuid === newOwner.uuid) || (newOwner.mobileNumber && o.mobileNumber === newOwner.mobileNumber)
-      );
-
-      if (existingIndex > -1) {
-        setSelectedOwners((prev) => {
+    if (editingOwner && !Array.isArray(editingOwner)) {
+      const editedUser = newOwnersList[0];
+      setSelectedOwners((prev) => {
+        const existingIdx = prev.findIndex((owner) => isSameOwner(owner, editingOwner));
+        if (existingIdx > -1) {
           const updated = [...prev];
-          updated[existingIndex] = {
-            ...updated[existingIndex],
-            ...newOwner,
+          updated[existingIdx] = {
+            ...updated[existingIdx],
+            ...editingOwner,
+            ...editedUser,
+            isPrimaryOwner: editingOwner.isPrimaryOwner !== undefined ? editingOwner.isPrimaryOwner : updated[existingIdx].isPrimaryOwner,
             status: true,
           };
           return updated;
-        });
-      } else {
-        setSelectedOwners((prev) => [...prev, newOwner]);
-      }
+        } else {
+          const activeNow = prev.filter((o) => o?.status !== false && o?.status !== "false");
+          const isFirst = activeNow.length === 0;
+          return [
+            ...prev,
+            {
+              ...editingOwner,
+              ...editedUser,
+              isPrimaryOwner:
+                editedUser?.isPrimaryOwner !== undefined && editedUser?.isPrimaryOwner !== null
+                  ? editedUser.isPrimaryOwner
+                  : editingOwner?.isPrimaryOwner !== undefined && editingOwner?.isPrimaryOwner !== null
+                  ? editingOwner.isPrimaryOwner
+                  : isFirst ? true : null,
+              status: true,
+            },
+          ];
+        }
+      });
+      setEditingOwner(null);
+      setShowOwnerModal(false);
+      return;
     }
 
+    // Adding new owner(s) (from search modal multi-select or from property search multiple owners)
+    setSelectedOwners((prev) => {
+      let updated = [...prev];
+
+      newOwnersList.forEach((newOwnerItem) => {
+        const existingIndex = updated.findIndex((o) => isSameOwner(o, newOwnerItem));
+        if (existingIndex > -1) {
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            ...newOwnerItem,
+            status: true,
+          };
+        } else {
+          const activeNow = updated.filter((o) => o?.status !== false && o?.status !== "false");
+          const isFirst = activeNow.length === 0;
+          updated.push({
+            ...newOwnerItem,
+            isPrimaryOwner:
+              newOwnerItem.isPrimaryOwner !== undefined && newOwnerItem.isPrimaryOwner !== null
+                ? newOwnerItem.isPrimaryOwner
+                : isFirst ? true : null,
+            status: true,
+          });
+        }
+      });
+
+      return updated;
+    });
+
+    setEditingOwner(null);
     setShowOwnerModal(false);
   };
 
@@ -601,32 +643,36 @@ const NOCNewApplicantDetails = (_props) => {
       return;
     }
 
-    setSelectedOwners((prev) =>
-      prev.map((owner) => {
-        const isMatch = (ownerToRemove.uuid && owner.uuid === ownerToRemove.uuid) || owner.mobileNumber === ownerToRemove.mobileNumber;
-        if (isMatch) {
+    const wasPrimary = ownerToRemove.isPrimaryOwner === true || ownerToRemove.isPrimaryOwner === "true";
+
+    setSelectedOwners((prev) => {
+      let firstActiveFound = false;
+      return prev.map((owner) => {
+        if (isSameOwner(owner, ownerToRemove)) {
           return {
             ...owner,
             status: false,
+            isPrimaryOwner: null,
+          };
+        }
+        if (wasPrimary && !firstActiveFound && (owner?.status !== false && owner?.status !== "false")) {
+          firstActiveFound = true;
+          return {
+            ...owner,
+            isPrimaryOwner: true,
           };
         }
         return owner;
-      })
-    );
+      });
+    });
   };
 
   const handleSetPrimary = (primaryOwner) => {
     setSelectedOwners((prev) =>
-      prev.map((owner) => {
-        const isTarget =
-          (primaryOwner.uuid && owner.uuid === primaryOwner.uuid) ||
-          (owner.name === primaryOwner.name && owner.mobileNumber === primaryOwner.mobileNumber) ||
-          (!owner.uuid && !primaryOwner.uuid && owner.mobileNumber === primaryOwner.mobileNumber);
-        return {
-          ...owner,
-          isPrimaryOwner: isTarget ? true : null,
-        };
-      })
+      prev.map((owner) => ({
+        ...owner,
+        isPrimaryOwner: isSameOwner(owner, primaryOwner) ? true : null,
+      }))
     );
   };
 
@@ -742,7 +788,14 @@ const NOCNewApplicantDetails = (_props) => {
                       setIsPropertyAvailable(e);
 
                       if (e?.value === false) {
+                        setShowOwnerModal(false);
+                        setEditingOwner(null);
+                        setShowPropertyModal(false);
                         setPropertyDetails(null);
+                        setSelectedOwners([]);
+                        dispatch(UPDATE_NOCNewApplication_FORM("applicants", []));
+                        dispatch(UPDATE_NOC_OwnerIds("ownerIdList", []));
+                        dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", []));
                         dispatch(UPDATE_NOCNewApplication_FORM("cpt", null));
                         dispatch(
                           UPDATE_NOCNewApplication_FORM("siteDetails", {
@@ -752,6 +805,21 @@ const NOCNewApplicantDetails = (_props) => {
                             netTotalArea: null,
                             proposedSiteAddress: "",
                             localityAreaType: null,
+                          })
+                        );
+                        dispatch(
+                          UPDATE_NOCNewApplication_FORM("applicationDetails", {
+                            ...currentStepData?.applicationDetails,
+                            isPropertyAvailable: e,
+                            propertyId: "",
+                            PropertyOwnerName: "",
+                            PropertyOwnerMobileNumber: "",
+                            PropertyOwnerAddress: "",
+                            PropertyOwnerPlotArea: null,
+                            propertyVasikaNo: null,
+                            propertyVasikaDate: null,
+                            localityAreaType: null,
+                            owners: [],
                           })
                         );
                       }
@@ -796,7 +864,7 @@ const NOCNewApplicantDetails = (_props) => {
           )}
 
           {/* Property Details Status Table */}
-          {propertyDetails?.propertyId && (
+          {isPropertyAvailable?.value === true && propertyDetails?.propertyId && (
             <div className="field" style={{ marginBottom: "20px" }}>
               <StatusTable className="noc-page-components-nocapplicant-details--style-7">
                 <Row className="border-none" label={t("PROPERTY_ID")} text={propertyDetails.propertyId} />
@@ -847,24 +915,54 @@ const NOCNewApplicantDetails = (_props) => {
         <div className="obps-page-components-layout-new-applicant-details--style-11">
           <div
             onClick={() => {
-              if (activeOwners.length === 0 && propertyDetails?.propertyId) {
-                const propOwnerObj = {
-                  name: propertyDetails.PropertyOwnerName || "",
-                  mobileNumber: propertyDetails.PropertyOwnerMobileNumber || "",
-                  permanentAddress: propertyDetails.PropertyOwnerAddress || "",
-                  address: propertyDetails.PropertyOwnerAddress || "",
-                  propertyId: propertyDetails.propertyId,
-                  PropertyOwnerName: propertyDetails.PropertyOwnerName || "",
-                  PropertyOwnerMobileNumber: propertyDetails.PropertyOwnerMobileNumber || "",
-                  PropertyOwnerAddress: propertyDetails.PropertyOwnerAddress || "",
-                  PropertyOwnerPlotArea: propertyDetails.PropertyOwnerPlotArea || null,
-                  propertyVasikaNo: propertyDetails.propertyVasikaNo || null,
-                  propertyVasikaDate: propertyDetails.propertyVasikaDate || null,
-                  localityAreaType: propertyDetails.localityAreaType || null,
-                  isPrimaryOwner: true,
-                  status: true,
-                };
-                setEditingOwner(propOwnerObj);
+              if (activeOwners.length === 0 && isPropertyAvailable?.value === true && propertyDetails?.propertyId) {
+                const propOwners = Array.isArray(propertyDetails.propOwners) && propertyDetails.propOwners.length > 0
+                  ? propertyDetails.propOwners
+                  : [];
+                if (propOwners.length > 0) {
+                  const ownersToComplete = propOwners.map((po, idx) => ({
+                    ...po,
+                    name: po?.name || "",
+                    mobileNumber: po?.mobileNumber || "",
+                    fatherOrHusbandName: po?.fatherOrHusbandName || "",
+                    emailId: po?.emailId || "",
+                    permanentAddress: po?.permanentAddress || propertyDetails.PropertyOwnerAddress || "",
+                    address: po?.permanentAddress || propertyDetails.PropertyOwnerAddress || "",
+                    dob: po?.dob || po?.dateOfBirth || "",
+                    gender: po?.gender || null,
+                    isPrimaryOwner: idx === 0,
+                    propertyId: propertyDetails.propertyId,
+                    PropertyOwnerName: po?.name || propertyDetails.PropertyOwnerName || "",
+                    PropertyOwnerMobileNumber: po?.mobileNumber || propertyDetails.PropertyOwnerMobileNumber || "",
+                    PropertyOwnerAddress: po?.permanentAddress || propertyDetails.PropertyOwnerAddress || "",
+                    PropertyOwnerPlotArea: propertyDetails.PropertyOwnerPlotArea || null,
+                    propertyVasikaNo: propertyDetails.propertyVasikaNo || null,
+                    propertyVasikaDate: propertyDetails.propertyVasikaDate || null,
+                    localityAreaType: propertyDetails.localityAreaType || null,
+                    isFromProperty: true,
+                    status: true,
+                  }));
+                  setEditingOwner(ownersToComplete.length > 1 ? ownersToComplete : ownersToComplete[0]);
+                } else {
+                  const propOwnerObj = {
+                    name: propertyDetails.PropertyOwnerName || "",
+                    mobileNumber: propertyDetails.PropertyOwnerMobileNumber || "",
+                    permanentAddress: propertyDetails.PropertyOwnerAddress || "",
+                    address: propertyDetails.PropertyOwnerAddress || "",
+                    propertyId: propertyDetails.propertyId,
+                    PropertyOwnerName: propertyDetails.PropertyOwnerName || "",
+                    PropertyOwnerMobileNumber: propertyDetails.PropertyOwnerMobileNumber || "",
+                    PropertyOwnerAddress: propertyDetails.PropertyOwnerAddress || "",
+                    PropertyOwnerPlotArea: propertyDetails.PropertyOwnerPlotArea || null,
+                    propertyVasikaNo: propertyDetails.propertyVasikaNo || null,
+                    propertyVasikaDate: propertyDetails.propertyVasikaDate || null,
+                    localityAreaType: propertyDetails.localityAreaType || null,
+                    isPrimaryOwner: true,
+                    isFromProperty: true,
+                    status: true,
+                  };
+                  setEditingOwner(propOwnerObj);
+                }
               } else {
                 setEditingOwner(null);
               }
@@ -886,13 +984,15 @@ const NOCNewApplicantDetails = (_props) => {
             onSelectUser={handleSelectUserFromModal}
             initialMobileNumber={editingOwner?.mobileNumber}
             editingOwner={editingOwner}
+            existingOwners={activeOwners}
             isPrimaryOwner={
               editingOwner
-                ? editingOwner.isPrimaryOwner === true || editingOwner.isPrimaryOwner === "true"
+                ? (Array.isArray(editingOwner) ? false : (editingOwner.isPrimaryOwner === true || editingOwner.isPrimaryOwner === "true"))
                 : activeOwners.length === 0
             }
             uploadModule="NOC"
             showOwnershipShare={false}
+            showPanDetails={false}
           />
         )}
 

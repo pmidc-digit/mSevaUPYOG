@@ -249,37 +249,51 @@ const LayoutNewApplicantDetails = (_props) => {
   };
 
   const handleSelectUserFromModal = (userObj) => {
-    const newUser = {
-      ...userObj,
-      name: userObj.name || "",
-      mobileNumber: userObj.mobileNumber || "",
-      emailId: userObj.emailId || "",
-      fatherOrHusbandName: userObj.fatherOrHusbandName || "",
-      permanentAddress: userObj.permanentAddress || userObj.address || "",
-      dob: userObj.dob || "",
-      gender: userObj.gender || null,
-      panNumber: userObj.panNumber || userObj.pan || "",
-      photoUploadedFiles: userObj.photoUploadedFiles || userObj.additionalDetails?.ownerPhoto || null,
-      documentUploadedFiles: userObj.documentUploadedFiles || userObj.additionalDetails?.documentFile || null,
-      panDocumentUploadedFiles: userObj.panDocumentUploadedFiles || userObj.additionalDetails?.panDocument || null,
+    if (!userObj) {
+      setShowModal(false);
+      setEditingOwner(null);
+      return;
+    }
+
+    const userList = Array.isArray(userObj) ? userObj : [userObj];
+    if (userList.length === 0) {
+      setShowModal(false);
+      setEditingOwner(null);
+      return;
+    }
+
+    const formatUser = (item) => ({
+      ...item,
+      name: item.name || "",
+      mobileNumber: item.mobileNumber || "",
+      emailId: item.emailId || "",
+      fatherOrHusbandName: item.fatherOrHusbandName || "",
+      permanentAddress: item.permanentAddress || item.address || "",
+      dob: item.dob || "",
+      gender: item.gender || null,
+      panNumber: item.panNumber || item.pan || "",
+      photoUploadedFiles: item.photoUploadedFiles || item.additionalDetails?.ownerPhoto || null,
+      documentUploadedFiles: item.documentUploadedFiles || item.additionalDetails?.documentFile || null,
+      panDocumentUploadedFiles: item.panDocumentUploadedFiles || item.additionalDetails?.panDocument || null,
       additionalDetails: {
-        ...userObj.additionalDetails,
-        ownerPhoto: userObj.photoUploadedFiles || userObj.additionalDetails?.ownerPhoto || null,
-        documentFile: userObj.documentUploadedFiles || userObj.additionalDetails?.documentFile || null,
-        panDocument: userObj.panDocumentUploadedFiles || userObj.additionalDetails?.panDocument || null,
-        aplicantType: userObj.aplicantType || userObj.additionalDetails?.aplicantType || null,
-        authorisedPerson: userObj.authorisedPerson || userObj.additionalDetails?.authorisedPerson || null,
+        ...item.additionalDetails,
+        ownerPhoto: item.photoUploadedFiles || item.additionalDetails?.ownerPhoto || null,
+        documentFile: item.documentUploadedFiles || item.additionalDetails?.documentFile || null,
+        panDocument: item.panDocumentUploadedFiles || item.additionalDetails?.panDocument || null,
+        aplicantType: item.aplicantType || item.additionalDetails?.aplicantType || null,
+        authorisedPerson: item.authorisedPerson || item.additionalDetails?.authorisedPerson || null,
       },
-      uuid: userObj.uuid !== undefined ? userObj.uuid : null,
+      uuid: item.uuid !== undefined ? item.uuid : null,
       status: true,
-    };
+    });
 
     if (editingOwner) {
-      // EDIT MODE: Check if userObj is the exact same person as editingOwner
+      const newUser = formatUser(userList[0]);
+      // EDIT MODE: Check if newUser is the exact same person as editingOwner
       const isSameUser =
-        userObj === editingOwner ||
-        (Boolean(editingOwner?.uuid) && Boolean(userObj?.uuid) && editingOwner.uuid === userObj.uuid) ||
-        (!editingOwner?.uuid && !userObj?.uuid && editingOwner?.mobileNumber === userObj?.mobileNumber && editingOwner?.name === userObj?.name);
+        userList[0] === editingOwner ||
+        (Boolean(editingOwner?.uuid) && Boolean(newUser?.uuid) && editingOwner.uuid === newUser.uuid) ||
+        (!editingOwner?.uuid && !newUser?.uuid && editingOwner?.mobileNumber === newUser?.mobileNumber && editingOwner?.name === newUser?.name);
 
       const isDifferentUser = !isSameUser;
 
@@ -315,28 +329,23 @@ const LayoutNewApplicantDetails = (_props) => {
     }
 
     // ADD MODE
-    const existingActiveIndex = selectedOwners.findIndex(
-      (o) => o?.status !== false && o?.status !== "false" && o.mobileNumber === userObj.mobileNumber
-    );
-    if (existingActiveIndex !== -1) {
-      setShowToast({
-        error: true,
-        message: t("OWNER_ALREADY_ADDED"),
-      });
-      return;
-    }
+    let updated = [...selectedOwners];
+    userList.forEach((rawUser) => {
+      const newUser = formatUser(rawUser);
+      const activeCount = updated.filter((o) => o?.status !== false && o?.status !== "false").length;
+      if (ownerType?.code === "INDIVIDUAL" && activeCount >= 1) {
+        // For individual mode, set existing active owner status to false and add new primary owner
+        updated = updated.map((o) =>
+          o?.status !== false && o?.status !== "false" ? { ...o, status: false, isPrimaryOwner: null } : o
+        );
+        updated.push({ ...newUser, isPrimaryOwner: true });
+      } else {
+        const isFirstActive = activeCount === 0;
+        updated.push({ ...newUser, isPrimaryOwner: isFirstActive ? true : null });
+      }
+    });
 
-    const activeCount = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false").length;
-    if (ownerType?.code === "INDIVIDUAL" && activeCount >= 1) {
-      // For individual mode, set existing active owner status to false and add new primary owner
-      const updated = selectedOwners.map((o) =>
-        o?.status !== false && o?.status !== "false" ? { ...o, status: false, isPrimaryOwner: null } : o
-      );
-      setSelectedOwners([...updated, { ...newUser, isPrimaryOwner: true }]);
-    } else {
-      const isFirstActive = activeCount === 0;
-      setSelectedOwners([...selectedOwners, { ...newUser, isPrimaryOwner: isFirstActive ? true : null }]);
-    }
+    setSelectedOwners(updated);
 
     setShowToast({
       key: "true",
@@ -544,6 +553,7 @@ const LayoutNewApplicantDetails = (_props) => {
             onSelectUser={handleSelectUserFromModal}
             initialMobileNumber={editingOwner?.mobileNumber}
             editingOwner={editingOwner}
+            existingOwners={activeOwners}
             isPrimaryOwner={editingOwner ? (editingOwner.isPrimaryOwner === true || editingOwner.isPrimaryOwner === "true") : (activeOwners.length === 0 || ownerType?.code === "INDIVIDUAL")}
           />
         )}

@@ -55,6 +55,40 @@ const getUserKey = (u) => {
   return `${mob}_${name}`;
 };
 
+const formatDobForInput = (dob) => {
+  if (!dob) return "";
+  if (typeof dob === "number") {
+    const d = new Date(dob);
+    if (!isNaN(d.getTime())) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+  }
+  if (typeof dob === "string") {
+    const trimmed = dob.trim();
+    if (/^\d{10,13}$/.test(trimmed)) {
+      const d = new Date(Number(trimmed));
+      if (!isNaN(d.getTime())) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+    }
+    const ddmmyyyy = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    if (ddmmyyyy) {
+      const day = String(ddmmyyyy[1]).padStart(2, "0");
+      const month = String(ddmmyyyy[2]).padStart(2, "0");
+      const year = ddmmyyyy[3];
+      return `${year}-${month}-${day}`;
+    }
+    return trimmed.slice(0, 10);
+  }
+  return "";
+};
+
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -109,6 +143,12 @@ export const LayoutOwnerSearchModal = ({
   const [authorisedPerson, setAuthorisedPerson] = useState("");
   const [errors, setErrors] = useState({});
 
+  // 4 Editable owner fields state for Step 2
+  const [ownerEmail, setOwnerEmail] = useState("");
+  const [ownerAddress, setOwnerAddress] = useState("");
+  const [ownerDob, setOwnerDob] = useState("");
+  const [ownerGender, setOwnerGender] = useState(null);
+
   // Manual User Form states
   const [showManualForm, setShowManualForm] = useState(false);
   const [manualName, setManualName] = useState("");
@@ -130,6 +170,33 @@ export const LayoutOwnerSearchModal = ({
       });
     });
 
+  const emailLabel =
+    uploadModule === "NOC"
+      ? "NOC_APPLICANT_EMAIL_LABEL"
+      : uploadModule === "CLU"
+      ? "BPA_APPLICANT_EMAIL_LABEL"
+      : "NEW_LAYOUT_APPLICANT_EMAIL_LABEL";
+
+  const addressLabel =
+    uploadModule === "NOC"
+      ? "NOC_APPLICANT_ADDRESS_LABEL"
+      : uploadModule === "CLU"
+      ? "BPA_APPLICANT_ADDRESS_LABEL"
+      : "NEW_LAYOUT_APPLICANT_ADDRESS_LABEL";
+
+  const dobLabel = uploadModule === "NOC" ? "NOC_APPLICANT_DOB_LABEL" : "BPA_APPLICANT_DOB_LABEL";
+  const genderLabel = uploadModule === "NOC" ? "NOC_APPLICANT_GENDER_LABEL" : "BPA_APPLICANT_GENDER_LABEL";
+
+  const findGenderOption = (val) => {
+    if (!val) return null;
+    const code = (typeof val === "string" ? val : val?.code || val?.value || "").toUpperCase();
+    const found = genderMenu.find((g) => (g?.code || "").toUpperCase() === code);
+    if (found) return found;
+    if (typeof val === "object" && val !== null) return val;
+    if (code) return { code, value: code, i18nKey: `COMMON_GENDER_${code}` };
+    return null;
+  };
+
   const isMultiMode =
     uploadModule !== "NOC" &&
     (Boolean(showOwnershipShare) || (uploadModule === "CLU" && (wizardUsers.length > 1 || (existingOwners && existingOwners.length > 0))));
@@ -150,8 +217,16 @@ export const LayoutOwnerSearchModal = ({
   const buildCurrentOwnerObj = () => {
     const isThisPrimary = checkIsPrimaryOwner(currentUserIndex, selectedUser);
     const isFirm = isThisPrimary && aplicantType?.code === "FIRM";
+    const cleanEmail = ownerEmail ? ownerEmail.trim() : "";
+    const cleanAddress = ownerAddress ? ownerAddress.trim() : "";
     return {
       ...selectedUser,
+      emailId: cleanEmail,
+      permanentAddress: cleanAddress,
+      address: cleanAddress,
+      dob: ownerDob || "",
+      dateOfBirth: ownerDob || "",
+      gender: ownerGender || null,
       aplicantType: isThisPrimary ? aplicantType : null,
       authorisedPerson: isFirm ? (authorisedPerson ? authorisedPerson.trim() : null) : null,
       panNumber: showPanDetails
@@ -192,6 +267,12 @@ export const LayoutOwnerSearchModal = ({
     setPanDocumentUploadedFile(existing?.panDocumentUploadedFiles || existing?.additionalDetails?.panDocument || null);
     setPanNumber(existing?.panNumber || existing?.pan || "");
     setOwnershipInPct(existing?.ownershipInPct !== undefined && existing?.ownershipInPct !== null ? String(existing.ownershipInPct) : "");
+
+    // Prefill 4 editable owner fields
+    setOwnerEmail(existing?.emailId || existing?.email || "");
+    setOwnerAddress(existing?.permanentAddress || existing?.address || "");
+    setOwnerDob(formatDobForInput(existing?.dob || existing?.dateOfBirth));
+    setOwnerGender(findGenderOption(existing?.gender));
 
     const isThisPrimary = checkIsPrimaryOwner(idx, existing);
     const appType = existing?.aplicantType || existing?.additionalDetails?.aplicantType || null;
@@ -482,6 +563,40 @@ export const LayoutOwnerSearchModal = ({
       }
     }
 
+    // Email Validation
+    if (!ownerEmail || !ownerEmail.trim()) {
+      errs.emailId = t("REQUIRED_FIELD");
+    } else if (!/^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}$/.test(ownerEmail.trim())) {
+      errs.emailId = t("INVALID_EMAIL_FORMAT");
+    }
+
+    // Address Validation
+    if (!ownerAddress || !ownerAddress.trim()) {
+      errs.address = t("REQUIRED_FIELD");
+    } else if (ownerAddress.trim().length > 100) {
+      errs.address = t("MAX_100_CHARACTERS_ALLOWED");
+    }
+
+    // DOB Validation
+    if (!ownerDob) {
+      errs.dob = t("REQUIRED_FIELD");
+    } else {
+      const today = new Date();
+      const dob = new Date(ownerDob);
+      const age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      const d = today.getDate() - dob.getDate();
+      const is18OrOlder = age >= 18 || (age === 18 && (m > 0 || (m === 0 && d >= 0)));
+      if (!is18OrOlder) {
+        errs.dob = t("DOB_MUST_BE_18_YEARS_OLD");
+      }
+    }
+
+    // Gender Validation
+    if (!ownerGender) {
+      errs.gender = t("REQUIRED_FIELD");
+    }
+
     if (!photoUploadedFile) {
       errs.photo = t("Passport photo is required");
     }
@@ -502,7 +617,6 @@ export const LayoutOwnerSearchModal = ({
       }
     }
 
-    const isMultiMode = Boolean(showOwnershipShare);
     if (isMultiMode) {
       const shareVal = parseFloat(ownershipInPct);
       if (!ownershipInPct || String(ownershipInPct).trim() === "") {
@@ -926,7 +1040,6 @@ export const LayoutOwnerSearchModal = ({
                 )}
               </p>
               <p className="obps-page-components-layout-owner-search-modal--style-45"><strong>{t("MOBILE NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
-              {selectedUser.emailId && <p className="obps-page-components-layout-owner-search-modal--style-46"><strong>{t("EMAIL ID")}:</strong> {selectedUser.emailId}</p>}
             </div>
 
             {/* Applicant Type */}
@@ -972,6 +1085,75 @@ export const LayoutOwnerSearchModal = ({
                 {errors?.authorisedPerson && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-48">{errors.authorisedPerson}</CardLabelError>}
               </React.Fragment>
             )}
+
+            {/* Email ID */}
+            <CardLabel className="card-label-smaller">
+              {t(emailLabel)} <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <TextInput
+                value={ownerEmail}
+                onChange={(e) => {
+                  setOwnerEmail(e.target.value);
+                  setErrors((prev) => ({ ...prev, emailId: "" }));
+                }}
+                t={t}
+              />
+            </div>
+            {errors?.emailId && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-47">{errors.emailId}</CardLabelError>}
+
+            {/* Address */}
+            <CardLabel className="card-label-smaller">
+              {t(addressLabel)} <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <TextArea
+                value={ownerAddress}
+                onChange={(e) => {
+                  setOwnerAddress(e.target.value);
+                  setErrors((prev) => ({ ...prev, address: "" }));
+                }}
+                t={t}
+              />
+            </div>
+            {errors?.address && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-47">{errors.address}</CardLabelError>}
+
+            {/* Date of Birth */}
+            <CardLabel className="card-label-smaller">
+              {t(dobLabel)} <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <DatePicker
+                date={ownerDob}
+                onChange={(val) => {
+                  setOwnerDob(val);
+                  setErrors((prev) => ({ ...prev, dob: "" }));
+                }}
+                min="1900-01-01"
+                max={new Date().toISOString().split("T")[0]}
+              />
+            </div>
+            {errors?.dob && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-47">{errors.dob}</CardLabelError>}
+
+            {/* Gender */}
+            <CardLabel className="card-label-smaller">
+              {t(genderLabel)} <span className="requiredField">*</span>
+            </CardLabel>
+            <div className="field">
+              <RadioButtons
+                t={t}
+                options={genderMenu}
+                optionsKey="code"
+                value={ownerGender}
+                selectedOption={ownerGender}
+                onSelect={(e) => {
+                  setOwnerGender(e);
+                  setErrors((prev) => ({ ...prev, gender: "" }));
+                }}
+                isDependent={true}
+              />
+            </div>
+            {errors?.gender && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-47">{errors.gender}</CardLabelError>}
 
             {/* Passport Photo */}
               <CardLabel className="card-label-smaller">

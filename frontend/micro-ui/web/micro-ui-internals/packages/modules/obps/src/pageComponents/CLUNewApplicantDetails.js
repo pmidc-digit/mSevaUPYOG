@@ -56,6 +56,22 @@ const getFileId = (file) => {
   return file;
 };
 
+export const isSameOwner = (a, b) => {
+  if (!a || !b) return false;
+  if (a.uuid && b.uuid && a.uuid === b.uuid) {
+    return true;
+  }
+  const mobA = String(a?.mobileNumber || a?.userName || "").trim();
+  const mobB = String(b?.mobileNumber || b?.userName || "").trim();
+  const nameA = String(a?.name || a?.ownerOrFirmName || "").trim().toLowerCase();
+  const nameB = String(b?.name || b?.ownerOrFirmName || "").trim().toLowerCase();
+
+  if (mobA && mobB && nameA && nameB) {
+    return mobA === mobB && nameA === nameB;
+  }
+  return false;
+};
+
 const areApplicantsEqual = (arr1, arr2) => {
   if (!arr1 && !arr2) return true;
   if (!arr1 || !arr2) return false;
@@ -413,19 +429,29 @@ const CLUNewApplicantDetails = (_props) => {
   };
 
   const handleSelectUserFromModal = (newUserData) => {
-    const isIndividual = ownerType?.code === "INDIVIDUAL";
-    const shareToSet = isIndividual ? "100" : (newUserData.ownershipInPct || "");
+    if (!newUserData) {
+      setShowModal(false);
+      return;
+    }
 
-    const enrichedUser = {
-      ...newUserData,
-      ownershipInPct: shareToSet,
-    };
+    const newOwnersList = Array.isArray(newUserData) ? newUserData : [newUserData];
+    if (newOwnersList.length === 0) {
+      setShowModal(false);
+      return;
+    }
 
     if (editingOwner) {
+      const editedUser = newOwnersList[0];
+      const isIndividual = ownerType?.code === "INDIVIDUAL";
+      const shareToSet = isIndividual ? "100" : (editedUser.ownershipInPct || "");
+      const enrichedUser = {
+        ...editedUser,
+        ownershipInPct: shareToSet,
+      };
+
       setSelectedOwners((prev) =>
         prev.map((owner) => {
-          const isMatch = (editingOwner.uuid && owner.uuid === editingOwner.uuid) || owner.mobileNumber === editingOwner.mobileNumber;
-          if (isMatch) {
+          if (isSameOwner(owner, editingOwner)) {
             return {
               ...owner,
               ...enrichedUser,
@@ -437,33 +463,53 @@ const CLUNewApplicantDetails = (_props) => {
         })
       );
       setEditingOwner(null);
-    } else {
-      const active = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
-      const isFirst = active.length === 0;
+      setShowModal(false);
+      return;
+    }
 
-      const newOwner = {
-        ...enrichedUser,
-        isPrimaryOwner: isFirst ? true : null,
-        status: true,
-      };
+    // Adding new owner(s)
+    const currentActiveOwners = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
+    const willHaveMultiple = currentActiveOwners.length + newOwnersList.length > 1;
 
-      const existingIndex = selectedOwners.findIndex(
-        (o) => (newOwner.uuid && o.uuid === newOwner.uuid) || o.mobileNumber === newOwner.mobileNumber
-      );
+    setSelectedOwners((prev) => {
+      let updated = [...prev];
 
-      if (existingIndex > -1) {
-        setSelectedOwners((prev) => {
-          const updated = [...prev];
+      newOwnersList.forEach((newOwnerItem) => {
+        const shareToSet = willHaveMultiple ? (newOwnerItem.ownershipInPct || "") : "100";
+        const enrichedUser = {
+          ...newOwnerItem,
+          ownershipInPct: shareToSet,
+        };
+
+        const existingIndex = updated.findIndex((o) => isSameOwner(o, enrichedUser));
+        if (existingIndex > -1) {
           updated[existingIndex] = {
             ...updated[existingIndex],
-            ...newOwner,
+            ...enrichedUser,
             status: true,
           };
-          return updated;
-        });
-      } else {
-        setSelectedOwners((prev) => [...prev, newOwner]);
-      }
+        } else {
+          const activeNow = updated.filter((o) => o?.status !== false && o?.status !== "false");
+          const isFirst = activeNow.length === 0;
+          updated.push({
+            ...enrichedUser,
+            isPrimaryOwner: isFirst ? true : null,
+            status: true,
+          });
+        }
+      });
+
+      return updated;
+    });
+
+    const newlyAddedCount = newOwnersList.filter(
+      (item) => !currentActiveOwners.some((o) => isSameOwner(o, item))
+    ).length;
+    const finalActiveCount = currentActiveOwners.length + newlyAddedCount;
+    if (finalActiveCount > 1 && ownerType?.code !== "MULTIPLE") {
+      setOwnerType(ownerTypeOptions[1]);
+      setValue("aplicantType", ownerTypeOptions[1]);
+      clearErrors("aplicantType");
     }
 
     setShowModal(false);
@@ -484,29 +530,36 @@ const CLUNewApplicantDetails = (_props) => {
       return;
     }
 
-    setSelectedOwners((prev) =>
-      prev.map((owner) => {
-        const isMatch = (ownerToRemove.uuid && owner.uuid === ownerToRemove.uuid) || owner.mobileNumber === ownerToRemove.mobileNumber;
-        if (isMatch) {
+    const wasPrimary = ownerToRemove.isPrimaryOwner === true || ownerToRemove.isPrimaryOwner === "true";
+
+    setSelectedOwners((prev) => {
+      let firstActiveFound = false;
+      return prev.map((owner) => {
+        if (isSameOwner(owner, ownerToRemove)) {
           return {
             ...owner,
             status: false,
+            isPrimaryOwner: null,
+          };
+        }
+        if (wasPrimary && !firstActiveFound && (owner?.status !== false && owner?.status !== "false")) {
+          firstActiveFound = true;
+          return {
+            ...owner,
+            isPrimaryOwner: true,
           };
         }
         return owner;
-      })
-    );
+      });
+    });
   };
 
   const handleSetPrimary = (primaryOwner) => {
     setSelectedOwners((prev) =>
-      prev.map((owner) => {
-        const isTarget = (primaryOwner.uuid && owner.uuid === primaryOwner.uuid) || owner.mobileNumber === primaryOwner.mobileNumber;
-        return {
-          ...owner,
-          isPrimaryOwner: isTarget ? true : null,
-        };
-      })
+      prev.map((owner) => ({
+        ...owner,
+        isPrimaryOwner: isSameOwner(owner, primaryOwner) ? true : null,
+      }))
     );
   };
 
@@ -726,13 +779,14 @@ const CLUNewApplicantDetails = (_props) => {
             onSelectUser={handleSelectUserFromModal}
             initialMobileNumber={editingOwner?.mobileNumber}
             editingOwner={editingOwner}
+            existingOwners={activeOwners}
             isPrimaryOwner={
               editingOwner
                 ? (editingOwner.isPrimaryOwner === true || editingOwner.isPrimaryOwner === "true")
                 : (activeOwners.length === 0 || ownerType?.code === "INDIVIDUAL")
             }
             uploadModule="CLU"
-            showOwnershipShare={isMultiple}
+            showOwnershipShare={isMultiple || activeOwners.length > 0}
           />
         )}
       </div>

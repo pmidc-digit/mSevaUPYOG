@@ -32,6 +32,29 @@ const findApplicantTypeOption = (val) => {
 
 
 
+const isSameUser = (a, b) => {
+  if (!a || !b) return false;
+  if (a.uuid && b.uuid && String(a.uuid) === String(b.uuid)) {
+    return true;
+  }
+  const mobA = String(a?.mobileNumber || a?.userName || "").trim();
+  const mobB = String(b?.mobileNumber || b?.userName || "").trim();
+  const nameA = String(a?.name || a?.ownerOrFirmName || "").trim().toLowerCase();
+  const nameB = String(b?.name || b?.ownerOrFirmName || "").trim().toLowerCase();
+  if (mobA && mobB && nameA && nameB) {
+    return mobA === mobB && nameA === nameB;
+  }
+  return false;
+};
+
+const getUserKey = (u) => {
+  if (!u) return "";
+  if (u.uuid) return String(u.uuid);
+  const mob = String(u.mobileNumber || u.userName || "").trim();
+  const name = String(u.name || u.ownerOrFirmName || "").trim().toLowerCase();
+  return `${mob}_${name}`;
+};
+
 const Close = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
     <path d="M0 0h24v24H0V0z" fill="none" />
@@ -52,9 +75,11 @@ export const LayoutOwnerSearchModal = ({
   onSelectUser,
   initialMobileNumber,
   editingOwner,
+  existingOwners = [],
   isPrimaryOwner,
   uploadModule,
   showOwnershipShare = false,
+  showPanDetails = true,
 }) => {
   const { t } = useTranslation();
   const stateId = Digit.ULBService.getStateId();
@@ -69,6 +94,10 @@ export const LayoutOwnerSearchModal = ({
   // Step state: 1 = Search/Manual form, 2 = Mandatory upload & additional fields form
   const [step, setStep] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUsersList, setSelectedUsersList] = useState([]);
+  const [wizardUsers, setWizardUsers] = useState([]);
+  const [currentUserIndex, setCurrentUserIndex] = useState(0);
+  const [completedOwners, setCompletedOwners] = useState([]);
 
   // Additional mandatory fields state
   const [photoUploadedFile, setPhotoUploadedFile] = useState(null);
@@ -101,18 +130,97 @@ export const LayoutOwnerSearchModal = ({
       });
     });
 
+  const isMultiMode =
+    uploadModule !== "NOC" &&
+    (Boolean(showOwnershipShare) || (uploadModule === "CLU" && (wizardUsers.length > 1 || (existingOwners && existingOwners.length > 0))));
+
+  const checkIsPrimaryOwner = (idx, user) => {
+    if (user?.isPrimaryOwner !== undefined && user?.isPrimaryOwner !== null) {
+      return user.isPrimaryOwner === true || user.isPrimaryOwner === "true";
+    }
+    if (Array.isArray(editingOwner)) {
+      return idx === 0;
+    }
+    if (editingOwner) {
+      return editingOwner.isPrimaryOwner === true || editingOwner.isPrimaryOwner === "true";
+    }
+    return Boolean(isPrimaryOwner && idx === 0);
+  };
+
+  const buildCurrentOwnerObj = () => {
+    const isThisPrimary = checkIsPrimaryOwner(currentUserIndex, selectedUser);
+    const isFirm = isThisPrimary && aplicantType?.code === "FIRM";
+    return {
+      ...selectedUser,
+      aplicantType: isThisPrimary ? aplicantType : null,
+      authorisedPerson: isFirm ? (authorisedPerson ? authorisedPerson.trim() : null) : null,
+      panNumber: showPanDetails
+        ? (panNumber ? panNumber.trim().toUpperCase() : null)
+        : (selectedUser?.panNumber || selectedUser?.pan || null),
+      pan: showPanDetails
+        ? (panNumber ? panNumber.trim().toUpperCase() : null)
+        : (selectedUser?.panNumber || selectedUser?.pan || null),
+      ownershipInPct: isMultiMode
+        ? (ownershipInPct !== "" && ownershipInPct !== null && ownershipInPct !== undefined ? String(ownershipInPct).trim() : null)
+        : (selectedUser?.ownershipInPct || (editingOwner && !Array.isArray(editingOwner) ? editingOwner?.ownershipInPct : null) || null),
+      photoUploadedFiles: photoUploadedFile,
+      documentUploadedFiles: documentUploadedFile,
+      panDocumentUploadedFiles: showPanDetails
+        ? panDocumentUploadedFile
+        : (selectedUser?.panDocumentUploadedFiles || selectedUser?.additionalDetails?.panDocument || null),
+      additionalDetails: {
+        ...selectedUser?.additionalDetails,
+        ownerPhoto: photoUploadedFile,
+        documentFile: documentUploadedFile,
+        panDocument: showPanDetails
+          ? panDocumentUploadedFile
+          : (selectedUser?.panDocumentUploadedFiles || selectedUser?.additionalDetails?.panDocument || null),
+        aplicantType: isThisPrimary ? aplicantType : null,
+        authorisedPerson: isFirm ? (authorisedPerson ? authorisedPerson.trim() : null) : null,
+        ownershipInPct: isMultiMode
+          ? (ownershipInPct !== "" && ownershipInPct !== null && ownershipInPct !== undefined ? String(ownershipInPct).trim() : null)
+          : (selectedUser?.ownershipInPct || (editingOwner && !Array.isArray(editingOwner) ? editingOwner?.ownershipInPct : null) || null),
+      },
+    };
+  };
+
+  const loadUserForStepTwo = (user, idx, savedList = completedOwners) => {
+    const existing = savedList[idx] || user;
+    setSelectedUser(existing);
+    setPhotoUploadedFile(existing?.photoUploadedFiles || existing?.additionalDetails?.ownerPhoto || null);
+    setDocumentUploadedFile(existing?.documentUploadedFiles || existing?.additionalDetails?.documentFile || null);
+    setPanDocumentUploadedFile(existing?.panDocumentUploadedFiles || existing?.additionalDetails?.panDocument || null);
+    setPanNumber(existing?.panNumber || existing?.pan || "");
+    setOwnershipInPct(existing?.ownershipInPct !== undefined && existing?.ownershipInPct !== null ? String(existing.ownershipInPct) : "");
+
+    const isThisPrimary = checkIsPrimaryOwner(idx, existing);
+    const appType = existing?.aplicantType || existing?.additionalDetails?.aplicantType || null;
+    setAplicantType(findApplicantTypeOption(appType) || (isThisPrimary ? applicantTypeOptions[0] : null));
+    setAuthorisedPerson(existing?.authorisedPerson || existing?.additionalDetails?.authorisedPerson || "");
+    setErrors({});
+  };
+
+  const startStepTwoWizard = (usersToProcess) => {
+    if (!usersToProcess || usersToProcess.length === 0) return;
+    setWizardUsers(usersToProcess);
+    setCurrentUserIndex(0);
+    setCompletedOwners([]);
+    loadUserForStepTwo(usersToProcess[0], 0, []);
+    setStep(2);
+  };
+
+  const isUserAlreadyAdded = (u) => {
+    if (!u || !existingOwners || existingOwners.length === 0) return false;
+    if (editingOwner) {
+      const editList = Array.isArray(editingOwner) ? editingOwner : [editingOwner];
+      if (editList.some((eo) => isSameUser(eo, u))) return false;
+    }
+    return existingOwners.some((eo) => isSameUser(eo, u));
+  };
+
   useEffect(() => {
     if (editingOwner) {
-      setSelectedUser(editingOwner);
-      setPhotoUploadedFile(editingOwner?.photoUploadedFiles || editingOwner?.additionalDetails?.ownerPhoto || null);
-      setDocumentUploadedFile(editingOwner?.documentUploadedFiles || editingOwner?.additionalDetails?.documentFile || null);
-      setPanDocumentUploadedFile(editingOwner?.panDocumentUploadedFiles || editingOwner?.additionalDetails?.panDocument || null);
-      setPanNumber(editingOwner?.panNumber || editingOwner?.pan || "");
-      setOwnershipInPct(editingOwner?.ownershipInPct !== undefined && editingOwner?.ownershipInPct !== null ? String(editingOwner.ownershipInPct) : "");
-      const appType = editingOwner?.aplicantType || editingOwner?.additionalDetails?.aplicantType || null;
-      setAplicantType(findApplicantTypeOption(appType) || (isPrimaryOwner ? applicantTypeOptions[0] : null));
-      setAuthorisedPerson(editingOwner?.authorisedPerson || editingOwner?.additionalDetails?.authorisedPerson || "");
-      setStep(2);
+      startStepTwoWizard(Array.isArray(editingOwner) ? editingOwner : [editingOwner]);
     } else if (initialMobileNumber && /^[6-9]\d{9}$/.test(initialMobileNumber)) {
       handleSearch(initialMobileNumber);
     }
@@ -167,8 +275,10 @@ export const LayoutOwnerSearchModal = ({
         });
 
         setSearchedUsers(formattedUsers);
+        setSelectedUsersList([]);
       } else {
         setSearchedUsers([]);
+        setSelectedUsersList([]);
         setShowToast({ warning: true, label: "ERR_MOBILE_NUMBER_NOT_REGISTERED" });
       }
     } catch (err) {
@@ -289,16 +399,11 @@ export const LayoutOwnerSearchModal = ({
   };
 
   const handleSelectUserFromTable = (user) => {
-    setSelectedUser(user);
-    setPhotoUploadedFile(user?.photoUploadedFiles || user?.additionalDetails?.ownerPhoto || null);
-    setDocumentUploadedFile(user?.documentUploadedFiles || user?.additionalDetails?.documentFile || null);
-    setPanDocumentUploadedFile(user?.panDocumentUploadedFiles || user?.additionalDetails?.panDocument || null);
-    setPanNumber(user?.panNumber || user?.pan || "");
-    const appType = user?.aplicantType || user?.additionalDetails?.aplicantType || null;
-    setAplicantType(findApplicantTypeOption(appType));
-    setAuthorisedPerson(user?.authorisedPerson || user?.additionalDetails?.authorisedPerson || "");
-    setErrors({});
-    setStep(2);
+    if (isUserAlreadyAdded(user)) {
+      setShowToast({ warning: true, label: "OWNER_ALREADY_ADDED" });
+      return;
+    }
+    startStepTwoWizard([user]);
   };
 
   const handleSaveManualUser = () => {
@@ -340,21 +445,33 @@ export const LayoutOwnerSearchModal = ({
       gender: manualGender,
     };
 
-    setSelectedUser(newManualUser);
-    setPhotoUploadedFile(null);
-    setDocumentUploadedFile(null);
-    setPanDocumentUploadedFile(null);
-    setPanNumber("");
-    setAplicantType(null);
-    setAuthorisedPerson("");
-    setErrors({});
-    setStep(2);
+    if (isUserAlreadyAdded(newManualUser)) {
+      setShowToast({ warning: true, label: "OWNER_ALREADY_SELECTED" });
+      return;
+    }
+
+    startStepTwoWizard([newManualUser]);
+  };
+
+  const handlePrevOwner = () => {
+    if (currentUserIndex > 0) {
+      const nextCompleted = [...completedOwners];
+      nextCompleted[currentUserIndex] = buildCurrentOwnerObj();
+      setCompletedOwners(nextCompleted);
+      const prevIdx = currentUserIndex - 1;
+      setCurrentUserIndex(prevIdx);
+      loadUserForStepTwo(wizardUsers[prevIdx], prevIdx, nextCompleted);
+    } else {
+      setStep(1);
+      setShowManualForm(false);
+    }
   };
 
   const handleSaveFinalOwner = () => {
     const errs = {};
+    const isThisPrimary = checkIsPrimaryOwner(currentUserIndex, selectedUser);
 
-    if (isPrimaryOwner) {
+    if (isThisPrimary) {
       if (!aplicantType) {
         errs.aplicantType = t("REQUIRED_FIELD");
       }
@@ -373,17 +490,20 @@ export const LayoutOwnerSearchModal = ({
       errs.document = t("Document upload is required");
     }
 
-    if (!panDocumentUploadedFile) {
-      errs.panDocument = t("PAN document is required");
+    if (showPanDetails) {
+      if (!panDocumentUploadedFile) {
+        errs.panDocument = t("PAN document is required");
+      }
+
+      if (!panNumber || !panNumber.trim()) {
+        errs.panNumber = t("REQUIRED_FIELD");
+      } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber.trim())) {
+        errs.panNumber = t("Invalid PAN Number format. Format should be like AAAAA1234A");
+      }
     }
 
-    if (!panNumber || !panNumber.trim()) {
-      errs.panNumber = t("REQUIRED_FIELD");
-    } else if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber.trim())) {
-      errs.panNumber = t("Invalid PAN Number format. Format should be like AAAAA1234A");
-    }
-
-    if (showOwnershipShare) {
+    const isMultiMode = Boolean(showOwnershipShare);
+    if (isMultiMode) {
       const shareVal = parseFloat(ownershipInPct);
       if (!ownershipInPct || String(ownershipInPct).trim() === "") {
         errs.ownershipInPct = t("REQUIRED_FIELD");
@@ -397,31 +517,35 @@ export const LayoutOwnerSearchModal = ({
       return;
     }
 
-    const isFirm = isPrimaryOwner && aplicantType?.code === "FIRM";
+    const currentOwnerObj = buildCurrentOwnerObj();
 
-    const finalUserObj = {
-      ...selectedUser,
-      aplicantType: isPrimaryOwner ? aplicantType : null,
-      authorisedPerson: isFirm ? authorisedPerson.trim() : null,
-      panNumber: panNumber.trim().toUpperCase(),
-      pan: panNumber.trim().toUpperCase(),
-      ownershipInPct: showOwnershipShare ? String(ownershipInPct).trim() : (editingOwner?.ownershipInPct || null),
-      photoUploadedFiles: photoUploadedFile,
-      documentUploadedFiles: documentUploadedFile,
-      panDocumentUploadedFiles: panDocumentUploadedFile,
-      additionalDetails: {
-        ...selectedUser?.additionalDetails,
-        ownerPhoto: photoUploadedFile,
-        documentFile: documentUploadedFile,
-        panDocument: panDocumentUploadedFile,
-        aplicantType: isPrimaryOwner ? aplicantType : null,
-        authorisedPerson: isFirm ? authorisedPerson.trim() : null,
-        ownershipInPct: showOwnershipShare ? String(ownershipInPct).trim() : (editingOwner?.ownershipInPct || null),
-      },
-    };
+    const nextCompleted = [...completedOwners];
+    nextCompleted[currentUserIndex] = currentOwnerObj;
+    setCompletedOwners(nextCompleted);
 
-    onSelectUser(finalUserObj);
-    closeModal();
+    if (currentUserIndex < wizardUsers.length - 1) {
+      const nextIdx = currentUserIndex + 1;
+      setCurrentUserIndex(nextIdx);
+      loadUserForStepTwo(wizardUsers[nextIdx], nextIdx, nextCompleted);
+    } else {
+      onSelectUser(wizardUsers.length > 1 ? nextCompleted : nextCompleted[0]);
+      closeModal();
+    }
+  };
+
+  const handleToggleUser = (user) => {
+    if (isUserAlreadyAdded(user)) {
+      setShowToast({ warning: true, label: "OWNER_ALREADY_SELECTED" });
+      return;
+    }
+    setSelectedUsersList((prev) => {
+      const isSelected = prev.some((su) => isSameUser(su, user));
+      if (isSelected) {
+        return prev.filter((su) => !isSameUser(su, user));
+      } else {
+        return [...prev, user];
+      }
+    });
   };
 
   const columns = [
@@ -463,18 +587,61 @@ export const LayoutOwnerSearchModal = ({
     {
       Header: t("ACTION"),
       accessor: "uuid",
-      Cell: ({ row }) => (
-        <button
-          className="submit-bar obps-page-components-layout-owner-search-modal--style-1"
-          type="button"
+      Cell: ({ row }) => {
+        const isAlreadyAdded = isUserAlreadyAdded(row.original);
+        if (isAlreadyAdded) {
+          return (
+            <button
+              className="submit-bar obps-page-components-layout-owner-search-modal--style-1"
+              type="button"
+              disabled={true}
+              style={{
+                background: "#374151",
+                backgroundImage: "none",
+                borderColor: "#374151",
+                color: "#ffffff",
+                fontWeight: "700",
+                opacity: 1,
+                cursor: "not-allowed",
+                minWidth: "110px",
+              }}
+              title={t("OWNER_ALREADY_SELECTED")}
+            >
+              {t("Already Selected")}
+            </button>
+          );
+        }
 
-          onClick={() => handleSelectUserFromTable(row.original)}
-        >
-          {t("Select")}
-        </button>
-      ),
+        const isSelected = selectedUsersList.some((su) => isSameUser(su, row.original));
+        return (
+          <button
+            className="submit-bar obps-page-components-layout-owner-search-modal--style-1"
+            type="button"
+            style={
+              isSelected
+                ? {
+                    background: "#00703c",
+                    backgroundImage: "none",
+                    borderColor: "#00703c",
+                    color: "#ffffff",
+                    fontWeight: "700",
+                    minWidth: "110px",
+                  }
+                : {
+                    minWidth: "110px",
+                    fontWeight: "600",
+                  }
+            }
+            onClick={() => handleToggleUser(row.original)}
+          >
+            {isSelected ? `✓ ${t("Selected")}` : t("Select")}
+          </button>
+        );
+      },
     },
   ];
+
+  const isThisPrimary = checkIsPrimaryOwner(currentUserIndex, selectedUser);
 
   return (
     <React.Fragment>
@@ -484,7 +651,11 @@ export const LayoutOwnerSearchModal = ({
       >
         <div className="obps-page-components-layout-owner-search-modal--style-3">
           <h1 className="heading-m obps-page-components-layout-owner-search-modal--style-4" >
-            {step === 2 ? t("OWNER ADDITIONAL DETAILS") : t("SEARCH OWNER DETAILS")}
+            {step === 2
+              ? wizardUsers.length > 1
+                ? `${t("OWNER ADDITIONAL DETAILS")} (${currentUserIndex + 1}/${wizardUsers.length})`
+                : t("OWNER ADDITIONAL DETAILS")
+              : t("SEARCH OWNER DETAILS")}
           </h1>
           <CloseBtn onClick={closeModal} />
         </div>
@@ -544,7 +715,7 @@ export const LayoutOwnerSearchModal = ({
                       wordBreak: "break-word",
                       padding: "10px 12px",
                       verticalAlign: "middle",
-                      minWidth: cellInfo.column.id === "uuid" ? "100px" : "110px",
+                      minWidth: cellInfo.column.id === "uuid" ? "120px" : "110px",
                     },
                   })}
                   disableSort={true}
@@ -554,6 +725,19 @@ export const LayoutOwnerSearchModal = ({
                 />
               ) : null}
             </div>
+
+            {/* Action Bar for Selected Owners */}
+            {selectedUsersList.length > 0 && (
+              <div className="obps-page-components-layout-owner-search-modal--style-56" style={{ marginTop: "16px", marginBottom: "8px" }}>
+                <button
+                  type="button"
+                  className="submit-bar obps-page-components-layout-owner-search-modal--style-58"
+                  onClick={() => startStepTwoWizard(selectedUsersList)}
+                >
+                  {t("Proceed with Selected Owners")} ({selectedUsersList.length})
+                </button>
+              </div>
+            )}
 
             {/* Section to trigger manual add owner form - visible only after search */}
             {searchedUsers !== null && (
@@ -711,26 +895,42 @@ export const LayoutOwnerSearchModal = ({
           <div className="obps-page-components-layout-owner-search-modal--style-40">
             <div className="obps-page-components-layout-owner-search-modal--style-41">
               <h2 className="obps-page-components-layout-owner-search-modal--style-42">
-                {t("ADDITIONAL DETAILS DOCUMENTS")}
+                {wizardUsers.length > 1
+                  ? `${t("ADDITIONAL DETAILS & DOCUMENTS")} - ${t("Owner")} ${currentUserIndex + 1} ${t("of")} ${wizardUsers.length}: ${selectedUser?.name || ""}`
+                  : t("ADDITIONAL DETAILS DOCUMENTS")}
               </h2>
               <LinkButton
-                label={t("CHANGE OWNER")}
-                onClick={() => {
-                  setStep(1);
-                  setShowManualForm(false);
-                }}
+                label={currentUserIndex > 0 ? `← ${t("PREVIOUS OWNER")}` : t("CHANGE OWNER")}
+                onClick={handlePrevOwner}
               />
             </div>
 
             {/* Selected Owner Details Card */}
             <div className="obps-page-components-layout-owner-search-modal--style-43">
-              <p className="obps-page-components-layout-owner-search-modal--style-44"><strong>{t("APPLICANT NAME")}:</strong> {selectedUser.name || "NA"}</p>
+              <p className="obps-page-components-layout-owner-search-modal--style-44">
+                <strong>{t("APPLICANT NAME")}:</strong> {selectedUser.name || "NA"}
+                {wizardUsers.length > 1 && (
+                  <span
+                    style={{
+                      marginLeft: "10px",
+                      background: "#f47738",
+                      color: "#fff",
+                      padding: "2px 8px",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      fontWeight: "normal",
+                    }}
+                  >
+                    {t("Owner")} {currentUserIndex + 1} of {wizardUsers.length}
+                  </span>
+                )}
+              </p>
               <p className="obps-page-components-layout-owner-search-modal--style-45"><strong>{t("MOBILE NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
               {selectedUser.emailId && <p className="obps-page-components-layout-owner-search-modal--style-46"><strong>{t("EMAIL ID")}:</strong> {selectedUser.emailId}</p>}
             </div>
 
             {/* Applicant Type */}
-            {isPrimaryOwner && (
+            {isThisPrimary && (
               <React.Fragment>
                 <CardLabel className="card-label-smaller">
                   {`${t("CLU_OWNER_TYPE_LABEL")}`} <span className="requiredField">*</span>
@@ -753,7 +953,7 @@ export const LayoutOwnerSearchModal = ({
             )}
 
             {/* Authorised Person (for Firm) */}
-            {aplicantType?.code === "FIRM" && (
+            {isThisPrimary && aplicantType?.code === "FIRM" && (
               <React.Fragment>
                   <CardLabel className="card-label-smaller">
                     {t("NEW_LAYOUT_FIRM_NAME_LABEL")}
@@ -780,13 +980,15 @@ export const LayoutOwnerSearchModal = ({
               </CardLabel>
               <div className="field obps-page-components-layout-owner-search-modal--style-49" >
                 <CustomUploadFile
-                  id="passport-photo-modal"
+                  key={`passport-photo-${currentUserIndex}`}
+                  id={`passport-photo-modal-${currentUserIndex}`}
                   onUpload={selectPhotoFile}
                   onDelete={() => {
                     setPhotoUploadedFile(null);
                     setErrors((prev) => ({ ...prev, photo: t("Passport photo is required") }));
                   }}
                   uploadedFile={photoUploadedFile}
+                  isRemovable={true}
                   message={photoUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                   uploadMessage="Invalid File Format"
                   accept=".png, .jpeg, .jpg"
@@ -802,13 +1004,15 @@ export const LayoutOwnerSearchModal = ({
               </CardLabel>
               <div className="field obps-page-components-layout-owner-search-modal--style-51" >
                 <CustomUploadFile
-                  id="id-proof-modal"
+                  key={`id-proof-${currentUserIndex}`}
+                  id={`id-proof-modal-${currentUserIndex}`}
                   onUpload={selectDocumentFile}
                   onDelete={() => {
                     setDocumentUploadedFile(null);
                     setErrors((prev) => ({ ...prev, document: t("Document upload is required") }));
                   }}
                   uploadedFile={documentUploadedFile}
+                  isRemovable={true}
                   message={documentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                   uploadMessage="Invalid File Format"
                   accept=".pdf, .png, .jpeg, .jpg"
@@ -817,50 +1021,55 @@ export const LayoutOwnerSearchModal = ({
               </div>
             {errors?.document && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-52">{errors.document}</CardLabelError>}
 
-            {/* PAN Document */}
-              <CardLabel className="card-label-smaller">
-                {t("BPA_PAN_DOCUMENT")}
-                <span className="requiredField">*</span>
-              </CardLabel>
-              <div className="field obps-page-components-layout-owner-search-modal--style-53" >
-                <CustomUploadFile
-                  id="pan-document-modal"
-                  onUpload={selectPanDocumentFile}
-                  onDelete={() => {
-                    setPanDocumentUploadedFile(null);
-                    setErrors((prev) => ({ ...prev, panDocument: t("PAN document is required") }));
-                  }}
-                  uploadedFile={panDocumentUploadedFile}
-                  message={panDocumentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
-                  uploadMessage="Invalid File Format"
-                  accept=".pdf, .png, .jpeg, .jpg"
-                />
-                <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
-              </div>
-            {errors?.panDocument && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-54">{errors.panDocument}</CardLabelError>}
+            {/* PAN Document & PAN Number */}
+            {showPanDetails && (
+              <React.Fragment>
+                <CardLabel className="card-label-smaller">
+                  {t("BPA_PAN_DOCUMENT")}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field obps-page-components-layout-owner-search-modal--style-53" >
+                  <CustomUploadFile
+                    key={`pan-document-${currentUserIndex}`}
+                    id={`pan-document-modal-${currentUserIndex}`}
+                    onUpload={selectPanDocumentFile}
+                    onDelete={() => {
+                      setPanDocumentUploadedFile(null);
+                      setErrors((prev) => ({ ...prev, panDocument: t("PAN document is required") }));
+                    }}
+                    uploadedFile={panDocumentUploadedFile}
+                    isRemovable={true}
+                    message={panDocumentUploadedFile ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                    uploadMessage="Invalid File Format"
+                    accept=".pdf, .png, .jpeg, .jpg"
+                  />
+                  <p className="upload-file-message">{t("Only .pdf, .png, .jpeg, .jpg files are accepted with maximum size of 5 MB")}</p>
+                </div>
+                {errors?.panDocument && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-54">{errors.panDocument}</CardLabelError>}
 
-            {/* PAN Number */}
-              <CardLabel className="card-label-smaller">
-                {`${t("BPA_PAN_NUMBER_LABEL")}`}
-                <span className="requiredField">*</span>
-              </CardLabel>
-              <div className="field">
-                <TextInput
-                  value={panNumber || ""}
-                  onChange={(e) => {
-                    const upper = e.target.value.toUpperCase();
-                    setPanNumber(upper);
-                    setErrors((prev) => ({ ...prev, panNumber: "" }));
-                  }}
-                  placeholder="e.g., AAAAA1234A"
-                  maxlength={10}
-                  t={t}
-                />
-              </div>
-            {errors?.panNumber && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-55">{errors.panNumber}</CardLabelError>}
+                <CardLabel className="card-label-smaller">
+                  {`${t("BPA_PAN_NUMBER_LABEL")}`}
+                  <span className="requiredField">*</span>
+                </CardLabel>
+                <div className="field">
+                  <TextInput
+                    value={panNumber || ""}
+                    onChange={(e) => {
+                      const upper = e.target.value.toUpperCase();
+                      setPanNumber(upper);
+                      setErrors((prev) => ({ ...prev, panNumber: "" }));
+                    }}
+                    placeholder="e.g., AAAAA1234A"
+                    maxlength={10}
+                    t={t}
+                  />
+                </div>
+                {errors?.panNumber && <CardLabelError className="obps-page-components-layout-owner-search-modal--style-55">{errors.panNumber}</CardLabelError>}
+              </React.Fragment>
+            )}
 
             {/* Ownership Share */}
-            {showOwnershipShare && (
+            {isMultiMode && (
               <React.Fragment>
                 <CardLabel className="card-label-smaller">
                   {`${t("BPA_OWNERSHIP_IN_PCT_LABEL")}`}
@@ -889,18 +1098,20 @@ export const LayoutOwnerSearchModal = ({
               <button
                 type="button"
                 className="submit-bar obps-page-components-layout-owner-search-modal--style-57"
-
-                onClick={closeModal}
+                onClick={currentUserIndex > 0 ? handlePrevOwner : closeModal}
               >
-                {t("CS_COMMON_CANCEL")}
+                {currentUserIndex > 0 ? `← ${t("CS_COMMON_BACK")}` : t("CS_COMMON_CANCEL")}
               </button>
               <button
                 type="button"
                 className="submit-bar obps-page-components-layout-owner-search-modal--style-58"
-
                 onClick={handleSaveFinalOwner}
               >
-                {t("Save & Select Owner")}
+                {currentUserIndex < wizardUsers.length - 1
+                  ? `${t("Save & Next Owner")} (${currentUserIndex + 1}/${wizardUsers.length}) →`
+                  : wizardUsers.length > 1
+                  ? `${t("Save & Finish")} (${wizardUsers.length} ${t("Owners")})`
+                  : t("Save & Select Owner")}
               </button>
             </div>
           </div>

@@ -41,6 +41,14 @@ export const OBPSService = {
       userService: true,
       method: "POST",
     }),
+  NOCSearchPublic: (tenantId, params) =>
+    Request({
+      url: Urls.obps.nocSearch,
+      params: { tenantId, ...params },
+      auth: false,
+      userService: false,
+      method: "POST",
+    }),
   update: (details, tenantId) =>
     Request({
       url: Urls.obps.update,
@@ -69,6 +77,14 @@ export const OBPSService = {
       params: { tenantId, ...params },
       auth: true,
       userService: true,
+      method: "POST",
+    }),
+  BPASearchPublic: (tenantId, params) =>
+    Request({
+      url: Urls.obps.bpaSearch,
+      params: { tenantId, ...params },
+      auth: false,
+      userService: false,
       method: "POST",
     }),
 
@@ -146,6 +162,15 @@ export const OBPSService = {
       data: details,
     });
   },
+  LayoutSearchPublic: (tenantId, details, params) =>
+    Request({
+      url: Urls.obps.layoutSearch,
+      params: { tenantId, ...params },
+      auth: false,
+      userService: false,
+      method: "POST",
+      data: details,
+    }),
   LayoutUpdate: (details, tenantId) =>
     Request({
       url: Urls.obps.layoutUpdate,
@@ -184,6 +209,15 @@ export const OBPSService = {
       useCache: false,
       method: "POST",
       auth: true,
+      userService: false,
+      params: { tenantId, ...filters },
+  }),
+  CLUSearchPublic: ({ tenantId, filters }) =>
+    Request({
+      url: Urls.obps.cluSearch,
+      useCache: false,
+      method: "POST",
+      auth: false,
       userService: false,
       params: { tenantId, ...filters },
   }),

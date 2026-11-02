@@ -51,6 +51,14 @@ public class ObpasEmployeeSearchCriteria {
     @JsonProperty("offset")
     private Integer offset;
 
+    public void setSubcategory(String subcategory) {
+        this.subcategory = subcategory;
+    }
+
+    public void setSubCategory(String subCategory) {
+        this.subcategory = subCategory;
+    }
+
     public String getModulename() {
         return modulename;
     }

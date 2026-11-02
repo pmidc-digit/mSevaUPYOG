@@ -84,6 +84,7 @@ import org.egov.common.entity.edcr.SetBack;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
+import org.egov.edcr.entity.RoadTypes;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
@@ -337,8 +338,8 @@ private class FrontYardResult {
 //										frontYardResult.occupancyCode.equalsIgnoreCase("G-IT") ||
 //										frontYardResult.occupancyCode.equalsIgnoreCase("G-F")
 										) {
-									permissableValueWithPercentage = frontYardResult.expectedminimumDistance.toString();
-								    providedValue = frontYardResult.actualMinDistance.toString();
+									permissableValueWithPercentage = frontYardResult.expectedminimumDistance.abs().stripTrailingZeros().toPlainString();
+								    providedValue = frontYardResult.actualMinDistance.abs().stripTrailingZeros().toPlainString();
 								    details.put("OccCode", frontYardResult.occupancyCode);
 								}else if (frontYardResult.setBackPercentage != null 
 								        && frontYardResult.setBackPercentage.contains("m")) {							    
@@ -1470,6 +1471,19 @@ private class FrontYardResult {
 					    frontYardResult.setBackPercentage = mdmsValue.toPlainString();	
 				    }else {
 				    	LOG.error("No value found from mdms for the front setback");
+				    }
+				}
+			}else if(L_MP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+				if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+					String roadType = RoadTypes.getCode(pl.getPlanInformation().getRoadType());
+				    String path = String.format(MdmsFilter.MP_FRONT_SETBACK_PATH, roadType);
+				    Optional<List> listOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), path, List.class);
+				    if (listOpt.isPresent() && !listOpt.get().isEmpty()) {
+				        BigDecimal mdmsValue = new BigDecimal(String.valueOf(listOpt.get().get(0)));
+				        LOG.info("Front Setback Value from MDMS: " + mdmsValue);
+				        minVal = mdmsValue;
+				    } else {
+				        LOG.error("No value found from MDMS for front setback, roadType=" + roadType);
 				    }
 				}
 			}else {

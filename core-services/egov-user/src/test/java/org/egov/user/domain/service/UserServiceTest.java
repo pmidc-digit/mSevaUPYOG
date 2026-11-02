@@ -29,7 +29,7 @@ import javax.annotation.PostConstruct;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
@@ -237,6 +237,114 @@ public class UserServiceTest {
         verify(otpRepository, never()).isOtpValidationComplete(getExpectedRequest());
     }
 
+    @Test
+    public void test_should_generate_random_uuid_as_username_when_type_is_citizen_and_username_is_absent() {
+        User domainUser = User.builder()
+                .name("Supandi")
+                .gender(Gender.MALE)
+                .type(UserType.CITIZEN)
+                .active(Boolean.TRUE)
+                .mobileNumber("9988776655")
+                .tenantId("tenantId")
+                .roles(Collections.singleton(Role.builder().code("CITIZEN").build()))
+                .accountLocked(false)
+                .otpValidationMandatory(false)
+                .build();
+
+        when(encryptionDecryptionUtil.encryptObject(any(User.class), eq("UserSelf"), eq(User.class)))
+                .thenAnswer(invocation -> invocation.getArguments()[0]);
+        when(userRepository.isUserPresent(anyString(), anyString(), any(UserType.class))).thenReturn(false);
+        final User expectedEntityUser = User.builder().build();
+        when(userRepository.create(any(User.class))).thenReturn(expectedEntityUser);
+        when(encryptionDecryptionUtil.decryptObject(any(), any(), any(), any())).thenReturn(expectedEntityUser);
+
+        userService.createUser(domainUser, getValidRequestInfo());
+
+        assertNotNull(domainUser.getUserName());
+        assertFalse(domainUser.getUserName().isEmpty());
+        assertTrue(domainUser.getUserName().matches("^[0-9a-fA-F-]{36}$"));
+    }
+
+    @Test(expected = DuplicateUserNameException.class)
+    public void test_should_throw_duplicate_when_citizen_exists_and_details_match() {
+        User domainUser = User.builder()
+                .userName("9988776655")
+                .name("Ramesh Kumar")
+                .guardian("Suresh Kumar")
+                .gender(Gender.MALE)
+                .type(UserType.CITIZEN)
+                .active(Boolean.TRUE)
+                .mobileNumber("9988776655")
+                .tenantId("tenantId")
+                .roles(Collections.singleton(Role.builder().code("CITIZEN").build()))
+                .accountLocked(false)
+                .otpValidationMandatory(false)
+                .build();
+
+        User existingUser = User.builder()
+                .userName("9988776655")
+                .name("Ramesh Kumar")
+                .guardian("Suresh Kumar")
+                .mobileNumber("9988776655")
+                .type(UserType.CITIZEN)
+                .tenantId("tenantId")
+                .build();
+
+        when(userRepository.isUserPresent(eq("9988776655"), anyString(), eq(UserType.CITIZEN))).thenReturn(true);
+        when(encryptionDecryptionUtil.encryptObject(any(UserSearchCriteria.class), eq("UserSearchCriteria"), eq(UserSearchCriteria.class)))
+                .thenAnswer(inv -> inv.getArguments()[0]);
+        when(userRepository.findAll(any(UserSearchCriteria.class))).thenReturn(Collections.singletonList(existingUser));
+        when(encryptionDecryptionUtil.decryptObject(eq(existingUser), any(), eq(User.class), any())).thenReturn(existingUser);
+
+        userService.createUser(domainUser, getValidRequestInfo());
+    }
+
+    @Test
+    public void test_should_generate_uuid_and_create_when_citizen_exists_and_details_differ() {
+        User domainUser = User.builder()
+                .userName("9988776655")
+                .name("Sunita Kumar")
+                .guardian("Ramesh Kumar")
+                .gender(Gender.FEMALE)
+                .type(UserType.CITIZEN)
+                .active(Boolean.TRUE)
+                .mobileNumber("9988776655")
+                .tenantId("tenantId")
+                .roles(Collections.singleton(Role.builder().code("CITIZEN").build()))
+                .accountLocked(false)
+                .otpValidationMandatory(false)
+                .build();
+
+        User existingUser = User.builder()
+                .userName("9988776655")
+                .name("Ramesh Kumar")
+                .guardian("Suresh Kumar")
+                .mobileNumber("9988776655")
+                .type(UserType.CITIZEN)
+                .tenantId("tenantId")
+                .build();
+
+        // Existing phone matches, but when UUID is generated, isUserPresent is false
+        when(userRepository.isUserPresent(anyString(), anyString(), eq(UserType.CITIZEN)))
+                .thenAnswer(inv -> "9988776655".equals(inv.getArguments()[0]));
+
+        when(encryptionDecryptionUtil.encryptObject(any(UserSearchCriteria.class), eq("UserSearchCriteria"), eq(UserSearchCriteria.class)))
+                .thenAnswer(inv -> inv.getArguments()[0]);
+        when(userRepository.findAll(any(UserSearchCriteria.class))).thenReturn(Collections.singletonList(existingUser));
+        when(encryptionDecryptionUtil.decryptObject(eq(existingUser), any(), eq(User.class), any())).thenReturn(existingUser);
+
+        when(encryptionDecryptionUtil.encryptObject(any(User.class), eq("UserSelf"), eq(User.class)))
+                .thenAnswer(inv -> inv.getArguments()[0]);
+        final User createdEntityUser = User.builder().build();
+        when(userRepository.create(any(User.class))).thenReturn(createdEntityUser);
+        when(encryptionDecryptionUtil.decryptObject(eq(createdEntityUser), any(), eq(User.class), any())).thenReturn(createdEntityUser);
+
+        userService.createUser(domainUser, getValidRequestInfo());
+
+        assertNotNull(domainUser.getUserName());
+        assertFalse(domainUser.getUserName().equals("9988776655"));
+        assertTrue(domainUser.getUserName().matches("^[0-9a-fA-F-]{36}$"));
+    }
     @Test(expected = InvalidUserCreateException.class)
     public void test_should_raise_exception_when_user_is_invalid() throws Exception {
         org.egov.user.domain.model.User domainUser = org.egov.user.domain.model.User.builder().build();

@@ -213,6 +213,7 @@ public class NOCService {
 
 		// Get siteDetails as a Map
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
+		enrichmentService.enrichBuildingCategory(nocRequest, mdmsData);
 
 		// Create Property if Property not available
 		List<String> propertyId = JsonPath.read(additionalDetailsData, "$.applicationDetails.owners.*.propertyId");

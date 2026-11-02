@@ -169,6 +169,15 @@ public class ccAvanueGateway implements Gateway {
         
         pairList.add(new KeyValuePair("promo_code", ""));
         pairList.add(new KeyValuePair("customer_identifier", transaction.getConsumerCode()));
+
+        Object account = transaction.getAdditionalFields().values().iterator().next();
+
+        if (account != null) {
+            pairList.add(new KeyValuePair(
+                    "sub_account_id",
+                    account.toString()
+            ));
+        }
         
         int andValue= 0;
         for (KeyValuePair pair : pairList) {   	 

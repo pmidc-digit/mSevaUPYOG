@@ -1,6 +1,7 @@
 package org.egov.noc.service;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -80,6 +81,7 @@ public class EnrichmentService {
 			throw new CustomException("INVALID CREATE", "Business Services not found for the ULB Type: " + ulbType);
 		
 		((Map)nocRequest.getNoc().getNocDetails().getAdditionalDetails()).put("businessService", businessServices.get(0));
+		enrichBuildingCategory(nocRequest, mdmsData);
 				
 		for (Document doc : documents) {
 			doc.setUuid(UUID.randomUUID().toString()); // Set your desired ID here
@@ -248,6 +250,58 @@ public class EnrichmentService {
 			details.put(NOCConstants.SOURCE_RefId, uniquePropertyId);
 
 			noc.getNocDetails().setAdditionalDetails(details);
+		}
+	}
+
+	public void enrichBuildingCategory(NocRequest nocRequest, Object mdmsData) {
+		if (nocRequest == null || nocRequest.getNoc() == null || nocRequest.getNoc().getNocDetails() == null
+				|| nocRequest.getNoc().getNocDetails().getAdditionalDetails() == null || mdmsData == null) {
+			return;
+		}
+
+		Map<String, Object> additionalDetails = (Map<String, Object>) nocRequest.getNoc().getNocDetails().getAdditionalDetails();
+		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetails.get("siteDetails");
+		if (siteDetails == null) {
+			return;
+		}
+
+		Object specCategoryObj = siteDetails.get("specificationBuildingCategory");
+		if (specCategoryObj == null) {
+			return;
+		}
+
+		String categoryIdentifier = null;
+		if (specCategoryObj instanceof Map) {
+			Map<?, ?> categoryMap = (Map<?, ?>) specCategoryObj;
+			if (categoryMap.containsKey("name") && categoryMap.containsKey("code")
+					&& categoryMap.containsKey("category") && categoryMap.containsKey("subCategory")) {
+				return;
+			}
+			if (categoryMap.get("name") != null) {
+				categoryIdentifier = categoryMap.get("name").toString().trim();
+			} else if (categoryMap.get("code") != null) {
+				categoryIdentifier = categoryMap.get("code").toString().trim();
+			}
+		} else if (specCategoryObj instanceof String) {
+			categoryIdentifier = specCategoryObj.toString().trim();
+		}
+
+		if (categoryIdentifier != null && !categoryIdentifier.isEmpty()) {
+			List<Map<String, Object>> buildingCategories = JsonPath.read(
+					mdmsData,
+					"$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + categoryIdentifier + "' || @.code == '" + categoryIdentifier + "')]"
+			);
+
+			if (!CollectionUtils.isEmpty(buildingCategories)) {
+				Map<String, Object> matchedCategory = buildingCategories.get(0);
+				Map<String, Object> filteredCategory = new LinkedHashMap<>();
+				filteredCategory.put("name", matchedCategory.get("name"));
+				filteredCategory.put("code", matchedCategory.get("code"));
+				filteredCategory.put("category", matchedCategory.get("category"));
+				filteredCategory.put("subCategory", matchedCategory.get("subCategory"));
+
+				siteDetails.put("specificationBuildingCategory", filteredCategory);
+			}
 		}
 	}
 

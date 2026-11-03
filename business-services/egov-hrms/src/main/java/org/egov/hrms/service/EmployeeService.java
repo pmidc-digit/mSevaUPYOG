@@ -415,10 +415,13 @@ public class EmployeeService {
 	    if ("noc-service".equalsIgnoreCase(criteria.getModulename()) && !StringUtils.isEmpty(criteria.getCategory())) {
 	        List<Map<String, Object>> categories = mdmsService.fetchNocBuildingCategories(requestInfo, criteria.getTenantId());
 	        for (Map<String, Object> cat : categories) {
-	            if (criteria.getCategory().equalsIgnoreCase(String.valueOf(cat.get("name")))) {
+	            String name = String.valueOf(cat.get("name"));
+	            String code = String.valueOf(cat.get("code"));
+
+	            if (criteria.getCategory().equalsIgnoreCase(name) || criteria.getCategory().equalsIgnoreCase(code)) {
 	                criteria.setCategory(String.valueOf(cat.get("category")));
 	                List<?> subCats = (List<?>) cat.get("subCategory");
-	                if (!CollectionUtils.isEmpty(subCats)) {
+	                if (StringUtils.isEmpty(criteria.getSubcategory()) && !CollectionUtils.isEmpty(subCats)) {
 	                    criteria.setSubcategory(subCats.get(0).toString());
 	                }
 	                break;

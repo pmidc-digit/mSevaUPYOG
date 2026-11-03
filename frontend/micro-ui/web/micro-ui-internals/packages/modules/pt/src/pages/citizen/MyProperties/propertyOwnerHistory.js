@@ -1,8 +1,10 @@
-import { Header, Loader } from "@mseva/digit-ui-react-components";
+import { Card, CardSubHeader, Header, Loader } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { convertEpochToDate } from "../../../utils";
 import { useParams } from "react-router-dom";
+import TransferDetails from "./TransferDetails";
+
 
 const styles = {
   wrapper: { width: "100%", boxSizing: "border-box", minWidth: 0, padding: "4px 0" },
@@ -204,6 +206,7 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
       )}
     </div>
   );
+}
 };
 
 export default propertyOwnerHistory;

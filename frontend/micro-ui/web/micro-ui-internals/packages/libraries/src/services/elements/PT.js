@@ -111,9 +111,9 @@ export const PTService = {
       userService: true,
       params: { tenantId, ...filters },
     }),
-  paymentsearch: ({ tenantId, filters, auth }) =>
+  paymentsearch: ({ tenantId, filters, auth, isCitizen = false }) =>
     Request({
-      url: Urls.pt.payment_search,
+      url: isCitizen ? Urls.pt.payment_search : Urls.pt.payment_search_employee,
       useCache: false,
       method: "POST",
       auth: auth === false ? auth : true,

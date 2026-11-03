@@ -1,5 +1,6 @@
 import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
+import { UserService } from "./User";
 
 const formatTransactionNumber = (txnId) => {
   if (!txnId || typeof txnId !== "string") return txnId;
@@ -73,9 +74,10 @@ export const PaymentService = {
     }),
 
   getReciept: (tenantId, businessservice, filters = {}) => {
+    const isEmployee = UserService.getType() === "employee";
     return Request({
       url:
-        businessservice && businessservice !== "BPAREG" && businessservice !== "TL" && businessservice !== "PT"
+        businessservice && businessservice !== "BPAREG" && businessservice !== "TL" && (businessservice !== "PT" || isEmployee)
           ? `${Urls.payment.print_reciept}/${businessservice}/_search`
           : `${Urls.payment.print_reciept}/_search`,
       useCache: false,

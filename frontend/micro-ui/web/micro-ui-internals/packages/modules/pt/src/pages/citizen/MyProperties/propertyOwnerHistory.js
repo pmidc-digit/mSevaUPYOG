@@ -1,9 +1,51 @@
-import { Card, CardSubHeader, Header, Loader } from "@mseva/digit-ui-react-components";
+import { Header, Loader } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { propertyCardBodyStyle, convertEpochToDate } from "../../../utils";
-import TransferDetails from "./TransferDetails";
+import { convertEpochToDate } from "../../../utils";
 import { useParams } from "react-router-dom";
+
+const styles = {
+  wrapper: { width: "100%", boxSizing: "border-box", minWidth: 0, padding: "4px 0" },
+  timelineEntry: { display: "flex", gap: "16px", position: "relative" },
+  rail: { display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, width: "16px" },
+  dot: { width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "#2947a3", marginTop: "6px", flexShrink: 0 },
+  line: { flex: 1, width: "2px", backgroundColor: "#d6dbe6", marginTop: "4px" },
+  entryBody: { flex: 1, minWidth: 0, paddingBottom: "24px" },
+  dateChip: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "6px 12px",
+    borderRadius: "16px",
+    backgroundColor: "#eef2fb",
+    color: "#2947a3",
+    fontSize: "14px",
+    fontWeight: 600,
+    marginBottom: "12px",
+  },
+  ownersGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "12px" },
+  ownerCard: {
+    border: "1px solid #e0e3eb",
+    borderRadius: "8px",
+    backgroundColor: "#ffffff",
+    overflow: "hidden",
+    minWidth: 0,
+  },
+  ownerHeader: {
+    padding: "10px 14px",
+    backgroundColor: "#f5f7fb",
+    borderBottom: "1px solid #e0e3eb",
+    fontSize: "15px",
+    fontWeight: 700,
+    color: "#0b0c0c",
+    wordBreak: "break-word",
+  },
+  ownerRows: { padding: "8px 14px" },
+  row: { display: "flex", flexDirection: "column", padding: "6px 0", borderBottom: "1px dashed #eceef3" },
+  rowLabel: { fontSize: "12px", color: "#505a5f", textTransform: "uppercase", letterSpacing: "0.3px" },
+  rowValue: { fontSize: "14px", color: "#0b0c0c", wordBreak: "break-word", marginTop: "2px" },
+  empty: { padding: "24px", textAlign: "center", color: "#505a5f", fontSize: "15px" },
+};
 
 const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
   const { t } = useTranslation();
@@ -28,7 +70,6 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
   };
   const transformData = (property) => {
     const { owners, institution, ownershipCategory } = property;
-
     let itemKey = [];
     owners.map((item) => {
       let owner = {};
@@ -53,33 +94,28 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
 
           // PT_FORM3_RELATIONSHIP: t(item.relationship) || t("CS_NA"),
           PT_MUTATION_AUTHORISED_EMAIL: item.emailId || t("CS_NA"),
-          PT_SPECIAL_OWNER_CATEGORY: t(item.ownerType === "NONE"?"CS_NA":item.ownerType) || t("CS_NA"),
-          PT_OWNER_PERCENTAGE: item.ownerShipPercentage===null?t("CS_NA"):item.ownerShipPercentage || t("CS_NA"),
+          PT_SPECIAL_OWNER_CATEGORY: t(item.ownerType === "NONE" ? "CS_NA" : item.ownerType) || t("CS_NA"),
+          PT_OWNER_PERCENTAGE: item.ownerShipPercentage === null ? t("CS_NA") : item.ownerShipPercentage || t("CS_NA"),
           PT_OWNERSHIP_INFO_CORR_ADDR: item.permanentAddress || t("CS_NA"),
         };
       }
       itemKey.push(owner);
     });
-
     return itemKey;
   };
 
   if (properties && Array.isArray(properties) && properties.length > 0) {
     let ownerProperty = properties[0];
-
     properties = properties.filter((data) => data.status == "ACTIVE");
     if (properties.length === 0) {
       properties.push(ownerProperty);
     }
     properties = getUniqueList(properties);
-
     properties &&
       properties.length > 0 &&
       properties.map((indProperty) => {
         let lastModifiedDate = indProperty.auditDetails.lastModifiedTime;
-        // indProperty.owners = indProperty.owners.filter((owner) => owner.status == "ACTIVE");
-          indProperty.owners = indProperty.owners.filter((owner) => owner.active === true);
-
+        indProperty.owners = indProperty.owners.filter((owner) => owner.active === true);
         if (!ownershipInfo[lastModifiedDate]) {
           ownershipInfo[lastModifiedDate] = [];
         }
@@ -90,6 +126,15 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
   if (isLoading) {
     return <Loader />;
   }
+
+  const entries = Object.keys(ownershipInfo).map((key) => ({
+    date: convertEpochToDate(Number(key)),
+    owners: ownershipInfo[key],
+  }));
+
+  const renderOwnerCard = (owner, index) => {
+    const title = owner.PT_OWNER_NAME || owner.PT_COMMON_INSTITUTION_NAME || `${t("PT_OWNER_NAME")} ${index + 1}`;
+    const rows = Object.keys(owner).filter((key) => key !== "PT_OWNER_NAME");
 
   if (propertyIdFromProp) {
     return (
@@ -132,27 +177,32 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
         </Card>
       </React.Fragment>
     );
-  }
+  };
 
   return (
-    <React.Fragment>
-      <Card>
-        <Header>{t("PT_OWNER_HISTORY")}</Header>
-        <div>
-          {Object.keys(ownershipInfo).map((key) => {
-            const date = convertEpochToDate(Number(key));
-            return (
-              <div style={{ padding: "10px" }}>
-                <div className="historyCheckpoint"></div>
-                <CardSubHeader className="historyTableDateLabel smallText"> {t("PT_DATE_OF_TRANSFER")} </CardSubHeader>
-                <CardSubHeader className="historyTableDate smallText">&nbsp;-&nbsp;{date}</CardSubHeader>
-                <TransferDetails data={ownershipInfo[key]} wrapperStyles="wrapperStyles leftBorder" showHorizontalBar={true} />
+    <div style={styles.wrapper}>
+      {!propertyIdFromProp && <Header>{t("PT_OWNER_HISTORY")}</Header>}
+      {entries.length === 0 ? (
+        <div style={styles.empty}>{t("PT_OWNER_HISTORY")}</div>
+      ) : (
+        entries.map((entry, index) => (
+          <div key={index} style={styles.timelineEntry}>
+            <div style={styles.rail}>
+              <span style={styles.dot}></span>
+              {index !== entries.length - 1 && <span style={styles.line}></span>}
+            </div>
+            <div style={styles.entryBody}>
+              <div style={styles.dateChip}>
+                {t("PT_DATE_OF_TRANSFER")}: <strong>{entry.date}</strong>
               </div>
-            );
-          })}
-        </div>
-      </Card>
-    </React.Fragment>
+              <div style={styles.ownersGrid}>
+                {entry.owners.map((owner, ownerIndex) => renderOwnerCard(owner, ownerIndex))}
+              </div>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
   );
 };
 

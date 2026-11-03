@@ -541,6 +541,7 @@ const FireNOCApplicationOverview = () => {
           <Card style={{ marginTop: "16px" }}>
             <CardSectionHeader>{t("NOC_APPLICATION_TIMELINE")}</CardSectionHeader>
             <div style={{ paddingTop: "8px" }}>
+             { console.log("workflow",workflow) }
               {workflow.map((step, idx) => {
                 const stStatus = step.state?.applicationStatus;
                 const dotColor =

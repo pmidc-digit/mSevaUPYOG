@@ -7,6 +7,7 @@ const ApplicationHistory = ({ applicationData }) => {
     const toggleAccordion = () => {
         setIsOpen(!isOpen);
     };
+    console.log("applicationData",applicationData)
  //   const { id: applicationNumber } = useParams();
     function formatDate(timestamp) {
         const date = new Date(timestamp);
@@ -90,6 +91,17 @@ const ApplicationHistory = ({ applicationData }) => {
                         }}>
                             <span className="label" style={{ fontWeight: "bold", minWidth: '60px', color: 'black' }}>Creation Date</span>
                             <span className='value' style={{ flex: '1', color: 'black' }}>{formatDate(applicationData.auditDetails?.createdTime)}</span>
+                        </div>
+                          <div className="assessment-row" style={{
+
+                            display: "flex",
+                            gap: "140px",
+                            marginBottom: "8px",
+                            color: 'black'
+
+                        }}>
+                            <span className="label" style={{ fontWeight: "bold", minWidth: '60px', color: 'black' }}>Mobile Number </span>
+                            <span className='value' style={{ flex: '1', color: 'black' }}>{applicationData.owners[0]?.mobileNumber}</span>
                         </div>
                         <div className="assessment-row" style={{
 

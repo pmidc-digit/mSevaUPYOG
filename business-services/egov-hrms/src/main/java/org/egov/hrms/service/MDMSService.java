@@ -2,6 +2,7 @@ package org.egov.hrms.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -278,6 +279,58 @@ public class MDMSService {
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().tenantId(tenantId).moduleDetails(moduleDetails).build();
 		return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
 
+	}
+
+	/**
+	 * Fetches BuildingCategory master data under module NOC from MDMS.
+	 *
+	 * @param requestInfo
+	 * @param tenantId
+	 * @return List of BuildingCategory master records
+	 */
+	public List<Map<String, Object>> fetchNocBuildingCategories(RequestInfo requestInfo, String tenantId) {
+		StringBuilder uri = new StringBuilder();
+		String stateTenantId = tenantId != null ? tenantId.split("\\.")[0] : "pb";
+
+		MasterDetail masterDetail = MasterDetail.builder()
+				.name("BuildingCategory")
+				.filter("[?(@.active == true)]")
+				.build();
+
+		ModuleDetail moduleDetail = ModuleDetail.builder()
+				.moduleName("NOC")
+				.masterDetails(Collections.singletonList(masterDetail))
+				.build();
+
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+				.tenantId(stateTenantId)
+				.moduleDetails(Collections.singletonList(moduleDetail))
+				.build();
+
+		MdmsCriteriaReq request = MdmsCriteriaReq.builder()
+				.requestInfo(requestInfo)
+				.mdmsCriteria(mdmsCriteria)
+				.build();
+
+		uri.append(mdmsHost).append(mdmsEndpoint);
+		try {
+			MdmsResponse response = restTemplate.postForObject(uri.toString(), request, MdmsResponse.class);
+			if (response != null && response.getMdmsRes() != null) {
+				Map mdmsRes = response.getMdmsRes();
+				if (mdmsRes.containsKey("NOC")) {
+					Map nocMasters = (Map) mdmsRes.get("NOC");
+					if (nocMasters != null && nocMasters.containsKey("BuildingCategory")) {
+						Object buildingCatObj = nocMasters.get("BuildingCategory");
+						if (buildingCatObj instanceof List) {
+							return (List<Map<String, Object>>) buildingCatObj;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Exception while fetching NOC BuildingCategory from MDMS: ", e);
+		}
+		return Collections.emptyList();
 	}
 
 }

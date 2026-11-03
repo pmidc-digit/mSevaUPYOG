@@ -106,6 +106,9 @@ public class EmployeeService {
 	@Autowired
 	private ObjectMapper objectMapper;
 
+	@Autowired
+	private MDMSService mdmsService;
+
 	/**
 	 * Service method for create employee. Does following:
 	 * 1. Sets ids to all the objects using idgen service.
@@ -407,6 +410,20 @@ public class EmployeeService {
 	        errorMap.put(ErrorConstants.OBPAS_INVALID_SEARCH_TENANT_CODE,
 	                     ErrorConstants.OBPAS_INVALID_SEARCH_TENANT_MSG);
 	        throw new CustomException(errorMap);
+	    }
+
+	    if ("noc-service".equalsIgnoreCase(criteria.getModulename()) && !StringUtils.isEmpty(criteria.getCategory())) {
+	        List<Map<String, Object>> categories = mdmsService.fetchNocBuildingCategories(requestInfo, criteria.getTenantId());
+	        for (Map<String, Object> cat : categories) {
+	            if (criteria.getCategory().equalsIgnoreCase(String.valueOf(cat.get("name")))) {
+	                criteria.setCategory(String.valueOf(cat.get("category")));
+	                List<?> subCats = (List<?>) cat.get("subCategory");
+	                if (!CollectionUtils.isEmpty(subCats)) {
+	                    criteria.setSubcategory(subCats.get(0).toString());
+	                }
+	                break;
+	            }
+	        }
 	    }
 
 	    // Fetch results

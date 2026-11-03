@@ -1269,6 +1269,7 @@ const BpaApplicationDetail = () => {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
+      const newValidityDate = Date.now()
       const rawOwnersList =
         data?.applicationData?.additionalDetails?.owners?.length > 0
           ? data?.applicationData?.additionalDetails?.owners
@@ -1366,6 +1367,11 @@ const BpaApplicationDetail = () => {
 
       return response.filestoreIds[0];
     } catch (error) {
+      setShowToast({
+        key: "true",
+        error: true,
+        message: `Failed to create sanction letter. Please try again. Error: ${error}`,
+      });
     } finally {
       Digit.StoreData.getCurrentLanguage = prevGetLang;
     }
@@ -1475,6 +1481,11 @@ const BpaApplicationDetail = () => {
       const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
       window.open(fileStore[fileStoreId], "_blank");
     } catch (error) {
+      setShowToast({
+        key: "true",
+        error: true,
+        message: `Failed to create sanction letter. Please try again. Error: ${error}`,
+      });
     } finally {
       Digit.StoreData.getCurrentLanguage = prevGetLang;
       setIsEnableLoader(false);
@@ -1500,7 +1511,7 @@ const BpaApplicationDetail = () => {
       setShowToast({
         key: "true",
         error: true,
-        message: "Failed to open sanction letter. Please try again.",
+        message: `Failed to open sanction letter. Please try again. Error: ${error}`,
       });
     } finally {
       setLoader(false);

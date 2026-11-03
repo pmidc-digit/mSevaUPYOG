@@ -33,6 +33,7 @@ import LayoutInbox from "../employee/Inbox/LayoutInbox";
 import CitizenLaoyoutInbox from "../employee/Inbox/CitizenLaoyoutInbox";
 import CitizenCLUInbox from "../employee/cluInbox/CitizenCLUInbox";
 import CitizenInbox from "../employee/Inbox/CitizenInbox";
+import VerifyDocument from "./VerifyDocument";
 
 const OBPSBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
@@ -234,6 +235,8 @@ const App = ({ path }) => {
   const LayoutMyApplications = Digit?.ComponentRegistryService?.getComponent("LayoutMyApplications");
   const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse");
   const OCStepperForm = Digit?.ComponentRegistryService?.getComponent("OCStepperForm");
+  const hideBreadcrumb = window.location.href.includes("/verify-document");
+
 
   const getBackPageNumber = () => {
     let goBacktoFromProperty = -1;
@@ -273,10 +276,20 @@ const App = ({ path }) => {
       }}
     >
       <PageContainer>
-      <div className="citizen-breadcrumb-wrapper">
-        <OBPSBreadCrumbs location={location} />
-      </div>
+      {!hideBreadcrumb ? (
+        <div className="citizen-breadcrumb-wrapper">
+          <OBPSBreadCrumbs location={location} />
+        </div>
+      ) : null}
       <Switch>
+        <Route
+          path={`${path}/verify-document`}
+          component={(props) => (
+            <AppContainer>
+              <VerifyDocument {...props} />
+            </AppContainer>
+          )}
+        />
         <PrivateRoute
           path={`${path}/layout/search-application`}
           component={(props) => (

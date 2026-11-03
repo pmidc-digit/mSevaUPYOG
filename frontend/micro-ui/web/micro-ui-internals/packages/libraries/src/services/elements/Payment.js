@@ -109,6 +109,15 @@ export const PaymentService = {
       userService: true,
       params: { tenantId, ...filters },
     }),
+  printRecieptPublic: (tenantId, filters = {}) =>
+    Request({
+      url: Urls.FileFetch,
+      useCache: false,
+      method: "GET",
+      auth: false,
+      userService: false,
+      params: { tenantId, ...filters },
+    }),
 
   createCitizenReciept: (tenantId, details = {}) =>
     Request({

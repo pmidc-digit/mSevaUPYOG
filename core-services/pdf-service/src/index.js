@@ -1275,6 +1275,8 @@ const prepareBulk = async (
   returnFileInResponse,
   entityIdPath
 ) => {
+  const moduleName = get(dataconfig, "DataConfigs.moduleName", "");
+  const documentType = get(dataconfig, "documentType", "");
   let isCommonTableBorderRequired = get(
     dataconfig,
     "DataConfigs.isCommonTableBorderRequired"

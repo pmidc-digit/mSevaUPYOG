@@ -534,6 +534,57 @@ export const LayoutOwnerSearchModal = ({
     startStepTwoWizard([newManualUser]);
   };
 
+  const handleRemoveWizardOwner = (indexToRemove = currentUserIndex) => {
+    if (wizardUsers.length <= 1) {
+      setShowToast({ warning: true, label: "At least one owner is required." });
+      return;
+    }
+
+    const removedOwner = wizardUsers[indexToRemove];
+    const removedName = removedOwner?.name || `${t("Owner")} ${indexToRemove + 1}`;
+
+    const updatedWizardUsers = wizardUsers.filter((_, idx) => idx !== indexToRemove);
+    const updatedCompletedOwners = completedOwners.filter((_, idx) => idx !== indexToRemove);
+
+    // If removed owner was primary (or index 0), ensure a remaining owner is primary
+    const hasPrimary = updatedWizardUsers.some((u) => u.isPrimaryOwner === true || u.isPrimaryOwner === "true");
+    if (!hasPrimary && updatedWizardUsers.length > 0) {
+      updatedWizardUsers[0] = {
+        ...updatedWizardUsers[0],
+        isPrimaryOwner: true,
+      };
+      if (updatedCompletedOwners[0]) {
+        updatedCompletedOwners[0] = {
+          ...updatedCompletedOwners[0],
+          isPrimaryOwner: true,
+        };
+      }
+    }
+
+    let nextIdx = currentUserIndex;
+    if (indexToRemove < currentUserIndex) {
+      nextIdx = currentUserIndex - 1;
+    } else if (indexToRemove === currentUserIndex) {
+      if (currentUserIndex >= updatedWizardUsers.length) {
+        nextIdx = updatedWizardUsers.length - 1;
+      } else {
+        nextIdx = currentUserIndex;
+      }
+    }
+
+    setWizardUsers(updatedWizardUsers);
+    setCompletedOwners(updatedCompletedOwners);
+    setCurrentUserIndex(nextIdx);
+    loadUserForStepTwo(updatedWizardUsers[nextIdx], nextIdx, updatedCompletedOwners);
+
+    setShowToast({
+      label: `${removedName} ${t("CS_DELETED_SUCCESSFULLY") || "removed successfully"}`,
+    });
+    setTimeout(() => {
+      setShowToast(null);
+    }, 3000);
+  };
+
   const handlePrevOwner = () => {
     if (currentUserIndex > 0) {
       const nextCompleted = [...completedOwners];
@@ -1020,8 +1071,9 @@ export const LayoutOwnerSearchModal = ({
             </div>
 
             {/* Selected Owner Details Card */}
-            <div className="obps-page-components-layout-owner-search-modal--style-43">
-              <p className="obps-page-components-layout-owner-search-modal--style-44">
+            <div className="obps-page-components-layout-owner-search-modal--style-43" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <p className="obps-page-components-layout-owner-search-modal--style-44">
                 <strong>{t("APPLICANT NAME")}:</strong> {selectedUser.name || "NA"}
                 {wizardUsers.length > 1 && (
                   <span
@@ -1039,7 +1091,15 @@ export const LayoutOwnerSearchModal = ({
                   </span>
                 )}
               </p>
-              <p className="obps-page-components-layout-owner-search-modal--style-45"><strong>{t("MOBILE NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
+                <p className="obps-page-components-layout-owner-search-modal--style-45"><strong>{t("MOBILE NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
+              </div>
+              {wizardUsers.length > 1 && (
+                <LinkButton
+                  style={{ color: "#a82227", padding: 0, whiteSpace: "nowrap" }}
+                  label={`✕ ${t("REMOVE_OWNER") || "Remove this Owner"}`}
+                  onClick={() => handleRemoveWizardOwner(currentUserIndex)}
+                />
+              )}
             </div>
 
             {/* Applicant Type */}

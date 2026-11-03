@@ -417,7 +417,7 @@ public class EmployeeService {
 	            && !StringUtils.isEmpty(criteria.getCategory())) {
 	        String moduleName = module.equalsIgnoreCase("noc-service") ? "NOC" : module.equalsIgnoreCase("clu-service") ? "CLU" : "LAYOUT";
 	        String masterName = "CLU".equalsIgnoreCase(moduleName) ? "AppliedCategory" : "BuildingCategory";
-	        List<Map<String, Object>> categories = mdmsService.fetchNocBuildingCategories(requestInfo, criteria.getTenantId(), moduleName, masterName, "[?(@.active == true)]");
+	        List<Map<String, Object>> categories = mdmsService.fetchBuildingCategories(requestInfo, criteria.getTenantId(), moduleName, masterName, "[?(@.active == true)]");
 	        for (Map<String, Object> cat : categories) {
 	            String name = String.valueOf(cat.get("name"));
 	            String code = String.valueOf(cat.get("code"));

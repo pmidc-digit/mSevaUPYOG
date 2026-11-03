@@ -291,7 +291,7 @@ public class MDMSService {
 	 * @param filter
 	 * @return List of master records
 	 */
-	public List<Map<String, Object>> fetchNocBuildingCategories(RequestInfo requestInfo, String tenantId, String moduleName, String masterName, String filter) {
+	public List<Map<String, Object>> fetchBuildingCategories(RequestInfo requestInfo, String tenantId, String moduleName, String masterName, String filter) {
 		StringBuilder uri = new StringBuilder();
 		String stateTenantId = tenantId != null ? tenantId.split("\\.")[0] : "pb";
 
@@ -336,16 +336,20 @@ public class MDMSService {
 		return Collections.emptyList();
 	}
 
-	public List<Map<String, Object>> fetchNocBuildingCategories(RequestInfo requestInfo, String tenantId, String moduleName, String filter) {
-		return fetchNocBuildingCategories(requestInfo, tenantId, moduleName, "CLU".equalsIgnoreCase(moduleName) ? "AppliedCategory" : "BuildingCategory", filter);
+	public List<Map<String, Object>> fetchBuildingCategories(RequestInfo requestInfo, String tenantId, String moduleName, String filter) {
+		return fetchBuildingCategories(requestInfo, tenantId, moduleName, "CLU".equalsIgnoreCase(moduleName) ? "AppliedCategory" : "BuildingCategory", filter);
+	}
+
+	public List<Map<String, Object>> fetchBuildingCategories(RequestInfo requestInfo, String tenantId) {
+		return fetchBuildingCategories(requestInfo, tenantId, "NOC", "BuildingCategory", "[?(@.active == true)]");
 	}
 
 	public List<Map<String, Object>> fetchNocBuildingCategories(RequestInfo requestInfo, String tenantId) {
-		return fetchNocBuildingCategories(requestInfo, tenantId, "NOC", "BuildingCategory", "[?(@.active == true)]");
+		return fetchBuildingCategories(requestInfo, tenantId);
 	}
 
 	public List<Map<String, Object>> fetchMDMSData(RequestInfo requestInfo, String tenantId, String moduleName, String masterName, String filter) {
-		return fetchNocBuildingCategories(requestInfo, tenantId, moduleName, masterName, filter);
+		return fetchBuildingCategories(requestInfo, tenantId, moduleName, masterName, filter);
 	}
 
 }

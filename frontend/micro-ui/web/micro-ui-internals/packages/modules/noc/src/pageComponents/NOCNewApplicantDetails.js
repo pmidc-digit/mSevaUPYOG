@@ -599,6 +599,21 @@ const NOCNewApplicantDetails = (_props) => {
     setSelectedOwners((prev) => {
       let updated = [...prev];
 
+      if (Array.isArray(editingOwner)) {
+        updated = updated.map((existingOwner) => {
+          const wasInBatch = editingOwner.some((eo) => isSameOwner(eo, existingOwner));
+          const isInNewList = newOwnersList.some((no) => isSameOwner(no, existingOwner));
+          if (wasInBatch && !isInNewList) {
+            return {
+              ...existingOwner,
+              status: false,
+              isPrimaryOwner: null,
+            };
+          }
+          return existingOwner;
+        });
+      }
+
       newOwnersList.forEach((newOwnerItem) => {
         const existingIndex = updated.findIndex((o) => isSameOwner(o, newOwnerItem));
         if (existingIndex > -1) {

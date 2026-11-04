@@ -289,55 +289,53 @@ const LayoutEmployeeApplicationOverview = () => {
     }
   }
 
-  const [getOBPSRoles, setOBPSRoles] = useState([]);
+  // const [getOBPSRoles, setOBPSRoles] = useState([]);
 
-  const searchOBPSRoles = async (appData) => {
-    console.log("appData", appData);
-    const category = appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory;
-    // const subCategory = appData?.applicationData?.landInfo?.unit?.[0]?.usageCategory;
-    const zone = appData?.layoutDetails?.additionalDetails?.siteDetails?.zone?.code;
-    const modulename = "layout-service";
-    const assignedTenantId = appData?.tenantId;
+  // const searchOBPSRoles = async (appData) => {
+  //   console.log("appData", appData);
+  //   const category = appData?.layoutDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory;
+  //   // const subCategory = appData?.applicationData?.landInfo?.unit?.[0]?.usageCategory;
+  //   const zone = appData?.layoutDetails?.additionalDetails?.siteDetails?.zone?.code;
+  //   const modulename = "layout-service";
+  //   const assignedTenantId = appData?.tenantId;
 
-    const filters = {
-      assignedTenantId: assignedTenantId,
-      category: category,
-      // subcategory: subCategory,
-      zone: zone,
-      modulename: modulename,
-    };
+  //   const filters = {
+  //     assignedTenantId: assignedTenantId,
+  //     category: category,
+  //     // subcategory: subCategory,
+  //     zone: zone,
+  //     modulename: modulename,
+  //   };
 
-    const response = await Digit.HRMSService.SearchEmpMap(tenantId, filters);
+  //   const response = await Digit.HRMSService.SearchEmpMap(tenantId, filters);
 
-    console.log("response", response?.Employees);
-    const Roles = response?.Employees?.map((item) => item?.roles);
-    setOBPSRoles(Roles);
-    console.log("Roles", Roles);
-  };
+  //   console.log("response", response?.Employees);
+  //   const Roles = response?.Employees?.map((item) => item?.roles);
+  //   setOBPSRoles(Roles);
+  //   console.log("Roles", Roles);
+  // };
 
-  // console.log("data===", data);
-
-  useEffect(() => {
-    if (data) searchOBPSRoles(data?.resData?.Layout[0]);
-  }, [data]);
+  // useEffect(() => {
+  //   if (data) searchOBPSRoles(data?.resData?.Layout[0]);
+  // }, [data]);
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
-  let actions =
-    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return e.roles?.includes(getOBPSRoles) || !e.roles;
-    }) ||
-    workflowDetails?.data?.nextActions?.filter((e) => {
-      return e.roles?.includes(getOBPSRoles) || !e.roles;
-    });
-
-  // const actions =
+  // let actions =
   //   workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //     return e.roles?.includes(getOBPSRoles) || !e.roles;
   //   }) ||
   //   workflowDetails?.data?.nextActions?.filter((e) => {
-  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //     return e.roles?.includes(getOBPSRoles) || !e.roles;
   //   });
+
+  const actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
 
   useEffect(() => {
     const layoutObject = applicationDetails?.Layout?.[0];

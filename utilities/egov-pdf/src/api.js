@@ -797,11 +797,11 @@ async function create_bulk_pdf(kafkaData) {
           { RequestInfo: requestinfo.RequestInfo },
           headers
         );
-        console.log("integratedBillsData", integratedBillsData)
+        //console.log("integratedBillsData", integratedBillsData)
 
         // Extract Bills array from response (handle different response structures)
         var billsArray = integratedBillsData.data?.IntegratedBills  || integratedBillsData.IntegratedBills  || integratedBillsData || [];
-        console.log("billsArray",billsArray);
+        //console.log("billsArray",billsArray);
         if (billsArray && billsArray.length > 0) {
           // Pass each property's integrated bill data as a single Bill entry
           // Each entry contains both water and sewerage bills within the bills object (either may be empty)

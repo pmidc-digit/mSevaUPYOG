@@ -342,6 +342,29 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 					break;
 				}
 			}
+			if (!isBillExpired) {
+				boolean hasFractionalAmount = false;
+				if (bill.getTotalAmount() != null) {
+					if ((bill.getTotalAmount().compareTo(BigDecimal.ZERO) > 0 && bill.getTotalAmount().compareTo(BigDecimal.ONE) < 0)
+							|| (bill.getTotalAmount().compareTo(BigDecimal.ZERO) > 0 && bill.getTotalAmount().stripTrailingZeros().scale() > 0)) {
+						hasFractionalAmount = true;
+					}
+				}
+				if (!hasFractionalAmount && !CollectionUtils.isEmpty(bill.getBillDetails())) {
+					for (BillDetailV2 bd : bill.getBillDetails()) {
+						if (bd.getAmount() != null) {
+							if ((bd.getAmount().compareTo(BigDecimal.ZERO) > 0 && bd.getAmount().compareTo(BigDecimal.ONE) < 0)
+									|| (bd.getAmount().compareTo(BigDecimal.ZERO) > 0 && bd.getAmount().stripTrailingZeros().scale() > 0)) {
+								hasFractionalAmount = true;
+								break;
+							}
+						}
+					}
+				}
+				if (hasFractionalAmount) {
+					isBillExpired = true;
+				}
+			}
 			if (!isBillExpired)
 				billsToBeReturned.add(bill);
 			else {
@@ -360,8 +383,13 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		 */
 		if(CollectionUtils.isEmpty(cosnumerCodesToBeExpired) && CollectionUtils.isEmpty(cosnumerCodesNotFoundInBill)) 
 		{
-			BigDecimal roundedTaxAmount = res.getBill().get(0).getTotalAmount().setScale(0, BigDecimal.ROUND_HALF_UP);
-			res.getBill().get(0).setTotalAmount(roundedTaxAmount);
+			if (!CollectionUtils.isEmpty(res.getBill())) {
+				for (BillV2 b : res.getBill()) {
+					if (b.getTotalAmount() != null) {
+						b.setTotalAmount(b.getTotalAmount().setScale(0, RoundingMode.HALF_UP));
+					}
+				}
+			}
 			return res;
 		}
 		else {

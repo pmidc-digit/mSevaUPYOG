@@ -715,9 +715,17 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		return isCurrentDemand;
 	}
 
-	/**
+		/**
 	 * 
 	 * Balances the decimal values in the newly updated demand by performing a roundoff
+	 * 
+	 * Calculates roundoff based on the NET PAYABLE amount (taxAmount - collectionAmount)
+	 * rather than raw taxAmount, so that fractional remainders after partial payment
+	 * are correctly handled and not hidden from the bill.
+	 * 
+	 * Fix for PI-23073: Previously, roundoff was calculated on total taxAmount sums,
+	 * which caused the bill totalAmount to show 0 when a small fractional amount
+	 * (e.g. 0.07) remained after partial payment, blocking the citizen from paying.
 	 * 
 	 * @param demand
 	 * @param requestInfoWrapper
@@ -728,42 +736,52 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		String tenantId = demand.getTenantId();
 		String demandId = demand.getId();
 
-		BigDecimal taxAmount = BigDecimal.ZERO;
+		BigDecimal totalTaxAmount = BigDecimal.ZERO;
+		BigDecimal totalCollectionAmount = BigDecimal.ZERO;
+		BigDecimal totalRoundOffTax = BigDecimal.ZERO;
+		BigDecimal totalRoundOffCollection = BigDecimal.ZERO;
 
-		// Collecting the taxHead master codes with the isDebit field in a Map
-		Map<String, Boolean> isTaxHeadDebitMap = mstrDataService.getTaxHeadMasterMap(requestInfoWrapper.getRequestInfo(), tenantId).stream()
-				.collect(Collectors.toMap(TaxHeadMaster::getCode, TaxHeadMaster::getIsDebit));
-
-		/*
-		 * Summing the credit amount and Debit amount in to separate variables(based on the taxhead:isdebit map) to send to roundoffDecimal method
-		 */
-
-		BigDecimal totalRoundOffAmount = BigDecimal.ZERO;
 		for (DemandDetail detail : demand.getDemandDetails()) {
 
 			if(!detail.getTaxHeadMasterCode().equalsIgnoreCase(PT_ROUNDOFF)){
-				taxAmount = taxAmount.add(detail.getTaxAmount());
+				totalTaxAmount = totalTaxAmount.add(detail.getTaxAmount());
+				totalCollectionAmount = totalCollectionAmount.add(
+						detail.getCollectionAmount() != null ? detail.getCollectionAmount() : BigDecimal.ZERO);
 			}
 			else{
-				totalRoundOffAmount = totalRoundOffAmount.add(detail.getTaxAmount());
+				totalRoundOffTax = totalRoundOffTax.add(detail.getTaxAmount());
+				totalRoundOffCollection = totalRoundOffCollection.add(
+						detail.getCollectionAmount() != null ? detail.getCollectionAmount() : BigDecimal.ZERO);
 			}
 		}
 
 		/*
-		 *  An estimate object will be returned incase if there is a decimal value
-		 *  
-		 *  If no decimal value found null object will be returned 
+		 * Calculate roundoff based on NET PAYABLE (outstanding balance) instead of
+		 * total taxAmount. This ensures that after partial payment, the fractional
+		 * remainder is not hidden by an incorrect roundoff adjustment.
 		 */
-		TaxHeadEstimate roundOffEstimate = payService.roundOffDecimals(taxAmount,totalRoundOffAmount);
+		BigDecimal netPayable = totalTaxAmount.subtract(totalCollectionAmount);
+		BigDecimal existingRoundOffBalance = totalRoundOffTax.subtract(totalRoundOffCollection);
 
+		BigDecimal roundOff = BigDecimal.ZERO;
+		BigDecimal remainder = netPayable.setScale(2, BigDecimal.ROUND_HALF_UP).remainder(BigDecimal.ONE);
 
+		if (remainder.abs().compareTo(BigDecimal.ZERO) > 0) {
+			if (remainder.doubleValue() >= 0.5)
+				roundOff = BigDecimal.ONE.subtract(remainder);
+			else if (remainder.doubleValue() > 0 && remainder.doubleValue() < 0.5)
+				roundOff = remainder.negate();
+			else if (remainder.doubleValue() < 0 && remainder.doubleValue() > -0.5)
+				roundOff = remainder.negate();
+			else if (remainder.doubleValue() <= -0.5)
+				roundOff = BigDecimal.ONE.negate().subtract(remainder);
+		}
 
-		BigDecimal decimalRoundOff = null != roundOffEstimate
-				? roundOffEstimate.getEstimateAmount() : BigDecimal.ZERO;
+		BigDecimal roundOffDelta = roundOff.subtract(existingRoundOffBalance);
 
-		if(decimalRoundOff.compareTo(BigDecimal.ZERO)!=0){
-				details.add(DemandDetail.builder().taxAmount(roundOffEstimate.getEstimateAmount())
-						.taxHeadMasterCode(roundOffEstimate.getTaxHeadCode()).demandId(demandId).tenantId(tenantId).build());
+		if(roundOffDelta.compareTo(BigDecimal.ZERO) != 0){
+				details.add(DemandDetail.builder().taxAmount(roundOffDelta)
+						.taxHeadMasterCode(PT_ROUNDOFF).demandId(demandId).tenantId(tenantId).build());
 		}
 
 

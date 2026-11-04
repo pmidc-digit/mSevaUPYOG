@@ -103,7 +103,9 @@ public class PayService {
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 			BigDecimal collectionAmount = demand.getDemandDetails().stream().map(DemandDetail::getCollectionAmount)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			if (oldTaxAmount.compareTo(collectionAmount) == 0) {
+			BigDecimal unpaidBalance = oldTaxAmount.subtract(collectionAmount).abs();
+			if (oldTaxAmount.compareTo(collectionAmount) == 0
+					|| (collectionAmount.compareTo(BigDecimal.ZERO) > 0 && unpaidBalance.compareTo(BigDecimal.ONE) <= 0)) {
 				BigDecimal oldCollectedTaxAmount = demand.getDemandDetails().stream()
 						.filter(demanddetail -> Stream
 								.of(CalculatorConstants.PT_TAX, CalculatorConstants.PT_OWNER_EXEMPTION,
@@ -127,24 +129,23 @@ public class PayService {
 						.collect(Collectors.toList());
 				BigDecimal intersetAmount = interestList.stream().map(DemandDetail::getCollectionAmount)
 						.reduce(BigDecimal.ZERO, BigDecimal::add);
-				if (taxAmt.compareTo(oldCollectedTaxAmount) >0 && rebate.compareTo(BigDecimal.ZERO)==0) {
+
+				BigDecimal diff = taxAmt.subtract(oldCollectedTaxAmount);
+				if (diff.compareTo(BigDecimal.ONE) > 0 && rebate.compareTo(BigDecimal.ZERO) == 0) {
 					estimates.put(CalculatorConstants.PT_TIME_REBATE, rebateamount.abs());
-				}
-				else if (taxAmt.compareTo(oldCollectedTaxAmount) >0 && rebate.compareTo(BigDecimal.ZERO) > 0 ) {
+				} else if (diff.compareTo(BigDecimal.ONE) > 0 && rebate.compareTo(BigDecimal.ZERO) > 0) {
 					estimates.put(CalculatorConstants.PT_TIME_REBATE, rebate.setScale(2, 0).negate());
-				}
-				else 
+				} else {
 					estimates.put(CalculatorConstants.PT_TIME_REBATE, rebateamount);
-				if (taxAmt.compareTo(oldCollectedTaxAmount) == 0) {
+				}
+				if (diff.compareTo(BigDecimal.ONE) <= 0) {
 					estimates.put(CalculatorConstants.PT_TIME_PENALTY, penaltyAmount);
 				} else {
 					estimates.put(CalculatorConstants.PT_TIME_PENALTY, penaltyCalculated.setScale(2, 0));
 				}
-				if (taxAmt.compareTo(oldCollectedTaxAmount) == 0) {
+				if (diff.compareTo(BigDecimal.ONE) <= 0) {
 					estimates.put(CalculatorConstants.PT_TIME_INTEREST, intersetAmount);
-		}
-
-				else {
+				} else {
 					estimates.put(CalculatorConstants.PT_TIME_INTEREST, interestCalculated.setScale(2, 0));
 				}
 			} else {

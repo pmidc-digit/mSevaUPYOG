@@ -213,7 +213,6 @@ public class NOCService {
 
 		// Get siteDetails as a Map
 		Map<String, Object> siteDetails = (Map<String, Object>) additionalDetailsMap.get("siteDetails");
-		enrichmentService.enrichBuildingCategory(nocRequest, mdmsData);
 
 		// Create Property if Property not available
 		List<String> propertyId = JsonPath.read(additionalDetailsData, "$.applicationDetails.owners.*.propertyId");
@@ -329,17 +328,6 @@ public class NOCService {
 						noc.getWorkflow().setAssignes(null);
 				}
 
-				if ("SENDBACKTOCITIZEN".equalsIgnoreCase(action) && CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
-					String createdBy = null;
-					if (searchResult != null && searchResult.getAuditDetails() != null) {
-						createdBy = searchResult.getAuditDetails().getCreatedBy();
-					} else if (noc.getAuditDetails() != null) {
-						createdBy = noc.getAuditDetails().getCreatedBy();
-					}
-					if (!StringUtils.isEmpty(createdBy)) {
-						noc.getWorkflow().setAssignes(Collections.singletonList(createdBy));
-					}
-				}
 				String hrmsSearchPath = userService.getEmployeeSearchPATH(noc.getTenantId(), additionalDetails, mdmsData);
 				wfIntegrator.callWorkFlow(nocRequest,businessServiceName,hrmsSearchPath);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServiceName);

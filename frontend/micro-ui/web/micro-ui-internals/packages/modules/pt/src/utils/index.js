@@ -1275,4 +1275,19 @@ export const getAcknowledgementData = async (application, tenantInfo, t) => {
     return uniqueOptions;
   };
 
+ 
 
+// Vasika date may be stored as a "YYYY-MM-DD" string or as a Date/ISO timestamp (saved at local midnight).
+// Read it with local-time getters so the picked calendar day is shown as dd-mm-yyyy.
+export const formatVasikaDate = (value) => {
+  if (!value) return "";
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split("-");
+    return `${day}-${month}-${year}`;
+  }
+  const date = new Date(value);
+  if (isNaN(date.getTime())) return value;
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}-${month}-${date.getFullYear()}`;
+};

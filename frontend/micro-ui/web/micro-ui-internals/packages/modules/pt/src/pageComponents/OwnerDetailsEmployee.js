@@ -812,7 +812,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 render={(props) => (
                   <TextInput
                     value={props.value}
-                    disable={isEditScreen}
+                    disable={false}
                     autoFocus={focusIndex.index === owner?.key && focusIndex.type === "ownershipPercentage"}
                     onChange={(e) => {
                       props.onChange(e);

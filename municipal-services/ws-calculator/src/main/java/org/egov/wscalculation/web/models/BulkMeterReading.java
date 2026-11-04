@@ -8,6 +8,7 @@ import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -99,6 +100,11 @@ public class BulkMeterReading {
 	@SafeHtml
 	@JsonProperty("connectionNo")
 	private String connectionNo = null;
+
+	@SafeHtml
+	@JsonProperty("oldConnectionNo")
+	@JsonAlias({"oldconnectionno", "oldConnectionNo"})
+	private String oldConnectionNo = null;
 	
 	@SafeHtml
 	@JsonProperty("usageCategory")
@@ -210,6 +216,20 @@ public class BulkMeterReading {
 
 	public void setConnectionNo(String connectionNo) {
 		this.connectionNo = connectionNo;
+	}
+
+	public BulkMeterReading oldConnectionNo(String oldConnectionNo) {
+		this.oldConnectionNo = oldConnectionNo;
+		return this;
+	}
+
+	@ApiModelProperty(value = "Old connection number of the water connection")
+	public String getOldConnectionNo() {
+		return oldConnectionNo;
+	}
+
+	public void setOldConnectionNo(String oldConnectionNo) {
+		this.oldConnectionNo = oldConnectionNo;
 	}
 
 	/**
@@ -415,13 +435,14 @@ public class BulkMeterReading {
 				&& Objects.equals(this.block, bulkMeterReading.block)
 				&& Objects.equals(this.zone, bulkMeterReading.zone)
 				&& Objects.equals(this.locality, bulkMeterReading.locality)
-				&& Objects.equals(this.groups, bulkMeterReading.groups);
+				&& Objects.equals(this.groups, bulkMeterReading.groups)
+				&& Objects.equals(this.oldConnectionNo, bulkMeterReading.oldConnectionNo);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(id, billingPeriod, meterStatus, lastReading, lastReadingDate, currentReading,
-				currentReadingDate, usageCategory, tenantId);
+				currentReadingDate, usageCategory, tenantId, oldConnectionNo);
 	}
 
 	@Override
@@ -438,6 +459,7 @@ public class BulkMeterReading {
 		sb.append("    currentReadingDate: ").append(toIndentedString(currentReadingDate)).append("\n");
 		sb.append("    consumption: ").append(toIndentedString(consumption)).append("\n");
 		sb.append("    usageCategory: ").append(toIndentedString(usageCategory)).append("\n");
+		sb.append("    oldConnectionNo: ").append(toIndentedString(oldConnectionNo)).append("\n");
 		sb.append("	   tenantId: ").append(toIndentedString(tenantId)).append("\n");
 		sb.append("	   block: ").append(toIndentedString(block)).append("\n");
 		sb.append("	   zone: ").append(toIndentedString(zone)).append("\n");

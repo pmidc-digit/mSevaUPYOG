@@ -42,7 +42,7 @@ import InspectionReport from "../../../pageComponents/InspectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { amountToWords, decryptId, formatDuration } from "../../../utils";
 import OBPSPaymentHistory from "../../../../../templates/ApplicationDetails/components/OBPSPaymentHistory";
-//import { getDrivingDistance } from "../../../utils/getDistance";
+import { getDrivingDistance } from "../../../utils/getDistance";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import { useEmployeeZoneAccess } from "../../../../../core/src/hooks/useEmployeeZoneAccess";
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
@@ -248,7 +248,7 @@ const CLUEmployeeApplicationDetails = () => {
   };
 
   const dowloadOptions = [];
-  const sanctionLetterID = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId
+  const sanctionLetterID = applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.sanctionLetterFilestoreId;
   if (applicationDetails?.Clu?.[0]) {
     dowloadOptions.push({
       label: t("Application Form"),
@@ -256,45 +256,53 @@ const CLUEmployeeApplicationDetails = () => {
     });
   }
 
-  
-    if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
-      dowloadOptions.push({
-        label: t("CLU_FEE_RECEIPT_1"),
-        onClick: () =>
-          getRecieptSearch({ tenantId: reciept_data1?.Payments[0]?.tenantId, payments: reciept_data1?.Payments[0], pdfkey: "clu-receipt", openReceipt: true, fileStoreId: reciept_data1?.Payments[0]?.fileStoreId }),
-      });
-    }
-    if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
-      dowloadOptions.push({
-        label: t("CLU_FEE_RECEIPT_2"),
-        onClick: () =>
-          getRecieptSearch({ tenantId: reciept_data2?.Payments[0]?.tenantId, payments: reciept_data2?.Payments[0], pdfkey: "clu-receiptsecond", openReceipt: true }),
-      });
-    }
-    if(sanctionLetterID){
-        dowloadOptions.push({
-          label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-          onClick: () =>
-            getRecieptSearch({
-              tenantId: reciept_data2?.Payments[0]?.tenantId,
-              payments: reciept_data2?.Payments[0],
-              fileStoreId : sanctionLetterID,
-              openReceipt: true
-            }),
-        });
-      }
-  
-  else if (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.isMigrationTrue && sanctionLetterID) {
-      dowloadOptions.push({
-        label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
-        onClick: () =>
-          getRecieptSearch({
-            tenantId: tenantId,
-            payments: {},
-            fileStoreId : sanctionLetterID,
-            openReceipt: true
-          }),
-      });
+  if (reciept_data1 && reciept_data1?.Payments.length > 0 && !recieptDataLoading1) {
+    dowloadOptions.push({
+      label: t("CLU_FEE_RECEIPT_1"),
+      onClick: () =>
+        getRecieptSearch({
+          tenantId: reciept_data1?.Payments[0]?.tenantId,
+          payments: reciept_data1?.Payments[0],
+          pdfkey: "clu-receipt",
+          openReceipt: true,
+          fileStoreId: reciept_data1?.Payments[0]?.fileStoreId,
+        }),
+    });
+  }
+  if (reciept_data2 && reciept_data2?.Payments.length > 0 && !recieptDataLoading2) {
+    dowloadOptions.push({
+      label: t("CLU_FEE_RECEIPT_2"),
+      onClick: () =>
+        getRecieptSearch({
+          tenantId: reciept_data2?.Payments[0]?.tenantId,
+          payments: reciept_data2?.Payments[0],
+          pdfkey: "clu-receiptsecond",
+          openReceipt: true,
+        }),
+    });
+  }
+  if (sanctionLetterID) {
+    dowloadOptions.push({
+      label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+      onClick: () =>
+        getRecieptSearch({
+          tenantId: reciept_data2?.Payments[0]?.tenantId,
+          payments: reciept_data2?.Payments[0],
+          fileStoreId: sanctionLetterID,
+          openReceipt: true,
+        }),
+    });
+  } else if (applicationDetails?.Clu?.[0]?.cluDetails?.additionalDetails?.isMigrationTrue && sanctionLetterID) {
+    dowloadOptions.push({
+      label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
+      onClick: () =>
+        getRecieptSearch({
+          tenantId: tenantId,
+          payments: {},
+          fileStoreId: sanctionLetterID,
+          openReceipt: true,
+        }),
+    });
   }
 
   async function openSanctionLetterPopup() {
@@ -329,7 +337,7 @@ const CLUEmployeeApplicationDetails = () => {
     }
   }
 
-  async function getRecieptSearch({ tenantId, payments, pdfkey, forcePnLocale = false, openReceipt= false, fileStoreId = null, ...params }) {
+  async function getRecieptSearch({ tenantId, payments, pdfkey, forcePnLocale = false, openReceipt = false, fileStoreId = null, ...params }) {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoader(true);
@@ -337,7 +345,7 @@ const CLUEmployeeApplicationDetails = () => {
       const approvecomments = approveComments?.[0];
       const firmName = application?.[0]?.cluDetails?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
       const owners = application?.[0]?.owners || [];
-      if(openReceipt && fileStoreId){
+      if (openReceipt && fileStoreId) {
         const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
         window.open(fileStore[fileStoreId], "_blank");
       }
@@ -392,10 +400,10 @@ const CLUEmployeeApplicationDetails = () => {
           pdfkey
         );
         fileStoreId = response?.filestoreIds[0];
-        if(openReceipt){
-        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-        window.open(fileStore[fileStoreId], "_blank");
-      }
+        if (openReceipt) {
+          const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+          window.open(fileStore[fileStoreId], "_blank");
+        }
       }
       return fileStoreId;
     } catch (error) {
@@ -587,8 +595,18 @@ const CLUEmployeeApplicationDetails = () => {
 
   const userRoles = user?.info?.roles?.map((e) => (typeof e === "string" ? e : e?.code || "")) || [];
   const isCluReadOnly =
-    userRoles?.some((r) => (r || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("READONLY")) &&
-    !userRoles?.some((r) => (r || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("CTP"));
+    userRoles?.some((r) =>
+      (r || "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase()
+        .includes("READONLY")
+    ) &&
+    !userRoles?.some((r) =>
+      (r || "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase()
+        .includes("CTP")
+    );
 
   useEffect(() => {
     // if (workflowDetails) {
@@ -602,13 +620,56 @@ const CLUEmployeeApplicationDetails = () => {
     workflowDetails.revalidate();
   }, []);
 
+  const [getOBPSRoles, setOBPSRoles] = useState([]);
+
+  const searchOBPSRoles = async (appData) => {
+    console.log("appData", appData);
+    const category = appData?.cluDetails?.additionalDetails?.siteDetails?.appliedCluCategory?.code;
+    // const subCategory = appData?.applicationData?.landInfo?.unit?.[0]?.usageCategory;
+    const zone = appData?.cluDetails?.additionalDetails?.siteDetails?.zone?.code;
+    const modulename = "clu-service";
+    const assignedTenantId = appData?.tenantId;
+
+    const filters = {
+      assignedTenantId: assignedTenantId,
+      category: category,
+      // subcategory: subCategory,
+      zone: zone,
+      modulename: modulename,
+    };
+
+    const response = await Digit.HRMSService.SearchEmpMap(tenantId, filters);
+
+    console.log("response", response?.Employees);
+    const Roles = response?.Employees?.map((item) => item?.roles);
+    setOBPSRoles(Roles);
+    console.log("Roles", Roles);
+  };
+
+  // console.log("data===", data);
+
+  useEffect(() => {
+    if (data) searchOBPSRoles(data?.resData?.Clu[0]);
+  }, [data]);
+
+  let isSingleButton = false;
+  let isMenuBotton = false;
+
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return e.roles?.includes(getOBPSRoles) || !e.roles;
     }) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return e.roles?.includes(getOBPSRoles) || !e.roles;
     });
+
+  // let actions =
+  //   workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //   }) ||
+  //   workflowDetails?.data?.nextActions?.filter((e) => {
+  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //   });
 
   useEffect(() => {
     const cluObject = applicationDetails?.Clu?.[0];
@@ -1035,38 +1096,38 @@ const CLUEmployeeApplicationDetails = () => {
     });
   }, []);
 
-  // useEffect(() => {
-  //   const fetchDistances = async () => {
-  //     if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0) {
-  //       try {
-  //         const results = await Promise.all(
-  //           geoLocations.map(async (loc, idx) => {
-  //             const d1 = await getDrivingDistance(
-  //               parseFloat(coordinates?.Latitude1),
-  //               parseFloat(coordinates?.Longitude1),
-  //               parseFloat(loc?.latitude),
-  //               parseFloat(loc?.longitude)
-  //             );
-  //             const d2 = await getDrivingDistance(
-  //               parseFloat(coordinates?.Latitude2),
-  //               parseFloat(coordinates?.Longitude2),
-  //               parseFloat(loc?.latitude),
-  //               parseFloat(loc?.longitude)
-  //             );
-  //             const minDistance = Math.min(d1, d2);
-  //             return minDistance;
-  //           })
-  //         );
-  //         setDistances(results);
-  //         console.log("Final distances (m):", results);
-  //       } catch (err) {
-  //         console.error("Error fetching distances:", err);
-  //       }
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchDistances = async () => {
+      if (coordinates?.Latitude1 && coordinates?.Latitude2 && geoLocations?.length > 0) {
+        try {
+          const results = await Promise.all(
+            geoLocations.map(async (loc, idx) => {
+              const d1 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude1),
+                parseFloat(coordinates?.Longitude1),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const d2 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude2),
+                parseFloat(coordinates?.Longitude2),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const minDistance = Math.min(d1, d2);
+              return minDistance;
+            })
+          );
+          setDistances(results);
+          console.log("Final distances (m):", results);
+        } catch (err) {
+          console.error("Error fetching distances:", err);
+        }
+      }
+    };
 
-  //   fetchDistances();
-  // }, [coordinates, geoLocations]);
+    fetchDistances();
+  }, [coordinates, geoLocations]);
 
   const validateSiteImages = (action) => {
     if (action?.action === "UPDATE_ZONE") return null;
@@ -1137,7 +1198,10 @@ const CLUEmployeeApplicationDetails = () => {
       <Card>
         <StatusTable>
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL")} text={id} />
-          <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Clu?.[0]?.applicationStatus ? t(`BPA_STATUS_${applicationDetails?.Clu?.[0]?.applicationStatus}`) : "N/A"} />
+          <Row
+            label={t("APPLICATION_STATUS")}
+            text={applicationDetails?.Clu?.[0]?.applicationStatus ? t(`BPA_STATUS_${applicationDetails?.Clu?.[0]?.applicationStatus}`) : "N/A"}
+          />
         </StatusTable>
       </Card>
 
@@ -1455,12 +1519,7 @@ const CLUEmployeeApplicationDetails = () => {
               // style={MenuStyle}
             />
           ) : null}
-          <SubmitBar
-            ref={menuRef}
-            label={t("WF_TAKE_ACTION")}
-            disabled={isZoneMismatch}
-            onSubmit={() => setDisplayMenu(!displayMenu)}
-          />
+          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} disabled={isZoneMismatch} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
       )}
 

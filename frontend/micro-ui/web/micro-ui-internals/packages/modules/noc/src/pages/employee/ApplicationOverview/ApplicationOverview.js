@@ -43,7 +43,7 @@ import NOCDocumentChecklist from "../../../components/NOCDocumentChecklist";
 import InspectionReport from "../../../pageComponents/InsectionReport";
 import InspectionReportDisplay from "../../../pageComponents/InspectionReportDisplay";
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
-//import { getDrivingDistance } from "../../../utils/getdistance";
+import { getDrivingDistance } from "../../../utils/getdistance";
 import ZoneModal from "../../../components/ZoneModal";
 import PdfPreviewModal from "../../../components/PdfPreviewModal";
 import { format } from "date-fns";
@@ -419,34 +419,34 @@ const NOCEmployeeApplicationOverview = () => {
   };
 
   async function getRecieptSearch({ tenantId, payments, pdfkey, EmpData, filestoreId = null, ...params }) {
-      const application = applicationDetails?.Noc?.[0];
-      try {
-        setLoader(true);
-        if (!application) {
-          throw new Error("Noc Application data is missing");
-        }
-        if(!filestoreId){
-          const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
-          const fee = payments?.totalAmountPaid;
-          const amountinwords = amountToWords(fee);
-          const response = await Digit.PaymentService.generatePdf(
-            tenantId,
-            { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] },
-            pdfkey
-          );
-          filestoreId = response?.filestoreIds[0];
-        }
-        const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
-        const receiptUrl = fileStore[filestoreId];
-        await downloadPdfFromURL(receiptUrl);
-      } catch (error) {
-        // console.error("Sanction Letter download error:", error);
-      } finally {
-        setLoader(false);
+    const application = applicationDetails?.Noc?.[0];
+    try {
+      setLoader(true);
+      if (!application) {
+        throw new Error("Noc Application data is missing");
       }
+      if (!filestoreId) {
+        const nocSanctionData = await getNOCSanctionLetter(application, t, EmpData, finalComment);
+        const fee = payments?.totalAmountPaid;
+        const amountinwords = amountToWords(fee);
+        const response = await Digit.PaymentService.generatePdf(
+          tenantId,
+          { Payments: [{ ...payments, Noc: nocSanctionData.Noc, amountinwords }] },
+          pdfkey
+        );
+        filestoreId = response?.filestoreIds[0];
+      }
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: filestoreId });
+      const receiptUrl = fileStore[filestoreId];
+      await downloadPdfFromURL(receiptUrl);
+    } catch (error) {
+      // console.error("Sanction Letter download error:", error);
+    } finally {
+      setLoader(false);
     }
+  }
 
-  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter",filestoreId, ...params }) {
+  async function getSanctionLetterReceipt({ tenantId, payments, EmpData, pdfkey = "noc-sanctionletter", filestoreId, ...params }) {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setLoader(true);
@@ -552,11 +552,10 @@ const NOCEmployeeApplicationOverview = () => {
             tenantId: tenantId,
             payments: {},
             EmpData,
-            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+            filestoreId: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId,
           }),
       });
-    }
-    else if(applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId){
+    } else if (applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId) {
       dowloadOptions.push({
         label: t("PDF_STATIC_LABEL_WS_CONSOLIDATED_SANCTION_LETTER"),
         onClick: () =>
@@ -564,17 +563,17 @@ const NOCEmployeeApplicationOverview = () => {
             tenantId: reciept_data?.Payments[0]?.tenantId,
             payments: reciept_data?.Payments[0],
             EmpData,
-            filestoreId :  applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId
+            filestoreId: applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.sanctionLetterFilestoreId,
           }),
       });
     }
   }
   if (reciept_data && reciept_data?.Payments?.length > 0 && !recieptDataLoading) {
-      dowloadOptions.push({
-        label: t("CHB_FEE_RECEIPT"),
-        onClick: () =>
-          getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData}),
-      });
+    dowloadOptions.push({
+      label: t("CHB_FEE_RECEIPT"),
+      onClick: () =>
+        getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0], pdfkey: "noc-receipt", EmpData }),
+    });
   }
   useEffect(() => {
     const latestCalc = applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.calculations?.find((c) => c.isLatest);
@@ -641,12 +640,7 @@ const NOCEmployeeApplicationOverview = () => {
   //   const { tenants } = storeData || {};
 
   let user = Digit.UserService.getUser();
-  const { isZoneMismatch } = useEmployeeZoneAccess(
-    user?.info?.tenantId || tenantId,
-    tenantId,
-    user?.info?.uuid,
-    currentZoneCode
-  );
+  const { isZoneMismatch } = useEmployeeZoneAccess(user?.info?.tenantId || tenantId, tenantId, user?.info?.uuid, currentZoneCode);
   const menuRef = useRef();
 
   // console.log('user', user)
@@ -687,7 +681,12 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  const isNocReadOnly = userRoles?.some((role) => (role || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase().includes("READONLY"));
+  const isNocReadOnly = userRoles?.some((role) =>
+    (role || "")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase()
+      .includes("READONLY")
+  );
 
   useEffect(() => {
     // if (workflowDetails) {
@@ -701,13 +700,56 @@ const NOCEmployeeApplicationOverview = () => {
     workflowDetails.revalidate();
   }, []);
 
+  const [getOBPSRoles, setOBPSRoles] = useState([]);
+
+  const searchOBPSRoles = async (appData) => {
+    console.log("appData", appData);
+    const category = appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory;
+    // const subCategory = appData?.applicationData?.landInfo?.unit?.[0]?.usageCategory;
+    const zone = appData?.nocDetails?.additionalDetails?.siteDetails?.zone;
+    const modulename = "noc-service";
+    const assignedTenantId = appData?.tenantId;
+
+    const filters = {
+      assignedTenantId: assignedTenantId,
+      category: category,
+      // subcategory: subCategory,
+      zone: zone,
+      modulename: modulename,
+    };
+
+    const response = await Digit.HRMSService.SearchEmpMap(tenantId, filters);
+
+    console.log("response", response?.Employees);
+    const Roles = response?.Employees?.map((item) => item?.roles);
+    setOBPSRoles(Roles);
+    console.log("Roles", Roles);
+  };
+
+  // console.log("data===", data);
+
+  useEffect(() => {
+    if (data) searchOBPSRoles(data?.resData?.Noc?.[0]);
+  }, [data]);
+
+  let isSingleButton = false;
+  let isMenuBotton = false;
+
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return e.roles?.includes(getOBPSRoles) || !e.roles;
     }) ||
     workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      return e.roles?.includes(getOBPSRoles) || !e.roles;
     });
+
+  // let actions =
+  //   workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //   }) ||
+  //   workflowDetails?.data?.nextActions?.filter((e) => {
+  //     return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  //   });
 
   // console.log("actions here", actions);
 
@@ -857,44 +899,44 @@ const NOCEmployeeApplicationOverview = () => {
     }
   }
 
-  // useEffect(() => {
-  //   const fetchDistances = async () => {
-  //     if (
-  //       coordinates?.Latitude1 &&
-  //       coordinates?.Latitude2 &&
-  //       geoLocations?.length > 0 &&
-  //       applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
-  //     ) {
-  //       try {
-  //         const results = await Promise.all(
-  //           geoLocations.map(async (loc, idx) => {
-  //             const d1 = await getDrivingDistance(
-  //               parseFloat(coordinates?.Latitude1),
-  //               parseFloat(coordinates?.Longitude1),
-  //               parseFloat(loc?.latitude),
-  //               parseFloat(loc?.longitude)
-  //             );
-  //             const d2 = await getDrivingDistance(
-  //               parseFloat(coordinates?.Latitude2),
-  //               parseFloat(coordinates?.Longitude2),
-  //               parseFloat(loc?.latitude),
-  //               parseFloat(loc?.longitude)
-  //             );
-  //             const minDistance = Math.min(d1, d2);
-  //             // console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
-  //             return minDistance;
-  //           })
-  //         );
-  //         setDistances(results);
-  //         // console.log("Final distances (m):", results);
-  //       } catch (err) {
-  //         console.error("Error fetching distances:", err);
-  //       }
-  //     }
-  //   };
+  useEffect(() => {
+    const fetchDistances = async () => {
+      if (
+        coordinates?.Latitude1 &&
+        coordinates?.Latitude2 &&
+        geoLocations?.length > 0 &&
+        applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
+      ) {
+        try {
+          const results = await Promise.all(
+            geoLocations.map(async (loc, idx) => {
+              const d1 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude1),
+                parseFloat(coordinates?.Longitude1),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const d2 = await getDrivingDistance(
+                parseFloat(coordinates?.Latitude2),
+                parseFloat(coordinates?.Longitude2),
+                parseFloat(loc?.latitude),
+                parseFloat(loc?.longitude)
+              );
+              const minDistance = Math.min(d1, d2);
+              // console.log(`Image ${idx + 1}: d1=${d1}m, d2=${d2}m, min=${minDistance}m`);
+              return minDistance;
+            })
+          );
+          setDistances(results);
+          // console.log("Final distances (m):", results);
+        } catch (err) {
+          console.error("Error fetching distances:", err);
+        }
+      }
+    };
 
-  //   fetchDistances();
-  // }, [coordinates, geoLocations]);
+    fetchDistances();
+  }, [coordinates, geoLocations]);
 
   // validation util
   const validateSiteImages = (action) => {
@@ -1275,7 +1317,16 @@ const NOCEmployeeApplicationOverview = () => {
             <div className="noc-pages-employee-application-overview-application-overview--style-4">
               <StatusTable>
                 <Row label={t("APPLICATIONNO")} text={id || "N/A"} />
-                <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Noc?.[0]?.applicationStatus ? t(`WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService}_${applicationDetails?.Noc?.[0]?.applicationStatus}`) : "N/A"} />
+                <Row
+                  label={t("APPLICATION_STATUS")}
+                  text={
+                    applicationDetails?.Noc?.[0]?.applicationStatus
+                      ? t(
+                          `WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService}_${applicationDetails?.Noc?.[0]?.applicationStatus}`
+                        )
+                      : "N/A"
+                  }
+                />
               </StatusTable>
             </div>
           </Card>
@@ -1631,12 +1682,7 @@ const NOCEmployeeApplicationOverview = () => {
               // style={MenuStyle}
             />
           ) : null}
-          <SubmitBar
-            ref={menuRef}
-            label={t("WF_TAKE_ACTION")}
-            disabled={isZoneMismatch}
-            onSubmit={() => setDisplayMenu(!displayMenu)}
-          />
+          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} disabled={isZoneMismatch} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
       )}
 

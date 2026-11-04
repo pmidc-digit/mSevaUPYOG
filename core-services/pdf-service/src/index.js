@@ -1130,9 +1130,15 @@ export const fillValues = (variableTovalueMap, formatconfig) => {
   
   //console.log(variableTovalueMap);
   //console.log(mustache.render(input, variableTovalueMap).replace(/""/g,"\"").replace(/"\[/g,"\[").replace(/\]"/g,"\]").replace(/\]\[/g,"\],\[").replace(/"\{/g,"\{").replace(/\}"/g,"\}"));
+
+  const templateData = {
+    ...variableTovalueMap,
+    encodeURIComponent: () => (text, render) =>
+      encodeURIComponent(render(text)),
+  };
   let output = JSON.parse(
     mustache
-      .render(input, variableTovalueMap)
+      .render(input, templateData)
       .replace(/""/g, '\""')
       //.replace(/\\/g, "")
       .replace(/"\[/g, "[")
@@ -1165,18 +1171,18 @@ const generateQRCodes = async (
   for (var i = 0, len = qrcodeMappings.length; i < len; i++) {
     let qrmapping = qrcodeMappings[i];
     let varname = qrmapping.variable;
-    let urlQR='',qrtext;
-    if(key == 'property-receipt' || key == 'bpa-receipt' || key == 'consolidatedreceipt' || key == 'tradelicense-receipt' || key == 'fsm-receipt' || key == 'misc-receipt' || key == 'ws-onetime-receipt')
-    {
-      urlQR=egov_host;
+    const qrTemplateData = {
+      ...variableTovalueMap,
+      encodeURIComponent: () => (text, render) =>
+        encodeURIComponent(render(text)),
+    };
 
-      urlQR=urlQR.concat(qrmapping.value);
-    }
-    if(urlQR=='')
-    qrtext = mustache.render(qrmapping.value, variableTovalueMap);
-    else
-    qrtext = mustache.render(urlQR, variableTovalueMap);
+    const qrValue = mustache.render(qrmapping.value, qrTemplateData);
 
+    const qrtext = qrValue.startsWith("/")
+      ? `${egov_host.replace(/\/$/, "")}${qrValue}`
+      : qrValue;
+      
     logger.info("URL is " + qrtext) ; 
     let qrCodeImage = await QRCode.toDataURL(qrtext);
     variableTovalueMap[varname] = qrCodeImage;
@@ -1323,6 +1329,8 @@ const prepareBulk = async (
   returnFileInResponse,
   entityIdPath
 ) => {
+  const moduleName = get(dataconfig, "DataConfigs.moduleName", "");
+  const documentType = get(dataconfig, "documentType", "");
   let isCommonTableBorderRequired = get(
     dataconfig,
     "DataConfigs.isCommonTableBorderRequired"

@@ -1,3 +1,4 @@
+import EmployeeModuleMappings from "./EmployeeModuleMappings";
 import { PrivateRoute, BreadCrumb, BackButton } from "@mseva/digit-ui-react-components";
 import React, { Fragment } from "react";
 import { Switch, useLocation } from "react-router-dom";
@@ -75,6 +76,10 @@ const OBPSBreadCrumbs = ({ location }) => {
       content: t("ES_OBPS_SEARCH_BPA"),
       show: location.pathname.includes("/obps/search/application/stakeholder/") ? true : false,
     },
+    {
+      content: t("Employee Module Mappings"),
+      show: location.pathname.endsWith("/employee-module-mappings"),
+    },
   ];
 
   return <BreadCrumb crumbs={crumbs.filter((crumb) => crumb.show)} />;
@@ -108,6 +113,7 @@ const EmployeeApp = ({ path }) => {
       <div className="ground-container">
         {!isFromNoc ? <OBPSBreadCrumbs location={location} /> : null}
         <Switch>
+          <PrivateRoute exact path={`${path}/employee-module-mappings`} component={EmployeeModuleMappings} />
            <PrivateRoute path={`${path}/layout/application-overview/:id`} component={(props) => <LayoutEmployeeApplicationDetails {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/response/:id`} component={(props) => <LayoutResponseEmployee {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/layout/inbox/application-overview/:layid`} component={(props) => <LayoutApplicationOverview {...props} parentRoute={path} />} />

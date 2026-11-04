@@ -183,7 +183,16 @@ public class UserService {
 			if(!org.springframework.util.StringUtils.isEmpty(zones))
 				uri.append("&zones=").append(zones);
 
-			appendBuildingCategoryQueryParams(uri, additionalDetails, mdmsData);
+			String specificationBuildingCategory = JsonPath.read(additionalDetails, "$.siteDetails.specificationBuildingCategory");
+			if (!org.springframework.util.StringUtils.isEmpty(specificationBuildingCategory)) {
+				List<String> categories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].category");
+				List<List<String>> subCategories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].subCategory");
+
+				if (!CollectionUtils.isEmpty(categories))
+					uri.append("&categories=").append(categories.get(0));
+				if (!CollectionUtils.isEmpty(subCategories))
+					uri.append("&subcategories=").append(String.join(",", subCategories.get(0)));
+			}
 
 			uri.append("&modulename=").append(NOCConstants.MODULENAME);
 		}
@@ -364,45 +373,21 @@ public class UserService {
 			if(!org.springframework.util.StringUtils.isEmpty(zones))
 				uri.append("&zones=").append(zones);
 
-			appendBuildingCategoryQueryParams(uri, additionalDetails, mdmsData);
+			String specificationBuildingCategory = JsonPath.read(additionalDetails, "$.siteDetails.specificationBuildingCategory");
+			if (!org.springframework.util.StringUtils.isEmpty(specificationBuildingCategory)) {				
+				List<String> categories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].category");
+				List<List<String>> subCategories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].subCategory");
+
+				if (!CollectionUtils.isEmpty(categories))
+					uri.append("&categories=").append(categories.get(0));
+				if (!CollectionUtils.isEmpty(subCategories))
+					uri.append("&subcategories=").append(String.join(",", subCategories.get(0)));
+			}
+
 			uri.append("&modulename=").append(NOCConstants.MODULENAME);
 		
 
 		return uri.toString();
-	}
-
-	private void appendBuildingCategoryQueryParams(StringBuilder uri, Map<String, String> additionalDetails, Object mdmsData) {
-		Object specCatObj = null;
-		try {
-			specCatObj = JsonPath.read(additionalDetails, "$.siteDetails.specificationBuildingCategory");
-		} catch (Exception e) {
-			log.warn("Error reading specificationBuildingCategory from additionalDetails: {}", e.getMessage());
-		}
-
-		if (specCatObj instanceof Map) {
-			Map<?, ?> specCatMap = (Map<?, ?>) specCatObj;
-			Object category = specCatMap.get("category");
-			Object subCategory = specCatMap.get("subCategory");
-
-			if (category != null && !org.springframework.util.StringUtils.isEmpty(category.toString())) {
-				uri.append("&categories=").append(category.toString());
-			}
-			if (subCategory instanceof List && !CollectionUtils.isEmpty((List<?>) subCategory)) {
-				List<?> subCatList = (List<?>) subCategory;
-				uri.append("&subcategories=").append(subCatList.stream().map(Object::toString).collect(Collectors.joining(",")));
-			} else if (subCategory != null && !org.springframework.util.StringUtils.isEmpty(subCategory.toString())) {
-				uri.append("&subcategories=").append(subCategory.toString());
-			}
-		} else if (specCatObj instanceof String && !org.springframework.util.StringUtils.isEmpty(specCatObj.toString())) {
-			String specificationBuildingCategory = specCatObj.toString();
-			List<String> categories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].category");
-			List<List<String>> subCategories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].subCategory");
-
-			if (!CollectionUtils.isEmpty(categories))
-				uri.append("&categories=").append(categories.get(0));
-			if (!CollectionUtils.isEmpty(subCategories))
-				uri.append("&subcategories=").append(String.join(",", subCategories.get(0)));
-		}
 	}
 
 }

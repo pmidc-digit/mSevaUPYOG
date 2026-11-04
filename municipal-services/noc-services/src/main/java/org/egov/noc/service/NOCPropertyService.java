@@ -108,21 +108,12 @@ public class NOCPropertyService {
 		}
 
 		String buildingStatus = siteDetails.getOrDefault("buildingStatus", "").toString();
-		Object specCatObj = siteDetails.get("specificationBuildingCategory");
-		String specificationBuildingCategory = "";
-		if (specCatObj instanceof Map) {
-			Map<?, ?> specCatMap = (Map<?, ?>) specCatObj;
-			specificationBuildingCategory = specCatMap.containsKey("name") && specCatMap.get("name") != null
-					? specCatMap.get("name").toString()
-					: (specCatMap.get("code") != null ? specCatMap.get("code").toString() : "");
-		} else if (specCatObj != null) {
-			specificationBuildingCategory = specCatObj.toString();
-		}
+		String specificationBuildingCategory = siteDetails.getOrDefault("specificationBuildingCategory", "").toString();
 		String localityCode = JsonPath.read(siteDetails, "$.localityAreaType.code");
 		List<Object> floorArea = (List<Object>)siteDetails.getOrDefault("floorArea", Collections.EMPTY_LIST);
 
 		List<String> buildingTypeList = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingType.[?(@.name == '" + buildingStatus + "')].code");
-		List<String> propertyUsageList = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "' || @.code == '" + specificationBuildingCategory + "')].propertyUsage");
+		List<String> propertyUsageList = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].propertyUsage");
 
 		if(CollectionUtils.isEmpty(propertyUsageList))
 			throw new CustomException("UPDATE ERROR", "Property Usage not found for the Building Category : " + specificationBuildingCategory);

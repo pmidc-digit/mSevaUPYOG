@@ -4,7 +4,7 @@ export const stepperConfig = [
     stepNumber: 1,
     body: [
       {
-        component: "NOCApplicantDetails",
+        component: "NOCNewApplicantDetails",
         withoutLabel: true,
         key: "applicantDetails",
         type: "component",

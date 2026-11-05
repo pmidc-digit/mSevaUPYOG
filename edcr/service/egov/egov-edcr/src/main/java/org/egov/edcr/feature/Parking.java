@@ -451,9 +451,9 @@ public class Parking extends FeatureProcess {
             }
         } else if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
             String subType = mostRestrictiveOccupancy.getSubtype() != null ? mostRestrictiveOccupancy.getSubtype().getCode() : "";
-            BigDecimal plotCoveredArea = (pl.getVirtualBuilding() != null) ? pl.getVirtualBuilding().getTotalCoverageArea() : null;
+            BigDecimal plotBuiltUpArea = (pl.getVirtualBuilding() != null) ? pl.getVirtualBuilding().getTotalBuitUpArea() : null;
 
-            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
+            if (plotBuiltUpArea == null || plotBuiltUpArea.compareTo(BigDecimal.ZERO) <= 0) {
                 addErrorMessage(pl, "Plot Area Error:", "Plot covered area must be greater than 0.");
             } else if (F_MIP.equalsIgnoreCase(subType)) {
                 BigDecimal totalBuiltUpArea = getTotalBuiltUpArea(pl);
@@ -476,13 +476,13 @@ public class Parking extends FeatureProcess {
                 if (multiplier == null || divisor == null || divisor.compareTo(BigDecimal.ZERO) == 0) {
                     addErrorMessage(pl, "Parking Calculation Error", "No valid ECS rule/divisor defined for subtype: " + subType);
                 } else {
-                    BigDecimal baseEcs = plotCoveredArea.divide(divisor, 2, RoundingMode.HALF_UP);
+                    BigDecimal baseEcs = plotBuiltUpArea.divide(divisor, 2, RoundingMode.HALF_UP);
                     noOfrequiredParking = baseEcs.multiply(BigDecimal.valueOf(multiplier)).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 }
             }
         } else if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null && G.equals(mostRestrictiveOccupancy.getType().getCode())) {
-            BigDecimal plotCoveredArea = (pl.getVirtualBuilding() != null) ? pl.getVirtualBuilding().getTotalCoverageArea() : null;
-            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
+            BigDecimal plotBuiltUpArea = (pl.getVirtualBuilding() != null) ? pl.getVirtualBuilding().getTotalBuitUpArea() : null;
+            if (plotBuiltUpArea == null || plotBuiltUpArea.compareTo(BigDecimal.ZERO) <= 0) {
                 addErrorMessage(pl, "Plot Area Error:", "Plot covered area must be greater than 0.");
             } else {             
                 String subType = mostRestrictiveOccupancy.getSubtype() != null ? mostRestrictiveOccupancy.getSubtype().getCode() : "";
@@ -490,14 +490,14 @@ public class Parking extends FeatureProcess {
                 if (multiplier == null) {
                     addErrorMessage(pl, "Parking Calculation Error", "No ECS rule defined for subtype: " + subType);
                 } else {
-                    BigDecimal baseEcs = plotCoveredArea.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                    BigDecimal baseEcs = plotBuiltUpArea.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
                     noOfrequiredParking = baseEcs.multiply(BigDecimal.valueOf(multiplier)).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 }
             }
         } else if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null && L.equals(mostRestrictiveOccupancy.getType().getCode())) {
-            BigDecimal plotCoveredArea = (pl.getVirtualBuilding() != null) ? pl.getVirtualBuilding().getTotalCoverageArea() : null;
+            BigDecimal plotBuiltUpArea = (pl.getVirtualBuilding() != null) ? pl.getVirtualBuilding().getTotalBuitUpArea() : null;
 
-            if (plotCoveredArea == null || plotCoveredArea.compareTo(BigDecimal.ZERO) <= 0) {
+            if (plotBuiltUpArea == null || plotBuiltUpArea.compareTo(BigDecimal.ZERO) <= 0) {
                 addErrorMessage(pl, "Plot Area Error:", "Plot covered area must be greater than 0.");
             } else {             
                 String subType = mostRestrictiveOccupancy.getSubtype() != null ? mostRestrictiveOccupancy.getSubtype().getCode() : "";
@@ -505,7 +505,7 @@ public class Parking extends FeatureProcess {
                 if (multiplier == null) {
                     addErrorMessage(pl, "Parking Calculation Error", "No ECS rule defined for subtype: " + subType);
                 } else {
-                    BigDecimal baseEcs = plotCoveredArea.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                    BigDecimal baseEcs = plotBuiltUpArea.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
                     noOfrequiredParking = baseEcs.multiply(BigDecimal.valueOf(multiplier)).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 }
             }

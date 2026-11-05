@@ -1158,6 +1158,10 @@ $hover-bg: #f5f5f5;
   
   .master-active {
     border-color: #1E40AF;
+
+    .label p {
+      display: none;
+    }
   }
   
   .server {

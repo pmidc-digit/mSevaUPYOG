@@ -12,7 +12,6 @@ const EditForm = ({ tenantId, data }) => {
   const [showToast, setShowToast] = useState(null);
   const [mobileNumber, setMobileNumber] = useState(null);
   const [phonecheck, setPhonecheck] = useState(false);
-  const [checkfield, setcheck] = useState(false);
    const { data: mdmsData,isLoading } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "egov-hrms", ["CommonFieldsConfig"], {
     select: (data) => {
        return {
@@ -137,15 +136,10 @@ const EditForm = ({ tenantId, data }) => {
       setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
     }
 
-    for (let i = 0; i < formData?.Jurisdictions?.length; i++) {
-      let key = formData?.Jurisdictions[i];
-      if (!(key?.boundary && key?.boundaryType && key?.hierarchy && key?.tenantId && key?.roles?.length > 0)) {
-        setcheck(false);
-        break;
-      } else {
-        setcheck(true);
-      }
-    }
+    const activeJurisdictions = formData?.Jurisdictions?.filter((key) => key?.isActive !== false) || [];
+    const checkfield =
+      activeJurisdictions.length > 0 &&
+      activeJurisdictions.every((key) => key?.boundary && key?.boundaryType && key?.hierarchy && key?.tenantId && key?.roles?.length > 0);
 
     let setassigncheck = false;
     for (let i = 0; i < formData?.Assignments?.length; i++) {

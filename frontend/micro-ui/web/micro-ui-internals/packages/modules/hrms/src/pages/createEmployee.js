@@ -12,7 +12,6 @@ const CreateEmployee = () => {
   const [mobileNumber, setMobileNumber] = useState(null);
   const [showToast, setShowToast] = useState(null);
   const [phonecheck, setPhonecheck] = useState(false);
-  const [checkfield, setcheck] = useState(false);
   const { t } = useTranslation();
   const history = useHistory();
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -81,15 +80,10 @@ const CreateEmployee = () => {
     } else {
       setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
     }
-    for (let i = 0; i < formData?.Jurisdictions?.length; i++) {
-      let key = formData?.Jurisdictions[i];
-      if (!(key?.boundary && key?.boundaryType && key?.hierarchy && key?.tenantId && key?.roles?.length > 0)) {
-        setcheck(false);
-        break;
-      } else {
-        setcheck(true);
-      }
-    }
+    const activeJurisdictions = formData?.Jurisdictions?.filter((key) => key?.isActive !== false) || [];
+    const checkfield =
+      activeJurisdictions.length > 0 &&
+      activeJurisdictions.every((key) => key?.boundary && key?.boundaryType && key?.hierarchy && key?.tenantId && key?.roles?.length > 0);
 
     let setassigncheck = false;
     for (let i = 0; i < formData?.Assignments?.length; i++) {

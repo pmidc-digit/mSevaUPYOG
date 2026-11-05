@@ -2,7 +2,7 @@ import { CardLabel, Dropdown, LabelFieldPair, Loader, RemoveableTag, MultiSelect
 import React, { useEffect, useState } from "react";
 import cleanup from "../Utils/cleanup";
 import { BOUNDARY_TYPE, REGION_DATA } from "../../../../../constants/DistrcitRegionBifurcation";
-// import MultiSelectDropdown from "./Multiselect";
+ //import MultiSelectDropdown from "./Multiselect";
 
 const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();

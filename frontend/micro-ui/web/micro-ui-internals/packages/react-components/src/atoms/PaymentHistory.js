@@ -125,12 +125,15 @@ export const getPaymentHistory = (billResponse, receiptResponse, advanceTaxHead)
 /** Fetches billing/payment history for a consumer and business service.
  * tenantId defaults to the current ULB. pdfKey enables receipt downloads for
  * services with a configured PDF template; RL retains its existing template.
+ * billSearchParams adds extra query params to the bill search (RL defaults to searchAll).
  */
-const PaymentHistory = ({ consumerCode, service, tenantId: tenantIdProp, title = "Payment History", pdfKey, advanceCarryForwardTaxHead }) => {
+const PaymentHistory = ({ consumerCode, service, tenantId: tenantIdProp, title = "Payment History", pdfKey, advanceCarryForwardTaxHead, billSearchParams }) => {
   const { t } = useTranslation();
   const tenantId = tenantIdProp || Digit.ULBService.getCurrentTenantId();
   const advanceTaxHead = advanceCarryForwardTaxHead || (service === "rl-services" ? "RL_ADVANCE_CARRYFORWARD" : undefined);
   const receiptPdfKey = pdfKey || (service === "rl-services" ? "rl-receipt-employee" : undefined);
+  const extraBillParams = billSearchParams || (service === "rl-services" ? { searchAll: true } : undefined);
+  const extraBillParamsKey = JSON.stringify(extraBillParams || {});
   const [history, setHistory] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -154,7 +157,7 @@ const PaymentHistory = ({ consumerCode, service, tenantId: tenantIdProp, title =
     const fetchHistory = async () => {
       try {
         const [bills, receipts] = await Promise.all([
-          Digit.PaymentService.searchBill(tenantId, { consumerCode, service }),
+          Digit.PaymentService.searchBill(tenantId, { ...extraBillParams, consumerCode, service }),
           Digit.PaymentService.recieptSearch(tenantId, service, { consumerCodes: consumerCode, limit: 200 }),
         ]);
         if (active) setHistory(getPaymentHistory(bills, receipts, advanceTaxHead));
@@ -166,7 +169,7 @@ const PaymentHistory = ({ consumerCode, service, tenantId: tenantIdProp, title =
     };
     fetchHistory();
     return () => { active = false; };
-  }, [consumerCode, service, tenantId, advanceTaxHead]);
+  }, [consumerCode, service, tenantId, advanceTaxHead, extraBillParamsKey]);
 
   const onDownloadReceipt = (receipt) => printReceipt({
     businessService: service,

@@ -9,12 +9,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
-
+import org.springframework.scheduling.annotation.EnableScheduling;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootApplication
+@EnableScheduling
 @ComponentScan(basePackages = { "org.egov.ptr", "org.egov.ptr.web.controllers", "org.egov.ptr.config",
 		"org.egov.ptr.repository" })
 @Import({ TracerConfiguration.class })

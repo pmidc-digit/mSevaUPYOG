@@ -27,8 +27,8 @@ WORKDIR /opt/egov
 COPY --from=build /app/target/*.jar /app/start.sh /opt/egov/
 COPY --from=build /app/src/main/resources/mcbathinda.cer mcbathinda.cer
 
-#RUN keytool -import -alias smsgwsmsgovin -file mcbathinda.cer -keystore /etc/ssl/certs/truststore.jks -storepass changeit -noprompt
-RUN keytool -importcert -noprompt -alias mcbathinda -trustcacerts -keystore cacerts -file mcbathinda.cer -storepass changeit
+RUN keytool -import -alias mcbathinda -file mcbathinda.cer -keystore /etc/ssl/certs/truststore.jks -storepass changeit -noprompt
+#RUN keytool -importcert -noprompt -alias mcbathinda -trustcacerts -keystore cacerts -file mcbathinda.cer -storepass changeit
 
 RUN chmod +x /opt/egov/start.sh
 

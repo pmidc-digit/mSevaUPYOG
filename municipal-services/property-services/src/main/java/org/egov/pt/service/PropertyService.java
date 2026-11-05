@@ -359,7 +359,16 @@ public class PropertyService {
 			else if (state.getIsTerminateState()
 					&& !state.getApplicationStatus().equalsIgnoreCase(Status.ACTIVE.toString())) {
 
-				terminateWorkflowAndReInstatePreviousRecord(request, propertyFromSearch);
+				if (propertyFromSearch.getStatus().equals(Status.PENDINGWS)) {
+					/*
+					 * PENDINGWS properties were created fresh from W&S — there is no previous
+					 * ACTIVE record to reinstate. Simply persist the terminal status (INACTIVE /
+					 * REJECTED) returned by the workflow engine.
+					 */
+					producer.push(config.getUpdatePropertyTopic(), producerKey(request), request);
+				} else {
+					terminateWorkflowAndReInstatePreviousRecord(request, propertyFromSearch);
+				}
 			} else {
 				/*
 				 * If property is In Workflow then continue

@@ -197,7 +197,7 @@ public class EnrichmentService {
 
 		if ("E-SIGNED".equalsIgnoreCase(nocRequest.getNoc().getApplicationStatus())
 				&& nocRequest.getNoc().getWorkflow() != null
-				&& ("ROLL_BACK_APPOVED".equalsIgnoreCase(nocRequest.getNoc().getWorkflow().getAction())
+				&& ("ROLL_BACK_APPROVED".equalsIgnoreCase(nocRequest.getNoc().getWorkflow().getAction())
 						|| "ROLL_BACK_APPROVED".equalsIgnoreCase(nocRequest.getNoc().getWorkflow().getAction()))) {
 			if (nocRequest.getNoc().getNocDetails() != null
 					&& nocRequest.getNoc().getNocDetails().getAdditionalDetails() instanceof Map) {

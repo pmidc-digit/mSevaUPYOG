@@ -85,6 +85,7 @@ import org.egov.common.entity.edcr.SetBack;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
+import org.egov.edcr.entity.RoadTypes;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
@@ -319,7 +320,7 @@ public class RearYardService extends GeneralRule {
 //									rearYardResult.occupancyCode.equalsIgnoreCase("G-F")
 									) {
 								permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toString();
-							    providedValue = rearYardResult.actualMinDistance.toString();
+							    providedValue = rearYardResult.actualMinDistance.abs().stripTrailingZeros().toPlainString();
 							    details.put("OccCode", rearYardResult.occupancyCode);
 							    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
 							    
@@ -873,20 +874,36 @@ public class RearYardService extends GeneralRule {
 		
 	    if(mostRestrictiveOccupancy != null &&
 				(L.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))) {
-			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
-			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-			            pl.getMdmsMasterData().get("masterMdmsData"),
-			            MdmsFilter.REAR_SETBACK_PATH,
-			            BigDecimal.class
-			    );
-			    if (scOpt.isPresent()) {
-			        BigDecimal mdmsValue = scOpt.get();
-			        LOG.info("Rear Setback Value from MDMS : " + mdmsValue);			        	        
-			        minVal = mdmsValue;		     
-			    }else {
-			    	LOG.error("No value found from mdms for the rear setback");
-			    }
-			}
+	    	if(L_MP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+	    		if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+	    			String roadType = RoadTypes.getCode(pl.getPlanInformation().getRoadType());
+				    String path = String.format(MdmsFilter.MP_REAR_SETBACK_PATH, roadType);
+				    Optional<List> listOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), path, List.class);
+				    if (listOpt.isPresent() && !listOpt.get().isEmpty()) {
+				        BigDecimal mdmsValue = new BigDecimal(String.valueOf(listOpt.get().get(0)));
+				        LOG.info("Rear Setback Value from MDMS: " + mdmsValue);
+				        minVal = mdmsValue.abs().stripTrailingZeros();
+				    } else {
+				        LOG.error("No value found from MDMS for front setback, roadType=" + roadType);
+				    }
+				}
+	    	}else {
+	    		if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+				    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+				            pl.getMdmsMasterData().get("masterMdmsData"),
+				            MdmsFilter.REAR_SETBACK_PATH,
+				            BigDecimal.class
+				    );
+				    if (scOpt.isPresent()) {
+				        BigDecimal mdmsValue = scOpt.get();
+				        LOG.info("Rear Setback Value from MDMS : " + mdmsValue);			        	        
+				        minVal = mdmsValue;		     
+				    }else {
+				    	LOG.error("No value found from mdms for the rear setback");
+				    }
+				}
+	    	}
+			
 		}
 
 		valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);

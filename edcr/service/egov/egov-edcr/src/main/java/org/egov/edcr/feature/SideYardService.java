@@ -86,6 +86,7 @@ import org.egov.common.entity.edcr.Yard;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
+import org.egov.edcr.entity.RoadTypes;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -700,8 +701,8 @@ public class SideYardService extends GeneralRule {
 //					sideYard1Result.occupancyCode.equalsIgnoreCase("G-IT") ||
 //					sideYard1Result.occupancyCode.equalsIgnoreCase("G-F")					
 					)) {
-				permissableValueWithPercentage = sideYard1Result.expectedDistance.toString();
-			    providedValue = sideYard1Result.actualDistance.toString();
+				permissableValueWithPercentage = sideYard1Result.expectedDistance.abs().stripTrailingZeros().toPlainString();
+			    providedValue = sideYard1Result.actualDistance.abs().stripTrailingZeros().toPlainString();
 			    details.put("OccCode", sideYard1Result.occupancyCode);
 			    details.put("isSetbackCombine", String.valueOf(sideYard1Result.isSetbackCombine));
 			}else if (sideYard1Result.setBackPercentage != null 
@@ -778,7 +779,7 @@ public class SideYardService extends GeneralRule {
 //    					sideYard2Result.occupancyCode.equalsIgnoreCase("G-F"))
     					)) {
     				permissableValueWithPercentage = sideYard2Result.expectedDistance.toString();
-    			    providedValue = sideYard2Result.actualDistance.toString();
+    			    providedValue = sideYard2Result.actualDistance.abs().stripTrailingZeros().toPlainString();
     			    detailsSideYard2.put("OccCode", sideYard2Result.occupancyCode);
     			    detailsSideYard2.put("isSetbackCombine", String.valueOf(sideYard2Result.isSetbackCombine));
     			}else if (sideYard2Result.setBackPercentage != null 
@@ -1065,21 +1066,38 @@ public class SideYardService extends GeneralRule {
         
         if(mostRestrictiveOccupancy != null &&
 				(L.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))) {
-      	if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
-  		    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-  		            pl.getMdmsMasterData().get("masterMdmsData"),
-  		            MdmsFilter.SIDE_SETBACK_PATH,
-  		            BigDecimal.class
-  		    );
-  		    if (scOpt.isPresent()) {
-  		        BigDecimal mdmsValue = scOpt.get();
-  		        LOG.info("Side Setback Value from MDMS : " + mdmsValue);		        
-  		        side1val = mdmsValue;	
-  		        side2val =mdmsValue;
-  		    }else {
-  		    	LOG.error("No value found from mdms for the side setback");
-  		    }
-  		}
+        	if(L_MP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+	    		if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+	    			String roadType = RoadTypes.getCode(pl.getPlanInformation().getRoadType());
+				    String path = String.format(MdmsFilter.MP_SIDE_SETBACK_PATH, roadType);
+				    Optional<List> listOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), path, List.class);
+				    if (listOpt.isPresent() && !listOpt.get().isEmpty()) {
+				        BigDecimal mdmsValue = new BigDecimal(String.valueOf(listOpt.get().get(0)));
+				        LOG.info("SIDE Setback Value from MDMS: " + mdmsValue);
+				        side1val = mdmsValue.abs().stripTrailingZeros();	
+          		        side2val =mdmsValue.abs().stripTrailingZeros();
+				    } else {
+				        LOG.error("No value found from MDMS for front setback, roadType=" + roadType);
+				    }
+				}
+	    	}else {
+        		if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+          		    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+          		            pl.getMdmsMasterData().get("masterMdmsData"),
+          		            MdmsFilter.SIDE_SETBACK_PATH,
+          		            BigDecimal.class
+          		    );
+          		    if (scOpt.isPresent()) {
+          		        BigDecimal mdmsValue = scOpt.get();
+          		        LOG.info("Side Setback Value from MDMS : " + mdmsValue);		        
+          		        side1val = mdmsValue;	
+          		        side2val = mdmsValue;
+          		    }else {
+          		    	LOG.error("No value found from mdms for the side setback");
+          		    }
+          		}
+        	}
+      	
       	
       }
         

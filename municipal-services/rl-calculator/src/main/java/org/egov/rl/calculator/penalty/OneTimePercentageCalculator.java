@@ -9,28 +9,15 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 /**
- * Strategy implementation for a ONE-TIME percentage penalty.
+ * Strategy implementation for One-Time Percentage late payment penalty.
  *
- * <p>A single percentage of the principal is charged once the demand is past its due date and then never
- * changes - being 1 day or 300 days late makes no difference, the amount is frozen.
- *
+ * <p>Formula:
  * <pre>
- *   penalty = principal × rate / 100
+ *   if isPerDayPenaltyApplied is true:
+ *     penalty = rentAmount × (rate / 100) × (lateDays / 365)
+ *   else:
+ *     penalty = rentAmount × (rate / 100)
  * </pre>
- *
- * <p>This is the simplest possible late-payment rule and the one most ULBs describe as "25% once the due date
- * passes". It replaces the need for a per-ULB {@code flatAmount}: the percentage applies to whatever the demand's
- * own principal is, so a ₹50,000 arrear and a ₹2,00,000 arrear are each charged their own 25%.
- *
- * <p>Rules:
- * <ul>
- *   <li>Returns 0 while {@code paymentDate} is on or before {@code dueDate} - the due day itself is not late.</li>
- *   <li>Returns 0 while the lateness is within {@code applicableAfterDays} / {@code graceDays}.</li>
- *   <li>The rate is taken from {@code rate}, falling back to {@code annualRate}; 0 or absent means no penalty.
- *       The name of the strategy is the only thing that makes the percentage "one time" - no day or month
- *       factor is ever applied.</li>
- *   <li>Honours {@code minAmount} and {@code maxAmount} when configured.</li>
- * </ul>
  */
 @Component
 @Slf4j
@@ -45,41 +32,46 @@ public class OneTimePercentageCalculator implements PenaltyCalculator {
 
     @Override
     public BigDecimal calculatePenalty(
-            BigDecimal principalAmount,
+            BigDecimal rentAmount,
             LocalDate dueDate,
             LocalDate paymentDate,
             PenaltyConfig config
     ) {
-        if (principalAmount == null || principalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            return BigDecimal.ZERO;
+        if (rentAmount == null || rentAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Rent amount must be greater than zero for penalty calculation.");
         }
+
         if (paymentDate == null || dueDate == null || !paymentDate.isAfter(dueDate)) {
             return BigDecimal.ZERO;
         }
 
-        long lateDays = ChronoUnit.DAYS.between(dueDate, paymentDate);
+        long totalLateDays = ChronoUnit.DAYS.between(dueDate, paymentDate);
         int graceDays = (config != null) ? config.effectiveGraceDays() : 0;
-        if (lateDays <= graceDays) {
+
+        if (totalLateDays <= graceDays) {
             return BigDecimal.ZERO;
         }
 
-        // `rate` is the natural home for a one-time percentage; annualRate is accepted as a fallback so a tenant
-        // can reuse the same number it configures for the annual strategies without duplicating it.
-        BigDecimal percentage = (config != null && config.getRate() != null
-                && config.getRate().compareTo(BigDecimal.ZERO) > 0)
-                ? config.getRate()
-                : ((config != null) ? config.effectiveAnnualRate() : BigDecimal.ZERO);
-
-        if (percentage == null || percentage.compareTo(BigDecimal.ZERO) <= 0) {
-            log.warn("{} strategy selected but no percentage (rate/annualRate) is configured - no penalty charged.",
-                    PENALTY_TYPE);
+        BigDecimal rate = (config != null) ? config.effectiveAnnualRate() : BigDecimal.ZERO;
+        if (rate.compareTo(BigDecimal.ZERO) <= 0) {
             return BigDecimal.ZERO;
         }
 
-        // Deliberately no day/month factor: one time, one amount.
-        BigDecimal penalty = principalAmount.multiply(percentage)
-                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        BigDecimal penalty;
+        if (config != null && Boolean.TRUE.equals(config.getIsPerDayPenaltyApplied())) {
+            // Pro-rated per day if explicitly requested
+            penalty = rentAmount
+                    .multiply(rate)
+                    .multiply(BigDecimal.valueOf(totalLateDays))
+                    .divide(BigDecimal.valueOf(36500), 2, RoundingMode.HALF_UP);
+        } else {
+            // Flat percentage (default for one-time percentage): rentAmount * rate / 100
+            penalty = rentAmount
+                    .multiply(rate)
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        }
 
+        // Apply Min / Max limits
         if (config != null) {
             if (config.getMinAmount() != null && penalty.compareTo(config.getMinAmount()) < 0) {
                 penalty = config.getMinAmount();
@@ -89,8 +81,6 @@ public class OneTimePercentageCalculator implements PenaltyCalculator {
             }
         }
 
-        log.debug("One time penalty {} = {} × {}% (due {}, evaluated {}, {} late day(s))",
-                penalty, principalAmount, percentage, dueDate, paymentDate, lateDays);
         return penalty;
     }
 }

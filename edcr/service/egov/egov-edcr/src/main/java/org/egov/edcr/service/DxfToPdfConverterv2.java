@@ -537,7 +537,7 @@ public class DxfToPdfConverterv2 {
                         path, color);
             }
 
-            if (!RENDER_PATTERN_HATCH_LINES) {
+            if (!RENDER_PATTERN_HATCH_LINES || doc.safeMode) {
                 // Treat a pattern hatch like a normal entity: draw only its boundary. No per-line
                 // geometry is generated, so memory/time stay proportional to the boundary points.
                 return String.format(Locale.US,
@@ -1781,7 +1781,8 @@ public class DxfToPdfConverterv2 {
                 if (block != null && !block.entities.isEmpty()) {
                     blockRendered = true;
                     String dimColor = resolveColor(doc, this);
-                    sb.append(String.format("<g fill=\"%s\" stroke=\"%s\" color=\"%s\">", dimColor, dimColor, dimColor));
+                    String dimColorAttr = "currentColor".equalsIgnoreCase(dimColor) ? "inherit" : dimColor;   // Batik rejects color="currentColor"
+                    sb.append(String.format("<g fill=\"%s\" stroke=\"%s\" color=\"%s\">", dimColor, dimColor, dimColorAttr));
                     for (Entity e : block.entities) {
                         if (!e.visible) continue;
                         String savedLayer = e.layer;
@@ -1861,6 +1862,17 @@ public class DxfToPdfConverterv2 {
         }
     }
 
+    /** POINT: drawn as a small filled dot. */
+    static class PointEntity extends Entity {
+        double x, y;
+
+        @Override
+        String toSvg(DxfDocument doc, double[] t) {
+            return String.format(Locale.US, "<circle cx=\"%.4f\" cy=\"%.4f\" r=\"2.5\" fill=\"%s\" stroke=\"none\"/>",
+                    tx(x, t), ty(y, t), resolveColor(doc, this));
+        }
+    }
+
     static class SolidEntity extends Entity {
         double[] corners = new double[8]; // x1,y1,x2,y2,x3,y3,x4,y4
 
@@ -1882,6 +1894,10 @@ public class DxfToPdfConverterv2 {
     static class DxfDocument {
         /** Pattern-hatch line segments emitted so far for the SVG being generated (memory budget). */
         int hatchSegmentsUsed = 0;
+        /** true = retry mode after a failure: pattern hatches are drawn as boundary only. */
+        boolean safeMode = false;
+        /** DXF entity types that this converter does not draw (type -> count). Logged after parsing. */
+        Map<String, Integer> skippedTypes = new TreeMap<>();
         /** Line budget of every pattern hatch (whole-drawing budget / number of pattern hatches). */
         int hatchShare = Integer.MAX_VALUE;
         Map<String, Layer> layers = new LinkedHashMap<>();
@@ -3327,6 +3343,10 @@ public class DxfToPdfConverterv2 {
             mergeAdjacentCollinearText(b.entities);
         }
         
+        if (!doc.skippedTypes.isEmpty()) {
+            LOG.warn("DXF entity types NOT drawn by the converter (type=count): {}", doc.skippedTypes);
+        }
+
         detectWorkSheetBorder(doc);
         
         computeExtents(doc);
@@ -3573,7 +3593,12 @@ public class DxfToPdfConverterv2 {
                     case "DIMENSION":  { DimensionEntity e = new DimensionEntity(); idx = parseDimensionEntity(tokens, idx, e); entityList.add(e); break; }
                     case "LEADER":     { LeaderEntity e = new LeaderEntity();   idx = parseLeaderEntity(tokens, idx, e);    entityList.add(e); break; }
                     case "SOLID":      { SolidEntity e = new SolidEntity();     idx = parseSolidEntity(tokens, idx, e);     entityList.add(e); break; }
-                    default:           { idx = skipEntity(tokens, idx); break; }
+                    case "ATTRIB":     { TextEntity e = new TextEntity();       idx = parseAttribEntity(tokens, idx, e);    if (e.visible && e.text != null && !e.text.isEmpty()) entityList.add(e); break; }
+                    case "TRACE":      { SolidEntity e = new SolidEntity();     idx = parseSolidEntity(tokens, idx, e);     entityList.add(e); break; }
+                    case "3DFACE":     { PolylineEntity e = new PolylineEntity(); idx = parseFaceEntity(tokens, idx, e);    if (e.vertices.size() >= 3) entityList.add(e); break; }
+                    case "POINT":      { PointEntity e = new PointEntity();     idx = parsePointEntity(tokens, idx, e);     entityList.add(e); break; }
+                    case "SEQEND": case "VERTEX": case "ATTDEF": { idx = skipEntity(tokens, idx); break; }
+                    default:           { doc.skippedTypes.merge(type, 1, Integer::sum); idx = skipEntity(tokens, idx); break; }
                 }
             } else {
                 idx++;
@@ -3775,12 +3800,23 @@ public class DxfToPdfConverterv2 {
         return idx;
     }
 
+    /**
+     * Parses a HATCH. Boundary paths are stored in two forms in DXF:
+     *  - polyline path: vertices (10/20);
+     *  - edge path: LINE / ARC / ELLIPSE / SPLINE edges (code 72 = edge type). For an ARC, 10/20 is the
+     *    CENTER, not a boundary point, so the edges must be decoded (and arcs tessellated), otherwise the
+     *    boundary polygon is wrong (huge black fills on the PDF).
+     */
     static int parseHatchEntity(List<String[]> tokens, int idx, HatchEntity e) {
-        double pendingX = 0;
-        boolean waitingForY = false;
         boolean inBoundaryData = false;
         boolean inPatternData = false;
+        boolean polyLoop = false;
+        boolean skipLoop = false;
         List<double[]> currentLoop = null;
+        double pendX = 0;
+        boolean waitY = false;
+        int edgeType = 0;
+        List<String[]> edgeCodes = null;
         HatchPatternLine currentPatternLine = null;
         while (idx < tokens.size() && !tokens.get(idx)[0].equals("0")) {
             String[] tok = tokens.get(idx);
@@ -3792,21 +3828,41 @@ public class DxfToPdfConverterv2 {
                 else if (c == 52) e.angle = Double.parseDouble(tok[1].trim());
                 else if (c == 41) e.scale = Double.parseDouble(tok[1].trim());
                 else if (c == 91) inBoundaryData = Integer.parseInt(tok[1].trim()) > 0;
-                else if (c == 78) inPatternData = Integer.parseInt(tok[1].trim()) > 0;
-                // Boundary paths end before the hatch style/pattern-definition fields.
-                // Do not mistake pattern-line origins for additional boundary vertices.
-                else if (c == 75 || c == 76 || c == 78 || c == 98) inBoundaryData = false;
-                else if (c == 92 && inBoundaryData) {
-                    if (currentLoop != null && !currentLoop.isEmpty()) {
-                        e.boundaryLoops.add(currentLoop);
-                    }
+                else if (c == 78) {
+                    flushHatchEdge(edgeType, edgeCodes, currentLoop);
+                    edgeCodes = null;
+                    inBoundaryData = false;
+                    inPatternData = Integer.parseInt(tok[1].trim()) > 0;
+                } else if (c == 75 || c == 76 || c == 98) {
+                    flushHatchEdge(edgeType, edgeCodes, currentLoop);
+                    edgeCodes = null;
+                    inBoundaryData = false;
+                } else if (c == 92 && inBoundaryData) {
+                    flushHatchEdge(edgeType, edgeCodes, currentLoop);
+                    edgeCodes = null;
+                    if (currentLoop != null && !currentLoop.isEmpty() && !skipLoop) e.boundaryLoops.add(currentLoop);
                     currentLoop = new ArrayList<>();
-                } else if ((c == 10 || c == 11) && inBoundaryData) {
-                    pendingX = Double.parseDouble(tok[1].trim());
-                    waitingForY = true;
-                } else if ((c == 20 || c == 21) && waitingForY && currentLoop != null) {
-                    currentLoop.add(new double[]{pendingX, Double.parseDouble(tok[1].trim())});
-                    waitingForY = false;
+                    int loopFlags = Integer.parseInt(tok[1].trim());
+                    polyLoop = (loopFlags & 2) != 0;
+                    skipLoop = (loopFlags & 8) != 0;     // text-box loops are text isolation islands, not fill boundaries
+                    waitY = false;
+                } else if (inBoundaryData && currentLoop != null) {
+                    if (polyLoop) {
+                        if (c == 10) { pendX = Double.parseDouble(tok[1].trim()); waitY = true; }
+                        else if (c == 20 && waitY) {
+                            currentLoop.add(new double[]{pendX, Double.parseDouble(tok[1].trim())});
+                            waitY = false;
+                        }
+                    } else if (c == 72) {
+                        flushHatchEdge(edgeType, edgeCodes, currentLoop);
+                        edgeType = Integer.parseInt(tok[1].trim());
+                        edgeCodes = new ArrayList<>();
+                    } else if (c == 97) {
+                        flushHatchEdge(edgeType, edgeCodes, currentLoop);
+                        edgeCodes = null;
+                    } else if (edgeCodes != null && c != 93) {
+                        edgeCodes.add(tok);
+                    }
                 } else if (inPatternData && c == 53) {
                     currentPatternLine = new HatchPatternLine();
                     currentPatternLine.angle = Double.parseDouble(tok[1].trim());
@@ -3825,10 +3881,71 @@ public class DxfToPdfConverterv2 {
             } catch (NumberFormatException ignored) {}
             idx++;
         }
-        if (currentLoop != null && !currentLoop.isEmpty()) {
+        flushHatchEdge(edgeType, edgeCodes, currentLoop);
+        if (currentLoop != null && !currentLoop.isEmpty() && !skipLoop) {
             e.boundaryLoops.add(currentLoop);
         }
         return idx;
+    }
+
+    /** Converts one decoded hatch boundary edge (line / arc / ellipse / spline) into polygon points. */
+    private static void flushHatchEdge(int type, List<String[]> codes, List<double[]> loop) {
+        if (codes == null || codes.isEmpty() || loop == null) return;
+        double x1 = 0, y1 = 0, x2 = 0, y2 = 0, r = 0, a0 = 0, a1 = 0, ratio = 1;
+        boolean ccw = true;
+        List<double[]> ctrl = new ArrayList<>();
+        double pendingX = 0;
+        boolean wy = false;
+        for (String[] t : codes) {
+            try {
+                int c = Integer.parseInt(t[0].trim());
+                double v = Double.parseDouble(t[1].trim());
+                if (c == 10) { pendingX = v; x1 = v; wy = true; }
+                else if (c == 20) { y1 = v; if (wy) { ctrl.add(new double[]{pendingX, v}); wy = false; } }
+                else if (c == 11) x2 = v;
+                else if (c == 21) y2 = v;
+                else if (c == 40) { if (type == 2) r = v; else if (type == 3) ratio = v; }
+                else if (c == 50) a0 = v;
+                else if (c == 51) a1 = v;
+                else if (c == 73) ccw = v != 0;
+            } catch (NumberFormatException ignored) {}
+        }
+        if (type == 1) {
+            addHatchPoint(loop, x1, y1);
+            addHatchPoint(loop, x2, y2);
+        } else if (type == 2 && r > 0) {
+            double sweep = ccw ? a1 - a0 : a0 - a1;
+            while (sweep <= 0) sweep += 360.0;
+            if (sweep > 360.0) sweep = 360.0;
+            int steps = Math.max(4, (int) Math.ceil(sweep / 6.0));
+            for (int i = 0; i <= steps; i++) {
+                double ang = Math.toRadians(ccw ? a0 + sweep * i / steps : a0 - sweep * i / steps);
+                addHatchPoint(loop, x1 + r * Math.cos(ang), y1 + r * Math.sin(ang));
+            }
+        } else if (type == 3) {
+            double mx = x2, my = y2;                       // major axis endpoint relative to center
+            double nx = -my * ratio, ny = mx * ratio;      // minor axis
+            double sweep = ccw ? a1 - a0 : a0 - a1;
+            while (sweep <= 0) sweep += 360.0;
+            if (sweep > 360.0) sweep = 360.0;
+            int steps = Math.max(4, (int) Math.ceil(sweep / 6.0));
+            for (int i = 0; i <= steps; i++) {
+                double ang = Math.toRadians(ccw ? a0 + sweep * i / steps : a0 - sweep * i / steps);
+                addHatchPoint(loop, x1 + mx * Math.cos(ang) + nx * Math.sin(ang),
+                        y1 + my * Math.cos(ang) + ny * Math.sin(ang));
+            }
+        } else if (type == 4) {
+            for (double[] cp : ctrl) addHatchPoint(loop, cp[0], cp[1]);   // control polygon approximation
+        }
+    }
+
+    private static void addHatchPoint(List<double[]> loop, double x, double y) {
+        if (!Double.isFinite(x) || !Double.isFinite(y)) return;
+        if (!loop.isEmpty()) {
+            double[] last = loop.get(loop.size() - 1);
+            if (Math.abs(last[0] - x) < 1e-12 && Math.abs(last[1] - y) < 1e-12) return;
+        }
+        loop.add(new double[]{x, y});
     }
 
     static int parseMlineEntity(List<String[]> tokens, int idx, MlineEntity e) {
@@ -4044,6 +4161,77 @@ public class DxfToPdfConverterv2 {
                     }
                     e.vertices.add(new double[]{x, y});
                 }
+            } catch (NumberFormatException ignored) {}
+            idx++;
+        }
+        return idx;
+    }
+
+    /** ATTRIB = text value of a block attribute (e.g. room name inside a symbol). Same layout as TEXT, vertical justify is 74. */
+    static int parseAttribEntity(List<String[]> tokens, int idx, TextEntity e) {
+        while (idx < tokens.size() && !tokens.get(idx)[0].equals("0")) {
+            String[] tok = tokens.get(idx);
+            applyCommonCode(tok, e);
+            try {
+                int c = Integer.parseInt(tok[0].trim());
+                if (c == 10) e.x = Double.parseDouble(tok[1].trim());
+                else if (c == 20) e.y = Double.parseDouble(tok[1].trim());
+                else if (c == 11) e.secondX = Double.parseDouble(tok[1].trim());
+                else if (c == 21) e.secondY = Double.parseDouble(tok[1].trim());
+                else if (c == 40) e.height = Double.parseDouble(tok[1].trim());
+                else if (c == 1) e.text = tok[1];
+                else if (c == 50) e.rotation = Double.parseDouble(tok[1].trim());
+                else if (c == 41) e.widthFactor = Double.parseDouble(tok[1].trim());
+                else if (c == 7) e.styleName = tok[1].trim();
+                else if (c == 72) e.hJustify = Integer.parseInt(tok[1].trim());
+                else if (c == 74) e.vJustify = Integer.parseInt(tok[1].trim());
+                else if (c == 70 && (Integer.parseInt(tok[1].trim()) & 1) != 0) e.visible = false;   // invisible attribute
+            } catch (NumberFormatException ignored) {}
+            idx++;
+        }
+        if (e.hJustify != 3 && e.hJustify != 5 && !Double.isNaN(e.secondX) && !Double.isNaN(e.secondY)
+                && (e.hJustify > 0 || e.vJustify > 0)
+                && (Math.abs(e.secondX - e.x) > 1e-6 || Math.abs(e.secondY - e.y) > 1e-6)) {
+            e.x = e.secondX;
+            e.y = e.secondY;
+        }
+        return idx;
+    }
+
+    /** 3DFACE -> closed polyline of its (distinct) corners, drawn as an outline. */
+    static int parseFaceEntity(List<String[]> tokens, int idx, PolylineEntity e) {
+        double[] xs = new double[4], ys = new double[4];
+        boolean[] has = new boolean[4];
+        while (idx < tokens.size() && !tokens.get(idx)[0].equals("0")) {
+            String[] tok = tokens.get(idx);
+            applyCommonCode(tok, e);
+            try {
+                int c = Integer.parseInt(tok[0].trim());
+                if (c >= 10 && c <= 13) { xs[c - 10] = Double.parseDouble(tok[1].trim()); has[c - 10] = true; }
+                else if (c >= 20 && c <= 23) { ys[c - 20] = Double.parseDouble(tok[1].trim()); }
+            } catch (NumberFormatException ignored) {}
+            idx++;
+        }
+        for (int i = 0; i < 4; i++) {
+            if (!has[i]) continue;
+            if (!e.vertices.isEmpty()) {
+                double[] last = e.vertices.get(e.vertices.size() - 1);
+                if (Math.abs(last[0] - xs[i]) < 1e-9 && Math.abs(last[1] - ys[i]) < 1e-9) continue;
+            }
+            e.vertices.add(new double[]{xs[i], ys[i], 0});
+        }
+        e.closed = true;
+        return idx;
+    }
+
+    static int parsePointEntity(List<String[]> tokens, int idx, PointEntity e) {
+        while (idx < tokens.size() && !tokens.get(idx)[0].equals("0")) {
+            String[] tok = tokens.get(idx);
+            applyCommonCode(tok, e);
+            try {
+                int c = Integer.parseInt(tok[0].trim());
+                if (c == 10) e.x = Double.parseDouble(tok[1].trim());
+                else if (c == 20) e.y = Double.parseDouble(tok[1].trim());
             } catch (NumberFormatException ignored) {}
             idx++;
         }
@@ -5119,31 +5307,8 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                 }
             }
             
-            // --- Step 3: Generate SVG in memory ---
-            LOG.info("Generating SVG...");
-            String svg;
-            try {
-                // Render the complete drawing extents on the established
-                // dynamic canvas. Worksheet-only cropping changes the relative
-                // scale and placement of details against the scrutiny table.
-                svg = generateSvg(doc, width, height);
-            } catch (Exception e) {
-                LOG.error("Failed to generate SVG from DXF: {}", e.getMessage(), e);
-                throw new Exception("SVG generation failed: " + e.getMessage(), e);
-            }
-            
-            // sanitize before handing to Batik
-            LOG.info("Sanitizing SVG paths...");
-            svg = sanitizeSvgPaths(svg);
-
-            // --- Step 4: Convert SVG → PDF ---
-            LOG.info("Converting SVG to PDF...");
-            try {
-                convertSvgToPdf(svg, outputPdfFile, saveSvg);
-            } catch (Exception e) {
-                LOG.error("Failed to convert SVG to PDF '{}': {}", outputPdfFile.getAbsolutePath(), e.getMessage(), e);
-                throw new Exception("SVG→PDF conversion failed: " + e.getMessage(), e);
-            }
+            // --- Step 3+4: Generate SVG and convert to PDF (automatic simplified retry on failure) ---
+            renderWithFallback(doc, width, height, outputPdfFile, saveSvg, false);
 
             LOG.info("PDF saved: {}", outputPdfFile.getAbsolutePath());
 
@@ -5197,28 +5362,8 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
             width = renderCanvas[0];
             height = renderCanvas[1];
 
-            // --- Step 3: Generate SVG in memory ---
-            LOG.info("Generating SVG...");
-            String svg;
-            try {
-                svg = generateSvgForWorksheet(doc, width, height);
-            } catch (Exception e) {
-                LOG.error("Failed to generate SVG from DXF: {}", e.getMessage(), e);
-                throw new Exception("SVG generation failed: " + e.getMessage(), e);
-            }
-            
-            // sanitize before handing to Batik
-            LOG.info("Sanitizing SVG paths...");
-            svg = sanitizeSvgPaths(svg);
-
-            // --- Step 4: Convert SVG → PDF ---
-            LOG.info("Converting SVG to PDF...");
-            try {
-                convertSvgToPdf(svg, outputPdfFile, saveSvg);
-            } catch (Exception e) {
-                LOG.error("Failed to convert SVG to PDF '{}': {}", outputPdfFile.getAbsolutePath(), e.getMessage(), e);
-                throw new Exception("SVG→PDF conversion failed: " + e.getMessage(), e);
-            }
+            // --- Step 3+4: Generate SVG and convert to PDF (automatic simplified retry on failure) ---
+            renderWithFallback(doc, width, height, outputPdfFile, saveSvg, true);
 
             LOG.info("PDF saved: {}", outputPdfFile.getAbsolutePath());
 
@@ -5227,6 +5372,59 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
             if (tempDxf != null && tempDxf.exists() && !tempDxf.delete()) {
                 LOG.warn("Temp DXF file not deleted: {}", tempDxf.getAbsolutePath());
                 tempDxf.deleteOnExit();
+            }
+        }
+    }
+
+    /**
+     * Whole-drawing render with a safety net. If rendering fails (including OutOfMemoryError) the drawing is
+     * generated again in SAFE MODE (pattern hatches as boundary only) instead of failing the whole request.
+     */
+    private static void renderWithFallback(DxfDocument doc, int width, int height, File out, boolean saveSvg,
+            boolean worksheet) throws Exception {
+        try {
+            renderOnce(doc, width, height, out, saveSvg, worksheet);
+        } catch (Exception | OutOfMemoryError first) {
+            LOG.warn("DXF render failed ({}). Retrying in safe mode (simplified hatches).", String.valueOf(first));
+            doc.safeMode = true;
+            try {
+                renderOnce(doc, width, height, out, saveSvg, worksheet);
+            } catch (OutOfMemoryError oom) {
+                throw new Exception("SVG/PDF generation ran out of memory even in safe mode", oom);
+            }
+        }
+    }
+
+    private static void renderOnce(DxfDocument doc, int width, int height, File out, boolean saveSvg,
+            boolean worksheet) throws Exception {
+        LOG.info("Generating SVG...");
+        String svg;
+        try {
+            svg = worksheet ? generateSvgForWorksheet(doc, width, height) : generateSvg(doc, width, height);
+        } catch (Exception e) {
+            LOG.error("Failed to generate SVG from DXF: {}", e.getMessage(), e);
+            throw new Exception("SVG generation failed: " + e.getMessage(), e);
+        }
+        svg = sanitizeSvgPaths(svg);
+        LOG.info("Converting SVG to PDF...");
+        try {
+            convertSvgToPdf(svg, out, saveSvg);
+        } catch (Exception e) {
+            LOG.error("Failed to convert SVG to PDF '{}': {}", out.getAbsolutePath(), e.getMessage(), e);
+            throw new Exception("SVG→PDF conversion failed: " + e.getMessage(), e);
+        }
+    }
+
+    private static void renderPageWithFallback(DxfDocument doc, double[] paperBounds, int w, int h, File out) throws Exception {
+        try {
+            convertSvgToPdf(sanitizeSvgPaths(generateSvg(doc, paperBounds, w, h)), out, false);
+        } catch (Exception | OutOfMemoryError first) {
+            LOG.warn("DXF page render failed ({}). Retrying in safe mode (simplified hatches).", String.valueOf(first));
+            doc.safeMode = true;
+            try {
+                convertSvgToPdf(sanitizeSvgPaths(generateSvg(doc, paperBounds, w, h)), out, false);
+            } catch (OutOfMemoryError oom) {
+                throw new Exception("Page render ran out of memory even in safe mode", oom);
             }
         }
     }
@@ -5750,10 +5948,9 @@ private static boolean currentExtentsContain(double[] box, DxfDocument doc) {
                 double padY = (sheet[3] - sheet[1]) * margin;
                 double[] paperBounds = new double[]{sheet[0] - padX, sheet[1] - padY,
                         sheet[2] + padX, sheet[3] + padY};
-                String svg = sanitizeSvgPaths(generateSvg(doc, paperBounds, dim[0], dim[1]));
                 File f = File.createTempFile("page_" + (i + 1) + "_", ".pdf");
                 temps.add(f);
-                convertSvgToPdf(svg, f, false);
+                renderPageWithFallback(doc, paperBounds, dim[0], dim[1], f);
             }
             PDFMergerUtility merger = new PDFMergerUtility();
             merger.setDestinationFileName(outputPdf.getAbsolutePath());

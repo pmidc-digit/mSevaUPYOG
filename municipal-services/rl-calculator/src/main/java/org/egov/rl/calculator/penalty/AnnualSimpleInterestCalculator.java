@@ -14,7 +14,10 @@ import java.time.temporal.ChronoUnit;
  * <p>Formula:
  * <pre>
  *   lateDays = max(0, DAYS_BETWEEN(dueDate, paymentDate))
- *   penalty  = rentAmount × (annualRate / 100) × (lateDays / 365)
+ *   if isPerDayPenaltyApplied is false:
+ *     penalty = rentAmount × (annualRate / 100)
+ *   else:
+ *     penalty = rentAmount × (annualRate / 100) × (lateDays / 365)
  * </pre>
  *
  * <p>Validation & Rules:
@@ -64,11 +67,19 @@ public class AnnualSimpleInterestCalculator implements PenaltyCalculator {
             return BigDecimal.ZERO;
         }
 
-        // Formula: rentAmount * annualRate * totalLateDays / (100 * 365)
-        BigDecimal penalty = rentAmount
-                .multiply(annualRate)
-                .multiply(BigDecimal.valueOf(totalLateDays))
-                .divide(BigDecimal.valueOf(36500), 2, RoundingMode.HALF_UP);
+        BigDecimal penalty;
+        if (config != null && Boolean.FALSE.equals(config.getIsPerDayPenaltyApplied())) {
+            // Flat percentage (days and 365 excluded): rentAmount * annualRate / 100
+            penalty = rentAmount
+                    .multiply(annualRate)
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        } else {
+            // Daily pro-rated: rentAmount * annualRate * totalLateDays / (100 * 365)
+            penalty = rentAmount
+                    .multiply(annualRate)
+                    .multiply(BigDecimal.valueOf(totalLateDays))
+                    .divide(BigDecimal.valueOf(36500), 2, RoundingMode.HALF_UP);
+        }
 
         // Apply Min / Max limits
         if (config != null) {

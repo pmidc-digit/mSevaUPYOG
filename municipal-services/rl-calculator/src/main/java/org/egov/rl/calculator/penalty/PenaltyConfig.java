@@ -57,6 +57,9 @@ public class PenaltyConfig {
     @JsonProperty("compound")
     private Boolean compound;
 
+    @JsonProperty("isPerDayPenaltyApplied")
+    private Boolean isPerDayPenaltyApplied;
+
     @JsonProperty("fromFY")
     private String fromFY;
 

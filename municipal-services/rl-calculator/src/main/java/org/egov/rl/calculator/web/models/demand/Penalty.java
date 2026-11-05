@@ -32,6 +32,9 @@ public class Penalty {
     @JsonProperty("maxAmount")
     private BigDecimal maxAmount;
 
+    @JsonProperty("isPerDayPenaltyApplied")
+    private Boolean isPerDayPenaltyApplied;
+
     @JsonProperty("fromFY")
     private String fromFY;
 

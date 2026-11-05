@@ -1026,6 +1026,7 @@ public class DemandService {
 							.applicableAfterDays(penaltyConfig.getApplicableAfterDays())
 							.minAmount(penaltyConfig.getMinAmount())
 							.maxAmount(penaltyConfig.getMaxAmount())
+							.isPerDayPenaltyApplied(penaltyConfig.getIsPerDayPenaltyApplied())
 							.build();
 				}
 
@@ -1081,8 +1082,15 @@ public class DemandService {
 					Penalty penaltySlab = penaltySlabs.get(0);
 					if (penaltySlab.getRate() != null && penaltySlab.getRate().compareTo(BigDecimal.ZERO) > 0
 							&& (penaltySlab.getApplicableAfterDays() == null || daysLate >= penaltySlab.getApplicableAfterDays())) {
-						BigDecimal fallback = penaltyPrincipalAmount.multiply(penaltySlab.getRate())
-								.divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+						BigDecimal fallback;
+						if (Boolean.TRUE.equals(penaltySlab.getIsPerDayPenaltyApplied())) {
+							fallback = penaltyPrincipalAmount.multiply(penaltySlab.getRate())
+									.multiply(BigDecimal.valueOf(daysLate))
+									.divide(BigDecimal.valueOf(36500), 2, RoundingMode.HALF_UP);
+						} else {
+							fallback = penaltyPrincipalAmount.multiply(penaltySlab.getRate())
+									.divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+						}
 						if (penaltySlab.getMinAmount() != null && fallback.compareTo(penaltySlab.getMinAmount()) < 0) {
 							fallback = penaltySlab.getMinAmount();
 						}

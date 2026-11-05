@@ -68,6 +68,7 @@ const formatDobForInput = (dob) => {
   }
   if (typeof dob === "string") {
     const trimmed = dob.trim();
+    if (!trimmed || trimmed === "null" || trimmed === "undefined" || trimmed === "NA") return "";
     if (/^\d{10,13}$/.test(trimmed)) {
       const d = new Date(Number(trimmed));
       if (!isNaN(d.getTime())) {

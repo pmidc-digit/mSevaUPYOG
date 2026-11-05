@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   FormStep,
   TextInput,
@@ -20,13 +20,35 @@ import {
   TextArea,
   MobileNumber,
   OTPVerifier,
-  Modal
+  Modal,
+  Table,
+  StatusTable,
+  CardSectionHeader,
+  CardLabelError
 } from "@mseva/digit-ui-react-components";
 import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoch } from "../utils";
 import Timeline from "../components/Timeline";
 import cloneDeep from "lodash/cloneDeep";
 import CustomUploadFile from "../components/CustomUploadFile";
 import { LoaderNew } from "../components/LoaderNew";
+import LayoutOwnerSearchModal from "./LayoutOwnerSearchModal";
+
+const EditIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#F47738">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M14.06 9.02l.92.92L5.92 19H5v-.92l9.06-9.06M17.66 3c-.25 0-.51.1-.7.29l-1.83 1.83 3.75 3.75 1.83-1.83c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.2-.2-.45-.29-.71-.29zm-3.6 3.19L3 17.25V21h3.75L17.81 9.94l-3.75-3.75z" />
+  </svg>
+);
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return String(dateString);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
 
 const Close = () => (
@@ -74,6 +96,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const [errors, setErrors] = useState({})
   const [ownerRoleCheck, setOwnerRoleCheck] = useState(null) // Declare ownerRoleCheck variable
   const [activeOtpIndex, setActiveOtpIndex] = useState(null)
+  const [showOwnerModal, setShowOwnerModal] = useState(false);
+  const [editingOwner, setEditingOwner] = useState(null);
 
   const setDocumentFile = (index, file) => {
 
@@ -256,8 +280,17 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     const landOwners = currentStepData?.createdResponse?.landInfo?.owners || [];
     const additionalOwners = currentStepData?.createdResponse?.additionalDetails?.owners || [];
 
-    const plotLandOwners = currentStepData?.PlotDetails?.landInfo?.owners || [];
-    const plotAdditionalOwners = currentStepData?.PlotDetails?.additionalDetails?.owners || [];
+    const plotLandOwners =
+      currentStepData?.PlotDetails?.landInfo?.owners ||
+      formData?.LicenseData?.landInfo?.owners ||
+      formData?.PlotDetails?.landInfo?.owners ||
+      formData?.createdResponse?.landInfo?.owners ||
+      [];
+    const plotAdditionalOwners =
+      currentStepData?.PlotDetails?.additionalDetails?.owners ||
+      formData?.PlotDetails?.additionalDetails?.owners ||
+      formData?.createdResponse?.additionalDetails?.owners ||
+      [];
 
     if (landOwners?.length > 0) {
       owners = landOwners?.map((item, idx) => {
@@ -266,7 +299,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           ...matchingAdditional,
           ...item,
           ownerId: item?.ownerId || matchingAdditional?.ownerId,
-          dob: Digit.Utils.date.getDate(item?.dob || matchingAdditional?.dob),
+          dob: (item?.dob || matchingAdditional?.dob) ? Digit.Utils.date.getDate(item?.dob || matchingAdditional?.dob) : null,
           isPrimaryOwner: item?.isPrimaryOwner === "true" || item?.isPrimaryOwner === true || matchingAdditional?.isPrimaryOwner === true || matchingAdditional?.isPrimaryOwner === "true",
           additionalDetails: {
             ...(matchingAdditional?.additionalDetails || {}),
@@ -279,7 +312,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       owners = additionalOwners?.map((item) => {
         return {
           ...item,
-          dob: Digit.Utils.date.getDate(item?.dob),
+          dob: item?.dob ? Digit.Utils.date.getDate(item?.dob) : null,
           isPrimaryOwner: item?.isPrimaryOwner === "true" || item?.isPrimaryOwner === true,
           additionalDetails: {
             ...(item?.additionalDetails || {}),
@@ -294,7 +327,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           ...matchingAdditional,
           ...item,
           ownerId: item?.ownerId || matchingAdditional?.ownerId,
-          dob: Digit.Utils.date.getDate(item?.dob || matchingAdditional?.dob),
+          dob: (item?.dob || matchingAdditional?.dob) ? Digit.Utils.date.getDate(item?.dob || matchingAdditional?.dob) : null,
           isPrimaryOwner: item?.isPrimaryOwner === "true" || item?.isPrimaryOwner === true || matchingAdditional?.isPrimaryOwner === true || matchingAdditional?.isPrimaryOwner === "true",
           additionalDetails: {
             ...(matchingAdditional?.additionalDetails || {}),
@@ -307,7 +340,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       owners = plotAdditionalOwners?.map((item) => {
         return {
           ...item,
-          dob: Digit.Utils.date.getDate(item?.dob),
+          dob: item?.dob ? Digit.Utils.date.getDate(item?.dob) : null,
           isPrimaryOwner: item?.isPrimaryOwner === "true" || item?.isPrimaryOwner === true,
           additionalDetails: {
             ...(item?.additionalDetails || {}),
@@ -336,7 +369,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       }
     }else if(ownershipCategory && ownershipCategoryList?.length > 0){
       // Auto-correct: if property has multiple owners, ensure MULTIPLEOWNERS is selected
-      const plotLandOwners = currentStepData?.PlotDetails?.landInfo?.owners || [];
+      const plotLandOwners =
+      currentStepData?.PlotDetails?.landInfo?.owners ||
+      formData?.LicenseData?.landInfo?.owners ||
+      formData?.PlotDetails?.landInfo?.owners ||
+      formData?.createdResponse?.landInfo?.owners ||
+      [];
       if(plotLandOwners.length > 1 && ownershipCategory?.code === "INDIVIDUAL.SINGLEOWNER"){
         const multipleOwnersCategory = ownershipCategoryList.find((item) => item.code === "INDIVIDUAL.MULTIPLEOWNERS");
         if(multipleOwnersCategory) setOwnershipCategory(multipleOwnersCategory);
@@ -412,13 +450,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   useEffect(() => {
     sessionStorage.setItem("ownerFields", JSON.stringify(fields))
-  }, [fields])
+  }, [fields, ownershipCategory])
 
   useEffect(() => {
-    var flag = 0
-    fields.map((ob) => {
+    let flag = 0;
+    const ownersList = fields?.filter((f) => f && (f.name || f.mobileNumber));
+    const ownersToCheck = ownersList?.length > 0 ? ownersList : fields;
+    ownersToCheck?.map((ob) => {
       if (ob?.isPrimaryOwner) flag = 1
-      if (ob?.name && ob?.mobileNumber && ob?.gender) {
+      if (ob?.name && ob?.mobileNumber && (ob?.gender?.code || ob?.gender)) {
         setCanmovenext(false)
       } else {
         setCanmovenext(true)
@@ -428,7 +468,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       if (flag == 1) setCanmovenext(false)
       else setCanmovenext(true)
     }
-  }, [fields])
+  }, [fields, ownershipCategory])
 
   useEffect(() => {
     const values = cloneDeep(fields)
@@ -467,6 +507,298 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       setGenderList(genderFilterTypeMenu)
     }
   }, [genderTypeData])
+
+  const explicitNoProperty =
+    currentStepData?.PlotDetails?.isPropertyAvailable?.value === false ||
+    formData?.PlotDetails?.isPropertyAvailable?.value === false ||
+    currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable === false ||
+    formData?.createdResponse?.additionalDetails?.isPropertyAvailable === false ||
+    currentStepData?.PlotDetails?.isPropertyAvailable === false ||
+    formData?.PlotDetails?.isPropertyAvailable === false;
+
+  const isRegisteredProperty =
+    !explicitNoProperty &&
+    Boolean(
+      currentStepData?.PlotDetails?.isPropertyAvailable?.value === true ||
+      formData?.PlotDetails?.isPropertyAvailable?.value === true ||
+      currentStepData?.createdResponse?.additionalDetails?.isPropertyAvailable === true ||
+      formData?.createdResponse?.additionalDetails?.isPropertyAvailable === true ||
+      currentStepData?.PlotDetails?.isPropertyAvailable === true ||
+      formData?.PlotDetails?.isPropertyAvailable === true ||
+      currentStepData?.cpt?.id ||
+      formData?.cpt?.id ||
+      (currentStepData?.createdResponse?.landInfo?.owners && currentStepData.createdResponse.landInfo.owners.length > 0) ||
+      (currentStepData?.PlotDetails?.landInfo?.owners && currentStepData.PlotDetails.landInfo.owners.length > 0)
+    );
+
+  const handleSetPrimary = (targetIndex) => {
+    setFeilds((prev) =>
+      prev.map((owner, idx) => ({
+        ...owner,
+        isPrimaryOwner: idx === targetIndex,
+      }))
+    );
+  };
+
+  const handleEditOwnerInModal = (ownerField) => {
+    setEditingOwner(ownerField);
+    setShowOwnerModal(true);
+  };
+
+  const propertyDerivedOwners =
+    currentStepData?.PlotDetails?.landInfo?.owners ||
+    currentStepData?.createdResponse?.landInfo?.owners ||
+    currentStepData?.cpt?.details?.owners ||
+    formData?.LicenseData?.landInfo?.owners ||
+    formData?.PlotDetails?.landInfo?.owners ||
+    formData?.createdResponse?.landInfo?.owners ||
+    formData?.data?.bpa?.landInfo?.owners ||
+    formData?.data?.landInfo?.owners ||
+    formData?.cpt?.details?.owners ||
+    formData?.cpt?.owners ||
+    [];
+
+  const hasPropertyOwners = Boolean(
+    isRegisteredProperty ||
+    propertyDerivedOwners?.length > 0 ||
+    (fields && fields.length > 0 && fields.some((f) => f?.name || f?.mobileNumber))
+  );
+
+  const getInitialPropertyOwners = () => {
+    const rawList =
+      fields && fields.length > 0 && fields.some((f) => f?.name || f?.mobileNumber)
+        ? fields
+        : propertyDerivedOwners.length > 0
+        ? propertyDerivedOwners
+        : [];
+
+    if (!rawList || rawList.length === 0) return null;
+
+    return rawList.map((po, idx) => ({
+      ...po,
+      name: po?.name || "",
+      mobileNumber: po?.mobileNumber || "",
+      fatherOrHusbandName: po?.fatherOrHusbandName || "",
+      emailId: po?.emailId || "",
+      permanentAddress: po?.permanentAddress || po?.address || "",
+      address: po?.permanentAddress || po?.address || "",
+      dob: po?.dob
+        ? typeof po?.dob === "string" && po?.dob.includes("-")
+          ? po?.dob
+          : Digit.Utils.date.getDate(po?.dob)
+        : po?.dateOfBirth || "",
+      gender: po?.gender || null,
+      isPrimaryOwner: po?.isPrimaryOwner !== undefined ? po?.isPrimaryOwner : idx === 0,
+      propertyId:
+        po?.propertyId ||
+        currentStepData?.cpt?.id ||
+        currentStepData?.createdResponse?.additionalDetails?.propertyuid ||
+        null,
+      isFromProperty: true,
+      status: true,
+    }));
+  };
+
+  const handleOpenPropertyOwnersWizard = () => {
+    const ownersToComplete = getInitialPropertyOwners();
+
+    if (!ownersToComplete || ownersToComplete.length === 0) {
+      setShowToast({ key: "true", error: true, message: "CS_PT_NO_OWNERS_FOUND" });
+      return;
+    }
+
+    setEditingOwner(ownersToComplete.length > 1 ? ownersToComplete : ownersToComplete[0]);
+    setShowOwnerModal(true);
+  };
+
+  const [hasCompletedWizard, setHasCompletedWizard] = useState(false);
+
+  const hasAutoOpenedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasPropertyOwners && !hasCompletedWizard && !showOwnerModal && !hasAutoOpenedRef.current) {
+      const propOwners = getInitialPropertyOwners();
+      if (propOwners && propOwners.length > 0) {
+        hasAutoOpenedRef.current = true;
+        setEditingOwner(propOwners.length > 1 ? propOwners : propOwners[0]);
+        setShowOwnerModal(true);
+      }
+    }
+  }, [hasPropertyOwners, hasCompletedWizard, showOwnerModal, fields]);
+
+  const handleSelectUserFromModal = (newUserData) => {
+    setShowOwnerModal(false);
+    const wasEditing = editingOwner;
+    setEditingOwner(null);
+    if (!newUserData) return;
+
+    const incomingOwners = Array.isArray(newUserData) ? newUserData : [newUserData];
+    if (incomingOwners.length === 0) return;
+
+    const formattedIncoming = incomingOwners.map((owner, idx) => {
+      const rawGender = owner?.gender?.code || owner?.gender;
+      const matchingGender =
+        genderList?.find((g) => g?.code === rawGender) ||
+        (rawGender ? { code: rawGender, i18nKey: `COMMON_GENDER_${rawGender}` } : null);
+
+      return {
+        ...owner,
+        name: owner?.name || "",
+        gender: matchingGender,
+        mobileNumber: owner?.mobileNumber || "",
+        emailId: owner?.emailId || "",
+        aadharNumber: owner?.aadharNumber || "",
+        dob: owner?.dob
+          ? typeof owner?.dob === "string" && owner?.dob.includes("-")
+            ? owner?.dob
+            : Digit.Utils.date.getDate(owner?.dob)
+          : "",
+        fatherOrHusbandName: owner?.fatherOrHusbandName || "",
+        permanentAddress: owner?.permanentAddress || owner?.address || "",
+        authorizedPerson: owner?.authorizedPerson || "",
+        authorizationLetter: owner?.authorizationLetter || null,
+        isPrimaryOwner:
+          owner?.isPrimaryOwner === true ||
+          owner?.isPrimaryOwner === "true" ||
+          (idx === 0 && incomingOwners.length === 1),
+        ownerId: owner?.ownerId || null,
+        id: owner?.id || null,
+        additionalDetails: {
+          ...(owner?.additionalDetails || {}),
+          documentFile: owner?.additionalDetails?.documentFile || owner?.documentUploadedFiles || null,
+          ownerPhoto: owner?.additionalDetails?.ownerPhoto || owner?.photoUploadedFiles || null,
+          isMobileVerified: true,
+        },
+      };
+    });
+
+    let updatedFields = [];
+    const isInitialBlank = fields.length === 1 && !fields[0]?.name && !fields[0]?.mobileNumber;
+
+    if (Array.isArray(wasEditing) || isInitialBlank) {
+      updatedFields = [...formattedIncoming];
+    } else if (wasEditing && !Array.isArray(wasEditing)) {
+      updatedFields = fields.map((f) => {
+        if (f?.mobileNumber === wasEditing?.mobileNumber || (f?.name === wasEditing?.name && f?.name)) {
+          return formattedIncoming[0];
+        }
+        return f;
+      });
+    } else {
+      const existingIndex = fields.findIndex(
+        (f) => f?.mobileNumber && f?.mobileNumber === formattedIncoming[0]?.mobileNumber
+      );
+      if (existingIndex >= 0) {
+        updatedFields = [...fields];
+        updatedFields[existingIndex] = formattedIncoming[0];
+      } else {
+        updatedFields = [...fields, ...formattedIncoming];
+      }
+    }
+
+    if (updatedFields.length === 1) {
+      updatedFields[0].isPrimaryOwner = true;
+    } else if (!updatedFields.some((f) => f?.isPrimaryOwner)) {
+      updatedFields[0].isPrimaryOwner = true;
+    }
+
+    setFeilds(updatedFields);
+
+    setHasCompletedWizard(true);
+
+    if (updatedFields.length > 1) {
+      const multiCat = ownershipCategoryList.find((cat) => cat?.code?.includes("MULTIPLEOWNERS"));
+      if (multiCat) setOwnershipCategory(multiCat);
+    } else if (updatedFields.length === 1) {
+      const singleCat = ownershipCategoryList.find((cat) => cat?.code?.includes("SINGLEOWNER"));
+      if (singleCat) setOwnershipCategory(singleCat);
+    }
+  };
+
+  const tableColumns = [
+    {
+      Header: t("S.NO"),
+      accessor: "sno",
+      Cell: ({ row }) => row.index + 1,
+    },
+    {
+      Header: t("PRIMARY OWNER"),
+      accessor: "isPrimaryOwner",
+      Cell: ({ row }) => {
+        const isPrimary = row.original?.isPrimaryOwner === true || row.original?.isPrimaryOwner === "true";
+        return (
+          <input
+            type="radio"
+            name="primaryOwnerGroup"
+            checked={isPrimary}
+            onChange={() => handleSetPrimary(row.index)}
+            style={{ cursor: "pointer", width: "16px", height: "16px" }}
+          />
+        );
+      },
+    },
+    {
+      Header: t("APPLICANT NAME"),
+      accessor: "name",
+      Cell: ({ value }) => value || t("CS_NA"),
+    },
+    {
+      Header: t("MOBILE NO"),
+      accessor: "mobileNumber",
+      Cell: ({ value }) => value || t("CS_NA"),
+    },
+    {
+      Header: t("EMAIL ID"),
+      accessor: "emailId",
+      Cell: ({ value }) => (value ? <span style={{ wordBreak: "break-all" }}>{value}</span> : t("CS_NA")),
+    },
+    {
+      Header: t("DOB"),
+      accessor: "dob",
+      Cell: ({ value }) => (value ? formatDate(value) : t("CS_NA")),
+    },
+    {
+      Header: t("GUARDIAN NAME"),
+      accessor: "fatherOrHusbandName",
+      Cell: ({ value }) => value || t("CS_NA"),
+    },
+    {
+      Header: t("ADDRESS"),
+      accessor: "permanentAddress",
+      Cell: ({ value }) => value || t("CS_NA"),
+    },
+    {
+      Header: t("GENDER"),
+      accessor: "gender",
+      Cell: ({ value }) => (typeof value === "object" ? t(value?.i18nKey || value?.code) : t(value) || t("CS_NA")),
+    },
+    {
+      Header: t("ACTIONS"),
+      accessor: "actions",
+      Cell: ({ row }) => (
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <span
+            onClick={() => handleEditOwnerInModal(row.original)}
+            style={{ cursor: "pointer", display: "inline-flex" }}
+            title={t("Edit Owner")}
+          >
+            <EditIcon />
+          </span>
+          {ismultiple && (
+            <span
+              onClick={() => handleRemove(row.index)}
+              style={{ cursor: "pointer", display: "inline-flex" }}
+              title={t("Remove Owner")}
+            >
+              <DeleteIcon fill="#a82227" />
+            </span>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  const activeOwners = fields.filter((f) => f && (f.name || f.mobileNumber));
 
   function selectedValue(value) {
     setOwnershipCategory(value)
@@ -697,12 +1029,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
             return {
               ...item,
               ownerId,
-              dob: Digit.Utils.date.getDate(item?.dob)
+              dob: item?.dob ? Digit.Utils.date.getDate(item?.dob) : null
             }
           }
           return {
             ...item,
-            dob: Digit.Utils.date.getDate(item?.dob)
+            dob: item?.dob ? Digit.Utils.date.getDate(item?.dob) : null
           }
         });
         setFeilds(updatedValues)
@@ -721,10 +1053,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const getUserData = async (data, tenant) => {
     let flag = false
     let userresponse = []
-    userresponse = fields?.map((ob, indexValue) => {
+    const listToSearch = (data?.length > 0 ? data : (activeOwners?.length > 0 ? activeOwners : fields))?.filter((f) => f && (f.name || f.mobileNumber));
+    userresponse = (listToSearch?.length > 0 ? listToSearch : fields)?.map((ob, indexValue) => {
       return Digit.UserService.userSearch(
         Digit.ULBService.getStateId(),
-        { userName: fields?.[indexValue]?.mobileNumber },
+        { userName: ob?.mobileNumber },
         {},
       ).then((ob) => {
         return ob
@@ -805,13 +1138,14 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       if (
         owner?.isPrimaryOwner &&
         owner?.name &&
+        (currentStepData?.BasicDetails?.applicantName || currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.applicantName || currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.applicantName) &&
         owner.name.trim().toLowerCase() !==
-          currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.applicantName?.trim()?.toLowerCase()
+          (currentStepData?.BasicDetails?.applicantName || currentStepData?.BasicDetails?.edcrDetails?.planDetail?.planInformation?.applicantName || currentStepData?.BasicDetails?.edcrDetails?.planDetail?.edcrRequest?.applicantName || "")?.trim()?.toLowerCase()
       ) {
         newErrors[`name_${index}`] = t("PRIMARY_OWNER_APPLICANT_NAME_VALIDATION_MESSAGE");
         isValid = false;
       }
-      if (!owner?.gender?.code) {
+      if (!owner?.gender?.code && !owner?.gender) {
         newErrors[`gender_${index}`] = t("Gender is required");
         isValid = false;
       }
@@ -860,6 +1194,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     });
 
     setErrors((prev) => ({ ...prev, ...newErrors }));
+    if (!isValid) {
+      const firstError = Object.values(newErrors)[0];
+      if (firstError) {
+        setShowToast({ key: "true", error: true, message: firstError });
+      }
+    }
     return isValid;
   };
 
@@ -868,7 +1208,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const goNext = async () => {
     setError(null)
     setErrors(null)
-    const isValid = validateOwners(fields, ownershipCategory, setErrors);
+    const ownersToValidate = activeOwners?.length > 0 ? activeOwners : fields.filter((f) => f && (f.name || f.mobileNumber));
+    const isValid = validateOwners(ownersToValidate, ownershipCategory, setErrors);
     if (!isValid) {
       // window.scrollTo(0, 0);
       return;
@@ -876,7 +1217,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
     // Validation: check that each owner's mobile number is verified
     let allVerified = true;
-    fields?.forEach((owner) => {
+    ownersToValidate?.forEach((owner) => {
       if (!owner?.additionalDetails?.isMobileVerified) {
         allVerified = false;
       }
@@ -887,7 +1228,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       return;
     }
     setApiLoading(true);
-    const userresponse = await getUserData()
+    const userresponse = await getUserData(ownersToValidate)
 
     // if (!moveforward) {
     //   setApiLoading(false);
@@ -895,7 +1236,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     // }
 
 
-    let newFields = [...fields];
+    let newFields = ownersToValidate?.length > 0 ? [...ownersToValidate] : [...fields];
     if (userresponse?.length > 0) {
       newFields = newFields?.map((item, index) => {
           if (userresponse?.[index]?.responseInfo?.status === "200") {
@@ -1027,10 +1368,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
 
   function getCanMoveNextMultiple() {
-    let flag = 0
-    fields &&
-      fields?.map((ob) => {
-        if (flag !== 1 && (!ob?.name || !ob?.mobileNumber || !ob?.gender?.code)) flag = 1
+    let flag = 0;
+    const ownersToCheck = activeOwners?.length > 0 ? activeOwners : fields;
+    ownersToCheck?.map((ob) => {
+        if (flag !== 1 && (!ob?.name || !ob?.mobileNumber || (!ob?.gender?.code && !ob?.gender))) flag = 1
       })
     if (flag == 0) return false
     else return true
@@ -1079,7 +1420,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         onSelect={goNext}
         onSkip={onSkip}
         t={t}
-        isDisabled={canmovenext || getCanMoveNextMultiple() || !ownershipCategory || isDisable}
+        isDisabled={(hasPropertyOwners && !hasCompletedWizard) || canmovenext || getCanMoveNextMultiple() || !ownershipCategory || isDisable}
         // forcedError={t(error)}
       >
         {!isLoading ? (
@@ -1099,7 +1440,65 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
               />
               <ErrorMessage message={errors[`ownershipCategory`]} />
             </div>
-            {fields.map((field, index) => {
+
+
+            {/* Selected Owners Table */}
+            {hasCompletedWizard && activeOwners.length > 0 && (
+              <div className="obps-page-components-layout-new-applicant-details--style-7" style={{ marginTop: "20px" }}>
+                <CardSectionHeader className="card-section-header obps-page-components-layout-new-applicant-details--style-8">
+                  {t("SELECTED OWNERS DETAILS")}
+                </CardSectionHeader>
+                <StatusTable>
+                  <Table
+                    className="customTable table-border-style"
+                    t={t}
+                    data={activeOwners}
+                    columns={tableColumns}
+                    getCellProps={() => ({ style: {} })}
+                    disableSort={true}
+                    autoSort={false}
+                    manualPagination={false}
+                    isPaginationRequired={false}
+                  />
+                </StatusTable>
+              </div>
+            )}
+
+            {/* Validation Errors for Owners */}
+            {hasCompletedWizard && activeOwners.length === 0 && (
+              <CardLabelError className="obps-page-components-layout-new-applicant-details--style-9">
+                {t("AT LEAST ONE OWNER REQUIRED")}
+              </CardLabelError>
+            )}
+
+            {hasCompletedWizard && ismultiple && activeOwners.length === 1 && (
+              <CardLabelError className="obps-page-components-layout-new-applicant-details--style-10">
+                {t("MULTIPLE OWNER TYPE REQUIRES MORE THAN ONE OWNER")}
+              </CardLabelError>
+            )}
+
+            {/* Add Owner Button */}
+            {(!ismultiple && activeOwners.length >= 1 ? false : true) && (
+              <div className="obps-page-components-layout-new-applicant-details--style-11">
+                <div
+                  onClick={() => {
+                    const propOwners = getInitialPropertyOwners();
+                    if (hasPropertyOwners && !hasCompletedWizard && propOwners && propOwners.length > 0) {
+                      setEditingOwner(propOwners.length > 1 ? propOwners : propOwners[0]);
+                      setShowOwnerModal(true);
+                    } else {
+                      setEditingOwner(null);
+                      setShowOwnerModal(true);
+                    }
+                  }}
+                  className="obps-page-components-layout-new-applicant-details--style-12"
+                >
+                  + {t("BPA_ADD_OWNER")}
+                </div>
+              </div>
+            )}
+
+            {false && fields.map((field, index) => {
               return (
                 <div key={`${field}-${index}`}>
                   {ismultiple && (
@@ -1277,7 +1676,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                 </div>
               )
             })}
-            {ismultiple ? (
+            {false && ismultiple ? (
               <div>
                 <div className="bpa-owner-add-owner-row">
                   <button type="button" className="bpa-owner-add-owner-button" onClick={() => handleAdd()}>
@@ -1293,7 +1692,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       </FormStep>
       <ActionBar>
         <SubmitBar label="Back" className="bpa-owner-submit-back" onSubmit={onGoBack} />
-        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading || canmovenext || getCanMoveNextMultiple() || !ownershipCategory || isDisable} />}
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={(hasPropertyOwners && !hasCompletedWizard) || apiLoading || canmovenext || getCanMoveNextMultiple() || !ownershipCategory || isDisable} />}
       </ActionBar>
       {showToast && (
         <Toast
@@ -1319,6 +1718,26 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
             }}
           />
         </Modal>
+      )}
+      {showOwnerModal && (
+        <LayoutOwnerSearchModal
+          closeModal={() => {
+            setShowOwnerModal(false);
+            setEditingOwner(null);
+          }}
+          onSelectUser={handleSelectUserFromModal}
+          initialMobileNumber={editingOwner && !Array.isArray(editingOwner) ? editingOwner?.mobileNumber : ""}
+          editingOwner={editingOwner}
+          existingOwners={activeOwners}
+          isPrimaryOwner={
+            editingOwner
+              ? (Array.isArray(editingOwner) ? false : (editingOwner.isPrimaryOwner === true || editingOwner.isPrimaryOwner === "true"))
+              : (activeOwners.length === 0 || !activeOwners.some((f) => f.isPrimaryOwner))
+          }
+          uploadModule="BPA"
+          showOwnershipShare={false}
+          showPanDetails={false}
+        />
       )}
     </div>
 

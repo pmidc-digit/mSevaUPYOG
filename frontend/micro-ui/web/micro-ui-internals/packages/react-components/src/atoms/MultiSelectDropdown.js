@@ -101,7 +101,7 @@ const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, def
   const Menu = () => {
     const filteredOptions =
       searchQuery?.length > 0 ? options.filter((option) => t(option[optionsKey]&&typeof option[optionsKey]=="string" && option[optionsKey].toUpperCase()).toLowerCase().indexOf(searchQuery.toLowerCase()) >= 0) : options;
-    return filteredOptions?.map((option, index) => <MenuItem option={option} key={index} index={index} />);
+    return filteredOptions?.map((option, index) => MenuItem({ option, index }));
   };
 
   return (
@@ -109,13 +109,13 @@ const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, def
       <div className={`master${active ? `-active` : ``}`}>
         <input className="cursorPointer" type="text" onKeyDown={keyChange} onFocus={() => setActive(true)} value={searchQuery} onChange={onSearch} />
         <div className="label">
-          <p>{alreadyQueuedSelectedState.length > 0 ? `${isSurvey? alreadyQueuedSelectedState?.filter((ob) => ob?.i18nKey !== undefined).length : alreadyQueuedSelectedState.length} ${defaultUnit}` : defaultLabel}</p>
+          <p style={active ? { visibility: "hidden" } : {}}>{alreadyQueuedSelectedState.length > 0 ? `${isSurvey? alreadyQueuedSelectedState?.filter((ob) => ob?.i18nKey !== undefined).length : alreadyQueuedSelectedState.length} ${defaultUnit}` : defaultLabel}</p>
           <ArrowDown />
         </div>
       </div>
       {active ? (
         <div className="server" id="jk-dropdown-unique" style={ServerStyle?ServerStyle:{}}>
-          <Menu />
+          {Menu()}
         </div>
       ) : null}
     </div>

@@ -122,10 +122,18 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
         applicationData.Employees[0]["documents"].push(documents);
       }
 
-      set(Employees[0], 'deactivationDetails[0].effectiveFrom', new Date()?.getTime());
-      set(Employees[0], 'deactivationDetails[0].orderNo', data?.orderNo);
-      set(Employees[0], 'deactivationDetails[0].reasonForDeactivation', data?.reasonForDeactivation);
-      set(Employees[0], 'deactivationDetails[0].remarks', data?.remarks);
+      const existingDeactivation = Employees[0]?.deactivationDetails?.[0];
+      Employees[0].deactivationDetails = [
+        {
+          ...(existingDeactivation?.id && { id: existingDeactivation.id }),
+          reasonForDeactivation: data?.reasonForDeactivation,
+          orderNo: data?.orderNo || "",
+          remarks: data?.remarks || "",
+          effectiveFrom: new Date().getTime(),
+          tenantId: Employees[0]?.tenantId,
+          ...(existingDeactivation?.auditDetails && { auditDetails: existingDeactivation.auditDetails }),
+        },
+      ];
 
       Employees[0].isActive = false;
       history.replace("/digit-ui/employee/hrms/response", { Employees, key: "UPDATE", action: "DEACTIVATION" });

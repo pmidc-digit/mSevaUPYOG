@@ -197,6 +197,68 @@ public class Plan implements Serializable {
     
     private List<Measurement> plotFrontageList = new ArrayList<>();
     
+    private List<PageLayoutInfo> pageLayouts = new ArrayList<>();
+    
+    private static volatile boolean workSheetValidationEnabled;
+    
+    private static volatile boolean pagesizeValidationEnabled;
+          
+    public static boolean isPagesizeValidationEnabled() {
+		return pagesizeValidationEnabled;
+	}
+
+	public static void setPagesizeValidationEnabled(boolean pagesizeValidationEnabled) {
+		Plan.pagesizeValidationEnabled = pagesizeValidationEnabled;
+	}
+
+	public static boolean isWorkSheetValidationEnabled() {
+		return workSheetValidationEnabled;
+	}
+
+	public static void setWorkSheetValidationEnabled(boolean workSheetValidationEnabled) {
+		Plan.workSheetValidationEnabled = workSheetValidationEnabled;
+	}
+
+
+	private String paperSize;
+    private Integer drawingScale;
+    
+    public String getPaperSize() {
+		return paperSize;
+	}
+
+	public void setPaperSize(String paperSize) {
+		this.paperSize = paperSize;
+	}
+
+	public Integer getDrawingScale() {
+		return drawingScale;
+	}
+
+	public void setDrawingScale(Integer drawingScale) {
+		this.drawingScale = drawingScale;
+	}
+
+
+	private List<Measurement> pageSize = new ArrayList<>();
+
+    public List<Measurement> getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(List<Measurement> pageSize) {
+		this.pageSize = pageSize;
+	}
+	
+
+    public List<PageLayoutInfo> getPageLayouts() {
+        return pageLayouts;
+    }
+
+    public void setPageLayouts(List<PageLayoutInfo> pageLayouts) {
+        this.pageLayouts = pageLayouts;
+    }
+    
 
 	public List<Measurement> getPlotFrontageList() {
 		return plotFrontageList;

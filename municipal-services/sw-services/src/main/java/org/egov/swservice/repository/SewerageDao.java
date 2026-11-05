@@ -7,6 +7,8 @@ import org.egov.swservice.web.models.EncryptionCount;
 import org.egov.swservice.web.models.SearchCriteria;
 import org.egov.swservice.web.models.SewerageConnection;
 import org.egov.swservice.web.models.SewerageConnectionRequest;
+import org.egov.swservice.web.models.UpdateBillStatusReq;
+import org.egov.swservice.web.models.UpdateDemandPayerRequest;
 
 public interface SewerageDao {
 	void saveSewerageConnection(SewerageConnectionRequest sewerageConnectionRequest);
@@ -31,4 +33,9 @@ public interface SewerageDao {
 	void updateEncryptionStatus(EncryptionCount encryptionCount);
 
 	EncryptionCount getLastExecutionDetail(SearchCriteria criteria);
+
+    void updateOldBillStatus(UpdateBillStatusReq updateBillStatusReq);
+
+    void updatePayerIDForDemand(UpdateDemandPayerRequest updateDemandPayerRequest);
+
 }

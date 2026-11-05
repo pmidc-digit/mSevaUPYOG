@@ -102,6 +102,9 @@ import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.edcr.mdms.filter.MdmsFilter;
+import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.edcr.constants.DxfFileConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -165,13 +168,30 @@ public class PlotFrontage extends FeatureProcess {
             		mostRestrictiveOccupancy.getSubtype()!=null &&
             		mostRestrictiveOccupancy.getSubtype().getCode()!=null) {            	
             	String subType = mostRestrictiveOccupancy.getSubtype().getCode();
-            	if(F_MTP.equals(subType) || F_MIP.equals(subType) || A_AF.equals(subType)) {
+            	if(F_MTP.equals(subType) || F_MIP.equals(subType) || A_AF.equals(subType)
+            			|| F_PFSF.equalsIgnoreCase(subType)
+						|| F_PFST.equalsIgnoreCase(subType)
+						|| F_PFSS.equalsIgnoreCase(subType)
+						|| F_PS.equalsIgnoreCase(subType)
+						|| F_CNGS.equalsIgnoreCase(subType)
+						) {
             		if (F_MTP.equalsIgnoreCase(subType)) {
                 		permissableFrontage = BigDecimal.valueOf(24.00);
     				} else if (F_MIP.equalsIgnoreCase(subType)) {				    
     					permissableFrontage = BigDecimal.valueOf(21.33);
     				}else if (A_AF.equals(subType)) {
     					permissableFrontage = BigDecimal.valueOf(18.00);
+    				}else if (
+    						F_PFSF.equalsIgnoreCase(subType)
+    						|| F_PFST.equalsIgnoreCase(subType)
+    						|| F_PFSS.equalsIgnoreCase(subType)
+    						|| F_PS.equalsIgnoreCase(subType)
+    						|| F_CNGS.equalsIgnoreCase(subType)
+    						) {
+    					Object masterMdmsData = pl.getMdmsMasterData().get("masterMdmsData");
+
+    					permissableFrontage = BpaMdmsUtil
+    							.extractMdmsValue(masterMdmsData, MdmsFilter.MIN_PLOT_FRONTAGE, BigDecimal.class).orElse(null);
     				}
                 	
                 	if (pl.getPlotFrontageList() != null) {

@@ -232,19 +232,17 @@ public class ExtractService {
 			}
 
 			if (rule != null) {
-				LOG.info("Got bean ..." + rule.getClass().getSimpleName());
+				String extractClassName = rule.getClass().getSimpleName();
+				LOG.info("Got bean ..." + extractClassName);
 				try {
 					rule.extract(planDetail);
 				} catch (Exception e) {
 					String str = ruleClass.getRuleClass().getSimpleName();
-//					planDetail.addError("msg.error.failed.on.extraction",
-//							"Please contact the adminstrator for the further information. The plan is failing while extracting data from plan in the feature "
-//									+ rule);
-					String errorFeatureKey = "Error in "+ str +" extraction";
-					planDetail.addError(errorFeatureKey,
-							"The plan is failing while extracting data from plan in the "+ str);
-					// FULL STACKTRACE logged
-                    LOG.error("Exception while processing feature: {}", str, e);
+					String friendlyFeature = humanizeFeatureName(str);
+					String friendlyMsg = buildUserFriendlyExtractorMessage(extractClassName, str, e);
+					planDetail.addError(friendlyFeature, friendlyMsg);
+					// FULL STACKTRACE logged with exact extract class name
+					LOG.error("Exception while processing feature in extract class [{}]: {}", extractClassName, e.getMessage(), e);
 				}
 			} else
 				LOG.error("Extract Api is not defined for " + ruleClass.getRuleClass());
@@ -423,6 +421,41 @@ public class ExtractService {
 		LOG.info("extracted plotArea : " + area);
 		LOG.info("exit extractPlotDetails");
 		return area;
+	}
+
+	private String humanizeFeatureName(String name) {
+		if (name == null || name.isEmpty()) return "Drawing Feature";
+		String clean = name.replaceAll("Extract$", "").replaceAll("Feature$", "").replaceAll("Service$", "");
+		return clean.replaceAll("(?<=[a-z])(?=[A-Z])", " ").trim();
+	}
+
+	private String buildUserFriendlyExtractorMessage(String extractClassName, String featureName, Throwable e) {
+		String featureLabel = humanizeFeatureName(featureName);
+		if (e instanceof NullPointerException) {
+			if (extractClassName.contains("PlanInfo")) {
+				return "Plan Information not defined into the plan.";
+			} else if (extractClassName.contains("GeneralStair") || extractClassName.contains("FireStair")) {
+				return featureLabel + " not defined into the plan.";
+			} else if (extractClassName.contains("Far")) {
+				return "Floor details not defined into the plan.";
+			} else if (extractClassName.contains("RoofTank") || extractClassName.contains("Chimney")) {
+				return featureLabel + " not defined into the plan.";
+			} else if (extractClassName.contains("Ramp")) {
+				return "Ramp details not defined into the plan.";
+			} else if (extractClassName.contains("WaterTank") || extractClassName.contains("RainWater")) {
+				return featureLabel + " not defined into the plan.";
+			} else {
+				return featureLabel + " not defined into the plan.";
+			}
+		} else if (e instanceof ArithmeticException) {
+			return "Calculation for " + featureLabel + " failed because required dimension cannot be 0 in the plan.";
+		} else if (e instanceof NumberFormatException) {
+			return "Dimension text for " + featureLabel + " not defined correctly into the plan.";
+		} else if (e.getMessage() != null && !e.getMessage().trim().isEmpty() && !e.getMessage().equalsIgnoreCase("null")) {
+			return e.getMessage().trim();
+		} else {
+			return featureLabel + " not defined into the plan.";
+		}
 	}
 
 }

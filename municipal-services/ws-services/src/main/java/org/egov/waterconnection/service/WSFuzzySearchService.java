@@ -88,10 +88,10 @@ public class WSFuzzySearchService {
         List<WaterConnection> orderedConnections = new LinkedList<>();
 
         if (!CollectionUtils.isEmpty(connections)) {
-            Map<String, WaterConnection> idToConnectionMap = new LinkedHashMap<>();
+            Map<String, List<WaterConnection>> idToConnectionMap = new LinkedHashMap<>();
 
-            // Map connections by their business identifier (Connection Number)
-            connections.forEach(conn -> idToConnectionMap.put(conn.getConnectionNo(), conn));
+            // Map connections by their business identifier (Connection Number) to a list of connection objects
+            connections.forEach(conn -> idToConnectionMap.computeIfAbsent(conn.getConnectionNo(), k -> new ArrayList<>()).add(conn));
 
             try {
                 List<Map<String, Object>> data = JsonPath.read(esResponse, ES_DATA_PATH);
@@ -100,7 +100,7 @@ public class WSFuzzySearchService {
                     for (Map<String, Object> map : data) {
                         String connNo = JsonPath.read(map, "$.connectionNo");
                         if (idToConnectionMap.containsKey(connNo)) {
-                            orderedConnections.add(idToConnectionMap.get(connNo));
+                            orderedConnections.addAll(idToConnectionMap.get(connNo));
                         }
                     }
                 }

@@ -20,6 +20,8 @@ import lombok.Setter;
 public class Email {
 
 	private Set<String> emailTo;
+	private Set<String> emailCc;
+	private Set<String> emailBcc;
 	private String subject;
 	private String body;
 	@JsonProperty("isHTML")

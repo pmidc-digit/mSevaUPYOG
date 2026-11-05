@@ -91,6 +91,10 @@ public class UserTypeQueryBuilder {
     public static final String UPDATE_FAILED_ATTEMPTS_SQL = " UPDATE eg_user_login_failed_attempts SET active = " +
             "'false' WHERE user_uuid = :user_uuid";
 
+    public static final String UNLOCK_USER_BY_UUID_SQL = "UPDATE eg_user SET accountlocked = :accountLocked, " +
+            "accountlockeddate = :accountLockedDate, lastmodifieddate = :lastModifiedDate, " +
+            "lastmodifiedby = :lastModifiedBy WHERE uuid = :uuid";
+
     private static final String SELECT_USER_ROLE_QUERY = "SELECT distinct(user_id) from eg_userrole_v1 ur";
     
     private static final String SELECT_USER_ROLES = "select ur.user_id as user_id, ur.role_code as role_code, ur.role_tenantid as role_tenantid from eg_userrole_v1 ur where";

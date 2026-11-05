@@ -198,6 +198,13 @@ public class PropertyUtil extends CommonUtils {
 
 
 			case UPDATE :
+				if(property.getSource() != null && property.getSource().equals(Source.WATER_CHARGES)){
+					JSONObject response=getWnsPTworkflowConfig(request);
+					if (response.has("businessService")) {
+						wf.setBusinessService(response.get("businessService").toString());
+					}
+					wf.setModuleName(configs.getPropertyModuleName());
+				}
 				break;
 
 			case MUTATION :

@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.upyog.adv.enums.RentalType;
+import org.upyog.adv.enums.ScheduleType;
 
 @Builder
 @AllArgsConstructor
@@ -25,18 +27,37 @@ import lombok.ToString;
         private Integer height;
         private String imageSrc;
         private String light;
-        /** Per-day booking amount (null when the advertisement uses a different rate period). */
+        /**
+         * Primary booking amount. Meaning depends on {@code rentalType} + {@code scheduleType}:
+         * <ul>
+         *   <li>{@code FIXED} — rate per billing period (e.g. ₹3000/month)</li>
+         *   <li>{@code DAILY}  — rate per day (e.g. ₹100/day)</li>
+         *   <li>{@code null} (legacy) — daily rate unless period‑specific fields are populated</li>
+         * </ul>
+         */
         private BigDecimal amount;
-        /** Per-week booking amount. */
+        /** Legacy: per‑week booking amount. Ignored when {@code rentalType} is set. */
         private BigDecimal weeklyAmount;
-        /** Per-month booking amount. */
+        /** Legacy: per‑month booking amount. Ignored when {@code rentalType} is set. */
         private BigDecimal monthlyAmount;
-        /** Per-year booking amount. */
+        /** Legacy: per‑year booking amount. Ignored when {@code rentalType} is set. */
         private BigDecimal yearlyAmount;
-        /** Biannual (6-month) booking amount. */
+        /** Legacy: biannual booking amount. Ignored when {@code rentalType} is set. */
         private BigDecimal biannualAmount;
         private Boolean available;
         private String locationCode;
         private String feeType;
         private boolean taxApplicable;
+        /**
+         * Billing schedule period — the unit by which the ULB charges for this ad.
+         * Default: DAILY.
+         */
+        private ScheduleType scheduleType;
+        /**
+         * How the rate is applied.
+         * {@code FIXED} = full period amount per complete billing period;
+         * {@code DAILY}  = period amount ÷ days-in-period × booking days.
+         * Default: DAILY (preserves existing behavior when absent from MDMS).
+         */
+        private RentalType rentalType;
     }

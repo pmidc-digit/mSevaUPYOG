@@ -24,6 +24,7 @@ public class CLUConstants {
 	public static final String FI_STATUS = "FIELDINSPECTION_INPROGRESS";
 
 	public static final String CLU_MODULE = "CLU";
+	public static final String MODULENAME = "clu-service";
 	public static final String WORKFLOW_CONFIG = "WorkflowConfig";
 	// mdms path codes
 

@@ -237,6 +237,39 @@ public class LocalizationService {
         }
     }
 
+    /**
+     * Busts the egov-localization cache for the given tenantId.
+     *
+     * Should be called after all localization messages for a migration have been
+     * pushed, so the UI immediately reflects the new keys without a service restart.
+     *
+     * Equivalent to:
+     * POST {localizationHost}/localization/messages/cache-bust
+     * Body: { "RequestInfo": {...}, "tenantId": "pb" }
+     *
+     * This call is safe — any error is caught and logged without interrupting
+     * the migration flow.
+     *
+     * @param requestInfo RequestInfo from the originating migration request
+     * @param tenantId    Tenant whose cache should be cleared (e.g. "pb")
+     */
+    public void bustLocalizationCache(RequestInfo requestInfo, String tenantId) {
+        String uri = config.getLocalizationHost() + config.getLocalizationCacheBustEndpoint();
+
+        Map<String, Object> requestBody = new java.util.HashMap<>();
+        requestBody.put("RequestInfo", requestInfo);
+        requestBody.put("tenantId", tenantId);
+
+        try {
+            log.info("Busting localization cache for tenantId: '{}' at: {}", tenantId, uri);
+            serviceRequestRepository.fetchResult(new StringBuilder(uri), requestBody);
+            log.info("Localization cache-bust successful for tenantId: '{}'.", tenantId);
+        } catch (Exception e) {
+            log.warn("Localization cache-bust failed for tenantId: '{}'. UI may show stale keys until next restart. Error: {}",
+                    tenantId, e.getMessage());
+        }
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private void addMessage(List<Message> messages, Set<String> processedCodes, String code, String messageText) {

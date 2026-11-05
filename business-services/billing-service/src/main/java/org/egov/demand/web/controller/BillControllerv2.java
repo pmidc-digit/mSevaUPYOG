@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,7 +68,7 @@ public class BillControllerv2 {
 		return new ResponseEntity<>(billService.searchBill(billCriteria,requestInfo), HttpStatus.OK);
 	}
 	
-	/*	PI-19980 Patiala Penalty not apply in W/S*/
+/*	PI-19980 Patiala Penalty not apply in W/S*/
 	
 	@PostMapping("_searchv2")
 	@ResponseBody
@@ -158,5 +159,15 @@ public class BillControllerv2 {
 		responseMap.put(Constants.RESPONSEINFO_STRING, responseInfo);
 		responseMap.put(Constants.MESSAGE_STRING, responseMsg);
 		return new ResponseEntity<>(responseMap, status);
+	}
+
+	@PostMapping("_reactivatebill")
+	@ResponseBody
+	public ResponseEntity<?> reactivateBill(@RequestParam String billId) {
+		billService.reactivateBill(billId);
+		Map<String, Object> responseMap = new HashMap<>();
+		responseMap.put("status", "SUCCESS");
+		responseMap.put("message", "Bill " + billId + " reactivated successfully");
+		return new ResponseEntity<>(responseMap, HttpStatus.OK);
 	}
 }

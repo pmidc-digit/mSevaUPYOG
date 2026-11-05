@@ -118,4 +118,7 @@ public class BPACalculatorConstants {
 	
 	public static final String BPA_ADJUSTMENT_TAX_HEAD_PREFIX = "ADJ_";
 	
+	// OCCUPANCY TYPE
+    public static final String RESIDENTIAL_OCCUPANCY = "A";
+	
 }

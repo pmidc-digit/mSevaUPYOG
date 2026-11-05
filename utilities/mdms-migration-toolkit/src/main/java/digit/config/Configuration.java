@@ -107,6 +107,9 @@ public class Configuration {
     @Value("${egov.localization.upsert.endpoint}")
     private String localizationUpsertEndpoint;
 
+    @Value("${egov.localization.cache.bust.endpoint}")
+    private String localizationCacheBustEndpoint;
+
     @Value("${egov.localization.default.module}")
     private String localizationDefaultModule;
 

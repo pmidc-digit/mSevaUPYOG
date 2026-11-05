@@ -3,7 +3,14 @@ const INTENTION_MORE = 'more';
 const INTENTION_GOBACK = 'goback';
 
 function get_input(event, scrub = true) {
-  return scrub? event.message.input.trim().toLowerCase() : event.message.input;
+  const input = event?.message?.input;
+
+  if (typeof input !== 'string') {
+      throw new TypeError('Invalid input: event.message.input must be a string.');
+    return '';
+  }
+
+  return scrub ? input.trim().toLowerCase() : input;
 }
 function get_message(bundle, locale = 'en_IN') {
   return (bundle[locale] === undefined)? bundle['en_IN'] : bundle[locale];
@@ -88,6 +95,12 @@ let global_messages = {
       en_IN: 'I am sorry, I didn\'t understand. But proceeding nonetheless',
       hi_IN: 'मुझे क्षमा करें, मुझे समझ नहीं आया। फिर भी आगे बढ़ें।'
     }
+  },
+  image_error: {
+    retry: {
+      en_IN: 'Sent Image Does Not Contain Location 😐\n\nPlease attach the valid Image to proceed further.',
+      hi_IN: 'भेजी गई छवि में स्थान की जानकारी नहीं है 😐\n\n कृपया आगे बढ़ने के लिए एक मान्य छवि संलग्न करें।'
+    },
   },
   system_error: {
     en_IN: 'I am sorry, our system has a problem and I cannot fulfill your request right now. Could you try again in a few minutes please?',

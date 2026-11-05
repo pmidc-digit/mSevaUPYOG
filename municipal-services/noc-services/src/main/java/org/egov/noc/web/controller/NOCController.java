@@ -98,4 +98,15 @@ public class NOCController {
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@PostMapping(value = "/_plainsearch")
+	public ResponseEntity<NocResponse> plainSearch(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+			@Valid @ModelAttribute NocSearchCriteria criteria) {
+
+		List<Noc> nocList = nocService.plainSearch(criteria, requestInfoWrapper.getRequestInfo());
+		NocResponse response = NocResponse.builder().noc(nocList).responseInfo(
+				responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

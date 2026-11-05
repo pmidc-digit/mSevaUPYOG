@@ -1495,7 +1495,7 @@ private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
 
         String type = subType.trim().toUpperCase();
         switch (type) {
-            case "F":
+            case "F-F":
             case "F-RB":
             case "F-SCC":
             case "F-PO":
@@ -1526,7 +1526,7 @@ private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
 
         String type = subType.trim().toUpperCase();
         switch (type) {
-            case "F":
+            case "F-F":
             case "F-RB":
             case "F-SCC":
             case "F-PO":

@@ -63,6 +63,26 @@ public class EdcrRequest {
     
     //private File layoutFile;  
     
+    private String dxfFileStoreId;
+    
+    private String controlSheet;
+    
+	public String getControlSheet() {
+		return controlSheet;
+	}
+
+	public void setControlSheet(String controlSheet) {
+		this.controlSheet = controlSheet;
+	}
+
+	public String getDxfFileStoreId() {
+		return dxfFileStoreId;
+	}
+
+	public void setDxfFileStoreId(String dxfFileStoreId) {
+		this.dxfFileStoreId = dxfFileStoreId;
+	}
+
 	@JsonProperty("additionalDetails")
 	private Object additionalDetails = null;
 

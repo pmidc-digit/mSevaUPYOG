@@ -67,6 +67,9 @@ public class LAYOUTService {
 	private LAYOUTConfiguration config;
 
 	@Autowired
+	private LayoutFuzzySearchService layoutFuzzySearchService;
+
+	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
 
 	@Autowired
@@ -148,7 +151,7 @@ public class LAYOUTService {
 		enrichmentService.enrichCreateRequest(nocRequest, mdmsData);
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
 //		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(LAYOUTConstants.WORKFLOWCODE));
-			wfIntegrator.callWorkFlow(nocRequest, businessService);
+			wfIntegrator.callWorkFlow(nocRequest, businessService,"");
 			//wfIntegrator.callWorkFlow(nocRequest, LAYOUTConstants.NOC_BUSINESS_SERVICE);
 		}else{
 		  nocRequest.getLayout().setApplicationStatus(LAYOUTConstants.CREATED_STATUS);
@@ -209,6 +212,13 @@ public class LAYOUTService {
 		BusinessService businessServicename = workflowService.getBusinessService(nocRequest.getLayout(),
 				nocRequest.getRequestInfo(), businessServicedata);
 		Layout layout = nocRequest.getLayout();
+
+		if (layout.getWorkflow() != null
+				&& (LAYOUTConstants.ACTION_APPLY.equalsIgnoreCase(layout.getWorkflow().getAction())
+						|| LAYOUTConstants.ACTION_RESUBMIT.equalsIgnoreCase(layout.getWorkflow().getAction()))
+				&& CollectionUtils.isEmpty(layout.getDocuments())) {
+			throw new CustomException("LAYOUT_DOCUMENT_REQUIRED", "Required documents are missing. Please upload all the mandatory documents to proceed.");
+		}
 		Map<String, String> additionalDetails  ;
 		if(!ObjectUtils.isEmpty(nocRequest.getLayout().getNocDetails().getAdditionalDetails()))  {
 			additionalDetails = (Map) nocRequest.getLayout().getNocDetails().getAdditionalDetails();
@@ -250,7 +260,8 @@ public class LAYOUTService {
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getLayout().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
-				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);
+				String hrmsSearchPath = userService.getEmployeeSearchPATH(nocRequest.getLayout().getTenantId(), additionalDetails, mdmsData);
+				wfIntegrator.callWorkFlow(nocRequest,businessServicedata,hrmsSearchPath);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServicedata);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getLayout(),
 						nocRequest.getRequestInfo(), businessServicedata);
@@ -278,8 +289,8 @@ public class LAYOUTService {
 					&& !StringUtils.isEmpty(nocRequest.getLayout().getWorkflow().getAction())) {
 
 
-
-				wfIntegrator.callWorkFlow(nocRequest, businessServicedata);
+				String hrmsSearchPath = userService.getEmployeeSearchPATH(nocRequest.getLayout().getTenantId(), additionalDetails, mdmsData);
+				wfIntegrator.callWorkFlow(nocRequest,businessServicedata,hrmsSearchPath);
 				enrichmentService.postStatusEnrichment(nocRequest, businessServicedata);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getLayout(),
 						nocRequest.getRequestInfo(), businessServicedata);
@@ -319,7 +330,75 @@ public class LAYOUTService {
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 		criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
 
-		if (criteria.getMobileNumber() != null) {
+        if (config.getIsFuzzyEnabled() != null && config.getIsFuzzyEnabled() && 
+            ((criteria.getOwnerName() != null && !criteria.getOwnerName().trim().isEmpty()) ||
+             (criteria.getAddress() != null && !criteria.getAddress().trim().isEmpty()) ||
+             (criteria.getMobileNumber() != null && !criteria.getMobileNumber().trim().isEmpty()) ||
+             (criteria.getApplicationNo() != null && !criteria.getApplicationNo().trim().isEmpty()) ||
+             (criteria.getLayoutNo() != null && !criteria.getLayoutNo().trim().isEmpty()))) {
+             
+             log.info("Fuzzy Search Started for Layout Services");
+             nocs = layoutFuzzySearchService.getLayouts(requestInfo, criteria);
+             
+             nocs.forEach(noc -> {
+				Map<String, String> additionalDetails = noc.getNocDetails().getAdditionalDetails() != null
+						? (Map<String, String>) noc.getNocDetails().getAdditionalDetails()
+						: new HashMap<String, String>();
+
+				List<String> accountid = nocRepository.getOwnerUserIdsByLayoutId(noc.getId());
+				
+				if(!CollectionUtils.isEmpty(accountid)) {
+					LayoutSearchCriteria userCriteria = new LayoutSearchCriteria();
+					userCriteria.setTenantId(noc.getTenantId());
+					userCriteria.setAccountId(accountid);
+					UserResponse userDetailResponse = userService.getUser(userCriteria, requestInfo);
+					List<OwnerInfo> users = userDetailResponse.getUser();
+					if(!CollectionUtils.isEmpty(users)) {
+						Map<String, OwnerInfo> usersByUuid = users.stream()
+								.filter(u -> u.getUuid() != null)
+								.collect(Collectors.toMap(OwnerInfo::getUuid, u -> u, (a, b) -> a));
+
+						if(!CollectionUtils.isEmpty(noc.getOwners())) {
+							for (OwnerInfo dbOwner : noc.getOwners()) {
+								OwnerInfo userProfile = usersByUuid.get(dbOwner.getUuid());
+								if (userProfile != null) {
+									dbOwner.addUserWithoutAuditDetail(userProfile);
+								}
+								dbOwner.setStatus(true);
+							}
+						}
+					}
+				}
+
+				// PROCESS CALL
+				StringBuilder url = new StringBuilder(config.getWfHost());
+				url.append(config.getWfProcessPath());
+				url.append("?businessIds=");
+				url.append(noc.getApplicationNo());
+				url.append("&tenantId=");
+				url.append(noc.getTenantId());
+							
+				log.info("Process 2 CALL STARTED" + url);
+				Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper);
+				ProcessInstanceResponse response = null;
+				try {
+					response = mapper.convertValue(result, ProcessInstanceResponse.class);
+				} catch (IllegalArgumentException e) {
+					throw new CustomException(LAYOUTConstants.PARSING_ERROR, "Failed to parse response of Workflow");
+				}
+				if(response.getProcessInstances()!=null && !response.getProcessInstances().isEmpty()) {
+					ProcessInstance nocProcess = response.getProcessInstances().get(0);
+					if (nocProcess.getAssignee() != null) {
+						additionalDetails.put("currentOwner", nocProcess.getAssignee().getName());
+					} else {
+						additionalDetails.put("currentOwner", null);
+					}
+				}else {
+					additionalDetails.put("currentOwner", null);
+				}
+			});
+
+        } else if (criteria.getMobileNumber() != null) {
 //			StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())
 //					.append(config.getBpaSearchEndpoint());
 //			uri.append("?tenantId=").append(criteria.getTenantId());
@@ -588,6 +667,18 @@ public class LAYOUTService {
 		});
 		nocRepository.updateDocumentCheckList(checkListRequest);
 		return checkListRequest.getCheckList();
+	}
+
+	public List<Layout> plainSearch(LayoutSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Layout> layoutList = getLayoutFromCriteriaForPlainSearch(criteria, requestInfo);
+		return layoutList;
+	}
+
+	public List<Layout> getLayoutFromCriteriaForPlainSearch(LayoutSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Layout> layoutList = nocRepository.getLayoutDataForPlainSearch(criteria);
+		if (CollectionUtils.isEmpty(layoutList))
+			return Collections.emptyList();
+		return layoutList;
 	}
 	
 }

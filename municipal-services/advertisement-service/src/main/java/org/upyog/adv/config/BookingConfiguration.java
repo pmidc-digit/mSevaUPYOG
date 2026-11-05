@@ -194,11 +194,5 @@ public class BookingConfiguration {
 
 	@Value("${egov.localization.search.endpoint}")
 	private String localizationSearchEndpoint;
-	
-	@Value("${egov.mdms-v2.host}")
-	private String mdmsV2Host;
-	
-	@Value("${egov.mdms-v2.search.endpoint}")
-	private String mdmsPathV2;
 
 }

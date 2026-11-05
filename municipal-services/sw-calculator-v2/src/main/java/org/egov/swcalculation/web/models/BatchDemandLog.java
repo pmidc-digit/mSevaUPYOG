@@ -17,6 +17,9 @@ public class BatchDemandLog {
     @JsonProperty("tenantId")
     private String tenantId;
 
+    @JsonProperty("locality")
+    private String locality;
+
     @JsonProperty("taxPeriodFrom")
     private Long taxPeriodFrom;
 

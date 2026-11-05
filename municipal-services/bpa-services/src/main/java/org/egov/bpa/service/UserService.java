@@ -282,9 +282,54 @@ public class UserService {
         		uri.append("&categories=").append(categories);
         	if(!StringUtils.isEmpty(subcategories))
         		uri.append("&subcategories=").append(subcategories);
+        	uri.append("&modulename=").append(BPAConstants.MODULENAME);
     	}
     	
     	return uri;
     }
+    
+    public Map<String, String> getEmployeeDesignation(RequestInfo requestInfo , String uuids, String tenantId) {
+		StringBuilder uri = new StringBuilder(config.getHrmsHost()).append(config.getEmployeeSearchEndpoint());
+		uri.append("?tenantId=").append(tenantId)
+				.append("&isActive=true")
+				.append("&uuids=")
+				.append(uuids);
+		JSONObject hrmsRequest = new JSONObject();
+		UserSearchRequest userSearchRequest = new UserSearchRequest();
+		userSearchRequest.setRequestInfo(requestInfo);
+		hrmsRequest.put("RequestInfo", requestInfo);
+		Object response = serviceRequestRepository.fetchResult(uri, userSearchRequest);
+
+		Map<String, String> designationMap = new HashMap<>();
+		
+		for(String uuid : uuids.split(",")) {
+			List<String> designation = JsonPath.read(response, "$.Employees.*.[?(@.uuid == '" + uuid + "')].assignments.[0].designation");
+				if(!CollectionUtils.isEmpty(designation))
+					designationMap.put(uuid, designation.get(0));
+		}
+		return designationMap;
+	}
+    
+	public String getEmployeeSearchPATH(String tenantId,Map<String, String> additionalDetails) {
+		String zones = StringUtils.isEmpty(additionalDetails.get("zonenumber")) ? null
+				: additionalDetails.get("zonenumber").toString();
+		String categories = StringUtils.isEmpty(additionalDetails.get("categories")) ? null
+				: additionalDetails.get("categories").toString();
+		String subcategories = StringUtils.isEmpty(additionalDetails.get("subcategories")) ? null
+				: additionalDetails.get("subcategories").toString();
+
+		StringBuilder uri = new StringBuilder();
+
+		uri.append("assignedtenattids=").append(tenantId);
+		if (!StringUtils.isEmpty(zones))
+			uri.append("&zones=").append(zones);
+		if (!StringUtils.isEmpty(categories))
+			uri.append("&categories=").append(categories);
+		if (!StringUtils.isEmpty(subcategories))
+			uri.append("&subcategories=").append(subcategories);
+		uri.append("&modulename=").append(BPAConstants.MODULENAME);
+
+		return uri.toString();
+	}
     
 }

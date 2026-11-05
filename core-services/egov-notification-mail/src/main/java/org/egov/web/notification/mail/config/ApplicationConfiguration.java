@@ -47,29 +47,85 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Properties;
 
+@Slf4j
 @Configuration
 public class ApplicationConfiguration {
 
     @Autowired
     private EmailProperties emailProperties;
 
-    @Bean
-    public JavaMailSenderImpl mailSender() {
-        final JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setPort(emailProperties.getMailPort());
-        mailSender.setHost(emailProperties.getMailHost());
-        mailSender.setProtocol(emailProperties.getMailProtocol());
-        mailSender.setUsername(emailProperties.getMailSenderUsername());
-        mailSender.setPassword(emailProperties.getMailSenderPassword());
-        final Properties mailProperties = new Properties();
-        mailProperties.setProperty("mail.smtps.auth", emailProperties.getMailSmtpsAuth());
-        mailProperties.setProperty("mail.smtps.starttls.enable", emailProperties.getMailStartTlsEnabled());
-        mailProperties.setProperty("mail.smtps.debug", emailProperties.getMailSmtpsDebug());
-        mailSender.setJavaMailProperties(mailProperties);
-        return mailSender;
+    // ─── NIC OTP relay sender ─────────────────────────────────────────────────
+    @Bean("nicOtpMailSender")
+    public JavaMailSenderImpl nicOtpMailSender() {
+        return buildNicSender(emailProperties.getNicHostOtp());
+    }
+
+    // ─── NIC SMTPSGW relay sender ─────────────────────────────────────────────
+    @Bean("nicSmtpsgwMailSender")
+    public JavaMailSenderImpl nicSmtpsgwMailSender() {
+        return buildNicSender(emailProperties.getNicHostSmtpsgw());
+    }
+
+    // ─── Gmail sender ─────────────────────────────────────────────────────────
+    @Bean("gmailMailSender")
+    public JavaMailSenderImpl gmailMailSender() {
+        log.info("Configuring Gmail sender | host={}", emailProperties.getGmailHost());
+        final JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setHost(emailProperties.getGmailHost());
+        sender.setPort(emailProperties.getGmailPort());
+        sender.setProtocol(emailProperties.getGmailProtocol());
+        sender.setUsername(emailProperties.getGmailSenderUsername());
+        sender.setPassword(emailProperties.getGmailSenderPassword());
+
+        final Properties props = new Properties();
+        props.setProperty("mail.smtp.auth",              emailProperties.getGmailSmtpAuth());
+        props.setProperty("mail.smtp.starttls.enable",   emailProperties.getGmailStartTlsEnabled());
+        props.setProperty("mail.smtp.starttls.required", emailProperties.getGmailStartTlsRequired());
+        props.setProperty("mail.smtp.ssl.protocols",     emailProperties.getGmailSslProtocols());
+        props.setProperty("mail.smtp.ssl.trust",         emailProperties.getGmailSslTrust());
+        props.setProperty("mail.smtp.timeout",           emailProperties.getGmailTimeout());
+        props.setProperty("mail.smtp.connectiontimeout", emailProperties.getGmailConnectionTimeout());
+        props.setProperty("mail.smtp.writetimeout",      emailProperties.getGmailWriteTimeout());
+        props.setProperty("mail.smtp.debug",             emailProperties.getGmailSmtpDebug());
+        sender.setJavaMailProperties(props);
+        return sender;
+    }
+
+    /** Shared helper — builds a NIC sender for the given relay host. */
+    private JavaMailSenderImpl buildNicSender(String host) {
+        log.info("Configuring NIC sender | host={}", host);
+        final JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setHost(host);
+        sender.setPort(emailProperties.getNicPort());
+        sender.setProtocol(emailProperties.getNicProtocol());
+        sender.setUsername(emailProperties.getNicSenderUsername());
+        sender.setPassword(emailProperties.getNicSenderPassword());
+
+        final Properties props = new Properties();
+        props.setProperty("mail.smtp.auth",              emailProperties.getNicSmtpAuth());
+        props.setProperty("mail.smtp.starttls.enable",   emailProperties.getNicStartTlsEnabled());
+        props.setProperty("mail.smtp.starttls.required", emailProperties.getNicStartTlsRequired());
+        props.setProperty("mail.smtp.ssl.protocols",     emailProperties.getNicSslProtocols());
+        props.setProperty("mail.smtp.ssl.trust",         emailProperties.getNicSslTrust());
+        props.setProperty("mail.smtp.timeout",           emailProperties.getNicTimeout());
+        props.setProperty("mail.smtp.connectiontimeout", emailProperties.getNicConnectionTimeout());
+        props.setProperty("mail.smtp.writetimeout",      emailProperties.getNicWriteTimeout());
+        props.setProperty("mail.smtp.debug",             emailProperties.getNicSmtpDebug());
+        // SMTPS mirror
+        props.setProperty("mail.smtps.auth",             emailProperties.getNicSmtpAuth());
+        props.setProperty("mail.smtps.starttls.enable",  emailProperties.getNicStartTlsEnabled());
+        props.setProperty("mail.smtps.ssl.protocols",    emailProperties.getNicSslProtocols());
+        props.setProperty("mail.smtps.ssl.trust",        emailProperties.getNicSslTrust());
+        props.setProperty("mail.smtps.timeout",          emailProperties.getNicTimeout());
+        props.setProperty("mail.smtps.connectiontimeout",emailProperties.getNicConnectionTimeout());
+        props.setProperty("mail.smtps.writetimeout",     emailProperties.getNicWriteTimeout());
+        props.setProperty("mail.smtps.debug",            emailProperties.getNicSmtpDebug());
+        sender.setJavaMailProperties(props);
+        return sender;
     }
     
     @Value("${egov.localization.host}")

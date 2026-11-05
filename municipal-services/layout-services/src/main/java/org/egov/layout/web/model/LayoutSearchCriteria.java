@@ -83,6 +83,14 @@ public class LayoutSearchCriteria {
     @JsonProperty("vasikaDate")
     private String vasikaDate = null;
 
+    @SafeHtml
+    @JsonProperty("ownerName")
+    private String ownerName;
+
+    @SafeHtml
+    @JsonProperty("address")
+    private String address;
+
     public boolean isEmpty() {
         return (this.tenantId == null && this.ids == null && this.applicationNo == null
                 && this.layoutNo == null && this.accountId == null && this.status == null);

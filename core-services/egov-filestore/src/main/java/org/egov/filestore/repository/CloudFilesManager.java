@@ -28,4 +28,11 @@ public interface CloudFilesManager {
 	 */
 	public Map<String, String> getFiles(List<org.egov.filestore.persistence.entity.Artifact> artifacts);
 
+	/**
+	 * Interface to delete the files from cloud storage (MinIO / Azure).
+	 *
+	 * @param artifacts list of persistent artifact entities to delete
+	 */
+	public void deleteFiles(List<org.egov.filestore.persistence.entity.Artifact> artifacts);
+
 }

@@ -179,26 +179,43 @@ public class BillGeneratorDao {
 	
 	public void updateBillSchedulerConnectionStatus(String consumerCode, String schedulerId,
 	        String locality, String status, String tenantId, String reason, long modifiedTime) {
+	    updateBillSchedulerConnectionStatus(consumerCode, schedulerId, locality, status, tenantId, reason, modifiedTime, null);
+	}
+
+	/**
+	 * Update connection status with optional bill amount (used on successful bill generation).
+	 * When billamount is non-null it is persisted to the billamount column so the
+	 * notification service can aggregate amounts directly from this table.
+	 */
+	public void updateBillSchedulerConnectionStatus(String consumerCode, String schedulerId,
+	        String locality, String status, String tenantId, String reason, long modifiedTime,
+	        java.math.BigDecimal billamount) {
 	    try {
-	        log.info("Entered into updateBillSchedulerConnectionStatus for consumerCode: {}", consumerCode);
+	        log.info("Entered into updateBillSchedulerConnectionStatus for consumerCode: {} billamount: {}", consumerCode, billamount);
 
 	        if (consumerCode == null || consumerCode.isEmpty())
 	            return;
-	        
-	        String sql = "UPDATE eg_ws_bill_scheduler_connection_status "
-	                   + "SET status = ?, reason = ?, lastupdatedtime = ? "
-	                   + "WHERE status='Initiated' AND eg_ws_scheduler_id = ? AND tenantid = ? AND consumercode = ?";
 
+	        boolean hasBillAmount = billamount != null;
+	        String sql = "UPDATE eg_ws_bill_scheduler_connection_status "
+	                   + "SET status = ?, reason = ?, lastupdatedtime = ?"
+	                   + (hasBillAmount ? ", billamount = ?" : "")
+	                   + " WHERE status='Initiated' AND eg_ws_scheduler_id = ? AND tenantid = ? AND consumercode = ?";
+
+	        final java.math.BigDecimal finalBillamount = billamount;
 	        int rows = jdbcTemplate.update(sql, ps -> {
-	            ps.setString(1, status);
-	            ps.setString(2, reason);
-	            ps.setObject(3, modifiedTime);
-	            ps.setString(4, schedulerId);
-	            ps.setString(5, tenantId);
-	            ps.setString(6, consumerCode);
+	            int idx = 1;
+	            ps.setString(idx++, status);
+	            ps.setString(idx++, reason);
+	            ps.setObject(idx++, modifiedTime);
+	            if (hasBillAmount) {
+	                ps.setBigDecimal(idx++, finalBillamount);
+	            }
+	            ps.setString(idx++, schedulerId);
+	            ps.setString(idx++, tenantId);
+	            ps.setString(idx++, consumerCode);
 	        });
 
-	        
 	        log.info("Update result: consumerCode={} rowsUpdated={}", consumerCode, rows);
 
 	    } catch (Exception e) {

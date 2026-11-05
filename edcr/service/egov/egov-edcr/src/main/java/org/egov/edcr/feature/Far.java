@@ -102,6 +102,7 @@ import static org.egov.edcr.utility.DcrConstants.ROUNDMODE_MEASUREMENTS;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -631,7 +632,7 @@ public class Far extends FeatureProcess {
 
 		pl.setOccupancies(occupanciesForPlan);
 		pl.getVirtualBuilding().setTotalFloorArea(totalFloorArea); //pl.getPlot().getArea()
-		pl.getVirtualBuilding().setTotalFloorArea(pl.getPlot().getArea());
+		//pl.getVirtualBuilding().setTotalFloorArea(pl.getPlot().getArea());
 		pl.getVirtualBuilding().setTotalCarpetArea(totalCarpetArea);
 		pl.getVirtualBuilding().setTotalExistingBuiltUpArea(totalExistingBuiltUpArea);
 		pl.getVirtualBuilding().setTotalExistingFloorArea(totalExistingFloorArea);
@@ -1557,7 +1558,13 @@ public class Far extends FeatureProcess {
 				String occupancyName = occupancyType.getType().getName();
 				buildResult(pl, occupancyName, far, typeOfArea, roadWidth, permissibleFAR.toPlainString(), isAccepted);
 			}else {
-				getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
+				if (isPetrolOrCngOccupancy(occupancyType.getSubtype().getCode())) {
+					validatePlotDimensions(occupancyType.getSubtype().getCode(), pl.getPlot().getLength(),
+							pl.getPlot().getWidth(), occupancyType.getSubtype().getName(), pl);
+					getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
+				} else {
+					getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
+				}
 			}
 		    
 		}
@@ -2653,5 +2660,113 @@ public class Far extends FeatureProcess {
 	    }
 	}
 
+	private Map<String, BigDecimal> getPlotDimensions(String occupancyType) {
+
+	    Map<String, Map<String, BigDecimal>> dimensionsMap = new HashMap<>();
+
+	    // F-PFSF
+	    Map<String, BigDecimal> pfsf = new HashMap<>();
+	    pfsf.put("minLength", new BigDecimal("30"));
+	    pfsf.put("minBreadth", new BigDecimal("17"));
+	    pfsf.put("height", new BigDecimal("6"));
+	    dimensionsMap.put("F-PFSF", pfsf);
+
+	    // F-PFST
+	    Map<String, BigDecimal> pfst = new HashMap<>();
+	    pfst.put("minLength", new BigDecimal("18"));
+	    pfst.put("minBreadth", new BigDecimal("15"));
+	    pfst.put("height", new BigDecimal("6"));
+	    dimensionsMap.put("F-PFST", pfst);
+
+	    // F-PFSS
+	    Map<String, BigDecimal> pfss = new HashMap<>();
+	    pfss.put("minLength", new BigDecimal("36"));
+	    pfss.put("minBreadth", new BigDecimal("30"));
+	    pfss.put("maxLength", new BigDecimal("45"));
+	    pfss.put("maxBreadth", new BigDecimal("33"));
+	    pfss.put("height", new BigDecimal("6"));
+	    dimensionsMap.put("F-PFSS", pfss);
+
+	    // F-CNGS
+	    Map<String, BigDecimal> cngs = new HashMap<>();
+	    cngs.put("minLength", new BigDecimal("36"));
+	    cngs.put("minBreadth", new BigDecimal("30"));
+	    cngs.put("height", new BigDecimal("4.5"));
+	    dimensionsMap.put("F-CNGS", cngs);
+
+	 
+	    //F-PS	     
+	      Map<String, BigDecimal> ps = new HashMap<>();
+	      ps.put("minLength", new BigDecimal("30"));
+	      ps.put("minBreadth", new BigDecimal("17"));
+	      ps.put("height", new BigDecimal("6"));
+	     dimensionsMap.put("F-PS", ps);	     
+	     
+	    return dimensionsMap.getOrDefault(
+	            occupancyType,
+	            Collections.<String, BigDecimal>emptyMap()
+	    );
+	}
+
+	private void validatePlotDimensions(String occupancyCode, BigDecimal actualLength, BigDecimal actualBreadth,
+			String occName, Plan pl) {
+
+		if (actualLength == null || actualBreadth == null || pl.getMdmsMasterData() == null
+				|| pl.getMdmsMasterData().get("masterMdmsData") == null) {
+			return;
+		}
+
+		Object masterMdmsData = pl.getMdmsMasterData().get("masterMdmsData");
+
+		BigDecimal minLength = BpaMdmsUtil
+				.extractMdmsValue(masterMdmsData, MdmsFilter.MIN_PLOT_LENGTH, BigDecimal.class).orElse(null);
+
+		BigDecimal minBreadth = BpaMdmsUtil
+				.extractMdmsValue(masterMdmsData, MdmsFilter.MIN_PLOT_WIDTH, BigDecimal.class).orElse(null);
+
+		// Minimum length validation
+		if (minLength != null && actualLength.compareTo(minLength) < 0) {
+			pl.addError("Plot Length Error",
+					"For category " + occName + ", length must be greater than or equal to " + minLength + " m.");
+		}
+
+		// Minimum breadth validation
+		if (minBreadth != null && actualBreadth.compareTo(minBreadth) < 0) {
+			pl.addError("Plot Width Error",
+					"For category " + occName + ", width must be greater than or equal to " + minBreadth + " m.");
+		}
+
+		/*
+		 * Maximum validation is required ONLY for F-PFSS.
+		 */
+		if (DxfFileConstants.F_PFSS.equalsIgnoreCase(occupancyCode)) {
+
+			BigDecimal maxLength = BpaMdmsUtil
+					.extractMdmsValue(masterMdmsData, MdmsFilter.MAX_PLOT_LENGTH, BigDecimal.class).orElse(null);
+
+			BigDecimal maxBreadth = BpaMdmsUtil
+					.extractMdmsValue(masterMdmsData, MdmsFilter.MAX_PLOT_WIDTH, BigDecimal.class).orElse(null);
+
+			// Maximum length validation
+			if (maxLength != null && actualLength.compareTo(maxLength) > 0) {
+				pl.addError("Plot Length Error",
+						"For category " + occName + ", length must be less than or equal to " + maxLength + " m.");
+			}
+
+			// Maximum breadth validation
+			if (maxBreadth != null && actualBreadth.compareTo(maxBreadth) > 0) {
+				pl.addError("Plot Width Error",
+						"For category " + occName + ", width must be less than or equal to " + maxBreadth + " m.");
+			}
+		}
+	}
+	
+	static boolean isPetrolOrCngOccupancy(String occupancyCode) {
+        return DxfFileConstants.F_PFSF.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_PFST.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_PFSS.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_PS.equalsIgnoreCase(occupancyCode)
+                || DxfFileConstants.F_CNGS.equalsIgnoreCase(occupancyCode);
+    }
 	
 }

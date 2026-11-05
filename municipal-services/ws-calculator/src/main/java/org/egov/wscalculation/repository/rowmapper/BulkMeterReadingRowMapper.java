@@ -28,6 +28,7 @@ public class BulkMeterReadingRowMapper implements ResultSetExtractor<List<BulkMe
 	            
 	            bulkMeterReading.setId(rs.getString("id"));
 	            bulkMeterReading.setConnectionNo(rs.getString("connectionId"));
+	            bulkMeterReading.setOldConnectionNo(rs.getString("oldConnectionNo"));
 	            bulkMeterReading.setUsageCategory(rs.getString("usageCategory"));
 	            bulkMeterReading.setBillingPeriod(rs.getString("billingPeriod"));
 	            bulkMeterReading.setCurrentReading(rs.getDouble("currentReading"));

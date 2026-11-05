@@ -40,6 +40,9 @@ class StorageControllerTest {
     @MockBean
     private StorageUtil storageUtil;
 
+    @MockBean
+    private org.egov.filestore.validator.StorageValidator storageValidator;
+
     @Test
     void testGetFile() throws Exception {
         when(storageService.retrieve((String) any(), (String) any())).thenReturn(
@@ -122,6 +125,40 @@ class StorageControllerTest {
                 .build()
                 .perform(requestBuilder);
         actualPerformResult.andExpect(MockMvcResultMatchers.status().is(405));
+    }
+
+    @Test
+    void testDeleteFilesPost() throws Exception {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("status", "SUCCESS");
+        when(storageService.delete((List<String>) any(), (String) any())).thenReturn(response);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/v1/files/_delete")
+                .param("tenantId", "pb.amritsar")
+                .param("fileStoreIds", "fileStoreId1,fileStoreId2");
+
+        MockMvcBuilders.standaloneSetup(storageController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value("SUCCESS"));
+    }
+
+    @Test
+    void testDeleteFiles() throws Exception {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("status", "SUCCESS");
+        when(storageService.delete((List<String>) any(), (String) any())).thenReturn(response);
+
+        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/v1/files")
+                .param("tenantId", "pb.amritsar")
+                .param("fileStoreIds", "fileStoreId1");
+
+        MockMvcBuilders.standaloneSetup(storageController)
+                .build()
+                .perform(requestBuilder)
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value("SUCCESS"));
     }
 }
 

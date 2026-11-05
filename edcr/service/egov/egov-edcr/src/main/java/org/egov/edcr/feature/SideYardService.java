@@ -86,6 +86,7 @@ import org.egov.common.entity.edcr.Yard;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
+import org.egov.edcr.entity.RoadTypes;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -171,6 +172,7 @@ public class SideYardService extends GeneralRule {
         String occupancy;
         BigDecimal expectedDistance = BigDecimal.ZERO;
         BigDecimal expectedmeanDistance = BigDecimal.ZERO;
+        BigDecimal expectedminimumDistance = BigDecimal.ZERO;
         boolean status = false;
         String setBackPercentage;
         boolean isSetbackCombine=false;
@@ -475,10 +477,10 @@ public class SideYardService extends GeneralRule {
 //			Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
 //			minPlotArea.ifPresent(min1 -> LOG.info("Min plot are required : " + min1));
 	        
-			if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-				errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
-		        pl.addErrors(errors);			        
-		    }
+//			if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
+//				errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
+//		        pl.addErrors(errors);			        
+//		    }
 			
 			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
 
@@ -699,8 +701,8 @@ public class SideYardService extends GeneralRule {
 //					sideYard1Result.occupancyCode.equalsIgnoreCase("G-IT") ||
 //					sideYard1Result.occupancyCode.equalsIgnoreCase("G-F")					
 					)) {
-				permissableValueWithPercentage = sideYard1Result.expectedDistance.toString();
-			    providedValue = sideYard1Result.actualDistance.toString();
+				permissableValueWithPercentage = sideYard1Result.expectedDistance.abs().stripTrailingZeros().toPlainString();
+			    providedValue = sideYard1Result.actualDistance.abs().stripTrailingZeros().toPlainString();
 			    details.put("OccCode", sideYard1Result.occupancyCode);
 			    details.put("isSetbackCombine", String.valueOf(sideYard1Result.isSetbackCombine));
 			}else if (sideYard1Result.setBackPercentage != null 
@@ -713,7 +715,10 @@ public class SideYardService extends GeneralRule {
 //			    permissableValueWithPercentage = sideYard1Result.setBackPercentage 
 //			            + "% of the plot area (" 
 //			            + sideYard1Result.expectedDistance.toPlainString() + ")";
-				permissableValueWithPercentage = sideYard1Result.setBackPercentage;
+				//permissableValueWithPercentage = sideYard1Result.setBackPercentage;
+				 permissableValueWithPercentage = sideYard1Result.setBackPercentage 
+				            + "% of the plot area (" 
+				            + sideYard1Result.expectedDistance.toPlainString() + ")";
 			    providedValue = sideYard1Result.actualDistance.toString();
 			    details.put("OccCode", sideYard1Result.occupancyCode);
 			    details.put("isSetbackCombine", String.valueOf(sideYard1Result.isSetbackCombine));
@@ -774,7 +779,7 @@ public class SideYardService extends GeneralRule {
 //    					sideYard2Result.occupancyCode.equalsIgnoreCase("G-F"))
     					)) {
     				permissableValueWithPercentage = sideYard2Result.expectedDistance.toString();
-    			    providedValue = sideYard2Result.actualDistance.toString();
+    			    providedValue = sideYard2Result.actualDistance.abs().stripTrailingZeros().toPlainString();
     			    detailsSideYard2.put("OccCode", sideYard2Result.occupancyCode);
     			    detailsSideYard2.put("isSetbackCombine", String.valueOf(sideYard2Result.isSetbackCombine));
     			}else if (sideYard2Result.setBackPercentage != null 
@@ -787,7 +792,10 @@ public class SideYardService extends GeneralRule {
 //    			    permissableValueWithPercentage = sideYard2Result.setBackPercentage 
 //    			            + "% of the plot area (" 
 //    			            + sideYard2Result.expectedDistance.toPlainString() + ")";
-    			    permissableValueWithPercentage = sideYard2Result.setBackPercentage;    			            
+    			    //permissableValueWithPercentage = sideYard2Result.setBackPercentage;  
+    			    permissableValueWithPercentage = sideYard2Result.setBackPercentage 
+				            + "% of the plot area (" 
+				            + sideYard1Result.expectedDistance.toPlainString() + ")";
     			    providedValue = sideYard2Result.actualDistance.toString();
     			    detailsSideYard2.put("OccCode", sideYard2Result.occupancyCode);
     			    detailsSideYard2.put("isSetbackCombine", String.valueOf(sideYard2Result.isSetbackCombine));
@@ -1058,21 +1066,38 @@ public class SideYardService extends GeneralRule {
         
         if(mostRestrictiveOccupancy != null &&
 				(L.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))) {
-      	if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
-  		    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-  		            pl.getMdmsMasterData().get("masterMdmsData"),
-  		            MdmsFilter.SIDE_SETBACK_PATH,
-  		            BigDecimal.class
-  		    );
-  		    if (scOpt.isPresent()) {
-  		        BigDecimal mdmsValue = scOpt.get();
-  		        LOG.info("Side Setback Value from MDMS : " + mdmsValue);		        
-  		        side1val = mdmsValue;	
-  		        side2val =mdmsValue;
-  		    }else {
-  		    	LOG.error("No value found from mdms for the side setback");
-  		    }
-  		}
+        	if(L_MP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+	    		if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+	    			String roadType = RoadTypes.getCode(pl.getPlanInformation().getRoadType());
+				    String path = String.format(MdmsFilter.MP_SIDE_SETBACK_PATH, roadType);
+				    Optional<List> listOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), path, List.class);
+				    if (listOpt.isPresent() && !listOpt.get().isEmpty()) {
+				        BigDecimal mdmsValue = new BigDecimal(String.valueOf(listOpt.get().get(0)));
+				        LOG.info("SIDE Setback Value from MDMS: " + mdmsValue);
+				        side1val = mdmsValue.abs().stripTrailingZeros();	
+          		        side2val =mdmsValue.abs().stripTrailingZeros();
+				    } else {
+				        LOG.error("No value found from MDMS for front setback, roadType=" + roadType);
+				    }
+				}
+	    	}else {
+        		if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+          		    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+          		            pl.getMdmsMasterData().get("masterMdmsData"),
+          		            MdmsFilter.SIDE_SETBACK_PATH,
+          		            BigDecimal.class
+          		    );
+          		    if (scOpt.isPresent()) {
+          		        BigDecimal mdmsValue = scOpt.get();
+          		        LOG.info("Side Setback Value from MDMS : " + mdmsValue);		        
+          		        side1val = mdmsValue;	
+          		        side2val = mdmsValue;
+          		    }else {
+          		    	LOG.error("No value found from mdms for the side setback");
+          		    }
+          		}
+        	}
+      	
       	
       }
         
@@ -1411,13 +1436,21 @@ public class SideYardService extends GeneralRule {
 	          BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result, valid1, subRule, rule,
 	          level);
         }else {
-        
-	        compareSideYard2Result(blockName, side2val, sideYard2.getArea(), BigDecimal.ZERO,
-	                BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result, valid2, subRule, rule,
-	                level);
-	        compareSideYard1Result(blockName, side1val, sideYard1.getArea(), BigDecimal.ZERO,
+        	BigDecimal sideYard1Area = sideYard1.getArea() != null
+        	        ? sideYard1.getArea().setScale(2, RoundingMode.HALF_UP)
+        	        : BigDecimal.ZERO;
+
+        	BigDecimal sideYard2Area = sideYard2.getArea() != null
+        	        ? sideYard2.getArea().setScale(2, RoundingMode.HALF_UP)
+        	        : BigDecimal.ZERO;
+        	
+        	compareSideYard1Result(blockName, side1val, sideYard1Area, BigDecimal.ZERO,
 	                BigDecimal.valueOf(maxMeanLength), mostRestrictiveOccupancy, sideYard1Result, valid1, subRule, rule,
 	                level);
+	        compareSideYard2Result(blockName, side2val, sideYard2Area, BigDecimal.ZERO,
+	                BigDecimal.valueOf(minMeanlength), mostRestrictiveOccupancy, sideYard2Result, valid2, subRule, rule,
+	                level);
+	        
         }
 
     }
@@ -1808,7 +1841,7 @@ public class SideYardService extends GeneralRule {
                 sideYard1Result.occupancy = occupancyName;
                 sideYard1Result.occupancyCode = occupanyCode;
             }
-
+            
             sideYard1Result.subRule = subRule;
             sideYard1Result.blockName = blockName;
             sideYard1Result.level = level;
@@ -2079,34 +2112,23 @@ public class SideYardService extends GeneralRule {
 		    sideYard1Result.setBackPercentage = "10";
 	        sideYard2Result.setBackPercentage = "10";
 	    }else {
-	    	
-	    	
 	    	 /* ======================================================
 	         * LOW RISE BUILDINGS (Height ≤ 21 m)
 	         * ====================================================== */	    	
-	    	//minVal= getPermisableForCommericalBelow21m(plotArea,pl, sideYard1Result, sideYard2Result);
-	        
+	    	//minVal= getPermisableForCommericalBelow21m(plotArea,pl, sideYard1Result, sideYard2Result);	        
 	        if (DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
 	        	sideYard2Result.isSetbackCombine=false;
-
 				Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"),
 						MdmsFilter.LIST_SIDE_SETBACK_PATH, List.class);
-
 				if (fullListOpt.isPresent()) {
-
 					List<Map<String, Object>> setbackRules = (List<Map<String, Object>>) fullListOpt.get();
-
 					Optional<BigDecimal> tableSetbackOpt = BpaMdmsUtil.findSetbackValueByHeight(setbackRules,
 							buildingHeight);
-
 					if (tableSetbackOpt.isPresent()) {
-
 						BigDecimal tableSetback = tableSetbackOpt.get();
 						BigDecimal minimumSideSetback = new BigDecimal("6.096"); //20 ft (6.096) m
-
 						// Rear & Side setback = max(20 ft (6.096 m), Table value)
 						minVal = tableSetback.max(minimumSideSetback);
-
 						if (minVal.compareTo(minimumSideSetback) == 0) {
 							sideYard1Result.setBackPercentage = minimumSideSetback.toPlainString().concat("m");
 							sideYard2Result.setBackPercentage = minimumSideSetback.toPlainString().concat("m");
@@ -2116,63 +2138,64 @@ public class SideYardService extends GeneralRule {
 						}
 					}
 				}
-
 			}else if (DxfFileConstants.F_MIP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
-
 			    sideYard2Result.isSetbackCombine = false;
-
 			    if (buildingHeight.compareTo(BigDecimal.valueOf(15)) < 0) {
-
 			        // Clause 4.22(ii)
 			        Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
 			                pl.getMdmsMasterData().get("masterMdmsData"),
 			                MdmsFilter.SIDE_SETBACK_PATH,
 			                BigDecimal.class);
-
 			        BigDecimal mdmsSide = scOpt.orElse(BigDecimal.valueOf(2));
-
 			        BigDecimal oneSixthHeight = buildingHeight.divide(
 			                BigDecimal.valueOf(6),
 			                2,
 			                RoundingMode.HALF_UP);
-
 			        minVal = mdmsSide.max(oneSixthHeight);
-
 			        sideYard1Result.setBackPercentage =
 			                minVal.stripTrailingZeros().toPlainString() + "m";
 			        sideYard2Result.setBackPercentage =
 			                minVal.stripTrailingZeros().toPlainString() + "m";
-
 			    } else {
-
 			        // Table 5.4
 			        BigDecimal tableSetback = getTableSetback(buildingHeight);
-
 			        minVal = tableSetback;
-
 			        sideYard1Result.setBackPercentage =
 			                tableSetback.stripTrailingZeros().toPlainString() + "m";
 			        sideYard2Result.setBackPercentage =
 			                tableSetback.stripTrailingZeros().toPlainString() + "m";
 			    }
-			} else {
-				sideYard1Result.isSetbackCombine=true;
-				if (pl.getMdmsMasterData().get("masterMdmsData") != null) {					
-					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-				            pl.getMdmsMasterData().get("masterMdmsData"),
-				            MdmsFilter.SIDE_SETBACK_PATH,
-				            BigDecimal.class
-				    );
-
-				    if (scOpt.isPresent()) {
-				        BigDecimal mdmsValue = scOpt.get();
-				        LOG.info("Side Setback Value from MDMS : " + mdmsValue);
-				        minVal = mdmsValue;
-				    }
-				    
-				    sideYard1Result.setBackPercentage = "10";
-			        sideYard2Result.setBackPercentage = "10";
+			} else {				
+				if (buildingHeight.compareTo(BigDecimal.valueOf(15)) <= 0) {
+					sideYard2Result.isSetbackCombine=false;
+					BigDecimal rear = BigDecimal.valueOf(2);
+			        BigDecimal oneSixthHeight = buildingHeight.divide(BigDecimal.valueOf(6), 2, RoundingMode.HALF_UP);
+			        minVal = rear.max(oneSixthHeight);
+			        sideYard1Result.setBackPercentage =
+			                minVal.stripTrailingZeros().toPlainString() + "m";
+			        sideYard2Result.setBackPercentage =
+			                minVal.stripTrailingZeros().toPlainString() + "m";
+				}else {
+					sideYard2Result.isSetbackCombine=true;
+					sideYard1Result.isSetbackCombine=true;
+					if (pl.getMdmsMasterData().get("masterMdmsData") != null) {					
+						Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+					            pl.getMdmsMasterData().get("masterMdmsData"),
+					            MdmsFilter.SIDE_SETBACK_PATH,
+					            BigDecimal.class
+					    );
+					    if (scOpt.isPresent()) {
+						    BigDecimal setbackPercentage = scOpt.get();
+						    LOG.info("Side Setback Value from MDMS : " + setbackPercentage);
+						    minVal = plotArea.multiply(setbackPercentage).divide(BigDecimal.valueOf(100), 2,
+									RoundingMode.HALF_UP);
+						    sideYard1Result.setBackPercentage =setbackPercentage.toPlainString();
+					        sideYard2Result.setBackPercentage = setbackPercentage.toPlainString();
+					    }
+					    
+					}
 				}
+				
 			}
 	    }
 

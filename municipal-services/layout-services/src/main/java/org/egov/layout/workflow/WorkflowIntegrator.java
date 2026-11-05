@@ -75,7 +75,7 @@ public class WorkflowIntegrator {
 	 *
 	 * @param nocRequest
 	 */
-	public void callWorkFlow(LayoutRequest nocRequest, String bussinessServiceValue) {
+	public void callWorkFlow(LayoutRequest nocRequest, String bussinessServiceValue, String hrmsSearchPath) {
 		String wfTenantId = nocRequest.getLayout().getTenantId();
 		JSONArray array = new JSONArray();
 		Layout noc = nocRequest.getLayout();
@@ -86,6 +86,9 @@ public class WorkflowIntegrator {
 		obj.put(MODULENAMEKEY, LAYOUTConstants.LAYOUT_MODULE);
 		obj.put(ACTIONKEY, noc.getWorkflow().getAction());
 		
+		// Add hrmsSearchPath inside ProcessInstances
+		obj.put("hrmsSearchPath", hrmsSearchPath);
+				
 		if(noc.getWorkflow().getComment() != null)
 		  obj.put(COMMENTKEY, noc.getWorkflow().getComment());
 		

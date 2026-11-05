@@ -143,7 +143,7 @@ public class WSCalculatorQueryBuilder {
 	
 	public static final String RELATED_SW_CONNECTION_SEARCH_QUERY = "SELECT conn.relatedSwConn from eg_ws_connection conn ";
 	
-	public static final String METERREADINGQUERY = "SELECT DISTINCT ON (mr.connectionNo) mr.id, mr.connectionNo as connectionId, epp.usagecategory as usageCategory, mr.billingPeriod, mr.meterStatus, mr.lastReading, mr.lastReadingDate, mr.currentReading,"
+	public static final String METERREADINGQUERY = "SELECT DISTINCT ON (mr.connectionNo) mr.id, mr.connectionNo as connectionId, conn.oldConnectionNo as oldConnectionNo, epp.usagecategory as usageCategory, mr.billingPeriod, mr.meterStatus, mr.lastReading, mr.lastReadingDate, mr.currentReading,"
 			+ " mr.currentReadingDate, mr.createdBy as mr_createdBy, mr.tenantid, mr.lastModifiedBy as mr_lastModifiedBy, mr.createdTime as mr_createdTime, mr.lastModifiedTime as mr_lastModifiedTime , "
 			+ " ebm.zonecode as zonecode , ebm.blockcode AS blockcode , ebm.localitycode as localityCode , conn.additionaldetails->>'groups' as groups FROM eg_ws_meterreading mr "
 			+ INNER_JOIN_STRING + " eg_ws_connection conn  ON mr.connectionno = conn.connectionno  AND mr.tenantid = conn.tenantid  "
@@ -786,7 +786,7 @@ StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
 	
 	
 	
-	public String getCollection( String tenantId,   Long taxperiodfrom,Long taxPeriodTo,String consumerCode,
+	public String getCollection( String tenantId,   Long taxperiodfrom,Long taxPeriodTo,String consumerCode,String businessService,
 			List<Object> preparedStatement) {
 StringBuilder query = new StringBuilder(getDemandId);
 		
@@ -806,12 +806,22 @@ StringBuilder query = new StringBuilder(getDemandId);
 		preparedStatement.add(consumerCode);
 		
 		
-		query.append("AND d.businessservice = 'WS' ");
+		addClauseIfRequired(preparedStatement, query);
+        query.append(" d.businessservice = ? ");
+        if (businessService == null || businessService.isEmpty() || "WS".equalsIgnoreCase(businessService)) {
+            preparedStatement.add("WS");
+        } else {
+            preparedStatement.add("SW");
+        }
 		
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" dd.collectionamount = '0' ");
 		
 		addClauseIfRequired(preparedStatement, query);
+        query.append(" d.status = ? ");
+        preparedStatement.add("ACTIVE");
+        
+        addClauseIfRequired(preparedStatement, query);
 		query.append(" d.ispaymentcompleted = 'false' ");
 				
 		//Add taxperiodfrom

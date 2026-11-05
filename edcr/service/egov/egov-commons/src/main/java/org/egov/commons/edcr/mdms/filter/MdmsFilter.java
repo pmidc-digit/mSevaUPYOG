@@ -41,5 +41,25 @@ public class MdmsFilter {
     public static final String SIDE_SETBACK_PATH = "$[0].MasterPlan[0].sideSetBack1";
     
     public static final String MIN_ROAD_WIDTH = "$[0].MasterPlan[0].minRoad";
+    
+    public static final String MIN_PLOT_FRONTAGE = "$[0].MasterPlan[0].additionalRules.minFrontage";
+    
+    public static final String MIN_PLOT_LENGTH = "$[0].MasterPlan[0].additionalRules.minPlotLength";
+    
+    public static final String MIN_PLOT_WIDTH = "$[0].MasterPlan[0].additionalRules.minPlotBreadth";
+    
+    public static final String MAX_PLOT_LENGTH = "$[0].MasterPlan[0].additionalRules.maxPlotLength";
+    
+    public static final String MAX_PLOT_WIDTH = "$[0].MasterPlan[0].additionalRules.maxPlotBreadth";
+    
+    public static final String MP_FRONT_SETBACK_PATH =
+    	    "$[0].MasterPlan[?(@.OccupancyType == 'L-MP')].frontSetBack[?(@.roadType == '%s')].setback";
+    
+    public static final String MP_REAR_SETBACK_PATH =
+    	    "$[0].MasterPlan[?(@.OccupancyType == 'L-MP')].rearSetBack[?(@.roadType == '%s')].setback";
+    
+    public static final String MP_SIDE_SETBACK_PATH =
+    	    "$[0].MasterPlan[?(@.OccupancyType == 'L-MP')].sideSetBack1[?(@.roadType == '%s')].setback";
+    
 
 }

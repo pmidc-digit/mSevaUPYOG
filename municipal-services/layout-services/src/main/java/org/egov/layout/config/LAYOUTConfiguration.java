@@ -150,4 +150,22 @@ public class LAYOUTConfiguration {
 	@Value("${spring.kafka.consumer.group-id}")
 	private String kafkaGroupId;
 
+	@Value("${elasticsearch.host}")
+	private String elasticsearchHost;
+	
+	@Value("${elasticsearch.search.endpoint}")
+	private String elasticsearchSearchEndpoint;
+	
+	@Value("${indexer.layout.index.name}")
+	private String elasticsearchIndexName;
+	
+	@Value("${elasticsearch.username:}")
+	private String elasticsearchUsername;
+
+	@Value("${elasticsearch.password:}")
+	private String elasticsearchPassword;
+
+	@Value("${egov.layout.fuzzysearch.isFuzzyEnabled:false}")
+	private Boolean isFuzzyEnabled;
+
 }

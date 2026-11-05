@@ -12,6 +12,8 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.noc.config.NOCConfiguration;
 import org.egov.noc.repository.ServiceRequestRepository;
+import org.egov.noc.util.NOCConstants;
+import org.egov.noc.util.NOCUtil;
 import org.egov.noc.web.model.*;
 import org.egov.tracer.model.CustomException;
 import org.json.JSONObject;
@@ -28,6 +30,9 @@ public class UserService {
 
 	@Autowired
 	private NOCConfiguration config;
+
+	@Autowired
+	private NOCUtil nocUtil;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
@@ -62,6 +67,16 @@ public class UserService {
 	 */
 	public UserResponse getUser(NocSearchCriteria criteria, RequestInfo requestInfo) {
 		UserSearchRequest userSearchRequest = getUserSearchRequest(criteria, requestInfo);
+		// Fix P1: Guard against empty search criteria to prevent HTTP 400 from egov-user.
+		// The service requires at least one of: uuid/ownerIds or mobileNumber.
+		// Sending only tenantId causes InvalidUserSearchCriteriaException.
+		boolean hasUuids = !CollectionUtils.isEmpty(userSearchRequest.getUuid());
+		boolean hasMobile = !org.apache.commons.lang3.StringUtils.isBlank(userSearchRequest.getMobileNumber());
+		if (!hasUuids && !hasMobile) {
+			log.warn("getUser: No valid user identifiers (uuid/ownerIds/mobileNumber) found in search criteria for tenantId={}. Skipping user search call.",
+					userSearchRequest.getTenantId());
+			return new UserResponse();
+		}
 		StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
 		UserResponse userDetailResponse = userCall(userSearchRequest, uri);
 		return userDetailResponse;
@@ -115,10 +130,10 @@ public class UserService {
 		}
 	}
 
-	public List<String> getAssigneeFromNOC(Noc noc, List<String> userRoles, RequestInfo requestInfo, boolean isAllAssignees) {
+	public List<String> getAssigneeFromNOC(Noc noc, List<String> userRoles, RequestInfo requestInfo, boolean isAllAssignees, Object mdmsData) {
 		Map<String, String> additionalDetails = (Map<String, String>)noc.getNocDetails().getAdditionalDetails();
 		String roles = userRoles.stream().collect(Collectors.joining(","));
-		StringBuilder uri = getEmployeeSearchURL(noc.getTenantId(), roles, additionalDetails, isAllAssignees);
+		StringBuilder uri = getEmployeeSearchURL(noc.getTenantId(), roles, additionalDetails, isAllAssignees, mdmsData);
 
 		JSONObject hrmsRequest = new JSONObject();
 		UserSearchRequest userSearchRequest = new UserSearchRequest();
@@ -153,7 +168,7 @@ public class UserService {
 		return designationMap;
 	}
 	
-	private StringBuilder getEmployeeSearchURL(String tenantId, String roles, Map<String, String> additionalDetails, boolean isAllAssignees) {
+	private StringBuilder getEmployeeSearchURL(String tenantId, String roles, Map<String, String> additionalDetails, boolean isAllAssignees, Object mdmsData) {
 		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone");
 
 		StringBuilder uri = new StringBuilder(config.getHrmsHost()).append(config.getEmployeeSearchEndpoint());
@@ -168,6 +183,18 @@ public class UserService {
 			if(!org.springframework.util.StringUtils.isEmpty(zones))
 				uri.append("&zones=").append(zones);
 
+			String specificationBuildingCategory = JsonPath.read(additionalDetails, "$.siteDetails.specificationBuildingCategory");
+			if (!org.springframework.util.StringUtils.isEmpty(specificationBuildingCategory)) {
+				List<String> categories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].category");
+				List<List<String>> subCategories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].subCategory");
+
+				if (!CollectionUtils.isEmpty(categories))
+					uri.append("&categories=").append(categories.get(0));
+				if (!CollectionUtils.isEmpty(subCategories))
+					uri.append("&subcategories=").append(String.join(",", subCategories.get(0)));
+			}
+
+			uri.append("&modulename=").append(NOCConstants.MODULENAME);
 		}
 
 		return uri;
@@ -335,6 +362,32 @@ public class UserService {
 			}
 		});
 
+	}
+	
+	public String getEmployeeSearchPATH(String tenantId, Map<String, String> additionalDetails, Object mdmsData) {
+		String zones = JsonPath.read(additionalDetails, "$.siteDetails.zone");
+
+		StringBuilder uri = new StringBuilder();
+	
+			uri.append("assignedtenattids=").append(tenantId);
+			if(!org.springframework.util.StringUtils.isEmpty(zones))
+				uri.append("&zones=").append(zones);
+
+			String specificationBuildingCategory = JsonPath.read(additionalDetails, "$.siteDetails.specificationBuildingCategory");
+			if (!org.springframework.util.StringUtils.isEmpty(specificationBuildingCategory)) {				
+				List<String> categories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].category");
+				List<List<String>> subCategories = JsonPath.read(mdmsData, "$.MdmsRes.NOC.BuildingCategory.[?(@.name == '" + specificationBuildingCategory + "')].subCategory");
+
+				if (!CollectionUtils.isEmpty(categories))
+					uri.append("&categories=").append(categories.get(0));
+				if (!CollectionUtils.isEmpty(subCategories))
+					uri.append("&subcategories=").append(String.join(",", subCategories.get(0)));
+			}
+
+			uri.append("&modulename=").append(NOCConstants.MODULENAME);
+		
+
+		return uri.toString();
 	}
 
 }

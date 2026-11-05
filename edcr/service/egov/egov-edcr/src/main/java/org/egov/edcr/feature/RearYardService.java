@@ -85,6 +85,7 @@ import org.egov.common.entity.edcr.SetBack;
 import org.egov.commons.edcr.mdms.filter.MdmsFilter;
 import org.egov.commons.mdms.BpaMdmsUtil;
 import org.egov.edcr.constants.DxfFileConstants;
+import org.egov.edcr.entity.RoadTypes;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
@@ -319,7 +320,7 @@ public class RearYardService extends GeneralRule {
 //									rearYardResult.occupancyCode.equalsIgnoreCase("G-F")
 									) {
 								permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toString();
-							    providedValue = rearYardResult.actualMinDistance.toString();
+							    providedValue = rearYardResult.actualMinDistance.abs().stripTrailingZeros().toPlainString();
 							    details.put("OccCode", rearYardResult.occupancyCode);
 							    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
 							    
@@ -329,15 +330,19 @@ public class RearYardService extends GeneralRule {
 							    providedValue = rearYardResult.actualMeanDistance.toString() + "m";
 							    details.put("OccCode", rearYardResult.occupancyCode);
 							    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
-							} else {								
-//							    permissableValueWithPercentage = rearYardResult.setBackPercentage 
-//							            + "% of the plot area (" 
-//							            + rearYardResult.expectedminimumDistance.toPlainString() + ")";
-							    permissableValueWithPercentage = rearYardResult.setBackPercentage;
-								//permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toPlainString();
-							    providedValue = rearYardResult.actualMinDistance.toString();
-							    details.put("OccCode", rearYardResult.occupancyCode);
-							    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
+							} else {
+							    if(Far.isPetrolOrCngOccupancy(rearYardResult.occupancyCode)) {
+								    permissableValueWithPercentage = "-";
+								    providedValue = rearYardResult.actualMeanDistance.toString();
+								    details.put("OccCode", rearYardResult.occupancyCode);
+								    details.put("isSetbackCombine", String.valueOf(false));
+							    }else {
+								    permissableValueWithPercentage = rearYardResult.setBackPercentage;
+									//permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toPlainString();
+								    providedValue = rearYardResult.actualMinDistance.toString();
+								    details.put("OccCode", rearYardResult.occupancyCode);
+								    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
+							    }
 							}
 							
 							if (rearYardResult.expectedmeanDistance != null
@@ -457,10 +462,10 @@ public class RearYardService extends GeneralRule {
 //	    		Optional<BigDecimal> minPlotArea = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.MIN_PLOT_AREA, BigDecimal.class);
 //	    		minPlotArea.ifPresent(min1 -> LOG.info("Min plot are required : " + min1));
 	    		        
-	    		if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-	    			errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
-	    			pl.addErrors(errors);			        
-	    		}
+//	    		if (plotArea == null || plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
+//	    			errors.put("Plot Area Error:", "Plot area must be greater than : " + MIN_PLOT_AREA);
+//	    			pl.addErrors(errors);			        
+//	    		}
 	    		
 	    		
 	    		
@@ -869,20 +874,36 @@ public class RearYardService extends GeneralRule {
 		
 	    if(mostRestrictiveOccupancy != null &&
 				(L.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode()))) {
-			if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
-			    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-			            pl.getMdmsMasterData().get("masterMdmsData"),
-			            MdmsFilter.REAR_SETBACK_PATH,
-			            BigDecimal.class
-			    );
-			    if (scOpt.isPresent()) {
-			        BigDecimal mdmsValue = scOpt.get();
-			        LOG.info("Rear Setback Value from MDMS : " + mdmsValue);			        	        
-			        minVal = mdmsValue;		     
-			    }else {
-			    	LOG.error("No value found from mdms for the rear setback");
-			    }
-			}
+	    	if(L_MP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
+	    		if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+	    			String roadType = RoadTypes.getCode(pl.getPlanInformation().getRoadType());
+				    String path = String.format(MdmsFilter.MP_REAR_SETBACK_PATH, roadType);
+				    Optional<List> listOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"), path, List.class);
+				    if (listOpt.isPresent() && !listOpt.get().isEmpty()) {
+				        BigDecimal mdmsValue = new BigDecimal(String.valueOf(listOpt.get().get(0)));
+				        LOG.info("Rear Setback Value from MDMS: " + mdmsValue);
+				        minVal = mdmsValue.abs().stripTrailingZeros();
+				    } else {
+				        LOG.error("No value found from MDMS for front setback, roadType=" + roadType);
+				    }
+				}
+	    	}else {
+	    		if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+				    Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+				            pl.getMdmsMasterData().get("masterMdmsData"),
+				            MdmsFilter.REAR_SETBACK_PATH,
+				            BigDecimal.class
+				    );
+				    if (scOpt.isPresent()) {
+				        BigDecimal mdmsValue = scOpt.get();
+				        LOG.info("Rear Setback Value from MDMS : " + mdmsValue);			        	        
+				        minVal = mdmsValue;		     
+				    }else {
+				    	LOG.error("No value found from mdms for the rear setback");
+				    }
+				}
+	    	}
+			
 		}
 
 		valid = validateMinimumAndMeanValue(min, mean, minVal, meanVal);
@@ -1246,11 +1267,15 @@ public class RearYardService extends GeneralRule {
 				&& F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
 			minVal = getMinValueForCommercialFromMdms(pl, plot.getArea(), errors, buildingHeight, rearYardResult, mostRestrictiveOccupancy);
 			subRule = "4.7.4";
-			valid = validateMinimumAndMeanValue(min, setback.getRearYard().getWidth(), minVal, meanVal);
-//	    	if (setback.getRearYard().getWidth().compareTo(minVal) >= 0) {		    
-//			}else {
-//				valid=false;
-//			}	    	
+			//valid = validateMinimumAndMeanValue(min, setback.getRearYard().getWidth(), minVal, meanVal);			
+			BigDecimal compareValue = Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())
+		            ? BigDecimal.ZERO
+		            : setback.getRearYard().getWidth();			
+			valid = compareValue != null && compareValue.compareTo(minVal) >= 0;
+			if(Far.isPetrolOrCngOccupancy(mostRestrictiveOccupancy.getSubtype().getCode())) {
+				valid = true;
+			}
+			
 		}
 
 		compareRearYardResult(block.getName(), min, mean, mostRestrictiveOccupancy, rearYardResult, valid, subRule,
@@ -1509,10 +1534,7 @@ public class RearYardService extends GeneralRule {
 			return BigDecimal.ZERO;
 		}
 
-		/*
-		 * ====================================================== HIGH RISE BUILDINGS
-		 * (Height > 21 m) ======================================================
-		 */
+		//===== HIGH RISE BUILDINGS ==============		
 		if (buildingHeight.compareTo(BigDecimal.valueOf(21)) > 0) {
 			rearYardResult.isSetbackCombine = true;
 			Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"),
@@ -1525,35 +1547,21 @@ public class RearYardService extends GeneralRule {
 				minVal = requiredSetback.get().abs().stripTrailingZeros();
 				rearYardResult.setBackPercentage = minVal.toPlainString().concat("m");
 			}
-		} else {
-			
-			/*
-			 * ====================================================== LOW RISE BUILDINGS
-			 * (Height ≤ 21 m) ======================================================
-			 */
-			// minVal= getPermisableForCommericalBelow21m(plotArea,pl, rearYardResult);
-
+		} else {			
+			//===== LOW RISE BUILDINGS ==============
 			if (DxfFileConstants.F_MTP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
 				rearYardResult.isSetbackCombine = false;
-
 				Optional<List> fullListOpt = BpaMdmsUtil.extractMdmsValue(pl.getMdmsMasterData().get("masterMdmsData"),
 						MdmsFilter.LIST_REAR_SETBACK_PATH, List.class);
-
 				if (fullListOpt.isPresent()) {
-
 					List<Map<String, Object>> setbackRules = (List<Map<String, Object>>) fullListOpt.get();
-
 					Optional<BigDecimal> tableSetbackOpt = BpaMdmsUtil.findSetbackValueByHeight(setbackRules,
 							buildingHeight);
-
 					if (tableSetbackOpt.isPresent()) {
-
 						BigDecimal tableSetback = tableSetbackOpt.get();
 						BigDecimal minimumRearSideSetback = new BigDecimal("6.096"); //20 ft (6.096) m
-
 						// Rear & Side setback = max(20 ft (6.096 m), Table value)
 						minVal = tableSetback.max(minimumRearSideSetback);
-
 						if (minVal.compareTo(minimumRearSideSetback) == 0) {
 							rearYardResult.setBackPercentage = minimumRearSideSetback.toPlainString().concat("m");
 						} else {
@@ -1561,7 +1569,6 @@ public class RearYardService extends GeneralRule {
 						}
 					}
 				}
-
 			}else if (DxfFileConstants.F_MIP.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
 			    rearYardResult.isSetbackCombine = false;
 			    if (buildingHeight.compareTo(BigDecimal.valueOf(15)) < 0) {
@@ -1572,7 +1579,6 @@ public class RearYardService extends GeneralRule {
 			        minVal = mdmsRear.max(oneFifthHeight);
 			        rearYardResult.setBackPercentage =
 			                minVal.stripTrailingZeros().toPlainString() + "m";
-
 			    } else {
 			        BigDecimal tableSetback = getTableSetback(buildingHeight);
 			        minVal = tableSetback;
@@ -1580,20 +1586,27 @@ public class RearYardService extends GeneralRule {
 			                tableSetback.stripTrailingZeros().toPlainString() + "m";
 			    }
 			}else {
-				rearYardResult.isSetbackCombine = true;
-				if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
-
-					Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
-							pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.REAR_SETBACK_PATH,
-							BigDecimal.class);
-
-					scOpt.ifPresent(sc -> LOG.info("Rear Setback Value from mdms : " + sc));
-
-					if (scOpt.isPresent()) {
-						minVal = scOpt.get();
-						rearYardResult.setBackPercentage = minVal.toPlainString();
+				if (buildingHeight.compareTo(BigDecimal.valueOf(15)) <= 0) {
+					rearYardResult.isSetbackCombine = false;
+					BigDecimal rear = BigDecimal.valueOf(3);
+			        BigDecimal oneFifthHeight = buildingHeight.divide(BigDecimal.valueOf(5), 2, RoundingMode.HALF_UP);
+			        minVal = rear.max(oneFifthHeight);
+			        rearYardResult.setBackPercentage =
+			                minVal.stripTrailingZeros().toPlainString() + "m";
+				} else if (buildingHeight.compareTo(BigDecimal.valueOf(15)) > 0) {
+					rearYardResult.isSetbackCombine = true;
+					if (pl.getMdmsMasterData().get("masterMdmsData") != null) {
+						Optional<BigDecimal> scOpt = BpaMdmsUtil.extractMdmsValue(
+								pl.getMdmsMasterData().get("masterMdmsData"), MdmsFilter.REAR_SETBACK_PATH,
+								BigDecimal.class);
+						scOpt.ifPresent(sc -> LOG.info("Rear Setback Value from mdms : " + sc));
+						if (scOpt.isPresent()) {
+							minVal = scOpt.get();
+							rearYardResult.setBackPercentage = minVal.toPlainString();
+						}
 					}
 				}
+				
 			}
 		}
 

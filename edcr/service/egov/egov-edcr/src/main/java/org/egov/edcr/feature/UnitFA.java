@@ -1322,6 +1322,17 @@ public class UnitFA extends FeatureProcess {
 
     private Map<String, String> buildTypicalFloorReportRow(String typicalFloorLabel, Integer modelFloorNo,
             List<Map<String, String>> definedFloorRows) {
+        if (definedFloorRows == null || definedFloorRows.isEmpty()) {
+            Map<String, String> typicalRow = new HashMap<>();
+            typicalRow.put(RULE_NO, RULE_NO_VAL);
+            typicalRow.put(DESCRIPTION, "");
+            typicalRow.put(FLOOR_HEADER, typicalFloorLabel);
+            typicalRow.put(FLOOR_NO, typicalFloorLabel);
+            typicalRow.put(UNIT_HEADER, "All units as Floor No. " + modelFloorNo);
+            typicalRow.put(PROVIDED, "Same as Floor No. " + modelFloorNo);
+            typicalRow.put(STATUS, Result.Accepted.getResultVal());
+            return typicalRow;
+        }
         Map<String, String> firstRow = definedFloorRows.get(0);
         Map<String, String> typicalRow = new HashMap<>();
         typicalRow.put(RULE_NO, firstRow.getOrDefault(RULE_NO, RULE_NO_VAL));

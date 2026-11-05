@@ -106,6 +106,9 @@ public class EmployeeService {
 	@Autowired
 	private ObjectMapper objectMapper;
 
+	@Autowired
+	private MDMSService mdmsService;
+
 	/**
 	 * Service method for create employee. Does following:
 	 * 1. Sets ids to all the objects using idgen service.
@@ -244,6 +247,9 @@ public class EmployeeService {
 	            searchCriteria.setSubcategory(criteria.getSubcategory());
 	            searchCriteria.setZone(criteria.getZone());
 	            searchCriteria.setAssignedTenantId(criteria.getAssignedTenantId());
+	            if (!StringUtils.isEmpty(criteria.getModulename())) {
+	                searchCriteria.setModulename(criteria.getModulename());
+	            }
 	        }
 
 	        // -------------------------
@@ -269,6 +275,8 @@ public class EmployeeService {
 	            empToDelete.setUuid(emp.getUuid());               // required for delete
 	            empToDelete.setTenantId(emp.getTenantId());       // required for delete
 	            empToDelete.setUserUUID(emp.getUserUUID());       // optional but useful
+	            empToDelete.setModulename(emp.getModulename());
+	            empToDelete.setRoles(emp.getRoles());
 
 	            employeesToDelete.add(empToDelete);
 	        }
@@ -402,6 +410,27 @@ public class EmployeeService {
 	        errorMap.put(ErrorConstants.OBPAS_INVALID_SEARCH_TENANT_CODE,
 	                     ErrorConstants.OBPAS_INVALID_SEARCH_TENANT_MSG);
 	        throw new CustomException(errorMap);
+	    }
+
+	    String module = criteria.getModulename();
+	    if (module != null && (module.equalsIgnoreCase("noc-service") || module.equalsIgnoreCase("clu-service") || module.equalsIgnoreCase("layout-service"))
+	            && !StringUtils.isEmpty(criteria.getCategory())) {
+	        String moduleName = module.equalsIgnoreCase("noc-service") ? "NOC" : module.equalsIgnoreCase("clu-service") ? "CLU" : "LAYOUT";
+	        String masterName = "CLU".equalsIgnoreCase(moduleName) ? "AppliedCategory" : "BuildingCategory";
+	        List<Map<String, Object>> categories = mdmsService.fetchBuildingCategories(requestInfo, criteria.getTenantId(), moduleName, masterName, "[?(@.active == true)]");
+	        for (Map<String, Object> cat : categories) {
+	            String name = String.valueOf(cat.get("name"));
+	            String code = String.valueOf(cat.get("code"));
+
+	            if (criteria.getCategory().equalsIgnoreCase(name) || criteria.getCategory().equalsIgnoreCase(code)) {
+	                criteria.setCategory(String.valueOf(cat.get("category")));
+	                List<?> subCats = (List<?>) cat.get("subCategory");
+	                if (StringUtils.isEmpty(criteria.getSubcategory()) && !CollectionUtils.isEmpty(subCats)) {
+	                    criteria.setSubcategory(subCats.get(0).toString());
+	                }
+	                break;
+	            }
+	        }
 	    }
 
 	    // Fetch results

@@ -143,7 +143,7 @@ public class BPAService {
 			landService.addLandInfoToBPA(bpaRequest);
 		}
 		enrichmentService.enrichBPACreateRequest(bpaRequest, mdmsData, values);
-		wfIntegrator.callWorkFlow(bpaRequest);
+		wfIntegrator.callWorkFlow(bpaRequest,"");
 		//nocService.createNocRequest(bpaRequest, mdmsData);
 //		this.addCalculation(applicationType, bpaRequest);
 		repository.save(bpaRequest);
@@ -438,7 +438,7 @@ public class BPAService {
 
 		
 		if (bpa.getStatus().equalsIgnoreCase(BPAConstants.FI_STATUS)
-				&& bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SENDBACKTOCITIZEN)) {
+				&& bpa.getWorkflow()!= null && bpa.getWorkflow().getAction().equalsIgnoreCase(BPAConstants.ACTION_SENDBACKTOCITIZEN)) {
 			if (additionalDetails.get(BPAConstants.FI_ADDITIONALDETAILS) != null)
 				additionalDetails.remove(BPAConstants.FI_ADDITIONALDETAILS);
 		}
@@ -527,11 +527,12 @@ public class BPAService {
 
 					if (!CollectionUtils.isEmpty(roles)) {
 						List<String> assignee = null;
-						assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, true);
+						assignee = userService.getAssigneeFromBPA(bpa, roles, requestInfo, false);
 						bpa.getWorkflow().setAssignes(assignee);
 					}
-
-					wfIntegrator.callWorkFlow(bpaRequest);
+					
+					String hrmsSearchPath = userService.getEmployeeSearchPATH(bpaRequest.getBPA().getTenantId(), additionalDetails);
+					wfIntegrator.callWorkFlow(bpaRequest,hrmsSearchPath);
 					log.debug("===> workflow done =>" + bpaRequest.getBPA().getStatus());
 					enrichmentService.postStatusEnrichment(bpaRequest);
 					

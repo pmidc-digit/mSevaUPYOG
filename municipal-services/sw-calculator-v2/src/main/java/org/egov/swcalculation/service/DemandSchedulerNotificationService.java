@@ -56,8 +56,13 @@ public class DemandSchedulerNotificationService {
 				.replace("{formattedTo}", formattedTo)
 				.replace("{totalCount}", String.valueOf(totalCount));
 
+		Set<String> toRecipients = utils.getTenantEmailIds(Collections.singleton(tenantId), requestInfo);
+		if (toRecipients == null || toRecipients.isEmpty()) {
+			toRecipients = Arrays.stream(configs.getMailRecipients().split(",")).map(String::trim).collect(Collectors.toSet());
+		}
+
 		Email email = Email.builder()
-				.emailTo(Arrays.stream(configs.getMailRecipients().split(",")).map(String::trim).collect(Collectors.toSet()))
+				.emailTo(toRecipients)
 				.subject("Sewerage Demand Generation Started - " + tenantId)
 				.body(htmlBody)
 				.isHTML(true)
@@ -180,8 +185,13 @@ public class DemandSchedulerNotificationService {
 				.replace("{totalAmount}", totalAmount.setScale(2, BigDecimal.ROUND_HALF_UP).toString())
 				.replace("{failedConnectionsRows}", failedRowsBuilder.toString());
 
+		Set<String> toRecipients = utils.getTenantEmailIds(Collections.singleton(tenantId), requestInfo);
+		if (toRecipients == null || toRecipients.isEmpty()) {
+			toRecipients = Arrays.stream(configs.getMailRecipients().split(",")).map(String::trim).collect(Collectors.toSet());
+		}
+
 		Email email = Email.builder()
-				.emailTo(Arrays.stream(configs.getMailRecipients().split(",")).map(String::trim).collect(Collectors.toSet()))
+				.emailTo(toRecipients)
 				.subject("Sewerage Demand Generation Completed - " + tenantId)
 				.body(htmlBody)
 				.isHTML(true)

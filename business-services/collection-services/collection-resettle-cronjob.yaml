@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: collection-resettle-job
+  namespace: egov
+  labels:
+    app: collection-resettle-job
+    group: billing-collection
+spec:
+  # Schedule: Every 2 hours (0 */2 * * *). Change to '0 2 * * *' for once daily at 2:00 AM.
+  schedule: "0 */2 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: collection-resettle-job
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: resettle-trigger
+            image: curlimages/curl:7.85.0
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Starting collection resettle batch job at $(date)..."
+
+              PAYLOAD='{
+                "RequestInfo": {
+                  "apiId": "collection-resettle-cron",
+                  "ver": "1.0",
+                  "action": "_auto-resettle",
+                  "did": "1",
+                  "key": "cron",
+                  "msgId": "cron-resettle-request",
+                  "userInfo": {
+                    "id": 1,
+                    "uuid": "cron-system-admin",
+                    "type": "SYSTEM",
+                    "roles": [{"name": "SUPERUSER", "code": "SUPERUSER"}]
+                  }
+                },
+                "criteria": {
+                  "limit": 50,
+                  "bufferMinutes": 30,
+                  "lookbackHours": 24
+                }
+              }'
+
+              RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+                -H "Content-Type: application/json" \
+                -d "$PAYLOAD" \
+                "http://collection-services.egov.svc.cluster.local:8080/collection-services/payments/_auto-resettle")
+
+              HTTP_BODY=$(echo "$RESPONSE" | sed -e '$d')
+              HTTP_STATUS=$(echo "$RESPONSE" | tail -n 1 | cut -d':' -f2)
+
+              echo "Response Code: $HTTP_STATUS"
+              echo "Response Body: $HTTP_BODY"
+
+              if [ "$HTTP_STATUS" -ne 200 ]; then
+                echo "ERROR: Resettle job failed with HTTP status $HTTP_STATUS"
+                exit 1
+              fi
+
+              echo "Resettle batch job completed successfully at $(date)."

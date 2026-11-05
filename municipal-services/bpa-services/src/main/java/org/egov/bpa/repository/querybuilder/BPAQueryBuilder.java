@@ -59,7 +59,7 @@ public class BPAQueryBuilder {
 
         StringBuilder builder = new StringBuilder(QUERY);
       
-        if (criteria.getTenantId() != null) {
+        if (criteria.getTenantId() != null && !criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
             if (criteria.getTenantId().split("\\.").length == 1) {
 
                 addClauseIfRequired(preparedStmtList, builder);
@@ -308,7 +308,7 @@ public class BPAQueryBuilder {
 
         StringBuilder builder = new StringBuilder(QUERY);
 
-        if (criteria.getTenantId() != null) {
+        if (criteria.getTenantId() != null && !criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
             if (criteria.getTenantId().split("\\.").length == 1) {
 
                 addClauseIfRequired(preparedStmtList, builder);

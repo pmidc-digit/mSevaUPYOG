@@ -95,6 +95,7 @@ import org.egov.edcr.feature.NorthDirection;
 import org.egov.edcr.feature.OpenStairService;
 import org.egov.edcr.feature.OverHangs;
 import org.egov.edcr.feature.OverheadElectricalLineService;
+import org.egov.edcr.feature.PageSize;
 import org.egov.edcr.feature.Parapet;
 import org.egov.edcr.feature.Parking;
 import org.egov.edcr.feature.PetrolFillingStation;
@@ -409,6 +410,9 @@ public class PlanFeatureRepository {
         
         pf = new PlanFeature(UnitFA.class);
         features.add(pf);
+        
+        pf = new PlanFeature(PageSize.class);
+	    features.add(pf);
 
         
         return features;

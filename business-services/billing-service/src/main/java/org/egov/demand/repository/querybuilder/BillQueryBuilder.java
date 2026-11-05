@@ -29,7 +29,7 @@ public class BillQueryBuilder {
 	public static final String REPLACE_STRING = "{replace}";
 
 	public static final String BILL_STATUS_UPDATE_BASE_QUERY = "UPDATE egbs_bill_v1 SET status=? {replace} WHERE status='ACTIVE' AND tenantId = ? ";
-	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE status='ACTIVE' ";
+	public static final String BILL_STATUS_UPDATE_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE (status='ACTIVE' OR status='EXPIRED') ";
 
 	public static final String BILL_STATUS_UPDATE_BATCH_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE id = ?";
 
@@ -104,7 +104,7 @@ public class BillQueryBuilder {
 
 		return maxQuery.toString();
 	}
-
+	
 	/*	PI-19980 Patiala Penalty not apply in W/S*/
 	public String getBillQueryLatest(BillSearchCriteria billSearchCriteria, List<Object> preparedStatementValues) {
 
@@ -133,6 +133,7 @@ public class BillQueryBuilder {
 		return maxQuery.toString();
 	}
 	/*	PI-19980 Patiala Penalty not apply in W/S*/
+
 	
 /**
  *  Fetch only Active Bills
@@ -220,7 +221,6 @@ public class BillQueryBuilder {
 			appendListToQuery(searchBill.getConsumerCode(), preparedStatementValues, selectQuery);
 		}
 	}
-
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void addWhereClauses(final StringBuilder selectQuery, final List preparedStatementValues,
@@ -277,6 +277,7 @@ public class BillQueryBuilder {
 		}
 	}
 	
+
 	@SuppressWarnings({ "rawtypes" })
 	private StringBuilder addPagingClause(final StringBuilder selectQuery, final List preparedStatementValues,
 			final BillSearchCriteria searchBillCriteria) {
@@ -317,6 +318,7 @@ public class BillQueryBuilder {
 
 	    return finalQuery;
 	}
+
 
 /**
 	 * Bill expire query builder

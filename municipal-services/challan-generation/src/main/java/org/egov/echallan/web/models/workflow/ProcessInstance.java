@@ -14,6 +14,9 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProcessInstance {
 
+  @JsonProperty("id")
+  private String id;
+
   @JsonProperty("businessService")
   private String businessService;
 
@@ -31,6 +34,12 @@ public class ProcessInstance {
 
   @JsonProperty("comment")
   private String comment;
+
+  @JsonProperty("assignes")
+  private java.util.List<String> assignes;
+
+  @JsonProperty("documents")
+  private java.util.List<org.egov.echallan.model.DocumentDetail> documents;
 
   @JsonProperty("state")
   private State state; // populated by workflow response

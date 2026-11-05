@@ -53,49 +53,64 @@ class KaleyraWhatsAppProvider {
 
   async sendMessageToUser(user, outputMessages, extraInfo) {
     for(let message of outputMessages) {
-      let phone = user.mobileNumber;
+      try {
+        let phone = user.mobileNumber;
 
-      let headers = {
-        'api-key': config.kaleyra.apikey
-      }
+        let headers = {
+          'api-key': config.kaleyra.apikey
+        }
 
-      let form = new FormData();
-      
-      form.append("channel", "whatsapp");
-      form.append("from", extraInfo.whatsAppBusinessNumber);
-      form.append("to", '91' + phone);
+        let form = new FormData();
 
-      if(typeof(message) == 'string') {
-        form.append("type", 'text');
-        form.append("body", message);
-      } else if (message.type == 'media') {
-        let buffer;
-        buffer = fs.readFileSync(path.resolve(__dirname, `../../${message.output}`));
-        form.append("caption", message.caption || '');
-        form.append("type", 'media');
-        form.append("media", buffer, {
-          contentType: 'text/plain',
-          name: 'file',
-          filename: message.output,
-        });
-      } else if(message.type == 'template') {
-        //TODO: Handle media template
-        form.append("type", message.type);
-        form.append("body", message.output);
-      } else {
-        form.append("type", message.type);
-        form.append("body", message.output);
-      }
-      
-      var request = {
-          method: "POST",
-          headers: headers,
-          body: form
-      }
+        form.append("channel", "whatsapp");
+        form.append("from", extraInfo.whatsAppBusinessNumber);
+        form.append("to", '91' + phone);
 
-      const response = await fetch(this.url, request).then(res => res.json());
-      if (response && message.type === 'media' && message.output.includes('dynamic-media')) {
-        fs.unlinkSync(path.resolve(__dirname, `../../${message.output}`));
+        if(typeof(message) == 'string') {
+          form.append("type", 'text');
+          form.append("body", message);
+        } else if (message.type == 'media') {
+          try {
+            let buffer = fs.readFileSync(path.resolve(__dirname, `../../${message.output}`));
+            form.append("caption", message.caption || '');
+            form.append("type", 'media');
+            form.append("media", buffer, {
+              contentType: 'text/plain',
+              name: 'file',
+              filename: message.output,
+            });
+          } catch (fileError) {
+            console.error(`Error reading media file ${message.output}:`, fileError.message);
+            continue;
+          }
+        } else if(message.type == 'template') {
+          form.append("type", message.type);
+          form.append("body", message.output);
+        } else {
+          form.append("type", message.type);
+          form.append("body", message.output);
+        }
+
+        var request = {
+            method: "POST",
+            headers: headers,
+            body: form
+        }
+
+        try {
+          const response = await fetch(this.url, request).then(res => res.json());
+          if (response && message.type === 'media' && message.output.includes('dynamic-media')) {
+            try {
+              fs.unlinkSync(path.resolve(__dirname, `../../${message.output}`));
+            } catch (deleteError) {
+              console.warn(`Warning: Could not delete media file ${message.output}:`, deleteError.message);
+            }
+          }
+        } catch (fetchError) {
+          console.error(`Error sending message via Kaleyra to ${phone}:`, fetchError.message);
+        }
+      } catch (error) {
+        console.error('Error in sendMessageToUser:', error.message);
       }
     }
   }

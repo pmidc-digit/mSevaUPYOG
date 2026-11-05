@@ -48,29 +48,53 @@
 
 package org.egov.infra.web.rest.error;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.http.HttpStatus;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ErrorResponse {
-    private final String errorCode;
-    private final String errorDetails;
-    private final int httpStatus;
+    private String errorCode;
+    private String errorDetails;
+    private int httpStatus;
+
+    public ErrorResponse() {
+    }
 
     public ErrorResponse(final String errorCode, final String errorDetails, final HttpStatus httpStatus) {
         this.errorCode = errorCode;
         this.errorDetails = errorDetails;
-        this.httpStatus = httpStatus.value();
+        this.httpStatus = httpStatus != null ? httpStatus.value() : 500;
     }
 
     public String getErrorCode() {
         return errorCode;
     }
 
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
     public String getErrorDetails() {
         return errorDetails;
+    }
+
+    public void setErrorDetails(String errorDetails) {
+        this.errorDetails = errorDetails;
+    }
+
+    public String getErrorMessage() {
+        return errorDetails;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorDetails = errorMessage;
     }
 
     public int getErrorStatus() {
         return httpStatus;
     }
 
+    public void setErrorStatus(int errorStatus) {
+        this.httpStatus = errorStatus;
+    }
 }

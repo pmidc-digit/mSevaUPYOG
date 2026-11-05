@@ -2,6 +2,7 @@ package org.egov.hrms.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -278,6 +279,77 @@ public class MDMSService {
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().tenantId(tenantId).moduleDetails(moduleDetails).build();
 		return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
 
+	}
+
+	/**
+	 * Common method to fetch master data for a module from MDMS.
+	 *
+	 * @param requestInfo
+	 * @param tenantId
+	 * @param moduleName
+	 * @param masterName
+	 * @param filter
+	 * @return List of master records
+	 */
+	public List<Map<String, Object>> fetchBuildingCategories(RequestInfo requestInfo, String tenantId, String moduleName, String masterName, String filter) {
+		StringBuilder uri = new StringBuilder();
+		String stateTenantId = tenantId != null ? tenantId.split("\\.")[0] : "pb";
+
+		MasterDetail masterDetail = MasterDetail.builder()
+				.name(masterName)
+				.filter(filter)
+				.build();
+
+		ModuleDetail moduleDetail = ModuleDetail.builder()
+				.moduleName(moduleName)
+				.masterDetails(Collections.singletonList(masterDetail))
+				.build();
+
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+				.tenantId(stateTenantId)
+				.moduleDetails(Collections.singletonList(moduleDetail))
+				.build();
+
+		MdmsCriteriaReq request = MdmsCriteriaReq.builder()
+				.requestInfo(requestInfo)
+				.mdmsCriteria(mdmsCriteria)
+				.build();
+
+		uri.append(mdmsHost).append(mdmsEndpoint);
+		try {
+			MdmsResponse response = restTemplate.postForObject(uri.toString(), request, MdmsResponse.class);
+			if (response != null && response.getMdmsRes() != null) {
+				Map mdmsRes = response.getMdmsRes();
+				if (mdmsRes.containsKey(moduleName)) {
+					Map masters = (Map) mdmsRes.get(moduleName);
+					if (masters != null && masters.containsKey(masterName)) {
+						Object masterObj = masters.get(masterName);
+						if (masterObj instanceof List) {
+							return (List<Map<String, Object>>) masterObj;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Exception while fetching MDMS data for module: " + moduleName + ", master: " + masterName, e);
+		}
+		return Collections.emptyList();
+	}
+
+	public List<Map<String, Object>> fetchBuildingCategories(RequestInfo requestInfo, String tenantId, String moduleName, String filter) {
+		return fetchBuildingCategories(requestInfo, tenantId, moduleName, "CLU".equalsIgnoreCase(moduleName) ? "AppliedCategory" : "BuildingCategory", filter);
+	}
+
+	public List<Map<String, Object>> fetchBuildingCategories(RequestInfo requestInfo, String tenantId) {
+		return fetchBuildingCategories(requestInfo, tenantId, "NOC", "BuildingCategory", "[?(@.active == true)]");
+	}
+
+	public List<Map<String, Object>> fetchNocBuildingCategories(RequestInfo requestInfo, String tenantId) {
+		return fetchBuildingCategories(requestInfo, tenantId);
+	}
+
+	public List<Map<String, Object>> fetchMDMSData(RequestInfo requestInfo, String tenantId, String moduleName, String masterName, String filter) {
+		return fetchBuildingCategories(requestInfo, tenantId, moduleName, masterName, filter);
 	}
 
 }

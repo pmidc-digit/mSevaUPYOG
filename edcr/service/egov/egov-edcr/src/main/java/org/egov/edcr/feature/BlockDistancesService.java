@@ -178,7 +178,7 @@ public class BlockDistancesService extends FeatureProcess {
 	public void processDistanceBetweenBlocks(Plan pl) {
 		if (pl.getBlocks().isEmpty())
 			return;
-		validateDistanceBetweenBlocks(pl);
+		//validateDistanceBetweenBlocks(pl);
 		scrutinyDetail = new ScrutinyDetail();
 		scrutinyDetail.setKey("Common_Distance Between Blocks");
 		scrutinyDetail.addColumnHeading(1, RULE_NO);
@@ -289,21 +289,21 @@ public class BlockDistancesService extends FeatureProcess {
 
 		if (valid1) {
 			setReportOutputDetails(pl, SUBRULE_37_1, String.format(SUB_RULE_DES, b.getNumber(), block.getNumber()),
-					StringUtils.EMPTY, MINIMUM_DISTANCE_BUILDING, actualDistance.toString() + DcrConstants.IN_METER,
+					StringUtils.EMPTY, MINIMUM_DISTANCE_BUILDING, actualDistance.toString() + DcrConstants.IN_M,
 					Result.Accepted.getResultVal());
 		} else {
 			setReportOutputDetails(pl, SUBRULE_37_1, String.format(SUB_RULE_DES, b.getNumber(), block.getNumber()),
-					StringUtils.EMPTY, MINIMUM_DISTANCE_BUILDING, actualDistance.toString() + DcrConstants.IN_METER,
+					StringUtils.EMPTY, MINIMUM_DISTANCE_BUILDING, actualDistance.toString() + DcrConstants.IN_M,
 					Result.Not_Accepted.getResultVal());
 		}
 
 		if (valid2) {
 			setReportOutputDetails(pl, SUBRULE_37_1, String.format(SUB_RULE_DES, b.getNumber(), block.getNumber()),
-					StringUtils.EMPTY, MINIMUM_DISTANCE_SETBACK, actualDistance.toString() + DcrConstants.IN_METER,
+					StringUtils.EMPTY, MINIMUM_DISTANCE_SETBACK, actualDistance.toString() + DcrConstants.IN_M,
 					Result.Accepted.getResultVal());
 		} else {
 			setReportOutputDetails(pl, SUBRULE_37_1, String.format(SUB_RULE_DES, b.getNumber(), block.getNumber()),
-					StringUtils.EMPTY, MINIMUM_DISTANCE_SETBACK, actualDistance.toString() + DcrConstants.IN_METER,
+					StringUtils.EMPTY, MINIMUM_DISTANCE_SETBACK, actualDistance.toString() + DcrConstants.IN_M,
 					Result.Not_Accepted.getResultVal());
 		}
 

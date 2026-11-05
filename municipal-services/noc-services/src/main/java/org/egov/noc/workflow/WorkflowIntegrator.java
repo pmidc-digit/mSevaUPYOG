@@ -75,7 +75,7 @@ public class WorkflowIntegrator {
 	 *
 	 * @param nocRequest
 	 */
-	public void callWorkFlow(NocRequest nocRequest, String bussinessServiceValue) {
+	public void callWorkFlow(NocRequest nocRequest, String bussinessServiceValue, String hrmsSearchPath) {
 		String wfTenantId = nocRequest.getNoc().getTenantId();
 		JSONArray array = new JSONArray();
 		Noc noc = nocRequest.getNoc();
@@ -85,6 +85,9 @@ public class WorkflowIntegrator {
 		obj.put(BUSINESSSERVICEKEY, bussinessServiceValue);
 		obj.put(MODULENAMEKEY, NOCConstants.NOC_MODULE);
 		obj.put(ACTIONKEY, noc.getWorkflow().getAction());
+		
+		// Add hrmsSearchPath inside ProcessInstances
+		obj.put("hrmsSearchPath", hrmsSearchPath);
 		
 		if(noc.getWorkflow().getComment() != null)
 		  obj.put(COMMENTKEY, noc.getWorkflow().getComment());

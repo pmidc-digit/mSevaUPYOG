@@ -22,28 +22,13 @@ public class WaterTankCapacityExtract extends FeatureExtract {
             String tankCapacity = Util.getMtextByLayerName(pl.getDoc(),
                     layerNames.getLayerName("LAYER_NAME_WATER_TANK_CALCULATION"),
                     layerNames.getLayerName("LAYER_NAME_WATER_TANK_CAPACITY_L"));
-            if (tankCapacity != null && !tankCapacity.isEmpty())
-                try {
-                    if (tankCapacity.contains(";")) {
-                        String[] textSplit = tankCapacity.split(";");
-                        int length = textSplit.length;
-
-                        if (length >= 1) {
-                            int index = length - 1;
-                            tankCapacity = textSplit[index];
-                            tankCapacity = tankCapacity.replaceAll("[^\\d.]", "");
-                        } else
-                            tankCapacity = tankCapacity.replaceAll("[^\\d.]", "");
-                    } else
-                        tankCapacity = tankCapacity.replaceAll("[^\\d.]", "");
-
-                    if (!tankCapacity.isEmpty())
-                        pl.getUtility().setWaterTankCapacity(BigDecimal.valueOf(Double.parseDouble(tankCapacity)));
-
-                } catch (NumberFormatException e) {
-                    pl.addError(layerNames.getLayerName("LAYER_NAME_WATER_TANK_CALCULATION"),
-                            "Water tank capacity value contains non numeric character.");
+            if (tankCapacity != null && !tankCapacity.isEmpty()) {
+                BigDecimal cap = Util.extractBigDecimalFromText(tankCapacity, pl,
+                        layerNames.getLayerName("LAYER_NAME_WATER_TANK_CALCULATION"), "Water tank capacity");
+                if (cap != null) {
+                    pl.getUtility().setWaterTankCapacity(cap);
                 }
+            }
         }
 
         return pl;

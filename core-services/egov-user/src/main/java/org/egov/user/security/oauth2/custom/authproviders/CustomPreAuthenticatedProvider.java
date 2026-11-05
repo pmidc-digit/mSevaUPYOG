@@ -67,9 +67,21 @@ public class CustomPreAuthenticatedProvider implements AuthenticationProvider {
             user = userService.getUniqueUser(userName, tenantId, UserType.fromValue(userType));
             /* decrypt here */
             Set<org.egov.user.domain.model.Role> domain_roles = user.getRoles();
+            if (domain_roles == null || domain_roles.isEmpty()) {
+                log.error("Login failed: User '{}' of type '{}' in tenant '{}' has no roles assigned in the database.",
+                        userName, userType, tenantId);
+                OAuth2Exception exception = new OAuth2Exception(
+                        "No roles assigned for user: " + userName + ". Your account does not have access permissions configured. Please contact your system administrator.");
+                exception.addAdditionalInformation("roles_missing", "true");
+                exception.addAdditionalInformation("user_name", userName);
+                exception.addAdditionalInformation("user_type", userType);
+                throw exception;
+            }
             List<org.egov.common.contract.request.Role> contract_roles = new ArrayList<>();
             for (org.egov.user.domain.model.Role role : domain_roles) {
-                contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode()).name(role.getName()).build());
+                if (role != null) {
+                    contract_roles.add(org.egov.common.contract.request.Role.builder().code(role.getCode()).name(role.getName()).build());
+                }
             }
             org.egov.common.contract.request.User userInfo = org.egov.common.contract.request.User.builder().uuid(user.getUuid())
                     .type(user.getType() != null ? user.getType().name() : null).roles(contract_roles).build();
@@ -84,8 +96,8 @@ public class CustomPreAuthenticatedProvider implements AuthenticationProvider {
 
         }
 
-        if (user.getAccountLocked() == null || user.getAccountLocked()) {
-            throw new OAuth2Exception("Account locked");
+        if (user.getAccountLocked() != null && user.getAccountLocked()) {
+            throw userService.buildAccountLockedException(user);
         }
 
         List<GrantedAuthority> grantedAuths = new ArrayList<>();

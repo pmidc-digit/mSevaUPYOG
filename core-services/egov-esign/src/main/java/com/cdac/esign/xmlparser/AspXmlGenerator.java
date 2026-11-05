@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -17,12 +19,14 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
+import com.cdac.esign.exception.ESignException;
 import com.cdac.esign.form.FormXmlDataAsp;
 
 @Component
@@ -35,9 +39,11 @@ public class AspXmlGenerator {
         try {
             Document doc = buildBaseDocument(aspXmlDetais);
             return convertDocumentToString(doc);
+        } catch (ESignException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("Error generating ASP XML", e);
-            return "";
+            throw new ESignException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate eSign request XML", e);
         }
     }
 
@@ -59,15 +65,20 @@ public class AspXmlGenerator {
             saveXmlToTempFile(xmlData, "Testing.xml");
 
             return xmlData;
+        } catch (ESignException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("Error generating Final ASP XML", e);
-            return "";
+            throw new ESignException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to generate final eSign XML", e);
         }
     }
 
     // --- Helper Methods to remove Code Duplication ---
 
     private Document buildBaseDocument(FormXmlDataAsp details) throws Exception {
+        if (details == null) {
+            throw new ESignException(HttpStatus.INTERNAL_SERVER_ERROR, "eSign request details are missing");
+        }
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
         Document doc = docBuilder.newDocument();
@@ -97,9 +108,13 @@ public class AspXmlGenerator {
         setAttr(doc, inputHash, "id", details.getId());
         setAttr(doc, inputHash, "hashAlgorithm", details.getHashAlgorithm());
         setAttr(doc, inputHash, "docInfo", details.getDocInfo());
-        
-        // CRITICAL: This Hash must be from the Prepared (Blank Field) PDF
-        inputHash.appendChild(doc.createTextNode(details.getDocHashHex()));
+
+        // CRITICAL: this hash must be from the prepared (blank signature field) PDF
+        String hash = details.getDocHashHex();
+        if (hash == null || hash.trim().isEmpty()) {
+            throw new ESignException(HttpStatus.INTERNAL_SERVER_ERROR, "Document hash is missing");
+        }
+        inputHash.appendChild(doc.createTextNode(hash));
         docs.appendChild(inputHash);
 
         return doc;
@@ -158,6 +173,7 @@ public class AspXmlGenerator {
             }
         } catch (Exception e) {
             logger.error("Error writing XML to file", e);
+            throw new ESignException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to write XML file", e);
         }
     }
 }

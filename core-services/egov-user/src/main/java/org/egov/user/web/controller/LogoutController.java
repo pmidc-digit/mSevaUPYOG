@@ -43,17 +43,23 @@ public class LogoutController {
     
     @PostMapping("/_logout")
     public ResponseInfo deleteToken(@RequestParam("access_token") String accessToken) throws Exception {
-      // String accessToken = tokenWrapper.getAccessToken();
         OAuth2AccessToken redisToken = tokenStore.readAccessToken(accessToken);
-        Map<String, Object> additionalInfo = redisToken.getAdditionalInformation();
-        if (additionalInfo != null && additionalInfo.containsKey("UserRequest")) {
-            org.egov.user.web.contract.auth.User userInfo =
-                    (org.egov.user.web.contract.auth.User) additionalInfo.get("UserRequest");
-
-            // Update logout time (manual logout)
-            userRepository.updateUserLogoutSession(userInfo.getUuid(), false);
+        if (redisToken != null) {
+            Map<String, Object> additionalInfo = redisToken.getAdditionalInformation();
+            if (additionalInfo != null && additionalInfo.containsKey("UserRequest")) {
+                Object userObj = additionalInfo.get("UserRequest");
+                if (userObj instanceof org.egov.user.web.contract.auth.User) {
+                    org.egov.user.web.contract.auth.User userInfo =
+                            (org.egov.user.web.contract.auth.User) userObj;
+                    // Update logout time (manual logout)
+                    userRepository.updateUserLogoutSession(userInfo.getUuid(), false);
+                }
+            }
+            if (redisToken.getRefreshToken() != null) {
+                tokenStore.removeRefreshToken(redisToken.getRefreshToken());
+            }
+            tokenStore.removeAccessToken(redisToken);
         }
-        tokenStore.removeAccessToken(redisToken);
         return new ResponseInfo("", "", System.currentTimeMillis(), "", "", "Logout successfully");
     }
     @ExceptionHandler(Exception.class)

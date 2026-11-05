@@ -36,5 +36,7 @@ public class Definition {
 	
 	@JsonProperty("output")
 	private Output output;	
-	
+
+	@JsonProperty("externalService")
+	private java.util.List<ExternalService> externalService;
 }

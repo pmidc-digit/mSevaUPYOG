@@ -7,6 +7,7 @@ var FormData = require("form-data");
 var uuid = require('uuid-random');
 var geturl = require("url");
 var path = require("path");
+const exifr = require('exifr');
 require('url-search-params-polyfill');
 
 let valueFirstRequestBody = "{\"@VER\":\"1.2\",\"USER\":{\"@USERNAME\":\"\",\"@PASSWORD\":\"\",\"@UNIXTIMESTAMP\":\"\",\"@CH_TYPE\":\"4\"},\"DLR\":{\"@URL\":\"\"},\"SMS\":[]}";
@@ -68,23 +69,74 @@ class ValueFirstWhatsAppProvider {
     
 
     async convertFromBase64AndStore(imageInBase64String){
-        imageInBase64String = imageInBase64String.replace(/ /g,'+');
+
+        if (!imageInBase64String || typeof imageInBase64String !== "string") {
+            throw new Error("Invalid imageInBase64String: Value is missing or not a string");
+        }
+
+       //console.log("Base64 Input Before Processing:", imageInBase64String.substring(0, 50) + "..."); // Print first 50 chars
+    
+
+
+        imageInBase64String = imageInBase64String.replace(/ /g, '+');
+
         let buff = Buffer.from(imageInBase64String, 'base64');
-        var tempName = 'pgr-whatsapp-'+Date.now()+'.jpg'; 
+        var tempName = 'pgr-whatsapp-' + Date.now() + '.jpg'; 
+
+       // console.log("Temp Filename:", tempName);
 
         /*fs.writeFile(tempName, buff, (err) => {
             if (err) throw err;
         });*/
 
-        var filestoreId = await this.fileStoreAPICall(tempName,buff);
+        try {
+            var filestoreId = await this.fileStoreAPICall(tempName, buff);
+            //console.log("FileStore ID:", filestoreId);
+            return filestoreId;
+        } catch (error) {
+           // console.error("Error in fileStoreAPICall:", error);
+            return null;
+        }
+
+        // var filestoreId = await this.fileStoreAPICall(tempName,buff);
         
-        return filestoreId;
+        // return filestoreId;
+    }
+
+    async getMetadataFromBase64(base64Image) {
+        try {
+          // Remove "data:image/jpeg;base64," or similar header if present
+          const base64Data = base64Image.replace(/ /g, '+');
+      
+          // Convert to Buffer
+          const imgBuffer = Buffer.from(base64Data, 'base64');
+      
+          // Now pass the buffer to exifr
+          const metadata = await exifr.gps(imgBuffer);
+      
+            if (metadata && metadata.latitude && metadata.longitude) {
+                //console.log('Metadata:', metadata);
+                return {
+                    latitude: metadata.latitude.toString(),
+                    longitude: metadata.longitude.toString(),
+                };
+            }else {
+                console.log('No metadata found.');
+                return {};
+            }
+        } catch (error) {
+          console.error('Error extracting metadata:', error);
+          return {};
+        }
     }
 
     async getUserMessage(requestBody){
+
+
         let reformattedMessage={};
         let type;
         let input;
+        // let metadata = {};
 
         if(requestBody.buttonLabel && requestBody.buttonLabel != '$btnLabel'){
             type = 'button'
@@ -101,8 +153,15 @@ class ValueFirstWhatsAppProvider {
             if(type === "location") {
                 input = '(' + requestBody.latitude + ',' + requestBody.longitude + ')';
             } 
+
             else if(type === 'image'){
-                var imageInBase64String = requestBody.media_data;
+                //var imageInBase64String = requestBody.media_data;
+                  var imageInBase64String = requestBody.MediaData;
+
+                if (!imageInBase64String) {
+                    console.error("Error: Base64 image string is missing in requestBody!");
+                }
+                // metadata = await this.getMetadataFromBase64(imageInBase64String);
                 input = await this.convertFromBase64AndStore(imageInBase64String);
             }
             else if(type === 'unknown' || type === 'document')
@@ -114,7 +173,8 @@ class ValueFirstWhatsAppProvider {
 
         reformattedMessage.message = {
             input: input,
-            type: type
+            type: type,
+            // metadata: metadata
         };
         reformattedMessage.user = {
            mobileNumber: requestBody.from.slice(2)
@@ -161,45 +221,85 @@ class ValueFirstWhatsAppProvider {
         return reformattedMessage;
     }
 
-    async downloadImage(url,filename) {  
-        const writer = fs.createWriteStream(filename);
-      
-        const response = await axios({
-            url,
-            method: 'GET',
-            responseType: 'stream'
+    async downloadImage(url,filename) {
+        try {
+          if (!filename || filename.trim() === '') {
+              const timestamp = Date.now();
+              filename = `temp_download_${timestamp}.jpg`;
+              console.warn(`Empty filename detected, using fallback: ${filename}`);
+          }
+
+          // Ensure filename is a string and not empty after trim
+          filename = filename.toString().trim();
+          if (filename === '') {
+              filename = `fallback_${Date.now()}.jpg`;
+              console.warn(`Invalid filename after processing, using: ${filename}`);
+          }
+
+          console.log("downloadImage - Using filename:", filename);
+
+          const writer = fs.createWriteStream(filename);
+
+          const response = await axios({
+              url,
+              method: 'GET',
+              responseType: 'stream'
+            });
+
+          response.data.pipe(writer);
+
+          return new Promise((resolve, reject) => {
+              writer.on('finish', resolve);
+              writer.on('error', reject);
           });
-      
-        response.data.pipe(writer);
-      
-        return new Promise((resolve, reject) => {
-          writer.on('finish', resolve);
-          writer.on('error', reject);
-        })
+        } catch (error) {
+          console.error('Error downloading image:', error.message);
+          throw error;
+        }
     }
 
     async getFileForFileStoreId(filestoreId){
-        var url = config.egovServices.egovServicesHost+config.egovServices.egovFilestoreServiceDownloadEndpoint;
-        url = url + '?';
-        url = url + 'tenantId='+config.rootTenantId;
-        url = url + '&';
-        url = url + 'fileStoreIds='+filestoreId;
+        try {
+          var url = config.egovServices.egovServicesHost+config.egovServices.egovFilestoreServiceDownloadEndpoint;
+          url = url + '?';
+          url = url + 'tenantId='+config.rootTenantId;
+          url = url + '&';
+          url = url + 'fileStoreIds='+filestoreId;
 
-        var options = {
-            method: "GET",
-            origin: '*'
+          var options = {
+              method: "GET",
+              origin: '*'
+          }
+          //console.log("Filestore URL", url)
+          let response = await fetch(url,options);
+
+          if (!response.ok) {
+              console.error('Filestore API returned error status:', response.status);
+              throw new Error(`Filestore API error: ${response.status}`);
+          }
+
+          response = await(response).json();
+
+          console.log('Filestore API Response:', JSON.stringify(response));
+
+          // Add validation here
+          if (!response || !response.fileStoreIds || response.fileStoreIds.length === 0) {
+              console.error('Error: fileStoreIds not found in response for fileStoreId:', filestoreId);
+              console.error('Response:', JSON.stringify(response));
+              throw new Error('Failed to retrieve file from filestore');
+          }
+          if (!response.fileStoreIds[0].url) {
+              console.error('Error: URL not found in fileStoreIds[0]');
+              throw new Error('File URL not found in filestore response');
+          }
+
+          //console.log("getFileForFileStoreId Response", response);
+          var fileURL = response['fileStoreIds'][0]['url'].split(",");
+          return fileURL[0].toString();
+        } catch (error) {
+          console.error('Error retrieving file from filestore:', error.message);
+          throw error;
         }
-
-        let response = await fetch(url,options);
-        response = await(response).json();
-        var fileURL = response['fileStoreIds'][0]['url'].split(",");
-        /*var fileName = geturl.parse(fileURL[0]);
-        fileName = path.basename(fileName.pathname);
-        fileName = fileName.substring(13);
-        await this.downloadImage(fileURL[0].toString(),fileName);
-        const file = fs.readFileSync(fileName,'base64');
-        fs.unlinkSync(fileName);*/
-        return fileURL[0].toString();
     }
 
     async getTransformedResponse(user, messages, extraInfo){
@@ -216,6 +316,8 @@ class ValueFirstWhatsAppProvider {
         for(let i = 0; i < messages.length; i++) {
             let message;
             let type;
+            console.log("getTransformedResponse message",messages[i]);
+            console.log("getTransformedResponse type",typeof messages[i]);
             if(typeof messages[i] == 'string'){
                 type = "text";
                 message = messages[i];
@@ -251,23 +353,57 @@ class ValueFirstWhatsAppProvider {
 
                 messageBody['@TEMPLATEINFO'] = combinedStringForTemplateInfo;
             }     
-            else {
-                // TODO for non-textual messages
-                let fileStoreId;
-                if(message)
-                    fileStoreId = message;
-                var fileURL = await this.getFileForFileStoreId(fileStoreId);
-                var uniqueImageMessageId = uuid();
-                messageBody = JSON.parse(imageMessageBody);
-                if(type === 'pdf'){
-                    messageBody['@TYPE'] = "document";
-                    messageBody['@CONTENTTYPE'] = 'application/pdf';
-                    messageBody['@CAPTION'] = extraInfo.fileName+'-'+Date.now();
-                }
-                messageBody['@MEDIADATA'] = fileURL;
-                messageBody['@ID'] = uniqueImageMessageId;
+            else 
+            // {
+            //     // TODO for non-textual messages
+            //     let fileStoreId;
+            //     if(message)
+            //         fileStoreId = message;
+            //     var fileURL = await this.getFileForFileStoreId(fileStoreId);
+            //     var uniqueImageMessageId = uuid();
+            //     messageBody = JSON.parse(imageMessageBody);
+            //     if(type === 'pdf'){
+            //         messageBody['@TYPE'] = "document";
+            //         messageBody['@CONTENTTYPE'] = 'application/pdf';
+            //         messageBody['@CAPTION'] = extraInfo.fileName+'-'+Date.now();
+            //     }
+            //     messageBody['@MEDIADATA'] = fileURL;
+            //     messageBody['@ID'] = uniqueImageMessageId;
 
-            }
+            // }
+            {
+            // Handle non-textual messages with error handling
+                try {
+                    let fileStoreId;
+                    if(message)
+                        fileStoreId = message;
+                    
+                    var fileURL = await this.getFileForFileStoreId(fileStoreId);
+                    var uniqueImageMessageId = uuid();
+                    messageBody = JSON.parse(imageMessageBody);
+                    
+                    if(type === 'pdf'){
+                        messageBody['@TYPE'] = "document";
+                        messageBody['@CONTENTTYPE'] = 'application/pdf';
+                        messageBody['@CAPTION'] = extraInfo.fileName+'-'+Date.now();
+                    }
+                    messageBody['@MEDIADATA'] = fileURL;
+                    messageBody['@ID'] = uniqueImageMessageId;
+                    
+                } 
+                catch (error) {
+                    console.error('============================================');
+                    console.error('ERROR: Failed to fetch file from filestore');
+                    console.error('FileStoreId:', message);
+                    console.error('Error:', error.message);
+                    console.error('============================================');
+                    
+                    // Send a user-friendly fallback text message
+                    messageBody = JSON.parse(textMessageBody);
+                    let fallbackMessage = 'Sorry, unable to load the image/document at this time. Please try again later.';
+                    messageBody['@TEXT'] = urlencode(fallbackMessage, 'utf8');
+                }
+           }
             messageBody["ADDRESS"][0]["@FROM"] = fromMobileNumber;
             messageBody["ADDRESS"][0]["@TO"] = '91' + userMobile;
 
@@ -278,48 +414,52 @@ class ValueFirstWhatsAppProvider {
     }
 
     async sendMessage(requestBody) {
-        let url = config.valueFirstWhatsAppProvider.valueFirstURL;
-        let token = await this.generateBearerToken();
-        console.log('token:' + token);
+        try {
+          let url = config.valueFirstWhatsAppProvider.valueFirstURL;
+          let token = await this.generateBearerToken();
+          console.log('token:' + token);
 
-        if(token){
-            token = 'Bearer ' + token;
-
-        }
-        else {
-            console.error('Error in sending message');
-            return undefined;
-        }
-
-        let headers = {
-            'Content-Type': 'application/json',
-            'Authorization': token
-        }
-
-        var request = {
-            method: "POST",
-            headers: headers,
-            origin: '*',
-            body: JSON.stringify(requestBody)
-        }
-        console.log(url);
-        console.log(JSON.stringify(request));
-        let response = await fetch(url,request);
-        if(response.status === 200){
-            let messageBack = await response.json();
-            if(messageBack.MESSAGEACK.Err){
-                console.error(messageBack.MESSAGEACK.Err.Desc);
-                return messageBack;
-            }
-
-            
-            return messageBack
-        }         
-        else {
-            console.error('Error in sending message');
-            console.error(response);
-            return undefined;
+          if(token){
+              token = 'Bearer ' + token;
           }
+          else {
+              console.error('Error in sending message: token generation failed');
+              return undefined;
+          }
+
+          let headers = {
+              'Content-Type': 'application/json',
+              'Authorization': token
+          }
+
+          var request = {
+              method: "POST",
+              headers: headers,
+              origin: '*',
+              body: JSON.stringify(requestBody)
+          }
+          console.log(url);
+          console.log(JSON.stringify(request));
+          let response = await fetch(url,request);
+          console.log(response);
+          if(response.status === 200){
+              let messageBack = await response.json();
+              if(messageBack.MESSAGEACK.Err){
+                  console.error(messageBack.MESSAGEACK.Err.Desc);
+                  return messageBack;
+              }
+
+              return messageBack
+          }
+          else {
+              console.error('Error in sending message: server returned status ' + response.status);
+              console.error(response);
+              return undefined;
+          }
+        } catch (error) {
+          console.error('Error in sendMessage:', error.message);
+          return undefined;
+        }
     }    
     
     async processMessageFromUser(req) {
@@ -341,66 +481,76 @@ class ValueFirstWhatsAppProvider {
     }
 
     async sendMessageToUser(user, messages,extraInfo) {
-        let requestBody = {};
-        requestBody = await this.getTransformedResponse(user, messages, extraInfo);
-        this.sendMessage(requestBody);       
+        try {
+          let requestBody = {};
+          requestBody = await this.getTransformedResponse(user, messages, extraInfo);
+          await this.sendMessage(requestBody);
+        } catch (error) {
+          console.error('Error in sendMessageToUser:', error.message);
+        }
     }
     async generateBearerToken(){
-        let url = config.valueFirstWhatsAppProvider.valueFirstTokenURL;
+        try {
+          let url = config.valueFirstWhatsAppProvider.valueFirstTokenURL;
 
-        let myheaders = {
-            'Authorization': config.valueFirstWhatsAppProvider.valuefirstLoginAuthorizationHeader
-        }
-        var requestOptions = {
-            method: 'POST',
-            headers: myheaders,
-            origin: '*'
-        };
-        url = url + '?action=generate';
+          let myheaders = {
+              'Authorization': config.valueFirstWhatsAppProvider.valuefirstLoginAuthorizationHeader
+          }
+          var requestOptions = {
+              method: 'POST',
+              headers: myheaders,
+              origin: '*'
+          };
+          url = url + '?action=generate';
 
-        console.log('URL: ' + url + JSON.stringify(requestOptions));
-        let response = await fetch(url,requestOptions);
-        console.log(response);
-        if(response.status === 200){
-            console.log('Token generated successfully');
-            let messageBack = await response.json();
-            return messageBack.token;
+          console.log('URL: ' + url + JSON.stringify(requestOptions));
+          let response = await fetch(url,requestOptions);
+          console.log(response);
+          if(response.status === 200){
+              console.log('Token generated successfully');
+              let messageBack = await response.json();
+              return messageBack.token;
+          }
+          else {
+              console.error('Error while generating token: server returned status ' + response.status);
+              console.error(response);
+              return undefined;
+          }
+        } catch (error) {
+          console.error('Error in generateBearerToken:', error.message);
+          return undefined;
         }
-        else {
-            console.error('Error while generating token');
-            console.error(response);
-            return undefined;
-            }
-        }
+    }
 
     async getTransformMessageForTemplate(reformattedMessages){
-        if(reformattedMessages.length>0){
-            let requestBody = JSON.parse(valueFirstRequestBody);
-            requestBody["USER"]["@USERNAME"] = config.valueFirstWhatsAppProvider.valueFirstUsername;
-            requestBody["USER"]["@PASSWORD"] = config.valueFirstWhatsAppProvider.valueFirstPassword;
+        try {
+          if(reformattedMessages.length>0){
+              let requestBody = JSON.parse(valueFirstRequestBody);
+              requestBody["USER"]["@USERNAME"] = config.valueFirstWhatsAppProvider.valueFirstUsername;
+              requestBody["USER"]["@PASSWORD"] = config.valueFirstWhatsAppProvider.valueFirstPassword;
 
-            for(let message of reformattedMessages){
-                let messageBody = JSON.parse(templateMessageBody);
-                let templateParams = message.extraInfo.params;
-                let combinedStringForTemplateInfo = message.extraInfo.templateId;
-                let userMobile = message.user.mobileNumber;
-            
-                for(let param of templateParams)
-                    combinedStringForTemplateInfo = combinedStringForTemplateInfo + "~" + param;
+              for(let message of reformattedMessages){
+                  let messageBody = JSON.parse(templateMessageBody);
+                  let templateParams = message.extraInfo.params;
+                  let combinedStringForTemplateInfo = message.extraInfo.templateId;
+                  let userMobile = message.user.mobileNumber;
 
-                messageBody['@TEMPLATEINFO'] = combinedStringForTemplateInfo;
+                  for(let param of templateParams)
+                      combinedStringForTemplateInfo = combinedStringForTemplateInfo + "~" + param;
 
-                messageBody["ADDRESS"][0]["@FROM"] = config.whatsAppBusinessNumber;
-                messageBody["ADDRESS"][0]["@TO"] = '91' + userMobile;
+                  messageBody['@TEMPLATEINFO'] = combinedStringForTemplateInfo;
 
-                requestBody["SMS"].push(messageBody);
+                  messageBody["ADDRESS"][0]["@FROM"] = config.whatsAppBusinessNumber;
+                  messageBody["ADDRESS"][0]["@TO"] = '91' + userMobile;
 
-            }
-            this.sendMessage(requestBody);
+                  requestBody["SMS"].push(messageBody);
 
+              }
+              await this.sendMessage(requestBody);
+          }
+        } catch (error) {
+          console.error('Error in getTransformMessageForTemplate:', error.message);
         }
-
-         
     }
 
     

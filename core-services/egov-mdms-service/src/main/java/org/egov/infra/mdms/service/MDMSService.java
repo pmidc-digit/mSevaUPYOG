@@ -1,8 +1,10 @@
 package org.egov.infra.mdms.service;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.egov.MDMSApplicationRunnerImpl;
 import org.egov.infra.mdms.utils.MDMSConstants;
@@ -80,7 +82,9 @@ public class MDMSService {
                 if (masterDetail.getFilter() != null)
                     masterData = filterMaster(masterData, masterDetail.getFilter());
 
-                finalMasterMap.put(masterDetail.getName(), masterData);
+                finalMasterMap.put(masterDetail.getName(),
+                        sanitizeMasterDataForResponse(masterData, tenantId, moduleDetail.getModuleName(),
+                                masterDetail.getName()));
             }
             responseMap.put(moduleDetail.getModuleName(), finalMasterMap);
         }
@@ -88,7 +92,8 @@ public class MDMSService {
     }
 
     private JSONArray getMasterData(Map<String, Map<String, JSONArray>> stateLevel,
-                                    Map<String, Map<String, JSONArray>> ulbLevel, String moduleName, String masterName, String tenantId) throws Exception {
+            Map<String, Map<String, JSONArray>> ulbLevel, String moduleName, String masterName, String tenantId)
+            throws Exception {
 
         Map<String, Map<String, Object>> masterConfigMap = MDMSApplicationRunnerImpl.getMasterConfigMap();
 
@@ -126,5 +131,67 @@ public class MDMSService {
     public JSONArray filterMaster(JSONArray masters, String filterExp) {
         JSONArray filteredMasters = JsonPath.read(masters, filterExp);
         return filteredMasters;
+    }
+
+    private static final Pattern UUID_PATTERN = Pattern
+            .compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+
+    private JSONArray sanitizeMasterDataForResponse(JSONArray masterData, String tenantId, String moduleName,
+            String masterName) {
+        boolean preserveTopLevelId = MDMSApplicationRunnerImpl.hasTopLevelIdInCache(tenantId, moduleName,
+                masterName);
+        JSONArray sanitizedMasterData = new JSONArray();
+        for (Object record : masterData) {
+            sanitizedMasterData.add(sanitizeRecordForResponse(record, preserveTopLevelId));
+        }
+        return sanitizedMasterData;
+    }
+
+    private Object sanitizeRecordForResponse(Object record, boolean preserveTopLevelId) {
+        if (!(record instanceof Map)) {
+            return record;
+        }
+
+        Map<?, ?> recordMap = (Map<?, ?>) record;
+        Object idObj = recordMap.get("id");
+
+        // If top-level 'id' exists and is a random UUID, remove 'id' from response
+        if (idObj != null && isRandomUuid(idObj)) {
+            Map<String, Object> sanitizedRecord = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> entry : recordMap.entrySet()) {
+                if ("id".equals(entry.getKey())) {
+                    continue;
+                }
+                sanitizedRecord.put(String.valueOf(entry.getKey()), entry.getValue());
+            }
+            return sanitizedRecord;
+        }
+
+        // If top-level 'id' exists and is NOT a random UUID, keep it
+        if (preserveTopLevelId || idObj != null) {
+            return record;
+        }
+
+        // Fallback: if record has an id field (e.g. null) that should be removed
+        if (recordMap.containsKey("id")) {
+            Map<String, Object> sanitizedRecord = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> entry : recordMap.entrySet()) {
+                if ("id".equals(entry.getKey())) {
+                    continue;
+                }
+                sanitizedRecord.put(String.valueOf(entry.getKey()), entry.getValue());
+            }
+            return sanitizedRecord;
+        }
+
+        return record;
+    }
+
+    private boolean isRandomUuid(Object idObj) {
+        if (idObj == null) {
+            return false;
+        }
+        String idStr = String.valueOf(idObj).trim();
+        return UUID_PATTERN.matcher(idStr).matches();
     }
 }

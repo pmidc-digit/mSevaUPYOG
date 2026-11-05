@@ -1,5 +1,6 @@
 package org.egov.wf.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
@@ -152,9 +153,11 @@ public class UserService {
         return  d.getTime();
     }
 
-    public List<User> getNextActionUsers(RequestInfo requestInfo, List<String> nextActionRoles, String tenantId){
+    public List<User> getNextActionUsers(RequestInfo requestInfo, List<String> nextActionRoles, String tenantId, String hrmsSearchPath){
     	String roles = nextActionRoles.stream().collect(Collectors.joining(","));
-    	StringBuilder uri = getEmployeeSearchURL(tenantId, roles);
+    	StringBuilder uri = getEmployeeSearchURL(tenantId, roles, hrmsSearchPath);
+    	
+    	
     	
     	JSONObject hrmsRequest = new JSONObject();
     	UserSearchRequest userSearchRequest = new UserSearchRequest();
@@ -163,10 +166,16 @@ public class UserService {
     	Object response = serviceRequestRepository.fetchResult(uri, userSearchRequest);
     	
     	List<User> usersList = JsonPath.read(response, "$.Employees.*.user");
+    	
+    	usersList = mapper.convertValue(
+    			usersList, 
+                new TypeReference<List<User>>() {}
+            );
+    	
     	return usersList;
     }
     
-    private StringBuilder getEmployeeSearchURL(String tenantId, String roles) {
+    private StringBuilder getEmployeeSearchURL(String tenantId, String roles,String hrmsSearchPath) {
     	
     	StringBuilder uri = new StringBuilder(hrmsHost).append(employeeSearchEndpoint);
     	uri.append("?tenantId=").append(tenantId)
@@ -174,6 +183,8 @@ public class UserService {
     	
     	if(!StringUtils.isEmpty(roles))
     		uri.append("&roles=").append(roles);
+    	if(!StringUtils.isEmpty(hrmsSearchPath))
+    		uri.append("&"+hrmsSearchPath);
     	
     	return uri;
     }

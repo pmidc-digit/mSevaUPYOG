@@ -207,5 +207,17 @@ public class ApplicationProperties {
 
     @Value("${egov.shortener.host}")
    	private String shortenerHost;
+
+    @Value("${egov.waterservice.updatebillstatus.topic}")
+    private String updateBillStatusTopic;
+
+    @Value("${egov.waterservice.updatedemandpayer.topic}")
+    private String updateDemandPayerTopic;
+
+    @Value("${egov.filestore.host:http://localhost:8083/}")
+    private String fileStoreHost;
+
+    @Value("${egov.filestore.delete.endpoint:filestore/v1/files/_delete}")
+    private String fileStoreDeleteEndpoint;
     
 }

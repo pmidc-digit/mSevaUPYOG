@@ -379,6 +379,82 @@ public class LayoutQueryBuilder {
 
 		return DOCUMENT_CHECK_LIST_QUERY;
 	}
+
+	public String getLayoutSearchQueryForPlainSearch(LayoutSearchCriteria criteria, List<Object> preparedStmtList, boolean isCount) {
+
+		StringBuilder builder = new StringBuilder(QUERY);
+
+		if (criteria.getTenantId() != null && !criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
+			if (criteria.getTenantId().split("\\.").length == 1) {
+				addClauseIfRequired(builder);
+				builder.append(" layout.tenantid like ?");
+				preparedStmtList.add('%' + criteria.getTenantId() + '%');
+			} else {
+				addClauseIfRequired(builder);
+				builder.append(" layout.tenantid=? ");
+				preparedStmtList.add(criteria.getTenantId());
+			}
+		}
+
+		List<String> ids = criteria.getIds();
+		if (!CollectionUtils.isEmpty(ids)) {
+			addClauseIfRequired(builder);
+			builder.append(" layout.id IN (").append(createQuery(ids)).append(")");
+			addToPreparedStatement(preparedStmtList, ids);
+		}
+
+		String applicationNo = criteria.getApplicationNo();
+		if (applicationNo != null) {
+			List<String> applicationNos = Arrays.asList(applicationNo.split(","));
+			addClauseIfRequired(builder);
+			builder.append(" layout.applicationNo IN (").append(createQuery(applicationNos)).append(")");
+			addToPreparedStatement(preparedStmtList, applicationNos);
+		}
+
+		String approvalNo = criteria.getLayoutNo();
+		if (approvalNo != null) {
+			List<String> approvalNos = Arrays.asList(approvalNo.split(","));
+			addClauseIfRequired(builder);
+			builder.append(" layout.layoutNo IN (").append(createQuery(approvalNos)).append(")");
+			addToPreparedStatement(preparedStmtList, approvalNos);
+		}
+
+		String nocType = criteria.getNocType();
+		if (nocType != null) {
+			List<String> nocTypes = Arrays.asList(nocType.split(","));
+			addClauseIfRequired(builder);
+			builder.append(" layout.layoutType IN (").append(createQuery(nocTypes)).append(")");
+			addToPreparedStatement(preparedStmtList, nocTypes);
+		}
+
+		List<String> status = criteria.getStatus();
+		if (status != null) {
+			addClauseIfRequired(builder);
+			builder.append(" layout.status IN (").append(createQuery(status)).append(")");
+			addToPreparedStatement(preparedStmtList, status);
+		}
+
+		if (!StringUtils.isEmpty(criteria.getVasikaNumber())) {
+			addClauseIfRequired(builder);
+			builder.append(" layout.vasikaNumber=? ");
+			preparedStmtList.add(criteria.getVasikaNumber());
+		}
+
+		if (!StringUtils.isEmpty(criteria.getVasikaDate())) {
+			addClauseIfRequired(builder);
+			builder.append(" layout.vasikaDate=? ");
+			preparedStmtList.add(criteria.getVasikaDate());
+		}
+
+		builder.append(" GROUP BY layout.id, layout.tenantid, layout.lastModifiedTime, layout.createdBy, ")
+				.append("layout.lastModifiedBy, layout.createdTime, layout.applicationNo, layout.layoutNo, layout.layoutType,details.id, details.layoutid, details.additionalDetails ");
+
+		if (isCount)
+			return addCountWrapper(builder.toString());
+
+		return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
+	}
+
 	private String addCountWrapper(String query) {
 	    return countWrapper.replace("{INTERNAL_QUERY}", query);
 	}

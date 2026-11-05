@@ -10,13 +10,17 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
+import org.egov.tracer.model.CustomException;
 import org.egov.user.domain.model.UpdateRequest;
 import org.egov.user.domain.model.UpdateResponse;
 import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.UserDetail;
 import org.egov.user.domain.model.UserSearchCriteria;
+import org.egov.user.domain.service.CitizenLoginService;
 import org.egov.user.domain.service.TokenService;
 import org.egov.user.domain.service.UserService;
+import org.egov.user.web.contract.CitizenLoginRequest;
+import org.egov.user.web.contract.CitizenLoginResponse;
 import org.egov.user.web.contract.CreateUserRequest;
 import org.egov.user.web.contract.UserDetailResponse;
 import org.egov.user.web.contract.UserRequest;
@@ -24,6 +28,7 @@ import org.egov.user.web.contract.UserSearchRequest;
 import org.egov.user.web.contract.UserSearchResponse;
 import org.egov.user.web.contract.UserSearchResponseContent;
 import org.egov.user.web.contract.EmployeeLoginRequest;
+import org.egov.user.web.contract.UserUnlockRequest;
 import org.egov.user.web.contract.auth.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +49,9 @@ public class UserController {
 
     private UserService userService;
     private TokenService tokenService;
+
+    @Autowired(required = false)
+    private CitizenLoginService citizenLoginService;
 
     @Value("${mobile.number.validation.workaround.enabled}")
     private String mobileValidationWorkaroundEnabled;
@@ -84,6 +92,28 @@ public class UserController {
         }
         User createdUser = userService.createCitizen(user, createUserRequest.getRequestInfo());
         return createResponse(createdUser);
+    }
+
+    /**
+     * Endpoint for citizen login with multi-profile support.
+     * Step 1: Validates mobile + OTP, returns direct token if 1 user exists or profile list with verificationToken if >1 users exist.
+     * Step 2: Validates verificationToken + userUuid and returns the token for the selected user.
+     *
+     * @param loginRequest
+     * @return CitizenLoginResponse
+     */
+    @PostMapping({"/citizen/_login", "/users/citizen/_login"})
+    public ResponseEntity<CitizenLoginResponse> citizenLogin(@RequestBody @Valid CitizenLoginRequest loginRequest) {
+        log.info("Received citizen login request");
+        if (loginRequest == null) {
+            throw new CustomException("INVALID_REQUEST", "Request body cannot be null");
+        }
+        if (citizenLoginService == null) {
+            log.error("CitizenLoginService is not initialized");
+            throw new CustomException("SERVICE_UNAVAILABLE", "Citizen login service is currently unavailable");
+        }
+        CitizenLoginResponse response = citizenLoginService.login(loginRequest);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
@@ -203,6 +233,21 @@ public class UserController {
                 loginRequest.getTenantId(),
                 loginRequest.getRequestInfo());
         return createResponse(authenticatedUser);
+    }
+
+    /**
+     * Endpoint to unlock a locked/blocked user account and clear failed login attempts.
+     *
+     * @param unlockRequest
+     * @return UserDetailResponse containing the unlocked user details
+     */
+    @PostMapping({"/users/_unlock", "/_unlock"})
+    public UserDetailResponse unlockUser(@RequestBody @Valid UserUnlockRequest unlockRequest) {
+        log.info("Received User Unlock Request for user: {}, uuid: {}",
+                unlockRequest != null ? unlockRequest.getUserName() : null,
+                unlockRequest != null ? unlockRequest.getUuid() : null);
+        User unlockedUser = userService.unlockUser(unlockRequest);
+        return createResponse(unlockedUser);
     }
 
     private UserDetailResponse createResponse(User newUser) {

@@ -474,4 +474,5 @@ public class SWCalculationConstant {
 	public static final String DISCONNECTION_EXECUTED = "DISCONNECTION_EXECUTED";
 	public static final String SW_DEMAND_MODULE = "waterSewerage";
 	public static final String SW_TENANT_SEARCH = "tenant";
+	public static final String SW_BILL_GEN_COMPLETION_EMAIL_TEMPLATE = "SW_BILL_GEN_COMPLETION_EMAIL_TEMPLATE";
 }

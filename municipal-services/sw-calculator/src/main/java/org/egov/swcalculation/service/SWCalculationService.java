@@ -8,6 +8,7 @@ import org.egov.swcalculation.web.models.Calculation;
 import org.egov.swcalculation.web.models.CalculationReq;
 import org.egov.swcalculation.web.models.SewerageConnection;
 import org.egov.swcalculation.web.models.SingleDemand;
+import org.egov.swcalculation.web.models.BulkDemandCriteria;
 
 public interface SWCalculationService {
 	
@@ -19,7 +20,7 @@ public interface SWCalculationService {
 	
 	void generateBillBasedLocality(RequestInfo requestInfo);
 	
-	void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria);
+	void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkDemandCriteria bulkDemandCriteria);
 	
 	List<Calculation> getEstimation(CalculationReq request);
 	

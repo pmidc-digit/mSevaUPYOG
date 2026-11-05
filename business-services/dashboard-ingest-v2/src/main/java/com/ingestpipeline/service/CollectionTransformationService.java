@@ -47,37 +47,40 @@ public class CollectionTransformationService implements TransformService {
         incomingDataCopy.putAll(incomingData);
         incomingData.clear();
 
-        String dataContext = incomingDataCopy.get(Constants.DATA_CONTEXT).toString();
-        String dataContextVersion = incomingDataCopy.get(Constants.DATA_CONTEXT_VERSION).toString();
+        String dataContext = incomingDataCopy.get(Constants.DATA_CONTEXT) != null 
+                ? incomingDataCopy.get(Constants.DATA_CONTEXT).toString() : "";
+        String dataContextVersion = incomingDataCopy.get(Constants.DATA_CONTEXT_VERSION) != null 
+                ? incomingDataCopy.get(Constants.DATA_CONTEXT_VERSION).toString() : "v1";
         ObjectMapper mapper = new ObjectMapper();
         List chainrSpecJSON = null ;
 
         try {
 
             JsonNode incomingNode = mapper.convertValue(incomingDataCopy, JsonNode.class);
-            //LOGGER.info("incoming data: "+incomingNode);
-            //JsonNode identifier = incomingNode.get(Constants.DATA_OBJECT).get(TRANSACTION_ID);
 
-
-            //To change: for loading the file from config root
+            // Attempt to load the primary transform spec
             String trsFile = OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION);
             String strFile = configLoader.get(trsFile);
+
+            // Fallback: if requested spec not found, try alternative version (v1 <-> v2)
+            if (strFile == null) {
+                LOGGER.warn("Transform spec '{}' not found in ConfigLoader. Checking alternative version...", trsFile);
+                String altVersion = "v2".equalsIgnoreCase(dataContextVersion) ? "v1" : "v2";
+                String altTrsFile = OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(altVersion).concat(JSON_EXTENSION);
+                strFile = configLoader.get(altTrsFile);
+                if (strFile != null) {
+                    LOGGER.info("Successfully resolved alternative transform spec: {}", altTrsFile);
+                    trsFile = altTrsFile;
+                }
+            }
+
+            if (strFile == null) {
+                LOGGER.error("No transform specification found for context '{}' with version '{}' or fallback. Loaded resources: {}",
+                        dataContext, dataContextVersion, configLoader.getResourceNames());
+                return Boolean.FALSE;
+            }
+
             JsonNode specNode = mapper.readTree(strFile);
-            // LOGGER.info("specNode:## "+specNode);
-
-
-            /*LOGGER.info("sourceUrl## "+strFile);
-
-            String sourceUrl = CONFIGROOT.concat(OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION));
-
-            LOGGER.info("sourceUrl## "+sourceUrl);
-
-            JsonNode specNode = mapper.readTree(this.getClass().getClassLoader().getResourceAsStream(sourceUrl));
-
-            LOGGER.info("specNode:## "+specNode);*/
-
-            //String sourceUrl = (OBJECTIVE.concat(SEPARATOR).concat(dataContext).concat(SEPARATOR).concat(dataContextVersion).concat(JSON_EXTENSION));
-            //JsonNode specNode = mapper.readTree(configLoader.get(sourceUrl));
 
             String previousField = findParentKey(specNode.findPath(JOLT_SPEC), "$i", "");
             if (previousField == null || previousField.isEmpty()) {
@@ -85,31 +88,60 @@ public class CollectionTransformationService implements TransformService {
                 return Boolean.FALSE;
             }
             List<JsonNode> parentValues = incomingNode.findValues(previousField);
-            if (parentValues == null || parentValues.size() == 0 || parentValues.get(0) == null) {
+            if (parentValues == null || parentValues.isEmpty() || parentValues.get(0) == null) {
                 LOGGER.error("No values found for parent key: {}", previousField);
                 return Boolean.FALSE;
             }
             int parentNodeSize = parentValues.get(0).size();
 
-            for(int i=0; (i<parentNodeSize); i++){
-                previousField = findParentKey(specNode.findPath(JOLT_SPEC), "$j", "");
-                if (previousField == null || previousField.isEmpty()) {
-                    LOGGER.error("Unable to determine nested parent key ($j) from spec");
-                    return Boolean.FALSE;
-                }
-                List<JsonNode> nestedValuesList = incomingNode.findValues(previousField);
-                if (nestedValuesList == null || nestedValuesList.size() == 0 || nestedValuesList.get(i) == null) {
-                    LOGGER.error("No nested values found for key: {} at index: {}", previousField, i);
-                    return Boolean.FALSE;
-                }
-                ArrayNode nestedNodes = (ArrayNode) nestedValuesList.get(i);
+            boolean hasJ = specNode.toString().contains("$j");
 
-                for(int j=0; j< nestedNodes.size(); j++){
-                    JsonNode idNode = nestedNodes.get(j).get(ID);
+            for(int i=0; (i<parentNodeSize); i++){
+                if (hasJ) {
+                    String jField = findParentKey(specNode.findPath(JOLT_SPEC), "$j", "");
+                    if (jField == null || jField.isEmpty()) {
+                        LOGGER.error("Unable to determine nested parent key ($j) from spec");
+                        return Boolean.FALSE;
+                    }
+                    List<JsonNode> nestedValuesList = incomingNode.findValues(jField);
+                    if (nestedValuesList != null && nestedValuesList.size() > i && nestedValuesList.get(i) instanceof ArrayNode) {
+                        ArrayNode nestedNodes = (ArrayNode) nestedValuesList.get(i);
+                        for(int j=0; j< nestedNodes.size(); j++){
+                            JsonNode idNode = nestedNodes.get(j).get(ID);
+                            String spec = specNode.toString();
+                            spec = spec.replace("$i", i+"");
+                            spec = spec.replace("$j", j+"");
+
+                            InputStream stream = new ByteArrayInputStream(spec.getBytes());
+                            chainrSpecJSON = JsonUtils.jsonToList(stream);
+                            Chainr chainr = Chainr.fromSpec( chainrSpecJSON );
+                            Object inputJSON = incomingDataCopy.get(Constants.DATA_OBJECT);
+
+                            try {
+                                Object transformedOutput = chainr.transform( inputJSON );
+
+                                Map incomingMap = new HashMap();
+                                incomingMap.put(Constants.DATA_CONTEXT, dataContext);
+                                incomingMap.put(Constants.DATA_CONTEXT_VERSION, dataContextVersion);
+                                incomingMap.put(Constants.DATA_OBJECT , transformedOutput);
+
+                                String idVal = (idNode != null && !idNode.isNull()) ? idNode.asText() : (incomingNode.has(ID) ? incomingNode.get(ID).asText() : ("doc_" + i + "_" + j));
+                                incomingMap.put(Constants.IDENTIFIER, idVal);
+                                incomingData.put(idVal, incomingMap);
+
+                            } catch (Exception e) {
+                                LOGGER.error("Encountered an error while transforming the JSON : " + e.getMessage(), e);
+                                return Boolean.FALSE;
+                            }
+                        }
+                    }
+                } else {
+                    // Spec has only $i (single-level array transformation, e.g. paymentDetails)
+                    ArrayNode iArray = (ArrayNode) parentValues.get(0);
+                    JsonNode currentINode = iArray.get(i);
+                    JsonNode idNode = (currentINode != null && currentINode.has(ID)) ? currentINode.get(ID) : null;
                     String spec = specNode.toString();
                     spec = spec.replace("$i", i+"");
-                    spec = spec.replace("$j", j+"");
-
 
                     InputStream stream = new ByteArrayInputStream(spec.getBytes());
                     chainrSpecJSON = JsonUtils.jsonToList(stream);
@@ -124,21 +156,20 @@ public class CollectionTransformationService implements TransformService {
                         incomingMap.put(Constants.DATA_CONTEXT_VERSION, dataContextVersion);
                         incomingMap.put(Constants.DATA_OBJECT , transformedOutput);
 
-                        incomingMap.put(Constants.IDENTIFIER, idNode.asText());
-                        incomingData.put(idNode.asText(), incomingMap);
+                        String idVal = (idNode != null && !idNode.isNull()) ? idNode.asText() : (incomingNode.has(ID) ? incomingNode.get(ID).asText() : ("doc_" + i));
+                        incomingMap.put(Constants.IDENTIFIER, idVal);
+                        incomingData.put(idVal, incomingMap);
 
                     } catch (Exception e) {
-                        LOGGER.error("Encountered an error while transforming the JSON : " + e.getMessage());
+                        LOGGER.error("Encountered an error while transforming the JSON : " + e.getMessage(), e);
                         return Boolean.FALSE;
                     }
-
                 }
             }
-            // LOGGER.info("After collection transformation incomingData size "+incomingData.size()+" entries "+incomingData.entrySet());
             return Boolean.TRUE;
 
         } catch (Exception e) {
-            LOGGER.error("Encountered an error : " + e.getMessage());
+            LOGGER.error("Encountered an error : " + e.getMessage(), e);
             return Boolean.FALSE;
 
         }

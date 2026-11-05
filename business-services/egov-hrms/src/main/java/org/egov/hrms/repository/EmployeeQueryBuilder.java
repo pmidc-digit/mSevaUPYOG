@@ -36,11 +36,13 @@ public class EmployeeQueryBuilder {
 
 	    StringBuilder builder;
 
-	    // Check if category, subcategory, or zone are present
 	    boolean hasCatSubZone = (criteria.getCategories() != null && !criteria.getCategories().isEmpty())
 	                            || (criteria.getSubcategories() != null && !criteria.getSubcategories().isEmpty())
 	                            || (criteria.getZones() != null && !criteria.getZones().isEmpty())
-	                            || (criteria.getAssignedtenattids() != null && !criteria.getAssignedtenattids().isEmpty());
+	                            || (criteria.getAssignedtenattids() != null && !criteria.getAssignedtenattids().isEmpty())
+	                            || (criteria.getModulenames() != null && !criteria.getModulenames().isEmpty())
+	                            //|| (criteria.getRoles() != null && !criteria.getRoles().isEmpty())
+	                            ;
 	                            
 
 	    if (hasCatSubZone) {
@@ -51,7 +53,7 @@ public class EmployeeQueryBuilder {
 	        builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
 	    }
 
-	    addWhereClause(criteria, builder, preparedStmtList);
+	    addWhereClause(criteria, builder, preparedStmtList, hasCatSubZone);
 	    return paginationClause(criteria, builder);
 	}
 
@@ -93,6 +95,16 @@ public class EmployeeQueryBuilder {
 	    if (criteria.getAssignedTenantId() != null) {
 	        builder.append(" AND assigned_tenantid = ? ");
 	        preparedStmtList.add(criteria.getAssignedTenantId());
+	    }
+
+	    if (criteria.getModulename() != null && !criteria.getModulename().isEmpty()) {
+	        builder.append(" AND modulename = ? ");
+	        preparedStmtList.add(criteria.getModulename());
+	    }
+	    
+	    if (criteria.getRoles() != null && !criteria.getRoles().isEmpty()) {
+	        builder.append(" AND role_code = ? ");
+	        preparedStmtList.add(criteria.getRoles());
 	    }
 
 	    return builder.toString();
@@ -143,7 +155,7 @@ public class EmployeeQueryBuilder {
 	 * @param builder
 	 * @param preparedStmtList
 	 */
-	public void addWhereClause(EmployeeSearchCriteria criteria, StringBuilder builder, List<Object> preparedStmtList) {
+	public void addWhereClause(EmployeeSearchCriteria criteria, StringBuilder builder, List<Object> preparedStmtList, boolean hasCatSubZone) {
 		if(!StringUtils.isEmpty(criteria.getTenantId())) {
 			builder.append(" employee.tenantid = ?");
 			preparedStmtList.add(criteria.getTenantId());
@@ -199,18 +211,26 @@ public class EmployeeQueryBuilder {
 		        builder.append(" and obpas.assigned_tenantid IN (").append(createQuery(criteria.getAssignedtenattids())).append(")");
 		        addToPreparedStatement(preparedStmtList, criteria.getAssignedtenattids());
 		    }
+
+		    if(!CollectionUtils.isEmpty(criteria.getModulenames())){
+		        builder.append(" and obpas.modulename IN (").append(createQuery(criteria.getModulenames())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getModulenames());
+		    }
+		    
+		    if(!CollectionUtils.isEmpty(criteria.getRoles()) && hasCatSubZone){
+		        builder.append(" and obpas.role_code IN (").append(createQuery(criteria.getRoles())).append(")");
+		        addToPreparedStatement(preparedStmtList, criteria.getRoles());
+		    }
 	}
 	
 	public String paginationClause(EmployeeSearchCriteria criteria, StringBuilder builder) {
 		String pagination = EmployeeQueries.HRMS_PAGINATION_WRAPPER;
 		pagination = pagination.replace("{}", builder.toString());
-		if(null != criteria.getOffset())
-			pagination = pagination.replace("$offset", criteria.getOffset().toString());
-		else
-			pagination = pagination.replace("$offset", "0");
+		int offset = criteria.getOffset() != null ? criteria.getOffset() : 0;
+		pagination = pagination.replace("$offset", String.valueOf(offset));
 		
 		if(null != criteria.getLimit()){
-			Integer limit = criteria.getLimit() + criteria.getOffset();
+			Integer limit = criteria.getLimit() + offset;
 			pagination = pagination.replace("$limit", limit.toString());
 		}
 		else

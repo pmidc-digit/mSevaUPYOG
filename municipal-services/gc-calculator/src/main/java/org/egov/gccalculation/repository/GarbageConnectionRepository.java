@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GarbageConnectionRepository {
 
-	private static final String WS_ADDTNL_DTL_QUERY = "select additionaldetails from eg_ws_connection ";
+	private static final String WS_ADDTNL_DTL_QUERY = "select additionaldetails from eg_gc_connection ";
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;

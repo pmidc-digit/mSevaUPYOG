@@ -2,7 +2,6 @@ package org.egov.demand.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -22,20 +21,22 @@ import org.egov.demand.model.AuditDetails;
 import org.egov.demand.model.BillV2.BillStatus;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
+import org.egov.demand.model.GenerateBillCriteria;
 import org.egov.demand.model.UpdateBillCriteria;
 import org.egov.demand.repository.AmendmentRepository;
 import org.egov.demand.repository.BillRepositoryV2;
-import org.egov.demand.repository.DemandRepository;
 import org.egov.demand.util.Util;
+import org.egov.demand.web.contract.BillResponseV2;
 import org.egov.demand.web.contract.DemandRequest;
+import org.egov.demand.web.contract.RequestInfoWrapper;
 import org.egov.demand.web.validator.AmendmentValidator;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import io.jaegertracing.thriftjava.Log;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -59,6 +60,9 @@ public class AmendmentService {
 	
 	@Autowired
 	private AmendmentRepository amendmentRepository;
+	
+	@Autowired
+	private BillServicev2 billServicev2;
 	
 	/**
 	 * Search amendment based on criteria
@@ -99,6 +103,20 @@ public class AmendmentService {
 	public Amendment create(AmendmentRequest amendmentRequest) {
 		
 		RequestInfo requestInfo = amendmentRequest.getRequestInfo();
+		
+		String bussinessService = amendmentRequest.getAmendment().getBusinessService();
+		Set<String> consumerCodes = Stream.of(amendmentRequest.getAmendment().getConsumerCode()).collect(Collectors.toSet());
+		GenerateBillCriteria generateBillCriteria = GenerateBillCriteria.builder().businessService(bussinessService)
+				.tenantId(amendmentRequest.getAmendment().getTenantId()).consumerCode(consumerCodes).build();
+		RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+		requestInfoWrapper.setRequestInfo(requestInfo);
+		BillResponseV2 response =  billServicev2.fetchBill(generateBillCriteria, requestInfoWrapper);
+		
+		if (response.getBill().isEmpty() || response.getBill().get(0).getBillDetails().isEmpty()) {
+			throw new CustomException("NO_BILL_FOUND",
+					"No bill is available, or all bills have already been paid for this user.");
+		}
+		
 		Amendment amendment = amendmentRequest.getAmendment();
 		
 		amendmentValidator.validateAmendmentForCreate(amendmentRequest);

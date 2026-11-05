@@ -6,6 +6,7 @@ export const UserService = {
   authenticate: (details) => {
     const data = new URLSearchParams();
     Object.entries(details).forEach(([key, value]) => data.append(key, value));
+    console.log("Hello data", data)
     data.append("scope", "read");
     data.append("grant_type", "password");
     return ServiceRequest({
@@ -23,6 +24,22 @@ export const UserService = {
       serviceName: "authenticateV1",
       url: Urls.Authenticatev1,
       data: details, // Full payload including RequestInfo
+    });
+  },
+   citizenAuthenticate: (details) => {
+    // const data = new URLSearchParams();
+    // Object.entries(details).forEach(([key, value]) => data.append(key, value));
+    // console.log("Hello data", data)
+    // data.append("scope", "read");
+    // data.append("grant_type", "password");
+    return ServiceRequest({
+      serviceName: "authenticate",
+      url: Urls.citizen_login_url,
+      data:details,
+      // headers: {
+      //   authorization: `Basic ${window?.globalConfigs?.getConfig("JWT_TOKEN") || "ZWdvdi11c2VyLWNsaWVudDo="}`,
+      //   "Content-Type": "application/x-www-form-urlencoded",
+      // },
     });
   },
   // employeeLogin: (details) => {

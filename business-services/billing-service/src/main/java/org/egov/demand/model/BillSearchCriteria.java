@@ -58,6 +58,8 @@ public class BillSearchCriteria {
 
 	private BillStatus status;
 
+	private Boolean searchAll;
+
 	@Pattern(regexp = "^[0-9]{10}$", message = "MobileNumber should be 10 digit number")
 	private String mobileNumber;
 	

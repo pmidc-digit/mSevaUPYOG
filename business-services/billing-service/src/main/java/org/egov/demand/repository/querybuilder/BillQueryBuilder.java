@@ -57,6 +57,8 @@ public class BillQueryBuilder {
 			+ " INNER JOIN (SELECT bd_consumercode, min(b_createddate) as mindate FROM billresult GROUP BY bd_consumercode) as uniqbill"
 			+ " ON uniqbill.bd_consumercode=billresult.bd_consumercode AND uniqbill.mindate=billresult.b_createddate ";
 
+	public static final String BILL_ALL_QUERY = "WITH billresult AS ({replace}) SELECT * FROM billresult ";
+
 	public static final String BILL_BASE_QUERY = "SELECT b.id AS b_id,b.mobilenumber, b.tenantid AS b_tenantid,b.payerid AS b_payerid,"
 			+ " b.payername AS b_payername, b.payeraddress AS b_payeraddress, b.payeremail AS b_payeremail,b.filestoreid AS b_fileStoreId,"
 			+ " b.isactive AS b_isactive, b.iscancelled AS b_iscancelled, b.createdby AS b_createdby, b.status as b_status,"
@@ -99,7 +101,7 @@ public class BillQueryBuilder {
 			billQuery.append(" AND bd.toperiod = ?");
 			preparedStatementValues.add(billSearchCriteria.getPeriodTo());
 		}
-		addWhereClause(billQuery, preparedStatementValues, billSearchCriteria);
+		addWhereClause(billQuery, preparedStatementValues, billSearchCriteria, true);
 		StringBuilder maxQuery = addPagingClause(billQuery, preparedStatementValues, billSearchCriteria);
 
 		return maxQuery.toString();
@@ -162,21 +164,26 @@ public class BillQueryBuilder {
 			billQuery.append(" AND bd.toperiod = ?");
 			preparedStatementValues.add(billSearchCriteria.getPeriodTo());
 		}
-		addWhereClause(billQuery, preparedStatementValues, billSearchCriteria);
+		addWhereClause(billQuery, preparedStatementValues, billSearchCriteria, false);
 		StringBuilder maxQuery = addPagingClause(billQuery, preparedStatementValues, billSearchCriteria);
 
 		return maxQuery.toString();
 	}
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void addWhereClause(final StringBuilder selectQuery, final List preparedStatementValues,
-			final BillSearchCriteria searchBill) {
+			final BillSearchCriteria searchBill, boolean searchAllSupported) {
 
 		if (!CollectionUtils.isEmpty(searchBill.getBillId())) {
 			selectQuery.append(" AND b.id in (");
 			appendListToQuery(searchBill.getBillId(), preparedStatementValues, selectQuery);
 		}
 
-		if (searchBill.getRetrieveOldest()!=null && !searchBill.getRetrieveOldest()) {
+		if (searchAllSupported && Boolean.TRUE.equals(searchBill.getSearchAll())) {
+			selectQuery.append(" AND b.status IN (?, ?, ?)");
+			preparedStatementValues.add(BillStatus.ACTIVE.toString());
+			preparedStatementValues.add(BillStatus.PAID.toString());
+			preparedStatementValues.add(BillStatus.PARTIALLY_PAID.toString());
+		} else if (searchBill.getRetrieveOldest()!=null && !searchBill.getRetrieveOldest()) {
 			if (searchBill.getStatus() != null) {
 				selectQuery.append(" AND b.status = ?");
 				preparedStatementValues.add(searchBill.getStatus().toString());
@@ -284,7 +291,9 @@ public class BillQueryBuilder {
 
 		StringBuilder finalQuery;
 
-		if (searchBillCriteria.getRetrieveOldest()!=null && !searchBillCriteria.getRetrieveOldest())
+		if (searchBillCriteria.getSearchAll() != null && searchBillCriteria.getSearchAll())
+			finalQuery = new StringBuilder(BILL_ALL_QUERY.replace(REPLACE_STRING, selectQuery));
+		else if (searchBillCriteria.getRetrieveOldest()!=null && !searchBillCriteria.getRetrieveOldest())
 			finalQuery = new StringBuilder(BILL_MIN_QUERY.replace(REPLACE_STRING, selectQuery));
 		else
 			finalQuery = new StringBuilder(BILL_MAX_QUERY.replace(REPLACE_STRING, selectQuery));

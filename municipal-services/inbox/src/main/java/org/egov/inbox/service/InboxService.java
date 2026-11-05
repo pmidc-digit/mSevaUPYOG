@@ -259,7 +259,7 @@ public class InboxService {
                 ? workflowService.getAllStatuses(businessSrvs)
                 : workflowService.getActionableStatusesForRole(requestInfo, businessSrvs, processCriteria);
 
-        if (CollectionUtils.isEmpty(statusIdNameMap) && isReadOnlyOrReportingUser(roles)) {
+        if (isReadOnlyOrReportingUser(roles)) {
             statusIdNameMap = workflowService.getAllStatuses(businessSrvs);
         }
 

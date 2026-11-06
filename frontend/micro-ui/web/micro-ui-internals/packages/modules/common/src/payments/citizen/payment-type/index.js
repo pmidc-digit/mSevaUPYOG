@@ -77,15 +77,22 @@ export const SelectPaymentType = (props) => {
   const moduleName = "testing"; //need to change this back to testing -> tenantId?.split(".")?.[1];
   // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
   // const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
-  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(tenantId, "PAYMENT", [
-    { name: "PaymentGateway", filter: `$.*.[?(@.businessService contains '${businessService}')]` },
-  ]); // will change back to pb.testing -> tenantId
-
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
     {}
   );
+  
+  const hasPaymentDetails = paymentdetails?.Bill?.length > 0;
+  
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS(
+    paymentdetails?.Bill[0]?.tenantId,
+    "PAYMENT",
+    [{ name: "PaymentGateway", "filter": `$.*.[?(@.businessService contains '${businessService}')]` }],
+    { enabled: hasPaymentDetails }
+  ); // will change back to pb.testing -> tenantId
+  //
+  
   if (window.location.href.includes("ISWSCON") || wrkflow === "WNS") consumerCode = decodeURIComponent(consumerCode);
   if (wrkflow === "WNS") consumerCode = stringReplaceAll(consumerCode, "+", "/");
   useEffect(() => {

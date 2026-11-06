@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components"; // Added Toast here
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import _ from "lodash"; // You are already using _
-
+import { tenantTLValidationList } from "../../../../config/tenantTLValidationList";
 const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
@@ -19,6 +19,7 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   });
 
   function validateStepData(data) {
+    debugger
     const { tradedetils, tradeUnits, validityYears, address, cpt, accessories } = data;
     const missingFields = [];
 
@@ -31,10 +32,10 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     if (!tradeDetail?.structureSubType?.code) missingFields.push("Structure Sub-Type");
     if (!tradeDetail?.commencementDate) missingFields.push("Commencement Date");
 
-    if (
-      tenantTLValidationList.includes(cpt?.tenantId) &&
-      !cpt?.details?.propertyId
-    ) {
+    // Property ID is required when no property is selected, or for tenants in the validation list
+    if (_.isEmpty(cpt)) {
+      missingFields.push("Property ID");
+    } else if (tenantTLValidationList.includes(cpt?.tenantId) && !cpt?.details?.propertyId) {
       missingFields.push("Property ID");
     }
     // Check tradeUnits
@@ -81,7 +82,7 @@ const TLNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   function goNext(data) {
-
+    debugger
     const missingFields = validateStepData(currentStepData);
 
     if (missingFields.length > 0) {

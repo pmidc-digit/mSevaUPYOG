@@ -787,6 +787,7 @@ const CLUNewApplicantDetails = (_props) => {
             }
             uploadModule="CLU"
             showOwnershipShare={isMultiple || activeOwners.length > 0}
+            showPanDetails={false}
           />
         )}
       </div>

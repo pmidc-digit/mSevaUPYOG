@@ -74,9 +74,15 @@ public class LandUserService {
 					owner.setOwnerType(LandConstants.CITIZEN);
 					userDetailResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);
 					log.debug("owner created --> " + userDetailResponse.getUser().get(0).getUuid());
-				}else if(!owner.compareWithExistingUser(userDetailResponse.getUser().get(0))) {
+				} else if (!owner.compareWithExistingUser(userDetailResponse.getUser().get(0))) {
 					// if details were changed,
 					// Updating user..
+					OwnerInfo existingUser = userDetailResponse.getUser().get(0);
+					owner.setId(existingUser.getId());
+					owner.setUuid(existingUser.getUuid());
+					owner.setUserName(existingUser.getUserName());
+					Role role = getCitizenRole();
+					addUserDefaultFields(owner.getTenantId(), role, owner);
 					StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserContextPath())
 							.append(config.getUserUpdateEndpoint());
 					userDetailResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);

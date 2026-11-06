@@ -650,13 +650,22 @@ public class CalculationService {
 
             long arrearDemandTime = entryDateEpoch;
 
-            // additionalDetails carries the annual penalty rate to the billing engine so that penalty keeps
-            // accruing on later bill fetches (DemandService.applyTimeBasedApplicables).
+            // additionalDetails carries two things to the billing engine so penalty keeps working on later bill
+            // fetches (DemandService.applyTimeBasedApplicables):
+            //   futurePenalty  - the PERCENTAGE to charge from the due day on. Whether it is applied once, per
+            //                    month or per year is decided by the penaltyType the tenant configures in MDMS.
+            //   migratedPenalty - the penalty already carried over by the migration (arrearPenalty above). The
+            //                    engine adds the accrued penalty ON TOP of it, and keeping it here means the total
+            //                    is recomputed from fixed inputs instead of growing on every run.
             ObjectNode arrearAdditionalDetails = null;
-            if (futurePenalty != null) {
+            if (futurePenalty != null || (arrearPenaltyAmount != null && arrearPenaltyAmount.compareTo(BigDecimal.ZERO) > 0)) {
                 arrearAdditionalDetails = mapper.createObjectNode();
-                arrearAdditionalDetails.put("futurePenalty", futurePenalty);
-                arrearAdditionalDetails.put("futurePenaltyUnit", "ANNUAL_PERCENT");
+                if (futurePenalty != null) {
+                    arrearAdditionalDetails.put("futurePenalty", futurePenalty);
+                }
+                if (arrearPenaltyAmount != null && arrearPenaltyAmount.compareTo(BigDecimal.ZERO) > 0) {
+                    arrearAdditionalDetails.put("migratedPenalty", arrearPenaltyAmount);
+                }
             }
 
             Demand arrearDemand = Demand.builder().consumerCode(consumerCode).demandDetails(arrearDetails).payer(payerUser)

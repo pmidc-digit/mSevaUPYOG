@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -130,9 +131,14 @@ public class EgovUserApplication {
 //				.addCaches(b->b.name("cRolesByCode").expireAfterWrite(masterDataExpiry, TimeUnit.MINUTES).entryCapacity(50));
 //	}
 	
-	 @Bean
+	@Bean
     public JedisConnectionFactory connectionFactory() {
         return new JedisConnectionFactory(new JedisShardInfo(host));
+    }
+
+    @Bean
+    public StringRedisTemplate stringRedisTemplate() {
+        return new StringRedisTemplate(connectionFactory());
     }
 
     public static void main(String[] args) {

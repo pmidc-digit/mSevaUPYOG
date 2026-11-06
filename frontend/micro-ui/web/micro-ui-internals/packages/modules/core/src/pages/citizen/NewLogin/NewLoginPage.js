@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
 import { Dropdown, Toast } from "@mseva/digit-ui-react-components";
@@ -7,6 +7,7 @@ import LocationSelect from "./NewLocationSelect";
 import MobileInput from "./NewSelectMobileNumber";
 import OtpInput from "./NewSelectOtp";
 import NewRegistration from "../NewRegistration";
+import ProfileSelectPopup from "./ProfileSelectPopup";
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
 const DEFAULT_BPA_REDIRECT_URL = "/digit-ui/citizen/obps/home";
 
@@ -24,6 +25,11 @@ const NewLogin = ({ stateCode }) => {
   const [isOtpValid, setIsOtpValid] = useState(true);
   const [isError, setIsError] = useState(true);
   const [user, setUser] = useState(null);
+  const [profiles, setProfiles] = useState([]);
+  const [verificationToken, setVerificationToken] = useState(null);
+  const [showProfilePopup, setShowProfilePopup] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [isProfileLoginLoading, setIsProfileLoginLoading] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(() => location.state?.selectedLanguage || Digit.StoreData.getCurrentLanguage());
   // const [selectedCity, setSelectedCity] = useState(() => ({ code: Digit.ULBService.getCitizenCurrentTenant(true) }));
   const [selectedCity, setSelectedCity] = useState(() => location.state?.selectedCity || null);
@@ -146,28 +152,32 @@ const NewLogin = ({ stateCode }) => {
 
       // Login flow only
       const requestData = {
-        username: mobileNumber,
-        password: otp,
+        mobileNumber: mobileNumber,
+        otp: otp,
         tenantId: stateCode,
         userType: "citizen",
       };
-      const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
+      //const { ResponseInfo, UserRequest: info, ...tokens } = await Digit.UserService.authenticate(requestData);
+      const {
+        ResponseInfo,
+        multipleProfiles,
+        verificationToken,
+        profiles,
+        UserRequest: info,
+        ...tokens
+      } = await Digit.UserService.citizenAuthenticate(requestData);
 
-      // Role-based access control
-      if (location.state?.role) {
-        const roleInfo = info.roles.find((userRole) => userRole.code === location.state.role);
-        if (!roleInfo || !roleInfo.code) {
-          setError(t("ES_ERROR_USER_NOT_PERMITTED"));
-          setTimeout(() => history.replace(DEFAULT_REDIRECT_URL), 5000);
-          return;
-        }
+      // Mobile number linked to more than one user: show the profile picker popup
+      if (multipleProfiles) {
+        setProfiles(profiles || []);
+        setVerificationToken(verificationToken);
+        setSelectedProfile(null);
+        setShowProfilePopup(true);
+        setCanSubmit(true);
+        return;
       }
 
-      if (window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")) {
-        info.tenantId = Digit.ULBService.getStateId();
-      }
-
-      setUser({ info, ...tokens });
+      completeLogin(info, tokens);
     } catch (e) {
       const errorMessage = e?.response?.data?.error_description || e?.error_description || t("CS_COMMON_ERROR");
       setError(errorMessage);
@@ -176,6 +186,51 @@ const NewLogin = ({ stateCode }) => {
       setIsOtpValid(false);
     }
   }
+
+  const completeLogin = (info, tokens) => {
+    // Role-based access control
+    if (location.state?.role) {
+      const roleInfo = info.roles.find((userRole) => userRole.code === location.state.role);
+      if (!roleInfo || !roleInfo.code) {
+        setError(t("ES_ERROR_USER_NOT_PERMITTED"));
+        setTimeout(() => history.replace(DEFAULT_REDIRECT_URL), 5000);
+        return;
+      }
+    }
+
+    if (window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")) {
+      info.tenantId = Digit.ULBService.getStateId();
+    }
+
+    setUser({ info, ...tokens });
+  };
+
+  const closeProfilePopup = useCallback(() => setShowProfilePopup(false), []);
+
+  const onProfileSelect = async () => {
+    if (!selectedProfile) {
+      setIsError(true);
+      setError("Please select a profile to continue.");
+      return;
+    }
+    try {
+      console.log("selectedProfile",selectedProfile)
+      setIsProfileLoginLoading(true);
+      const requestData = {
+        tenantId: stateCode,
+        verificationToken: verificationToken,
+        userUuid: selectedProfile.uuid,
+      };
+      const { ResponseInfo, multipleProfiles, UserRequest: info, ...tokens } = await Digit.UserService.citizenAuthenticate(requestData);
+      setShowProfilePopup(false);
+      completeLogin(info, tokens);
+    } catch (e) {
+      setIsError(true);
+      setError(e?.response?.data?.error_description || e?.error_description || t("CS_COMMON_ERROR"));
+    } finally {
+      setIsProfileLoginLoading(false);
+    }
+  };
 
   const resendOtp = async () => {
     const data = {
@@ -556,6 +611,19 @@ const NewLogin = ({ stateCode }) => {
                   {t("CS_COMMON_REGISTER")}
                 </span>
               </div>
+            )}
+
+            {showProfilePopup && (
+              <ProfileSelectPopup
+                profiles={profiles}
+                mobileNumber={mobileNumber}
+                selectedProfile={selectedProfile}
+                onSelect={setSelectedProfile}
+                onContinue={onProfileSelect}
+                isLoading={isProfileLoginLoading}
+                onClose={closeProfilePopup}
+                onCancel={() => window.location.reload()}
+              />
             )}
 
             {error && <Toast error={isError} label={error} onClose={() => setError(null)} isDleteBtn={true} />}

@@ -68,6 +68,7 @@ const formatDobForInput = (dob) => {
   }
   if (typeof dob === "string") {
     const trimmed = dob.trim();
+    if (!trimmed || trimmed === "null" || trimmed === "undefined" || trimmed === "NA") return "";
     if (/^\d{10,13}$/.test(trimmed)) {
       const d = new Date(Number(trimmed));
       if (!isNaN(d.getTime())) {
@@ -114,6 +115,7 @@ export const LayoutOwnerSearchModal = ({
   uploadModule,
   showOwnershipShare = false,
   showPanDetails = true,
+  allowOwnerRemoval = true,
 }) => {
   const { t } = useTranslation();
   const stateId = Digit.ULBService.getStateId();
@@ -535,6 +537,11 @@ export const LayoutOwnerSearchModal = ({
   };
 
   const handleRemoveWizardOwner = (indexToRemove = currentUserIndex) => {
+    const targetOwner = wizardUsers[indexToRemove];
+    if (!allowOwnerRemoval || targetOwner?.isFromProperty || targetOwner?.propertyId) {
+      setShowToast({ warning: true, label: "CS_CANNOT_REMOVE_PROPERTY_OWNER" });
+      return;
+    }
     if (wizardUsers.length <= 1) {
       setShowToast({ warning: true, label: "At least one owner is required." });
       return;
@@ -594,7 +601,11 @@ export const LayoutOwnerSearchModal = ({
       setCurrentUserIndex(prevIdx);
       loadUserForStepTwo(wizardUsers[prevIdx], prevIdx, nextCompleted);
     } else {
+      if (!allowOwnerRemoval || selectedUser?.isFromProperty || selectedUser?.propertyId) {
+        return;
+      }
       setStep(1);
+
       setShowManualForm(false);
     }
   };
@@ -1064,7 +1075,9 @@ export const LayoutOwnerSearchModal = ({
                   ? `${t("ADDITIONAL DETAILS & DOCUMENTS")} - ${t("Owner")} ${currentUserIndex + 1} ${t("of")} ${wizardUsers.length}: ${selectedUser?.name || ""}`
                   : t("ADDITIONAL DETAILS DOCUMENTS")}
               </h2>
-              <LinkButton
+
+                <LinkButton
+                style={{ display: currentUserIndex === 0 && (!allowOwnerRemoval || selectedUser?.isFromProperty || selectedUser?.propertyId) ? "none" : undefined }}
                 label={currentUserIndex > 0 ? `← ${t("PREVIOUS OWNER")}` : t("CHANGE OWNER")}
                 onClick={handlePrevOwner}
               />
@@ -1075,7 +1088,8 @@ export const LayoutOwnerSearchModal = ({
               <div>
                 <p className="obps-page-components-layout-owner-search-modal--style-44">
                 <strong>{t("APPLICANT NAME")}:</strong> {selectedUser.name || "NA"}
-                {wizardUsers.length > 1 && (
+                {
+                wizardUsers.length > 1 && (
                   <span
                     style={{
                       marginLeft: "10px",
@@ -1093,7 +1107,13 @@ export const LayoutOwnerSearchModal = ({
               </p>
                 <p className="obps-page-components-layout-owner-search-modal--style-45"><strong>{t("MOBILE NO")}:</strong> {selectedUser.mobileNumber || "NA"}</p>
               </div>
-              {wizardUsers.length > 1 && (
+              {allowOwnerRemoval &&
+                !selectedUser?.isFromProperty &&
+                !selectedUser?.propertyId &&
+                !wizardUsers[currentUserIndex]?.isFromProperty &&
+                !wizardUsers[currentUserIndex]?.propertyId &&
+                wizardUsers.length > 1 && (
+  
                 <LinkButton
                   style={{ color: "#a82227", padding: 0, whiteSpace: "nowrap" }}
                   label={`✕ ${t("REMOVE_OWNER") || "Remove this Owner"}`}

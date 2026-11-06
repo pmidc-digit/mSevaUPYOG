@@ -649,6 +649,13 @@ const NOCNewApplicantDetails = (_props) => {
   };
 
   const handleRemoveOwner = (ownerToRemove) => {
+    if (ownerToRemove?.isFromProperty || ownerToRemove?.propertyId) {
+      setShowToast({
+        warning: true,
+        message: "CS_CANNOT_REMOVE_PROPERTY_OWNER",
+      });
+      return;
+    }
     const active = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
     if (active.length <= 1) {
       setShowToast({
@@ -692,6 +699,7 @@ const NOCNewApplicantDetails = (_props) => {
   };
 
   const activeOwners = selectedOwners.filter((o) => o?.status !== false && o?.status !== "false");
+  const isPropertyLinked = (isPropertyAvailable?.value === true && !!propertyDetails?.propertyId) || activeOwners.some((o) => o?.isFromProperty || o?.propertyId);
 
   const LayoutOwnerSearchModal = Digit?.ComponentRegistryService?.getComponent("LayoutOwnerSearchModal");
 
@@ -767,6 +775,7 @@ const NOCNewApplicantDetails = (_props) => {
           <span
             onClick={() => handleRemoveOwner(row.original)}
             className="obps-page-components-layout-new-applicant-details--style-4"
+            style={{ display: row.original?.isFromProperty || row.original?.propertyId ? "none" : undefined }}
             title={t("Remove Owner")}
           >
             <DeleteIcon fill="#a82227" />
@@ -801,6 +810,17 @@ const NOCNewApplicantDetails = (_props) => {
                     select={(e) => {
                       props.onChange(e);
                       setIsPropertyAvailable(e);
+
+                      if (e?.value === true) {
+                        setShowOwnerModal(false);
+                        setEditingOwner(null);
+                        setShowPropertyModal(false);
+                        setPropertyDetails(null);
+                        setSelectedOwners([]);
+                        dispatch(UPDATE_NOCNewApplication_FORM("applicants", []));
+                        dispatch(UPDATE_NOC_OwnerIds("ownerIdList", []));
+                        dispatch(UPDATE_NOC_OwnerPhotos("ownerPhotoList", []));
+                      }
 
                       if (e?.value === false) {
                         setShowOwnerModal(false);
@@ -927,9 +947,13 @@ const NOCNewApplicantDetails = (_props) => {
         )}
 
         {/* 4. Add Owner Button */}
-        <div className="obps-page-components-layout-new-applicant-details--style-11">
+        <div
+          className="obps-page-components-layout-new-applicant-details--style-11"
+          style={{ display: isPropertyAvailable?.value === false ? undefined : "none" }}
+        >
           <div
             onClick={() => {
+              if (isPropertyAvailable?.value !== false) return;
               if (activeOwners.length === 0 && isPropertyAvailable?.value === true && propertyDetails?.propertyId) {
                 const propOwners = Array.isArray(propertyDetails.propOwners) && propertyDetails.propOwners.length > 0
                   ? propertyDetails.propOwners
@@ -989,6 +1013,8 @@ const NOCNewApplicantDetails = (_props) => {
           </div>
         </div>
 
+
+
         {/* 5. Modals */}
         {showOwnerModal && LayoutOwnerSearchModal && (
           <LayoutOwnerSearchModal
@@ -1008,6 +1034,7 @@ const NOCNewApplicantDetails = (_props) => {
             uploadModule="NOC"
             showOwnershipShare={false}
             showPanDetails={false}
+            allowOwnerRemoval={!isPropertyLinked}
           />
         )}
 

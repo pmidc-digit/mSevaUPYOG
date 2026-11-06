@@ -80,7 +80,7 @@ public class BPAAutoEscalationService {
 	 */
 	public void startProcess(List<ProcessInstance> processInstances, Map<String, Object> autoEscalationMdmsData,
 			RequestInfo requestInfo) {
-
+		List<String> terminateRoles = (List<String>) autoEscalationMdmsData.get("terminateRoles");
 		processInstances.forEach(processInstance -> {
 			BPASearchCriteria criteria = new BPASearchCriteria();
 			criteria.setTenantId(processInstance.getTenantId());
@@ -96,7 +96,23 @@ public class BPAAutoEscalationService {
 					bpa.getWorkflow().setAssignes(getAssignees(bpa, requestInfo));
 				});
 
-				bpaService.update(BPARequest.builder().requestInfo(requestInfo).BPA(bpas.get(0)).build());
+				List<String> terminateEmployees = new ArrayList<String>();
+				boolean isTerminate = false;
+				if(!CollectionUtils.isEmpty(terminateRoles)) {
+					terminateEmployees = userService.getAssigneeFromBPA(bpas.get(0), terminateRoles, requestInfo, false);
+					for(User assignee : processInstance.getAssignes()) {
+						if(terminateEmployees.contains(assignee.getUuid())) {
+							isTerminate = true;
+							break;
+						}
+					}
+				}
+				if(!isTerminate) {
+					bpaService.update(BPARequest.builder().requestInfo(requestInfo).BPA(bpas.get(0)).build());
+					log.info("Auto Escalation Done for application no: " + processInstance.getBusinessId());
+				}
+				else
+					log.info("Auto Escalation terminated for application no: " + processInstance.getBusinessId());
 			} catch (Exception e) {
 				log.error("Error While Auto Escalating Application : " + processInstance.getBusinessId()
 						+ " For Action : " + autoEscalationMdmsData.get("action").toString());

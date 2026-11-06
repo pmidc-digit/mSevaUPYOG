@@ -182,6 +182,6 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
     </div>
   );
 }
-};
+
 
 export default propertyOwnerHistory

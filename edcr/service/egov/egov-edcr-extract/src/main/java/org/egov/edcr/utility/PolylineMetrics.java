@@ -321,6 +321,15 @@ public class PolylineMetrics {
             return BigDecimal.ZERO;
         }
 
+        // Primary strategy: measure the depth between the building face that borders this
+        // yard and the plot-boundary edge that faces it. Works for L-shaped / notched yards,
+        // where the longest yard edge is a side edge and NOT the setback direction.
+        BigDecimal facingDistance = getFacingParallelDistance(plotBoundary, footprint, setbackPolyline);
+        if (facingDistance != null && facingDistance.compareTo(BigDecimal.ZERO) > 0) {
+            LOG.info("Computed facing parallel setback distance={}", facingDistance);
+            return facingDistance;
+        }
+
         DXFLine referenceLine = getLongestLine(setbackLines);
         if (referenceLine == null) {
             LOG.warn("getMinParallelSetback: no reference line found in setback polyline");
@@ -377,6 +386,101 @@ public class PolylineMetrics {
         }
 
         return BigDecimal.valueOf(distance).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Setback depth for a yard = perpendicular distance between the building face that
+     * borders the yard and the plot-boundary edge facing it across the yard.
+     * 1. Footprint edges lying on the yard polygon are grouped by direction; the direction
+     *    with the greatest total length is the building face of this yard, and its longest
+     *    edge is the reference face (a notch/projection cannot hijack the result).
+     * 2. Plot-boundary edges parallel to that face, overlapping it in projection and with the
+     *    gap between them inside the yard, are measured perpendicularly; the minimum is used.
+     * Returns null when no such pair exists so the caller can fall back to the older logic.
+     */
+    private static BigDecimal getFacingParallelDistance(DXFLWPolyline plotBoundary,
+            DXFLWPolyline footprint, DXFLWPolyline yard) {
+        double tol = Math.toRadians(10.0);
+
+        List<DXFLine> fpOnYard = new ArrayList<>();
+        for (DXFLine l : getLinesOfPolyline(footprint)) {
+            Point a = l.getStartPoint();
+            Point b = l.getEndPoint();
+            if (isPointInOrOnYard(yard, a) && isPointInOrOnYard(yard, b)
+                    && isPointInOrOnYard(yard, getPointAlongLine(a, b, 0.5))) {
+                fpOnYard.add(l);
+            }
+        }
+        if (fpOnYard.isEmpty()) {
+            return null;
+        }
+
+        DXFLine dominant = null;
+        double bestTotal = 0.0;
+        for (DXFLine cand : fpOnYard) {
+            double total = 0.0;
+            for (DXFLine o : fpOnYard) {
+                if (isParallel(cand, o, tol)) {
+                    total += getLineLength(o);
+                }
+            }
+            if (total > bestTotal + 1e-9) {
+                bestTotal = total;
+                dominant = cand;
+            }
+        }
+        if (dominant == null) {
+            return null;
+        }
+
+        DXFLine face = null;
+        for (DXFLine o : fpOnYard) {
+            if (isParallel(dominant, o, tol) && (face == null || getLineLength(o) > getLineLength(face))) {
+                face = o;
+            }
+        }
+
+        double fx = face.getStartPoint().getX();
+        double fy = face.getStartPoint().getY();
+        double len = getLineLength(face);
+        double ux = (face.getEndPoint().getX() - fx) / len;
+        double uy = (face.getEndPoint().getY() - fy) / len;
+        double nx = -uy;
+        double ny = ux;
+
+        double best = Double.MAX_VALUE;
+        for (DXFLine b : getLinesOfPolyline(plotBoundary)) {
+            if (!isParallel(face, b, tol)) {
+                continue;
+            }
+            double t1 = (b.getStartPoint().getX() - fx) * ux + (b.getStartPoint().getY() - fy) * uy;
+            double t2 = (b.getEndPoint().getX() - fx) * ux + (b.getEndPoint().getY() - fy) * uy;
+            double lo = Math.max(0.0, Math.min(t1, t2));
+            double hi = Math.min(len, Math.max(t1, t2));
+            if (hi - lo < 0.01) {
+                continue; // no overlap along the face
+            }
+            double tm = (lo + hi) / 2.0;
+            double pfx = fx + ux * tm;
+            double pfy = fy + uy * tm;
+            double s = (b.getStartPoint().getX() - pfx) * nx + (b.getStartPoint().getY() - pfy) * ny;
+            if (Math.abs(s) <= 0.1) {
+                continue;
+            }
+            Point gapMid = new Point();
+            gapMid.setX(pfx + nx * s / 2.0);
+            gapMid.setY(pfy + ny * s / 2.0);
+            gapMid.setZ(0.0);
+            if (!isPointInOrOnYard(yard, gapMid)) {
+                continue; // the two edges do not face each other across this yard
+            }
+            best = Math.min(best, Math.abs(s));
+        }
+
+        if (best == Double.MAX_VALUE) {
+            return null;
+        }
+        return BigDecimal.valueOf(best).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**

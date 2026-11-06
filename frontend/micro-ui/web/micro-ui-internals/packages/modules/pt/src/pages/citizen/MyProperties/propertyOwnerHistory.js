@@ -138,46 +138,21 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
     const title = owner.PT_OWNER_NAME || owner.PT_COMMON_INSTITUTION_NAME || `${t("PT_OWNER_NAME")} ${index + 1}`;
     const rows = Object.keys(owner).filter((key) => key !== "PT_OWNER_NAME");
 
-  if (propertyIdFromProp) {
     return (
-      <React.Fragment>
-        <Card style={{marginLeft:'2px'}}>
-          <div>
-            {Object.keys(ownershipInfo).map((key, index, arr) => {
-              const date = convertEpochToDate(Number(key));
-
-              return (
-                <div className="historyContent">
-                  <div style={{ display: "flex" }}>
-                    <div className="historyCheckpoint zIndex"></div>
-                    {/* {index !== Object.keys(ownershipInfo).length - 1 ? ( */}
-                      <div className="rowContainerStyles">
-                        <CardSubHeader className="historyTableDateLabel bottomMargin"> {t("PT_DATE_OF_TRANSFER")} </CardSubHeader>
-                        <CardSubHeader className="historyTableDate bottomMargin">{date}</CardSubHeader>
-                      </div>
-                    {/* ) : null} */}
-                  </div>
-                  <TransferDetails
-                    data={ownershipInfo[key]}
-                    wrapperStyles="wrapperStyles"
-                    containerStyles="containerStyles"
-                    rowContainerStyles={{
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                    tableStyles={{
-                      display: "grid",
-                      gridAutoRows: "min-content",
-                      gridTemplateColumns: "repeat(5, minmax(100px, 1fr))",
-                    }}
-                  />
-                  {index !== arr.length - 1 && <div className="checkpoint-connect" style={{ marginLeft: 0, top: "4px" }}></div>}
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-      </React.Fragment>
+      <div key={index} style={styles.ownerCard}>
+        <div style={styles.ownerHeader}>{title}</div>
+        <div style={styles.ownerRows}>
+          {rows.map((key, rowIndex) => (
+            <div
+              key={key}
+              style={rowIndex === rows.length - 1 ? { ...styles.row, borderBottom: "none" } : styles.row}
+            >
+              <span style={styles.rowLabel}>{t(key)}</span>
+              <span style={styles.rowValue}>{owner[key]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     );
   };
 
@@ -209,4 +184,4 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
 }
 };
 
-export default propertyOwnerHistory;
+export default propertyOwnerHistory

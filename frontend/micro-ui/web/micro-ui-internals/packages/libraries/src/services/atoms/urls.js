@@ -35,6 +35,8 @@ const Urls = {
   EmployeeSearch: "/egov-hrms/employees/_search",
   Swach_Assignee_Count: "/egov-workflow-v2/egov-wf/process/_count",
 
+  citizen_login_url :"/user/citizen/_login",
+
   InboxSearch: "/inbox/v1/_search",
 
   UserSearch: "/user/_search",

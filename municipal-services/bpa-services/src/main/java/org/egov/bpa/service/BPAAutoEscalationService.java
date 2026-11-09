@@ -100,10 +100,12 @@ public class BPAAutoEscalationService {
 				boolean isTerminate = false;
 				if(!CollectionUtils.isEmpty(terminateRoles)) {
 					terminateEmployees = userService.getAssigneeFromBPA(bpas.get(0), terminateRoles, requestInfo, false);
-					for(User assignee : processInstance.getAssignes()) {
-						if(terminateEmployees.contains(assignee.getUuid())) {
-							isTerminate = true;
-							break;
+					if(!CollectionUtils.isEmpty(terminateEmployees)){
+						for(User assignee : processInstance.getAssignes()) {
+							if(terminateEmployees.contains(assignee.getUuid())) {
+								isTerminate = true;
+								break;
+							}
 						}
 					}
 				}

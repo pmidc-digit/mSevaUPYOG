@@ -971,8 +971,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           },
           authorizationLetter: owner?.authorizationLetter || null,
           photo:null,
-          // Keep IDs only from the existing BPA-search owner, not the user lookup.
-          id: matchingLandOwner?.id,
+          id: matchingLandOwner?.id || owner?.id || null,
           ownerId: matchingLandOwner?.ownerId,
         })
       })

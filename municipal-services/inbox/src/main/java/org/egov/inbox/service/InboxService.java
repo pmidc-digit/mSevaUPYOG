@@ -249,7 +249,10 @@ public class InboxService {
             statusIdNameMap = workflowService.getAllStatuses(businessSrvs);
         }
 
-        excludeCancelledAndTerminatedStates(moduleName, statusIdNameMap);
+        if (requestInfo.getUserInfo().getType() != null &&
+                "EMPLOYEE".equalsIgnoreCase(requestInfo.getUserInfo().getType())) {
+            excludeCancelledAndTerminatedStates(moduleName, statusIdNameMap);
+        }
                 
         // Preserve all actionable statuses before any filtering
         Map<String, String> allActionableStatuses = new HashMap<>(statusIdNameMap);

@@ -1346,7 +1346,7 @@ public class DemandService {
 									}
 
 									long periodFrom = periodStart.atStartOfDay(zone).toInstant().toEpochMilli();
-									long periodTo = periodEnd.atTime(23, 59, 59, 999000000).atZone(zone).toInstant().toEpochMilli();
+									long periodTo = periodEnd.atTime(23, 59, 59).atZone(zone).toInstant().toEpochMilli();
 
 									// Stop if allotment ended before this period started
 									if (d.getEndDate() != null && d.getEndDate() > 0 && periodFrom > d.getEndDate()) {
@@ -1372,15 +1372,14 @@ public class DemandService {
 								log.error("Error generating demands for application: {}", d.getApplicationNumber(), ex);
 							}
 						});
-//						log.info
-						System.out.println("------::List of consummercode which have to generate bulk demand::-----");
-						if (demandList.isEmpty()) {
-							System.out.println("------::All demand alreday has been generated::-----");
-						}
-						demandList.stream().forEach(d -> {
-//							log.info("{} Demand consummerCode :{} ",currentDate,d.getConsumerCode());
-							System.out.println(currentDate + " Demand consummerCode : " + d.getConsumerCode());
 
+						log.info("Batch demand generation summary for tenant {}: total demands={}", tenantId, demandList.size());
+						if (demandList.isEmpty()) {
+							log.info("All demands have already been generated for tenant: {}", tenantId);
+						}
+						demandList.forEach(d -> {
+							log.info("{} Demand generated for consumerCode: {} from: {} to: {} amount: {}",
+									currentDate, d.getConsumerCode(), d.getTaxPeriodFrom(), d.getTaxPeriodTo(), d.getMinimumAmountPayable());
 						});
 
 						batchDemanService.batchRun(demandList, batchSize, requestInfo);
@@ -1453,12 +1452,21 @@ public class DemandService {
 
 		List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
 
-		// Populate demand details for expired demands
-		expiredDemands.forEach(d -> {
-			if (CollectionUtils.isEmpty(d.getDemandDetails())) {
-				d.setDemandDetails(demandRepository.getDemandsDetailsByDemandId(Arrays.asList(d.getId())));
-			}
-		});
+		// Populate demand details for expired demands in a single batched query
+		List<String> missingDetailDemandIds = expiredDemands.stream()
+				.filter(d -> CollectionUtils.isEmpty(d.getDemandDetails()))
+				.map(Demand::getId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+
+		if (!missingDetailDemandIds.isEmpty()) {
+			Map<String, List<DemandDetail>> detailsMap = demandRepository.getDemandDetailsByDemandIds(missingDetailDemandIds);
+			expiredDemands.forEach(d -> {
+				if (CollectionUtils.isEmpty(d.getDemandDetails())) {
+					d.setDemandDetails(detailsMap.getOrDefault(d.getId(), Collections.emptyList()));
+				}
+			});
+		}
 
 		RequestInfoWrapper wrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 		List<Demand> demandsToUpdate = new ArrayList<>();

@@ -18,6 +18,7 @@ import org.egov.rl.calculator.service.DemandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import lombok.extern.log4j.Log4j;
 import lombok.extern.log4j.Log4j2;
@@ -54,37 +55,31 @@ public class BatchDemanService {
 	}
 
 	public void batchRun(List<Demand> list, int batchSize, RequestInfo requestInfo) {
+		if (CollectionUtils.isEmpty(list)) {
+			log.info("No demands to process in batchRun.");
+			return;
+		}
+
 		AtomicInteger noofBatch = new AtomicInteger(0);
-		List<Demand> data = IntStream.rangeClosed(0, (list.size() - 1)).boxed().map(a -> list.get(a))
-				.collect(Collectors.toList());
-		List<List<Demand>> batches = partition(data, config.getDemandBatchSize());
+		int batchConfigSize = config.getDemandBatchSize() > 0 ? config.getDemandBatchSize() : 10;
+		List<List<Demand>> batches = partition(list, batchConfigSize);
 		batches.forEach(demands -> {
-			int batch=noofBatch.incrementAndGet();
+			int batch = noofBatch.incrementAndGet();
 			LocalDate currentDate = LocalDate.now();
 			try {
 				List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
 				demandService.fetchBillForDemands(savedDemands, requestInfo);
-				// Workflow transition disabled per requirement: demands are generated without modifying application workflow state
-				// batchWorkflowUpdate(requestInfo,demands);
 				demands.forEach(d -> {
-					
-//					log.info("{} , Batch No :{} ,Success Bulk demands generation for consumerCode: {} , from: {} , to: {} and for amount: {}",
-//							currentDate,batch, d.getConsumerCode(), d.getTaxPeriodFrom(), d.getTaxPeriodTo(),
-//							d.getMinimumAmountPayable());
-					System.out.println(currentDate+" , Batch No : "+ batch +" ,Success Bulk demands generation for consumerCode: "+d.getConsumerCode()+" , from: "+d.getTaxPeriodFrom()+" , to: "+d.getTaxPeriodTo()+" and for amount: "+d.getMinimumAmountPayable());
+					log.info("{}, Batch No: {}, Success Bulk demand generation for consumerCode: {}, from: {}, to: {}, amount: {}",
+							currentDate, batch, d.getConsumerCode(), d.getTaxPeriodFrom(), d.getTaxPeriodTo(), d.getMinimumAmountPayable());
 				});
 			} catch (Exception e) {
-				System.out.println("-----:: Failed Batch Demand Generation ::-----");
+				log.error("Failed Batch Demand Generation for Batch No: {}", batch, e);
 				demands.forEach(d -> {
-//					log.error("{} , Batch No :{} : Failed Bulk demands for consumerCode: {} and from: {} to: {} for amount: {}",
-//							currentDate,noofBatch.incrementAndGet(), d.getConsumerCode(), d.getTaxPeriodFrom(), d.getTaxPeriodTo(),
-//							d.getMinimumAmountPayable());
-					System.out.println(currentDate+" , Batch No : "+ batch +" ,Failed Bulk demands generation for consumerCode: "+d.getConsumerCode()+" , from: "+d.getTaxPeriodFrom()+" , to: "+d.getTaxPeriodTo()+" and for amount: "+d.getMinimumAmountPayable());
-					
+					log.error("{}, Batch No: {}, Failed Bulk demand for consumerCode: {}, from: {}, to: {}, amount: {}",
+							currentDate, batch, d.getConsumerCode(), d.getTaxPeriodFrom(), d.getTaxPeriodTo(), d.getMinimumAmountPayable());
 				});
-				e.printStackTrace();
 			}
-
 		});
 	}
 	

@@ -147,14 +147,18 @@ public class DemandRepository {
 		List<Object> subQueryParams = new ArrayList<>();
 
 		if (consumercode == null) {
-			return null; // avoid "IN ()" SQL
+			return null;
 		}
 
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE status = 'ACTIVE' AND consumercode IN (?) AND taxperiodfrom=? and taxperiodto=?";
+		// Sub-second precision tolerance (+/- 1000ms) to ensure exact matching between .000 and .999 timestamps
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE status = 'ACTIVE' AND consumercode = ? "
+				+ "AND taxperiodfrom BETWEEN ? AND ? AND taxperiodto BETWEEN ? AND ?";
 
 		subQueryParams.add(consumercode);
-		subQueryParams.add(startDate);
-		subQueryParams.add(endDate);
+		subQueryParams.add(startDate - 1000);
+		subQueryParams.add(startDate + 1000);
+		subQueryParams.add(endDate - 1000);
+		subQueryParams.add(endDate + 1000);
 		try {
 
 			preparedStmtList.addAll(subQueryParams);

@@ -34,5 +34,6 @@ public class GetBillCriteria {
 	private Long fromDate;
 
 	private Long toDate;
-	
+
+	private String propertyId;
 }

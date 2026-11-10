@@ -1205,7 +1205,7 @@ public class DemandService {
 	}
 
 	private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo,
-			String consumerCode) {
+			String consumerCode, String propertyId) {
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 
 		String baseHost = config.getRlServiceHost();
@@ -1221,8 +1221,11 @@ public class DemandService {
 				tenantId);
 		builder.queryParam("status", joiner.toString());
 		builder.queryParam("isExpaireFlag", false);
-		if (consumerCode != null) {
-			builder.queryParam("applicationNumbers", consumerCode);
+		if (consumerCode != null && !consumerCode.trim().isEmpty()) {
+			builder.queryParam("applicationNumbers", consumerCode.trim());
+		}
+		if (propertyId != null && !propertyId.trim().isEmpty()) {
+			builder.queryParam("propertyId", propertyId.trim());
 		}
 
 		String url = builder.build().toUriString();
@@ -1231,7 +1234,27 @@ public class DemandService {
 		try {
 			Object result = serviceRequestRepository.fetchResult(new StringBuilder(url), requestInfoWrapper);
 			AllotmentSearchResponse response = mapper.convertValue(result, AllotmentSearchResponse.class);
-			return response.getAllotment();
+			List<AllotmentDetails> allotments = (response != null && response.getAllotment() != null)
+					? response.getAllotment()
+					: Collections.emptyList();
+
+			// Fallback: If consumerCode was passed and no allotment found by applicationNumbers, try searching by propertyId
+			if (CollectionUtils.isEmpty(allotments) && consumerCode != null && !consumerCode.trim().isEmpty()
+					&& (propertyId == null || propertyId.trim().isEmpty())) {
+				UriComponentsBuilder fallbackBuilder = UriComponentsBuilder.fromHttpUrl(baseHost).path(basePath)
+						.queryParam("tenantId", tenantId)
+						.queryParam("status", joiner.toString())
+						.queryParam("isExpaireFlag", false)
+						.queryParam("propertyId", consumerCode.trim());
+				String fallbackUrl = fallbackBuilder.build().toUriString();
+				log.info("ALLOTMENT FALLBACK SEARCH URI (by propertyId): " + fallbackUrl);
+				Object fallbackResult = serviceRequestRepository.fetchResult(new StringBuilder(fallbackUrl), requestInfoWrapper);
+				AllotmentSearchResponse fallbackResponse = mapper.convertValue(fallbackResult, AllotmentSearchResponse.class);
+				if (fallbackResponse != null && fallbackResponse.getAllotment() != null) {
+					allotments = fallbackResponse.getAllotment();
+				}
+			}
+			return allotments;
 		} catch (Exception e) {
 			log.error("Error while fetching approved allotment applications for tenant: {}", tenantId, e);
 			throw new CustomException("RL_APP_SEARCH_ERROR", "Failed to fetch approved allotment applications");
@@ -1239,11 +1262,15 @@ public class DemandService {
 	}
 
 	public void generateBatchDemand(RequestInfo requestInfo, String tenantCode, String consumerCode) {
+		generateBatchDemand(requestInfo, tenantCode, consumerCode, null);
+	}
+
+	public void generateBatchDemand(RequestInfo requestInfo, String tenantCode, String consumerCode, String propertyId) {
 		LocalDate currentDate = LocalDate.now(); // today
 
 		List<String> tenantIds = (tenantCode == null) ? demandRepository.getDistinctTenantIds()
 				: Arrays.asList(tenantCode);
-		log.info("Starting demand generation job for tenants: {}", tenantIds);
+		log.info("Starting demand generation job for tenants: {} (consumerCode={}, propertyId={})", tenantIds, consumerCode, propertyId);
 
 		for (String tenantId : tenantIds) {
 			log.info("Generating demands for tenant: {}", tenantId);
@@ -1254,7 +1281,7 @@ public class DemandService {
 					try {
 
 						List<AllotmentDetails> list = fetchApprovedAllotmentApplications(tenantId, requestInfo,
-								consumerCode);
+								consumerCode, propertyId);
 						List<Demand> demandList = new ArrayList<>();
 						int batchSize = 10;
 						Map<String, List<BillingPeriod>> billingPeriodsCache = new HashMap<>();

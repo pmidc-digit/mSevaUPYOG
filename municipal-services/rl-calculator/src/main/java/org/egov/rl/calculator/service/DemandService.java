@@ -1327,10 +1327,10 @@ public class DemandService {
 									LocalDate[] lastPeriod = getFinancialYearPeriod(lastEnd, cycle);
 									probeDate = lastPeriod[1].plusDays(1);
 								} else {
-									// If no demand exists till date: check created time
-									long initialEpoch = (d.getCreatedTime() > 0)
-											? d.getCreatedTime()
-											: ((d.getStartDate() != null && d.getStartDate() > 0) ? d.getStartDate() : System.currentTimeMillis());
+									// If no demand exists till date: start from allotment lease startDate (or createdTime)
+									long initialEpoch = (d.getStartDate() != null && d.getStartDate() > 0)
+											? d.getStartDate()
+											: ((d.getCreatedTime() > 0) ? d.getCreatedTime() : System.currentTimeMillis());
 									probeDate = Instant.ofEpochMilli(initialEpoch).atZone(zone).toLocalDate();
 								}
 
@@ -1353,8 +1353,21 @@ public class DemandService {
 										break;
 									}
 
+									// Skip if period ended before allotment lease started
+									if (d.getStartDate() != null && d.getStartDate() > 0 && periodTo < d.getStartDate()) {
+										probeDate = periodEnd.plusDays(1);
+										continue;
+									}
+
 									long startDay = (d.getStartDate() != null && d.getStartDate() > periodFrom) ? d.getStartDate() : periodFrom;
 									long endDay = (d.getEndDate() != null && d.getEndDate() < periodTo && d.getEndDate() > 0) ? d.getEndDate() : periodTo;
+
+									// Inverted period safety check (cannot bill if start is after or equal to end)
+									if (startDay >= endDay) {
+										probeDate = periodEnd.plusDays(1);
+										continue;
+									}
+
 									long expiryDate = periodTo;
 
 									// Clone allotment to prevent mutating original dates across multiple period iterations

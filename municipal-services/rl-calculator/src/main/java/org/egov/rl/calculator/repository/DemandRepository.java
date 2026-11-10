@@ -15,6 +15,7 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -175,7 +176,7 @@ public class DemandRepository {
 		List<Object> preparedStmtList = new ArrayList<>();
 
 		String placeholders = applicationNumber.stream().map(id -> "?").collect(Collectors.joining(", "));
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (" + placeholders + ") ORDER BY textperiodto DESC limit 1";
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (" + placeholders + ") ORDER BY taxperiodto DESC limit 1";
 		preparedStmtList.addAll(applicationNumber);
 		try {
 			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
@@ -185,6 +186,26 @@ public class DemandRepository {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
 					"Failed to fetch demands for the given rentable IDs and period");
+		}
+	}
+
+	/**
+	 * Fetches the latest non-cancelled demand for a consumer ordered by taxperiodto descending.
+	 * Used to determine the end of the last billed period for automated recurring billing.
+	 */
+	public Demand getLatestDemandForConsumer(String tenantId, String consumerCode) {
+		if (consumerCode == null || tenantId == null) {
+			return null;
+		}
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE tenantid = ? AND consumercode = ? "
+				+ "AND businessservice = 'rl-services' AND status <> 'CANCELLED' "
+				+ "ORDER BY taxperiodto DESC LIMIT 1";
+		try {
+			List<Demand> demands = jdbcTemplate.query(sql, new Object[]{tenantId, consumerCode}, demandRowMapper);
+			return CollectionUtils.isEmpty(demands) ? null : demands.get(0);
+		} catch (Exception e) {
+			log.error("Error fetching latest demand for consumerCode: {} in tenant: {}", consumerCode, tenantId, e);
+			return null;
 		}
 	}
 

@@ -1101,7 +1101,7 @@ public class DemandService {
 						DemandDetail existingPenaltyDetail = demand.getDemandDetails().stream()
 								.filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE))
 								.findFirst().orElse(null);
-						BigDecimal migratedPenalty = extractMigratedPenalty(demand, existingPenaltyDetail);
+						BigDecimal migratedPenalty = arrearOnly ? extractMigratedPenalty(demand, existingPenaltyDetail) : BigDecimal.ZERO;
 						BigDecimal totalPenalty = migratedPenalty.add(fallback).setScale(2, RoundingMode.HALF_UP);
 
 						if (existingPenaltyDetail != null) {
@@ -1257,29 +1257,92 @@ public class DemandService {
 								consumerCode);
 						List<Demand> demandList = new ArrayList<>();
 						int batchSize = 10;
+						Map<String, List<BillingPeriod>> billingPeriodsCache = new HashMap<>();
+
 						list.forEach(d -> {
-							JsonNode additionalDetails = d.getAdditionalDetails();
-							String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
+							try {
+								String cycle = RLConstants.RL_MONTHLY_CYCLE;
+								JsonNode additionalDetails = d.getAdditionalDetails();
+								if (additionalDetails != null && additionalDetails.path("propertyDetails").get(0) != null) {
+									String rawCycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
+									if (rawCycle != null && !rawCycle.isEmpty() && !"null".equalsIgnoreCase(rawCycle)) {
+										cycle = rawCycle;
+									}
+								}
 
-							List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo,
-									tenantId);
-							BillingPeriod billingPeriod = billingPeriods.stream()
-									.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle))
-									.findFirst().orElse(null);
-							if (billingPeriod != null) {
-								long startDay = billingPeriod.getTaxPeriodFrom() <= d.getStartDate() ? d.getStartDate()
-										: billingPeriod.getTaxPeriodFrom();
+								// Check if the billing cycle is configured and active in MDMS billingPeriod.json for this tenant
+								String appTenant = (d.getTenantId() != null) ? d.getTenantId() : tenantId;
+								List<BillingPeriod> tenantBillingPeriods = billingPeriodsCache.computeIfAbsent(appTenant, t -> {
+									try {
+										return masterDataService.getBillingPeriod(requestInfo, t);
+									} catch (Exception e) {
+										log.warn("Could not fetch MDMS billingPeriod for tenant {}: {}", t, e.getMessage());
+										return Collections.emptyList();
+									}
+								});
 
-								long endDay = billingPeriod.getTaxPeriodTo() <= d.getEndDate()
-										? billingPeriod.getTaxPeriodTo()
-										: d.getEndDate();
+								if (!isCycleActiveForTenant(tenantBillingPeriods, cycle)) {
+									log.info("Demand generation skipped for application {} ({}) in tenant {} - cycle '{}' is inactive or not present in MDMS billingPeriod",
+											d.getApplicationNumber(), d.getPropertyId(), appTenant, cycle);
+									return;
+								}
 
-								long exparyDate = billingPeriod.getTaxPeriodTo();
+								ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
+								LocalDate today = LocalDate.now(zone);
 
-								Demand demand = schedulerService.billGenerateByCycle(startDay, endDay, exparyDate, d,
-										requestInfo, cycle);
-								if (demand != null)
-									demandList.add(demand);
+								// 1. Check previous demands present or not (fetch last demand generated for this consumer)
+								Demand lastDemand = demandRepository.getLatestDemandForConsumer(d.getTenantId(), d.getApplicationNumber());
+
+								LocalDate probeDate;
+								if (lastDemand != null && lastDemand.getTaxPeriodTo() != null && lastDemand.getTaxPeriodTo() > 0) {
+									// Determine period of last demand, and start next unbilled cycle from the day after it ends
+									LocalDate lastEnd = Instant.ofEpochMilli(lastDemand.getTaxPeriodTo()).atZone(zone).toLocalDate();
+									LocalDate[] lastPeriod = getFinancialYearPeriod(lastEnd, cycle);
+									probeDate = lastPeriod[1].plusDays(1);
+								} else {
+									// If no demand exists till date: check created time
+									long initialEpoch = (d.getCreatedTime() > 0)
+											? d.getCreatedTime()
+											: ((d.getStartDate() != null && d.getStartDate() > 0) ? d.getStartDate() : System.currentTimeMillis());
+									probeDate = Instant.ofEpochMilli(initialEpoch).atZone(zone).toLocalDate();
+								}
+
+								// 2. Step through missing periods financial-year wise up to current date without depending on MDMS
+								while (true) {
+									LocalDate[] period = getFinancialYearPeriod(probeDate, cycle);
+									LocalDate periodStart = period[0];
+									LocalDate periodEnd = period[1];
+
+									// Stop when period start is after today (do not generate future cycles)
+									if (periodStart.isAfter(today)) {
+										break;
+									}
+
+									long periodFrom = periodStart.atStartOfDay(zone).toInstant().toEpochMilli();
+									long periodTo = periodEnd.atTime(23, 59, 59, 999000000).atZone(zone).toInstant().toEpochMilli();
+
+									// Stop if allotment ended before this period started
+									if (d.getEndDate() != null && d.getEndDate() > 0 && periodFrom > d.getEndDate()) {
+										break;
+									}
+
+									long startDay = (d.getStartDate() != null && d.getStartDate() > periodFrom) ? d.getStartDate() : periodFrom;
+									long endDay = (d.getEndDate() != null && d.getEndDate() < periodTo && d.getEndDate() > 0) ? d.getEndDate() : periodTo;
+									long expiryDate = periodTo;
+
+									// Clone allotment to prevent mutating original dates across multiple period iterations
+									AllotmentDetails periodAllotment = mapper.convertValue(mapper.valueToTree(d), AllotmentDetails.class);
+									Demand demand = schedulerService.billGenerateByCycle(startDay, endDay, expiryDate, periodAllotment,
+											requestInfo, cycle);
+									if (demand != null) {
+										demandList.add(demand);
+									}
+
+									// Advance to next financial year cycle
+									probeDate = periodEnd.plusDays(1);
+								}
+							} catch (Exception ex) {
+								log.error("Error generating demands for application: {}", d.getApplicationNumber(), ex);
 							}
 						});
 //						log.info
@@ -1464,7 +1527,15 @@ public class DemandService {
 		Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
 		Demand tempDemand = Demand.builder().taxPeriodFrom(allotmentDetails.getStartDate()).build();
 		long absoluteExpiry = getDueCutoffEpoch(tempDemand, dueDay);
-		long durationMillis = Math.max(0L, absoluteExpiry - System.currentTimeMillis());
+		long now = System.currentTimeMillis();
+		if (absoluteExpiry <= now) {
+			long window = TimeUnit.DAYS.toMillis(
+					config.getArrearPayableWindowDays() != null && config.getArrearPayableWindowDays() > 0
+							? config.getArrearPayableWindowDays()
+							: 30);
+			absoluteExpiry = now + window;
+		}
+		long durationMillis = Math.max(0L, absoluteExpiry - now);
 
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 				.minimumAmountPayable(amountPayable).tenantId(allotmentDetails.getTenantId())
@@ -1473,6 +1544,107 @@ public class DemandService {
 				.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 		demands.add(demand);
 		return demand;
+	}
+
+	/**
+	 * Checks whether a given billing cycle is configured with "active": true in the tenant's MDMS billingPeriod.json.
+	 * If missing or false, demand will not be generated for that cycle.
+	 */
+	private boolean isCycleActiveForTenant(List<BillingPeriod> billingPeriods, String cycle) {
+		if (CollectionUtils.isEmpty(billingPeriods) || cycle == null) {
+			return false;
+		}
+		for (BillingPeriod bp : billingPeriods) {
+			if (bp != null && Boolean.TRUE.equals(bp.getActive()) && isCycleMatch(bp.getBillingCycle(), cycle)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Matches MDMS billingCycle against application feesPeriodCycle accommodating common spelling variants.
+	 */
+	private boolean isCycleMatch(String mdmsCycle, String appCycle) {
+		if (mdmsCycle == null || appCycle == null) {
+			return false;
+		}
+		String m = mdmsCycle.trim();
+		String a = appCycle.trim();
+		if (m.equalsIgnoreCase(a)) {
+			return true;
+		}
+		if (("QUATERLY".equalsIgnoreCase(m) || "QUARTERLY".equalsIgnoreCase(m)) &&
+				("QUATERLY".equalsIgnoreCase(a) || "QUARTERLY".equalsIgnoreCase(a))) {
+			return true;
+		}
+		if (("BIANNUAL".equalsIgnoreCase(m) || "BIAANNUALY".equalsIgnoreCase(m)) &&
+				("BIANNUAL".equalsIgnoreCase(a) || "BIAANNUALY".equalsIgnoreCase(a))) {
+			return true;
+		}
+		if (("ANNUAL".equalsIgnoreCase(m) || "YEARLY".equalsIgnoreCase(m)) &&
+				("ANNUAL".equalsIgnoreCase(a) || "YEARLY".equalsIgnoreCase(a))) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the Indian Financial Year (April 1 to March 31) period boundaries [startDate, endDate]
+	 * for a given date and billing cycle:
+	 * - QUATERLY: Q1 (Apr 1 - Jun 30), Q2 (Jul 1 - Sep 30), Q3 (Oct 1 - Dec 31), Q4 (Jan 1 - Mar 31)
+	 * - BIANNUAL: H1 (Apr 1 - Sep 30), H2 (Oct 1 - Mar 31)
+	 * - ANNUAL: Full FY (Apr 1 - Mar 31)
+	 * - MONTHLY: Calendar month (1st to last day of month)
+	 */
+	public static LocalDate[] getFinancialYearPeriod(LocalDate date, String cycle) {
+		int month = date.getMonthValue();
+		int year = date.getYear();
+
+		if (cycle != null && (cycle.equalsIgnoreCase(RLConstants.RL_QUATERLY_CYCLE) || "QUARTERLY".equalsIgnoreCase(cycle))) {
+			if (month >= 4 && month <= 6) {
+				return new LocalDate[] { LocalDate.of(year, 4, 1), LocalDate.of(year, 6, 30) };
+			} else if (month >= 7 && month <= 9) {
+				return new LocalDate[] { LocalDate.of(year, 7, 1), LocalDate.of(year, 9, 30) };
+			} else if (month >= 10 && month <= 12) {
+				return new LocalDate[] { LocalDate.of(year, 10, 1), LocalDate.of(year, 12, 31) };
+			} else {
+				return new LocalDate[] { LocalDate.of(year, 1, 1), LocalDate.of(year, 3, 31) };
+			}
+		} else if (cycle != null && (cycle.equalsIgnoreCase(RLConstants.RL_BIAANNUALY_CYCLE) || "BIANNUAL".equalsIgnoreCase(cycle))) {
+			if (month >= 4 && month <= 9) {
+				return new LocalDate[] { LocalDate.of(year, 4, 1), LocalDate.of(year, 9, 30) };
+			} else if (month >= 10 && month <= 12) {
+				return new LocalDate[] { LocalDate.of(year, 10, 1), LocalDate.of(year + 1, 3, 31) };
+			} else {
+				return new LocalDate[] { LocalDate.of(year - 1, 10, 1), LocalDate.of(year, 3, 31) };
+			}
+		} else if (cycle != null && (cycle.equalsIgnoreCase(RLConstants.RL_YEARLY_CYCLE) || "ANNUAL".equalsIgnoreCase(cycle))) {
+			if (month >= 4) {
+				return new LocalDate[] { LocalDate.of(year, 4, 1), LocalDate.of(year + 1, 3, 31) };
+			} else {
+				return new LocalDate[] { LocalDate.of(year - 1, 4, 1), LocalDate.of(year, 3, 31) };
+			}
+		} else {
+			// Monthly cycle: 1st of month to end of month
+			return new LocalDate[] { date.withDayOfMonth(1), date.withDayOfMonth(date.lengthOfMonth()) };
+		}
+	}
+
+	private int getStepMonthsForCycle(String cycle) {
+		if (cycle == null) {
+			return 1;
+		}
+		if (cycle.equalsIgnoreCase(RLConstants.RL_QUATERLY_CYCLE) || "QUARTERLY".equalsIgnoreCase(cycle)) {
+			return 3;
+		}
+		if (cycle.equalsIgnoreCase(RLConstants.RL_BIAANNUALY_CYCLE) || "BIANNUAL".equalsIgnoreCase(cycle)) {
+			return 6;
+		}
+		if (cycle.equalsIgnoreCase(RLConstants.RL_YEARLY_CYCLE) || "ANNUAL".equalsIgnoreCase(cycle)) {
+			return 12;
+		}
+		return 1;
 	}
 
 	/** Due day from a resolved DueDate row, defaulting to 10 when the master does not define one. */

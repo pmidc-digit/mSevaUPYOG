@@ -64,7 +64,8 @@ public class BatchDemanService {
 			try {
 				List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
 				demandService.fetchBillForDemands(savedDemands, requestInfo);
-				batchWorkflowUpdate(requestInfo,demands);
+				// Workflow transition disabled per requirement: demands are generated without modifying application workflow state
+				// batchWorkflowUpdate(requestInfo,demands);
 				demands.forEach(d -> {
 					
 //					log.info("{} , Batch No :{} ,Success Bulk demands generation for consumerCode: {} , from: {} , to: {} and for amount: {}",

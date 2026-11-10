@@ -69,6 +69,7 @@ public class BatchDemanService {
 			try {
 				List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
 				demandService.fetchBillForDemands(savedDemands, requestInfo);
+				batchWorkflowUpdate(requestInfo, demands);
 				demands.forEach(d -> {
 					log.info("{}, Batch No: {}, Success Bulk demand generation for consumerCode: {}, from: {}, to: {}, amount: {}",
 							currentDate, batch, d.getConsumerCode(), d.getTaxPeriodFrom(), d.getTaxPeriodTo(), d.getMinimumAmountPayable());
@@ -83,18 +84,19 @@ public class BatchDemanService {
 		});
 	}
 	
-	public void batchWorkflowUpdate(RequestInfo requestInfo,List<Demand> list) {
-
-       try {
-        	CompletableFuture.runAsync(() -> {
-        		list.stream().forEach(dmd->{
-        			cycleWorkflowService.process(dmd.getTenantId(),requestInfo,dmd.getConsumerCode()
-                );});
-        	  });
-        	
-            
-        } catch (Exception e) {
-			// TODO: handle exception
-		} 
-    }
+	public void batchWorkflowUpdate(RequestInfo requestInfo, List<Demand> list) {
+		try {
+			CompletableFuture.runAsync(() -> {
+				list.forEach(dmd -> {
+					try {
+						cycleWorkflowService.process(dmd.getTenantId(), requestInfo, dmd.getConsumerCode());
+					} catch (Exception ex) {
+						log.error("Error in workflow transition for consumerCode: {}", dmd.getConsumerCode(), ex);
+					}
+				});
+			});
+		} catch (Exception e) {
+			log.error("Error triggering batchWorkflowUpdate", e);
+		}
+	}
 }

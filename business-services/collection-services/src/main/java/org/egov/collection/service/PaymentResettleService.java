@@ -25,6 +25,12 @@ import org.egov.collection.web.contract.PaymentAutoResettleRequest;
 import org.egov.collection.web.contract.PaymentAutoResettleResponse;
 import org.egov.collection.web.contract.PaymentResettleRequest;
 import org.egov.collection.web.contract.PaymentResettleResponse;
+import org.egov.collection.model.PaymentReplayCriteria;
+import org.egov.collection.web.contract.PaymentReplayRequest;
+import org.egov.collection.web.contract.PaymentReplayResponse;
+import org.egov.common.contract.request.Role;
+import org.egov.common.contract.request.User;
+
 import org.egov.collection.web.contract.factory.ResponseInfoFactory;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
@@ -155,7 +161,8 @@ public class PaymentResettleService {
 		}
 
 		// 4. Trigger demand settlement by publishing to Kafka payment create topic
-		PaymentRequest paymentRequest = new PaymentRequest(resettleRequest.getRequestInfo(), payment);
+		RequestInfo enrichedRequestInfo = enrichRequestInfoWithSystemRoles(resettleRequest.getRequestInfo(), payment.getTenantId());
+		PaymentRequest paymentRequest = new PaymentRequest(enrichedRequestInfo, payment);
 		String key = payment.getMobileNumber() + payment.getId();
 		producer.producer(applicationProperties.getCreatePaymentTopicName(), key, paymentRequest);
 		log.info("Payment settlement event successfully re-produced to Kafka topic {} for payment ID {}",
@@ -368,7 +375,8 @@ public class PaymentResettleService {
 					}
 
 					// 3. Produce to Kafka
-					PaymentRequest paymentRequest = new PaymentRequest(requestInfo, payment);
+					RequestInfo enrichedRequestInfo = enrichRequestInfoWithSystemRoles(requestInfo, payment.getTenantId());
+					PaymentRequest paymentRequest = new PaymentRequest(enrichedRequestInfo, payment);
 					String key = payment.getMobileNumber() + payment.getId();
 					producer.producer(applicationProperties.getCreatePaymentTopicName(), key, paymentRequest);
 
@@ -460,4 +468,186 @@ public class PaymentResettleService {
 	public List<PaymentResettleDetailAudit> getResettleDetailAudits(String batchId, String paymentId, String status, Integer limit) {
 		return paymentRepository.fetchResettleDetailAudits(batchId, paymentId, status, limit);
 	}
+
+	public PaymentReplayResponse replayPayment(PaymentReplayRequest replayRequest) {
+		if (replayRequest == null || replayRequest.getReplayCriteria() == null) {
+			throw new CustomException("INVALID_REQUEST", "Replay criteria cannot be null");
+		}
+
+		PaymentReplayCriteria criteria = replayRequest.getReplayCriteria();
+		if (StringUtils.isEmpty(criteria.getTenantId())) {
+			throw new CustomException("INVALID_TENANT", "TenantId is mandatory for replaying payments");
+		}
+
+		if (StringUtils.isEmpty(criteria.getPaymentId()) && StringUtils.isEmpty(criteria.getReceiptNumber())
+				&& StringUtils.isEmpty(criteria.getConsumerCode()) && StringUtils.isEmpty(criteria.getBillId())) {
+			throw new CustomException("INVALID_CRITERIA",
+					"At least one of paymentId, receiptNumber, consumerCode, or billId must be provided");
+		}
+
+		PaymentSearchCriteria searchCriteria = PaymentSearchCriteria.builder()
+				.tenantId(criteria.getTenantId())
+				.offset(0)
+				.limit(applicationProperties.getReceiptsSearchDefaultLimit())
+				.build();
+
+		if (!StringUtils.isEmpty(criteria.getPaymentId())) {
+			Set<String> ids = new HashSet<>();
+			ids.add(criteria.getPaymentId());
+			searchCriteria.setIds(ids);
+		}
+		if (!StringUtils.isEmpty(criteria.getReceiptNumber())) {
+			Set<String> receiptNumbers = new HashSet<>();
+			receiptNumbers.add(criteria.getReceiptNumber());
+			searchCriteria.setReceiptNumbers(receiptNumbers);
+		}
+		if (!StringUtils.isEmpty(criteria.getConsumerCode())) {
+			Set<String> consumerCodes = new HashSet<>();
+			consumerCodes.add(criteria.getConsumerCode());
+			searchCriteria.setConsumerCodes(consumerCodes);
+		}
+		if (!StringUtils.isEmpty(criteria.getBillId())) {
+			Set<String> billIds = new HashSet<>();
+			billIds.add(criteria.getBillId());
+			searchCriteria.setBillIds(billIds);
+		}
+		if (!StringUtils.isEmpty(criteria.getBusinessService())) {
+			searchCriteria.setBusinessService(criteria.getBusinessService());
+		}
+
+		List<Payment> payments = paymentRepository.fetchPayments(searchCriteria);
+		if (CollectionUtils.isEmpty(payments)) {
+			throw new CustomException("PAYMENT_NOT_FOUND", "No payment found matching given replay criteria");
+		}
+
+		RequestInfo enrichedRequestInfo = enrichRequestInfoWithSystemRoles(replayRequest.getRequestInfo(), criteria.getTenantId());
+		List<Payment> replayedPayments = new ArrayList<>();
+		String topic = applicationProperties.getCreatePaymentTopicName();
+
+		for (Payment payment : payments) {
+			if (!CollectionUtils.isEmpty(payment.getPaymentDetails())) {
+				for (PaymentDetail detail : payment.getPaymentDetails()) {
+					if (detail.getBill() == null) {
+						detail.setBill(Bill.builder()
+								.id(detail.getBillId())
+								.tenantId(payment.getTenantId())
+								.consumerCode(criteria.getConsumerCode())
+								.businessService(detail.getBusinessService())
+								.build());
+					} else {
+						if (StringUtils.isEmpty(detail.getBill().getConsumerCode()) && !StringUtils.isEmpty(criteria.getConsumerCode())) {
+							detail.getBill().setConsumerCode(criteria.getConsumerCode());
+						}
+						if (StringUtils.isEmpty(detail.getBill().getBusinessService()) && !StringUtils.isEmpty(detail.getBusinessService())) {
+							detail.getBill().setBusinessService(detail.getBusinessService());
+						}
+					}
+				}
+			}
+
+			PaymentRequest paymentRequest = new PaymentRequest(enrichedRequestInfo, payment);
+			String key = payment.getMobileNumber() + payment.getId();
+			producer.producer(topic, key, paymentRequest);
+			log.info("Payment event successfully replayed to Kafka topic {} for payment ID {} (consumerCode: {})",
+					topic, payment.getId(), criteria.getConsumerCode());
+			replayedPayments.add(payment);
+		}
+
+		try {
+			String userUuid = (replayRequest.getRequestInfo() != null && replayRequest.getRequestInfo().getUserInfo() != null)
+					? replayRequest.getRequestInfo().getUserInfo().getUuid()
+					: "SYSTEM";
+			for (Payment payment : replayedPayments) {
+				String cCode = criteria.getConsumerCode();
+				if (StringUtils.isEmpty(cCode) && !CollectionUtils.isEmpty(payment.getPaymentDetails()) && payment.getPaymentDetails().get(0).getBill() != null) {
+					cCode = payment.getPaymentDetails().get(0).getBill().getConsumerCode();
+				}
+				String bService = !CollectionUtils.isEmpty(payment.getPaymentDetails())
+						? payment.getPaymentDetails().get(0).getBusinessService()
+						: criteria.getBusinessService();
+				String billId = !CollectionUtils.isEmpty(payment.getPaymentDetails())
+						? payment.getPaymentDetails().get(0).getBillId()
+						: criteria.getBillId();
+
+				PaymentResettleDetailAudit detailAudit = PaymentResettleDetailAudit.builder()
+						.id(UUID.randomUUID().toString())
+						.batchId("REPLAY-" + UUID.randomUUID().toString().substring(0, 8))
+						.paymentId(payment.getId())
+						.consumerCode(cCode)
+						.businessService(bService)
+						.billId(billId)
+						.tenantId(payment.getTenantId())
+						.resettleStatus("REPLAYED")
+						.failureReason("Payment event replayed to Kafka topic: " + topic)
+						.createdTime(System.currentTimeMillis())
+						.createdBy(userUuid)
+						.build();
+				paymentRepository.saveResettleDetailAudit(Collections.singletonList(detailAudit));
+			}
+		} catch (Exception e) {
+			log.warn("Failed to save replay audit record: {}", e.getMessage());
+		}
+
+		ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(replayRequest.getRequestInfo(), true);
+		return PaymentReplayResponse.builder()
+				.responseInfo(responseInfo)
+				.status("SUCCESS")
+				.message("Payment event successfully replayed to Kafka topic " + topic + " for " + replayedPayments.size() + " payment(s).")
+				.payments(replayedPayments)
+				.totalReplayed(replayedPayments.size())
+				.topic(topic)
+				.consumerCode(criteria.getConsumerCode())
+				.tenantId(criteria.getTenantId())
+				.build();
+	}
+
+	private RequestInfo enrichRequestInfoWithSystemRoles(RequestInfo requestInfo, String tenantId) {
+		if (requestInfo == null) {
+			requestInfo = new RequestInfo();
+		}
+		User userInfo = requestInfo.getUserInfo();
+		if (userInfo == null) {
+			userInfo = User.builder()
+					.id(1L)
+					.userName("SYSTEM")
+					.name("System User")
+					.type("SYSTEM")
+					.roles(new ArrayList<>())
+					.build();
+			requestInfo.setUserInfo(userInfo);
+		}
+		List<Role> roles = userInfo.getRoles();
+		if (roles == null) {
+			roles = new ArrayList<>();
+			userInfo.setRoles(roles);
+		}
+		boolean hasSystemPayment = false;
+		for (Role role : roles) {
+			if (role != null && "SYSTEM_PAYMENT".equalsIgnoreCase(role.getCode())) {
+				hasSystemPayment = true;
+				break;
+			}
+		}
+		if (!hasSystemPayment) {
+			roles.add(Role.builder()
+					.code("SYSTEM_PAYMENT")
+					.name("System Payment")
+					.build());
+		}
+		boolean hasAnonymous = false;
+		for (Role role : roles) {
+			if (role != null && "ANONYMOUS".equalsIgnoreCase(role.getCode())) {
+				hasAnonymous = true;
+				break;
+			}
+		}
+		if (!hasAnonymous) {
+			roles.add(Role.builder()
+					.code("ANONYMOUS")
+					.name("Anonymous")
+					.build());
+		}
+		return requestInfo;
+	}
+
 }

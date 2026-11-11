@@ -959,4 +959,12 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 		
 	}
 	
+	public void reactivateBill(String billId) {
+		try {
+			billRepository.updateBillStatusBYId(billId, BillStatus.ACTIVE.toString());
+		} catch (Exception e) {
+			throw new CustomException("EGBS_REACTIVATE_BILL_ERROR", e.getMessage());
+		}
+	}
+
 }

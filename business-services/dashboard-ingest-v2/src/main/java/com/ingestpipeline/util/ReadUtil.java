@@ -245,7 +245,7 @@ public class ReadUtil {
 		switch (cell.getCellType()) {
 		case STRING:
 			String str = cell.getRichStringCellValue().getString();
-			str = str.replaceAll("(\\n\\s)+|(\\r\\n\\s)+|(\\r\\s)+|(\\r)+|(\\n)+|(\\s)+", " ");
+			str = str.replaceAll("(\\r\n\\s)+|(\\r\\r\n\\s)+|(\\r\\s)+|(\\r)+|(\\r\n)+|(\\s)+", " ");
 			rowRecord.add(str);
 			break;
 		case NUMERIC:

@@ -36,6 +36,10 @@ import com.ingestpipeline.util.Constants;
 import com.ingestpipeline.util.JSONUtil;
 import com.ingestpipeline.util.ReadUtil;
 
+import com.ingestpipeline.model.ReconciliationRequest;
+import com.ingestpipeline.model.ReconciliationResponse;
+import com.ingestpipeline.service.ReconciliationService;
+
 @RestController
 @RequestMapping(Constants.Paths.ELASTIC_PUSH_CONTROLLER_PATH)
 public class RestApiController {
@@ -56,6 +60,9 @@ public class RestApiController {
 
 	@Autowired
 	private ElasticService elasticService;
+
+	@Autowired
+	private ReconciliationService reconciliationService;
 
 	/**
 	 * This API use to pause a active kafka consumer
@@ -181,6 +188,48 @@ public class RestApiController {
 			return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<String>(HttpStatus.SERVICE_UNAVAILABLE);
+	}
+
+	/**
+	 * Reconcile collection payments from collection-services into DSS Elasticsearch index (dss-payment_v2 / dss-collection_v2).
+	 * Accepts date range, tenantId, businessService, transactionNumber, paymentId, or direct payments payload.
+	 *
+	 * @param request reconciliation criteria
+	 * @return ReconciliationResponse containing status, counts, and total amount
+	 */
+	@RequestMapping(value = Constants.Paths.RECONCILE, method = RequestMethod.POST)
+	public ResponseEntity<ReconciliationResponse> reconcile(@RequestBody ReconciliationRequest request) {
+		logMyTime();
+		logger.info("Reconciliation triggered via POST with request: {}", request);
+		ReconciliationResponse response = reconciliationService.reconcile(request);
+		return new ResponseEntity<ReconciliationResponse>(response, HttpStatus.OK);
+	}
+
+	@RequestMapping(value = Constants.Paths.RECONCILE, method = RequestMethod.GET)
+	public ResponseEntity<ReconciliationResponse> reconcileGet(
+			@RequestParam(value = "tenantId", defaultValue = "pb") String tenantId,
+			@RequestParam(value = "fromDate", required = false) Long fromDate,
+			@RequestParam(value = "toDate", required = false) Long toDate,
+			@RequestParam(value = "businessService", required = false) String businessService,
+			@RequestParam(value = "transactionNumber", required = false) String transactionNumber,
+			@RequestParam(value = "paymentId", required = false) String paymentId,
+			@RequestParam(value = "consumerCode", required = false) String consumerCode,
+			@RequestParam(value = "limit", required = false) Integer limit,
+			@RequestParam(value = "offset", required = false) Integer offset) {
+		logMyTime();
+		ReconciliationRequest request = new ReconciliationRequest();
+		request.setTenantId(tenantId);
+		request.setFromDate(fromDate);
+		request.setToDate(toDate);
+		request.setBusinessService(businessService);
+		request.setTransactionNumber(transactionNumber);
+		request.setPaymentId(paymentId);
+		request.setConsumerCode(consumerCode);
+		request.setLimit(limit);
+		request.setOffset(offset);
+		logger.info("Reconciliation triggered via GET with criteria: {}", request);
+		ReconciliationResponse response = reconciliationService.reconcile(request);
+		return new ResponseEntity<ReconciliationResponse>(response, HttpStatus.OK);
 	}
 
 	private void logMyTime() {

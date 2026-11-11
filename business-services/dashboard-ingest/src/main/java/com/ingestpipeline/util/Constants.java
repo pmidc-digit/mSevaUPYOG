@@ -18,6 +18,7 @@ public interface Constants {
 		final String Targets = "/targets";
 		final String Collections = "/getCollections";
 		final String ES_INDEX = "/migrate/{indexName}/{version}";
+		final String RECONCILE = "/reconcile";
 	}
 	
 	public interface Qualifiers { 
@@ -59,6 +60,7 @@ public interface Constants {
 		public static final String TOPIC_TWO = "topicTwo"; 
 		public static final String TOPIC_THREE = "topicThree"; 
 		public static final String TOPIC_FOUR = "topicFour"; 
+		public static final String DLQ_TOPIC = "egov-dss-ingest-dlq";
 	}
 	
 	public interface BeanContainerFactory { 

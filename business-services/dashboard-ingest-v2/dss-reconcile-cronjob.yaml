@@ -1,0 +1,62 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: dss-reconcile-daily
+  namespace: egov
+  labels:
+    app: dss-reconcile-daily
+    group: analytics
+spec:
+  # Runs daily at 2:00 AM IST (20:30 UTC previous day, or adjust to your cluster timezone)
+  schedule: "30 20 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: dss-reconcile-daily
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: dss-reconcile
+            image: curlimages/curl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              # Calculate yesterday's epoch range in milliseconds (IST: UTC+5:30)
+              # Yesterday 00:00:00 to Yesterday 23:59:59
+              NOW_SEC=$(date +%s)
+              START_OF_TODAY_SEC=$(( (NOW_SEC / 86400) * 86400 ))
+              START_OF_YESTERDAY_SEC=$(( START_OF_TODAY_SEC - 86400 ))
+              END_OF_YESTERDAY_SEC=$(( START_OF_TODAY_SEC - 1 ))
+
+              FROM_DATE_MS=$(( START_OF_YESTERDAY_SEC * 1000 ))
+              TO_DATE_MS=$(( END_OF_YESTERDAY_SEC * 1000 ))
+
+              echo "=========================================================="
+              echo "Starting DSS Daily Payment Reconciliation"
+              echo "From Date (ms): $FROM_DATE_MS"
+              echo "To Date   (ms): $TO_DATE_MS"
+              echo "Target URL: http://dashboard-ingest-v2:8081/dashboard-ingest-v2/ingest/reconcile"
+              echo "=========================================================="
+
+              RESPONSE=$(curl -s -w "\r\nHTTP_STATUS:%{http_code}" -X POST \
+                "http://dashboard-ingest-v2:8081/dashboard-ingest-v2/ingest/reconcile" \
+                -H "Content-Type: application/json" \
+                -d "{\"tenantId\": \"pb\", \"fromDate\": $FROM_DATE_MS, \"toDate\": $TO_DATE_MS, \"limit\": 500}")
+
+              echo "Response from DSS Ingest:"
+              echo "$RESPONSE"
+
+              HTTP_STATUS=$(echo "$RESPONSE" | tr -d '\r' | sed -n 's/HTTP_STATUS://p')
+              if [ "$HTTP_STATUS" != "200" ]; then
+                echo "Reconciliation failed with HTTP status $HTTP_STATUS"
+                exit 1
+              fi
+              echo "Reconciliation completed successfully."

@@ -1317,15 +1317,30 @@ public class DemandService {
 								ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
 								LocalDate today = LocalDate.now(zone);
 
-								// 1. Check previous demands present or not (fetch last demand generated for this consumer)
-								Demand lastDemand = demandRepository.getLatestDemandForConsumer(d.getTenantId(), d.getApplicationNumber());
+								// 1. Audit all existing demands for this consumer to detect missing or cancelled periods (gaps)
+								List<Demand> consumerDemands = demandRepository.getDemandsForConsumer(appTenant, d.getApplicationNumber());
+								List<Demand> activeDemands = (consumerDemands != null)
+										? consumerDemands.stream().filter(dem -> Demand.DemandStatusEnum.ACTIVE.equals(dem.getStatus())).collect(Collectors.toList())
+										: new ArrayList<>();
 
 								LocalDate probeDate;
-								if (lastDemand != null && lastDemand.getTaxPeriodTo() != null && lastDemand.getTaxPeriodTo() > 0) {
-									// Determine period of last demand, and start next unbilled cycle from the day after it ends
-									LocalDate lastEnd = Instant.ofEpochMilli(lastDemand.getTaxPeriodTo()).atZone(zone).toLocalDate();
-									LocalDate[] lastPeriod = getFinancialYearPeriod(lastEnd, cycle);
-									probeDate = lastPeriod[1].plusDays(1);
+								if (!CollectionUtils.isEmpty(consumerDemands)) {
+									// Demands already exist for this consumer: start probing from the earliest billed period
+									long earliestDemandEpoch = consumerDemands.stream()
+											.mapToLong(Demand::getTaxPeriodFrom)
+											.min()
+											.orElse(System.currentTimeMillis());
+
+									long initialEpoch = earliestDemandEpoch;
+									if (d.getStartDate() != null && d.getStartDate() > 0 && d.getStartDate() < earliestDemandEpoch) {
+										LocalDate leaseStart = Instant.ofEpochMilli(d.getStartDate()).atZone(zone).toLocalDate();
+										LocalDate earliestDemandDate = Instant.ofEpochMilli(earliestDemandEpoch).atZone(zone).toLocalDate();
+										// If lease started within the same FY or within 1 year before the first demand, probe from lease start
+										if (leaseStart.getYear() == earliestDemandDate.getYear() || leaseStart.plusYears(1).isAfter(earliestDemandDate)) {
+											initialEpoch = d.getStartDate();
+										}
+									}
+									probeDate = Instant.ofEpochMilli(initialEpoch).atZone(zone).toLocalDate();
 								} else {
 									// If no demand exists till date: start from allotment lease startDate (or createdTime)
 									long initialEpoch = (d.getStartDate() != null && d.getStartDate() > 0)
@@ -1368,6 +1383,17 @@ public class DemandService {
 										continue;
 									}
 
+									// Check if an ACTIVE demand already covers this exact period (with 1000ms tolerance)
+									boolean activeDemandExists = activeDemands.stream().anyMatch(existing ->
+											(Math.abs(existing.getTaxPeriodFrom() - startDay) <= 1000 || Math.abs(existing.getTaxPeriodFrom() - periodFrom) <= 1000) &&
+											(Math.abs(existing.getTaxPeriodTo() - endDay) <= 1000 || Math.abs(existing.getTaxPeriodTo() - periodTo) <= 1000)
+									);
+
+									if (activeDemandExists) {
+										probeDate = periodEnd.plusDays(1);
+										continue;
+									}
+
 									long expiryDate = periodTo;
 
 									// Clone allotment to prevent mutating original dates across multiple period iterations
@@ -1376,6 +1402,7 @@ public class DemandService {
 											requestInfo, cycle);
 									if (demand != null) {
 										demandList.add(demand);
+										activeDemands.add(demand);
 									}
 
 									// Advance to next financial year cycle

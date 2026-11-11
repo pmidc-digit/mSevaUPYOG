@@ -194,6 +194,24 @@ public class DemandRepository {
 	}
 
 	/**
+	 * Fetches all demands for a consumer ordered by taxperiodfrom ascending.
+	 * Used to audit existing billed periods and detect any missing or cancelled periods for gap generation.
+	 */
+	public List<Demand> getDemandsForConsumer(String tenantId, String consumerCode) {
+		if (consumerCode == null || tenantId == null) {
+			return Collections.emptyList();
+		}
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE tenantid = ? AND consumercode = ? "
+				+ "AND businessservice = 'rl-services' ORDER BY taxperiodfrom ASC";
+		try {
+			return jdbcTemplate.query(sql, new Object[]{tenantId, consumerCode}, demandRowMapper);
+		} catch (Exception e) {
+			log.error("Error fetching demands for consumerCode: {} in tenant: {}", consumerCode, tenantId, e);
+			return Collections.emptyList();
+		}
+	}
+
+	/**
 	 * Fetches the latest non-cancelled demand for a consumer ordered by taxperiodto descending.
 	 * Used to determine the end of the last billed period for automated recurring billing.
 	 */

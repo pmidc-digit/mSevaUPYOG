@@ -271,7 +271,7 @@ public class UserService {
                     .getType()).tenantId(user.getTenantId()).build());
     }
 
-    public String getStateLevelTenantForCitizen(String tenantId, UserType userType) {
+    private String getStateLevelTenantForCitizen(String tenantId, UserType userType) {
         if (!isNull(userType) && userType.equals(UserType.CITIZEN) && !isEmpty(tenantId) && tenantId.contains("."))
             return tenantId.split("\\.")[0];
         else
@@ -436,7 +436,7 @@ public class UserService {
         return getAccess(user, user.getOtpReference());
     }
 
-    public Map<String, Object> getAccess(User user, String password) {
+    private Object getAccess(User user, String password) {
         log.info("Fetch access token for register with login flow");
         try {
             HttpHeaders headers = new HttpHeaders();

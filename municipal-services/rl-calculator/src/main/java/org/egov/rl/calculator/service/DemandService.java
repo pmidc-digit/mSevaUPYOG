@@ -1050,9 +1050,11 @@ public class DemandService {
 						// (arrearPenalty, written verbatim when the arrear demand was created). The accrued penalty
 						// is ADDED on top of that migrated amount so the customer pays both. The migrated part is a
 						// fixed amount stored on the demand, so the total is recomputed from scratch on every run
-						// and never stacks. A demand created before the amount was stored falls back to the head's
-						// current value, which is exactly that migrated amount.
-						BigDecimal migratedPenalty = extractMigratedPenalty(demand, existingPenaltyDetail);
+						// and never stacks. Normal rent demands have no migrated penalty and must not stack.
+						BigDecimal migratedPenalty = arrearOnly ? extractMigratedPenalty(demand, existingPenaltyDetail) : BigDecimal.ZERO;
+						if (arrearOnly) {
+							preserveMigratedPenalty(demand, migratedPenalty);
+						}
 						BigDecimal totalPenalty = migratedPenalty.add(penaltyAmount).setScale(2, RoundingMode.HALF_UP);
 
 						if (existingPenaltyDetail != null) {
@@ -1102,6 +1104,9 @@ public class DemandService {
 								.filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE))
 								.findFirst().orElse(null);
 						BigDecimal migratedPenalty = arrearOnly ? extractMigratedPenalty(demand, existingPenaltyDetail) : BigDecimal.ZERO;
+						if (arrearOnly) {
+							preserveMigratedPenalty(demand, migratedPenalty);
+						}
 						BigDecimal totalPenalty = migratedPenalty.add(fallback).setScale(2, RoundingMode.HALF_UP);
 
 						if (existingPenaltyDetail != null) {
@@ -1913,5 +1918,32 @@ public class DemandService {
 			return penaltyDetail.getTaxAmount();
 		}
 		return BigDecimal.ZERO;
+	}
+
+	/**
+	 * Permanently stores the migrated penalty amount in demand.additionalDetails so subsequent recalculations
+	 * do not stack accrued penalty on top of the previous total.
+	 */
+	private void preserveMigratedPenalty(Demand demand, BigDecimal migratedPenalty) {
+		if (demand == null || migratedPenalty == null) {
+			return;
+		}
+		try {
+			JsonNode current = (demand.getAdditionalDetails() != null)
+					? mapper.convertValue(demand.getAdditionalDetails(), JsonNode.class)
+					: null;
+			com.fasterxml.jackson.databind.node.ObjectNode details;
+			if (current instanceof com.fasterxml.jackson.databind.node.ObjectNode) {
+				details = (com.fasterxml.jackson.databind.node.ObjectNode) current;
+			} else {
+				details = mapper.createObjectNode();
+			}
+			if (!details.hasNonNull("migratedPenalty")) {
+				details.put("migratedPenalty", migratedPenalty.toString());
+				demand.setAdditionalDetails(details);
+			}
+		} catch (Exception e) {
+			log.warn("Could not preserve migratedPenalty on demand {}: {}", demand.getId(), e.getMessage());
+		}
 	}
 }

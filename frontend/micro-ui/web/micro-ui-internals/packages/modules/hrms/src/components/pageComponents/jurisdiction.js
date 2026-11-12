@@ -88,10 +88,18 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
     if (unit.id) {
       let res = {
         id: unit?.id,
-        hierarchy: typeof unit?.hierarchy === 'string',
-        boundaryType: unit?.boundaryType?.label,
-        boundary: unit?.boundary?.code,
-        tenantId: unit?.boundary?.code,
+        hierarchy: typeof unit?.hierarchy === 'string'
+          ? unit?.hierarchy
+          : unit?.hierarchy?.code,
+        boundaryType: typeof unit?.boundaryType === 'string'
+          ? unit?.boundaryType
+          : unit?.boundaryType?.label,
+        boundary: typeof unit?.boundary === 'string'
+          ? unit?.boundary
+          : unit?.boundary?.code,
+        tenantId: typeof unit?.boundary === 'string'
+          ? unit?.boundary
+          : unit?.boundary?.code,
         auditDetails: unit?.auditDetails,
         isdeleted: true,
         isActive: false,
@@ -139,10 +147,13 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   
   // Helper function to get boundaryType value for dropdown
   const getBoundaryTypeValue = (jurisdiction, boundaryTypeData) => {
+   // debugger
+    //console.log("boundaryTypeData",boundaryTypeData)
     if (!jurisdiction.boundaryType) return null;
     if (typeof jurisdiction.boundaryType === 'object') return jurisdiction.boundaryType;
-    // If it's a string label, find matching object
-    return boundaryTypeData?.find(bt => bt.label === jurisdiction.boundaryType) || null;
+    // If it's a string label, find matching object (MDMS label/code casing differs across hierarchies)
+    const searchVal = String(jurisdiction.boundaryType).toLowerCase();
+    return boundaryTypeData?.find(bt => String(bt.label).toLowerCase() === searchVal || String(bt.code).toLowerCase() === searchVal) || null;
   };
   
   // Helper function to get boundary value for dropdown
@@ -281,7 +292,7 @@ function Jurisdiction({
     const hierarchyCode = typeof jurisdiction?.hierarchy === 'string' 
       ? jurisdiction?.hierarchy 
       : jurisdiction?.hierarchy?.code;
-    
+
     if (hierarchyCode && data?.MdmsRes?.["egov-location"]["TenantBoundary"]) {
       const boundaryTypes = data?.MdmsRes?.["egov-location"]["TenantBoundary"]
         .filter((ele) => {
@@ -290,6 +301,7 @@ function Jurisdiction({
         .map((item) => {
           return { ...item.boundary, i18text: Digit.Utils.locale.convertToLocale(item.boundary.label, "EGOV_LOCATION_BOUNDARYTYPE") };
         });
+      //  console.log("boundaryTypes",boundaryTypes)
       selectBoundaryType(boundaryTypes);
     }
   }, [jurisdiction?.hierarchy, data?.MdmsRes]);

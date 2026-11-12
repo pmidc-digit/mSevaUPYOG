@@ -69,7 +69,8 @@ public class BatchDemanService {
 			try {
 				List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
 				demandService.fetchBillForDemands(savedDemands, requestInfo);
-				batchWorkflowUpdate(requestInfo, demands);
+				// Regular cycle demands/bills do not alter application workflow; allotment remains in APPROVED status.
+				// batchWorkflowUpdate(requestInfo, demands);
 				demands.forEach(d -> {
 					log.info("{}, Batch No: {}, Success Bulk demand generation for consumerCode: {}, from: {}, to: {}, amount: {}",
 							currentDate, batch, d.getConsumerCode(), d.getTaxPeriodFrom(), d.getTaxPeriodTo(), d.getMinimumAmountPayable());

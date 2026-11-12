@@ -63,7 +63,7 @@ public class CalculatorController {
 		log.info("Starting bulk demands for rent/lease demands.");
 		String consumerCode = null;
 		if (getBillCriteria.getConsumerCodes() != null && !getBillCriteria.getConsumerCodes().isEmpty()) {
-			consumerCode = getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining());
+			consumerCode = getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining(","));
 		} else if (getBillCriteria.getApplicationNumber() != null && !getBillCriteria.getApplicationNumber().isEmpty()) {
 			consumerCode = getBillCriteria.getApplicationNumber();
 		}
@@ -78,7 +78,7 @@ public class CalculatorController {
 		log.info("Generating bill for tenant: {} consumerCodes: {} propertyId: {}", getBillCriteria.getTenantId(), getBillCriteria.getConsumerCodes(), getBillCriteria.getPropertyId());
 		String consumerCode = null;
 		if (getBillCriteria.getConsumerCodes() != null && !getBillCriteria.getConsumerCodes().isEmpty()) {
-			consumerCode = getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining());
+			consumerCode = getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining(","));
 		} else if (getBillCriteria.getApplicationNumber() != null && !getBillCriteria.getApplicationNumber().isEmpty()) {
 			consumerCode = getBillCriteria.getApplicationNumber();
 		}

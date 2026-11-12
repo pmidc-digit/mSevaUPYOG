@@ -100,28 +100,36 @@ public class CalculationService {
 				fee = new BigDecimal(amount.getBaseRent());
 				AllotmentDetails allotmentDetails=allotmentRequest.getAllotment().get(0);
 				JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
-				String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
+				String rawCycle = (additionalDetails != null && additionalDetails.path("propertyDetails").get(0) != null)
+						? additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText()
+						: null;
+				String cycle = (rawCycle != null && !rawCycle.isEmpty() && !"null".equalsIgnoreCase(rawCycle))
+						? rawCycle
+						: RLConstants.RL_MONTHLY_CYCLE;
 
-				List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(allotmentRequest.getRequestInfo(), tenantId);
+				List<BillingPeriod> billingPeriods = null;
+				try {
+					billingPeriods = masterDataService.getBillingPeriod(allotmentRequest.getRequestInfo(), tenantId);
+				} catch (Exception e) {
+					log.warn("Could not fetch MDMS billing period, relying on allotment dates: {}", e.getMessage());
+				}
 				BillingPeriod billingPeriod = billingPeriods != null ? billingPeriods.stream()
 						.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null) : null;
-				//Basically getting the rent fromt the table otherwise we fallback to the original additional details
-				BigDecimal activeRent = getActiveRent(allotmentDetails, billingPeriod != null ? billingPeriod.getTaxPeriodFrom() : System.currentTimeMillis(), fee);
+				
+				long effectivePeriodStart = (allotmentDetails.getStartDate() != null && allotmentDetails.getStartDate() > 0)
+						? allotmentDetails.getStartDate()
+						: (billingPeriod != null ? billingPeriod.getTaxPeriodFrom() : System.currentTimeMillis());
+				BigDecimal activeRent = getActiveRent(allotmentDetails, effectivePeriodStart, fee);
 
-				if (billingPeriod != null) {
-					long startDay = billingPeriod.getTaxPeriodFrom() <= allotmentDetails.getStartDate()
-							? allotmentDetails.getStartDate()
-							: billingPeriod.getTaxPeriodFrom();
-
-					long endDay = billingPeriod.getTaxPeriodTo() <= allotmentDetails.getEndDate()
-							? billingPeriod.getTaxPeriodTo()
-							: allotmentDetails.getEndDate();
-					fee = calculatePaybleAmount(startDay, endDay, activeRent, cycle);
-				} else {
-					fee = activeRent;
+				int stepMonths = 1;
+				if (RLConstants.RL_QUATERLY_CYCLE.equalsIgnoreCase(cycle) || "QUARTERLY".equalsIgnoreCase(cycle)) {
+					stepMonths = 3;
+				} else if (RLConstants.RL_BIAANNUALY_CYCLE.equalsIgnoreCase(cycle) || "BIANNUAL".equalsIgnoreCase(cycle)) {
+					stepMonths = 6;
+				} else if (RLConstants.RL_YEARLY_CYCLE.equalsIgnoreCase(cycle) || "ANNUAL".equalsIgnoreCase(cycle)) {
+					stepMonths = 12;
 				}
-				
-				
+				fee = activeRent.multiply(BigDecimal.valueOf(stepMonths));
 				
 				demandDetails.add(DemandDetail.builder().taxAmount(fee)
 //						.collectionAmount(fee)

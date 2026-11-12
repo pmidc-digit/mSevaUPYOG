@@ -27,11 +27,42 @@
     }
   }
 
+  .employee-dashboard-support-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #e0f2fe;
+    border: 1px solid #e9d5ff;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #374151;
+
+    svg {
+      flex-shrink: 0;
+    }
+
+    a {
+      color: #1d4ed8;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+  }
+
   @media (max-width: 768px) {
+    .employee-dashboard-support-notice {
+      align-items: flex-start;
+    }
+
     .employee-dashboard-resource-links {
       width: 100%;
       justify-content: flex-start;
-      .submit-bar { flex: 1 1 160px; }
+
+      .submit-bar {
+        flex: 1 1 160px;
+      }
     }
   }
 }

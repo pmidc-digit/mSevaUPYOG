@@ -902,7 +902,14 @@ public class PlanReportServiceV2 {
             scrutinyDetail.addColumnHeading(4, "Deduction Area in m²");
             scrutinyDetail.addColumnHeading(5, "Floor Area in m²");
 
-            for (DcrReportFloorDetail floor : proposedBlockDetail.getDcrReportFloorDetails()) {
+            // NPE fix: floor details are null when no floors were extracted for the block
+            List<DcrReportFloorDetail> proposedFloors = proposedBlockDetail.getDcrReportFloorDetails();
+            if (proposedFloors == null) {
+                LOG.warn("Block {} has no floor details (no floors found in the drawing); skipping floor rows in block wise summary.",
+                        proposedBlockDetail.getBlockNo());
+                proposedFloors = Collections.emptyList();
+            }
+            for (DcrReportFloorDetail floor : proposedFloors) {
                 totalBuiltUpArea   = totalBuiltUpArea.add(floor.getBuiltUpArea());
                 totalDeductionArea = totalDeductionArea.add(floor.getBuiltUpDeductionArea());
                 totalFloorArea     = totalFloorArea.add(floor.getFloorArea());
@@ -943,7 +950,8 @@ public class PlanReportServiceV2 {
                             : BigDecimal.ZERO)
                     .append(" m");
 
-            if (proposedBlockDetail.getConstructedArea().compareTo(BigDecimal.ZERO) > 0) {
+            if (proposedBlockDetail.getConstructedArea() != null
+                    && proposedBlockDetail.getConstructedArea().compareTo(BigDecimal.ZERO) > 0) {
                 text.append("\n4. Already constructed area is ")
                         .append(proposedBlockDetail.getConstructedArea()
                                 .setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS))
@@ -1048,11 +1056,16 @@ public class PlanReportServiceV2 {
                         LOG.info("building height exclude mumpty : " + buildingHeightExMumpty);
                     }
 
-                    if (!floors.isEmpty()) {
+                    // never leave the floor list null: downstream summaries iterate it
+                    dcrReportBlockDetail.setDcrReportFloorDetails(new ArrayList<>());
+                    if (floors == null || floors.isEmpty()) {
+                        LOG.warn("Block {} has no floors in the plan; proposed floor details will be empty.", block.getNumber());
+                    }
+                    if (floors != null && !floors.isEmpty()) {
                         List<DcrReportFloorDetail> dcrReportFloorDetails = new ArrayList<>();
                         for (Floor floor : floors) {
                             List<Occupancy> occupancies = floor.getOccupancies();
-                            if (!occupancies.isEmpty()) {
+                            if (occupancies != null && !occupancies.isEmpty()) {
                                 for (Occupancy occupancy : occupancies) {
                                     String occupancyName = "";
                                     if (occupancy.getTypeHelper() != null) {

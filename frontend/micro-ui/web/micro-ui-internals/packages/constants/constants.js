@@ -18,3 +18,5 @@ export const MSEVA_APP_LINK = "https://play.google.com/store/apps/details?id=com
 export const MSEVA_YOUTUBE_LINK = "https://www.youtube.com/@esewapunjabdolgpunjab";
 
 export const OBPS_EMPLOYEE_USER_MANUAL = "https://mseva.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FSeptember%2F2%2F1788355215615CwTppIbDjT.pdf";
+
+export const OBPAS_SUPPORT_EMAIL = "support.tpw@punjab.gov.in";

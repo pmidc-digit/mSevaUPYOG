@@ -25,7 +25,7 @@ public class BulkDemandGenerationJob implements Job {
     @Autowired
     private RLAutoEscalationService autoEscalationService;
 
-    @org.springframework.beans.factory.annotation.Value("${scheduler.bulk.cron:0 0/3 * * * ?}")
+    @org.springframework.beans.factory.annotation.Value("${scheduler.bulk.cron:0 30 3 * * ?}")
     private String bulkDemandCronExpression;
 
     @Override

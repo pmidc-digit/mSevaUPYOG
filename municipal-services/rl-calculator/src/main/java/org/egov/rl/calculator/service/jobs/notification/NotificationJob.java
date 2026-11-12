@@ -25,7 +25,7 @@ public class NotificationJob implements Job {
     @Autowired
     private RLAutoEscalationService autoEscalationService;
 
-    @org.springframework.beans.factory.annotation.Value("${scheduler.notification.cron:0 0/3 * * * ?}")
+    @org.springframework.beans.factory.annotation.Value("${scheduler.notification.cron:0 30 22 * * ?}")
     private String notificationCronExpression;
 
     @Override

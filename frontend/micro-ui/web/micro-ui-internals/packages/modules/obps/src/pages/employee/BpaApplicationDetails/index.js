@@ -137,7 +137,14 @@ const BpaApplicationDetail = () => {
       user = userInfo.value;
     }
   }
-  const userRoles = user?.info?.roles?.map((e) => e.code);
+  const { data = {}, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id }, {
+    enabled: !!id, // 👈 only runs when valid
+  });
+  const applicationTenantId = data?.applicationData?.tenantId || tenantId;
+
+  const userRoles = user?.info?.roles
+    ?.filter((role) => role?.tenantId === applicationTenantId)
+    .map((role) => role.code);
   const isBpaReadOnly =
     userRoles?.some((r) =>
       (r || "")
@@ -182,14 +189,7 @@ const BpaApplicationDetail = () => {
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
-  const { data = {}, isLoading, refetch } = Digit.Hooks.obps.useBPADetailsPage(
-    tenantId,
-    { applicationNo: id },
-    {
-      enabled: !!id, // 👈 only runs when valid
-    }
-  );
-
+  
   const { isZoneMismatch } = useEmployeeZoneAccess(
     user?.info?.tenantId || tenantId,
     tenantId,
@@ -198,6 +198,7 @@ const BpaApplicationDetail = () => {
   );
 
   const addressPincode = data?.applicationData?.landInfo?.address?.pincode;
+
   const isSelfCertification = data?.applicationData?.additionalDetails?.isSelfCertification || null;
 
   const loading = isLoading || getLoader;

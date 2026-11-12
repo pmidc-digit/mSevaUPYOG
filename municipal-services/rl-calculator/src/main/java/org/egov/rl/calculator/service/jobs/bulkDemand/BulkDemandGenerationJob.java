@@ -25,9 +25,12 @@ public class BulkDemandGenerationJob implements Job {
     @Autowired
     private RLAutoEscalationService autoEscalationService;
 
+    @org.springframework.beans.factory.annotation.Value("${scheduler.bulk.cron:0 0/3 * * * ?}")
+    private String bulkDemandCronExpression;
+
     @Override
     public void execute(JobExecutionContext context) {
-        log.info("Quartz Scheduler - Bulk Demand Generation Job Started Every day at 03:30 AM");
+        log.info("Quartz Scheduler - Bulk Demand Generation Job Started (cron: {})", bulkDemandCronExpression);
         log.info("Morning Scheduler Start Date Time: {}", LocalDateTime.now());
         try {
             RequestInfo requestInfo = autoEscalationService.getDefaultRequestInfo();

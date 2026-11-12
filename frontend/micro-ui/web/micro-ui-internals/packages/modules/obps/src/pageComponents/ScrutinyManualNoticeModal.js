@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, CitizenInfoLabel } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import { OBPAS_SUPPORT_EMAIL } from "../../../../constants/constants";
 
 const DEFAULT_SCRUTINY_MANUAL_URL =
   "https://mseva.lgpunjab.gov.in/filestore/v1/files/viewfile/?name=pb%2FCLU%2FOctober%2F21%2F1792575799079whbusTVLkn.pdf";
@@ -80,6 +81,24 @@ export const ScrutinyManualNoticeModal = ({ closeModal }) => {
               "BPA_USER_MANUAL_UPDATED_PART2",
               " for drawing preparation, which includes the newly added Worksheet Layer."
             )}
+            <span
+              style={{
+                display: "block",
+                marginTop: "12px",
+                paddingTop: "10px",
+                borderTop: "1px solid rgba(139, 92, 246, 0.25)",
+              }}
+            >
+              {t("BPA_OBPAS_SUPPORT_QUERY_PART1", "For any queries or assistance regarding OBPAS services, please email ")}
+              <a
+                href={`mailto:${OBPAS_SUPPORT_EMAIL}`}
+                style={{ color: "#1D4ED8", fontWeight: "600", textDecoration: "underline" }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {t("BPA_OBPAS_SUPPORT_EMAIL", OBPAS_SUPPORT_EMAIL)}
+              </a>
+              .
+            </span>
           </span>
         }
         style={{ margin: "8px 0" }}

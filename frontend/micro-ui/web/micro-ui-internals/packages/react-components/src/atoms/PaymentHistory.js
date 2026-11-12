@@ -73,10 +73,15 @@ export const getPaymentHistory = (billResponse, receiptResponse, advanceTaxHead)
         const key = getBillDetailKey(billDetail);
         if (!key) return;
 
-        // A payment response contains a historical bill snapshot. It must not
-        // create timeline rows, otherwise cancelled or regenerated bills leak in.
-        const month = months.get(key);
-        if (!month) return;
+        const month = months.get(key) || {
+          key,
+          fromPeriod: billDetail?.fromPeriod || payment?.transactionDate || paymentDetail?.receiptDate,
+          toPeriod: billDetail?.toPeriod || payment?.transactionDate || paymentDetail?.receiptDate,
+          billNumber: paymentDetail?.bill?.billNumber || "-",
+          billStatus: paymentDetail?.bill?.status,
+          billed: roundMoney(Number(billDetail?.amount || 0)),
+          receipts: [],
+        };
 
         const advanceCarryForward = getAdvanceCarryForward(billDetail, advanceTaxHead);
 
@@ -98,9 +103,9 @@ export const getPaymentHistory = (billResponse, receiptResponse, advanceTaxHead)
 
   const rows = [...months.values()]
     .map((month) => {
-      const billed = roundMoney(month.billed);
       const paid = roundMoney(month.receipts.reduce((total, receipt) => total + receipt.amount, 0));
       const advance = roundMoney(month.receipts.reduce((total, receipt) => total + receipt.advanceCarryForward, 0));
+      const billed = roundMoney(Math.max(Number(month.billed || 0), paid));
       const due = Math.max(0, roundMoney(billed - paid));
       const status = billed > 0 && due === 0 ? "PAID" : paid > 0 ? "PARTIALLY_PAID" : "DUE";
 

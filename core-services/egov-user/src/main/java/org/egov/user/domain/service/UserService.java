@@ -529,6 +529,80 @@ public class UserService {
     // TODO Fix date formats
     public User updateWithoutOtpValidation(User user, RequestInfo requestInfo) {
         final User existingUser = getUserByUuid(user.getUuid());
+
+        if (UserType.CITIZEN.equals(user.getType())) {
+            User decryptedExistingUser = encryptionDecryptionUtil.decryptObject(existingUser, "User", User.class, requestInfo);
+            if (StringUtils.isBlank(user.getMobileNumber()) && decryptedExistingUser != null && StringUtils.isNotBlank(decryptedExistingUser.getMobileNumber())) {
+                user.setMobileNumber(decryptedExistingUser.getMobileNumber());
+            }
+            if (StringUtils.isBlank(user.getName()) && decryptedExistingUser != null) {
+                user.setName(decryptedExistingUser.getName());
+            }
+            if (StringUtils.isBlank(user.getGuardian()) && decryptedExistingUser != null) {
+                user.setGuardian(decryptedExistingUser.getGuardian());
+            }
+
+            if (!isSameCitizen(user, decryptedExistingUser)) {
+                log.info("Citizen details in update request differ from existing user uuid: {}. Resolving matching profile.", user.getUuid());
+                return resolveCitizenForUpdate(user, requestInfo);
+            }
+        }
+
+        return performStandardUpdate(user, existingUser, requestInfo);
+    }
+
+    private User resolveCitizenForUpdate(User user, RequestInfo requestInfo) {
+        String stateTenant = getStateLevelTenantForCitizen(user.getTenantId(), user.getType());
+
+        // 1. Targeted search by mobile number AND name with limit to avoid DB load
+        try {
+            UserSearchCriteria criteria = UserSearchCriteria.builder()
+                    .mobileNumber(user.getMobileNumber())
+                    .name(user.getName())
+                    .tenantId(stateTenant)
+                    .type(UserType.CITIZEN)
+                    .active(true)
+                    .limit(5)
+                    .build();
+            criteria = encryptionDecryptionUtil.encryptObject(criteria, "UserSearchCriteria", UserSearchCriteria.class);
+            List<User> matchingUsers = userRepository.findAll(criteria);
+
+            if (!CollectionUtils.isEmpty(matchingUsers)) {
+                List<User> decryptedUsers = encryptionDecryptionUtil.decryptObject(matchingUsers, "UserListSelf", User.class, requestInfo);
+                for (User candidate : decryptedUsers) {
+                    if (candidate != null && isSameCitizen(user, candidate)) {
+                        log.info("Found existing matching citizen profile with uuid: {} for mobile: {}. Updating matching profile.",
+                                candidate.getUuid(), maskMobileNumber(user.getMobileNumber()));
+                        user.setUuid(candidate.getUuid());
+                        user.setUserName(candidate.getUserName());
+                        user.setId(candidate.getId());
+                        User rawCandidate = getUserByUuid(candidate.getUuid());
+                        return performStandardUpdate(user, rawCandidate, requestInfo);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Error searching for existing matching citizen profile during update resolution: " + e.getMessage(), e);
+        }
+
+        // 2. If no matching profile exists for this citizen under this mobile, create a new profile
+        log.info("No matching citizen profile found for applicant name: {} with mobile: {}. Creating new citizen profile.",
+                user.getName(), maskMobileNumber(user.getMobileNumber()));
+        user.setUuid(null);
+        user.setId(null);
+        user.setUserName(UUID.randomUUID().toString());
+        user.setOtpValidationMandatory(false);
+        user.setMobileValidationMandatory(false);
+        if (user.getActive() == null) {
+            user.setActive(true);
+        }
+        if (CollectionUtils.isEmpty(user.getRoles())) {
+            user.setRoleToCitizen();
+        }
+        return createUser(user, requestInfo);
+    }
+
+    private User performStandardUpdate(User user, User existingUser, RequestInfo requestInfo) {
         user.setTenantId(getStateLevelTenantForCitizen(user.getTenantId(), user.getType()));
         validateUserRoles(user);
         user.validateUserModification();
@@ -536,8 +610,11 @@ public class UserService {
         user.setPassword(encryptPwd(user.getPassword()));
         /* encrypt */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
-        userRepository.update(user, existingUser, requestInfo.getUserInfo().getId(),
-                requestInfo.getUserInfo().getUuid());
+        Long userId = (requestInfo != null && requestInfo.getUserInfo() != null && requestInfo.getUserInfo().getId() != null)
+                ? requestInfo.getUserInfo().getId() : 0L;
+        String userUuid = (requestInfo != null && requestInfo.getUserInfo() != null)
+                ? requestInfo.getUserInfo().getUuid() : null;
+        userRepository.update(user, existingUser, userId, userUuid);
 
         // If user is being unlocked via update, reset failed login attempts
         if (user.getAccountLocked() != null && !user.getAccountLocked() && existingUser.getAccountLocked())
@@ -547,6 +624,18 @@ public class UserService {
         User decryptedupdatedUserfromDB = encryptionDecryptionUtil.decryptObject(encryptedUpdatedUserfromDB, "User",
                 User.class, requestInfo);
         return decryptedupdatedUserfromDB;
+    }
+
+    private String maskMobileNumber(String mobile) {
+        if (StringUtils.isBlank(mobile) || mobile.length() < 6) {
+            return "******";
+        }
+        String clean = mobile.replaceAll("[^0-9]", "");
+        if (clean.length() >= 10) {
+            clean = clean.substring(clean.length() - 10);
+            return clean.substring(0, 2) + "******" + clean.substring(8);
+        }
+        return "******";
     }
 
     public void removeTokensByUser(User user) {

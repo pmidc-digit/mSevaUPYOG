@@ -24,7 +24,7 @@ import EmployeeTenantSelection from "./EmployeeTenantSelection";
 import { hasConfirmedEmployeeTenant } from "./employeeTenant";
 import CitizenHomeCardWithExternalLink from "../pages/citizen/CitizenHomeCardWithExternalLink";
 import CitizenHomeCardAccordian from "../pages/citizen/CitizenHomeCardAccordian";
-import { MSEVA_APP_LINK, MSEVA_YOUTUBE_LINK, OBPS_EMPLOYEE_USER_MANUAL } from "../../../../constants/constants";
+import { MSEVA_APP_LINK, MSEVA_YOUTUBE_LINK, OBPS_EMPLOYEE_USER_MANUAL, OBPAS_SUPPORT_EMAIL } from "../../../../constants/constants";
 /* 
 Feature :: Citizen All service screen cards
 */
@@ -258,6 +258,24 @@ const EmployeeHome = ({ modules }) => {
               </div>
             )}
           </div>
+          {hasOBPSModule && (
+            <div className="employee-dashboard-support-notice">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="10" cy="10" r="9" fill="#8B5CF6" opacity="0.1" />
+                <path
+                  d="M10 14V10M10 6H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z"
+                  stroke="#8B5CF6"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>
+                {t("BPA_OBPAS_SUPPORT_QUERY_PART1", "For any queries or assistance regarding OBPAS services, please email ")}
+                <a href={`mailto:${OBPAS_SUPPORT_EMAIL}`}>{t("BPA_OBPAS_SUPPORT_EMAIL", OBPAS_SUPPORT_EMAIL)}</a>.
+              </span>
+            </div>
+          )}
           <div className="employee-dashboard-module-card-wrapper">
             {modules.map((moduleData, index) => {
               return <EmployeeQuickServicesCard key={index} moduleData={moduleData} />;

@@ -275,6 +275,8 @@ public class UserRepository {
 
         Map<String, Object> updateuserInputs = new HashMap<>();
 
+        String targetUuid = !isEmpty(oldUser.getUuid()) ? oldUser.getUuid() : uuid;
+        updateuserInputs.put("uuid", targetUuid);
         updateuserInputs.put("username", oldUser.getUserName());
         updateuserInputs.put("type", oldUser.getType().toString());
         updateuserInputs.put("tenantid", oldUser.getTenantId());

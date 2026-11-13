@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.egov.common.contract.request.PlainAccessRequest;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.rl.services.config.RentLeaseConfiguration;
 import org.egov.rl.services.models.Address;
@@ -302,7 +303,16 @@ public class AllotmentEnrichmentService {
 	public void enrichOwnerDetailsFromUserService(List<AllotmentDetails> allotmentDetails, RequestInfo requestInfo) {
 		allotmentDetails.stream().map(d -> {
 			return d.getOwnerInfo().stream().map(ownerInfo -> {
+				PlainAccessRequest plainAccessRequestCopy = requestInfo != null ? requestInfo.getPlainAccessRequest() : null;
 				try {
+					if (requestInfo != null) {
+						PlainAccessRequest plainAccessRequest = PlainAccessRequest.builder()
+								.plainRequestFields(Arrays.asList("name", "mobileNumber", "emailId", "fatherOrHusbandName", "gender", "userName"))
+								.recordId(ownerInfo.getUserUuid())
+								.build();
+						requestInfo.setPlainAccessRequest(plainAccessRequest);
+					}
+
 					// Fetch user details from user service using the stored UUID
 					org.egov.rl.services.models.user.UserSearchRequest userSearchRequest = userService
 							.getBaseUserSearchRequest(d.getTenantId(), requestInfo);
@@ -338,6 +348,10 @@ public class AllotmentEnrichmentService {
 					// Log error but don't fail the search
 					System.err.println("Error fetching user details for owner: " + ownerInfo.getUserUuid() + ", Error: "
 							+ e.getMessage());
+				} finally {
+					if (requestInfo != null) {
+						requestInfo.setPlainAccessRequest(plainAccessRequestCopy);
+					}
 				}
 				return ownerInfo;
 			}).collect(Collectors.toList());

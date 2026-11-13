@@ -43,6 +43,9 @@ public class PaymentNotificationService {
 	@Autowired
 	private NotificationService notificationService;
 
+	@Autowired
+	private AllotmentEnrichmentService allotmentEnrichmentService;
+
 	/**
 	 * Process the incoming record and topic from the payment notification consumer.
 	 * Performs defensive null checks and validates the payment request before proceeding.
@@ -90,68 +93,55 @@ public class PaymentNotificationService {
 					.build();
 
 			List<AllotmentDetails> applications = allotmentRepository.getAllotmentSearch(criteria);
-			boolean status=applications.get(0).getStatus().equalsIgnoreCase(RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION);
-			log.info("Processing payment for application: {}", applicationNumber);
-			
-			// Transition workflow with PAY action
-			State workflowState = transitionWorkflowToApproved(paymentRequest,status?"PAY":"PAY_SETTLEMENT_AMOUNT");
-			
-			if (workflowState == null) {
-				log.error("Workflow transition failed for application: {}", applicationNumber);
-				return;
-			}
-			
-			// Fetch the updated process instance to get the current state
-			ProcessInstance updatedProcessInstance = fetchProcessInstanceFromWorkflow(applicationNumber, tenantId, paymentRequest.getRequestInfo());
-			if (updatedProcessInstance != null && updatedProcessInstance.getState() != null) {
-				workflowState = updatedProcessInstance.getState();
-			} else {
-				log.warn("Could not fetch updated process instance for application: {}, using state from workflow transition", applicationNumber);
-			}
-			
-			// Get the application status from workflow state
-			String applicationStatus = workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState();
-			
-			log.info("Workflow state for application {} - State: {}, ApplicationStatus: {}, Final status: {}", 
-					applicationNumber, workflowState.getState(), workflowState.getApplicationStatus(), applicationStatus);
-			
-			// For payment completion, we expect APPROVED status
-			if (!"APPROVED".equals(applicationStatus)) {
-				log.warn("Application status is not APPROVED after payment: {} for application: {}. Will force to APPROVED.", applicationStatus, applicationNumber);
-			} else {
-				log.info("Application status is APPROVED after payment for application: {}", applicationNumber);
-			}
-			
 			if (applications == null || applications.isEmpty()) {
 				log.error("No application found for application number: {}", applicationNumber);
+				try {
+					notificationService.sendPaymentSuccessNotification(paymentRequest, null);
+				} catch (Exception e) {
+					log.error("Error sending payment success notification: {}", e.getMessage());
+				}
 				return;
 			}
 
+			allotmentEnrichmentService.enrichOwnerDetailsFromUserService(applications, paymentRequest.getRequestInfo());
+
 			AllotmentDetails application = applications.get(0);
-			
-			// For both new and renewal applications, ALWAYS set status to APPROVED after payment completion
-			// This ensures consistency regardless of what workflow returns (same logic as new applications)
-			String applicationType = application.getApplicationType();
-			boolean isRenewal = applicationType != null && RLConstants.RENEWAL_RL_APPLICATION.equals(applicationType);
-			
-			// Always use APPROVED status after payment completion for both new and renewal applications
-			// Workflow should return APPROVED, but we enforce it to ensure consistency
-			if (!"APPROVED".equals(applicationStatus)) {
-				log.warn("Workflow returned status '{}' instead of APPROVED for application: {} (type: {}). Forcing to APPROVED.", 
-						applicationStatus, applicationNumber, applicationType);
-			}
-			applicationStatus = "APPROVED";
-			application.setStatus(RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION);
-			
-			log.info("Updating application status to APPROVED for application: {} (type: {}, isRenewal: {}, previous workflow status: {})", 
-					applicationNumber, applicationType, isRenewal, workflowState.getApplicationStatus() != null ? workflowState.getApplicationStatus() : workflowState.getState());
-			if(status) {
+			String currentStatus = application.getStatus();
+			log.info("Processing payment for application: {}, currentStatus: {}", applicationNumber, currentStatus);
+
+			if (RLConstants.FORWARD_FOR_SATELMENT_RL_APPLICATION.equalsIgnoreCase(currentStatus)) {
+				// Case 1: Settlement payment for disconnection/surrender -> Close application
+				State workflowState = transitionWorkflowToApproved(paymentRequest, "PAY_SETTLEMENT_AMOUNT");
+				if (workflowState == null) {
+					log.error("Workflow transition PAY_SETTLEMENT_AMOUNT failed for application: {}", applicationNumber);
+					return;
+				}
+				updateDatabaseWithStatus(application, applicationNumber, "CLOSED", paymentRequest.getRequestInfo());
+				log.info("Application {} successfully CLOSED after settlement payment.", applicationNumber);
+
+			} else if (RLConstants.PENDING_FOR_PAYMENT_RL_APPLICATION.equalsIgnoreCase(currentStatus)) {
+				// Case 2: Initial allotment payment -> Activate to APPROVED
+				State workflowState = transitionWorkflowToApproved(paymentRequest, "PAY");
+				if (workflowState == null) {
+					log.error("Workflow transition PAY failed for application: {}", applicationNumber);
+					return;
+				}
 				application.setStatus(RLConstants.PAY);
-			// Always generate/update petRegistrationNumber and update status for both new and renewal applications after payment
-				updateDatabaseWithStatus(application,applicationNumber, applicationStatus, paymentRequest.getRequestInfo());
-			}else {
-				applicationStatus = "CLOSED";
-				updateDatabaseWithStatus(application,applicationNumber, applicationStatus, paymentRequest.getRequestInfo());	
+				updateDatabaseWithStatus(application, applicationNumber, "APPROVED", paymentRequest.getRequestInfo());
+				log.info("Application {} activated to APPROVED following payment.", applicationNumber);
+
+			} else {
+				// Case 3: Regular monthly rent payment on an already APPROVED allotment
+				// Billing-service has cleared the bill/demand; no redundant DB update or workflow transition needed.
+				log.info("Regular rent payment processed for application: {} with status: {}. Bill cleared; application remains in current state.",
+						applicationNumber, currentStatus);
+			}
+
+			// Dispatch payment success confirmation SMS & Email (RL_PAYMENT_SUCCESS_CONFIRM)
+			try {
+				notificationService.sendPaymentSuccessNotification(paymentRequest, application);
+			} catch (Exception e) {
+				log.error("Error sending payment success notification for application: {}", applicationNumber, e);
 			}
 		} catch (Exception e) {
 			log.error("Error processing payment for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
@@ -366,6 +356,7 @@ public class PaymentNotificationService {
 			if (rowsUpdated > 0) {
 				log.info("Successfully updated application - ApplicationNumber: {}, Status: {} , Rows updated: {}", 
 						applicationNumber, status, applicationNumber != null ? applicationNumber : "null", rowsUpdated);
+				allotmentDetails.setStatus(status);
 				List<AllotmentDetails> allotmentlist=new ArrayList<>();
 				allotmentlist.add(allotmentDetails);
 				log.info("Sending Notification"); 

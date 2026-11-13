@@ -627,7 +627,36 @@ public class CalculationService {
                     + "penalty after their due day.", consumerCode);
         }
 
-        if (hasBreakdown || arrearAmount.compareTo(BigDecimal.ZERO) > 0) {
+        BigDecimal rawArrear = resolveRawAmount(
+                (criteria.getBaseArrear() != null && criteria.getBaseArrear().compareTo(BigDecimal.ZERO) != 0)
+                        ? criteria.getBaseArrear()
+                        : criteria.getArrearAmount(),
+                additionalDetails, "baseArrear", "arrear", "arrearAmount");
+
+        if (rawArrear != null && rawArrear.compareTo(BigDecimal.ZERO) < 0) {
+            // Negative arrear is set as advance demand (RL_ADVANCE_CARRYFORWARD)
+            BigDecimal advanceAmount = rawArrear.abs();
+            BigDecimal advanceTaxAmount = advanceAmount.negate();
+            List<DemandDetail> advanceDetails = new ArrayList<>();
+            advanceDetails.add(DemandDetail.builder()
+                    .taxAmount(advanceTaxAmount)
+                    .taxHeadMasterCode(RLConstants.RL_ADVANCE_CARRYFORWARD)
+                    .tenantId(tenantId)
+                    .collectionAmount(BigDecimal.ZERO)
+                    .build());
+
+            long arrearDemandTime = entryDateEpoch;
+
+            Demand advanceDemand = Demand.builder().consumerCode(consumerCode).demandDetails(advanceDetails).payer(payerUser)
+                    .minimumAmountPayable(BigDecimal.ZERO).tenantId(tenantId)
+                    .taxPeriodFrom(arrearStartDate != null ? arrearStartDate : arrearDemandTime).taxPeriodTo(arrearDemandTime)
+                    .fixedbillexpirydate(calculatedExpiry).billExpiryTime(durationMillis)
+                    .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
+                    .businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+
+            generatedDemands.add(advanceDemand);
+            log.info("Generated advance demand for application {}: advanceAmount={}", consumerCode, advanceAmount);
+        } else if (hasBreakdown || arrearAmount.compareTo(BigDecimal.ZERO) > 0) {
             List<DemandDetail> arrearDetails = new ArrayList<>();
 
             if (hasBreakdown) {
@@ -705,9 +734,10 @@ public class CalculationService {
 		String tenantId = allotmentDetails.getTenantId();
 		JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
 		BigDecimal adhocPenalty = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_PENALTY_KEY);
-		BigDecimal adhocRebate = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_REBATE_KEY);
+		BigDecimal adhocRebate = resolveAdhocRebateAmount(additionalDetails,
+				CalculatorConstants.ADHOC_REBATE_KEY, "adhocRebate", "rebateAmount");
 
-		if (adhocPenalty != null) {
+		if (adhocPenalty != null && adhocPenalty.compareTo(BigDecimal.ZERO) > 0) {
 			adhocDetails.add(DemandDetail.builder().taxAmount(adhocPenalty)
 					.taxHeadMasterCode(CalculatorConstants.RL_ADHOC_PENALTY).tenantId(tenantId)
 					.collectionAmount(BigDecimal.ZERO).build());
@@ -716,15 +746,55 @@ public class CalculationService {
 					readAdhocText(additionalDetails, CalculatorConstants.ADHOC_PENALTY_REASON_KEY));
 		}
 
-		if (adhocRebate != null) {
-			adhocDetails.add(DemandDetail.builder().taxAmount(adhocRebate.negate())
+		if (adhocRebate != null && adhocRebate.compareTo(BigDecimal.ZERO) < 0) {
+			adhocDetails.add(DemandDetail.builder().taxAmount(adhocRebate)
 					.taxHeadMasterCode(CalculatorConstants.RL_ADHOC_REBATE).tenantId(tenantId)
 					.collectionAmount(BigDecimal.ZERO).build());
 			log.info("Adhoc exemption {} for application {} (reason: {}).", adhocRebate,
 					allotmentDetails.getApplicationNumber(),
-					readAdhocText(additionalDetails, CalculatorConstants.ADHOC_REBATE_REASON_KEY));
+					readAdhocRebateReason(additionalDetails));
 		}
 		return adhocDetails;
+	}
+
+	private BigDecimal resolveAdhocRebateAmount(JsonNode details, String... keys) {
+		if (details == null || keys == null) {
+			return null;
+		}
+		for (String key : keys) {
+			if (key == null || !details.has(key)) {
+				continue;
+			}
+			JsonNode node = details.get(key);
+			if (node == null || node.isNull()) {
+				continue;
+			}
+			String raw = node.asText();
+			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+				continue;
+			}
+			try {
+				BigDecimal amount = new BigDecimal(raw.trim());
+				if (amount.compareTo(BigDecimal.ZERO) != 0) {
+					return amount.abs().negate();
+				}
+			} catch (NumberFormatException e) {
+				throw new CustomException("INVALID_ADHOC_REBATE",
+						"Unable to parse '" + key + "' value '" + raw + "'. Expected a numeric amount.");
+			}
+		}
+		return null;
+	}
+
+	private static String readAdhocRebateReason(JsonNode details) {
+		String reason = readAdhocText(details, CalculatorConstants.ADHOC_REBATE_REASON_KEY);
+		if (reason == null) {
+			reason = readAdhocText(details, "adhocRebateReason");
+		}
+		if (reason == null) {
+			reason = readAdhocText(details, "rebateReason");
+		}
+		return reason;
 	}
 
 	/** Free text of an adhoc reason, for logging only. */
@@ -926,6 +996,38 @@ public class CalculationService {
 			try {
 				BigDecimal amount = new BigDecimal(raw.trim());
 				if (amount.compareTo(BigDecimal.ZERO) > 0) {
+					return amount;
+				}
+			} catch (NumberFormatException e) {
+				throw new CustomException("INVALID_LEGACY_AMOUNT",
+						"Unable to parse '" + key + "' value '" + raw + "'. Expected a numeric amount.");
+			}
+		}
+		return null;
+	}
+
+	private BigDecimal resolveRawAmount(BigDecimal fromRequest, JsonNode details, String... keys) {
+		if (fromRequest != null && fromRequest.compareTo(BigDecimal.ZERO) != 0) {
+			return fromRequest;
+		}
+		if (details == null || keys == null) {
+			return null;
+		}
+		for (String key : keys) {
+			if (key == null || !details.has(key)) {
+				continue;
+			}
+			JsonNode node = details.get(key);
+			if (node == null || node.isNull()) {
+				continue;
+			}
+			String raw = node.asText();
+			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+				continue;
+			}
+			try {
+				BigDecimal amount = new BigDecimal(raw.trim());
+				if (amount.compareTo(BigDecimal.ZERO) != 0) {
 					return amount;
 				}
 			} catch (NumberFormatException e) {

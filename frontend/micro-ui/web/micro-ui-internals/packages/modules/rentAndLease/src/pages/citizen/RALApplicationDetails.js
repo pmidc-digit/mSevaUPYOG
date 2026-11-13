@@ -161,7 +161,7 @@ const RALApplicationDetails = () => {
           )}
         </div>
         {isApprovedApplication && totalDueAmount > 0 && (
-          <Card>
+          <Card style={{ background: "#f0f7fe", border: "1px solid #cfe2f8", boxShadow: "0 2px 8px rgba(13, 110, 168, 0.08)" }}>
             <CardSubHeader className="ral-card-subheader-24">{t("Due Payment Details")}</CardSubHeader>
             <StatusTable>
               {primaryBill?.billNumber && <Row label={t("UC_BILL_NO_LABEL")} text={tValue(primaryBill.billNumber)} />}

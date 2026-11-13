@@ -84,6 +84,15 @@ const RALApplicationDetails = () => {
     return `₹ ${safeAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
+  const handleAddAdhoc = () => {
+    const adhocAction = actions?.find((act) => act?.action === "APPLY_ADHOC" || act?.action === "ADHOC_PENALTY" || act?.action === "ADHOC_REBATE") || {
+      action: "APPLY_ADHOC",
+      forcedName: "Apply Adhoc(Penalty/Rebate)",
+    };
+    setSelectedAction(adhocAction);
+    setShowModal(true);
+  };
+
   const handleCollectPayment = () => {
     history.push(`/digit-ui/employee/payment/collect/rl-services/${consumerCode}/${tenantId}`);
   };
@@ -204,6 +213,13 @@ const RALApplicationDetails = () => {
     return true;
   });
 
+  if (
+    (applicationData?.status === "PENDING_FOR_PAYMENT" || applicationData?.status === "APPROVED") &&
+    !actions?.some((action) => action?.action === "APPLY_ADHOC" || action?.action === "ADHOC_PENALTY" || action?.action === "ADHOC_REBATE")
+  ) {
+    actions = [...(actions || []), { action: "APPLY_ADHOC", forcedName: "Apply Adhoc(Penalty/Rebate)" }];
+  }
+
   const closeToast = () => {
     setShowToast(null);
   };
@@ -298,6 +314,13 @@ const RALApplicationDetails = () => {
         ...updatedApplicant?.additionalDetails,
         adhocPenalty: filtData.adhocPenalty,
         adhocPenaltyReason: filtData.adhocPenaltyReason,
+      };
+    }
+    if (filtData.action === "ADHOC_REBATE") {
+      updatedApplicant.additionalDetails = {
+        ...updatedApplicant?.additionalDetails,
+        adhocRebate: filtData.adhocRebate,
+        adhocRebateReason: filtData.adhocRebateReason,
       };
     }
     if (filtData.action === "FORWARD_FOT_SETLEMENT" && filtData?.amountToBeDeducted !== undefined) {
@@ -463,7 +486,7 @@ const RALApplicationDetails = () => {
           )}
         </div>
         {isApprovedApplication && totalDueAmount > 0 && (
-          <Card>
+          <Card style={{ background: "#f0f7fe", border: "1px solid #cfe2f8", boxShadow: "0 2px 8px rgba(13, 110, 168, 0.08)" }}>
             <CardSubHeader className="ral-card-subheader-24">{t("Due Payment Details")}</CardSubHeader>
             <StatusTable>
               {primaryBill?.billNumber && <Row label={t("UC_BILL_NO_LABEL")} text={tValue(primaryBill.billNumber)} />}
@@ -487,6 +510,7 @@ const RALApplicationDetails = () => {
               <Row last={true} label={t("Total Due Amount")} text={formatINR(totalDueAmount)} />
             </StatusTable>
             <div className="ral-bill-generate__actions">
+              <SubmitBar label={t("Add Adhoc(Penalty/Rebate)")} onSubmit={handleAddAdhoc} className="submit-bar ral-back-btn" />
               <SubmitBar label={t("Pay")} onSubmit={handleCollectPayment} />
             </div>
           </Card>

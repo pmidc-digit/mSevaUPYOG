@@ -136,7 +136,7 @@ SET
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -278,7 +278,7 @@ SET
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -433,7 +433,7 @@ VALUES (
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -589,7 +589,7 @@ VALUES (
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -742,7 +742,7 @@ VALUES (
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -894,7 +894,7 @@ VALUES (
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>

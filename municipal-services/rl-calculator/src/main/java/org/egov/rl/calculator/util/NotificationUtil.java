@@ -32,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 import static org.egov.rl.calculator.util.RLConstants.*;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.jayway.jsonpath.Criteria.where;
@@ -257,6 +258,51 @@ public class NotificationUtil {
      * @return List of EmailRequest
      */
 
+    private static final Pattern HELPLINE_AND_EMAIL_PATTERN = Pattern.compile(
+            "Helpline:\\s*(?:<strong>)?\\s*1800-1800-0172\\s*(?:</strong>)?\\s*(?:&nbsp;|\\s)*(?:\\|(?:&nbsp;|\\s)*)?"
+            + "Email:\\s*(?:<a\\s+[^>]*>)?\\s*support\\.mseva@punjab\\.gov\\.in\\s*(?:</a>)?\\s*(?:(?:&nbsp;|\\s)*(?:\\||(?:&nbsp;\\|\\s*))(?:\\s|&nbsp;)*)?",
+            Pattern.CASE_INSENSITIVE
+    );
+
+    private static final Pattern HELPLINE_ONLY_PATTERN = Pattern.compile(
+            "Helpline:\\s*(?:<strong>)?\\s*1800-1800-0172\\s*(?:</strong>)?\\s*(?:(?:&nbsp;|\\s)*(?:\\||(?:&nbsp;\\|\\s*))(?:\\s|&nbsp;)*)?",
+            Pattern.CASE_INSENSITIVE
+    );
+
+    private static final Pattern EMAIL_ONLY_PATTERN = Pattern.compile(
+            "Email:\\s*(?:<a\\s+[^>]*>)?\\s*support\\.mseva@punjab\\.gov\\.in\\s*(?:</a>)?\\s*(?:(?:&nbsp;|\\s)*(?:\\||(?:&nbsp;\\|\\s*))(?:\\s|&nbsp;)*)?",
+            Pattern.CASE_INSENSITIVE
+    );
+
+    private static final Pattern CLEAN_LEADING_PIPE_BR = Pattern.compile(
+            "(<br\\s*/?>\\s*)(?:&nbsp;|\\s)*(?:\\||(?:&nbsp;\\|\\s*))(?:\\s|&nbsp;)*",
+            Pattern.CASE_INSENSITIVE
+    );
+
+    private static final Pattern CLEAN_LEADING_PIPE_LINE = Pattern.compile(
+            "(^\\s*)(?:&nbsp;|\\s)*(?:\\||(?:&nbsp;\\|\\s*))(?:\\s|&nbsp;)*",
+            Pattern.MULTILINE | Pattern.CASE_INSENSITIVE
+    );
+
+    /**
+     * Sanitizes email body by stripping helpline number and support email
+     *
+     * @param body Email body (HTML or plain text)
+     * @return Sanitized body without helpline and support email
+     */
+    public static String sanitizeEmailBody(String body) {
+        if (StringUtils.isEmpty(body)) {
+            return body;
+        }
+        String cleaned = HELPLINE_AND_EMAIL_PATTERN.matcher(body).replaceAll("");
+        cleaned = HELPLINE_ONLY_PATTERN.matcher(cleaned).replaceAll("");
+        cleaned = EMAIL_ONLY_PATTERN.matcher(cleaned).replaceAll("");
+        cleaned = cleaned.replace("1800-1800-0172", "").replace("support.mseva@punjab.gov.in", "");
+        cleaned = CLEAN_LEADING_PIPE_BR.matcher(cleaned).replaceAll("$1");
+        cleaned = CLEAN_LEADING_PIPE_LINE.matcher(cleaned).replaceAll("$1");
+        return cleaned;
+    }
+
     public List<EmailRequest> createEmailRequest(RequestInfo requestInfo,String message, Map<String, String> mobileNumberToEmailId) {
 
         List<EmailRequest> emailRequest = new LinkedList<>();
@@ -269,7 +315,7 @@ public class NotificationUtil {
                 log.info("Email ID is empty, no notification will be sent ");
 
             String subject = "";
-            String body = customizedMsg;
+            String body = sanitizeEmailBody(customizedMsg);
             Email emailobj = Email.builder().emailTo(Collections.singleton(entryset.getValue())).isHTML(false).body(body).subject(subject).build();
             EmailRequest email = new EmailRequest(requestInfo,emailobj);
             emailRequest.add(email);
@@ -290,7 +336,8 @@ public class NotificationUtil {
             if (CollectionUtils.isEmpty(emailRequestList))
                 log.info("Messages from localization couldn't be fetched!");
             for (EmailRequest emailRequest: emailRequestList) {
-                if (!StringUtils.isEmpty(emailRequest.getEmail().getBody())) {
+                if (emailRequest != null && emailRequest.getEmail() != null && !StringUtils.isEmpty(emailRequest.getEmail().getBody())) {
+                    emailRequest.getEmail().setBody(sanitizeEmailBody(emailRequest.getEmail().getBody()));
                     producer.push(config.getEmailNotifTopic(), emailRequest);
                     log.info("Sending EMAIL notification! ");
                     log.info("Email Id: " + emailRequest.getEmail().toString());

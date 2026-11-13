@@ -21,7 +21,7 @@ import { Loader } from "../../../../challanGeneration/src/components/Loader";
 // import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 import RALModal from "../../pageComponents/RALModal";
 import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-import { convertEpochToDate, getAcknowledgementData } from "../../utils/index";
+import { convertEpochToDate, getAcknowledgementData, formatINR, formatTaxHeadBreakup } from "../../utils/index";
 
 const RALApplicationDetails = () => {
   const { t } = useTranslation();
@@ -77,12 +77,6 @@ const RALApplicationDetails = () => {
   const billsTotal = activeBills.reduce((sum, bill) => sum + (Number.isFinite(Number(bill?.totalAmount)) ? Number(bill.totalAmount) : 0), 0);
   const detailsTotal = dueBillDetails.reduce((sum, detail) => sum + (Number.isFinite(Number(detail?.amount)) ? Number(detail.amount) : 0), 0);
   const totalDueAmount = hasMultipleBillDetails ? detailsTotal : hasExplicitBillTotal ? billsTotal : detailsTotal;
-
-  const formatINR = (amount) => {
-    const num = Number(amount);
-    const safeAmount = Number.isFinite(num) ? num : 0;
-    return `₹ ${safeAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
 
   const handleAddAdhoc = () => {
     const adhocAction = actions?.find((act) => act?.action === "APPLY_ADHOC" || act?.action === "ADHOC_PENALTY" || act?.action === "ADHOC_REBATE") || {
@@ -502,7 +496,11 @@ const RALApplicationDetails = () => {
                         {t("Due Period")} {index + 1}
                       </CardSectionHeader>
                     )}
-                    <Row label={t("Due Amount")} text={formatINR(detail?.amount)} />
+                    <Row
+                      label={t("Due Amount")}
+                      text={formatTaxHeadBreakup(detail?.billAccountDetails, t, detail?.amount)}
+                      rowContainerStyle={{ alignItems: "flex-start" }}
+                    />
                     {(detail?.fromPeriod || detail?.toPeriod) && <Row label={t("Duration")} text={duration} />}
                   </React.Fragment>
                 );
@@ -510,7 +508,7 @@ const RALApplicationDetails = () => {
               <Row last={true} label={t("Total Due Amount")} text={formatINR(totalDueAmount)} />
             </StatusTable>
             <div className="ral-bill-generate__actions">
-              <SubmitBar label={t("Add Adhoc(Penalty/Rebate)")} onSubmit={handleAddAdhoc} className="submit-bar ral-back-btn" />
+              <SubmitBar label={t("Add Adhoc(Penalty/Rebate)")} onSubmit={handleAddAdhoc} className="submit-bar" />
               <SubmitBar label={t("Pay")} onSubmit={handleCollectPayment} />
             </div>
           </Card>

@@ -1,4 +1,4 @@
-import { Dropdown, UploadFile } from "@mseva/digit-ui-react-components";
+import { Dropdown, UploadFile, RadioButtons } from "@mseva/digit-ui-react-components";
 import React from "react";
 
 export const ModalConfig = ({
@@ -12,26 +12,69 @@ export const ModalConfig = ({
   setUploadedFile,
   assigneeLabel,
   businessService,
+  adhocType,
+  setAdhocType,
 }) => {
-  if (action?.action === "ADHOC_PENALTY") {
+  if (action?.action === "ADHOC_PENALTY" || action?.action === "ADHOC_REBATE" || action?.action === "APPLY_ADHOC") {
+    const isPenalty = adhocType !== "ADHOC_REBATE";
+    const adhocOptions = [
+      { code: "ADHOC_PENALTY", name: t("Adhoc Penalty") },
+      { code: "ADHOC_REBATE", name: t("Adhoc Rebate") },
+    ];
+    const selectedAdhocOption = adhocOptions.find((opt) => opt.code === (isPenalty ? "ADHOC_PENALTY" : "ADHOC_REBATE"));
+
     return {
-      label: { heading: "", submit: t("ADHOC_PENALTY"), cancel: t("WF_EMPLOYEE_NEWTL_CANCEL") },
-      form: [{ body: [
+      label: {
+        heading: t("Adhoc Penalty/Rebate"),
+        submit: isPenalty ? t("ADHOC_PENALTY") : t("ADHOC_REBATE"),
+        cancel: t("WF_EMPLOYEE_NEWTL_CANCEL"),
+      },
+      form: [
         {
-          label: t("Adhoc Penalty"),
-          type: "number",
-          isMandatory: true,
-          validation: { required: true, min: 0, message: t("CORE_COMMON_REQUIRED_ERRMSG") },
-          populators: { name: "adhocPenalty" },
+          body: [
+            {
+              label: t("Adhoc Type"),
+              type: "custom",
+              populators: {
+                name: "adhocType",
+                component: () => (
+                  <RadioButtons
+                    options={adhocOptions}
+                    optionsKey="name"
+                    selectedOption={selectedAdhocOption}
+                    onSelect={(option) => {
+                      setAdhocType && setAdhocType(option.code);
+                    }}
+                    style={{ display: "flex", gap: "24px", marginBottom: "20px" }}
+                    innerStyles={{ display: "inline-flex", alignItems: "center", marginBottom: "0px" }}
+                  />
+                ),
+              },
+            },
+            {
+              label: isPenalty ? t("Adhoc Penalty") : t("Adhoc Rebate"),
+              type: "number",
+              isMandatory: true,
+              validation: {
+                required: true,
+                min: 0,
+                message: t("CORE_COMMON_REQUIRED_ERRMSG"),
+              },
+              populators: {
+                name: isPenalty ? "adhocPenalty" : "adhocRebate",
+                error: t("CORE_COMMON_REQUIRED_ERRMSG"),
+              },
+            },
+            {
+              label: isPenalty ? t("Adhoc Penalty Reason") : t("Adhoc Rebate Reason"),
+              type: "textarea",
+              isMandatory: true,
+              validation: { required: true, message: t("CORE_COMMON_REQUIRED_ERRMSG") },
+              populators: { name: isPenalty ? "adhocPenaltyReason" : "adhocRebateReason" },
+            },
+          ],
         },
-        {
-          label: t("Adhoc Penalty Reason"),
-          type: "textarea",
-          isMandatory: true,
-          validation: { required: true, message: t("CORE_COMMON_REQUIRED_ERRMSG") },
-          populators: { name: "adhocPenaltyReason" },
-        },
-      ] }],
+      ],
     };
   }
   let checkAssigneeVisible =
@@ -48,7 +91,6 @@ export const ModalConfig = ({
     action?.action === "FORWARD_FOR_FIELDINSPECTION" ||
     action?.action === "FORWARD_FOT_SETLEMENT" ||
     action?.action === "FORWARD_FOR_DESCONNECTION_FIELD_INSPECTION";
-  if (action?.isTerminateState) checkAssigneeMandatory = false;
 
   if (action.isTerminateState) {
     checkAssigneeVisible = false;

@@ -1,16 +1,27 @@
--- =========================================================================================
--- COMPLETE SQL INSERT SCRIPT FOR ALL 8 NOTIFICATIONS (8 EMAILS + 8 SMS) FOR PUNJAB mSEVA
--- Database: PostgreSQL | Table: message (egov-localization service)
--- Tenant: pb (State Level) | Locale: en_IN | Modules: rainmaker-rl & rl-services
--- Total Rows Inserted: 32 (16 per module: 8 Emails + 8 SMS)
 -- =========================================================================================
-
--- -----------------------------------------------------------------------------------------
--- SECTION: INSERTS FOR MODULE 'rainmaker-rl'
+
+-- COMPLETE SQL INSERT SCRIPT FOR ALL 8 NOTIFICATIONS (8 EMAILS + 8 SMS) FOR PUNJAB mSEVA
+
+-- Database: PostgreSQL | Table: message (egov-localization service)
+
+-- Tenant: pb (State Level) | Locale: en_IN | Modules: rainmaker-rl & rl-services
+
+-- Total Rows Inserted: 32 (16 per module: 8 Emails + 8 SMS)
+
+-- =========================================================================================
+
+
 -- -----------------------------------------------------------------------------------------
-
--- Email: RL_OVERDUE_PENALTY_NOTICE (rl.demand.overdue.penalty.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+-- SECTION: INSERTS FOR MODULE 'rainmaker-rl'
+
+-- -----------------------------------------------------------------------------------------
+
+
+-- Email: RL_OVERDUE_PENALTY_NOTICE (rl.demand.overdue.penalty.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('5a1eb054-dc7a-4bdc-b062-e9c6a83f0979', 'en_IN', 'rl.demand.overdue.penalty.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -135,7 +146,7 @@ VALUES ('5a1eb054-dc7a-4bdc-b062-e9c6a83f0979', 'en_IN', 'rl.demand.overdue.pena
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -148,9 +159,12 @@ VALUES ('5a1eb054-dc7a-4bdc-b062-e9c6a83f0979', 'en_IN', 'rl.demand.overdue.pena
   </table>
 </body>
 </html>', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_OVERDUE_DETAILED_NOTICE (rl.demand.overdue.detailed.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_OVERDUE_DETAILED_NOTICE (rl.demand.overdue.detailed.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('83b786e4-ffb7-440f-b19b-1b8693f76909', 'en_IN', 'rl.demand.overdue.detailed.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -275,7 +289,7 @@ VALUES ('83b786e4-ffb7-440f-b19b-1b8693f76909', 'en_IN', 'rl.demand.overdue.deta
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -288,9 +302,12 @@ VALUES ('83b786e4-ffb7-440f-b19b-1b8693f76909', 'en_IN', 'rl.demand.overdue.deta
   </table>
 </body>
 </html>', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_BILL_GENERATED_NOTICE (rl.demand.generated.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_BILL_GENERATED_NOTICE (rl.demand.generated.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('39a7e9c2-1272-4f91-87fc-3ff5072fe34f', 'en_IN', 'rl.demand.generated.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -411,7 +428,7 @@ VALUES ('39a7e9c2-1272-4f91-87fc-3ff5072fe34f', 'en_IN', 'rl.demand.generated.em
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -424,9 +441,12 @@ VALUES ('39a7e9c2-1272-4f91-87fc-3ff5072fe34f', 'en_IN', 'rl.demand.generated.em
   </table>
 </body>
 </html>', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_DUE_DATE_REMINDER (rl.demand.due.reminder.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_DUE_DATE_REMINDER (rl.demand.due.reminder.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('db49d3ff-920c-4ffc-b93e-384a6ca39814', 'en_IN', 'rl.demand.due.reminder.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -543,7 +563,7 @@ VALUES ('db49d3ff-920c-4ffc-b93e-384a6ca39814', 'en_IN', 'rl.demand.due.reminder
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -556,9 +576,12 @@ VALUES ('db49d3ff-920c-4ffc-b93e-384a6ca39814', 'en_IN', 'rl.demand.due.reminder
   </table>
 </body>
 </html>', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_APP_APPROVED_NOTICE (rl.application.approved.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_APP_APPROVED_NOTICE (rl.application.approved.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('a1e943c5-6e68-4825-b9dc-66a010b793fe', 'en_IN', 'rl.application.approved.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -675,7 +698,7 @@ VALUES ('a1e943c5-6e68-4825-b9dc-66a010b793fe', 'en_IN', 'rl.application.approve
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -688,9 +711,12 @@ VALUES ('a1e943c5-6e68-4825-b9dc-66a010b793fe', 'en_IN', 'rl.application.approve
   </table>
 </body>
 </html>', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_PAYMENT_SUCCESS_CONFIRM (rl.payment.success.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_PAYMENT_SUCCESS_CONFIRM (rl.payment.success.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('bd926f69-ee27-4c1d-bc3a-4e9b974abab2', 'en_IN', 'rl.payment.success.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -811,7 +837,7 @@ VALUES ('bd926f69-ee27-4c1d-bc3a-4e9b974abab2', 'en_IN', 'rl.payment.success.ema
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -824,9 +850,12 @@ VALUES ('bd926f69-ee27-4c1d-bc3a-4e9b974abab2', 'en_IN', 'rl.payment.success.ema
   </table>
 </body>
 </html>', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_SETTLEMENT_PAYMENT_NOTICE (rl.lease.settlement.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_SETTLEMENT_PAYMENT_NOTICE (rl.lease.settlement.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('8698f022-22de-4354-b4fb-c4ee49811871', 'en_IN', 'rl.lease.settlement.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -943,7 +972,7 @@ VALUES ('8698f022-22de-4354-b4fb-c4ee49811871', 'en_IN', 'rl.lease.settlement.em
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -956,9 +985,12 @@ VALUES ('8698f022-22de-4354-b4fb-c4ee49811871', 'en_IN', 'rl.lease.settlement.em
   </table>
 </body>
 </html>', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_APPLICATION_CLOSED_NOTICE (rl.lease.closed.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_APPLICATION_CLOSED_NOTICE (rl.lease.closed.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('061102ae-410b-4f29-8ed2-82a2fab22a76', 'en_IN', 'rl.lease.closed.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1079,7 +1111,7 @@ VALUES ('061102ae-410b-4f29-8ed2-82a2fab22a76', 'en_IN', 'rl.lease.closed.email'
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -1092,45 +1124,75 @@ VALUES ('061102ae-410b-4f29-8ed2-82a2fab22a76', 'en_IN', 'rl.lease.closed.email'
   </table>
 </body>
 </html>', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_OVERDUE_PENALTY_NOTICE (rl.demand.overdue.penalty.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_OVERDUE_PENALTY_NOTICE (rl.demand.overdue.penalty.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('806b2409-fead-4580-be1e-22141b0e529b', 'en_IN', 'rl.demand.overdue.penalty.sms', 'Dear {1}, rent payment of Rs.{2} for Allotment No.{3} is overdue. Penalty of Rs.{4} applied. Pay now at {5} to avoid lease action - mSeva Punjab', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_OVERDUE_DETAILED_NOTICE (rl.demand.overdue.detailed.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_OVERDUE_DETAILED_NOTICE (rl.demand.overdue.detailed.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('0f6176ed-c631-4d10-aaa8-26a85101e66e', 'en_IN', 'rl.demand.overdue.detailed.sms', 'Dear {1}, your rent of Rs.{2} for property {3} is overdue since {4}. Penalty fee Rs.{5} levied. Total due Rs.{6}. Pay at {7} - {8}, Punjab', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_BILL_GENERATED_NOTICE (rl.demand.generated.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_BILL_GENERATED_NOTICE (rl.demand.generated.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('75714983-7df3-480a-b936-09c71f9c4119', 'en_IN', 'rl.demand.generated.sms', 'Dear {1}, rent bill of Rs.{2} for {3} has been generated for Allotment {4}. Due date is {5}. Pay online at {6} - mSeva Punjab', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_DUE_DATE_REMINDER (rl.demand.due.reminder.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_DUE_DATE_REMINDER (rl.demand.due.reminder.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('5625787a-da71-4b1d-8e97-0b3e2842a9e8', 'en_IN', 'rl.demand.due.reminder.sms', 'Dear {1}, friendly reminder that rent of Rs.{2} for Allotment {3} is due on {4}. Pay at {5} to avoid late fee penalty - mSeva Punjab', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_APP_APPROVED_NOTICE (rl.application.approved.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_APP_APPROVED_NOTICE (rl.application.approved.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('ac40673f-3617-4750-9788-8c6b8fa6222e', 'en_IN', 'rl.application.approved.sms', 'Dear {1}, your Rent & Lease application {2} has been APPROVED by {3}. Please pay the allotment fee of Rs.{4} at {5} - mSeva Punjab', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_PAYMENT_SUCCESS_CONFIRM (rl.payment.success.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_PAYMENT_SUCCESS_CONFIRM (rl.payment.success.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('49e0e43e-63c9-4e07-8f83-77a94b5296fd', 'en_IN', 'rl.payment.success.sms', 'Dear {1}, payment of Rs.{2} received towards Rent & Lease Allotment {3} vide Receipt No.{4}. Download receipt at {5} - mSeva Punjab', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_SETTLEMENT_PAYMENT_NOTICE (rl.lease.settlement.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_SETTLEMENT_PAYMENT_NOTICE (rl.lease.settlement.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('06dde03d-6cf7-4fae-8e02-4ab85b11604d', 'en_IN', 'rl.lease.settlement.sms', 'Dear {1}, settlement dues of Rs.{2} for lease surrender/closure of Allotment {3} are payable. Pay at {4} to complete closure - {5}', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_APPLICATION_CLOSED_NOTICE (rl.lease.closed.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_APPLICATION_CLOSED_NOTICE (rl.lease.closed.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('a8bd2816-f3f3-497c-b570-631dc41499b1', 'en_IN', 'rl.lease.closed.sms', 'Dear {1}, Rent & Lease Allotment {2} has been successfully CLOSED in records of {3}. All dues are cleared. Thank you - mSeva Punjab', 'pb', 'rainmaker-rl', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- -----------------------------------------------------------------------------------------
--- SECTION: INSERTS FOR MODULE 'rl-services'
+
+
 -- -----------------------------------------------------------------------------------------
-
--- Email: RL_OVERDUE_PENALTY_NOTICE (rl.demand.overdue.penalty.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+-- SECTION: INSERTS FOR MODULE 'rl-services'
+
+-- -----------------------------------------------------------------------------------------
+
+
+-- Email: RL_OVERDUE_PENALTY_NOTICE (rl.demand.overdue.penalty.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('9f6a0856-0453-4691-a539-a25c3ed56b4f', 'en_IN', 'rl.demand.overdue.penalty.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1255,7 +1317,7 @@ VALUES ('9f6a0856-0453-4691-a539-a25c3ed56b4f', 'en_IN', 'rl.demand.overdue.pena
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -1268,9 +1330,12 @@ VALUES ('9f6a0856-0453-4691-a539-a25c3ed56b4f', 'en_IN', 'rl.demand.overdue.pena
   </table>
 </body>
 </html>', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_OVERDUE_DETAILED_NOTICE (rl.demand.overdue.detailed.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_OVERDUE_DETAILED_NOTICE (rl.demand.overdue.detailed.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('1a4ab9cc-ac5c-4647-b8a1-03232c53ab7d', 'en_IN', 'rl.demand.overdue.detailed.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1395,7 +1460,7 @@ VALUES ('1a4ab9cc-ac5c-4647-b8a1-03232c53ab7d', 'en_IN', 'rl.demand.overdue.deta
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -1408,9 +1473,12 @@ VALUES ('1a4ab9cc-ac5c-4647-b8a1-03232c53ab7d', 'en_IN', 'rl.demand.overdue.deta
   </table>
 </body>
 </html>', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_BILL_GENERATED_NOTICE (rl.demand.generated.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_BILL_GENERATED_NOTICE (rl.demand.generated.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('548c607f-9e68-4931-ad4a-f88d11a38c8a', 'en_IN', 'rl.demand.generated.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1531,7 +1599,7 @@ VALUES ('548c607f-9e68-4931-ad4a-f88d11a38c8a', 'en_IN', 'rl.demand.generated.em
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -1544,9 +1612,12 @@ VALUES ('548c607f-9e68-4931-ad4a-f88d11a38c8a', 'en_IN', 'rl.demand.generated.em
   </table>
 </body>
 </html>', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_DUE_DATE_REMINDER (rl.demand.due.reminder.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_DUE_DATE_REMINDER (rl.demand.due.reminder.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('bdc87ae5-cdac-4df3-8ec0-1333e7bd28b4', 'en_IN', 'rl.demand.due.reminder.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1663,7 +1734,7 @@ VALUES ('bdc87ae5-cdac-4df3-8ec0-1333e7bd28b4', 'en_IN', 'rl.demand.due.reminder
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -1676,9 +1747,12 @@ VALUES ('bdc87ae5-cdac-4df3-8ec0-1333e7bd28b4', 'en_IN', 'rl.demand.due.reminder
   </table>
 </body>
 </html>', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_APP_APPROVED_NOTICE (rl.application.approved.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_APP_APPROVED_NOTICE (rl.application.approved.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('cdd33346-2169-4434-a928-cb5222a25fc2', 'en_IN', 'rl.application.approved.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1795,7 +1869,7 @@ VALUES ('cdd33346-2169-4434-a928-cb5222a25fc2', 'en_IN', 'rl.application.approve
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -1808,9 +1882,12 @@ VALUES ('cdd33346-2169-4434-a928-cb5222a25fc2', 'en_IN', 'rl.application.approve
   </table>
 </body>
 </html>', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_PAYMENT_SUCCESS_CONFIRM (rl.payment.success.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_PAYMENT_SUCCESS_CONFIRM (rl.payment.success.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('d14caa93-7b58-450d-bf9e-93823cfc16f3', 'en_IN', 'rl.payment.success.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1931,7 +2008,7 @@ VALUES ('d14caa93-7b58-450d-bf9e-93823cfc16f3', 'en_IN', 'rl.payment.success.ema
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -1944,9 +2021,12 @@ VALUES ('d14caa93-7b58-450d-bf9e-93823cfc16f3', 'en_IN', 'rl.payment.success.ema
   </table>
 </body>
 </html>', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_SETTLEMENT_PAYMENT_NOTICE (rl.lease.settlement.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_SETTLEMENT_PAYMENT_NOTICE (rl.lease.settlement.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('a4a948a0-df92-4178-854a-01046631d3a7', 'en_IN', 'rl.lease.settlement.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2063,7 +2143,7 @@ VALUES ('a4a948a0-df92-4178-854a-01046631d3a7', 'en_IN', 'rl.lease.settlement.em
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -2076,9 +2156,12 @@ VALUES ('a4a948a0-df92-4178-854a-01046631d3a7', 'en_IN', 'rl.lease.settlement.em
   </table>
 </body>
 </html>', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- Email: RL_APPLICATION_CLOSED_NOTICE (rl.lease.closed.email)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- Email: RL_APPLICATION_CLOSED_NOTICE (rl.lease.closed.email)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('05068997-8439-4de0-a665-7ec09379aeec', 'en_IN', 'rl.lease.closed.email', '<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2199,7 +2282,7 @@ VALUES ('05068997-8439-4de0-a665-7ec09379aeec', 'en_IN', 'rl.lease.closed.email'
           <tr>
             <td style="background-color:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;font-size:12px;color:#4b5563;line-height:1.6;">
               <strong style="color:#111827;">Department of Local Government, Punjab (mSeva)</strong><br>
-              Helpline: <strong>1800-1800-0172</strong> &nbsp;|&nbsp; Email: <a href="mailto:support.mseva@punjab.gov.in" style="color:#1d4ed8;text-decoration:none;">support.mseva@punjab.gov.in</a> &nbsp;|&nbsp; Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
+              Portal: <a href="https://mseva.lgpunjab.gov.in" target="_blank" style="color:#1d4ed8;text-decoration:none;">mseva.lgpunjab.gov.in</a>
               <p style="margin:10px 0 0 0;font-size:11px;color:#9ca3af;font-style:italic;">
                 This is a system generated communication from Punjab Municipal Services.
               </p>
@@ -2212,46 +2295,78 @@ VALUES ('05068997-8439-4de0-a665-7ec09379aeec', 'en_IN', 'rl.lease.closed.email'
   </table>
 </body>
 </html>', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_OVERDUE_PENALTY_NOTICE (rl.demand.overdue.penalty.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_OVERDUE_PENALTY_NOTICE (rl.demand.overdue.penalty.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('0bea5d8e-1464-4294-83d4-6a93769dc950', 'en_IN', 'rl.demand.overdue.penalty.sms', 'Dear {1}, rent payment of Rs.{2} for Allotment No.{3} is overdue. Penalty of Rs.{4} applied. Pay now at {5} to avoid lease action - mSeva Punjab', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_OVERDUE_DETAILED_NOTICE (rl.demand.overdue.detailed.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_OVERDUE_DETAILED_NOTICE (rl.demand.overdue.detailed.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('25196490-25ce-4aa5-a1f2-939a6f0c4618', 'en_IN', 'rl.demand.overdue.detailed.sms', 'Dear {1}, your rent of Rs.{2} for property {3} is overdue since {4}. Penalty fee Rs.{5} levied. Total due Rs.{6}. Pay at {7} - {8}, Punjab', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_BILL_GENERATED_NOTICE (rl.demand.generated.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_BILL_GENERATED_NOTICE (rl.demand.generated.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('167f5418-489e-415d-bda5-2fe9197add33', 'en_IN', 'rl.demand.generated.sms', 'Dear {1}, rent bill of Rs.{2} for {3} has been generated for Allotment {4}. Due date is {5}. Pay online at {6} - mSeva Punjab', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_DUE_DATE_REMINDER (rl.demand.due.reminder.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_DUE_DATE_REMINDER (rl.demand.due.reminder.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('03f8b17d-4243-4f7b-bc41-17da6fa0eabc', 'en_IN', 'rl.demand.due.reminder.sms', 'Dear {1}, friendly reminder that rent of Rs.{2} for Allotment {3} is due on {4}. Pay at {5} to avoid late fee penalty - mSeva Punjab', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_APP_APPROVED_NOTICE (rl.application.approved.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_APP_APPROVED_NOTICE (rl.application.approved.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('f8b17d1f-1c65-4d6b-9bdc-4c9648e656b7', 'en_IN', 'rl.application.approved.sms', 'Dear {1}, your Rent & Lease application {2} has been APPROVED by {3}. Please pay the allotment fee of Rs.{4} at {5} - mSeva Punjab', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_PAYMENT_SUCCESS_CONFIRM (rl.payment.success.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_PAYMENT_SUCCESS_CONFIRM (rl.payment.success.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('8d066003-ef74-4e8a-9144-c82cee3454c7', 'en_IN', 'rl.payment.success.sms', 'Dear {1}, payment of Rs.{2} received towards Rent & Lease Allotment {3} vide Receipt No.{4}. Download receipt at {5} - mSeva Punjab', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_SETTLEMENT_PAYMENT_NOTICE (rl.lease.settlement.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_SETTLEMENT_PAYMENT_NOTICE (rl.lease.settlement.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('b6318ac0-4ace-4454-aea3-9a0aecc3664d', 'en_IN', 'rl.lease.settlement.sms', 'Dear {1}, settlement dues of Rs.{2} for lease surrender/closure of Allotment {3} are payable. Pay at {4} to complete closure - {5}', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- SMS: RL_APPLICATION_CLOSED_NOTICE (rl.lease.closed.sms)
-INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
+
+-- SMS: RL_APPLICATION_CLOSED_NOTICE (rl.lease.closed.sms)
+
+INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
+
 VALUES ('0a07164a-9485-439d-8a33-96b517cc7286', 'en_IN', 'rl.lease.closed.sms', 'Dear {1}, Rent & Lease Allotment {2} has been successfully CLOSED in records of {3}. All dues are cleared. Thank you - mSeva Punjab', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
-
--- -----------------------------------------------------------------------------------------
--- VERIFICATION QUERY:
--- -----------------------------------------------------------------------------------------
-SELECT id, code, locale, module, tenantid, length(message) AS length, createddate
-FROM message
-WHERE tenantid = 'pb'
-  AND code IN (
+
+
+-- -----------------------------------------------------------------------------------------
+
+-- VERIFICATION QUERY:
+
+-- -----------------------------------------------------------------------------------------
+
+SELECT id, code, locale, module, tenantid, length(message) AS length, createddate
+
+FROM message
+
+WHERE tenantid = 'pb'
+
+  AND code IN (
+
       'rl.demand.overdue.penalty.email',
       'rl.demand.overdue.detailed.email',
       'rl.demand.generated.email',
@@ -2267,6 +2382,8 @@ WHERE tenantid = 'pb'
       'rl.application.approved.sms',
       'rl.payment.success.sms',
       'rl.lease.settlement.sms',
-      'rl.lease.closed.sms'
-  )
+      'rl.lease.closed.sms'
+
+  )
+
 ORDER BY module, code;

@@ -44,6 +44,13 @@ const RALModal = ({
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
+  const [adhocType, setAdhocType] = useState(action?.action === "ADHOC_REBATE" ? "ADHOC_REBATE" : "ADHOC_PENALTY");
+
+  useEffect(() => {
+    if (action?.action === "ADHOC_REBATE" || action?.action === "ADHOC_PENALTY" || action?.action === "APPLY_ADHOC") {
+      setAdhocType(action?.action === "ADHOC_REBATE" ? "ADHOC_REBATE" : "ADHOC_PENALTY");
+    }
+  }, [action]);
 
   const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
 
@@ -117,21 +124,45 @@ const RALModal = ({
   }, [file]);
 
   function submit(data) {
-    if (action?.action === "ADHOC_PENALTY") {
-      const amount = data?.adhocPenalty;
-      const reason = data?.adhocPenaltyReason?.trim();
-      if (amount === undefined || amount === null || String(amount).trim() === "" || !Number.isFinite(Number(amount)) || Number(amount) < 0 || !reason) {
-        setShowToast({ key: true, label: t("Enter a valid penalty amount and reason") });
+    if (action?.action === "ADHOC_PENALTY" || action?.action === "ADHOC_REBATE" || action?.action === "APPLY_ADHOC") {
+      const isPenalty = adhocType !== "ADHOC_REBATE";
+      const rawAmount = isPenalty ? data?.adhocPenalty : data?.adhocRebate;
+      const rawReason = isPenalty ? data?.adhocPenaltyReason : data?.adhocRebateReason;
+      const reason = rawReason?.trim();
+      const amount = Number(rawAmount);
+
+      if (rawAmount === undefined || rawAmount === null || String(rawAmount).trim() === "" || !Number.isFinite(amount) || amount <= 0 || !reason) {
+        setShowToast({ key: true, label: t(isPenalty ? "Enter a valid penalty amount and reason" : "Enter a valid rebate amount and reason") });
         return;
       }
-      submitAction({ Licenses: [{
-        action: action.action,
-        adhocPenalty: Number(amount),
-        adhocPenaltyReason: reason,
-        assignee: [],
-        comment: "",
-        wfDocuments: null,
-      }] });
+
+      if (isPenalty) {
+        submitAction({
+          Licenses: [
+            {
+              action: "ADHOC_PENALTY",
+              adhocPenalty: Math.abs(amount),
+              adhocPenaltyReason: reason,
+              assignee: [],
+              comment: "",
+              wfDocuments: null,
+            },
+          ],
+        });
+      } else {
+        submitAction({
+          Licenses: [
+            {
+              action: "ADHOC_REBATE",
+              adhocRebate: -Math.abs(amount),
+              adhocRebateReason: reason,
+              assignee: [],
+              comment: "",
+              wfDocuments: null,
+            },
+          ],
+        });
+      }
       return;
     }
     if (action?.action === "RENEWAL" || action?.action === "RAL_RENEWAL") {
@@ -226,10 +257,12 @@ const RALModal = ({
           uploadedFile,
           setUploadedFile,
           businessService,
+          adhocType,
+          setAdhocType,
         })
       );
     }
-  }, [action, approvers, financialYears, uploadedFile]);
+  }, [action, approvers, financialYears, uploadedFile, adhocType]);
 
   useEffect(() => {
     if (action?.action === "FORWARD_FOT_SETLEMENT") {
@@ -251,6 +284,16 @@ const RALModal = ({
       // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       formId="modal-action"
     >
+      <style>{`
+        .bpa-workflow-modal-form input[type="number"]::-webkit-inner-spin-button,
+        .bpa-workflow-modal-form input[type="number"]::-webkit-outer-spin-button {
+          -webkit-appearance: none !important;
+          margin: 0 !important;
+        }
+        .bpa-workflow-modal-form input[type="number"] {
+          -moz-appearance: textfield !important;
+        }
+      `}</style>
       {/* {financialYearsLoading ? (
         <Loader />
       ) : ( */}

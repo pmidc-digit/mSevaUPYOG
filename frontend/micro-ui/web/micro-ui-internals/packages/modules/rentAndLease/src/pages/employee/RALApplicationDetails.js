@@ -21,7 +21,7 @@ import { Loader } from "../../../../challanGeneration/src/components/Loader";
 // import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
 import RALModal from "../../pageComponents/RALModal";
 import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
-import { getAcknowledgementData } from "../../utils/index";
+import { convertEpochToDate, getAcknowledgementData, formatINR, formatTaxHeadBreakup } from "../../utils/index";
 
 const RALApplicationDetails = () => {
   const { t } = useTranslation();
@@ -53,6 +53,44 @@ const RALApplicationDetails = () => {
     },
     { enabled: acknowledgementIds ? true : false }
   );
+  const consumerCode = applicationData?.consumerCode || applicationData?.applicationNumber || acknowledgementIds;
+  const isApprovedApplication = applicationData?.status === "APPROVED";
+
+  const { data: dueBillData } = Digit.Hooks.useFetchPayment(
+    {
+      tenantId,
+      consumerCode,
+      businessService: "rl-services",
+    },
+    {
+      enabled: Boolean(isApprovedApplication && consumerCode && tenantId),
+      retry: false,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  const activeBills = (dueBillData?.Bill || []).filter((bill) => !bill?.status || bill.status === "ACTIVE");
+  const primaryBill = activeBills[0];
+  const dueBillDetails = activeBills.flatMap((bill) => bill?.billDetails || []);
+  const hasMultipleBillDetails = dueBillDetails.length > 1;
+  const hasExplicitBillTotal = activeBills.some((bill) => bill?.totalAmount != null);
+  const billsTotal = activeBills.reduce((sum, bill) => sum + (Number.isFinite(Number(bill?.totalAmount)) ? Number(bill.totalAmount) : 0), 0);
+  const detailsTotal = dueBillDetails.reduce((sum, detail) => sum + (Number.isFinite(Number(detail?.amount)) ? Number(detail.amount) : 0), 0);
+  const totalDueAmount = hasMultipleBillDetails ? detailsTotal : hasExplicitBillTotal ? billsTotal : detailsTotal;
+
+  const handleAddAdhoc = () => {
+    const adhocAction = actions?.find((act) => act?.action === "APPLY_ADHOC" || act?.action === "ADHOC_PENALTY" || act?.action === "ADHOC_REBATE") || {
+      action: "APPLY_ADHOC",
+      forcedName: "Apply Adhoc(Penalty/Rebate)",
+    };
+    setSelectedAction(adhocAction);
+    setShowModal(true);
+  };
+
+  const handleCollectPayment = () => {
+    history.push(`/digit-ui/employee/payment/collect/rl-services/${consumerCode}/${tenantId}`);
+  };
+
   const fetchApplications = async (filters) => {
     setLoader(true);
     try {
@@ -169,6 +207,13 @@ const RALApplicationDetails = () => {
     return true;
   });
 
+  if (
+    (applicationData?.status === "PENDING_FOR_PAYMENT" || applicationData?.status === "APPROVED") &&
+    !actions?.some((action) => action?.action === "APPLY_ADHOC" || action?.action === "ADHOC_PENALTY" || action?.action === "ADHOC_REBATE")
+  ) {
+    actions = [...(actions || []), { action: "APPLY_ADHOC", forcedName: "Apply Adhoc(Penalty/Rebate)" }];
+  }
+
   const closeToast = () => {
     setShowToast(null);
   };
@@ -263,6 +308,13 @@ const RALApplicationDetails = () => {
         ...updatedApplicant?.additionalDetails,
         adhocPenalty: filtData.adhocPenalty,
         adhocPenaltyReason: filtData.adhocPenaltyReason,
+      };
+    }
+    if (filtData.action === "ADHOC_REBATE") {
+      updatedApplicant.additionalDetails = {
+        ...updatedApplicant?.additionalDetails,
+        adhocRebate: filtData.adhocRebate,
+        adhocRebateReason: filtData.adhocRebateReason,
       };
     }
     if (filtData.action === "FORWARD_FOT_SETLEMENT" && filtData?.amountToBeDeducted !== undefined) {
@@ -427,6 +479,40 @@ const RALApplicationDetails = () => {
             />
           )}
         </div>
+        {isApprovedApplication && totalDueAmount > 0 && (
+          <Card style={{ background: "#f0f7fe", border: "1px solid #cfe2f8", boxShadow: "0 2px 8px rgba(13, 110, 168, 0.08)" }}>
+            <CardSubHeader className="ral-card-subheader-24">{t("Due Payment Details")}</CardSubHeader>
+            <StatusTable>
+              {primaryBill?.billNumber && <Row label={t("UC_BILL_NO_LABEL")} text={tValue(primaryBill.billNumber)} />}
+              {primaryBill?.billDate && <Row label={t("UC_BILL_DATE_LABEL")} text={tValue(convertEpochToDate(primaryBill.billDate))} />}
+              {dueBillDetails.map((detail, index) => {
+                const multipleDetails = dueBillDetails.length > 1;
+                const duration = `${convertEpochToDate(detail?.fromPeriod)} to ${convertEpochToDate(detail?.toPeriod)}`;
+
+                return (
+                  <React.Fragment key={detail?.id || detail?.demandId || index}>
+                    {multipleDetails && (
+                      <CardSectionHeader className="ral-app-details-owner-header">
+                        {t("Due Period")} {index + 1}
+                      </CardSectionHeader>
+                    )}
+                    <Row
+                      label={t("Due Amount")}
+                      text={formatTaxHeadBreakup(detail?.billAccountDetails, t, detail?.amount)}
+                      rowContainerStyle={{ alignItems: "flex-start" }}
+                    />
+                    {(detail?.fromPeriod || detail?.toPeriod) && <Row label={t("Duration")} text={duration} />}
+                  </React.Fragment>
+                );
+              })}
+              <Row last={true} label={t("Total Due Amount")} text={formatINR(totalDueAmount)} />
+            </StatusTable>
+            <div className="ral-bill-generate__actions">
+              <SubmitBar label={t("Add Adhoc(Penalty/Rebate)")} onSubmit={handleAddAdhoc} className="submit-bar" />
+              <SubmitBar label={t("Pay")} onSubmit={handleCollectPayment} />
+            </div>
+          </Card>
+        )}
         <Card>
           <CardSubHeader className="ral-card-subheader-24">{t("RAL_CITIZEN_DETAILS")}</CardSubHeader>
           <StatusTable>

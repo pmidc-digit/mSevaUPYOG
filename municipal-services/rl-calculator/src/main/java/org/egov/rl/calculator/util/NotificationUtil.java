@@ -5,6 +5,7 @@ import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.egov.common.contract.request.PlainAccessRequest;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
@@ -410,6 +411,76 @@ public class NotificationUtil {
         UserDetailResponse userDetailResponse = userService.getUser(userSearchRequest);
         requestInfo.setUserInfo(userInfoCopy);
         return userDetailResponse;
+    }
+
+    /**
+     * Fetches User Object based on the UUID with unmasked/decrypted plain details.
+     *
+     * @param uuid - UUID of the User
+     * @param requestInfo - Request Info Object
+     * @param tenantId - Tenant Id
+     * @return - Returns UserDetailResponse with decrypted User
+     */
+    public UserDetailResponse fetchUserByUuid(String uuid, RequestInfo requestInfo, String tenantId) {
+        if (StringUtils.isBlank(uuid)) {
+            return null;
+        }
+
+        User userInfoCopy = requestInfo != null ? requestInfo.getUserInfo() : null;
+        PlainAccessRequest plainAccessRequestCopy = requestInfo != null ? requestInfo.getPlainAccessRequest() : null;
+
+        String stateTenantId = (tenantId != null && tenantId.contains(".")) ? tenantId.split("\\.")[0] : (tenantId != null ? tenantId : "pb");
+        User internalUser = getInternalMicroserviceUser(stateTenantId);
+
+        if (requestInfo == null) {
+            requestInfo = new RequestInfo();
+        }
+        requestInfo.setUserInfo(internalUser);
+
+        PlainAccessRequest plainAccessRequest = PlainAccessRequest.builder()
+                .plainRequestFields(Arrays.asList("name", "mobileNumber", "emailId", "fatherOrHusbandName", "gender", "userName"))
+                .recordId(uuid)
+                .build();
+        requestInfo.setPlainAccessRequest(plainAccessRequest);
+
+        UserSearchRequest userSearchRequest = userService.getBaseUserSearchRequest(stateTenantId, requestInfo);
+        userSearchRequest.setUuid(Collections.singleton(uuid));
+
+        UserDetailResponse userDetailResponse = null;
+        try {
+            userDetailResponse = userService.getUser(userSearchRequest);
+        } catch (Exception e) {
+            log.error("Exception while fetching plain user by UUID: {}", uuid, e);
+        } finally {
+            if (requestInfo != null) {
+                requestInfo.setUserInfo(userInfoCopy);
+                requestInfo.setPlainAccessRequest(plainAccessRequestCopy);
+            }
+        }
+        return userDetailResponse;
+    }
+
+    /**
+     * Fetches multiple Users by their UUIDs with unmasked/decrypted plain details.
+     *
+     * @param uuids - Set of UUIDs
+     * @param requestInfo - Request Info Object
+     * @param tenantId - Tenant Id
+     * @return - Map of UUID to decrypted User object
+     */
+    public Map<String, org.egov.rl.calculator.web.models.User> fetchUsersByUUIDs(Set<String> uuids, RequestInfo requestInfo, String tenantId) {
+        if (CollectionUtils.isEmpty(uuids)) {
+            return Collections.emptyMap();
+        }
+        Map<String, org.egov.rl.calculator.web.models.User> userMap = new HashMap<>();
+        for (String uuid : uuids) {
+            if (StringUtils.isBlank(uuid) || userMap.containsKey(uuid)) continue;
+            UserDetailResponse response = fetchUserByUuid(uuid, requestInfo, tenantId);
+            if (response != null && !CollectionUtils.isEmpty(response.getUser()) && response.getUser().get(0) != null) {
+                userMap.put(uuid, response.getUser().get(0));
+            }
+        }
+        return userMap;
     }
 
     /**

@@ -4,6 +4,7 @@ import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.egov.common.contract.request.PlainAccessRequest;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
@@ -401,6 +402,53 @@ public class NotificationUtil {
 
 		UserDetailResponse userDetailResponse = userService.getUser(userSearchRequest);
 		requestInfo.setUserInfo(userInfoCopy);
+		return userDetailResponse;
+	}
+
+	/**
+	 * Fetches User Object based on the UUID with unmasked/decrypted plain details.
+	 *
+	 * @param uuid        - UUID of User
+	 * @param requestInfo - Request Info Object
+	 * @param tenantId    - Tenant Id
+	 * @return - Returns UserDetailResponse with decrypted User
+	 */
+	public UserDetailResponse fetchUserByUuid(String uuid, RequestInfo requestInfo, String tenantId) {
+		if (StringUtils.isBlank(uuid)) {
+			return null;
+		}
+
+		User userInfoCopy = requestInfo != null ? requestInfo.getUserInfo() : null;
+		PlainAccessRequest plainAccessRequestCopy = requestInfo != null ? requestInfo.getPlainAccessRequest() : null;
+
+		String stateTenantId = (tenantId != null && tenantId.contains(".")) ? tenantId.split("\\.")[0] : (tenantId != null ? tenantId : "pb");
+		User userInfo = getInternalMicroserviceUser(stateTenantId);
+
+		if (requestInfo == null) {
+			requestInfo = new RequestInfo();
+		}
+		requestInfo.setUserInfo(userInfo);
+
+		PlainAccessRequest plainAccessRequest = PlainAccessRequest.builder()
+				.plainRequestFields(Arrays.asList("name", "mobileNumber", "emailId", "fatherOrHusbandName", "gender", "userName"))
+				.recordId(uuid)
+				.build();
+		requestInfo.setPlainAccessRequest(plainAccessRequest);
+
+		UserSearchRequest userSearchRequest = userService.getBaseUserSearchRequest(stateTenantId, requestInfo);
+		userSearchRequest.setUuid(Collections.singleton(uuid));
+
+		UserDetailResponse userDetailResponse = null;
+		try {
+			userDetailResponse = userService.getUser(userSearchRequest);
+		} catch (Exception e) {
+			log.error("Exception while fetching plain user by UUID: {}", uuid, e);
+		} finally {
+			if (requestInfo != null) {
+				requestInfo.setUserInfo(userInfoCopy);
+				requestInfo.setPlainAccessRequest(plainAccessRequestCopy);
+			}
+		}
 		return userDetailResponse;
 	}
 

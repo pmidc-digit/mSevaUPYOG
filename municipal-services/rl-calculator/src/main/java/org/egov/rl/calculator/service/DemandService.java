@@ -145,8 +145,6 @@ public class DemandService {
 
 			boolean isSecurityDeposite = firstCriteria.isSecurityDeposite();
 			List<Demand> demands = new ArrayList<>();
-			Map<String, Demand> adhocUpdates = new LinkedHashMap<>();
-			Map<String, Demand> alreadyCreated = new LinkedHashMap<>();
 			RequestInfo requestInfo = calculationReq.getRequestInfo();
 			String tenantId = calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getAllotment().get(0)
 					.getTenantId();
@@ -177,11 +175,11 @@ public class DemandService {
 				if (billingPeriod != null) {
 					long startDay = billingPeriod.getTaxPeriodFrom() <= allotmentDetails.getStartDate()
 							? allotmentDetails.getStartDate()
-							: billingPeriod.getTaxPeriodFrom();
+						: billingPeriod.getTaxPeriodFrom();
 
 					long endDay = billingPeriod.getTaxPeriodTo() <= allotmentDetails.getEndDate()
 							? billingPeriod.getTaxPeriodTo()
-							: allotmentDetails.getEndDate();
+						: allotmentDetails.getEndDate();
 
 //					long exparyDate = billingPeriod.getDemandExpiryDate();
 
@@ -203,28 +201,90 @@ public class DemandService {
 							.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 					demands.add(demand);
 				}
-
-				// The adhoc penalty / exemption is attached to the current period's demand, so it can be added,
-				// changed or removed at any time - including long after this period's demand exists.
-				syncAdhocCharges(allotmentDetails, null, requestInfo, demands, adhocUpdates, alreadyCreated);
 			}
 
-			List<Demand> demands1 = demandRepository.saveDemand(
-					calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
-			List<Demand> touched = new ArrayList<>();
-			if (!CollectionUtils.isEmpty(demands1)) {
-				touched.addAll(demands1);
+			// Idempotency guard: duplicate demands covering the same period are not posted again
+			Map<String, List<Demand>> existingByConsumer = new HashMap<>();
+			List<Demand> demandsToCreate = new ArrayList<>();
+			Map<String, Demand> alreadyCreated = new LinkedHashMap<>();
+			Map<String, Demand> demandUpdates = new LinkedHashMap<>();
+
+			for (Demand demand : demands) {
+				String consumerKey = demand.getTenantId() + "|" + demand.getConsumerCode();
+				List<Demand> existing = existingByConsumer.get(consumerKey);
+				if (existing == null) {
+					existing = loadExistingDemands(demand.getTenantId(), demand.getConsumerCode());
+					if (existing == null) {
+						existing = new ArrayList<>();
+					}
+					existingByConsumer.put(consumerKey, existing);
+				}
+				Demand duplicate = findDuplicate(existing, demand);
+				if (duplicate == null) {
+					demandsToCreate.add(demand);
+					existing.add(demand);
+					continue;
+				}
+				log.warn("Demand already exists for consumer {} (id {}) covering {} to {} - skipping creation.",
+						demand.getConsumerCode(), duplicate.getId(),
+						formatCutoff(demand.getTaxPeriodFrom()), formatCutoff(demand.getTaxPeriodTo()));
+				alreadyCreated.put(duplicate.getId(), duplicate);
 			}
-			if (!adhocUpdates.isEmpty()) {
-				List<Demand> updated = demandRepository.updateDemand(requestInfo, new ArrayList<>(adhocUpdates.values()));
-				if (!CollectionUtils.isEmpty(updated)) {
-					touched.addAll(updated);
+
+			// The adhoc penalty / exemption is attached to the current period's demand, so adding, editing or removing
+			// it never rewrites the demand of another period and never creates a second demand for the same one.
+			for (CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
+				AllotmentRequest allotmentRequest = criteria.getAllotmentRequest();
+				if (allotmentRequest == null || CollectionUtils.isEmpty(allotmentRequest.getAllotment())) {
+					continue;
+				}
+				AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
+				String consumerKey = allotmentDetails.getTenantId() + "|" + allotmentDetails.getApplicationNumber();
+				List<Demand> existing = existingByConsumer.get(consumerKey);
+				if (existing == null) {
+					existing = loadExistingDemands(allotmentDetails.getTenantId(), allotmentDetails.getApplicationNumber());
+					if (existing == null) {
+						existing = new ArrayList<>();
+					}
+					existingByConsumer.put(consumerKey, existing);
+				}
+				syncAdhocCharges(allotmentDetails, existing, requestInfo, demandsToCreate, demandUpdates, alreadyCreated);
+			}
+
+			List<Demand> savedDemands = null;
+			if (!demandsToCreate.isEmpty()) {
+				log.info("Saving demand(s) to billing service. Count: {} ({} already existed)",
+						demandsToCreate.size(), alreadyCreated.size());
+				savedDemands = demandRepository.saveDemand(
+						calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demandsToCreate);
+			} else {
+				log.info("All {} generated demand(s) already exist - nothing to create.", demands.size());
+			}
+
+			List<Demand> updatedDemands = Collections.emptyList();
+			if (!demandUpdates.isEmpty()) {
+				log.info("{} demand(s) changed - updating them in place.", demandUpdates.size());
+				updatedDemands = demandRepository.updateDemand(requestInfo, new ArrayList<>(demandUpdates.values()));
+				if (updatedDemands == null) {
+					updatedDemands = Collections.emptyList();
 				}
 			}
+
+			List<Demand> touched = new ArrayList<>();
+			if (!CollectionUtils.isEmpty(savedDemands)) {
+				touched.addAll(savedDemands);
+			}
+			touched.addAll(updatedDemands);
 			if (!touched.isEmpty()) {
 				fetchBillForDemands(touched, requestInfo);
 			}
-			return DemandResponse.builder().demands(demands1).build();
+
+			List<Demand> responseDemands = new ArrayList<>();
+			if (!CollectionUtils.isEmpty(savedDemands)) {
+				responseDemands.addAll(savedDemands);
+			}
+			responseDemands.addAll(alreadyCreated.values());
+			return DemandResponse.builder().demands(responseDemands).build();
 		}
 	}
 
@@ -305,8 +365,16 @@ public class DemandService {
 				continue;
 			}
 			AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
-			syncAdhocCharges(allotmentDetails,
-					existingByConsumer.get(allotmentDetails.getTenantId() + "|" + allotmentDetails.getApplicationNumber()),
+			String consumerKey = allotmentDetails.getTenantId() + "|" + allotmentDetails.getApplicationNumber();
+			List<Demand> existing = existingByConsumer.get(consumerKey);
+			if (existing == null) {
+				existing = loadExistingDemands(allotmentDetails.getTenantId(), allotmentDetails.getApplicationNumber());
+				if (existing == null) {
+					existing = new ArrayList<>();
+				}
+				existingByConsumer.put(consumerKey, existing);
+			}
+			syncAdhocCharges(allotmentDetails, existing,
 					requestInfo, demandsToCreate, demandUpdates, alreadyCreated);
 		}
 
@@ -718,7 +786,23 @@ public class DemandService {
 				return demand;
 			}
 		}
-		return null;
+		long now = System.currentTimeMillis();
+		for (Demand demand : demands) {
+			if (isCurrentPeriodDemand(demand, now)) {
+				return demand;
+			}
+		}
+		// Fallback: pick the latest active non-arrear demand
+		Demand latest = null;
+		for (Demand demand : demands) {
+			if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails()) || isArrearOnly(demand)) {
+				continue;
+			}
+			if (latest == null || (demand.getTaxPeriodTo() != null && (latest.getTaxPeriodTo() == null || demand.getTaxPeriodTo() > latest.getTaxPeriodTo()))) {
+				latest = demand;
+			}
+		}
+		return latest;
 	}
 
 	/**
@@ -799,12 +883,38 @@ public class DemandService {
 					.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 			demands.add(demand);
 		}
-		List<Demand> demands1 = demandRepository.saveDemand(
-				calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demands);
-		if (!CollectionUtils.isEmpty(demands1)) {
-			fetchBillForDemands(demands1, requestInfo);
+		Map<String, Demand> alreadyCreated = new LinkedHashMap<>();
+		List<Demand> demandsToCreate = new ArrayList<>();
+		for (Demand demand : demands) {
+			List<Demand> existing = loadExistingDemands(demand.getTenantId(), demand.getConsumerCode());
+			Demand duplicate = findDuplicate(existing, demand);
+			if (duplicate == null) {
+				demandsToCreate.add(demand);
+			} else {
+				log.warn("Settlement demand already exists for consumer {} (id {}) covering {} to {} - skipping creation.",
+						demand.getConsumerCode(), duplicate.getId(),
+						formatCutoff(demand.getTaxPeriodFrom()), formatCutoff(demand.getTaxPeriodTo()));
+				alreadyCreated.put(duplicate.getId(), duplicate);
+			}
 		}
-		return DemandResponse.builder().demands(demands1).build();
+		List<Demand> savedDemands = null;
+		if (!demandsToCreate.isEmpty()) {
+			savedDemands = demandRepository.saveDemand(
+					calculationReq.getCalculationCriteria().get(0).getAllotmentRequest().getRequestInfo(), demandsToCreate);
+		}
+		List<Demand> touched = new ArrayList<>();
+		if (!CollectionUtils.isEmpty(savedDemands)) {
+			touched.addAll(savedDemands);
+		}
+		if (!touched.isEmpty()) {
+			fetchBillForDemands(touched, requestInfo);
+		}
+		List<Demand> responseDemands = new ArrayList<>();
+		if (!CollectionUtils.isEmpty(savedDemands)) {
+			responseDemands.addAll(savedDemands);
+		}
+		responseDemands.addAll(alreadyCreated.values());
+		return DemandResponse.builder().demands(responseDemands).build();
 	}
 
 	public DemandResponse estimate(boolean isSecurityDeposite, CalculationReq calculationReq) {

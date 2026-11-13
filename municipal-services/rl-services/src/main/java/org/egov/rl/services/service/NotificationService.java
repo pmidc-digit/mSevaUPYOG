@@ -48,6 +48,11 @@ public class NotificationService {
 	private ServiceRequestRepository serviceRequestRepository;
 
 	public void process(AllotmentRequest request) {
+		if (request != null && !CollectionUtils.isEmpty(request.getAllotment())) {
+			for (AllotmentDetails allotment : request.getAllotment()) {
+				enrichOrDecryptOwners(allotment, request.getRequestInfo());
+			}
+		}
 		EventRequest eventRequest = getEventsForAllotment(request);
 		log.info("Event Request in Rl process method: {}", eventRequest);
 		if (null != eventRequest)
@@ -172,6 +177,7 @@ public class NotificationService {
 
 		for (AllotmentDetails allotment : request.getAllotment()) {
 			try {
+				enrichOrDecryptOwners(allotment, request.getRequestInfo());
 				String action = allotment.getWorkflow() != null ? allotment.getWorkflow().getAction() : null;
 				String status = allotment.getStatus();
 
@@ -398,6 +404,10 @@ public class NotificationService {
 			return;
 		}
 
+		if (allotment != null) {
+			enrichOrDecryptOwners(allotment, paymentRequest.getRequestInfo());
+		}
+
 		String tenantId = paymentRequest.getPayment().getTenantId();
 		String consumerCode = allotment != null && allotment.getApplicationNumber() != null 
 				? allotment.getApplicationNumber()
@@ -405,9 +415,9 @@ public class NotificationService {
 						&& paymentRequest.getPayment().getPaymentDetails().get(0).getBill() != null
 						? paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode() : "");
 
-		String payerName = StringUtils.isNotBlank(paymentRequest.getPayment().getPayerName())
+		String payerName = StringUtils.isNotBlank(paymentRequest.getPayment().getPayerName()) && !isEncrypted(paymentRequest.getPayment().getPayerName())
 				? paymentRequest.getPayment().getPayerName()
-				: (StringUtils.isNotBlank(paymentRequest.getPayment().getPaidBy()) 
+				: (StringUtils.isNotBlank(paymentRequest.getPayment().getPaidBy()) && !isEncrypted(paymentRequest.getPayment().getPaidBy())
 						? paymentRequest.getPayment().getPaidBy() 
 						: (allotment != null ? getOwnerName(allotment) : "Citizen"));
 
@@ -437,7 +447,7 @@ public class NotificationService {
 
 		// Target mobile numbers: from Payment + allotment owner info
 		List<String> mobileNumbers = new ArrayList<>();
-		if (StringUtils.isNotBlank(paymentRequest.getPayment().getMobileNumber())) {
+		if (StringUtils.isNotBlank(paymentRequest.getPayment().getMobileNumber()) && !isEncrypted(paymentRequest.getPayment().getMobileNumber())) {
 			mobileNumbers.add(paymentRequest.getPayment().getMobileNumber());
 		}
 		if (allotment != null) {
@@ -501,7 +511,7 @@ public class NotificationService {
 		List<String> emails = new ArrayList<>();
 		if (allotment != null && !CollectionUtils.isEmpty(allotment.getOwnerInfo())) {
 			for (org.egov.rl.services.models.OwnerInfo owner : allotment.getOwnerInfo()) {
-				if (owner != null && StringUtils.isNotBlank(owner.getEmailId())) {
+				if (owner != null && StringUtils.isNotBlank(owner.getEmailId()) && !isEncrypted(owner.getEmailId())) {
 					emails.add(owner.getEmailId().trim());
 				}
 			}
@@ -536,7 +546,8 @@ public class NotificationService {
 	private String getOwnerName(AllotmentDetails allotment) {
 		if (allotment != null && !CollectionUtils.isEmpty(allotment.getOwnerInfo()) 
 				&& allotment.getOwnerInfo().get(0) != null 
-				&& StringUtils.isNotBlank(allotment.getOwnerInfo().get(0).getName())) {
+				&& StringUtils.isNotBlank(allotment.getOwnerInfo().get(0).getName())
+				&& !isEncrypted(allotment.getOwnerInfo().get(0).getName())) {
 			return allotment.getOwnerInfo().get(0).getName();
 		}
 		return "Citizen";
@@ -545,7 +556,8 @@ public class NotificationService {
 	private String getMobileNumber(AllotmentDetails allotment) {
 		if (allotment != null && !CollectionUtils.isEmpty(allotment.getOwnerInfo()) 
 				&& allotment.getOwnerInfo().get(0) != null 
-				&& StringUtils.isNotBlank(allotment.getOwnerInfo().get(0).getMobileNo())) {
+				&& StringUtils.isNotBlank(allotment.getOwnerInfo().get(0).getMobileNo())
+				&& !isEncrypted(allotment.getOwnerInfo().get(0).getMobileNo())) {
 			return allotment.getOwnerInfo().get(0).getMobileNo();
 		}
 		return null;
@@ -554,19 +566,61 @@ public class NotificationService {
 	private List<String> getAllMobileNumbers(AllotmentDetails allotment) {
 		List<String> mobileNumbers = new ArrayList<>();
 		String primaryMobile = getMobileNumber(allotment);
-		if (StringUtils.isNotBlank(primaryMobile)) {
+		if (StringUtils.isNotBlank(primaryMobile) && !isEncrypted(primaryMobile)) {
 			mobileNumbers.add(primaryMobile);
 		}
 		if (allotment != null && allotment.getAdditionalDetails() != null) {
 			com.fasterxml.jackson.databind.JsonNode details = allotment.getAdditionalDetails();
 			if (details.has("alternateMobileNumber") && !details.get("alternateMobileNumber").isNull()) {
 				String altMobile = details.get("alternateMobileNumber").asText();
-				if (StringUtils.isNotBlank(altMobile) && !mobileNumbers.contains(altMobile)) {
+				if (StringUtils.isNotBlank(altMobile) && !isEncrypted(altMobile) && !mobileNumbers.contains(altMobile)) {
 					mobileNumbers.add(altMobile);
 				}
 			}
 		}
 		return mobileNumbers;
+	}
+
+	private void enrichOrDecryptOwners(AllotmentDetails allotment, RequestInfo requestInfo) {
+		if (allotment == null || CollectionUtils.isEmpty(allotment.getOwnerInfo())) {
+			return;
+		}
+		for (org.egov.rl.services.models.OwnerInfo owner : allotment.getOwnerInfo()) {
+			if (owner == null || StringUtils.isBlank(owner.getUserUuid())) {
+				continue;
+			}
+			boolean needsEnrichment = StringUtils.isBlank(owner.getName())
+					|| StringUtils.isBlank(owner.getMobileNo())
+					|| StringUtils.isBlank(owner.getEmailId())
+					|| isEncrypted(owner.getName())
+					|| isEncrypted(owner.getMobileNo())
+					|| isEncrypted(owner.getEmailId());
+
+			if (needsEnrichment) {
+				try {
+					org.egov.rl.services.models.user.UserDetailResponse response = 
+							util.fetchUserByUuid(owner.getUserUuid(), requestInfo, allotment.getTenantId());
+					if (response != null && !CollectionUtils.isEmpty(response.getUser()) && response.getUser().get(0) != null) {
+						org.egov.rl.services.models.user.User user = response.getUser().get(0);
+						if (StringUtils.isNotBlank(user.getName()) && !isEncrypted(user.getName())) {
+							owner.setName(user.getName());
+						}
+						if (StringUtils.isNotBlank(user.getMobileNumber()) && !isEncrypted(user.getMobileNumber())) {
+							owner.setMobileNo(user.getMobileNumber());
+						}
+						if (StringUtils.isNotBlank(user.getEmailId()) && !isEncrypted(user.getEmailId())) {
+							owner.setEmailId(user.getEmailId());
+						}
+					}
+				} catch (Exception e) {
+					log.warn("Failed to decrypt owner details for user UUID: {}", owner.getUserUuid(), e);
+				}
+			}
+		}
+	}
+
+	private boolean isEncrypted(String value) {
+		return value != null && value.contains("|") && value.indexOf('|') > 0;
 	}
 
 	private String getAllotmentFee(AllotmentDetails allotment) {

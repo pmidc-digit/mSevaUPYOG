@@ -210,7 +210,8 @@ public class AllotmentService {
 		JsonNode details = allotmentDetails.getAdditionalDetails();
 		return hasValue(details, RLConstants.ADHOC_PENALTY_KEY)
 				|| hasValue(details, RLConstants.ADHOC_REBATE_KEY)
-				|| hasValue(details, RLConstants.ADHOC_REBATE_ALT_KEY);
+				|| hasValue(details, RLConstants.ADHOC_REBATE_ALT_KEY)
+				|| hasValue(details, "rebateAmount");
 	}
 
 	private static boolean hasValue(JsonNode details, String key) {

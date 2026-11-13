@@ -82,6 +82,21 @@ public class NotificationService {
 				.collect(Collectors.toList());
 
 		Map<String, Owner> ownerMap = demandRepository.getOwnersByConsumerCodes(consumerCodes);
+
+		// Collect all owner UUIDs to fetch decrypted user details from user service
+		Set<String> uuidsToFetch = new HashSet<>();
+		for (Demand demand : demands) {
+			Owner owner = ownerMap.get(demand.getConsumerCode());
+			if (owner != null && StringUtils.isNotBlank(owner.getUuid())) {
+				uuidsToFetch.add(owner.getUuid());
+			} else if (demand.getPayer() != null && StringUtils.isNotBlank(demand.getPayer().getUuid())) {
+				uuidsToFetch.add(demand.getPayer().getUuid());
+			}
+		}
+
+		Map<String, User> decryptedUsers = notifUtil.fetchUsersByUUIDs(uuidsToFetch, requestInfo, tenantId);
+		log.info("Decrypted {} user(s) by UUID for overdue penalty notifications", decryptedUsers.size());
+
 		String localizationMessages = getLocalizationSafely(tenantId, requestInfo);
 
 		String smsTemplate = getTemplateSafely(CODE_OVERDUE_SMS, localizationMessages, FALLBACK_OVERDUE_SMS);
@@ -94,13 +109,40 @@ public class NotificationService {
 		for (Demand demand : demands) {
 			String consumerCode = demand.getConsumerCode();
 			Owner owner = ownerMap.get(consumerCode);
-			if (owner == null && demand.getPayer() != null) {
-				owner = demand.getPayer();
+			String ownerUuid = (owner != null && StringUtils.isNotBlank(owner.getUuid())) ? owner.getUuid() : 
+					(demand.getPayer() != null ? demand.getPayer().getUuid() : null);
+
+			User decryptedUser = ownerUuid != null ? decryptedUsers.get(ownerUuid) : null;
+
+			String ownerName;
+			String mobileNumber;
+			String emailId;
+
+			if (decryptedUser != null) {
+				ownerName = StringUtils.isNotBlank(decryptedUser.getName()) ? decryptedUser.getName() : "Citizen";
+				mobileNumber = StringUtils.isNotBlank(decryptedUser.getMobileNumber()) ? decryptedUser.getMobileNumber() : null;
+				emailId = StringUtils.isNotBlank(decryptedUser.getEmailId()) ? decryptedUser.getEmailId() : null;
+			} else {
+				if (owner == null && demand.getPayer() != null) {
+					owner = demand.getPayer();
+				}
+				ownerName = (owner != null && StringUtils.isNotBlank(owner.getName())) ? owner.getName() : "Citizen";
+				mobileNumber = (owner != null && StringUtils.isNotBlank(owner.getMobileNumber())) ? owner.getMobileNumber() : null;
+				emailId = (owner != null && StringUtils.isNotBlank(owner.getEmailId())) ? owner.getEmailId() : null;
 			}
 
-			String ownerName = (owner != null && StringUtils.isNotBlank(owner.getName())) ? owner.getName() : "Citizen";
-			String mobileNumber = (owner != null && StringUtils.isNotBlank(owner.getMobileNumber())) ? owner.getMobileNumber() : null;
-			String emailId = (owner != null && StringUtils.isNotBlank(owner.getEmailId())) ? owner.getEmailId() : null;
+			// Cleanse encrypted values so ciphertext (e.g. 30048|...) never leaks into notifications
+			if (isEncrypted(ownerName)) {
+				ownerName = "Citizen";
+			}
+			if (isEncrypted(mobileNumber)) {
+				log.warn("Mobile number for consumerCode {} is encrypted ({}) and could not be decrypted, skipping SMS", consumerCode, mobileNumber);
+				mobileNumber = null;
+			}
+			if (isEncrypted(emailId)) {
+				log.warn("Email for consumerCode {} is encrypted ({}) and could not be decrypted, skipping Email", consumerCode, emailId);
+				emailId = null;
+			}
 
 			BigDecimal totalTax = demand.getDemandDetails().stream()
 					.map(DemandDetail::getTaxAmount)
@@ -184,6 +226,21 @@ public class NotificationService {
 				.collect(Collectors.toList());
 
 		Map<String, Owner> ownerMap = demandRepository.getOwnersByConsumerCodes(consumerCodes);
+
+		// Collect all owner UUIDs to fetch decrypted user details from user service
+		Set<String> uuidsToFetch = new HashSet<>();
+		for (Demand demand : demands) {
+			Owner owner = ownerMap.get(demand.getConsumerCode());
+			if (owner != null && StringUtils.isNotBlank(owner.getUuid())) {
+				uuidsToFetch.add(owner.getUuid());
+			} else if (demand.getPayer() != null && StringUtils.isNotBlank(demand.getPayer().getUuid())) {
+				uuidsToFetch.add(demand.getPayer().getUuid());
+			}
+		}
+
+		Map<String, User> decryptedUsers = notifUtil.fetchUsersByUUIDs(uuidsToFetch, requestInfo, tenantId);
+		log.info("Decrypted {} user(s) by UUID for bill generated notifications", decryptedUsers.size());
+
 		String localizationMessages = getLocalizationSafely(tenantId, requestInfo);
 
 		String smsTemplate = getTemplateSafely(CODE_BILL_GENERATED_SMS, localizationMessages, FALLBACK_BILL_GENERATED_SMS);
@@ -196,13 +253,40 @@ public class NotificationService {
 		for (Demand demand : demands) {
 			String consumerCode = demand.getConsumerCode();
 			Owner owner = ownerMap.get(consumerCode);
-			if (owner == null && demand.getPayer() != null) {
-				owner = demand.getPayer();
+			String ownerUuid = (owner != null && StringUtils.isNotBlank(owner.getUuid())) ? owner.getUuid() : 
+					(demand.getPayer() != null ? demand.getPayer().getUuid() : null);
+
+			User decryptedUser = ownerUuid != null ? decryptedUsers.get(ownerUuid) : null;
+
+			String ownerName;
+			String mobileNumber;
+			String emailId;
+
+			if (decryptedUser != null) {
+				ownerName = StringUtils.isNotBlank(decryptedUser.getName()) ? decryptedUser.getName() : "Citizen";
+				mobileNumber = StringUtils.isNotBlank(decryptedUser.getMobileNumber()) ? decryptedUser.getMobileNumber() : null;
+				emailId = StringUtils.isNotBlank(decryptedUser.getEmailId()) ? decryptedUser.getEmailId() : null;
+			} else {
+				if (owner == null && demand.getPayer() != null) {
+					owner = demand.getPayer();
+				}
+				ownerName = (owner != null && StringUtils.isNotBlank(owner.getName())) ? owner.getName() : "Citizen";
+				mobileNumber = (owner != null && StringUtils.isNotBlank(owner.getMobileNumber())) ? owner.getMobileNumber() : null;
+				emailId = (owner != null && StringUtils.isNotBlank(owner.getEmailId())) ? owner.getEmailId() : null;
 			}
 
-			String ownerName = (owner != null && StringUtils.isNotBlank(owner.getName())) ? owner.getName() : "Citizen";
-			String mobileNumber = (owner != null && StringUtils.isNotBlank(owner.getMobileNumber())) ? owner.getMobileNumber() : null;
-			String emailId = (owner != null && StringUtils.isNotBlank(owner.getEmailId())) ? owner.getEmailId() : null;
+			// Cleanse encrypted values so ciphertext (e.g. 30048|...) never leaks into notifications
+			if (isEncrypted(ownerName)) {
+				ownerName = "Citizen";
+			}
+			if (isEncrypted(mobileNumber)) {
+				log.warn("Mobile number for consumerCode {} is encrypted ({}) and could not be decrypted, skipping SMS", consumerCode, mobileNumber);
+				mobileNumber = null;
+			}
+			if (isEncrypted(emailId)) {
+				log.warn("Email for consumerCode {} is encrypted ({}) and could not be decrypted, skipping Email", consumerCode, emailId);
+				emailId = null;
+			}
 
 			BigDecimal totalTax = demand.getDemandDetails().stream()
 					.map(DemandDetail::getTaxAmount)
@@ -368,5 +452,9 @@ public class NotificationService {
 				+ "<p style=\"font-size:12px;color:#6b7280;\">Direct link: {7}</p>"
 				+ "<p>Regards,<br><strong>{8}</strong><br>Department of Local Government, Punjab</p>"
 				+ "</div></body></html>";
+	}
+
+	private boolean isEncrypted(String value) {
+		return value != null && value.contains("|") && value.indexOf('|') > 0;
 	}
 }

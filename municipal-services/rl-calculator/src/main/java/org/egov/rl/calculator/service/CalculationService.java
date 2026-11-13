@@ -705,10 +705,8 @@ public class CalculationService {
 		String tenantId = allotmentDetails.getTenantId();
 		JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
 		BigDecimal adhocPenalty = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_PENALTY_KEY);
-		BigDecimal adhocRebate = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_REBATE_KEY);
-		if (adhocRebate == null) {
-			adhocRebate = resolveLegacyAmount(null, additionalDetails, "adhocRebate");
-		}
+		BigDecimal adhocRebate = resolveAdhocRebateAmount(additionalDetails,
+				CalculatorConstants.ADHOC_REBATE_KEY, "adhocRebate", "rebateAmount");
 
 		if (adhocPenalty != null && adhocPenalty.compareTo(BigDecimal.ZERO) > 0) {
 			adhocDetails.add(DemandDetail.builder().taxAmount(adhocPenalty)
@@ -719,25 +717,53 @@ public class CalculationService {
 					readAdhocText(additionalDetails, CalculatorConstants.ADHOC_PENALTY_REASON_KEY));
 		}
 
-		if (adhocRebate != null) {
-			// Rebate amount must be in -ve; if not, make it -ve
-			BigDecimal negativeRebate = adhocRebate.compareTo(BigDecimal.ZERO) < 0
-					? adhocRebate
-					: adhocRebate.negate();
-			adhocDetails.add(DemandDetail.builder().taxAmount(negativeRebate)
+		if (adhocRebate != null && adhocRebate.compareTo(BigDecimal.ZERO) < 0) {
+			adhocDetails.add(DemandDetail.builder().taxAmount(adhocRebate)
 					.taxHeadMasterCode(CalculatorConstants.RL_ADHOC_REBATE).tenantId(tenantId)
 					.collectionAmount(BigDecimal.ZERO).build());
-			log.info("Adhoc exemption {} for application {} (reason: {}).", negativeRebate,
+			log.info("Adhoc exemption {} for application {} (reason: {}).", adhocRebate,
 					allotmentDetails.getApplicationNumber(),
 					readAdhocRebateReason(additionalDetails));
 		}
 		return adhocDetails;
 	}
 
+	private BigDecimal resolveAdhocRebateAmount(JsonNode details, String... keys) {
+		if (details == null || keys == null) {
+			return null;
+		}
+		for (String key : keys) {
+			if (key == null || !details.has(key)) {
+				continue;
+			}
+			JsonNode node = details.get(key);
+			if (node == null || node.isNull()) {
+				continue;
+			}
+			String raw = node.asText();
+			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+				continue;
+			}
+			try {
+				BigDecimal amount = new BigDecimal(raw.trim());
+				if (amount.compareTo(BigDecimal.ZERO) != 0) {
+					return amount.abs().negate();
+				}
+			} catch (NumberFormatException e) {
+				throw new CustomException("INVALID_ADHOC_REBATE",
+						"Unable to parse '" + key + "' value '" + raw + "'. Expected a numeric amount.");
+			}
+		}
+		return null;
+	}
+
 	private static String readAdhocRebateReason(JsonNode details) {
 		String reason = readAdhocText(details, CalculatorConstants.ADHOC_REBATE_REASON_KEY);
 		if (reason == null) {
 			reason = readAdhocText(details, "adhocRebateReason");
+		}
+		if (reason == null) {
+			reason = readAdhocText(details, "rebateReason");
 		}
 		return reason;
 	}

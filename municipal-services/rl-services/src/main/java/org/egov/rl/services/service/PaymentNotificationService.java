@@ -43,6 +43,9 @@ public class PaymentNotificationService {
 	@Autowired
 	private NotificationService notificationService;
 
+	@Autowired
+	private AllotmentEnrichmentService allotmentEnrichmentService;
+
 	/**
 	 * Process the incoming record and topic from the payment notification consumer.
 	 * Performs defensive null checks and validates the payment request before proceeding.
@@ -99,6 +102,8 @@ public class PaymentNotificationService {
 				}
 				return;
 			}
+
+			allotmentEnrichmentService.enrichOwnerDetailsFromUserService(applications, paymentRequest.getRequestInfo());
 
 			AllotmentDetails application = applications.get(0);
 			String currentStatus = application.getStatus();

@@ -344,18 +344,24 @@ public class DemandRepository {
 		Map<String, Owner> ownerMap = new HashMap<>();
 		try {
 			String placeholders = consumerCodes.stream().map(id -> "?").collect(Collectors.joining(", "));
-			String sql = "SELECT a.application_number, u.name, u.mobilenumber, u.emailid "
+			String sql = "SELECT a.application_number, a.tenant_id, o.user_uuid, u.name, u.mobilenumber, u.emailid "
 					+ "FROM eg_rl_allotment a "
 					+ "JOIN eg_rl_owner_info o ON a.id = o.allotment_id "
-					+ "JOIN eg_user u ON o.user_uuid = u.uuid "
-					+ "WHERE a.application_number IN (" + placeholders + ")";
+					+ "LEFT JOIN eg_user u ON o.user_uuid = u.uuid "
+					+ "WHERE a.application_number IN (" + placeholders + ") "
+					+ "ORDER BY o.is_primary_owner DESC NULLS LAST, o.id ASC";
 			jdbcTemplate.query(sql, consumerCodes.toArray(), rs -> {
-				Owner owner = Owner.builder()
-						.name(rs.getString("name"))
-						.mobileNumber(rs.getString("mobilenumber"))
-						.emailId(rs.getString("emailid"))
-						.build();
-				ownerMap.put(rs.getString("application_number"), owner);
+				String appNo = rs.getString("application_number");
+				if (!ownerMap.containsKey(appNo)) {
+					Owner owner = Owner.builder()
+							.uuid(rs.getString("user_uuid"))
+							.tenantId(rs.getString("tenant_id"))
+							.name(rs.getString("name"))
+							.mobileNumber(rs.getString("mobilenumber"))
+							.emailId(rs.getString("emailid"))
+							.build();
+					ownerMap.put(appNo, owner);
+				}
 			});
 			log.debug("Read owner contact details for {}/{} consumer code(s)", ownerMap.size(), consumerCodes.size());
 		} catch (Exception e) {

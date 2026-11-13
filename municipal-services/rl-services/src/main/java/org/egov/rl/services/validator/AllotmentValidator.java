@@ -367,11 +367,13 @@ public class AllotmentValidator {
 
 			boolean hasPenalty = hasValue(additionalDetails, RLConstants.ADHOC_PENALTY_KEY);
 			boolean hasRebate = hasValue(additionalDetails, RLConstants.ADHOC_REBATE_KEY)
-					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_ALT_KEY);
+					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_ALT_KEY)
+					|| hasValue(additionalDetails, "rebateAmount");
 			boolean hasAdhoc = hasPenalty || hasRebate
 					|| hasValue(additionalDetails, RLConstants.ADHOC_PENALTY_REASON_KEY)
 					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_REASON_KEY)
-					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_ALT_REASON_KEY);
+					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_ALT_REASON_KEY)
+					|| hasValue(additionalDetails, "rebateReason");
 
 			if (!hasAdhoc) {
 				continue;
@@ -400,8 +402,10 @@ public class AllotmentValidator {
 				}
 
 				if (hasRebate) {
-					String key = objNode.hasNonNull(RLConstants.ADHOC_REBATE_ALT_KEY)
-							? RLConstants.ADHOC_REBATE_ALT_KEY : RLConstants.ADHOC_REBATE_KEY;
+					String key = objNode.hasNonNull("rebateAmount") && !objNode.get("rebateAmount").asText().trim().isEmpty()
+							? "rebateAmount"
+							: (objNode.hasNonNull(RLConstants.ADHOC_REBATE_ALT_KEY) && !objNode.get(RLConstants.ADHOC_REBATE_ALT_KEY).asText().trim().isEmpty()
+									? RLConstants.ADHOC_REBATE_ALT_KEY : RLConstants.ADHOC_REBATE_KEY);
 					try {
 						BigDecimal rebateVal = new BigDecimal(objNode.get(key).asText().trim());
 						// Rebate amount must be negative; if not, make it negative
@@ -409,6 +413,7 @@ public class AllotmentValidator {
 						objNode.put(key, negRebateVal);
 						objNode.put(RLConstants.ADHOC_REBATE_KEY, negRebateVal);
 						objNode.put(RLConstants.ADHOC_REBATE_ALT_KEY, negRebateVal);
+						objNode.put("rebateAmount", negRebateVal);
 					} catch (NumberFormatException e) {
 						throw new CustomException("INVALID_ADHOC_REBATE", "Adhoc rebate amount must be a valid number.");
 					}

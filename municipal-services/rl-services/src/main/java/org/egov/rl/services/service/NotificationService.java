@@ -28,6 +28,7 @@ import org.egov.rl.services.web.contracts.EmailRequest;
 import org.egov.rl.services.web.contracts.SMSRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
 import com.jayway.jsonpath.JsonPath;
@@ -40,6 +41,9 @@ public class NotificationService {
 	
 	@Autowired
 	private RentLeaseConfiguration config;
+
+	@Value("${notification.url:https://mseva-dev.lgpunjab.gov.in/digit-ui/select-language}")
+	private String notificationUrl;
 	
 	@Autowired
 	private NotificationUtil util;
@@ -653,6 +657,12 @@ public class NotificationService {
 	}
 
 	private String buildPaymentUrl(String consumerCode, String tenantId) {
+		if (StringUtils.isNotBlank(notificationUrl)) {
+			if (notificationUrl.contains("select-language")) {
+				return notificationUrl;
+			}
+			return notificationUrl + "/" + consumerCode + "?tenantId=" + tenantId;
+		}
 		String baseHost = "https://mseva.lgpunjab.gov.in";
 		if (config != null && config.getUiAppHost() != null && !config.getUiAppHost().isEmpty()) {
 			baseHost = config.getUiAppHost();

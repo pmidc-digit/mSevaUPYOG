@@ -713,17 +713,9 @@ public class DemandService {
 			existingDemands = loadExistingDemands(allotmentDetails.getTenantId(),
 					allotmentDetails.getApplicationNumber());
 		}
-		long entryDate = (allotmentDetails.getCreatedTime() > 0) ? allotmentDetails.getCreatedTime()
-				: System.currentTimeMillis();
 		List<DemandDetail> desired = calculationService.buildAdhocDetails(allotmentDetails);
 
-		Demand candidate = null;
-		for (Demand possible : toCreate) {
-			if (isCurrentPeriodDemand(possible, entryDate)) {
-				candidate = possible;
-				break;
-			}
-		}
+		Demand candidate = findLatestUnpaidDemand(toCreate);
 		if (candidate != null) {
 			if (desired.isEmpty()) {
 				// Nothing to add, and a demand that is not posted yet has nothing to remove either.
@@ -735,23 +727,24 @@ public class DemandService {
 			calculationService.addRoundOffTaxHead(candidate.getTenantId(), candidate.getDemandDetails());
 			candidate.setMinimumAmountPayable(candidate.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
 					.reduce(BigDecimal.ZERO, BigDecimal::add));
-			log.info("Adhoc charge applied to the current period demand of application {}.",
+			log.info("Adhoc charge applied to the latest unpaid demand of application {}.",
 					allotmentDetails.getApplicationNumber());
 			return;
 		}
 
-		Demand currentPeriod = findCurrentPeriodDemand(existingDemands, entryDate);
-		if (currentPeriod == null) {
+		Demand latestUnpaidDemand = findLatestUnpaidDemand(existingDemands);
+		if (latestUnpaidDemand == null) {
 			if (!desired.isEmpty()) {
-				log.warn("No current period demand found to carry the adhoc charge of application {} - it was not "
-						+ "applied.", allotmentDetails.getApplicationNumber());
+				throw new CustomException("NO_UNPAID_DEMAND_FOUND",
+						"No active unpaid demand found to apply adhoc penalty/rebate for application "
+								+ allotmentDetails.getApplicationNumber());
 			}
 			return;
 		}
-		guardAdhocExemption(currentPeriod.getDemandDetails(), desired, allotmentDetails.getApplicationNumber());
-		Demand updated = reconcileDemand(currentPeriod, asDesiredState(currentPeriod, desired), requestInfo,
+		guardAdhocExemption(latestUnpaidDemand.getDemandDetails(), desired, allotmentDetails.getApplicationNumber());
+		Demand updated = reconcileDemand(latestUnpaidDemand, asDesiredState(latestUnpaidDemand, desired), requestInfo,
 				ADHOC_HEADS, false, "adhoc");
-		kept.put(currentPeriod.getId(), (updated != null) ? updated : currentPeriod);
+		kept.put(latestUnpaidDemand.getId(), (updated != null) ? updated : latestUnpaidDemand);
 		if (updated != null) {
 			toUpdate.put(updated.getId(), updated);
 		}
@@ -790,47 +783,68 @@ public class DemandService {
 		}
 	}
 
-	/** The demand of the period the entry instant falls in - the only demand an adhoc charge may land on. */
-	private static Demand findCurrentPeriodDemand(List<Demand> demands, long entryDate) {
+	/**
+	 * Finds the latest active and unpaid demand to carry adhoc penalty / rebate.
+	 * Prefers regular rent demand, falling back to any unpaid demand (e.g. arrear demand if no rent demand exists).
+	 */
+	private static Demand findLatestUnpaidDemand(List<Demand> demands) {
 		if (CollectionUtils.isEmpty(demands)) {
 			return null;
 		}
+		// 1. Try finding the latest unpaid non-arrear demand (regular rent demand)
+		Demand latestRentDemand = null;
 		for (Demand demand : demands) {
-			if (isCurrentPeriodDemand(demand, entryDate)) {
-				return demand;
-			}
-		}
-		long now = System.currentTimeMillis();
-		for (Demand demand : demands) {
-			if (isCurrentPeriodDemand(demand, now)) {
-				return demand;
-			}
-		}
-		// Fallback: pick the latest active non-arrear demand
-		Demand latest = null;
-		for (Demand demand : demands) {
-			if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails()) || isArrearOnly(demand)) {
+			if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails())
+					|| demand.isIspaymentcompleted()
+					|| Demand.DemandStatusEnum.CANCELLED.equals(demand.getStatus())
+					|| isArrearOnly(demand)) {
 				continue;
 			}
-			if (latest == null || (demand.getTaxPeriodTo() != null && (latest.getTaxPeriodTo() == null || demand.getTaxPeriodTo() > latest.getTaxPeriodTo()))) {
-				latest = demand;
+			if (latestRentDemand == null) {
+				latestRentDemand = demand;
+			} else {
+				long to1 = (demand.getTaxPeriodTo() != null) ? demand.getTaxPeriodTo() : 0L;
+				long toLatest = (latestRentDemand.getTaxPeriodTo() != null) ? latestRentDemand.getTaxPeriodTo() : 0L;
+				if (to1 > toLatest) {
+					latestRentDemand = demand;
+				} else if (to1 == toLatest) {
+					long from1 = (demand.getTaxPeriodFrom() != null) ? demand.getTaxPeriodFrom() : 0L;
+					long fromLatest = (latestRentDemand.getTaxPeriodFrom() != null) ? latestRentDemand.getTaxPeriodFrom() : 0L;
+				if (from1 > fromLatest) {
+						latestRentDemand = demand;
+					}
+				}
 			}
 		}
-		return latest;
-	}
-
-	/**
-	 * True for a demand whose period contains the given instant and which is not the arrear demand (whose period end
-	 * is the instant the arrear demand was raised, not a billing period). The adhoc charge already carried by that
-	 * demand does not disqualify it - it is what makes re-editing the current period idempotent.
-	 */
-	private static boolean isCurrentPeriodDemand(Demand demand, long entryDate) {
-		if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails()) || isArrearOnly(demand)) {
-			return false;
+		if (latestRentDemand != null) {
+			return latestRentDemand;
 		}
-		Long from = demand.getTaxPeriodFrom();
-		Long to = demand.getTaxPeriodTo();
-		return from != null && to != null && from <= entryDate && entryDate <= to;
+
+		// 2. Fallback: latest unpaid demand of any type (e.g. if only an arrear demand exists)
+		Demand latestAnyDemand = null;
+		for (Demand demand : demands) {
+			if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails())
+					|| demand.isIspaymentcompleted()
+					|| Demand.DemandStatusEnum.CANCELLED.equals(demand.getStatus())) {
+				continue;
+			}
+			if (latestAnyDemand == null) {
+				latestAnyDemand = demand;
+			} else {
+				long to1 = (demand.getTaxPeriodTo() != null) ? demand.getTaxPeriodTo() : 0L;
+				long toLatest = (latestAnyDemand.getTaxPeriodTo() != null) ? latestAnyDemand.getTaxPeriodTo() : 0L;
+				if (to1 > toLatest) {
+					latestAnyDemand = demand;
+				} else if (to1 == toLatest) {
+					long from1 = (demand.getTaxPeriodFrom() != null) ? demand.getTaxPeriodFrom() : 0L;
+					long fromLatest = (latestAnyDemand.getTaxPeriodFrom() != null) ? latestAnyDemand.getTaxPeriodFrom() : 0L;
+					if (from1 > fromLatest) {
+						latestAnyDemand = demand;
+					}
+				}
+			}
+		}
+		return latestAnyDemand;
 	}
 
 	/** Minimal stand-in for "the demand as the request wants it", used to drive the in-place reconcile. */

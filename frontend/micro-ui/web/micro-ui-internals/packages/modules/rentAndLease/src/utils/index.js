@@ -362,3 +362,137 @@ export const formatDate = (dateString) => {
   }
   return str;
 };
+
+export const formatINR = (amount) => {
+  const num = Number(amount);
+  const safeAmount = Number.isFinite(num) ? num : 0;
+  if (safeAmount < 0) {
+    return `-₹ ${Math.abs(safeAmount).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  return `₹ ${safeAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
+export const getTaxHeadLabel = (taxHeadCode, t) => {
+  if (!taxHeadCode) return "";
+  const translated = t ? t(taxHeadCode) : taxHeadCode;
+  if (translated && translated !== taxHeadCode) {
+    return translated;
+  }
+  return taxHeadCode
+    .replace(/^RL_/i, "")
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .split(" ")
+    .map((word) => (["cgst", "sgst", "igst", "gst", "tds"].includes(word) ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1)))
+    .join(" ");
+};
+
+export const isRoundOff = (taxHeadCode, t) => {
+  if (!taxHeadCode) return false;
+  const rawNormalized = String(taxHeadCode).toUpperCase().replace(/_/g, "");
+  if (rawNormalized.includes("ROUNDOFF")) return true;
+  const label = getTaxHeadLabel(taxHeadCode, t);
+  const labelNormalized = String(label).toUpperCase().replace(/[\s_-]/g, "");
+  if (labelNormalized.includes("ROUNDOFF")) return true;
+  return false;
+};
+
+export const formatTaxHeadBreakup = (billAccountDetails, t, totalAmount) => {
+  if (!Array.isArray(billAccountDetails) || billAccountDetails.length === 0) {
+    return totalAmount != null ? formatINR(totalAmount) : "";
+  }
+  const activeDetails = billAccountDetails.filter(
+    (item) =>
+      item?.taxHeadCode &&
+      !isRoundOff(item.taxHeadCode, t) &&
+      Number.isFinite(Number(item?.amount)) &&
+      Number(item?.amount) !== 0
+  );
+  if (activeDetails.length === 0) {
+    return totalAmount != null ? formatINR(totalAmount) : "";
+  }
+
+  const isMobile = Boolean(window?.Digit?.Utils?.browser?.isMobile?.() || (typeof window !== "undefined" && window.innerWidth <= 768));
+
+  if (totalAmount != null) {
+    return (
+      <div>
+        <div style={{ fontWeight: 700, fontSize: "16px", color: "#0b0c0c" }}>
+          {formatINR(totalAmount)}
+        </div>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "620px",
+            boxSizing: "border-box",
+            background: "#ffffff",
+            border: "1px solid #d6e4f0",
+            borderRadius: "6px",
+            padding: isMobile ? "8px 12px" : "10px 16px",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+            marginTop: "6px",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 600,
+              color: "#505a5f",
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              marginBottom: "6px",
+            }}
+          >
+            {t ? t("Fee Breakdown") : "Fee Breakdown"}
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: activeDetails.length > 1 && !isMobile ? "1fr 1fr" : "1fr",
+              columnGap: "24px",
+              rowGap: "8px",
+              width: "100%",
+            }}
+          >
+            {activeDetails.map((item, idx) => {
+              const itemAmount = Number(item.amount);
+              const isRebate = itemAmount < 0;
+              return (
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    flexDirection: isMobile ? "column" : "row",
+                    justifyContent: isMobile ? "flex-start" : "space-between",
+                    alignItems: isMobile ? "flex-start" : "center",
+                    gap: isMobile ? "2px" : "16px",
+                    padding: "4px 0",
+                    borderBottom: "1px dashed #e5e7eb",
+                    fontSize: "13px",
+                  }}
+                >
+                  <span style={{ color: "#374151" }}>
+                    {getTaxHeadLabel(item.taxHeadCode, t)} :
+                  </span>
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: isRebate ? "#00703c" : "#111827",
+                      whiteSpace: "nowrap",
+                      marginLeft: isMobile ? "0px" : "8px",
+                    }}
+                  >
+                    {formatINR(item.amount)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const parts = activeDetails.map((item) => `${getTaxHeadLabel(item.taxHeadCode, t)} : ${formatINR(item.amount)}`);
+  return ` (${parts.join(", ")})`;
+};

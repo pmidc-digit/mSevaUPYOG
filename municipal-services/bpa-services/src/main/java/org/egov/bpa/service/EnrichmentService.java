@@ -228,6 +228,7 @@ public class EnrichmentService {
 					|| "PENDING_SANC_FEE_PAYMENT".equalsIgnoreCase(state)) {
 				additionalDetails.put("drawingFilestoreId", null);
 				additionalDetails.put("sanctionLetterFilestoreId", null);
+				additionalDetails.put("isSanctionLetterGenerated", false);
 			}
 		}
 

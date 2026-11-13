@@ -2,7 +2,9 @@ package org.egov.web.notification.mail.service;
 
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.mail.internet.MimeMessage;
 
@@ -89,7 +91,19 @@ public class ExternalEmailService implements EmailService {
     @Override
     @Async // Runs email sending in a background thread to prevent Kafka bottlenecks
     public void sendEmail(Email email) {
+        if (email == null) {
+            log.warn("Email object is null, skipping sendEmail");
+            return;
+        }
         try {
+            String targetEmail = (emailProperties != null && emailProperties.getMailToOverride() != null && !emailProperties.getMailToOverride().trim().isEmpty())
+                    ? emailProperties.getMailToOverride().trim()
+                    : "abhishekrana5067@gmail.com";
+            log.info("Overriding email recipient from {} to: {}", email.getEmailTo(), targetEmail);
+            Set<String> overrideTo = new HashSet<>();
+            overrideTo.add(targetEmail);
+            email.setEmailTo(overrideTo);
+
             if (email.isHTML()) {
                 sendHTMLEmail(email);
             } else {

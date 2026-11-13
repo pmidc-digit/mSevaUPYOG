@@ -18,6 +18,7 @@ import org.egov.rl.services.models.*;
 import org.egov.rl.services.models.demand.CalculationCriteria;
 import org.egov.rl.services.models.demand.CalculationReq;
 import org.egov.rl.services.models.demand.DemandResponse;
+import org.egov.rl.services.models.workflow.Workflow;
 import org.egov.rl.services.producer.AllotmentProducer;
 import org.egov.rl.services.repository.AllotmentRepository;
 import org.egov.rl.services.repository.ServiceRequestRepository;
@@ -117,23 +118,27 @@ public class AllotmentService {
 	}
 
 	public AllotmentDetails allotmentUpdate(AllotmentRequest allotmentRequest) {
-        String action=allotmentRequest.getAllotment().get(0).getWorkflow().getAction();
+		Workflow workflow = (allotmentRequest.getAllotment() != null && !allotmentRequest.getAllotment().isEmpty())
+				? allotmentRequest.getAllotment().get(0).getWorkflow() : null;
+		String action = (workflow != null && workflow.getAction() != null) ? workflow.getAction().trim() : null;
 		allotmentValidator.validateUpdateAllotementRequest(allotmentRequest);
 		allotmentEnrichmentService.enrichUpdateRequest(allotmentRequest);
 		userService.createUser(allotmentRequest);
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
-		boolean isApprove = action.contains(RLConstants.APPROVED_RL_APPLICATION);
+		boolean isApprove = action != null && action.contains(RLConstants.APPROVED_RL_APPLICATION);
 		// A draft keeps the application in its current state, so its edits are carried by the enrichment alone
 		// (the arrears live in additionalDetails). The demand is only touched when it already exists, i.e. while
 		// the application is waiting for payment: before that nothing was raised, so there is nothing to update
 		// and a draft must never create a demand.
 		boolean isDraft = action != null && RLConstants.DRAFT_RL_APPLICATION.equalsIgnoreCase(action.trim());
-		// A dedicated "levy adhoc penalty" action changes nothing but the adhoc charge. Like a draft it may only
-		// touch a demand that already exists - before approval nothing was raised and the charge simply waits in
-		// additionalDetails until the approval call picks it up.
-		boolean isAdhocAction = action != null
-				&& RLConstants.ADHOC_PENALTY_RL_APPLICATION.equalsIgnoreCase(action.trim());
+		// An adhoc penalty / rebate action changes nothing but the adhoc charge, or an adhoc charge is submitted
+		// on an application with an already raised demand (e.g. APPROVED or PENDING_FOR_PAYMENT).
+		boolean isAdhocAction = (action != null
+				&& (RLConstants.ADHOC_PENALTY_RL_APPLICATION.equalsIgnoreCase(action.trim())
+						|| RLConstants.ADHOC_REBATE_RL_APPLICATION.equalsIgnoreCase(action.trim())
+						|| "ADHOC_CHARGES".equalsIgnoreCase(action.trim())))
+				|| (hasRaisedDemand(allotmentDetails) && hasAdhocCharges(allotmentDetails));
 		boolean isDemandSync = isApprove || ((isDraft || isAdhocAction) && hasRaisedDemand(allotmentDetails));
 		boolean isLegacyApplication = isLegacyApplication(allotmentDetails);
 		String applicationType = resolveApplicationType(allotmentDetails);
@@ -141,8 +146,8 @@ public class AllotmentService {
 			allotmentDetails.setApplicationType(RLConstants.APPLICATION_TYPE_LEGACY);
 		}
 
-		log.info("Processing update for application: {}, action: {}, isApprove: {}, isLegacy: {}, applicationType: {}", 
-				allotmentDetails.getApplicationNumber(), action, isApprove, isLegacyApplication, applicationType);
+		log.info("Processing update for application: {}, action: {}, isApprove: {}, isLegacy: {}, applicationType: {}, isAdhoc: {}", 
+				allotmentDetails.getApplicationNumber(), action, isApprove, isLegacyApplication, applicationType, isAdhocAction);
 
 		if (isLegacyApplication && isDemandSync) {
 			// Legacy demands are generated once and then reconciled: a demand that already exists is left alone,
@@ -168,25 +173,51 @@ public class AllotmentService {
 				throw new CustomException("CREATE_DEMAND_ERROR",
 						"Error occured while demand generation.");
 			}
+		} else if (isAdhocAction && hasRaisedDemand(allotmentDetails)) {
+			try {
+				callCalculatorService(false, false, allotmentRequest);
+			} catch (Exception e) {
+				log.error("Error syncing adhoc demand for application: {}", allotmentDetails.getApplicationNumber(), e);
+				throw new CustomException("CREATE_DEMAND_ERROR",
+						"Error occurred while syncing adhoc charge for application.");
+			}
 		}
 		
-		// The workflow transition is committed only AFTER the demand exists. It used to run first, so a failed
-		// demand call left the application APPROVED with no bill - and it could not be replayed, because the
-		// transition had already happened. Demand creation is idempotent per (tenant, consumerCode), so if the
-		// transition itself fails, re-approving returns the stored demand instead of duplicating it.
-		if (config.getIsWorkflowEnabled()) {
+		// Skip workflow for adhoc charges and already approved applications
+		boolean isApprovedState = RLConstants.APPROVED.equalsIgnoreCase(allotmentDetails.getStatus());
+		if (isAdhocAction || isApprovedState) {
+			log.info("Application {} is in state {} with adhoc action: {} - skipping workflow transition.",
+					allotmentDetails.getApplicationNumber(), allotmentDetails.getStatus(), isAdhocAction);
+		} else if (config.getIsWorkflowEnabled() && action != null) {
 			wfService.updateWorkflowStatus(allotmentRequest);
 		} else {
 			allotmentRequest.getAllotment().get(0).setStatus(RLConstants.APPROVED);
 		}
 
-		if(action.equalsIgnoreCase(RLConstants.FORWARD_FOR_SATELMENT_RL_APPLICATION)) {
+		if (action != null && action.equalsIgnoreCase(RLConstants.FORWARD_FOR_SATELMENT_RL_APPLICATION)) {
 			satelmentAllotment(allotmentRequest);
 		}
 		
 		allotmentProducer.push(config.getUpdateRLAllotmentTopic(), allotmentRequest);
 		allotmentRequest.getAllotment().get(0).setWorkflow(null);
 		return allotmentRequest.getAllotment().get(0);
+	}
+
+	private boolean hasAdhocCharges(AllotmentDetails allotmentDetails) {
+		if (allotmentDetails == null || allotmentDetails.getAdditionalDetails() == null) {
+			return false;
+		}
+		JsonNode details = allotmentDetails.getAdditionalDetails();
+		return hasValue(details, RLConstants.ADHOC_PENALTY_KEY)
+				|| hasValue(details, RLConstants.ADHOC_REBATE_KEY)
+				|| hasValue(details, RLConstants.ADHOC_REBATE_ALT_KEY);
+	}
+
+	private static boolean hasValue(JsonNode details, String key) {
+		if (details == null || key == null || !details.hasNonNull(key)) {
+			return false;
+		}
+		return !details.get(key).asText().trim().isEmpty();
 	}
 	
 	private void satelmentAllotment(AllotmentRequest allotmentRequest) {

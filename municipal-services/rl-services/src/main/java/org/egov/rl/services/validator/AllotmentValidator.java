@@ -1,5 +1,6 @@
 package org.egov.rl.services.validator;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -353,19 +355,64 @@ public class AllotmentValidator {
 	 */
 	private void validateAdhocCharges(AllotmentRequest allotementRequest) {
 		RequestInfo requestInfo = allotementRequest.getRequestInfo();
-		if (requestInfo == null || requestInfo.getUserInfo() == null || requestInfo.getUserInfo().getType() == null
-				|| !RLConstants.CITIZEN_USER_TYPE.equalsIgnoreCase(requestInfo.getUserInfo().getType().trim())) {
-			return;
-		}
 		if (CollectionUtils.isEmpty(allotementRequest.getAllotment())) {
 			return;
 		}
+
 		for (AllotmentDetails allotmentDetails : allotementRequest.getAllotment()) {
 			JsonNode additionalDetails = (allotmentDetails != null) ? allotmentDetails.getAdditionalDetails() : null;
-			if (hasValue(additionalDetails, RLConstants.ADHOC_PENALTY_KEY)
-					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_KEY)) {
-				throw new CustomException("INVALID ADHOC CHARGES",
-						"AdhocPenalty or AdhocExemption can only be set by an employee, not by a citizen.");
+			if (additionalDetails == null) {
+				continue;
+			}
+
+			boolean hasPenalty = hasValue(additionalDetails, RLConstants.ADHOC_PENALTY_KEY);
+			boolean hasRebate = hasValue(additionalDetails, RLConstants.ADHOC_REBATE_KEY)
+					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_ALT_KEY);
+			boolean hasAdhoc = hasPenalty || hasRebate
+					|| hasValue(additionalDetails, RLConstants.ADHOC_PENALTY_REASON_KEY)
+					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_REASON_KEY)
+					|| hasValue(additionalDetails, RLConstants.ADHOC_REBATE_ALT_REASON_KEY);
+
+			if (!hasAdhoc) {
+				continue;
+			}
+
+			// 1. Citizens are strictly not allowed to take this action
+			if (requestInfo == null || requestInfo.getUserInfo() == null || requestInfo.getUserInfo().getType() == null
+					|| !RLConstants.EMPLOYEE_USER_TYPE.equalsIgnoreCase(requestInfo.getUserInfo().getType().trim())) {
+				throw new CustomException("INVALID_ADHOC_ACTION",
+						"Citizens are not allowed to apply or modify Adhoc Penalty or Adhoc Rebate. This action can only be performed by an employee.");
+			}
+
+			// 2. Validate particular parameters and normalize rebate to negative
+			if (additionalDetails instanceof ObjectNode) {
+				ObjectNode objNode = (ObjectNode) additionalDetails;
+
+				if (hasPenalty) {
+					try {
+						BigDecimal penaltyVal = new BigDecimal(objNode.get(RLConstants.ADHOC_PENALTY_KEY).asText().trim());
+						if (penaltyVal.compareTo(BigDecimal.ZERO) < 0) {
+							throw new CustomException("INVALID_ADHOC_PENALTY", "Adhoc penalty amount cannot be negative.");
+						}
+					} catch (NumberFormatException e) {
+						throw new CustomException("INVALID_ADHOC_PENALTY", "Adhoc penalty amount must be a valid number.");
+					}
+				}
+
+				if (hasRebate) {
+					String key = objNode.hasNonNull(RLConstants.ADHOC_REBATE_ALT_KEY)
+							? RLConstants.ADHOC_REBATE_ALT_KEY : RLConstants.ADHOC_REBATE_KEY;
+					try {
+						BigDecimal rebateVal = new BigDecimal(objNode.get(key).asText().trim());
+						// Rebate amount must be negative; if not, make it negative
+						BigDecimal negRebateVal = rebateVal.compareTo(BigDecimal.ZERO) < 0 ? rebateVal : rebateVal.negate();
+						objNode.put(key, negRebateVal);
+						objNode.put(RLConstants.ADHOC_REBATE_KEY, negRebateVal);
+						objNode.put(RLConstants.ADHOC_REBATE_ALT_KEY, negRebateVal);
+					} catch (NumberFormatException e) {
+						throw new CustomException("INVALID_ADHOC_REBATE", "Adhoc rebate amount must be a valid number.");
+					}
+				}
 			}
 		}
 	}

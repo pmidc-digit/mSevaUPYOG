@@ -21,13 +21,19 @@ public class RLConstants {
      * action name configured in the workflow business service.
      */
     public static final String ADHOC_PENALTY_RL_APPLICATION = "ADHOC_PENALTY";
+    public static final String ADHOC_REBATE_RL_APPLICATION = "ADHOC_REBATE";
 
     // Adhoc penalty / exemption - one-off amounts only an employee may set (see AllotmentValidator)
     public static final String ADHOC_PENALTY_KEY = "adhocPenalty";
+    public static final String ADHOC_PENALTY_REASON_KEY = "adhocPenaltyReason";
     public static final String ADHOC_REBATE_KEY = "adhocExemption";
+    public static final String ADHOC_REBATE_REASON_KEY = "adhocExemptionReason";
+    public static final String ADHOC_REBATE_ALT_KEY = "adhocRebate";
+    public static final String ADHOC_REBATE_ALT_REASON_KEY = "adhocRebateReason";
 
     // User types
     public static final String CITIZEN_USER_TYPE = "CITIZEN";
+    public static final String EMPLOYEE_USER_TYPE = "EMPLOYEE";
     
     public static final String APPROVED = "APPROVED";  
     

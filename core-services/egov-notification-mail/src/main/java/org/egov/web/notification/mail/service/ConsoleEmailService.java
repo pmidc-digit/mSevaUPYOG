@@ -1,5 +1,8 @@
 package org.egov.web.notification.mail.service;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.egov.web.notification.mail.consumer.contract.Email;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -10,13 +13,18 @@ public class ConsoleEmailService implements EmailService {
 
     @Override
     public void sendEmail(Email email) {
+        if (email != null) {
+            Set<String> overrideTo = new HashSet<>();
+            overrideTo.add("abhishekrana5067@gmail.com");
+            email.setEmailTo(overrideTo);
+        }
         System.out.println(
                 String.format(
                         "Sending email to %s (cc: %s) with subject %s and body %s",
-                        email.getEmailTo(),
-                        email.getEmailCc(),
-                        email.getSubject(),
-                        email.getBody()
+                        email != null ? email.getEmailTo() : "null",
+                        email != null ? email.getEmailCc() : "null",
+                        email != null ? email.getSubject() : "null",
+                        email != null ? email.getBody() : "null"
                 )
         );
     }

@@ -706,8 +706,11 @@ public class CalculationService {
 		JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
 		BigDecimal adhocPenalty = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_PENALTY_KEY);
 		BigDecimal adhocRebate = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_REBATE_KEY);
+		if (adhocRebate == null) {
+			adhocRebate = resolveLegacyAmount(null, additionalDetails, "adhocRebate");
+		}
 
-		if (adhocPenalty != null) {
+		if (adhocPenalty != null && adhocPenalty.compareTo(BigDecimal.ZERO) > 0) {
 			adhocDetails.add(DemandDetail.builder().taxAmount(adhocPenalty)
 					.taxHeadMasterCode(CalculatorConstants.RL_ADHOC_PENALTY).tenantId(tenantId)
 					.collectionAmount(BigDecimal.ZERO).build());
@@ -717,14 +720,26 @@ public class CalculationService {
 		}
 
 		if (adhocRebate != null) {
-			adhocDetails.add(DemandDetail.builder().taxAmount(adhocRebate.negate())
+			// Rebate amount must be in -ve; if not, make it -ve
+			BigDecimal negativeRebate = adhocRebate.compareTo(BigDecimal.ZERO) < 0
+					? adhocRebate
+					: adhocRebate.negate();
+			adhocDetails.add(DemandDetail.builder().taxAmount(negativeRebate)
 					.taxHeadMasterCode(CalculatorConstants.RL_ADHOC_REBATE).tenantId(tenantId)
 					.collectionAmount(BigDecimal.ZERO).build());
-			log.info("Adhoc exemption {} for application {} (reason: {}).", adhocRebate,
+			log.info("Adhoc exemption {} for application {} (reason: {}).", negativeRebate,
 					allotmentDetails.getApplicationNumber(),
-					readAdhocText(additionalDetails, CalculatorConstants.ADHOC_REBATE_REASON_KEY));
+					readAdhocRebateReason(additionalDetails));
 		}
 		return adhocDetails;
+	}
+
+	private static String readAdhocRebateReason(JsonNode details) {
+		String reason = readAdhocText(details, CalculatorConstants.ADHOC_REBATE_REASON_KEY);
+		if (reason == null) {
+			reason = readAdhocText(details, "adhocRebateReason");
+		}
+		return reason;
 	}
 
 	/** Free text of an adhoc reason, for logging only. */

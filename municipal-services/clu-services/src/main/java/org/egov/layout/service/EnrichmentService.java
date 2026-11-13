@@ -186,6 +186,15 @@ public class EnrichmentService {
 		nocRequest.getLayout().getAuditDetails().setCreatedBy(searchResult.getAuditDetails().getCreatedBy());
 		nocRequest.getLayout().getAuditDetails().setCreatedTime(searchResult.getAuditDetails().getCreatedTime());
 
+		if ("E-SIGNED".equalsIgnoreCase(nocRequest.getLayout().getApplicationStatus())
+				&& nocRequest.getLayout().getWorkflow() != null
+				&& "ROLL_BACK".equalsIgnoreCase(nocRequest.getLayout().getWorkflow().getAction())) {
+			if (nocRequest.getLayout().getNocDetails() != null
+					&& nocRequest.getLayout().getNocDetails().getAdditionalDetails() instanceof Map) {
+				((Map<String, Object>) nocRequest.getLayout().getNocDetails().getAdditionalDetails()).put("sanctionLetterFilestoreId", null);
+			}
+		}
+
 	}
 
 	/**

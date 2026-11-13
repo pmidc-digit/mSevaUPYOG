@@ -214,6 +214,24 @@ public class EnrichmentService {
 			});
 		}
 
+		BPA bpa = bpaRequest.getBPA();
+		if (bpa.getWorkflow() != null && "ROLL_BACK".equalsIgnoreCase(bpa.getWorkflow().getAction())
+				&& bpa.getAdditionalDetails() instanceof Map) {
+			String state = (businessService != null && bpa.getStatus() != null)
+					? workflowService.getCurrentState(bpa.getStatus(), businessService) : null;
+			Map<String, Object> additionalDetails = (Map<String, Object>) bpa.getAdditionalDetails();
+
+			if ("SANCTION_LETTER_ESIGN_PENDING".equalsIgnoreCase(bpa.getStatus())
+					|| "SANCTION_LETTER_ESIGN_PENDING".equalsIgnoreCase(state)) {
+				additionalDetails.put("drawingFilestoreId", null);
+			} else if ("PENDING_SANC_FEE_PAYMENT".equalsIgnoreCase(bpa.getStatus())
+					|| "PENDING_SANC_FEE_PAYMENT".equalsIgnoreCase(state)) {
+				additionalDetails.put("drawingFilestoreId", null);
+				additionalDetails.put("sanctionLetterFilestoreId", null);
+				additionalDetails.put("isSanctionLetterGenerated", false);
+			}
+		}
+
 	}
 
 	/**

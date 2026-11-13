@@ -276,6 +276,12 @@ public class AllotmentService {
         }
 		String applicationType = resolveApplicationType(allotmentDetails);
 		boolean isLegacy = RLConstants.APPLICATION_TYPE_LEGACY.equalsIgnoreCase(applicationType);
+		if (!isLegacy && allotmentDetails.getAdditionalDetails() != null) {
+			JsonNode ad = allotmentDetails.getAdditionalDetails();
+			if (ad.has(RLConstants.LEGACY_ARREAR_KEY) || ad.has("arrearAmount") || ad.has("baseArrear")) {
+				isLegacy = true;
+			}
+		}
 		log.info("Resolved applicationType for application {} as {}, isLegacy: {}",
 				allotmentDetails.getApplicationNumber(), applicationType, isLegacy);
 		return isLegacy;
@@ -291,6 +297,17 @@ public class AllotmentService {
 				return RLConstants.APPLICATION_TYPE_LEGACY;
 			}
 			return rootType;
+		}
+		JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
+		if (additionalDetails != null) {
+			if (additionalDetails.has("applicationType")) {
+				return additionalDetails.get("applicationType").asText();
+			}
+			if (additionalDetails.has(RLConstants.LEGACY_ARREAR_KEY)
+					|| additionalDetails.has("arrearAmount")
+					|| additionalDetails.has("baseArrear")) {
+				return RLConstants.APPLICATION_TYPE_LEGACY;
+			}
 		}
 		return null;
 	}

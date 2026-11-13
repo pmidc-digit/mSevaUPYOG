@@ -70,6 +70,7 @@ public class RLConstants {
 
     // Legacy workflow tax head
     public static final String RL_ARREAR_FEE = "RL_ARREAR_FEE";
+    public static final String RL_ADVANCE_CARRYFORWARD = "RL_ADVANCE_CARRYFORWARD";
 	
 	public static final String SECURITY_DEPOSIT_FEE_RL_APPLICATION = "RL_SECURITY_DEPOSIT_FEE";
 

@@ -100,6 +100,7 @@ public class DemandService {
 	 */
 	private static final Set<String> ARREAR_BREAKDOWN_HEADS = new HashSet<>(Arrays.asList(
 			RLConstants.RL_ARREAR_FEE.toUpperCase(),
+			RLConstants.RL_ADVANCE_CARRYFORWARD.toUpperCase(),
 			RLConstants.CGST_FEE_RL_APPLICATION.toUpperCase(),
 			RLConstants.SGST_FEE_RL_APPLICATION.toUpperCase(),
 			RLConstants.ROUND_OFF_RL_APPLICATION.toUpperCase()));
@@ -295,7 +296,19 @@ public class DemandService {
 		}
 
 		String applicationType = criteria.getAllotmentRequest().getAllotment().get(0).getApplicationType();
-		return RLConstants.APPLICATION_TYPE_LEGACY.equalsIgnoreCase(applicationType);
+		if (RLConstants.APPLICATION_TYPE_LEGACY.equalsIgnoreCase(applicationType)) {
+			return true;
+		}
+		JsonNode ad = criteria.getAllotmentRequest().getAllotment().get(0).getAdditionalDetails();
+		if (ad != null) {
+			if (ad.has("applicationType") && RLConstants.APPLICATION_TYPE_LEGACY.equalsIgnoreCase(ad.get("applicationType").asText())) {
+				return true;
+			}
+			if (ad.has(RLConstants.LEGACY_ARREAR_KEY) || ad.has("arrearAmount") || ad.has("baseArrear")) {
+				return true;
+			}
+		}
+		return false;
 	}
     /**
 	 * Creates a single combined demand for legacy applications.
@@ -461,7 +474,7 @@ public class DemandService {
 		if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails())) {
 			return false;
 		}
-		boolean hasArrear = false;
+		boolean hasArrearOrAdvance = false;
 		for (DemandDetail detail : demand.getDemandDetails()) {
 			String head = (detail != null) ? detail.getTaxHeadMasterCode() : null;
 			if (head == null) {
@@ -470,11 +483,12 @@ public class DemandService {
 			if (head.equalsIgnoreCase(RLConstants.RENT_LEASE_FEE_RL_APPLICATION)) {
 				return false;
 			}
-			if (head.equalsIgnoreCase(RLConstants.RL_ARREAR_FEE)) {
-				hasArrear = true;
+			if (head.equalsIgnoreCase(RLConstants.RL_ARREAR_FEE)
+					|| head.equalsIgnoreCase(RLConstants.RL_ADVANCE_CARRYFORWARD)) {
+				hasArrearOrAdvance = true;
 			}
 		}
-		return hasArrear;
+		return hasArrearOrAdvance;
 	}
 
 	/** Exact period key for the duplicate check - the same precision the scheduler dedupe relies on. */

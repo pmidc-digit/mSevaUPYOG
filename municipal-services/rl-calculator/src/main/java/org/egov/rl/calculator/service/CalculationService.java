@@ -627,7 +627,36 @@ public class CalculationService {
                     + "penalty after their due day.", consumerCode);
         }
 
-        if (hasBreakdown || arrearAmount.compareTo(BigDecimal.ZERO) > 0) {
+        BigDecimal rawArrear = resolveRawAmount(
+                (criteria.getBaseArrear() != null && criteria.getBaseArrear().compareTo(BigDecimal.ZERO) != 0)
+                        ? criteria.getBaseArrear()
+                        : criteria.getArrearAmount(),
+                additionalDetails, "baseArrear", "arrear", "arrearAmount");
+
+        if (rawArrear != null && rawArrear.compareTo(BigDecimal.ZERO) < 0) {
+            // Negative arrear is set as advance demand (RL_ADVANCE_CARRYFORWARD)
+            BigDecimal advanceAmount = rawArrear.abs();
+            BigDecimal advanceTaxAmount = advanceAmount.negate();
+            List<DemandDetail> advanceDetails = new ArrayList<>();
+            advanceDetails.add(DemandDetail.builder()
+                    .taxAmount(advanceTaxAmount)
+                    .taxHeadMasterCode(RLConstants.RL_ADVANCE_CARRYFORWARD)
+                    .tenantId(tenantId)
+                    .collectionAmount(BigDecimal.ZERO)
+                    .build());
+
+            long arrearDemandTime = entryDateEpoch;
+
+            Demand advanceDemand = Demand.builder().consumerCode(consumerCode).demandDetails(advanceDetails).payer(payerUser)
+                    .minimumAmountPayable(BigDecimal.ZERO).tenantId(tenantId)
+                    .taxPeriodFrom(arrearStartDate != null ? arrearStartDate : arrearDemandTime).taxPeriodTo(arrearDemandTime)
+                    .fixedbillexpirydate(calculatedExpiry).billExpiryTime(durationMillis)
+                    .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
+                    .businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+
+            generatedDemands.add(advanceDemand);
+            log.info("Generated advance demand for application {}: advanceAmount={}", consumerCode, advanceAmount);
+        } else if (hasBreakdown || arrearAmount.compareTo(BigDecimal.ZERO) > 0) {
             List<DemandDetail> arrearDetails = new ArrayList<>();
 
             if (hasBreakdown) {
@@ -967,6 +996,38 @@ public class CalculationService {
 			try {
 				BigDecimal amount = new BigDecimal(raw.trim());
 				if (amount.compareTo(BigDecimal.ZERO) > 0) {
+					return amount;
+				}
+			} catch (NumberFormatException e) {
+				throw new CustomException("INVALID_LEGACY_AMOUNT",
+						"Unable to parse '" + key + "' value '" + raw + "'. Expected a numeric amount.");
+			}
+		}
+		return null;
+	}
+
+	private BigDecimal resolveRawAmount(BigDecimal fromRequest, JsonNode details, String... keys) {
+		if (fromRequest != null && fromRequest.compareTo(BigDecimal.ZERO) != 0) {
+			return fromRequest;
+		}
+		if (details == null || keys == null) {
+			return null;
+		}
+		for (String key : keys) {
+			if (key == null || !details.has(key)) {
+				continue;
+			}
+			JsonNode node = details.get(key);
+			if (node == null || node.isNull()) {
+				continue;
+			}
+			String raw = node.asText();
+			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+				continue;
+			}
+			try {
+				BigDecimal amount = new BigDecimal(raw.trim());
+				if (amount.compareTo(BigDecimal.ZERO) != 0) {
 					return amount;
 				}
 			} catch (NumberFormatException e) {

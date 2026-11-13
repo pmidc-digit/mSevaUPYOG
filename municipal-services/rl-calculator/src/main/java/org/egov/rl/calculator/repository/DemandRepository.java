@@ -11,6 +11,7 @@ import org.egov.rl.calculator.web.models.demand.Demand;
 import org.egov.rl.calculator.web.models.demand.DemandDetail;
 import org.egov.rl.calculator.web.models.demand.DemandRequest;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
+import org.egov.rl.calculator.web.models.Owner;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -330,6 +331,38 @@ public class DemandRepository {
 			return Collections.emptyMap();
 		}
 		return cycleByApplication;
+	}
+
+	/**
+	 * Fetches citizen/owner contact details (name, mobilenumber, emailid) for a list of consumer codes
+	 * by querying eg_rl_allotment, eg_rl_owner_info, and eg_user.
+	 */
+	public Map<String, Owner> getOwnersByConsumerCodes(List<String> consumerCodes) {
+		if (consumerCodes == null || consumerCodes.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		Map<String, Owner> ownerMap = new HashMap<>();
+		try {
+			String placeholders = consumerCodes.stream().map(id -> "?").collect(Collectors.joining(", "));
+			String sql = "SELECT a.application_number, u.name, u.mobilenumber, u.emailid "
+					+ "FROM eg_rl_allotment a "
+					+ "JOIN eg_rl_owner_info o ON a.id = o.allotment_id "
+					+ "JOIN eg_user u ON o.user_uuid = u.uuid "
+					+ "WHERE a.application_number IN (" + placeholders + ")";
+			jdbcTemplate.query(sql, consumerCodes.toArray(), rs -> {
+				Owner owner = Owner.builder()
+						.name(rs.getString("name"))
+						.mobileNumber(rs.getString("mobilenumber"))
+						.emailId(rs.getString("emailid"))
+						.build();
+				ownerMap.put(rs.getString("application_number"), owner);
+			});
+			log.debug("Read owner contact details for {}/{} consumer code(s)", ownerMap.size(), consumerCodes.size());
+		} catch (Exception e) {
+			log.warn("Could not read owner contact details from eg_rl_allotment for {} consumer code(s): {}",
+					consumerCodes.size(), e.getMessage());
+		}
+		return ownerMap;
 	}
 
 	/**

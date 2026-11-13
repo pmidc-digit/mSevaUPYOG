@@ -257,7 +257,20 @@ public class RLConstants {
 
     public static final String PROPERTY_DECRYPT_MODEL = "PropertyDecrypDisabled";
 
-    
+    // Punjab SMS & Email Notification Codes & Fallbacks
+    public static final String NOTIFICATION_APP_APPROVED_SMS = "rl.application.approved.sms";
+    public static final String NOTIFICATION_APP_APPROVED_EMAIL = "rl.application.approved.email";
+    public static final String NOTIFICATION_PAYMENT_SUCCESS_SMS = "rl.payment.success.sms";
+    public static final String NOTIFICATION_PAYMENT_SUCCESS_EMAIL = "rl.payment.success.email";
+    public static final String NOTIFICATION_LEASE_SETTLEMENT_SMS = "rl.lease.settlement.sms";
+    public static final String NOTIFICATION_LEASE_SETTLEMENT_EMAIL = "rl.lease.settlement.email";
+    public static final String NOTIFICATION_LEASE_CLOSED_SMS = "rl.lease.closed.sms";
+    public static final String NOTIFICATION_LEASE_CLOSED_EMAIL = "rl.lease.closed.email";
+
+    public static final String FALLBACK_APP_APPROVED_SMS = "Dear {1}, your Rent & Lease application {2} has been APPROVED by {3}. Please pay the allotment fee of Rs.{4} at {5} - mSeva Punjab";
+    public static final String FALLBACK_PAYMENT_SUCCESS_SMS = "Dear {1}, payment of Rs.{2} received towards Rent & Lease Allotment {3} vide Receipt No.{4}. Download receipt at {5} - mSeva Punjab";
+    public static final String FALLBACK_LEASE_SETTLEMENT_SMS = "Dear {1}, settlement dues of Rs.{2} for lease surrender/closure of Allotment {3} are payable. Pay at {4} to complete closure - {5}";
+    public static final String FALLBACK_LEASE_CLOSED_SMS = "Dear {1}, Rent & Lease Allotment {2} has been successfully CLOSED in records of {3}. All dues are cleared. Thank you - mSeva Punjab";
 
 }
 

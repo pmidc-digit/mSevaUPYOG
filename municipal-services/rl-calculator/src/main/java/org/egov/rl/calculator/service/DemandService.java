@@ -1531,6 +1531,11 @@ public class DemandService {
 		if (!demandsToUpdate.isEmpty()) {
 			demandRepository.updateDemand(requestInfo, demandsToUpdate);
 			log.info("Successfully updated {} demands with penalty engine in scheduler for tenant: {}", demandsToUpdate.size(), tenantId);
+			try {
+				notificationService.sendOverduePenaltyNotifications(requestInfo, tenantId, demandsToUpdate);
+			} catch (Exception ex) {
+				log.error("Error sending overdue penalty notifications for tenant: {}", tenantId, ex);
+			}
 		}
 	}
 

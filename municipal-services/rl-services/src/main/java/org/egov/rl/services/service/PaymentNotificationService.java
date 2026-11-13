@@ -92,6 +92,11 @@ public class PaymentNotificationService {
 			List<AllotmentDetails> applications = allotmentRepository.getAllotmentSearch(criteria);
 			if (applications == null || applications.isEmpty()) {
 				log.error("No application found for application number: {}", applicationNumber);
+				try {
+					notificationService.sendPaymentSuccessNotification(paymentRequest, null);
+				} catch (Exception e) {
+					log.error("Error sending payment success notification: {}", e.getMessage());
+				}
 				return;
 			}
 
@@ -125,6 +130,13 @@ public class PaymentNotificationService {
 				// Billing-service has cleared the bill/demand; no redundant DB update or workflow transition needed.
 				log.info("Regular rent payment processed for application: {} with status: {}. Bill cleared; application remains in current state.",
 						applicationNumber, currentStatus);
+			}
+
+			// Dispatch payment success confirmation SMS & Email (RL_PAYMENT_SUCCESS_CONFIRM)
+			try {
+				notificationService.sendPaymentSuccessNotification(paymentRequest, application);
+			} catch (Exception e) {
+				log.error("Error sending payment success notification for application: {}", applicationNumber, e);
 			}
 		} catch (Exception e) {
 			log.error("Error processing payment for application: {}, Error: {}", applicationNumber, e.getMessage(), e);
@@ -339,6 +351,7 @@ public class PaymentNotificationService {
 			if (rowsUpdated > 0) {
 				log.info("Successfully updated application - ApplicationNumber: {}, Status: {} , Rows updated: {}", 
 						applicationNumber, status, applicationNumber != null ? applicationNumber : "null", rowsUpdated);
+				allotmentDetails.setStatus(status);
 				List<AllotmentDetails> allotmentlist=new ArrayList<>();
 				allotmentlist.add(allotmentDetails);
 				log.info("Sending Notification"); 

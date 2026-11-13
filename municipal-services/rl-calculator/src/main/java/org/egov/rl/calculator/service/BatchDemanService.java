@@ -38,6 +38,9 @@ public class BatchDemanService {
 	private DemandService demandService;
 
 	@Autowired
+	private NotificationService notificationService;
+
+	@Autowired
 	private Configurations config;
 
 	public <T> List<List<Demand>> partition(List<Demand> list, int batchSize) {
@@ -69,7 +72,13 @@ public class BatchDemanService {
 			try {
 				List<Demand> savedDemands = demandRepository.saveDemand(requestInfo, demands);
 				demandService.fetchBillForDemands(savedDemands, requestInfo);
-				batchWorkflowUpdate(requestInfo, demands);
+				try {
+					notificationService.sendBillGeneratedNotifications(requestInfo, savedDemands);
+				} catch (Exception ex) {
+					log.error("Error sending bulk demand generation notifications for batch: {}", batch, ex);
+				}
+				// Regular cycle demands/bills do not alter application workflow; allotment remains in APPROVED status.
+				// batchWorkflowUpdate(requestInfo, demands);
 				demands.forEach(d -> {
 					log.info("{}, Batch No: {}, Success Bulk demand generation for consumerCode: {}, from: {}, to: {}, amount: {}",
 							currentDate, batch, d.getConsumerCode(), d.getTaxPeriodFrom(), d.getTaxPeriodTo(), d.getMinimumAmountPayable());

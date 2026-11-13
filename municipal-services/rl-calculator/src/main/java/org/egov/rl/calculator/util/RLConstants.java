@@ -44,6 +44,7 @@ public class RLConstants {
 	public static final String ROUND_OFF_RL_APPLICATION = "RL_FEE_ROUND_OFF";
 
     public static final String RL_ARREAR_FEE = "RL_ARREAR_FEE";
+    public static final String RL_ADVANCE_CARRYFORWARD = "RL_ADVANCE_CARRYFORWARD";
     public static final String APPLICATION_TYPE_LEGACY = "Legacy";
     
     // Legacy arrear keys for additionalDetails

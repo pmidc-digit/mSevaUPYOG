@@ -44,7 +44,7 @@ public class NotificationService {
 	@Autowired
 	private DemandRepository demandRepository;
 
-	@Value("${notification.url:https://mseva.lgpunjab.gov.in/digit-ui/citizen/payment/my-bills/RentAndLease}")
+	@Value("${notification.url:https://mseva-dev.lgpunjab.gov.in/digit-ui/select-language}")
 	private String notificationURL;
 
 	private static final String DEFAULT_DATE_FORMAT = "dd/MM/yyyy";
@@ -374,7 +374,10 @@ public class NotificationService {
 	}
 
 	private String buildPaymentUrl(String tenantId, String consumerCode) {
-		String baseUrl = StringUtils.isNotBlank(notificationURL) ? notificationURL : "https://mseva.lgpunjab.gov.in/digit-ui/citizen/payment/my-bills/RentAndLease";
+		String baseUrl = StringUtils.isNotBlank(notificationURL) ? notificationURL : "https://mseva-dev.lgpunjab.gov.in/digit-ui/select-language";
+		if (baseUrl.contains("select-language")) {
+			return baseUrl;
+		}
 		return baseUrl + "/" + consumerCode + "?tenantId=" + tenantId;
 	}
 

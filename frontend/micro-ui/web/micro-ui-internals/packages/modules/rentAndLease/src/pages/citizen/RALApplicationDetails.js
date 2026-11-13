@@ -6,7 +6,7 @@ import { useParams, useHistory } from "react-router-dom";
 // import { Loader } from "../../components/Loader";
 import { Loader } from "../../../../challanGeneration/src/components/Loader";
 // import ApplicationTimeline from "../../../../templates/ApplicationDetails/components/ApplicationTimeline";
-import { convertEpochToDate, getAcknowledgementData } from "../../utils/index";
+import { convertEpochToDate, getAcknowledgementData, formatINR, formatTaxHeadBreakup } from "../../utils/index";
 import NewApplicationTimeline from "../../../../templates/ApplicationDetails/components/NewApplicationTimeline";
 const RALApplicationDetails = () => {
   const { t } = useTranslation();
@@ -44,12 +44,6 @@ const RALApplicationDetails = () => {
   const billsTotal = activeBills.reduce((sum, bill) => sum + (Number.isFinite(Number(bill?.totalAmount)) ? Number(bill.totalAmount) : 0), 0);
   const detailsTotal = dueBillDetails.reduce((sum, detail) => sum + (Number.isFinite(Number(detail?.amount)) ? Number(detail.amount) : 0), 0);
   const totalDueAmount = hasMultipleBillDetails ? detailsTotal : hasExplicitBillTotal ? billsTotal : detailsTotal;
-
-  const formatINR = (amount) => {
-    const num = Number(amount);
-    const safeAmount = Number.isFinite(num) ? num : 0;
-    return `₹ ${safeAmount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
 
   const handleCollectPayment = () => {
     history.push(`/digit-ui/citizen/payment/my-bills/rl-services/${consumerCode}/${tenantId}?tenantId=${tenantId}`);
@@ -177,7 +171,11 @@ const RALApplicationDetails = () => {
                         {t("Due Period")} {index + 1}
                       </CardSectionHeader>
                     )}
-                    <Row label={t("Due Amount")} text={formatINR(detail?.amount)} />
+                    <Row
+                      label={t("Due Amount")}
+                      text={formatTaxHeadBreakup(detail?.billAccountDetails, t, detail?.amount)}
+                      rowContainerStyle={{ alignItems: "flex-start" }}
+                    />
                     {(detail?.fromPeriod || detail?.toPeriod) && <Row label={t("Duration")} text={duration} />}
                   </React.Fragment>
                 );

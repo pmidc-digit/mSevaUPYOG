@@ -41,10 +41,12 @@ const HRMSEMPMAPDetails = () => {
     isupdate,
     { enabled: fallbackEnabled }
   );
-
+  //console.log("primarySearch",primarySearch.data.Employees)
   // isLoading must stay true while fallbackSearch is pending, since disabled queries report isLoading=false
   const isLoading = primarySearch.isLoading || (fallbackEnabled && (fallbackSearch.isLoading || fallbackSearch.isFetching));
   const data = primarySearch.data?.Employees?.length > 0 ? primarySearch.data : fallbackSearch.data;
+  // Tenant of the employee as returned by HRMS search (falls back to route tenant until loaded)
+  const empTenantId = data?.Employees?.[0]?.tenantId || tenantId;
   const [errorInfo, setErrorInfo, clearError] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_ERROR_DATA", false);
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_HAPPENED", false);
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_HRMS_MUTATION_SUCCESS_DATA", false);
@@ -209,14 +211,14 @@ const HRMSEMPMAPDetails = () => {
         // Prepare payload - send ALL mapping UUIDs, not the user UUID
         const payload = {
           Employees: mappingData.map(mapping => ({
-            tenantId: tenantId,
+            tenantId: empTenantId,
             uuid: mapping.employeeUUID, // Use each mapping's UUID
           })),
         };
 
         // Call DELETE API for each mapping
-        const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
-
+        const response = await Digit.HRMSService.DeleteEmpMapping(empTenantId, payload);
+        
         if (response?.ResponseInfo?.status === "successful") {
           // Trigger refresh through useEffect to ensure proper data flow
           setRefreshCounter(prev => prev + 1);
@@ -246,15 +248,15 @@ const HRMSEMPMAPDetails = () => {
         const payload = {
           Employees: [
             {
-              tenantId: tenantId,
+              tenantId: empTenantId,
               uuid: employeeUUID,
             },
           ],
         };
 
         // Call DELETE API using service
-        const response = await Digit.HRMSService.DeleteEmpMapping(tenantId, payload);
-
+        const response = await Digit.HRMSService.DeleteEmpMapping(empTenantId, payload);
+        
         if (response?.ResponseInfo?.status === "successful") {
           // Trigger refresh through useEffect to ensure proper data flow
           setRefreshCounter(prev => prev + 1);

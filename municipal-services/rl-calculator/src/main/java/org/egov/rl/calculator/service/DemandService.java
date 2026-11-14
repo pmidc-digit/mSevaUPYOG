@@ -1667,12 +1667,32 @@ public class DemandService {
 		}
 
 		if (!demandsToUpdate.isEmpty()) {
-			demandRepository.updateDemand(requestInfo, demandsToUpdate);
-			log.info("Successfully updated {} demands with penalty engine in scheduler for tenant: {}", demandsToUpdate.size(), tenantId);
+			List<Demand> successfullyUpdated = new ArrayList<>();
 			try {
-				notificationService.sendOverduePenaltyNotifications(requestInfo, tenantId, demandsToUpdate);
-			} catch (Exception ex) {
-				log.error("Error sending overdue penalty notifications for tenant: {}", tenantId, ex);
+				demandRepository.updateDemand(requestInfo, demandsToUpdate);
+				successfullyUpdated.addAll(demandsToUpdate);
+				log.info("Successfully updated {} demands with penalty engine in scheduler for tenant: {}", demandsToUpdate.size(), tenantId);
+			} catch (Exception e) {
+				log.warn("Batch demand update failed for tenant: {}. Falling back to individual updates. Error: {}", tenantId, e.getMessage());
+				for (Demand d : demandsToUpdate) {
+					try {
+						demandRepository.updateDemand(requestInfo, Collections.singletonList(d));
+						successfullyUpdated.add(d);
+					} catch (Exception individualEx) {
+						log.error("Failed to update demand for consumerCode: {} (ID: {}). Reason: {}",
+								d.getConsumerCode(), d.getId(), individualEx.getMessage());
+					}
+				}
+				log.info("Individually updated {} of {} demands for tenant: {}",
+						successfullyUpdated.size(), demandsToUpdate.size(), tenantId);
+			}
+
+			if (!successfullyUpdated.isEmpty()) {
+				try {
+					notificationService.sendOverduePenaltyNotifications(requestInfo, tenantId, successfullyUpdated);
+				} catch (Exception ex) {
+					log.error("Error sending overdue penalty notifications for tenant: {}", tenantId, ex);
+				}
 			}
 		}
 	}

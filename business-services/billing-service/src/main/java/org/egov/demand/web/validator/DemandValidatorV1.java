@@ -582,18 +582,21 @@ public class DemandValidatorV1 {
 		 */
 		for (Demand demand : oldDemands) {
 			Demand dbDemand = demandMap.get(demand.getId());
-			log.info("Old Demand From Db: "+ dbDemand.toString());
 			if (dbDemand == null) {
 				unFoundDemandIds.add(demand.getId());
-				log.info("Inside If Condition for validation Of Demand Details as demands not found: ");	
+				log.info("Inside If Condition for validation Of Demand Details as demands not found for id: {}", demand.getId());	
 			}
 			else {
+				log.info("Old Demand From Db: {}", dbDemand);
 				/* payment completed field information cannot be changed from outside
 				 */
 				log.info("Inside Else Condition for validation Of Demand Details: ");
 				demand.setIsPaymentCompleted(dbDemand.getIsPaymentCompleted());
-				dbDemandDetailMap.putAll(dbDemand.getDemandDetails().stream()
-						.collect(Collectors.toMap(DemandDetail::getId, Function.identity())));
+				if (!CollectionUtils.isEmpty(dbDemand.getDemandDetails())) {
+					dbDemandDetailMap.putAll(dbDemand.getDemandDetails().stream()
+							.filter(d -> d.getId() != null)
+							.collect(Collectors.toMap(DemandDetail::getId, Function.identity(), (existing, replacing) -> existing)));
+				}
 			}
 		}
 

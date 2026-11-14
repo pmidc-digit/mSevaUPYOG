@@ -33,6 +33,7 @@ const RALApplicationDetails = () => {
       enabled: Boolean(isApprovedApplication && consumerCode && tenantId),
       retry: false,
       refetchOnWindowFocus: false,
+      staleTime: 0,
     }
   );
 

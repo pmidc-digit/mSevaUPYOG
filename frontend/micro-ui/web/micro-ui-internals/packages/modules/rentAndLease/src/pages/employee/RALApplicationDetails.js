@@ -56,7 +56,7 @@ const RALApplicationDetails = () => {
   const consumerCode = applicationData?.consumerCode || applicationData?.applicationNumber || acknowledgementIds;
   const isApprovedApplication = applicationData?.status === "APPROVED";
 
-  const { data: dueBillData } = Digit.Hooks.useFetchPayment(
+  const { data: dueBillData, revalidate: revalidateDueBill } = Digit.Hooks.useFetchPayment(
     {
       tenantId,
       consumerCode,
@@ -66,6 +66,7 @@ const RALApplicationDetails = () => {
       enabled: Boolean(isApprovedApplication && consumerCode && tenantId),
       retry: false,
       refetchOnWindowFocus: false,
+      staleTime: 0,
     }
   );
 
@@ -346,6 +347,7 @@ const RALApplicationDetails = () => {
       });
 
       if (response?.ResponseInfo?.status == "successful") {
+        revalidateDueBill?.();
         // ✅ Show success first
         setShowToast({ key: false, label: "Successfully updated the status" });
         // ✅ Delay navigation so toast shows
@@ -448,6 +450,7 @@ const RALApplicationDetails = () => {
     };
     try {
       await Digit.RentAndLeaseService.update(payload);
+      revalidateDueBill?.();
       // Refresh the current application details
       if (acknowledgementIds) {
         const filters = { applicationNumbers: acknowledgementIds };

@@ -375,8 +375,8 @@ public class NotificationService {
 
 	private String buildPaymentUrl(String tenantId, String consumerCode) {
 		String baseUrl = StringUtils.isNotBlank(notificationURL) ? notificationURL : "https://mseva-dev.lgpunjab.gov.in/digit-ui/select-language";
-		if (baseUrl.contains("select-language")) {
-			return baseUrl;
+		if (baseUrl.contains("select-language") || baseUrl.contains("my-properties")) {
+			return "https://mseva-dev.lgpunjab.gov.in/digit-ui/select-language";
 		}
 		return baseUrl + "/" + consumerCode + "?tenantId=" + tenantId;
 	}

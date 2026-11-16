@@ -416,7 +416,7 @@ const BpaApplicationDetail = () => {
 
   useEffect(() => {
     const fetchOwnerFileUrls = async () => {
-      const owners = data?.applicationData?.landInfo?.owners || [];
+      const owners = data?.applicationData?.additionalDetails?.owners?.length > 0 ? data?.applicationData?.additionalDetails?.owners : data?.applicationData?.landInfo?.owners || [];
       if (owners.length === 0) return;
 
       // Collect valid fileStoreIds from each owner
@@ -469,7 +469,7 @@ const BpaApplicationDetail = () => {
     };
 
     fetchOwnerFileUrls();
-  }, [data?.applicationData?.landInfo?.owners]);
+  }, [data?.applicationData?.additionalDetails?.owners, data?.applicationData?.landInfo?.owners]);
 
   const onChangeReport = (key, value) => {
     setFieldInspectionPending(value);
@@ -544,6 +544,15 @@ const BpaApplicationDetail = () => {
           designation,
           approverComment: comments,
         };
+        if (requestData?.additionalDetails?.owners) {
+          requestData.additionalDetails = {
+            ...requestData.additionalDetails,
+            owners: requestData.additionalDetails.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
+            })),
+          };
+        }
         if (requestData?.landInfo?.owners) {
           requestData.landInfo = {
             ...requestData.landInfo,
@@ -1228,8 +1237,10 @@ const BpaApplicationDetail = () => {
      const prevGetLang = Digit.StoreData.getCurrentLanguage;
      try {
        const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
-       const newValidityDate = Date.now();
-       const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
+       const rawOwnersList = data?.applicationData?.additionalDetails?.owners?.length > 0
+         ? data?.applicationData?.additionalDetails?.owners
+         : data?.applicationData?.landInfo?.owners;
+       const ownersList = rawOwnersList?.map((item) => item.name);
        const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
        const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
        const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
@@ -1255,6 +1266,15 @@ const BpaApplicationDetail = () => {
          combinedOwnersName,
          approverComment: comments,
        };
+       if (requestData?.additionalDetails?.owners) {
+         requestData.additionalDetails = {
+           ...requestData.additionalDetails,
+           owners: requestData.additionalDetails.owners.map((owner) => ({
+             ...owner,
+             permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
+           })),
+         };
+       }
        if (requestData?.landInfo?.owners) {
           requestData.landInfo = {
             ...requestData.landInfo,
@@ -1324,7 +1344,10 @@ const BpaApplicationDetail = () => {
     try {
        setIsEnableLoader(true);
        const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
-        const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
+        const rawOwnersList = data?.applicationData?.additionalDetails?.owners?.length > 0
+          ? data?.applicationData?.additionalDetails?.owners
+          : data?.applicationData?.landInfo?.owners;
+        const ownersList = rawOwnersList?.map((item) => item.name);
         const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
         const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
         const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]?.filter((v, i, arr) => v && arr.indexOf(v) === i).join(", ");
@@ -1350,6 +1373,15 @@ const BpaApplicationDetail = () => {
            combinedOwnersName,
            approverComment: comments,
          };
+         if (requestData?.additionalDetails?.owners) {
+          requestData.additionalDetails = {
+            ...requestData.additionalDetails,
+            owners: requestData.additionalDetails.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
+            })),
+          };
+        }
          if (requestData?.landInfo?.owners) {
           requestData.landInfo = {
             ...requestData.landInfo,

@@ -130,7 +130,8 @@ const BpaApplicationDetail = () => {
 
   const addressPincode = data?.applicationData?.landInfo?.address?.pincode;
   const { isMdmsLoadingFees, data: mdmsDataFees } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["GaushalaFees", "MalbaCharges", "LabourCess"]);
-  const isUserCitizen = data?.applicationData?.landInfo?.owners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
+  const bpaOwners = data?.applicationData?.additionalDetails?.owners?.length > 0 ? data?.applicationData?.additionalDetails?.owners : data?.applicationData?.landInfo?.owners;
+  const isUserCitizen = bpaOwners?.find((item) => item.mobileNumber === citizenmobilenumber) || false;
   const cities = Digit.Hooks.useTenants();
   const applicationType = data?.edcrDetails?.appliactionType;
   const isOCApplication = applicationType === "BUILDING_OC_PLAN_SCRUTINY";
@@ -782,6 +783,15 @@ const BpaApplicationDetail = () => {
           designation,
           approverComment: comments,
         };
+        if (requestData?.additionalDetails?.owners) {
+          requestData.additionalDetails = {
+            ...requestData.additionalDetails,
+            owners: requestData.additionalDetails.owners.map((owner) => ({
+              ...owner,
+              permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
+            })),
+          };
+        }
         if (requestData?.landInfo?.owners) {
           requestData.landInfo = {
             ...requestData.landInfo,
@@ -907,7 +917,8 @@ const BpaApplicationDetail = () => {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       setIsEnableLoader(true);
-      const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
+      const _rawOwners910 = data?.applicationData?.additionalDetails?.owners?.length > 0 ? data?.applicationData?.additionalDetails?.owners : data?.applicationData?.landInfo?.owners;
+      const ownersList = _rawOwners910?.map((item) => item.name);
       const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
       const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
       const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
@@ -934,6 +945,15 @@ const BpaApplicationDetail = () => {
         designation,
         approverComment: comments,
       };
+      if (requestData?.additionalDetails?.owners) {
+        requestData.additionalDetails = {
+          ...requestData.additionalDetails,
+          owners: requestData.additionalDetails.owners.map((owner) => ({
+            ...owner,
+            permanentPinCode: owner?.permanentPinCode || addressPincode || " ",
+          })),
+        };
+      }
       if (requestData?.landInfo?.owners) {
         requestData.landInfo = {
           ...requestData.landInfo,
@@ -1006,7 +1026,8 @@ const BpaApplicationDetail = () => {
     try {
       setIsEnableLoader(true);
       const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
-      const ownersList = data?.applicationData?.landInfo?.owners?.map((item) => item.name);
+      const _rawOwners1009 = data?.applicationData?.additionalDetails?.owners?.length > 0 ? data?.applicationData?.additionalDetails?.owners : data?.applicationData?.landInfo?.owners;
+      const ownersList = _rawOwners1009?.map((item) => item.name);
       const firmName = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.firmName;
       const isFirm = data?.applicationData?.additionalDetails?.applicationDetails?.owners?.[0]?.ownerType?.code === "Firm";
       const combinedOwnersName = [...(isFirm && firmName?.trim() ? [firmName.trim()] : []), ...((isFirm ? ownersList?.slice(1) : ownersList) || [])]
@@ -1164,7 +1185,7 @@ const BpaApplicationDetail = () => {
 
   useEffect(() => {
     const fetchOwnerFileUrls = async () => {
-      const owners = data?.applicationData?.landInfo?.owners || [];
+      const owners = data?.applicationData?.additionalDetails?.owners?.length > 0 ? data?.applicationData?.additionalDetails?.owners : data?.applicationData?.landInfo?.owners || [];
       if (owners.length === 0) return;
 
       // Collect valid fileStoreIds from each owner
@@ -1217,7 +1238,7 @@ const BpaApplicationDetail = () => {
     };
 
     fetchOwnerFileUrls();
-  }, [data?.applicationData?.landInfo?.owners]);
+  }, [data?.applicationData?.additionalDetails?.owners, data?.applicationData?.landInfo?.owners]);
 
   const closeToast = () => {
     setShowToast(null);
@@ -1484,7 +1505,7 @@ const BpaApplicationDetail = () => {
     if (action === "SEND_TO_CITIZEN") {
       const isArchitectUnderTakingIncluded = data?.applicationData?.documents?.some((item) => item?.documentType === "ARCHITECT.UNDERTAKING");
       const isFeesDeclared = data?.applicationData?.additionalDetails?.isFeesDeclared;
-      const ownerData = data?.applicationData?.landInfo?.owners;
+      const ownerData = data?.applicationData?.additionalDetails?.owners?.length > 0 ? data?.applicationData?.additionalDetails?.owners : data?.applicationData?.landInfo?.owners;
       const documentData = data?.applicationData?.documents;
       if (!(ownerData?.length > 0)) {
         setShowToast({

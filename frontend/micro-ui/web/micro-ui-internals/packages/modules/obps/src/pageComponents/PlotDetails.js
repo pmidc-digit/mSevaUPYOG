@@ -623,11 +623,11 @@ useEffect(() => {
       city: currentStepData?.cpt?.details?.address?.tenantId || currentStepData?.cpt?.details?.address?.city || "",
       id: null
     } || currentStepData?.createdResponse?.landInfo?.address || undefined;
-    const ownershipCategory = currentStepData?.cpt?.details?.ownershipCategory || currentStepData?.createdResponse?.landInfo?.ownershipCategory || undefined;
+    const ownershipCategory = currentStepData?.cpt?.details?.ownershipCategory || currentStepData?.createdResponse?.additionalDetails?.ownershipCategory || currentStepData?.createdResponse?.landInfo?.ownershipCategory || undefined;
     const owners = currentStepData?.cpt?.details?.owners?.map((data) => ({
       ...data,
       status: data?.status?.trim() === "ACTIVE"? true : false,
-    })) || currentStepData?.createdResponse?.landInfo?.owners || undefined;
+    })) || currentStepData?.createdResponse?.additionalDetails?.owners || currentStepData?.createdResponse?.landInfo?.owners || undefined;
     const landInfo = isPropertyAvailable?.value ? {
       address,
       ownershipCategory,

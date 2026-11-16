@@ -870,12 +870,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       const existingLandOwners = currentStepData?.createdResponse?.landInfo?.owners || [];
       const conversionOwners = []
       newFields?.map((owner, idx) => {
-        const matchingLandOwner = existingLandOwners[idx] || existingLandOwners.find((l) => l?.mobileNumber === owner?.mobileNumber) || {};
-        const ownerId = owner?.ownerId || matchingLandOwner?.ownerId || owner?.id || matchingLandOwner?.id || null;
+        const matchingLandOwner = existingLandOwners[idx] || existingLandOwners.find((existingOwner) => existingOwner?.mobileNumber === owner?.mobileNumber) || {};
         conversionOwners.push({
           ...matchingLandOwner,
           ...owner,
-          ownerId: ownerId,
           active: true,
           name: owner?.name,
           emailId: owner?.emailId,
@@ -891,7 +889,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
             ownerPhoto: owner?.additionalDetails?.ownerPhoto || null
           },
           authorizationLetter: owner?.authorizationLetter || null,
-          photo:null
+          photo:null,
+          // Keep IDs only from the existing BPA-search owner, not the user lookup.
+          id: matchingLandOwner?.id,
+          ownerId: matchingLandOwner?.ownerId,
         })
       })
 

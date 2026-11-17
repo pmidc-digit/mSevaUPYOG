@@ -219,5 +219,13 @@ public class ApplicationProperties {
 
     @Value("${egov.filestore.delete.endpoint:filestore/v1/files/_delete}")
     private String fileStoreDeleteEndpoint;
+
+    public String getFileStoreHost() {
+        return this.fileStoreHost;
+    }
+
+    public String getFileStoreDeleteEndpoint() {
+        return this.fileStoreDeleteEndpoint;
+    }
     
 }

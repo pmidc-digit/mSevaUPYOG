@@ -256,16 +256,19 @@ public class ccAvanueGateway implements Gateway {
              String vResponse="";
              JSONObject jsonResponse= null;
              String encResp = params.get("encResp");
+             log.info("encResp: {}",encResp);
 	         AesUtil aesUtilenc=new AesUtil(MERCHANT_WORKING_KEY);
 
 	         String txnId = currentStatus.getTxnId();
+             log.info("Transaction id in request: {}",txnId);
 	         String[] parts = txnId.split("-"); // Split the transaction ID by "-"
 	         String datePart = parts[2] + "_" + parts[3] + "_" + parts[4];
-
+             log.info("datePart: {}",datePart);
 	         // Convert to DD-MM-YYYY format
 	         String[] dateComponents = datePart.split("_");
 	         String formattedDate = dateComponents[2] + "-" + dateComponents[1] + "-" + dateComponents[0];
 	         String encRequest = aesUtilenc.encrypt("{'order_no': '" + txnId + "'}");
+             log.info("encRequest: {}",encRequest);
 	         StringBuffer wsDataBuff = new StringBuffer();
 	         wsDataBuff.append("enc_request=" + encRequest +
 	                           "&access_code=" + MERCHANT_ACCESS_CODE +
@@ -276,14 +279,19 @@ public class ccAvanueGateway implements Gateway {
 	                           "&from_date=" + formattedDate);
   	     try {
              if (encResp != null && !encResp.trim().isEmpty()) {
+                 log.info("encResp Before decryption: {}",encResp);
                  String decryptedResponse = aesUtilenc.decrypt(encResp);
+                 log.info("decryptedResponse: {}",decryptedResponse);
                  jsonResponse = convertEncRespToOrderStatus(decryptedResponse);
              }
              else {
                  vResponse = processUrlConnectionReq(wsDataBuff.toString(), MERCHANT_URL_STATUS);
+                 log.info("vResponse: {}",vResponse);
                  String[] keyValuePairs = vResponse.toString().split("&");
                  String resp = keyValuePairs[1];
+                 log.info("resp: {}", resp);
                  String decResp = aesUtilenc.decrypt(resp.substring(13, resp.length()));
+                 log.info("decResp: {}",decResp);
                  jsonResponse = new JSONObject(decResp);
              }
 

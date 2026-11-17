@@ -735,7 +735,7 @@ public class CalculationService {
 		JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
 		BigDecimal adhocPenalty = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_PENALTY_KEY);
 		BigDecimal adhocRebate = resolveAdhocRebateAmount(additionalDetails,
-				CalculatorConstants.ADHOC_REBATE_KEY, "adhocRebate", "rebateAmount");
+				CalculatorConstants.ADHOC_REBATE_ALT_KEY, CalculatorConstants.ADHOC_REBATE_KEY, "rebateAmount");
 
 		if (adhocPenalty != null && adhocPenalty.compareTo(BigDecimal.ZERO) > 0) {
 			adhocDetails.add(DemandDetail.builder().taxAmount(adhocPenalty)
@@ -787,9 +787,9 @@ public class CalculationService {
 	}
 
 	private static String readAdhocRebateReason(JsonNode details) {
-		String reason = readAdhocText(details, CalculatorConstants.ADHOC_REBATE_REASON_KEY);
+		String reason = readAdhocText(details, CalculatorConstants.ADHOC_REBATE_ALT_REASON_KEY);
 		if (reason == null) {
-			reason = readAdhocText(details, "adhocRebateReason");
+			reason = readAdhocText(details, CalculatorConstants.ADHOC_REBATE_REASON_KEY);
 		}
 		if (reason == null) {
 			reason = readAdhocText(details, "rebateReason");

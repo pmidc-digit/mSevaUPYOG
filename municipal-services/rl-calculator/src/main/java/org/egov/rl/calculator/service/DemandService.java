@@ -658,7 +658,7 @@ public class DemandService {
 			}
 			BigDecimal collected = (target.getCollectionAmount() != null) ? target.getCollectionAmount()
 					: BigDecimal.ZERO;
-			if (collected.compareTo(newAmount) > 0) {
+			if (newAmount.compareTo(BigDecimal.ZERO) >= 0 && collected.compareTo(newAmount) > 0) {
 				// Money is already with the ULB: lowering the head would leave the demand over collected (a credit).
 				log.warn("{} was already collected against {} of demand {} - the head is kept at {} instead of being "
 						+ "reduced to {}; adjust the collection instead.", collected, head, stored.getId(),

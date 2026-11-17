@@ -17,6 +17,7 @@ public class LocalityBillSummary {
     private int totalCount;
     private int successCount;
     private int failureCount;
+    private int pendingCount;
     private BigDecimal totalAmount;
     private String status;
 }

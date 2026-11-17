@@ -47,8 +47,8 @@ public class DemandSchedulerNotificationService {
 			return;
 		}
 
-		String formattedFrom = new SimpleDateFormat("dd-MMM-yyyy").format(new Date(from));
-		String formattedTo = new SimpleDateFormat("dd-MMM-yyyy").format(new Date(to));
+		String formattedFrom = getIstDateFormat("dd-MMM-yyyy").format(new Date(from));
+		String formattedTo = getIstDateFormat("dd-MMM-yyyy").format(new Date(to));
 
 		String htmlBody = template
 				.replace("{tenantId}", tenantId)
@@ -152,15 +152,15 @@ public class DemandSchedulerNotificationService {
 		}
 
 		Date fromDate = new Date(from);
-		String billingCycle = new SimpleDateFormat("MMMM yyyy").format(fromDate);
+		String billingCycle = getIstDateFormat("MMMM yyyy").format(fromDate);
 
-		Calendar cal = Calendar.getInstance();
+		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kolkata"));
 		cal.setTime(fromDate);
 		int year = cal.get(Calendar.YEAR);
 		String financialYear = year + "-" + ((year + 1) % 100);
 
-		String generatedOn = new SimpleDateFormat("dd-MMM-yyyy hh:mm a").format(new Date(startTime));
-		String completedOn = new SimpleDateFormat("dd-MMM-yyyy hh:mm a").format(new Date());
+		String generatedOn = getIstDateFormat("dd-MMM-yyyy hh:mm a").format(new Date(startTime));
+		String completedOn = getIstDateFormat("dd-MMM-yyyy hh:mm a").format(new Date());
 
 		long durationMs = System.currentTimeMillis() - startTime;
 		long durationMin = (durationMs / 1000) / 60;
@@ -254,5 +254,11 @@ public class DemandSchedulerNotificationService {
 			log.info("ℹ️ Table eg_sw_demand_generation_error not available, using default fallback messages. Details: {}", e.getMessage());
 		}
 		return results;
+	}
+
+	private SimpleDateFormat getIstDateFormat(String pattern) {
+		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+		return sdf;
 	}
 }

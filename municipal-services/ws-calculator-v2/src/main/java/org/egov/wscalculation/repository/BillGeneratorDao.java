@@ -223,4 +223,22 @@ public class BillGeneratorDao {
 	    }
 	}
 
+	/**
+	 * Checks if the locality code exists in eg_bndry_mohalla for the given tenantId.
+	 * Returns true if present, false if missing. Does NOT perform any insert.
+	 */
+	public boolean isLocalityPresentInMohalla(String locality, String tenantId) {
+		if (locality == null || locality.trim().isEmpty() || tenantId == null || tenantId.trim().isEmpty()) {
+			return false;
+		}
+		try {
+			String checkSql = "SELECT COUNT(*) FROM eg_bndry_mohalla WHERE localitycode = ? AND tenantid = ?";
+			Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, locality.trim(), tenantId.trim());
+			return count != null && count > 0;
+		} catch (Exception e) {
+			log.warn("⚠️ Non-fatal: Error checking locality {} in eg_bndry_mohalla: {}", locality, e.getMessage());
+			return true; // fail-safe: don't falsely skip if boundary query fails
+		}
+	}
+
 }

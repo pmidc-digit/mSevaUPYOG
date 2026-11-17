@@ -1002,6 +1002,23 @@ So, both lists are now filtered to include only records with INITIATED status, w
 		log.info("billSchedularList count : " + billSchedularList.size());
 		for (BillScheduler billSchedular : billSchedularList) {
 			try {
+				boolean hasLocality = billSchedular.getLocality() != null && !billSchedular.getLocality().trim().isEmpty();
+				boolean hasGroup = billSchedular.getGrup() != null && !billSchedular.getGrup().trim().isEmpty();
+
+				// If both locality and group are null/empty in the incoming row, mark as COMPLETED and skip
+				if (!hasLocality && !hasGroup && schedulerLevel != SchedulerLevel.TENANT) {
+					log.info("Scheduler row {} has both locality and group null/empty. Marking as COMPLETED.", billSchedular.getId());
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.COMPLETED);
+					continue;
+				}
+
+				// If locality is missing in eg_bndry_mohalla, do NOT insert: mark as COMPLETED and skip
+				if (hasLocality && !billGeneratorDao.isLocalityPresentInMohalla(billSchedular.getLocality().trim(), billSchedular.getTenantId())) {
+					log.warn("⚠️ Locality {} for tenant {} is missing in eg_bndry_mohalla. Marking as COMPLETED and skipping.",
+							billSchedular.getLocality(), billSchedular.getTenantId());
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.COMPLETED);
+					continue;
+				}
 				
 				List<String> connectionNos = null;
 				RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder()
@@ -1068,7 +1085,7 @@ So, both lists are now filtered to include only records with INITIATED status, w
 					 billGeneratorDao.insertBillSchedulerConnectionStatus(
 			                    new ArrayList<>(billGeneraterReq.getConsumerCodes()),
 			                    billGeneraterReq.getBillSchedular().getId(),
-			                    billGeneraterReq.getBillSchedular().getLocality(),
+			                    localityCode,
 			                    WSCalculationConstant.INITIATED,
 			                    billGeneraterReq.getBillSchedular().getTenantId(),
 			                    WSCalculationConstant.INITIATED,
@@ -1081,8 +1098,8 @@ So, both lists are now filtered to include only records with INITIATED status, w
 
 
 				}
-				billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.COMPLETED);
-				log.info("Updated Bill Schedular Status To COMPLETED");
+				billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
+				log.info("Updated Bill Schedular Status To INPROGRESS (awaiting consumer processing)");
 
 			} catch (Exception e) {
 				log.error("Execption occured while generating bills for tenant" + billSchedular.getTenantId()

@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -12,8 +13,11 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.wscalculation.config.WSCalculationConfiguration;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.producer.WSCalculationProducer;
+import org.egov.wscalculation.repository.BillGeneratorDao;
+import org.egov.wscalculation.repository.rowmapper.BillGenerateSchedulerRowMapper;
 import org.egov.wscalculation.util.NotificationUtil;
 import org.egov.wscalculation.web.models.*;
+import org.egov.wscalculation.web.models.BillScheduler.StatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -33,6 +37,15 @@ public class BillSchedulerNotificationService {
 
 	@Autowired
 	private NamedParameterJdbcTemplate jdbcTemplate;
+
+	@Autowired
+	private BillGeneratorDao billGeneratorDao;
+
+	@Autowired
+	private BillGenerateSchedulerRowMapper billGenerateSchedulerRowMapper;
+
+	// In-memory active lock per tenant to guarantee only ONE monitor runs per tenant
+	private static final ConcurrentHashMap<String, Boolean> activeTenantMonitors = new ConcurrentHashMap<>();
 
 	private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat("#,##,##0.00");
 	private static final DecimalFormat COUNT_FORMAT = new DecimalFormat("#,##,###");
@@ -70,7 +83,9 @@ public class BillSchedulerNotificationService {
 
 	/**
 	 * Asynchronously monitors the bill generation batches for all scheduled entries
-	 * and sends a completion email using template from localization service (message table).
+	 * at the tenant level for the rolling 12-hour window.
+	 * Sends a single consolidated email per tenant when all connections across all
+	 * schedulers in the window are resolved, or sends a stuck alert email if stalled.
 	 */
 	public void monitorAndSendBillCompletionEmail(List<BillScheduler> billSchedularList, long startTime, RequestInfo requestInfo) {
 		if (configs.getIsEmailEnabled() == null || !configs.getIsEmailEnabled()) {
@@ -83,109 +98,250 @@ public class BillSchedulerNotificationService {
 			return;
 		}
 
-		List<String> schedulerIds = billSchedularList.stream()
+		Set<String> tenantIds = billSchedularList.stream()
+				.map(BillScheduler::getTenantId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+
+		if (tenantIds.isEmpty()) {
+			log.info("No valid tenant IDs found for monitoring.");
+			return;
+		}
+
+		for (String tenantId : tenantIds) {
+			// Lock check: only 1 monitor runs per tenant
+			if (activeTenantMonitors.putIfAbsent(tenantId, Boolean.TRUE) != null) {
+				log.info("ℹ️ Tenant monitor already active for tenantId: {}. Existing monitor will aggregate all initiated schedulers for this tenant.", tenantId);
+				continue;
+			}
+
+			List<String> triggeredIds = billSchedularList.stream()
+					.filter(s -> tenantId.equals(s.getTenantId()))
+					.map(BillScheduler::getId)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+
+			CompletableFuture.runAsync(() -> {
+				try {
+					monitorTenantBillProcessing(tenantId, triggeredIds, startTime, requestInfo);
+				} catch (Exception ex) {
+					log.error("❌ Error in async bill scheduler completion notification for tenant {}: {}", tenantId, ex.getMessage(), ex);
+				} finally {
+					activeTenantMonitors.remove(tenantId);
+					log.info("🏁 Released active tenant monitor lock for tenantId: {}", tenantId);
+				}
+			});
+		}
+	}
+
+	private void monitorTenantBillProcessing(String tenantId, List<String> triggeredIds, long startTime, RequestInfo requestInfo) {
+		log.info("🚀 Started tenant-level monitoring for all initiated localities/groups of tenantId: {}", tenantId);
+
+		long pollStartTime = System.currentTimeMillis();
+		long lastProgressTime = System.currentTimeMillis();
+		long previousInitiatedCount = -1;
+
+		long MAX_TOTAL_RUNTIME_MS = 60 * 60 * 1000L; // 60 minutes overall safety cap
+		long INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L;  // 5 minutes of ZERO progress
+
+		boolean isStalled = false;
+		List<BillScheduler> tenantSchedulers = new ArrayList<>();
+
+		while (System.currentTimeMillis() - pollStartTime < MAX_TOTAL_RUNTIME_MS) {
+			try {
+				// Query all initiated and in-progress schedulers for this tenant (no 12 hr restriction)
+				List<BillScheduler> rawSchedulers = getTenantInitiatedSchedulers(tenantId, triggeredIds);
+				tenantSchedulers = new ArrayList<>();
+
+				for (BillScheduler s : rawSchedulers) {
+					boolean hasLocality = s.getLocality() != null && !s.getLocality().trim().isEmpty();
+					boolean hasGroup = s.getGrup() != null && !s.getGrup().trim().isEmpty();
+
+					// Mark scheduler entries where both locality and group are null as COMPLETED
+					if (!hasLocality && !hasGroup) {
+						log.info("Scheduler entry {} has both locality and group null/empty. Marking as COMPLETED.", s.getId());
+						billGeneratorDao.updateBillSchedularStatus(s.getId(), StatusEnum.COMPLETED);
+						continue;
+					}
+					tenantSchedulers.add(s);
+				}
+
+				List<String> schedulerIds = tenantSchedulers.stream()
+						.map(BillScheduler::getId)
+						.filter(Objects::nonNull)
+						.collect(Collectors.toList());
+
+				if (schedulerIds.isEmpty()) {
+					log.info("No active bill schedulers found for tenant {}", tenantId);
+					break;
+				}
+
+				// Query overall connection stats for all active schedulers of this tenant
+				Map<String, Object> overallStats = getOverallConnectionStatusStats(schedulerIds);
+				long initiatedCount = ((Number) overallStats.getOrDefault("initiated_count", 0)).longValue();
+				long totalCount = ((Number) overallStats.getOrDefault("total_count", 0)).longValue();
+
+				// 1. All connections across all localities of this tenant are resolved!
+				if (totalCount > 0 && initiatedCount == 0) {
+					log.info("🎯 All {} scheduled connections across {} localities/groups resolved for tenant {}!",
+							totalCount, tenantSchedulers.size(), tenantId);
+					break;
+				}
+
+				// 2. Active progress tracking
+				if (previousInitiatedCount == -1 || initiatedCount < previousInitiatedCount) {
+					lastProgressTime = System.currentTimeMillis();
+					previousInitiatedCount = initiatedCount;
+					log.info("⏳ Tenant {} bill processing active: {}/{} connections remaining (initiated)",
+							tenantId, initiatedCount, totalCount);
+				} else if (System.currentTimeMillis() - lastProgressTime >= INACTIVITY_TIMEOUT_MS) {
+					log.warn("⚠️ Tenant {} bill processing stalled: initiated count stayed at {} for {} minutes with no progress.",
+							tenantId, initiatedCount, INACTIVITY_TIMEOUT_MS / (60 * 1000));
+					isStalled = true;
+					break;
+				}
+			} catch (Exception e) {
+				log.warn("⚠️ Polling tenant {} bill connection status error: {}", tenantId, e.getMessage());
+			}
+
+			try {
+				Thread.sleep(15000); // Poll every 15 seconds
+			} catch (InterruptedException ie) {
+				Thread.currentThread().interrupt();
+				log.error("❌ Monitoring interrupted for tenant {}", tenantId);
+				break;
+			}
+		}
+
+		if (System.currentTimeMillis() - pollStartTime >= MAX_TOTAL_RUNTIME_MS) {
+			log.warn("⚠️ Tenant {} bill monitoring reached maximum allowable runtime (60 mins).", tenantId);
+			isStalled = true;
+		}
+
+		if (tenantSchedulers.isEmpty()) {
+			return;
+		}
+
+		List<String> schedulerIds = tenantSchedulers.stream()
 				.map(BillScheduler::getId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 
-		if (schedulerIds.isEmpty()) {
-			log.info("No valid scheduler IDs found for monitoring.");
-			return;
+		// Build summaries for each locality / group / tenant scheduler
+		List<LocalityBillSummary> localitySummaries = new ArrayList<>();
+		int totalScheduled = 0;
+		int totalSuccess = 0;
+		int totalFailure = 0;
+		int totalPending = 0;
+		BigDecimal grandTotalAmount = BigDecimal.ZERO;
+
+		for (BillScheduler scheduler : tenantSchedulers) {
+			String locOrGroup;
+			if (scheduler.getLocality() != null && !scheduler.getLocality().trim().isEmpty()) {
+				locOrGroup = "Locality: " + scheduler.getLocality();
+			} else if (scheduler.getGrup() != null && !scheduler.getGrup().trim().isEmpty()) {
+				locOrGroup = "Group: " + scheduler.getGrup();
+			} else if (scheduler.getGroup() != null && !scheduler.getGroup().isEmpty()) {
+				locOrGroup = "Group: " + String.join(", ", scheduler.getGroup());
+			} else {
+				locOrGroup = "All Localities (Tenant)";
+			}
+
+			boolean isMissingInBoundary = false;
+			if (scheduler.getLocality() != null && !scheduler.getLocality().trim().isEmpty()) {
+				isMissingInBoundary = !billGeneratorDao.isLocalityPresentInMohalla(scheduler.getLocality().trim(), scheduler.getTenantId());
+			}
+
+			Map<String, Object> stats = getSchedulerStatusStats(scheduler.getId());
+			int count = ((Number) stats.getOrDefault("total_count", 0)).intValue();
+			int succ = ((Number) stats.getOrDefault("success_count", 0)).intValue();
+			int fail = ((Number) stats.getOrDefault("failure_count", 0)).intValue();
+			int pending = ((Number) stats.getOrDefault("initiated_count", 0)).intValue();
+
+			BigDecimal amount = getSchedulerTotalAmount(scheduler.getId());
+
+			// Mark scheduler as COMPLETED if resolved OR if crashed/stalled OR if missing in boundary
+			if ((pending == 0 && count > 0) || isStalled || isMissingInBoundary) {
+				try {
+					billGeneratorDao.updateBillSchedularStatus(scheduler.getId(), StatusEnum.COMPLETED);
+					log.info("🎯 Updated bill scheduler {} status to COMPLETED (count={}, pending={}, isStalled={}, isMissingInBoundary={})",
+							scheduler.getId(), count, pending, isStalled, isMissingInBoundary);
+				} catch (Exception e) {
+					log.warn("⚠️ Failed to update bill scheduler {} status to COMPLETED: {}", scheduler.getId(), e.getMessage());
+				}
+			}
+
+			String status;
+			if (isMissingInBoundary) {
+				status = "MISSING IN BOUNDARY (COMPLETED)";
+			} else if (pending == 0 && fail == 0 && count > 0) {
+				status = "COMPLETED";
+			} else if (pending > 0) {
+				status = isStalled ? "STALLED (COMPLETED)" : "INCOMPLETE (" + pending + " PENDING)";
+			} else if (succ > 0) {
+				status = "PARTIALLY COMPLETED";
+			} else if (count == 0) {
+				status = "COMPLETED (NO CONNECTIONS)";
+			} else {
+				status = "FAILED";
+			}
+
+			LocalityBillSummary summary = LocalityBillSummary.builder()
+					.localityOrGroup(locOrGroup)
+					.tenantId(scheduler.getTenantId())
+					.cityName(getCityName(scheduler.getTenantId()))
+					.totalCount(count)
+					.successCount(succ)
+					.failureCount(fail)
+					.pendingCount(pending)
+					.totalAmount(amount)
+					.status(status)
+					.build();
+
+			localitySummaries.add(summary);
+
+			totalScheduled += count;
+			totalSuccess += succ;
+			totalFailure += fail;
+			totalPending += pending;
+			grandTotalAmount = grandTotalAmount.add(amount);
 		}
 
-		// Run monitoring in background thread
-		CompletableFuture.runAsync(() -> {
-			try {
-				log.info("🚀 Started async monitoring for {} bill scheduler ID(s)", schedulerIds.size());
-				long pollStartTime = System.currentTimeMillis();
+		// Fetch failed records
+		List<Map<String, Object>> failedRecords = getFailedConnectionRecords(schedulerIds);
 
-				// Poll up to 15 minutes for consumer processing
-				while (System.currentTimeMillis() - pollStartTime < 15 * 60 * 1000) {
-					try {
-						Map<String, Object> overallStats = getOverallConnectionStatusStats(schedulerIds);
-						long initiatedCount = ((Number) overallStats.getOrDefault("initiated_count", 0)).longValue();
-						long totalCount = ((Number) overallStats.getOrDefault("total_count", 0)).longValue();
+		// Send SINGLE consolidated email for this tenant (or stuck alert email if stalled)
+		sendBillEmail(tenantSchedulers, localitySummaries, failedRecords, schedulerIds,
+				totalScheduled, totalSuccess, totalFailure, totalPending, grandTotalAmount,
+				startTime, isStalled, requestInfo);
+	}
 
-						if (totalCount > 0 && initiatedCount == 0) {
-							log.info("🎯 All {} scheduled bill connections processed!", totalCount);
-							break;
-						}
-					} catch (Exception e) {
-						log.warn("⚠️ Polling bill connection status error: {}", e.getMessage());
-					}
+	private List<BillScheduler> getTenantInitiatedSchedulers(String tenantId, List<String> triggeredIds) {
+		StringBuilder sql = new StringBuilder("SELECT * FROM eg_ws_scheduler WHERE tenantid = :tenantId ");
+		Map<String, Object> params = new HashMap<>();
+		params.put("tenantId", tenantId);
 
-					try {
-						Thread.sleep(10000); // Poll every 10 seconds
-					} catch (InterruptedException ie) {
-						Thread.currentThread().interrupt();
-						log.error("❌ Bill monitoring interrupted");
-						break;
-					}
-				}
+		if (triggeredIds != null && !triggeredIds.isEmpty()) {
+			sql.append("AND (status IN ('INITIATED', 'INPROGRESS') OR id IN (:triggeredIds)) ");
+			params.put("triggeredIds", triggeredIds);
+		} else {
+			sql.append("AND status IN ('INITIATED', 'INPROGRESS') ");
+		}
+		sql.append("ORDER BY createdtime ASC");
 
-				// Build summaries for each locality / group / tenant scheduler
-				List<LocalityBillSummary> localitySummaries = new ArrayList<>();
-				int totalScheduled = 0;
-				int totalSuccess = 0;
-				int totalFailure = 0;
-				BigDecimal grandTotalAmount = BigDecimal.ZERO;
-
-				for (BillScheduler scheduler : billSchedularList) {
-					String locOrGroup;
-					if (scheduler.getLocality() != null && !scheduler.getLocality().trim().isEmpty()) {
-						locOrGroup = "Locality: " + scheduler.getLocality();
-					} else if (scheduler.getGrup() != null && !scheduler.getGrup().trim().isEmpty()) {
-						locOrGroup = "Group: " + scheduler.getGrup();
-					} else if (scheduler.getGroup() != null && !scheduler.getGroup().isEmpty()) {
-						locOrGroup = "Group: " + String.join(", ", scheduler.getGroup());
-					} else {
-						locOrGroup = "All Localities (Tenant)";
-					}
-
-					Map<String, Object> stats = getSchedulerStatusStats(scheduler.getId());
-					int count = ((Number) stats.getOrDefault("total_count", 0)).intValue();
-					int succ = ((Number) stats.getOrDefault("success_count", 0)).intValue();
-					int fail = ((Number) stats.getOrDefault("failure_count", 0)).intValue();
-
-					BigDecimal amount = getSchedulerTotalAmount(scheduler.getId());
-
-					String status = fail == 0 && count > 0 ? "COMPLETED" : (succ > 0 ? "PARTIALLY COMPLETED" : (count == 0 ? "NO DATA" : "FAILED"));
-
-					LocalityBillSummary summary = LocalityBillSummary.builder()
-							.localityOrGroup(locOrGroup)
-							.tenantId(scheduler.getTenantId())
-							.cityName(getCityName(scheduler.getTenantId()))
-							.totalCount(count)
-							.successCount(succ)
-							.failureCount(fail)
-							.totalAmount(amount)
-							.status(status)
-							.build();
-
-					localitySummaries.add(summary);
-
-					totalScheduled += count;
-					totalSuccess += succ;
-					totalFailure += fail;
-					grandTotalAmount = grandTotalAmount.add(amount);
-				}
-
-				// Fetch failed records
-				List<Map<String, Object>> failedRecords = getFailedConnectionRecords(schedulerIds);
-
-				// Send Email using template from message table
-				sendBillEmail(billSchedularList, localitySummaries, failedRecords, schedulerIds, totalScheduled, totalSuccess, totalFailure, grandTotalAmount, startTime, requestInfo);
-
-			} catch (Exception ex) {
-				log.error("❌ Error in async bill scheduler completion notification: {}", ex.getMessage(), ex);
-			}
-		});
+		try {
+			List<BillScheduler> list = jdbcTemplate.query(sql.toString(), params, billGenerateSchedulerRowMapper);
+			return list != null ? list : Collections.emptyList();
+		} catch (Exception e) {
+			log.error("⚠️ Error querying tenant initiated/in-progress schedulers: {}", e.getMessage(), e);
+			return Collections.emptyList();
+		}
 	}
 
 	private void sendBillEmail(List<BillScheduler> schedulers, List<LocalityBillSummary> summaries,
 							   List<Map<String, Object>> failedRecords, List<String> schedulerIds,
 							   int totalScheduled, int totalSuccess,
-							   int totalFailure, BigDecimal totalAmount, long startTime, RequestInfo requestInfo) {
+							   int totalFailure, int totalPending, BigDecimal totalAmount, long startTime, boolean isStalled, RequestInfo requestInfo) {
 		try {
 			String primaryTenant = schedulers.get(0).getTenantId();
 			String localizationMessage = "";
@@ -226,22 +382,46 @@ public class BillSchedulerNotificationService {
 				displayTenant = distinctTenantIds.isEmpty() ? "Unknown" : distinctTenantIds.get(0);
 			}
 
-			String generatedOn = new SimpleDateFormat("dd-MMM-yyyy hh:mm a").format(new Date(startTime));
-			String completedOn = new SimpleDateFormat("dd-MMM-yyyy hh:mm a").format(new Date());
+			String generatedOn = getIstDateFormat("dd-MMM-yyyy hh:mm a").format(new Date(startTime));
+			String completedOn = getIstDateFormat("dd-MMM-yyyy hh:mm a").format(new Date());
 
 			long durationMs = System.currentTimeMillis() - startTime;
 			long durationMin = (durationMs / 1000) / 60;
 			long durationSec = (durationMs / 1000) % 60;
 			String duration = durationMin + "m " + durationSec + "s";
 
-			String overallStatus = totalFailure == 0 && totalSuccess > 0 ? "SUCCESS" : (totalSuccess > 0 ? "PARTIALLY COMPLETED" : "COMPLETED");
-			String statusColor = totalFailure == 0 ? "#10b981" : "#f59e0b";
+			String overallStatus;
+			String statusColor;
+			if (totalPending > 0 || isStalled) {
+				overallStatus = "PARTIALLY COMPLETED (STALLED)";
+				statusColor = "#ef4444";
+			} else if (totalFailure == 0 && totalSuccess > 0) {
+				overallStatus = "SUCCESS";
+				statusColor = "#10b981";
+			} else if (totalSuccess > 0) {
+				overallStatus = "PARTIALLY COMPLETED";
+				statusColor = "#f59e0b";
+			} else {
+				overallStatus = "COMPLETED";
+				statusColor = "#64748b";
+			}
 
 			// Build Locality breakdown rows
 			StringBuilder localityRows = new StringBuilder();
 			int sNo = 1;
+			List<String> missingLocalitiesList = new ArrayList<>();
 			for (LocalityBillSummary loc : summaries) {
-				String locStatusColor = "COMPLETED".equalsIgnoreCase(loc.getStatus()) ? "#10b981" : "#ef4444";
+				String locStatusColor;
+				if (loc.getStatus() != null && loc.getStatus().contains("MISSING IN BOUNDARY")) {
+					locStatusColor = "#d97706";
+					missingLocalitiesList.add(loc.getLocalityOrGroup());
+				} else if (loc.getPendingCount() > 0) {
+					locStatusColor = "#ef4444";
+				} else if ("COMPLETED".equalsIgnoreCase(loc.getStatus())) {
+					locStatusColor = "#10b981";
+				} else {
+					locStatusColor = "#f59e0b";
+				}
 				localityRows.append("<tr style=\"border-bottom: 1px solid #e5e7eb;\">")
 						.append("<td style=\"padding: 8px 12px; text-align: center;\">").append(sNo++).append("</td>")
 						.append("<td style=\"padding: 8px 12px; font-weight: 600; color: #1f2937;\">").append(loc.getLocalityOrGroup()).append("</td>")
@@ -298,21 +478,54 @@ public class BillSchedulerNotificationService {
 					.replace("{totalScheduled}", COUNT_FORMAT.format(totalScheduled))
 					.replace("{totalSuccess}", COUNT_FORMAT.format(totalSuccess))
 					.replace("{totalFailure}", COUNT_FORMAT.format(totalFailure))
+					.replace("{totalPending}", COUNT_FORMAT.format(totalPending))
 					.replace("{totalAmount}", CURRENCY_FORMAT.format(totalAmount))
 					.replace("{successRate}", successRate)
 					.replace("{commonFailureReason}", commonFailureReason)
 					.replace("{localityRows}", localityRows.toString())
 					.replace("{failedRows}", failedRows.toString());
 
+			if (!missingLocalitiesList.isEmpty()) {
+				String boundaryWarning = "<div style=\"background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 14px; margin: 20px 0;\">"
+						+ "<h4 style=\"margin: 0; color: #b45309; font-size: 14px; font-weight: bold;\">⚠️ Boundary Notice: Missing Localities in Database</h4>"
+						+ "<p style=\"margin: 6px 0 0; color: #92400e; font-size: 13px; line-height: 1.5;\">"
+						+ "The following locality code(s) were not found in the boundary table (<code>eg_bndry_mohalla</code>) for this tenant: <strong>"
+						+ String.join(", ", missingLocalitiesList)
+						+ "</strong>.<br/>These entries were automatically marked as <strong>COMPLETED</strong> and skipped from billing."
+						+ "</p>"
+						+ "</div>";
+				if (customizedMsg.contains("<table")) {
+					customizedMsg = customizedMsg.replaceFirst("<table", boundaryWarning + "<table");
+				}
+			}
+
+			if (totalPending > 0 || isStalled) {
+				String pendingWarning = "<div style=\"background-color: #fef2f2; border: 2px solid #ef4444; border-radius: 8px; padding: 16px; margin: 20px 0;\">"
+						+ "<h3 style=\"margin: 0; color: #991b1b; font-size: 16px; font-weight: bold;\">[STUCK ALERT] Water Bill Generation Stalled - Action Required</h3>"
+						+ "<p style=\"margin: 8px 0 0; color: #7f1d1d; font-size: 13px; line-height: 1.5;\">"
+						+ "Billing execution for <strong>" + displayCity + "</strong> halted before completing all connections. "
+						+ "No consumer progress was detected for over 5 minutes.<br/>"
+						+ "• Total Scheduled: <strong>" + COUNT_FORMAT.format(totalScheduled) + "</strong><br/>"
+						+ "• Processed: <strong>" + COUNT_FORMAT.format(totalSuccess + totalFailure) + "</strong> (" + COUNT_FORMAT.format(totalSuccess) + " bills, " + COUNT_FORMAT.format(totalFailure) + " failures)<br/>"
+						+ "• <span style=\"color: #b91c1c; font-weight: bold;\">Stuck / Incomplete: " + COUNT_FORMAT.format(totalPending) + " connection(s)</span> still in <code>Initiated</code> state.<br/>"
+						+ "• <strong>Resolution Note:</strong> All associated scheduler entries have been automatically marked as <strong>COMPLETED</strong> to prevent blocking future billing cycles."
+						+ "</p>"
+						+ "</div>";
+				if (customizedMsg.contains("<table")) {
+					customizedMsg = customizedMsg.replaceFirst("<table", pendingWarning + "<table");
+				}
+			}
+
 			String subject;
 			String body;
-			if (customizedMsg.contains("<h2>") && customizedMsg.contains("</h2>")) {
+			if (totalPending > 0 || isStalled) {
+				subject = "[STUCK ALERT] Water Bill Generation Stalled - " + displayCity + " (" + COUNT_FORMAT.format(totalPending) + " Records Unprocessed)";
+			} else if (customizedMsg.contains("<h2>") && customizedMsg.contains("</h2>")) {
 				subject = customizedMsg.substring(customizedMsg.indexOf("<h2>") + 4, customizedMsg.indexOf("</h2>"));
-				body = customizedMsg.substring(customizedMsg.indexOf("</h2>") + 5);
 			} else {
-				subject = "Water Bill Generation Completed - " + displayCity + " (" + new SimpleDateFormat("dd-MMM-yyyy").format(new Date()) + ")";
-				body = customizedMsg;
+				subject = "Water Bill Generation Completed - " + displayCity + " (" + getIstDateFormat("dd-MMM-yyyy").format(new Date()) + ")";
 			}
+			body = customizedMsg;
 
 			Set<String> toRecipients = notificationUtil.getTenantEmailIds(distinctTenantIds, requestInfo);
 			if (toRecipients == null || toRecipients.isEmpty()) {
@@ -363,7 +576,8 @@ public class BillSchedulerNotificationService {
 		String sql = "SELECT "
 				+ "COUNT(*) as total_count, "
 				+ "COUNT(CASE WHEN status = 'Success' THEN 1 END) as success_count, "
-				+ "COUNT(CASE WHEN status = 'Failure' THEN 1 END) as failure_count "
+				+ "COUNT(CASE WHEN status = 'Failure' THEN 1 END) as failure_count, "
+				+ "COUNT(CASE WHEN status = 'Initiated' THEN 1 END) as initiated_count "
 				+ "FROM eg_ws_bill_scheduler_connection_status "
 				+ "WHERE eg_ws_scheduler_id = :id";
 
@@ -376,6 +590,7 @@ public class BillSchedulerNotificationService {
 			empty.put("total_count", 0);
 			empty.put("success_count", 0);
 			empty.put("failure_count", 0);
+			empty.put("initiated_count", 0);
 			return empty;
 		}
 	}
@@ -450,5 +665,11 @@ public class BillSchedulerNotificationService {
 			log.warn("⚠️ Error querying most common failure reason: {}", e.getMessage());
 			return "Unable to determine";
 		}
+	}
+
+	private SimpleDateFormat getIstDateFormat(String pattern) {
+		SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+		sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+		return sdf;
 	}
 }

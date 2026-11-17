@@ -685,6 +685,24 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 		long startTime = System.currentTimeMillis();
 		for (BillScheduler billSchedular : billSchedularList) {
 			try {
+				boolean hasLocality = billSchedular.getLocality() != null && !billSchedular.getLocality().trim().isEmpty();
+				boolean hasGroup = billSchedular.getGrup() != null && !billSchedular.getGrup().trim().isEmpty();
+
+				// If both locality and group are null/empty in the incoming row, mark as COMPLETED and skip
+				if (!hasLocality && !hasGroup && schedulerLevel != SchedulerLevel.TENANT) {
+					log.info("Scheduler row {} has both locality and group null/empty. Marking as COMPLETED.", billSchedular.getId());
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.COMPLETED);
+					continue;
+				}
+
+				// If locality is missing in eg_bndry_mohalla, do NOT insert: mark as COMPLETED and skip
+				if (hasLocality && !billGeneratorDao.isLocalityPresentInMohalla(billSchedular.getLocality().trim(), billSchedular.getTenantId())) {
+					log.warn("⚠️ Locality {} for tenant {} is missing in eg_bndry_mohalla. Marking as COMPLETED and skipping.",
+							billSchedular.getLocality(), billSchedular.getTenantId());
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.COMPLETED);
+					continue;
+				}
+
 				List<String> connectionNos = null;
 
 				requestInfo.getUserInfo().setTenantId(billSchedular.getTenantId() != null ? billSchedular.getTenantId() : requestInfo.getUserInfo().getTenantId());
@@ -713,7 +731,8 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 //				connectionNos.add("0603009718");
 				
 				if (connectionNos == null || connectionNos.isEmpty()) {
-					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.COMPLETED);
+					billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
+				log.info("Updated Sewerage Bill Schedular Status To INPROGRESS (awaiting consumer processing)");
 					continue;
 				}
 
@@ -755,7 +774,7 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 					 billGeneratorDao.insertBillSchedulerConnectionStatus(
 			                    new ArrayList<>(billGeneraterReq.getConsumerCodes()),
 			                    billGeneraterReq.getBillSchedular().getId(),
-			                    billGeneraterReq.getBillSchedular().getLocality(),
+			                    localityCode,
 			                    SWCalculationConstant.INITIATED,
 			                    billGeneraterReq.getBillSchedular().getTenantId(),
 			                    SWCalculationConstant.INITIATED,
@@ -767,7 +786,8 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 
 
 				}
-				billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.COMPLETED);
+				billGeneratorDao.updateBillSchedularStatus(billSchedular.getId(), StatusEnum.INPROGRESS);
+				log.info("Updated Sewerage Bill Schedular Status To INPROGRESS (awaiting consumer processing)");
 
 			}catch (Exception e) {
 				e.printStackTrace();

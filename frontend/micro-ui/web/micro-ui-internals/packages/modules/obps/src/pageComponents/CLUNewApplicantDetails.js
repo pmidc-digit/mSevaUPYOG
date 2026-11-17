@@ -328,7 +328,7 @@ const CLUNewApplicantDetails = (_props) => {
           ownerType: ownerType,
           emailId: owner.emailId || "",
           mobileNumber: owner.mobileNumber || "",
-          userName: owner.mobileNumber || "",
+          userName: owner.userName || owner.uuid || owner.mobileNumber || "",
           fatherOrHusbandName: owner.fatherOrHusbandName || "",
           permanentAddress: owner.permanentAddress || owner.address || "",
           address: owner.permanentAddress || owner.address || "",

@@ -248,8 +248,10 @@ public class AllotmentService {
 				.append(config.getRlCalculatorEndpoint());
 		Object response = serviceRequestRepository.fetchResult(url, calculationReq).get();
 		DemandResponse demandResponse = mapper.convertValue(response, DemandResponse.class);
-		String demandId =demandResponse.getDemands().get(0).getId();
-		return demandId;
+		if (demandResponse != null && !CollectionUtils.isEmpty(demandResponse.getDemands())) {
+			return demandResponse.getDemands().get(0).getId();
+		}
+		return null;
 	}
 
     /**
@@ -364,8 +366,10 @@ public class AllotmentService {
                 .append(config.getRlCalculatorEndpoint());
         Object response = serviceRequestRepository.fetchResult(url, calculationReq).get();
         DemandResponse demandResponse = mapper.convertValue(response, DemandResponse.class);
-        String demandId = demandResponse.getDemands().get(0).getId();
-        return demandId;
+        if (demandResponse != null && !CollectionUtils.isEmpty(demandResponse.getDemands())) {
+            return demandResponse.getDemands().get(0).getId();
+        }
+        return null;
     }
 
     /**

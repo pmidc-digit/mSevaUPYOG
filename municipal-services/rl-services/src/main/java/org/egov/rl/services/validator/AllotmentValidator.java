@@ -402,10 +402,10 @@ public class AllotmentValidator {
 				}
 
 				if (hasRebate) {
-					String key = objNode.hasNonNull("rebateAmount") && !objNode.get("rebateAmount").asText().trim().isEmpty()
-							? "rebateAmount"
-							: (objNode.hasNonNull(RLConstants.ADHOC_REBATE_ALT_KEY) && !objNode.get(RLConstants.ADHOC_REBATE_ALT_KEY).asText().trim().isEmpty()
-									? RLConstants.ADHOC_REBATE_ALT_KEY : RLConstants.ADHOC_REBATE_KEY);
+					String key = objNode.hasNonNull(RLConstants.ADHOC_REBATE_ALT_KEY) && !objNode.get(RLConstants.ADHOC_REBATE_ALT_KEY).asText().trim().isEmpty()
+							? RLConstants.ADHOC_REBATE_ALT_KEY
+							: (objNode.hasNonNull("rebateAmount") && !objNode.get("rebateAmount").asText().trim().isEmpty()
+									? "rebateAmount" : RLConstants.ADHOC_REBATE_KEY);
 					try {
 						BigDecimal rebateVal = new BigDecimal(objNode.get(key).asText().trim());
 						// Rebate amount must be negative; if not, make it negative
@@ -416,6 +416,17 @@ public class AllotmentValidator {
 						objNode.put("rebateAmount", negRebateVal);
 					} catch (NumberFormatException e) {
 						throw new CustomException("INVALID_ADHOC_REBATE", "Adhoc rebate amount must be a valid number.");
+					}
+
+					String reasonKey = objNode.hasNonNull(RLConstants.ADHOC_REBATE_ALT_REASON_KEY) && !objNode.get(RLConstants.ADHOC_REBATE_ALT_REASON_KEY).asText().trim().isEmpty()
+							? RLConstants.ADHOC_REBATE_ALT_REASON_KEY
+							: (objNode.hasNonNull("rebateReason") && !objNode.get("rebateReason").asText().trim().isEmpty()
+									? "rebateReason" : RLConstants.ADHOC_REBATE_REASON_KEY);
+					if (objNode.hasNonNull(reasonKey) && !objNode.get(reasonKey).asText().trim().isEmpty()) {
+						String reasonVal = objNode.get(reasonKey).asText().trim();
+						objNode.put(RLConstants.ADHOC_REBATE_ALT_REASON_KEY, reasonVal);
+						objNode.put(RLConstants.ADHOC_REBATE_REASON_KEY, reasonVal);
+						objNode.put("rebateReason", reasonVal);
 					}
 				}
 			}

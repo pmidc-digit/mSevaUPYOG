@@ -538,8 +538,8 @@ public class CalculationService {
                 stepMonths = 12;
             }
 
-            // Generate demands stepping by cycle duration (1, 3, 6, or 12 months)
-            YearMonth currentIterMonth = lastPaidMonth.plusMonths(stepMonths);
+            // Generate demands stepping by cycle duration (1, 3, 6, or 12 months) starting from the first unpaid month
+            YearMonth currentIterMonth = lastPaidMonth.plusMonths(1);
             while (!currentIterMonth.isAfter(entryMonth)) {
                 YearMonth endIterMonth = currentIterMonth.plusMonths(stepMonths - 1);
                 long periodFrom = currentIterMonth.atDay(1).atStartOfDay(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();

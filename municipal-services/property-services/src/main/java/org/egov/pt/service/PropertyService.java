@@ -162,14 +162,17 @@ public class PropertyService {
 
 		Property propertyFromSearch = unmaskingUtil.getPropertyUnmasked(request);
 
-		boolean isNumberDifferent = checkIsRequestForMobileNumberUpdate(request, propertyFromSearch);
-	    boolean surveyIdChanged = isSurveyIdUpdate(request, propertyFromSearch);
+		boolean isRequestForOwnerMutation = CreationReason.MUTATION.equals(request.getProperty().getCreationReason());
+		boolean isMutationWorkflowRequest = isRequestForOwnerMutation
+				&& (Status.INWORKFLOW.equals(propertyFromSearch.getStatus()) || request.getProperty().getWorkflow() != null);
+
+		boolean isNumberDifferent = !isMutationWorkflowRequest
+				&& checkIsRequestForMobileNumberUpdate(request, propertyFromSearch);
+		boolean surveyIdChanged = isSurveyIdUpdate(request, propertyFromSearch);
 
 		if (!isNumberDifferent && !surveyIdChanged) {
 			propertyValidator.validateCommonUpdateInformation(request, propertyFromSearch);
 		}
-
-		boolean isRequestForOwnerMutation = CreationReason.MUTATION.equals(request.getProperty().getCreationReason());
 
 		boolean isRequestForStatusChange = CreationReason.STATUS.equals(request.getProperty().getCreationReason());
 
@@ -413,15 +416,27 @@ public class PropertyService {
 
 		notifService.sendNotificationForMobileNumberUpdate(request, propertyFromSearch, uuidToMobileNumber);
 
-		Map<OwnerInfo, String> ownerToInitialUuid = new HashMap<OwnerInfo, String>();
+		Map<OwnerInfo, String> ownerToInitialUuid = captureInitialOwnerUuids(request);
+
+		userService.updateUserMobileNumber(request, uuidToMobileNumber);
+
+		inactivateReplacedOwners(request, propertyFromSearch, ownerToInitialUuid);
+	}
+
+	private Map<OwnerInfo, String> captureInitialOwnerUuids(PropertyRequest request) {
+		Map<OwnerInfo, String> ownerToInitialUuid = new IdentityHashMap<OwnerInfo, String>();
 		if (!CollectionUtils.isEmpty(request.getProperty().getOwners())) {
 			for (OwnerInfo owner : request.getProperty().getOwners()) {
 				ownerToInitialUuid.put(owner, owner.getUuid());
 			}
 		}
+		return ownerToInitialUuid;
+	}
 
-		userService.updateUserMobileNumber(request, uuidToMobileNumber);
+	private void inactivateReplacedOwners(PropertyRequest request, Property propertyFromSearch,
+			Map<OwnerInfo, String> ownerToInitialUuid) {
 
+		List<OwnerInfo> searchOwners = propertyFromSearch.getOwners();
 		Map<String, OwnerInfo> searchOwnerMap = new HashMap<String, OwnerInfo>();
 		if (!CollectionUtils.isEmpty(searchOwners)) {
 			for (OwnerInfo searchOwner : searchOwners) {
@@ -431,48 +446,52 @@ public class PropertyService {
 			}
 		}
 
+		Set<String> allRequestUuids = new HashSet<String>();
+		if (!CollectionUtils.isEmpty(request.getProperty().getOwners())) {
+			for (OwnerInfo reqOwner : request.getProperty().getOwners()) {
+				if (reqOwner.getUuid() != null) {
+					allRequestUuids.add(reqOwner.getUuid());
+				}
+			}
+		}
+
 		List<OwnerInfo> inactiveOwners = new ArrayList<OwnerInfo>();
-		Set<String> activeUuidsInRequest = new HashSet<String>();
+		Set<String> alreadyInactivatedUuids = new HashSet<String>();
 
 		if (!CollectionUtils.isEmpty(request.getProperty().getOwners())) {
 			for (OwnerInfo reqOwner : request.getProperty().getOwners()) {
 				String initialUuid = ownerToInitialUuid.get(reqOwner);
 				String updatedUuid = reqOwner.getUuid();
 
-				if (updatedUuid != null) {
-					activeUuidsInRequest.add(updatedUuid);
-				}
-
 				if (initialUuid != null && updatedUuid != null && !initialUuid.equals(updatedUuid)) {
 					reqOwner.setOwnerInfoUuid(UUID.randomUUID().toString());
-					reqOwner.setStatus(Status.ACTIVE);
+					if (reqOwner.getStatus() == null) {
+						reqOwner.setStatus(Status.ACTIVE);
+					}
 
 					OwnerInfo previousOwner = searchOwnerMap.get(initialUuid);
-					if (previousOwner != null) {
+					if (previousOwner != null
+							&& !allRequestUuids.contains(initialUuid)
+							&& !alreadyInactivatedUuids.contains(initialUuid)) {
 						OwnerInfo inactiveOwner = new OwnerInfo(previousOwner);
 						inactiveOwner.setStatus(Status.INACTIVE);
 						inactiveOwners.add(inactiveOwner);
+						alreadyInactivatedUuids.add(initialUuid);
 					}
 				}
 			}
 		}
 
 		if (!CollectionUtils.isEmpty(searchOwners)) {
-			Set<String> alreadyInactivatedUuids = new HashSet<String>();
-			for (OwnerInfo o : inactiveOwners) {
-				if (o.getUuid() != null) {
-					alreadyInactivatedUuids.add(o.getUuid());
-				}
-			}
-
 			for (OwnerInfo searchOwner : searchOwners) {
 				if (searchOwner.getUuid() != null
 						&& Status.ACTIVE.equals(searchOwner.getStatus())
-						&& !activeUuidsInRequest.contains(searchOwner.getUuid())
+						&& !allRequestUuids.contains(searchOwner.getUuid())
 						&& !alreadyInactivatedUuids.contains(searchOwner.getUuid())) {
 					OwnerInfo inactiveOwner = new OwnerInfo(searchOwner);
 					inactiveOwner.setStatus(Status.INACTIVE);
 					inactiveOwners.add(inactiveOwner);
+					alreadyInactivatedUuids.add(searchOwner.getUuid());
 				}
 			}
 		}
@@ -491,8 +510,10 @@ public class PropertyService {
 	private void processOwnerMutation(PropertyRequest request, Property propertyFromSearch) {
 
 		propertyValidator.validateMutation(request, propertyFromSearch);
+		Map<OwnerInfo, String> ownerToInitialUuid = captureInitialOwnerUuids(request);
 		userService.createUserForMutation(request, !propertyFromSearch.getStatus().equals(Status.INWORKFLOW));
 		enrichmentService.enrichAssignes(request.getProperty());
+		inactivateReplacedOwners(request, propertyFromSearch, ownerToInitialUuid);
 		enrichmentService.enrichMutationRequest(request, propertyFromSearch);
 		// calculatorService.calculateMutationFee(request.getRequestInfo(),
 		// request.getProperty());

@@ -164,7 +164,9 @@ public class PropertyService {
 
 		boolean isRequestForOwnerMutation = CreationReason.MUTATION.equals(request.getProperty().getCreationReason());
 		boolean isMutationWorkflowRequest = isRequestForOwnerMutation
-				&& (Status.INWORKFLOW.equals(propertyFromSearch.getStatus()) || request.getProperty().getWorkflow() != null);
+				&& (Status.INWORKFLOW.equals(propertyFromSearch.getStatus())
+						|| (request.getProperty().getWorkflow() != null
+								&& !StringUtils.isEmpty(request.getProperty().getWorkflow().getAction())));
 
 		boolean isNumberDifferent = !isMutationWorkflowRequest
 				&& checkIsRequestForMobileNumberUpdate(request, propertyFromSearch);
@@ -317,7 +319,7 @@ public class PropertyService {
 
 		if (!CollectionUtils.isEmpty(request.getProperty().getOwners())) {
 			List<OwnerInfo> activeOwnersOnly = request.getProperty().getOwners().stream()
-					.filter(owner -> Status.ACTIVE.equals(owner.getStatus()))
+					.filter(owner -> !Status.INACTIVE.equals(owner.getStatus()))
 					.collect(Collectors.toList());
 			request.getProperty().setOwners(activeOwnersOnly);
 		}
@@ -414,11 +416,22 @@ public class PropertyService {
 			}
 		}
 
-		notifService.sendNotificationForMobileNumberUpdate(request, propertyFromSearch, uuidToMobileNumber);
-
 		Map<OwnerInfo, String> ownerToInitialUuid = captureInitialOwnerUuids(request);
 
 		userService.updateUserMobileNumber(request, uuidToMobileNumber);
+
+		if (!CollectionUtils.isEmpty(request.getProperty().getOwners())) {
+			for (OwnerInfo reqOwner : request.getProperty().getOwners()) {
+				String initialUuid = ownerToInitialUuid.get(reqOwner);
+				String updatedUuid = reqOwner.getUuid();
+				if (initialUuid != null && updatedUuid != null && !initialUuid.equals(updatedUuid)
+						&& uuidToMobileNumber.containsKey(initialUuid)) {
+					uuidToMobileNumber.put(updatedUuid, uuidToMobileNumber.get(initialUuid));
+				}
+			}
+		}
+
+		notifService.sendNotificationForMobileNumberUpdate(request, propertyFromSearch, uuidToMobileNumber);
 
 		inactivateReplacedOwners(request, propertyFromSearch, ownerToInitialUuid);
 	}
@@ -513,7 +526,9 @@ public class PropertyService {
 		Map<OwnerInfo, String> ownerToInitialUuid = captureInitialOwnerUuids(request);
 		userService.createUserForMutation(request, !propertyFromSearch.getStatus().equals(Status.INWORKFLOW));
 		enrichmentService.enrichAssignes(request.getProperty());
-		inactivateReplacedOwners(request, propertyFromSearch, ownerToInitialUuid);
+		if (Status.INWORKFLOW.equals(propertyFromSearch.getStatus()) || !config.getIsMutationWorkflowEnabled()) {
+			inactivateReplacedOwners(request, propertyFromSearch, ownerToInitialUuid);
+		}
 		enrichmentService.enrichMutationRequest(request, propertyFromSearch);
 		// calculatorService.calculateMutationFee(request.getRequestInfo(),
 		// request.getProperty());

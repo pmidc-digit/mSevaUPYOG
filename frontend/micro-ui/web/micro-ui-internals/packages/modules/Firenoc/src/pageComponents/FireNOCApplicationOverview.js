@@ -82,7 +82,9 @@ const FireNOCApplicationOverview = () => {
   const [getEmployees, setEmployees] = useState([]);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [loading, setLoading] = useState(false);
-  const cities = Digit.Hooks.useTenants();
+  const stateId = Digit.ULBService.getStateId();
+  const { data: tenantMdms } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{ name: "tenants" }], { retry: false });
+console.log(tenantMdms, "tenantMdms")
 
 
   const menuRef = React.useRef();
@@ -304,7 +306,7 @@ const FireNOCApplicationOverview = () => {
 
       const tenantCode = address?.city; 
 
-      const matchedCity = cities?.status === "success" && cities?.data?.find((city) => city?.code === tenantCode);
+      const matchedCity = tenantMdms?.tenant?.tenants?.find((city) => city?.code === tenantCode);
 
 
       const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData , matchedCity : matchedCity});

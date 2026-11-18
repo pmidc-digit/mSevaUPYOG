@@ -92,6 +92,9 @@ public class NOCConfiguration {
 
 	@Value("${egov.idgen.noc.application.id}")
 	private String applicationNoIdgenName;
+
+	@Value("${egov.idgen.noc.application.mgr.id:noc.application.number.mgr}")
+	private String applicationNoIdgenNameMgr;
 	
 	@Value("${workflow.context.path}")
 	private String wfHost;

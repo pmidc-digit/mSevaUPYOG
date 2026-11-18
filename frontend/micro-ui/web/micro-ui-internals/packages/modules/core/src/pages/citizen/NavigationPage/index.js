@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Loader, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { citizenServiceMappings } from "../../../config/ssoConfig";
+import {Decryption} from "./decryption"
 
 const USER_TYPE = "CITIZEN";
 const TYPE_REGISTER = "register";
@@ -72,19 +73,38 @@ const NavigationApp = ({ stateCode }) => {
       return;
     }
     const queryParams = new URLSearchParams(location.search);
-    const msg = queryParams.get("msg");
+    const decmsg = queryParams.get("msg");
+    
+    const msg = Decryption(decmsg);
+    if (!msg) {
+      showToast(ERROR_MESSAGE, true);
+      return;
+    }
+    // token | fullName | email | mobile | serviceCode | JSON data | returnUrl | hash
     const params = msg.split("|");
-    if (params.length !== 5) {
+    if (params.length < 7) {
       showToast(INVALID_QUERY_PARAMS_VALUES, true);
       return;
     }
-    const [token, fullName, serviceName, dataString, returnUrl] = params;
-    const dataFromURL = { ...JSON.parse(dataString), fullName: fullName, serviceName: serviceName, returnUrl: returnUrl };
+    const [token, fullName, email, mobileNo, serviceCode, dataString, returnUrl, hash] = params;
+    let data;
+    try {
+      data = JSON.parse(dataString);
+    } catch (e) {
+      showToast(INVALID_QUERY_PARAMS_VALUES, true);
+      return;
+    }
+    const dataFromURL = {
+      ...data,
+      fullName,
+      serviceName: serviceCode,
+      returnUrl,
+    };
 
     const isMobileNoValid = validateMobileNumber(dataFromURL?.MobileNo?.trim());
     const isFullNameValid = validateFullName(dataFromURL?.fullName?.trim());
     const city = getCity(dataFromURL?.ULBName?.trim());
-    const isCityValid = Object.keys(city).length > 0;
+    const isCityValid = !!city;
 
     const areParamsValid =
       dataFromURL?.thirdPartyName &&

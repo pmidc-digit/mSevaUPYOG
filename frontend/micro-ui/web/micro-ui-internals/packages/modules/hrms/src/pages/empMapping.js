@@ -62,7 +62,18 @@ const EmpMaping = () => {
 
   // Custom Hooks from HRMS
   const { obpsRoles } = Digit.Hooks.hrms.useOBPSRoles(stateId);
-  const { employeeList: modalEmployeeList } = Digit.Hooks.hrms.useEmployeeList(selectedULB, obpsRoles.codes);
+  const { employeeList: rawModalEmployeeList } = Digit.Hooks.hrms.useEmployeeList(selectedULB, obpsRoles.codes);
+  const modalEmployeeList = useMemo(
+    () =>
+      (rawModalEmployeeList || []).map((emp) => {
+        const designation = emp.employeeObj?.assignments?.[0]?.designation;
+        return {
+          ...emp,
+          name: `${emp.employeeObj?.user?.name || emp.code} (${emp.code}) (${designation ? t(`COMMON_MASTERS_DESIGNATION_${designation}`) : "N/A"})`,
+        };
+      }),
+    [rawModalEmployeeList, t]
+  );
   const { zones: filterZones } = Digit.Hooks.hrms.useZones(stateId, filterULB);
   const { zones: modalZones } = Digit.Hooks.hrms.useZones(stateId, selectedULB || filterULB);
 
@@ -91,13 +102,17 @@ const EmpMaping = () => {
         });
 
         if (response?.Employees) {
-          const employeeOptions = response.Employees.map((emp) => ({
-            code: emp.code,
-            name: `${emp.user?.name || emp.code} (${emp.code}) (${emp.assignments?.[0]?.designation || "N/A"})`,
-            uuid: emp.uuid,
-            department: emp.assignments?.[0]?.department || "N/A",
-            employeeObj: emp,
-          }));
+          const employeeOptions = response.Employees.map((emp) => {
+            const designation = emp.assignments?.[0]?.designation;
+            const department = emp.assignments?.[0]?.department;
+            return {
+              code: emp.code,
+              name: `${emp.user?.name || emp.code} (${emp.code}) (${designation ? t(`COMMON_MASTERS_DESIGNATION_${designation}`) : "N/A"})`,
+              uuid: emp.uuid,
+              department: department ? `COMMON_MASTERS_DEPARTMENT_${department}` : "N/A",
+              employeeObj: emp,
+            };
+          });
           setSearchEmployeeList(employeeOptions);
         }
       } catch (error) {
@@ -242,7 +257,8 @@ const EmpMaping = () => {
 
     if (employee && employee.employeeObj) {
       if (employee.employeeObj.assignments && employee.employeeObj.assignments.length > 0) {
-        designation = employee.employeeObj.assignments[0].designation || "";
+        const empDesignation = employee.employeeObj.assignments[0].designation;
+        designation = empDesignation ? t(`COMMON_MASTERS_DESIGNATION_${empDesignation}`) : "";
       }
       roleNames = getEmployeeOBPSRoles(employee.employeeObj, obpsRoles.map);
     }

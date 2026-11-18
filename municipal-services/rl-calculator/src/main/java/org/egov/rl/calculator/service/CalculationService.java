@@ -415,6 +415,14 @@ public class CalculationService {
         if (lastPaidUpto != null && lastPaidUpto <= 0) {
             lastPaidUpto = null;
         }
+        Long lastBillingPeriod = criteria.getLastBillingPeriod();
+        if ((lastBillingPeriod == null || lastBillingPeriod <= 0) && additionalDetails != null) {
+            lastBillingPeriod = readLegacyDateMillis(additionalDetails,
+                    RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY, "lastBillingPeriod", "arrearEndDate");
+        }
+        if (lastBillingPeriod != null && lastBillingPeriod <= 0) {
+            lastBillingPeriod = null;
+        }
         boolean hasUnpaidCycles = lastPaidUpto != null;
         if (hasUnpaidCycles) {
             log.info("Legacy arrear generation for application {}: lastPaidUpto={}, cycle={}",
@@ -440,27 +448,13 @@ public class CalculationService {
         // Tax heads (SGST/CGST/Cowcess) - loaded lazily once and reused by every generated period.
         List<TaxRate> taxRates = null;
 
-        // Generate Current Period Demand
-        long taxPeriodFrom;
-        long taxPeriodTo;
-        
-        List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
-        BillingPeriod billingPeriod = null;
-        if (!CollectionUtils.isEmpty(billingPeriods)) {
-            String matchCycle = cycle;
-            billingPeriod = billingPeriods.stream()
-                    .filter(b -> b.getBillingCycle().equalsIgnoreCase(matchCycle))
-                    .findFirst().orElse(null);
-        }
-
-        if (billingPeriod != null) {
-            taxPeriodFrom = billingPeriod.getTaxPeriodFrom();
-            taxPeriodTo = billingPeriod.getTaxPeriodTo();
-        } else {
-            YearMonth currentMonth = YearMonth.from(entryDate);
-            taxPeriodFrom = currentMonth.atDay(1).atStartOfDay(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
-            taxPeriodTo = currentMonth.atEndOfMonth().atTime(23, 59, 59).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
-        }
+        // Generate Current Period Demand using dynamic FY period boundaries matching DemandService.generateBatchDemand
+        ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
+        LocalDate[] currentFYPeriod = DemandService.getFinancialYearPeriod(entryDate, cycle);
+        LocalDate currentPeriodStart = currentFYPeriod[0];
+        LocalDate currentPeriodEnd = currentFYPeriod[1];
+        long taxPeriodFrom = currentPeriodStart.atStartOfDay(zone).toInstant().toEpochMilli();
+        long taxPeriodTo = currentPeriodEnd.atTime(23, 59, 59).atZone(zone).toInstant().toEpochMilli();
 
         BigDecimal currentPeriodRent = BigDecimal.ZERO;
 
@@ -605,8 +599,16 @@ public class CalculationService {
                 currentIterMonth = currentIterMonth.plusMonths(stepMonths);
             }
         } else {
-            // Default legacy demand generation: current period demand
-            generatedDemands.add(monthlyDemand);
+            LocalDate lastBillingDate = (lastBillingPeriod != null)
+                    ? Instant.ofEpochMilli(lastBillingPeriod).atZone(zone).toLocalDate()
+                    : null;
+            if (lastBillingDate == null || currentPeriodEnd.isAfter(lastBillingDate)) {
+                // Default legacy demand generation: current period demand
+                generatedDemands.add(monthlyDemand);
+            } else {
+                log.info("Current period {} - {} for application {} ended on or before lastBillingPeriod {} - skipping regular rent demand.",
+                        currentPeriodStart, currentPeriodEnd, consumerCode, lastBillingDate);
+            }
         }
 
         // ---- Arrear demand: breakdown (baseArrear / arrearGST / arrearPenalty) or lump sum ----
@@ -930,7 +932,7 @@ public class CalculationService {
 	 * blank, and throws for a present but unusable value: Jackson's {@code asLong()} silently returns 0 and
 	 * would turn 1970-01-01 into the arrear start date, producing an absurd penalty.
 	 */
-	private Long readLegacyDateMillis(JsonNode details, String... keys) {
+	Long readLegacyDateMillis(JsonNode details, String... keys) {
 		if (details == null || keys == null) {
 			return null;
 		}

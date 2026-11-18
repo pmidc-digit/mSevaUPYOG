@@ -91,6 +91,9 @@ public class CLUConfiguration {
 
 	@Value("${egov.idgen.clu.application.id}")
 	private String applicationNoIdgenName;
+
+	@Value("${egov.idgen.clu.application.mgr.id:clu.application.number.mgr}")
+	private String applicationNoIdgenNameMgr;
 	
 	@Value("${workflow.context.path}")
 	private String wfHost;

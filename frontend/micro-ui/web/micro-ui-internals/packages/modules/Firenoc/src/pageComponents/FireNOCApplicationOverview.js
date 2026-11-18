@@ -83,8 +83,14 @@ const FireNOCApplicationOverview = () => {
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [loading, setLoading] = useState(false);
   const stateId = Digit.ULBService.getStateId();
-  const { data: tenantMdms } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{ name: "tenants" }], { retry: false });
-console.log(tenantMdms, "tenantMdms")
+  const { data: tenantMdms } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{ name: "tenants" }], { retry: false }  );
+  const localityTenantId = fireNOC?.fireNOCDetails?.propertyDetails?.address?.city;
+  const { data: fetchedLocalities = [] } = Digit.Hooks.useBoundaryLocalities(
+    localityTenantId,
+    "revenue",
+    { enabled: !!localityTenantId },
+    t
+  );
 
 
   const menuRef = React.useRef();
@@ -247,7 +253,9 @@ console.log(tenantMdms, "tenantMdms")
   const owners = details?.applicantDetails?.owners || [];
   const buildings = details?.buildings || [];
   const address = details?.propertyDetails?.address;
-
+  const selectedLocality = fetchedLocalities.find(
+    ({ code }) => code === address?.locality?.code
+  )?.name || address?.locality?.name || address?.locality?.code || "";
   const remainingDocs = (fireNOC?.documents || details?.applicantDetails?.additionalDetail?.ownerAuditionalDetail?.documents || [])
     ?.filter(
       (doc) =>
@@ -277,7 +285,7 @@ console.log(tenantMdms, "tenantMdms")
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData = null, ...params }) => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData});
+      const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData , selectedLocality: selectedLocality});
       let filestoreID = null;
         try {
           const response = await Digit.PaymentService.generatePdf(
@@ -309,7 +317,13 @@ console.log(tenantMdms, "tenantMdms")
       const matchedCity = tenantMdms?.tenant?.tenants?.find((city) => city?.code === tenantCode);
 
 
-      const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData , matchedCity : matchedCity});
+      const nocSanctionData = await getNOCSanctionLetter({
+        application: fireNOC,
+        t,
+        EmpData,
+        matchedCity,
+        selectedLocality,
+      });
 
       const prevGetLang = Digit.StoreData.getCurrentLanguage;
 
@@ -440,7 +454,7 @@ console.log(tenantMdms, "tenantMdms")
           <StatusTable>
             <Row label={t("NOC_CITY")} text={address?.city || address?.tenantId || "-"} />
             <Row label={t("NOC_AREA_TYPE")} text={address?.areaType || "-"} />
-            <Row label={t("NOC_LOCALITY")} text={address?.locality?.code || "-"} />
+            <Row label={t("NOC_LOCALITY")} text={selectedLocality || "-"} />
           </StatusTable>
         </Card>
 

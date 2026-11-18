@@ -79,6 +79,9 @@ public class LAYOUTConfiguration {
 
 	@Value("${egov.idgen.layout.application.id}")
 	private String applicationNoIdgenName;
+
+	@Value("${egov.idgen.layout.application.mgr.id:layout.application.number.mgr}")
+	private String applicationNoIdgenNameMgr;
 	
 	@Value("${workflow.context.path}")
 	private String wfHost;

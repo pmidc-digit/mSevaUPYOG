@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
+import { getStatusChangeDateColumn } from "../../../../../templates/Inbox/components/workflowColumns";
 
 const useLayoutTableConfig = ({ enableColumnSearch = false,  parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, globalSearch, cities }) => {
   const { t } = useTranslation();
@@ -148,16 +149,18 @@ const useLayoutTableConfig = ({ enableColumnSearch = false,  parentRoute, onPage
           return t(`${prefix}_${row?.status}`) || t(`${prefix}_${row?.applicationStatus}`) || "-";
         },
         id: "status",
-        Cell: ({ cell }) => {
-          const statusClass = getStatusClass(cell.value);
+        Cell: ({ value, cell }) => {
+          const statusText = value ?? cell?.value;
+          const statusClass = getStatusClass(statusText);
           return (
             <span className={`ndc-new-status-pill ${statusClass}`}>
               {renderStatusIcon(statusClass)}
-              <span>{cell.value}</span>
+              <span>{statusText}</span>
             </span>
           );
         },
       },
+      getStatusChangeDateColumn(t),
       {
         Header: t("ZONE"),
         accessor: (row) => t(row?.zone),

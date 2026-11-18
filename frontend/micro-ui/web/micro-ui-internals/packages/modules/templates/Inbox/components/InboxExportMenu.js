@@ -62,7 +62,7 @@ const InboxExportMenu = ({
 
   const getHeaders = useCallback(() => {
     return getExportableColumns().map((col) => {
-      const title = typeof col.Header === "string" ? col.Header : col.id || col.accessor || "Column";
+      const title = col.searchLabel || (typeof col.Header === "string" ? col.Header : col.id || col.accessor || "Column");
       return t ? t(title) : title;
     });
   }, [getExportableColumns, t]);

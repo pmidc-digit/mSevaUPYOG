@@ -4,16 +4,17 @@ export const getColumnText = (value) => {
   if (value == null) return "";
   if (Array.isArray(value)) return value.map(getColumnText).join(" ");
   if (React.isValidElement(value)) return getColumnText(value.props.children);
+  if (typeof value === "object") return getColumnText(value.name || value.label || value.code || "");
   return String(value);
 };
 
 const SearchHeader = ({ column }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+  <div className="inbox-column-search-header">
     <span>{column.searchLabel}</span>
     <input type="search" aria-label={`Search ${column.searchLabel}`} placeholder="Search…"
       value={column.searchValue} onChange={(event) => column.updateSearch(event.target.value)}
       onClick={(event) => event.stopPropagation()} onKeyDown={(event) => event.stopPropagation()}
-      style={{ width: "100%", minWidth: 110, padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: 6, fontSize: 14, fontWeight: 400, background: "white", color: "#334155" }} />
+      className="inbox-column-search-input" />
   </div>
 );
 

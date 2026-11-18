@@ -230,4 +230,56 @@ public class CitizenMultiProfileUpdateTest {
         assertEquals("Ramesh Kumar", incomingUpdate.getName());
         assertEquals("Suresh Kumar", incomingUpdate.getGuardian());
     }
+
+    @Test
+    public void test_updateWithoutOtpValidation_employee_preserves_ciphertext_without_double_encryption() {
+        String cipherMobile = "30048|piCvziANlzJwHaoQcafH7jSlXp2PlY+C7LDZni46Wd4sgQJ1QBRvMG06h0WIyysOQUuyrMzRMSy";
+        String cipherName = "30048|piCvziAN3i1sBaxIJqfW7G+wf/m8hqyHWy/37ho6R41fgG1IYEPMS70p5WF4b6CNgLd3nrtb";
+
+        User employeeDb = User.builder()
+                .uuid("uuid-emp")
+                .userName("emp01")
+                .name(cipherName)
+                .mobileNumber(cipherMobile)
+                .type(UserType.EMPLOYEE)
+                .tenantId("pb")
+                .active(true)
+                .roles(Collections.singleton(Role.builder().code("EMPLOYEE").build()))
+                .build();
+
+        when(userRepository.findAll(any(UserSearchCriteria.class))).thenReturn(Collections.singletonList(employeeDb));
+
+        // When encryptObject is called on User, verify that mobileNumber and name passed into encryptObject are NULL (skipped)
+        when(encryptionDecryptionUtil.encryptObject(any(User.class), eq("User"), eq(User.class)))
+                .thenAnswer(inv -> {
+                    User userPassedToEncrypt = (User) inv.getArguments()[0];
+                    assertNull("Already-encrypted mobileNumber must not be passed to encryptObject", userPassedToEncrypt.getMobileNumber());
+                    assertNull("Already-encrypted name must not be passed to encryptObject", userPassedToEncrypt.getName());
+                    return userPassedToEncrypt;
+                });
+
+        when(encryptionDecryptionUtil.decryptObject(any(User.class), eq("User"), eq(User.class), any()))
+                .thenReturn(employeeDb);
+
+        // Incoming update from HRMS sends back the ciphertext mobile and name
+        User incomingUpdate = User.builder()
+                .uuid("uuid-emp")
+                .userName("emp01")
+                .name(cipherName)
+                .mobileNumber(cipherMobile)
+                .type(UserType.EMPLOYEE)
+                .tenantId("pb")
+                .active(true)
+                .roles(Collections.singleton(Role.builder().code("EMPLOYEE").build()))
+                .build();
+
+        // Act
+        User result = userService.updateWithoutOtpValidation(incomingUpdate, requestInfo);
+
+        // Assert: update was called, and the user saved to repository has the original single-encrypted cipher, NOT re-encrypted
+        org.mockito.ArgumentCaptor<User> userCaptor = org.mockito.ArgumentCaptor.forClass(User.class);
+        verify(userRepository, times(1)).update(userCaptor.capture(), eq(employeeDb), anyLong(), anyString());
+        assertEquals(cipherMobile, userCaptor.getValue().getMobileNumber());
+        assertEquals(cipherName, userCaptor.getValue().getName());
+    }
 }

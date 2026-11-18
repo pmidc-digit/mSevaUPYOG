@@ -532,13 +532,17 @@ public class UserService {
 
         if (UserType.CITIZEN.equals(user.getType())) {
             User decryptedExistingUser = encryptionDecryptionUtil.decryptObject(existingUser, "User", User.class, requestInfo);
-            if (StringUtils.isBlank(user.getMobileNumber()) && decryptedExistingUser != null && StringUtils.isNotBlank(decryptedExistingUser.getMobileNumber())) {
+            if (StringUtils.isBlank(user.getMobileNumber()) && decryptedExistingUser != null 
+                    && StringUtils.isNotBlank(decryptedExistingUser.getMobileNumber())
+                    && !isCiphertext(decryptedExistingUser.getMobileNumber())) {
                 user.setMobileNumber(decryptedExistingUser.getMobileNumber());
             }
-            if (StringUtils.isBlank(user.getName()) && decryptedExistingUser != null) {
+            if (StringUtils.isBlank(user.getName()) && decryptedExistingUser != null
+                    && !isCiphertext(decryptedExistingUser.getName())) {
                 user.setName(decryptedExistingUser.getName());
             }
-            if (StringUtils.isBlank(user.getGuardian()) && decryptedExistingUser != null) {
+            if (StringUtils.isBlank(user.getGuardian()) && decryptedExistingUser != null
+                    && !isCiphertext(decryptedExistingUser.getGuardian())) {
                 user.setGuardian(decryptedExistingUser.getGuardian());
             }
 
@@ -608,8 +612,38 @@ public class UserService {
         user.validateUserModification();
         validatePassword(user.getPassword());
         user.setPassword(encryptPwd(user.getPassword()));
-        /* encrypt */
+
+        boolean isMobileCipher = isCiphertext(user.getMobileNumber());
+        boolean isNameCipher = isCiphertext(user.getName());
+        boolean isGuardianCipher = isCiphertext(user.getGuardian());
+        boolean isEmailCipher = isCiphertext(user.getEmailId());
+        boolean isPanCipher = isCiphertext(user.getPan());
+        boolean isAadhaarCipher = isCiphertext(user.getAadhaarNumber());
+
+        String preservedMobile = isMobileCipher ? user.getMobileNumber() : null;
+        String preservedName = isNameCipher ? user.getName() : null;
+        String preservedGuardian = isGuardianCipher ? user.getGuardian() : null;
+        String preservedEmail = isEmailCipher ? user.getEmailId() : null;
+        String preservedPan = isPanCipher ? user.getPan() : null;
+        String preservedAadhaar = isAadhaarCipher ? user.getAadhaarNumber() : null;
+
+        if (isMobileCipher) user.setMobileNumber(null);
+        if (isNameCipher) user.setName(null);
+        if (isGuardianCipher) user.setGuardian(null);
+        if (isEmailCipher) user.setEmailId(null);
+        if (isPanCipher) user.setPan(null);
+        if (isAadhaarCipher) user.setAadhaarNumber(null);
+
+        /* encrypt only plain-text fields */
         user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
+
+        if (isMobileCipher) user.setMobileNumber(preservedMobile);
+        if (isNameCipher) user.setName(preservedName);
+        if (isGuardianCipher) user.setGuardian(preservedGuardian);
+        if (isEmailCipher) user.setEmailId(preservedEmail);
+        if (isPanCipher) user.setPan(preservedPan);
+        if (isAadhaarCipher) user.setAadhaarNumber(preservedAadhaar);
+
         Long userId = (requestInfo != null && requestInfo.getUserInfo() != null && requestInfo.getUserInfo().getId() != null)
                 ? requestInfo.getUserInfo().getId() : 0L;
         String userUuid = (requestInfo != null && requestInfo.getUserInfo() != null)
@@ -624,6 +658,14 @@ public class UserService {
         User decryptedupdatedUserfromDB = encryptionDecryptionUtil.decryptObject(encryptedUpdatedUserfromDB, "User",
                 User.class, requestInfo);
         return decryptedupdatedUserfromDB;
+    }
+
+    private boolean isCiphertext(String value) {
+        if (StringUtils.isBlank(value)) {
+            return false;
+        }
+        String[] parts = value.split("\\|");
+        return parts.length == 2 && StringUtils.isNumeric(parts[0]) && StringUtils.isNotBlank(parts[1]);
     }
 
     private String maskMobileNumber(String mobile) {

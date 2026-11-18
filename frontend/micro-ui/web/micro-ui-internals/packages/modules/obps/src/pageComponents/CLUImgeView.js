@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ImageViewer, Card, CardSubHeader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
-const CLUImageView = ({ ownerFileStoreId, ownerName }) => {
+const CLUImageView = ({ ownerFileStoreId, ownerName, photoLabel }) => {
   const stateCode = Digit.ULBService.getStateId();
   const { t } = useTranslation();
   const [imageCitizenZoom, setImageCitizenZoom] = useState(null);
@@ -27,6 +27,7 @@ const CLUImageView = ({ ownerFileStoreId, ownerName }) => {
     <div className="obps-page-components-cluimge-view--style-1">
       <div className="obps-page-components-cluimge-view--style-2">
         <div className="obps-page-components-cluimge-view--style-3">
+          {photoLabel && <CardSubHeader className="clu-owner-photo-heading">{photoLabel}</CardSubHeader>}
           <img
             src={imageCitizenZoom}
             alt="Primary Owner Photo"

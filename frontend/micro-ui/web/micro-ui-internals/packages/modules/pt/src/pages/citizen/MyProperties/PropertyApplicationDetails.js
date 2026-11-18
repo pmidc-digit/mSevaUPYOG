@@ -9,12 +9,14 @@ import PropertyFloors from "../../../../../templates/ApplicationDetails/componen
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview";
 import PropertyEstimates from "../../../../../templates/ApplicationDetails/components/PropertyEstimates";
 import PropertyOwnerHistory from "./propertyOwnerHistory";
-export const PropertyApplicationDetails = () => {
+// Can be rendered via route (reads :id param + location.state) or embedded (e.g. in a modal) by passing props
+export const PropertyApplicationDetails = ({ applicationNumber: applicationNumberProp, propertyId: propertyIdProp } = {}) => {
       const { t } = useTranslation();
       const tenantId = Digit.ULBService.getCurrentTenantId();
-      const { id:applicationNumber } = useParams(); 
+      const { id: applicationNumberParam } = useParams();
       const location = useLocation();
-      const propertyId = location?.state?.propertyId
+      const applicationNumber = applicationNumberProp || applicationNumberParam;
+      const propertyId = propertyIdProp || location?.state?.propertyId
       const [appDetailsToShow, setAppDetailsToShow] = useState({});
      const [applicationData, setApplicationData] = useState([])
 
@@ -22,7 +24,7 @@ export const PropertyApplicationDetails = () => {
         try{
        let filters={
         acknowledgementIds: applicationNumber,
-       // tenantId: tenantId
+        tenantId: tenantId
        }
        const auth =true
             Digit.PTService.applicationsearch({filters:filters,auth:auth}).then((response) => {

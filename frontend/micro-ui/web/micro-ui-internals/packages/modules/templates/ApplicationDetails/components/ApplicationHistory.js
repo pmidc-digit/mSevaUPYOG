@@ -1,8 +1,24 @@
-import { LinkLabel } from '@mseva/digit-ui-react-components';
+import { Modal } from '@mseva/digit-ui-react-components';
 import React, { useState } from 'react'
-import { useHistory, useParams,Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
+
+const Close = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+        <path d="M0 0h24v24H0V0z" fill="none" />
+        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+    </svg>
+);
+
+const CloseBtn = (props) => (
+    <div className="icon-bg-secondary" onClick={props.onClick}>
+        <Close />
+    </div>
+);
+
 const ApplicationHistory = ({ applicationData }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
+    const PropertyApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PropertyApplicationDetails");
       const history = useHistory();
     const toggleAccordion = () => {
         setIsOpen(!isOpen);
@@ -115,18 +131,29 @@ const ApplicationHistory = ({ applicationData }) => {
                             <span className='value' style={{ flex: '1', color: 'black' }}>{applicationData.status}</span>
                         </div>
                         <div>
-                            <Link to={{
-                                pathname: window.location.pathname.includes("/employee")
-                                    ? `/digit-ui/employee/pt/property/application-preview/${applicationData.acknowldgementNumber}`
-                                    : `/digit-ui/citizen/pt/property/application-preview/${applicationData.acknowldgementNumber}`,
-                                state: { propertyId: applicationData.propertyId }
-                            }} style={{color:'#2947a3',display:'inline',border:'1px solid',padding:'8px',borderRadius:'8px'}}>
-                            {"View History"}
-                            </Link>
+                            <span
+                                onClick={(e) => { e.stopPropagation(); setShowPreview(true); }}
+                                style={{color:'#2947a3',display:'inline',border:'1px solid',padding:'8px',borderRadius:'8px',cursor:'pointer'}}>
+                            {"View Detail"}
+                            </span>
                         </div>
                     </div>
 
                 </div>
+            )}
+            {showPreview && PropertyApplicationDetails && (
+                <Modal
+                    headerBarMain={<h1 className="heading-m">{"Application History"}</h1>}
+                    headerBarEnd={<CloseBtn onClick={() => setShowPreview(false)} />}
+                    hideSubmit={true}
+                    popupStyles={{ width: "75%", zIndex: 100001 }}
+                    popupModuleMianStyles={{ maxHeight: "80vh", overflowY: "auto" }}
+                >
+                    <PropertyApplicationDetails
+                        applicationNumber={applicationData.acknowldgementNumber}
+                        propertyId={applicationData.propertyId}
+                    />
+                </Modal>
             )}
         </div>
     )

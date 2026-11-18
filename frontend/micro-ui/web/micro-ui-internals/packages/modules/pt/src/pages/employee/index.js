@@ -84,6 +84,12 @@ const EmployeeApp = ({ path, url, userType }) => {
         show: location.pathname.includes("pt/inbox") ? true : false,
       },
       {
+        path: "/digit-ui/employee/pt/inbox",
+        content: t("PT_PROPERTY_HOME") === "PT_PROPERTY_HOME" ? "Property Home" : t("PT_PROPERTY_HOME"),
+        // Show on every PT page except the inbox itself (inbox already has its own crumb)
+        show: !location.pathname.includes("pt/inbox"),
+      },
+      {
         path: "/digit-ui/employee/pt/search",
         content: t("PT_COMMON_SEARCH_PROPERTY_SUB_HEADER"),
         show: location.pathname.includes("/pt/search") || location.pathname.includes("/pt/ptsearch") ? true : false,

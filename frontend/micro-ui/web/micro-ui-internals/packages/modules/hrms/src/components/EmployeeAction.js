@@ -108,7 +108,6 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
 
   function submit(data) {
     // useHRMSUpdate
-    //debugger
     data.effectiveFrom = new Date(data.effectiveFrom).getTime();
     data.reasonForDeactivation = selectedReason.code;
     let Employees = [...applicationData.Employees];
@@ -129,7 +128,7 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
           reasonForDeactivation: data?.reasonForDeactivation,
           orderNo: data?.orderNo || "",
           remarks: data?.remarks || "",
-          effectiveFrom: new Date().getTime(),
+          effectiveFrom: new Date(),
           tenantId: Employees[0]?.tenantId,
           ...(existingDeactivation?.auditDetails && { auditDetails: existingDeactivation.auditDetails }),
         },

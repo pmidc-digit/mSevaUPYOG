@@ -143,7 +143,7 @@ const setData=(config,data)=>{
         <LabelFieldPair key={0}>
           <CardLabel className="card-label-smaller">
             {`${t(inputs[0].label)}`}
-            {config.isMandatory ? " *" : ""}
+            {config.isMandatory ? <span style={{ color: "red" }}> *</span> : ""}
           </CardLabel>
           <div className="field">
             <Controller
@@ -184,7 +184,7 @@ const setData=(config,data)=>{
         <LabelFieldPair key={1}>
           <CardLabel className="card-label-smaller">
             {`${t(inputs[1].label)}`}
-            {config.isMandatory ? " * " : ""}
+            {config.isMandatory ? <span style={{ color: "red" }}> *</span> : ""}
           </CardLabel>
           <div className="field">
             <Controller

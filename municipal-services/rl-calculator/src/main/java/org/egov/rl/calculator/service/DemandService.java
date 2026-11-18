@@ -471,6 +471,11 @@ public class DemandService {
 
 	/** True when a demand carries RL_ARREAR_FEE and no rent head, i.e. it is the migrated arrear demand. */
 	private static boolean isArrearOnly(Demand demand) {
+		return isArrearOrAdvanceOnly(demand);
+	}
+
+	/** True when a demand carries RL_ARREAR_FEE or RL_ADVANCE_CARRYFORWARD and no rent head. */
+	private static boolean isArrearOrAdvanceOnly(Demand demand) {
 		if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails())) {
 			return false;
 		}
@@ -1460,16 +1465,34 @@ public class DemandService {
 								ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
 								LocalDate today = LocalDate.now(zone);
 
+								Long legacyCutoff = null;
+								if (additionalDetails != null) {
+									try {
+										legacyCutoff = calculationService.readLegacyDateMillis(additionalDetails,
+												"lastPaidUpto", "lastPaidOn", "lastPaidDate",
+												RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY, "lastBillingPeriod", "arrearEndDate");
+									} catch (Exception ex) {
+										log.warn("Ignoring unparseable legacy cutoff date for application {}: {}",
+												d.getApplicationNumber(), ex.getMessage());
+									}
+								}
+								LocalDate legacyCutoffDate = (legacyCutoff != null && legacyCutoff > 0)
+										? Instant.ofEpochMilli(legacyCutoff).atZone(zone).toLocalDate()
+										: null;
+
 								// 1. Audit all existing demands for this consumer to detect missing or cancelled periods (gaps)
 								List<Demand> consumerDemands = demandRepository.getDemandsForConsumer(appTenant, d.getApplicationNumber());
 								List<Demand> activeDemands = (consumerDemands != null)
 										? consumerDemands.stream().filter(dem -> Demand.DemandStatusEnum.ACTIVE.equals(dem.getStatus())).collect(Collectors.toList())
 										: new ArrayList<>();
+								List<Demand> rentDemands = (consumerDemands != null)
+										? consumerDemands.stream().filter(dem -> !isArrearOrAdvanceOnly(dem)).collect(Collectors.toList())
+										: new ArrayList<>();
 
 								LocalDate probeDate;
-								if (!CollectionUtils.isEmpty(consumerDemands)) {
-									// Demands already exist for this consumer: start probing from the earliest billed period
-									long earliestDemandEpoch = consumerDemands.stream()
+								if (!CollectionUtils.isEmpty(rentDemands)) {
+									// Regular rent demands already exist for this consumer: start probing from the earliest billed period
+									long earliestDemandEpoch = rentDemands.stream()
 											.mapToLong(Demand::getTaxPeriodFrom)
 											.min()
 											.orElse(System.currentTimeMillis());
@@ -1484,12 +1507,18 @@ public class DemandService {
 										}
 									}
 									probeDate = Instant.ofEpochMilli(initialEpoch).atZone(zone).toLocalDate();
+								} else if (legacyCutoffDate != null) {
+									// Legacy allotment with no regular rent demands yet: start probing right after legacy cutoff
+									probeDate = legacyCutoffDate.plusDays(1);
 								} else {
 									// If no demand exists till date: start from allotment lease startDate (or createdTime)
 									long initialEpoch = (d.getStartDate() != null && d.getStartDate() > 0)
 											? d.getStartDate()
 											: ((d.getCreatedTime() > 0) ? d.getCreatedTime() : System.currentTimeMillis());
 									probeDate = Instant.ofEpochMilli(initialEpoch).atZone(zone).toLocalDate();
+								}
+								if (legacyCutoffDate != null && !probeDate.isAfter(legacyCutoffDate)) {
+									probeDate = legacyCutoffDate.plusDays(1);
 								}
 
 								// 2. Step through missing periods financial-year wise up to current date without depending on MDMS
@@ -1501,6 +1530,12 @@ public class DemandService {
 									// Stop when period start is after today (do not generate future cycles)
 									if (periodStart.isAfter(today)) {
 										break;
+									}
+
+									// Skip if period ended on or before legacy billing/paid cutoff
+									if (legacyCutoffDate != null && !periodEnd.isAfter(legacyCutoffDate)) {
+										probeDate = periodEnd.plusDays(1);
+										continue;
 									}
 
 									long periodFrom = periodStart.atStartOfDay(zone).toInstant().toEpochMilli();

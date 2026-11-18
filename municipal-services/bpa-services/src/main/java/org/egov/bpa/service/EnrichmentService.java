@@ -141,6 +141,17 @@ public class EnrichmentService {
 		setIdgenIds(bpaRequest);
 	}
 
+	private boolean isMigrationTrue(Object additionalDetails) {
+		if (additionalDetails instanceof Map) {
+			Object val = ((Map<?, ?>) additionalDetails).get("isMigrationTrue");
+			return val != null && Boolean.parseBoolean(String.valueOf(val).trim());
+		} else if (additionalDetails instanceof String) {
+			String str = (String) additionalDetails;
+			return str.contains("\"isMigrationTrue\":true") || str.contains("\"isMigrationTrue\":\"true\"");
+		}
+		return false;
+	}
+
 	/**
 	 * Sets the ApplicationNumber for given bpaRequest
 	 *
@@ -151,8 +162,15 @@ public class EnrichmentService {
 		String tenantId = request.getBPA().getTenantId();
 		BPA bpa = request.getBPA();
 
-		List<String> applicationNumbers = getIdList(requestInfo, tenantId, config.getApplicationNoIdgenName(),
-				config.getApplicationNoIdgenFormat(), 1);
+		String idName = config.getApplicationNoIdgenName();
+		String idFormat = config.getApplicationNoIdgenFormat();
+		if (isMigrationTrue(bpa.getAdditionalDetails())) {
+			idName = config.getApplicationNoIdgenNameMgr();
+			idFormat = config.getApplicationNoIdgenFormatMgr();
+		}
+
+		List<String> applicationNumbers = getIdList(requestInfo, tenantId, idName,
+				idFormat, 1);
 		ListIterator<String> itr = applicationNumbers.listIterator();
 
 		Map<String, String> errorMap = new HashMap<>();

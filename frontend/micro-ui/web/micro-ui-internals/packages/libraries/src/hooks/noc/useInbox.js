@@ -44,7 +44,7 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
     filters: _filters,
     config: {
       select: (data) => {
-        const tableData = data?.items?.map((application) => {
+        const tableData = (data?.items || []).map((application) => {
           const ownerObj = application?.businessObject?.nocDetails?.additionalDetails?.applicationDetails?.owners?.[0];
           const displayOwner = ownerObj?.firmName?.trim?.() || ownerObj?.ownerOrFirmName?.trim?.() || "-";
           const submittedOn = Number(application?.businessObject?.nocDetails?.additionalDetails?.SubmittedOn); // or submissionDate

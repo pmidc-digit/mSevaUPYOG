@@ -1,3 +1,4 @@
+import getApplicationStatusText from "../../../../../templates/ApplicationDetails/getApplicationStatusText";
 import {
   CardSectionHeader,
   Header,
@@ -1304,11 +1305,11 @@ const NOCEmployeeApplicationOverview = () => {
         )}
       </div>
       <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-
         <NOCImageView
+          photoLabel={t("OWNER_OWNERPHOTO")}
           ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
           ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+          centered
         />
       </Card>
       {id.length > 0 && (
@@ -1320,11 +1321,12 @@ const NOCEmployeeApplicationOverview = () => {
                 <Row
                   label={t("APPLICATION_STATUS")}
                   text={
-                    applicationDetails?.Noc?.[0]?.applicationStatus
-                      ? t(
-                          `WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService}_${applicationDetails?.Noc?.[0]?.applicationStatus}`
-                        )
-                      : "N/A"
+                    getApplicationStatusText(
+                      applicationDetails?.Noc?.[0]?.applicationStatus
+                        ? t(`WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService}_${applicationDetails?.Noc?.[0]?.applicationStatus}`)
+                        : "N/A",
+                      workflowDetails
+                    )
                   }
                 />
               </StatusTable>

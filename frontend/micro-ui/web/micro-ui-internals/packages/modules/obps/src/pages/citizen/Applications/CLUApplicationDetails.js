@@ -1,3 +1,4 @@
+import getApplicationStatusText from "../../../../../templates/ApplicationDetails/getApplicationStatusText";
 import {
   CardSectionHeader,
   Header,
@@ -689,8 +690,8 @@ const CLUApplicationDetails = () => {
       </div>
 
       <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
         <CLUImageView
+          photoLabel={t("OWNER_OWNERPHOTO")}
           ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
           ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
         />
@@ -699,7 +700,13 @@ const CLUApplicationDetails = () => {
       <Card>
         <StatusTable>
           <Row label={t("BPA_APPLICATION_NUMBER_LABEL")} text={id} />
-          <Row label={t("APPLICATION_STATUS")} text={applicationDetails?.Clu?.[0]?.applicationStatus ? t(`BPA_STATUS_${applicationDetails?.Clu?.[0]?.applicationStatus}`) : "N/A"} />
+          <Row
+            label={t("APPLICATION_STATUS")}
+            text={getApplicationStatusText(
+              applicationDetails?.Clu?.[0]?.applicationStatus ? t(`BPA_STATUS_${applicationDetails?.Clu?.[0]?.applicationStatus}`) : "N/A",
+              workflowDetails
+            )}
+          />
         </StatusTable>
       </Card>
 

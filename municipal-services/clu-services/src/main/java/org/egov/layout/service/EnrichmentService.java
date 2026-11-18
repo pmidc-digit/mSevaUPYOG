@@ -94,6 +94,17 @@ public class EnrichmentService {
 		}
 	}
 
+	private boolean isMigrationTrue(Object additionalDetails) {
+		if (additionalDetails instanceof Map) {
+			Object val = ((Map<?, ?>) additionalDetails).get("isMigrationTrue");
+			return val != null && Boolean.parseBoolean(String.valueOf(val).trim());
+		} else if (additionalDetails instanceof String) {
+			String str = (String) additionalDetails;
+			return str.contains("\"isMigrationTrue\":true") || str.contains("\"isMigrationTrue\":\"true\"");
+		}
+		return false;
+	}
+
 	/**
 	 * sets the ids for all the child objects of NOCRequest
 	 * @param request
@@ -103,7 +114,10 @@ public class EnrichmentService {
 		String tenantId = request.getLayout().getTenantId();
 		Clu noc = request.getLayout();
 
-		List<String> applicationNumbers = getIdList(requestInfo, tenantId, config.getApplicationNoIdgenName(), 1);
+		Object additionalDetails = noc.getNocDetails() != null ? noc.getNocDetails().getAdditionalDetails() : null;
+		List<String> applicationNumbers = isMigrationTrue(additionalDetails)
+				? getIdList(requestInfo, tenantId, config.getApplicationNoIdgenNameMgr(), 1)
+				: getIdList(requestInfo, tenantId, config.getApplicationNoIdgenName(), 1);
 		ListIterator<String> itr = applicationNumbers.listIterator();
 
 		Map<String, String> errorMap = new HashMap<>();

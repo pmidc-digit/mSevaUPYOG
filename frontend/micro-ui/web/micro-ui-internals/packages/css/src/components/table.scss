@@ -108,6 +108,7 @@ table tbody tr:nth-child(even) {
 
 /* NDC-style inbox table look (scoped) */
 .ndc-new-table {
+  overflow: hidden;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
@@ -149,6 +150,28 @@ table tbody tr:nth-child(even) {
 .ndc-new-table-wrapper {
   display: block;
   overflow-x: auto;
+}
+
+.ndc-new-table-wrapper.digit-table-sticky-header {
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: auto;
+
+  .ndc-new-table {
+    overflow: visible;
+  }
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
 }
 
 .ndc-new-table-card {

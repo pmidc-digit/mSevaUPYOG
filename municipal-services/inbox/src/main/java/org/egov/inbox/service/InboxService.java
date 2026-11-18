@@ -263,11 +263,11 @@ public class InboxService {
             statusIdNameMap = workflowService.getAllStatuses(businessSrvs);
         }
 
-//        if (requestInfo.getUserInfo().getType() != null &&
-//                "EMPLOYEE".equalsIgnoreCase(requestInfo.getUserInfo().getType())) {
-//            excludeCancelledAndTerminatedStates(moduleName, statusIdNameMap);
-//        }
-        excludeCancelledAndTerminatedStates(moduleName, statusIdNameMap);
+        if (requestInfo.getUserInfo().getType() != null &&
+                "EMPLOYEE".equalsIgnoreCase(requestInfo.getUserInfo().getType())) {
+            excludeCancelledAndTerminatedStates(moduleName, statusIdNameMap);
+        }
+        //excludeCancelledAndTerminatedStates(moduleName, statusIdNameMap);
                 
         // Preserve all actionable statuses before any filtering
         Map<String, String> allActionableStatuses = new HashMap<>(statusIdNameMap);
@@ -887,30 +887,30 @@ public class InboxService {
         );
     }
 
-//	private void excludeCancelledAndTerminatedStates(String moduleName, HashMap<String, String> statusIdNameMap) {
-//		if (!CollectionUtils.isEmpty(statusIdNameMap) && moduleName != null
-//				&& (moduleName.equalsIgnoreCase("noc-service") || moduleName.equalsIgnoreCase("layout-service")
-//						|| moduleName.equalsIgnoreCase("clu-service") || moduleName.equalsIgnoreCase("bpa-service"))) {
-//			statusIdNameMap.entrySet().removeIf(
-//					entry -> entry.getValue() != null && EXCLUDED_STATUSES.contains(entry.getValue().toUpperCase()));
-//		}
-//	}
+	private void excludeCancelledAndTerminatedStates(String moduleName, HashMap<String, String> statusIdNameMap) {
+		if (!CollectionUtils.isEmpty(statusIdNameMap) && moduleName != null
+				&& (moduleName.equalsIgnoreCase("noc-service") || moduleName.equalsIgnoreCase("layout-service")
+						|| moduleName.equalsIgnoreCase("clu-service") || moduleName.equalsIgnoreCase("bpa-service"))) {
+			statusIdNameMap.entrySet().removeIf(
+					entry -> entry.getValue() != null && EXCLUDED_STATUSES.contains(entry.getValue().toUpperCase()));
+		}
+	}
     
-    private void excludeCancelledAndTerminatedStates(String moduleName, HashMap<String, String> statusIdNameMap) {
-        if (!CollectionUtils.isEmpty(statusIdNameMap) && moduleName != null && (
-                moduleName.equalsIgnoreCase("noc-service") ||
-                        moduleName.equalsIgnoreCase("layout-service") ||
-                        moduleName.equalsIgnoreCase("clu-service")
-        )) {
-            statusIdNameMap.entrySet().removeIf(entry -> {
-                String statusName = entry.getValue();
-                return statusName != null && (
-                        statusName.equalsIgnoreCase("CANCELLED")
-
-                );
-            });
-        }
-    }
+//    private void excludeCancelledAndTerminatedStates(String moduleName, HashMap<String, String> statusIdNameMap) {
+//        if (!CollectionUtils.isEmpty(statusIdNameMap) && moduleName != null && (
+//                moduleName.equalsIgnoreCase("noc-service") ||
+//                        moduleName.equalsIgnoreCase("layout-service") ||
+//                        moduleName.equalsIgnoreCase("clu-service")
+//        )) {
+//            statusIdNameMap.entrySet().removeIf(entry -> {
+//                String statusName = entry.getValue();
+//                return statusName != null && (
+//                        statusName.equalsIgnoreCase("CANCELLED")
+//
+//                );
+//            });
+//        }
+//    }
 
 
         public InboxResponse fetchInboxDataBackup(InboxSearchCriteria criteria, RequestInfo requestInfo) {

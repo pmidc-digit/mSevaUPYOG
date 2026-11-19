@@ -103,6 +103,9 @@ public class PropertiesManager {
 	@Value("${kafka.topics.hrms.updateData}")
 	public String updateTopic;
 	
+	@Value("${hrms.obpas.data.batch.size}")
+	public Integer obpasEmployeeBatchSize;
+	
 	
 	//Variables
 	@Value("${egov.idgen.ack.name}")

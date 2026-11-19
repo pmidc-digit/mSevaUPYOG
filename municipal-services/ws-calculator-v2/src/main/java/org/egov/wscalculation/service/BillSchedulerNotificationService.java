@@ -141,8 +141,8 @@ public class BillSchedulerNotificationService {
 		long lastProgressTime = System.currentTimeMillis();
 		long previousInitiatedCount = -1;
 
-		long MAX_TOTAL_RUNTIME_MS = 60 * 60 * 1000L; // 60 minutes overall safety cap
-		long INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L;  // 5 minutes of ZERO progress
+		long MAX_TOTAL_RUNTIME_MS = 4 * 60 * 60 * 1000L; // 4 hours safety cap for multi-city queues
+		long INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000L;  // 5 minutes of ZERO system-wide progress
 
 		boolean isStalled = false;
 		List<BillScheduler> tenantSchedulers = new ArrayList<>();
@@ -181,10 +181,10 @@ public class BillSchedulerNotificationService {
 				long initiatedCount = ((Number) overallStats.getOrDefault("initiated_count", 0)).longValue();
 				long totalCount = ((Number) overallStats.getOrDefault("total_count", 0)).longValue();
 
-				// 1. All connections across all localities of this tenant are resolved!
-				if (totalCount > 0 && initiatedCount == 0) {
-					log.info("🎯 All {} scheduled connections across {} localities/groups resolved for tenant {}!",
-							totalCount, tenantSchedulers.size(), tenantId);
+				// 1. All connections across all localities of this tenant are resolved (or no initiated connections)!
+				if (initiatedCount == 0) {
+					log.info("🎯 Tenant {} has 0 initiated connections remaining (total: {} across {} batches). Monitoring complete.",
+							tenantId, totalCount, tenantSchedulers.size());
 					break;
 				}
 
@@ -195,10 +195,18 @@ public class BillSchedulerNotificationService {
 					log.info("⏳ Tenant {} bill processing active: {}/{} connections remaining (initiated)",
 							tenantId, initiatedCount, totalCount);
 				} else if (System.currentTimeMillis() - lastProgressTime >= INACTIVITY_TIMEOUT_MS) {
-					log.warn("⚠️ Tenant {} bill processing stalled: initiated count stayed at {} for {} minutes with no progress.",
-							tenantId, initiatedCount, INACTIVITY_TIMEOUT_MS / (60 * 1000));
-					isStalled = true;
-					break;
+					// Check if consumer is actively processing other batches in the shared Kafka queue
+					long sinceTime = System.currentTimeMillis() - INACTIVITY_TIMEOUT_MS;
+					if (isGlobalConsumerActive(sinceTime)) {
+						lastProgressTime = System.currentTimeMillis();
+						log.info("⏳ Tenant {} has {} connections waiting in queue; global consumer is actively processing other batches. Extending wait.",
+								tenantId, initiatedCount);
+					} else {
+						log.warn("⚠️ System-wide stall: No connections processed across ANY tenant for {} minutes. Declaring tenant {} stalled at {} pending.",
+								INACTIVITY_TIMEOUT_MS / (60 * 1000), tenantId, initiatedCount);
+						isStalled = true;
+						break;
+					}
 				}
 			} catch (Exception e) {
 				log.warn("⚠️ Polling tenant {} bill connection status error: {}", tenantId, e.getMessage());
@@ -214,7 +222,7 @@ public class BillSchedulerNotificationService {
 		}
 
 		if (System.currentTimeMillis() - pollStartTime >= MAX_TOTAL_RUNTIME_MS) {
-			log.warn("⚠️ Tenant {} bill monitoring reached maximum allowable runtime (60 mins).", tenantId);
+			log.warn("⚠️ Tenant {} bill monitoring reached maximum allowable runtime (4 hours).", tenantId);
 			isStalled = true;
 		}
 
@@ -261,7 +269,7 @@ public class BillSchedulerNotificationService {
 			BigDecimal amount = getSchedulerTotalAmount(scheduler.getId());
 
 			// Mark scheduler as COMPLETED if resolved OR if crashed/stalled OR if missing in boundary
-			if ((pending == 0 && count > 0) || isStalled || isMissingInBoundary) {
+			if (pending == 0 || isStalled || isMissingInBoundary) {
 				try {
 					billGeneratorDao.updateBillSchedularStatus(scheduler.getId(), StatusEnum.COMPLETED);
 					log.info("🎯 Updated bill scheduler {} status to COMPLETED (count={}, pending={}, isStalled={}, isMissingInBoundary={})",
@@ -392,7 +400,8 @@ public class BillSchedulerNotificationService {
 
 			String overallStatus;
 			String statusColor;
-			if (totalPending > 0 || isStalled) {
+			boolean isActuallyStuck = isStalled && totalPending > 0;
+			if (isActuallyStuck) {
 				overallStatus = "PARTIALLY COMPLETED (STALLED)";
 				statusColor = "#ef4444";
 			} else if (totalFailure == 0 && totalSuccess > 0) {
@@ -499,7 +508,7 @@ public class BillSchedulerNotificationService {
 				}
 			}
 
-			if (totalPending > 0 || isStalled) {
+			if (isActuallyStuck) {
 				String pendingWarning = "<div style=\"background-color: #fef2f2; border: 2px solid #ef4444; border-radius: 8px; padding: 16px; margin: 20px 0;\">"
 						+ "<h3 style=\"margin: 0; color: #991b1b; font-size: 16px; font-weight: bold;\">[STUCK ALERT] Water Bill Generation Stalled - Action Required</h3>"
 						+ "<p style=\"margin: 8px 0 0; color: #7f1d1d; font-size: 13px; line-height: 1.5;\">"
@@ -518,7 +527,7 @@ public class BillSchedulerNotificationService {
 
 			String subject;
 			String body;
-			if (totalPending > 0 || isStalled) {
+			if (isActuallyStuck) {
 				subject = "[STUCK ALERT] Water Bill Generation Stalled - " + displayCity + " (" + COUNT_FORMAT.format(totalPending) + " Records Unprocessed)";
 			} else if (customizedMsg.contains("<h2>") && customizedMsg.contains("</h2>")) {
 				subject = customizedMsg.substring(customizedMsg.indexOf("<h2>") + 4, customizedMsg.indexOf("</h2>"));
@@ -664,6 +673,19 @@ public class BillSchedulerNotificationService {
 		} catch (Exception e) {
 			log.warn("⚠️ Error querying most common failure reason: {}", e.getMessage());
 			return "Unable to determine";
+		}
+	}
+
+	private boolean isGlobalConsumerActive(long sinceTime) {
+		String sql = "SELECT COUNT(*) FROM eg_ws_bill_scheduler_connection_status "
+				+ "WHERE status IN ('Success', 'Failure') AND lastupdatedtime >= :sinceTime";
+		Map<String, Object> params = Collections.singletonMap("sinceTime", sinceTime);
+		try {
+			Integer count = jdbcTemplate.queryForObject(sql, params, Integer.class);
+			return count != null && count > 0;
+		} catch (Exception e) {
+			log.warn("⚠️ Error checking global WS consumer activity: {}", e.getMessage());
+			return false;
 		}
 	}
 

@@ -26,4 +26,8 @@ public class AuthorizationRequest {
     @NotNull
     private Set<String> tenantIds;
 
+    private String userType;
+
+    private String userTenantId;
+
 }

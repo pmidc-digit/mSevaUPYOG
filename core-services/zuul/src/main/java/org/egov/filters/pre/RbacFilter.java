@@ -91,6 +91,8 @@ public class RbacFilter extends ZuulFilter {
             .roles(new HashSet<>(user.getRoles()))
             .uri(requestUri)
             .tenantIds(tenantId)
+            .userType(user.getType())
+            .userTenantId(user.getTenantId())
             .build();
 
         return isUriAuthorized(request);

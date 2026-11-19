@@ -128,10 +128,17 @@ public class ActionService {
 		Set<Role> roles = authorizationRequest.getRoles();
 		Set<Role> applicableRoles = new HashSet<>();
 
+		boolean isPunjabEmployee = "EMPLOYEE".equalsIgnoreCase(authorizationRequest.getUserType()) 
+				&& "pb.punjab".equalsIgnoreCase(authorizationRequest.getUserTenantId());
+
+		boolean isStateLevelRequest = requestTenantIds.contains(stateLevelTenantId) 
+				|| requestTenantIds.contains("pb.punjab");
+
 		for(Role role : roles){
 			/* setting for swach State user --Abhishek (21-05-25)*/
 			if(requestTenantIds.contains(role.getTenantId()) || role.getTenantId().equalsIgnoreCase(stateLevelTenantId) 
-					|| role.getTenantId().equalsIgnoreCase("pb.punjab")){
+					|| role.getTenantId().equalsIgnoreCase("pb.punjab")
+					|| (isStateLevelRequest && isPunjabEmployee)){
 				applicableRoles.add(role);
 			}
 			

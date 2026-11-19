@@ -41,6 +41,7 @@ public class CalculatorConstants {
 	public static final String RL_TIME_INTEREST = "RL_TIME_INTEREST";
 
 	public static final String PT_ADVANCE_CARRYFORWARD = "PT_ADVANCE_CARRYFORWARD";
+	public static final String RL_ADVANCE_CARRYFORWARD = "RL_ADVANCE_CARRYFORWARD";
 
 	public static final String PT_FIRE_CESS = "PT_FIRE_CESS";
 
@@ -65,6 +66,10 @@ public class CalculatorConstants {
 	public static final String ADHOC_REBATE_KEY = "adhocExemption";
 
 	public static final String ADHOC_REBATE_REASON_KEY = "adhocExemptionReason";
+
+	public static final String ADHOC_REBATE_ALT_KEY = "adhocRebate";
+
+	public static final String ADHOC_REBATE_ALT_REASON_KEY = "adhocRebateReason";
 	
 	public static final String ALLOWED_RECEIPT_STATUS = "DEPOSITED,NEW,APPROVED,REMITTED";
 

@@ -25,9 +25,12 @@ public class NotificationJob implements Job {
     @Autowired
     private RLAutoEscalationService autoEscalationService;
 
+    @org.springframework.beans.factory.annotation.Value("${scheduler.notification.cron:0 30 22 * * ?}")
+    private String notificationCronExpression;
+
     @Override
     public void execute(JobExecutionContext context) {
-        log.info("Quartz Scheduler - Notification Job Started Every day at 10:30 PM");
+        log.info("Quartz Scheduler - Notification Job Started (cron: {})", notificationCronExpression);
         log.info("Afternoon Scheduler Start Date Time: {}", LocalDateTime.now());
         try {
             RequestInfo requestInfo = autoEscalationService.getDefaultRequestInfo();

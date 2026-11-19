@@ -11,10 +11,12 @@ import org.egov.rl.calculator.web.models.demand.Demand;
 import org.egov.rl.calculator.web.models.demand.DemandDetail;
 import org.egov.rl.calculator.web.models.demand.DemandRequest;
 import org.egov.rl.calculator.web.models.demand.DemandResponse;
+import org.egov.rl.calculator.web.models.Owner;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -146,14 +148,18 @@ public class DemandRepository {
 		List<Object> subQueryParams = new ArrayList<>();
 
 		if (consumercode == null) {
-			return null; // avoid "IN ()" SQL
+			return null;
 		}
 
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE status = 'ACTIVE' AND consumercode IN (?) AND taxperiodfrom=? and taxperiodto=?";
+		// Sub-second precision tolerance (+/- 1000ms) to ensure exact matching between .000 and .999 timestamps
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE status = 'ACTIVE' AND consumercode = ? "
+				+ "AND taxperiodfrom BETWEEN ? AND ? AND taxperiodto BETWEEN ? AND ?";
 
 		subQueryParams.add(consumercode);
-		subQueryParams.add(startDate);
-		subQueryParams.add(endDate);
+		subQueryParams.add(startDate - 1000);
+		subQueryParams.add(startDate + 1000);
+		subQueryParams.add(endDate - 1000);
+		subQueryParams.add(endDate + 1000);
 		try {
 
 			preparedStmtList.addAll(subQueryParams);
@@ -175,7 +181,7 @@ public class DemandRepository {
 		List<Object> preparedStmtList = new ArrayList<>();
 
 		String placeholders = applicationNumber.stream().map(id -> "?").collect(Collectors.joining(", "));
-		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (" + placeholders + ") ORDER BY textperiodto DESC limit 1";
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE consumercode IN (" + placeholders + ") ORDER BY taxperiodto DESC limit 1";
 		preparedStmtList.addAll(applicationNumber);
 		try {
 			return jdbcTemplate.query(sql, preparedStmtList.toArray(), demandRowMapper);
@@ -185,6 +191,44 @@ public class DemandRepository {
 			log.error("Error while fetching demands for rentable IDs and period", e);
 			throw new CustomException("DEMAND_FETCH_ERROR",
 					"Failed to fetch demands for the given rentable IDs and period");
+		}
+	}
+
+	/**
+	 * Fetches all demands for a consumer ordered by taxperiodfrom ascending.
+	 * Used to audit existing billed periods and detect any missing or cancelled periods for gap generation.
+	 */
+	public List<Demand> getDemandsForConsumer(String tenantId, String consumerCode) {
+		if (consumerCode == null || tenantId == null) {
+			return Collections.emptyList();
+		}
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE tenantid = ? AND consumercode = ? "
+				+ "AND businessservice = 'rl-services' ORDER BY taxperiodfrom ASC";
+		try {
+			return jdbcTemplate.query(sql, new Object[]{tenantId, consumerCode}, demandRowMapper);
+		} catch (Exception e) {
+			log.error("Error fetching demands for consumerCode: {} in tenant: {}", consumerCode, tenantId, e);
+			return Collections.emptyList();
+		}
+	}
+
+	/**
+	 * Fetches the latest non-cancelled demand for a consumer ordered by taxperiodto descending.
+	 * Used to determine the end of the last billed period for automated recurring billing.
+	 */
+	public Demand getLatestDemandForConsumer(String tenantId, String consumerCode) {
+		if (consumerCode == null || tenantId == null) {
+			return null;
+		}
+		String sql = "SELECT * FROM egbs_demand_v1 WHERE tenantid = ? AND consumercode = ? "
+				+ "AND businessservice = 'rl-services' AND status <> 'CANCELLED' "
+				+ "ORDER BY taxperiodto DESC LIMIT 1";
+		try {
+			List<Demand> demands = jdbcTemplate.query(sql, new Object[]{tenantId, consumerCode}, demandRowMapper);
+			return CollectionUtils.isEmpty(demands) ? null : demands.get(0);
+		} catch (Exception e) {
+			log.error("Error fetching latest demand for consumerCode: {} in tenant: {}", consumerCode, tenantId, e);
+			return null;
 		}
 	}
 
@@ -287,6 +331,44 @@ public class DemandRepository {
 			return Collections.emptyMap();
 		}
 		return cycleByApplication;
+	}
+
+	/**
+	 * Fetches citizen/owner contact details (name, mobilenumber, emailid) for a list of consumer codes
+	 * by querying eg_rl_allotment, eg_rl_owner_info, and eg_user.
+	 */
+	public Map<String, Owner> getOwnersByConsumerCodes(List<String> consumerCodes) {
+		if (consumerCodes == null || consumerCodes.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		Map<String, Owner> ownerMap = new HashMap<>();
+		try {
+			String placeholders = consumerCodes.stream().map(id -> "?").collect(Collectors.joining(", "));
+			String sql = "SELECT a.application_number, a.tenant_id, o.user_uuid, u.name, u.mobilenumber, u.emailid "
+					+ "FROM eg_rl_allotment a "
+					+ "JOIN eg_rl_owner_info o ON a.id = o.allotment_id "
+					+ "LEFT JOIN eg_user u ON o.user_uuid = u.uuid "
+					+ "WHERE a.application_number IN (" + placeholders + ") "
+					+ "ORDER BY o.is_primary_owner DESC NULLS LAST, o.id ASC";
+			jdbcTemplate.query(sql, consumerCodes.toArray(), rs -> {
+				String appNo = rs.getString("application_number");
+				if (!ownerMap.containsKey(appNo)) {
+					Owner owner = Owner.builder()
+							.uuid(rs.getString("user_uuid"))
+							.tenantId(rs.getString("tenant_id"))
+							.name(rs.getString("name"))
+							.mobileNumber(rs.getString("mobilenumber"))
+							.emailId(rs.getString("emailid"))
+							.build();
+					ownerMap.put(appNo, owner);
+				}
+			});
+			log.debug("Read owner contact details for {}/{} consumer code(s)", ownerMap.size(), consumerCodes.size());
+		} catch (Exception e) {
+			log.warn("Could not read owner contact details from eg_rl_allotment for {} consumer code(s): {}",
+					consumerCodes.size(), e.getMessage());
+		}
+		return ownerMap;
 	}
 
 	/**

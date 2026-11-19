@@ -409,6 +409,28 @@ public class DemandService {
 		return hasArrear;
 	}
 
+	/** True when a demand carries RL_ARREAR_FEE or RL_ADVANCE_CARRYFORWARD and no rent head. */
+	private static boolean isArrearOrAdvanceOnly(Demand demand) {
+		if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails())) {
+			return false;
+		}
+		boolean hasArrearOrAdvance = false;
+		for (DemandDetail detail : demand.getDemandDetails()) {
+			String head = (detail != null) ? detail.getTaxHeadMasterCode() : null;
+			if (head == null) {
+				continue;
+			}
+			if (head.equalsIgnoreCase(RLConstants.RENT_LEASE_FEE_RL_APPLICATION)) {
+				return false;
+			}
+			if (head.equalsIgnoreCase(RLConstants.RL_ARREAR_FEE)
+					|| head.equalsIgnoreCase(RLConstants.RL_ADVANCE_CARRYFORWARD)) {
+				hasArrearOrAdvance = true;
+			}
+		}
+		return hasArrearOrAdvance;
+	}
+
 	/** Exact period key for the duplicate check - the same precision the scheduler dedupe relies on. */
 	private static String periodKey(Long from, Long to) {
 		return from + ":" + to;
@@ -576,7 +598,7 @@ public class DemandService {
 			}
 			BigDecimal collected = (target.getCollectionAmount() != null) ? target.getCollectionAmount()
 					: BigDecimal.ZERO;
-			if (collected.compareTo(newAmount) > 0) {
+			if (newAmount.compareTo(BigDecimal.ZERO) >= 0 && collected.compareTo(newAmount) > 0) {
 				// Money is already with the ULB: lowering the head would leave the demand over collected (a credit).
 				log.warn("{} was already collected against {} of demand {} - the head is kept at {} instead of being "
 						+ "reduced to {}; adjust the collection instead.", collected, head, stored.getId(),
@@ -631,17 +653,9 @@ public class DemandService {
 			existingDemands = loadExistingDemands(allotmentDetails.getTenantId(),
 					allotmentDetails.getApplicationNumber());
 		}
-		long entryDate = (allotmentDetails.getCreatedTime() > 0) ? allotmentDetails.getCreatedTime()
-				: System.currentTimeMillis();
 		List<DemandDetail> desired = calculationService.buildAdhocDetails(allotmentDetails);
 
-		Demand candidate = null;
-		for (Demand possible : toCreate) {
-			if (isCurrentPeriodDemand(possible, entryDate)) {
-				candidate = possible;
-				break;
-			}
-		}
+		Demand candidate = findLatestUnpaidDemand(toCreate);
 		if (candidate != null) {
 			if (desired.isEmpty()) {
 				// Nothing to add, and a demand that is not posted yet has nothing to remove either.
@@ -653,23 +667,24 @@ public class DemandService {
 			calculationService.addRoundOffTaxHead(candidate.getTenantId(), candidate.getDemandDetails());
 			candidate.setMinimumAmountPayable(candidate.getDemandDetails().stream().map(DemandDetail::getTaxAmount)
 					.reduce(BigDecimal.ZERO, BigDecimal::add));
-			log.info("Adhoc charge applied to the current period demand of application {}.",
+			log.info("Adhoc charge applied to the latest unpaid demand of application {}.",
 					allotmentDetails.getApplicationNumber());
 			return;
 		}
 
-		Demand currentPeriod = findCurrentPeriodDemand(existingDemands, entryDate);
-		if (currentPeriod == null) {
+		Demand latestUnpaidDemand = findLatestUnpaidDemand(existingDemands);
+		if (latestUnpaidDemand == null) {
 			if (!desired.isEmpty()) {
-				log.warn("No current period demand found to carry the adhoc charge of application {} - it was not "
-						+ "applied.", allotmentDetails.getApplicationNumber());
+				throw new CustomException("NO_UNPAID_DEMAND_FOUND",
+						"No active unpaid demand found to apply adhoc penalty/rebate for application "
+								+ allotmentDetails.getApplicationNumber());
 			}
 			return;
 		}
-		guardAdhocExemption(currentPeriod.getDemandDetails(), desired, allotmentDetails.getApplicationNumber());
-		Demand updated = reconcileDemand(currentPeriod, asDesiredState(currentPeriod, desired), requestInfo,
+		guardAdhocExemption(latestUnpaidDemand.getDemandDetails(), desired, allotmentDetails.getApplicationNumber());
+		Demand updated = reconcileDemand(latestUnpaidDemand, asDesiredState(latestUnpaidDemand, desired), requestInfo,
 				ADHOC_HEADS, false, "adhoc");
-		kept.put(currentPeriod.getId(), (updated != null) ? updated : currentPeriod);
+		kept.put(latestUnpaidDemand.getId(), (updated != null) ? updated : latestUnpaidDemand);
 		if (updated != null) {
 			toUpdate.put(updated.getId(), updated);
 		}
@@ -708,31 +723,68 @@ public class DemandService {
 		}
 	}
 
-	/** The demand of the period the entry instant falls in - the only demand an adhoc charge may land on. */
-	private static Demand findCurrentPeriodDemand(List<Demand> demands, long entryDate) {
+	/**
+	 * Finds the latest active and unpaid demand to carry adhoc penalty / rebate.
+	 * Prefers regular rent demand, falling back to any unpaid demand (e.g. arrear demand if no rent demand exists).
+	 */
+	private static Demand findLatestUnpaidDemand(List<Demand> demands) {
 		if (CollectionUtils.isEmpty(demands)) {
 			return null;
 		}
+		// 1. Try finding the latest unpaid non-arrear demand (regular rent demand)
+		Demand latestRentDemand = null;
 		for (Demand demand : demands) {
-			if (isCurrentPeriodDemand(demand, entryDate)) {
-				return demand;
+			if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails())
+					|| demand.isIspaymentcompleted()
+					|| Demand.DemandStatusEnum.CANCELLED.equals(demand.getStatus())
+					|| isArrearOnly(demand)) {
+				continue;
+			}
+			if (latestRentDemand == null) {
+				latestRentDemand = demand;
+			} else {
+				long to1 = (demand.getTaxPeriodTo() != null) ? demand.getTaxPeriodTo() : 0L;
+				long toLatest = (latestRentDemand.getTaxPeriodTo() != null) ? latestRentDemand.getTaxPeriodTo() : 0L;
+				if (to1 > toLatest) {
+					latestRentDemand = demand;
+				} else if (to1 == toLatest) {
+					long from1 = (demand.getTaxPeriodFrom() != null) ? demand.getTaxPeriodFrom() : 0L;
+					long fromLatest = (latestRentDemand.getTaxPeriodFrom() != null) ? latestRentDemand.getTaxPeriodFrom() : 0L;
+				if (from1 > fromLatest) {
+						latestRentDemand = demand;
+					}
+				}
 			}
 		}
-		return null;
-	}
-
-	/**
-	 * True for a demand whose period contains the given instant and which is not the arrear demand (whose period end
-	 * is the instant the arrear demand was raised, not a billing period). The adhoc charge already carried by that
-	 * demand does not disqualify it - it is what makes re-editing the current period idempotent.
-	 */
-	private static boolean isCurrentPeriodDemand(Demand demand, long entryDate) {
-		if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails()) || isArrearOnly(demand)) {
-			return false;
+		if (latestRentDemand != null) {
+			return latestRentDemand;
 		}
-		Long from = demand.getTaxPeriodFrom();
-		Long to = demand.getTaxPeriodTo();
-		return from != null && to != null && from <= entryDate && entryDate <= to;
+
+		// 2. Fallback: latest unpaid demand of any type (e.g. if only an arrear demand exists)
+		Demand latestAnyDemand = null;
+		for (Demand demand : demands) {
+			if (demand == null || CollectionUtils.isEmpty(demand.getDemandDetails())
+					|| demand.isIspaymentcompleted()
+					|| Demand.DemandStatusEnum.CANCELLED.equals(demand.getStatus())) {
+				continue;
+			}
+			if (latestAnyDemand == null) {
+				latestAnyDemand = demand;
+			} else {
+				long to1 = (demand.getTaxPeriodTo() != null) ? demand.getTaxPeriodTo() : 0L;
+				long toLatest = (latestAnyDemand.getTaxPeriodTo() != null) ? latestAnyDemand.getTaxPeriodTo() : 0L;
+				if (to1 > toLatest) {
+					latestAnyDemand = demand;
+				} else if (to1 == toLatest) {
+					long from1 = (demand.getTaxPeriodFrom() != null) ? demand.getTaxPeriodFrom() : 0L;
+					long fromLatest = (latestAnyDemand.getTaxPeriodFrom() != null) ? latestAnyDemand.getTaxPeriodFrom() : 0L;
+					if (from1 > fromLatest) {
+						latestAnyDemand = demand;
+					}
+				}
+			}
+		}
+		return latestAnyDemand;
 	}
 
 	/** Minimal stand-in for "the demand as the request wants it", used to drive the in-place reconcile. */
@@ -1050,9 +1102,11 @@ public class DemandService {
 						// (arrearPenalty, written verbatim when the arrear demand was created). The accrued penalty
 						// is ADDED on top of that migrated amount so the customer pays both. The migrated part is a
 						// fixed amount stored on the demand, so the total is recomputed from scratch on every run
-						// and never stacks. A demand created before the amount was stored falls back to the head's
-						// current value, which is exactly that migrated amount.
+						// and never stacks. Normal rent demands have no migrated penalty and must not stack.
 						BigDecimal migratedPenalty = arrearOnly ? extractMigratedPenalty(demand, existingPenaltyDetail) : BigDecimal.ZERO;
+						if (arrearOnly) {
+							preserveMigratedPenalty(demand, migratedPenalty);
+						}
 						BigDecimal totalPenalty = migratedPenalty.add(penaltyAmount).setScale(2, RoundingMode.HALF_UP);
 
 						if (existingPenaltyDetail != null) {
@@ -1101,7 +1155,10 @@ public class DemandService {
 						DemandDetail existingPenaltyDetail = demand.getDemandDetails().stream()
 								.filter(detail -> detail.getTaxHeadMasterCode().equalsIgnoreCase(RLConstants.PENALTY_TAXHEAD_CODE))
 								.findFirst().orElse(null);
-						BigDecimal migratedPenalty = extractMigratedPenalty(demand, existingPenaltyDetail);
+						BigDecimal migratedPenalty = arrearOnly ? extractMigratedPenalty(demand, existingPenaltyDetail) : BigDecimal.ZERO;
+						if (arrearOnly) {
+							preserveMigratedPenalty(demand, migratedPenalty);
+						}
 						BigDecimal totalPenalty = migratedPenalty.add(fallback).setScale(2, RoundingMode.HALF_UP);
 
 						if (existingPenaltyDetail != null) {
@@ -1205,7 +1262,7 @@ public class DemandService {
 	}
 
 	private List<AllotmentDetails> fetchApprovedAllotmentApplications(String tenantId, RequestInfo requestInfo,
-			String consumerCode) {
+			String consumerCode, String propertyId) {
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 
 		String baseHost = config.getRlServiceHost();
@@ -1221,8 +1278,11 @@ public class DemandService {
 				tenantId);
 		builder.queryParam("status", joiner.toString());
 		builder.queryParam("isExpaireFlag", false);
-		if (consumerCode != null) {
-			builder.queryParam("applicationNumbers", consumerCode);
+		if (consumerCode != null && !consumerCode.trim().isEmpty()) {
+			builder.queryParam("applicationNumbers", consumerCode.trim());
+		}
+		if (propertyId != null && !propertyId.trim().isEmpty()) {
+			builder.queryParam("propertyId", propertyId.trim());
 		}
 
 		String url = builder.build().toUriString();
@@ -1231,7 +1291,27 @@ public class DemandService {
 		try {
 			Object result = serviceRequestRepository.fetchResult(new StringBuilder(url), requestInfoWrapper);
 			AllotmentSearchResponse response = mapper.convertValue(result, AllotmentSearchResponse.class);
-			return response.getAllotment();
+			List<AllotmentDetails> allotments = (response != null && response.getAllotment() != null)
+					? response.getAllotment()
+					: Collections.emptyList();
+
+			// Fallback: If consumerCode was passed and no allotment found by applicationNumbers, try searching by propertyId
+			if (CollectionUtils.isEmpty(allotments) && consumerCode != null && !consumerCode.trim().isEmpty()
+					&& (propertyId == null || propertyId.trim().isEmpty())) {
+				UriComponentsBuilder fallbackBuilder = UriComponentsBuilder.fromHttpUrl(baseHost).path(basePath)
+						.queryParam("tenantId", tenantId)
+						.queryParam("status", joiner.toString())
+						.queryParam("isExpaireFlag", false)
+						.queryParam("propertyId", consumerCode.trim());
+				String fallbackUrl = fallbackBuilder.build().toUriString();
+				log.info("ALLOTMENT FALLBACK SEARCH URI (by propertyId): " + fallbackUrl);
+				Object fallbackResult = serviceRequestRepository.fetchResult(new StringBuilder(fallbackUrl), requestInfoWrapper);
+				AllotmentSearchResponse fallbackResponse = mapper.convertValue(fallbackResult, AllotmentSearchResponse.class);
+				if (fallbackResponse != null && fallbackResponse.getAllotment() != null) {
+					allotments = fallbackResponse.getAllotment();
+				}
+			}
+			return allotments;
 		} catch (Exception e) {
 			log.error("Error while fetching approved allotment applications for tenant: {}", tenantId, e);
 			throw new CustomException("RL_APP_SEARCH_ERROR", "Failed to fetch approved allotment applications");
@@ -1239,11 +1319,15 @@ public class DemandService {
 	}
 
 	public void generateBatchDemand(RequestInfo requestInfo, String tenantCode, String consumerCode) {
+		generateBatchDemand(requestInfo, tenantCode, consumerCode, null);
+	}
+
+	public void generateBatchDemand(RequestInfo requestInfo, String tenantCode, String consumerCode, String propertyId) {
 		LocalDate currentDate = LocalDate.now(); // today
 
 		List<String> tenantIds = (tenantCode == null) ? demandRepository.getDistinctTenantIds()
 				: Arrays.asList(tenantCode);
-		log.info("Starting demand generation job for tenants: {}", tenantIds);
+		log.info("Starting demand generation job for tenants: {} (consumerCode={}, propertyId={})", tenantIds, consumerCode, propertyId);
 
 		for (String tenantId : tenantIds) {
 			log.info("Generating demands for tenant: {}", tenantId);
@@ -1254,43 +1338,175 @@ public class DemandService {
 					try {
 
 						List<AllotmentDetails> list = fetchApprovedAllotmentApplications(tenantId, requestInfo,
-								consumerCode);
+								consumerCode, propertyId);
 						List<Demand> demandList = new ArrayList<>();
 						int batchSize = 10;
+						Map<String, List<BillingPeriod>> billingPeriodsCache = new HashMap<>();
+
 						list.forEach(d -> {
-							JsonNode additionalDetails = d.getAdditionalDetails();
-							String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
+							try {
+								String cycle = RLConstants.RL_MONTHLY_CYCLE;
+								JsonNode additionalDetails = d.getAdditionalDetails();
+								if (additionalDetails != null && additionalDetails.path("propertyDetails").get(0) != null) {
+									String rawCycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
+									if (rawCycle != null && !rawCycle.isEmpty() && !"null".equalsIgnoreCase(rawCycle)) {
+										cycle = rawCycle;
+									}
+								}
 
-							List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo,
-									tenantId);
-							BillingPeriod billingPeriod = billingPeriods.stream()
-									.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle))
-									.findFirst().orElse(null);
-							if (billingPeriod != null) {
-								long startDay = billingPeriod.getTaxPeriodFrom() <= d.getStartDate() ? d.getStartDate()
-										: billingPeriod.getTaxPeriodFrom();
+								// Check if the billing cycle is configured and active in MDMS billingPeriod.json for this tenant
+								String appTenant = (d.getTenantId() != null) ? d.getTenantId() : tenantId;
+								List<BillingPeriod> tenantBillingPeriods = billingPeriodsCache.computeIfAbsent(appTenant, t -> {
+									try {
+										return masterDataService.getBillingPeriod(requestInfo, t);
+									} catch (Exception e) {
+										log.warn("Could not fetch MDMS billingPeriod for tenant {}: {}", t, e.getMessage());
+										return Collections.emptyList();
+									}
+								});
 
-								long endDay = billingPeriod.getTaxPeriodTo() <= d.getEndDate()
-										? billingPeriod.getTaxPeriodTo()
-										: d.getEndDate();
+								if (!isCycleActiveForTenant(tenantBillingPeriods, cycle)) {
+									log.info("Demand generation skipped for application {} ({}) in tenant {} - cycle '{}' is inactive or not present in MDMS billingPeriod",
+											d.getApplicationNumber(), d.getPropertyId(), appTenant, cycle);
+									return;
+								}
 
-								long exparyDate = billingPeriod.getTaxPeriodTo();
+								ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
+								LocalDate today = LocalDate.now(zone);
 
-								Demand demand = schedulerService.billGenerateByCycle(startDay, endDay, exparyDate, d,
-										requestInfo, cycle);
-								if (demand != null)
-									demandList.add(demand);
+								Long legacyCutoff = null;
+								if (additionalDetails != null) {
+									try {
+										legacyCutoff = calculationService.readLegacyDateMillis(additionalDetails,
+												"lastPaidUpto", "lastPaidOn", "lastPaidDate",
+												RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY, "lastBillingPeriod", "arrearEndDate");
+									} catch (Exception ex) {
+										log.warn("Ignoring unparseable legacy cutoff date for application {}: {}",
+												d.getApplicationNumber(), ex.getMessage());
+									}
+								}
+								LocalDate legacyCutoffDate = (legacyCutoff != null && legacyCutoff > 0)
+										? Instant.ofEpochMilli(legacyCutoff).atZone(zone).toLocalDate()
+										: null;
+
+								// 1. Audit all existing demands for this consumer to detect missing or cancelled periods (gaps)
+								List<Demand> consumerDemands = demandRepository.getDemandsForConsumer(appTenant, d.getApplicationNumber());
+								List<Demand> activeDemands = (consumerDemands != null)
+										? consumerDemands.stream().filter(dem -> Demand.DemandStatusEnum.ACTIVE.equals(dem.getStatus())).collect(Collectors.toList())
+										: new ArrayList<>();
+								List<Demand> rentDemands = (consumerDemands != null)
+										? consumerDemands.stream().filter(dem -> !isArrearOrAdvanceOnly(dem)).collect(Collectors.toList())
+										: new ArrayList<>();
+
+								LocalDate probeDate;
+								if (!CollectionUtils.isEmpty(rentDemands)) {
+									// Regular rent demands already exist for this consumer: start probing from the earliest billed period
+									long earliestDemandEpoch = rentDemands.stream()
+											.mapToLong(Demand::getTaxPeriodFrom)
+											.min()
+											.orElse(System.currentTimeMillis());
+
+									long initialEpoch = earliestDemandEpoch;
+									if (d.getStartDate() != null && d.getStartDate() > 0 && d.getStartDate() < earliestDemandEpoch) {
+										LocalDate leaseStart = Instant.ofEpochMilli(d.getStartDate()).atZone(zone).toLocalDate();
+										LocalDate earliestDemandDate = Instant.ofEpochMilli(earliestDemandEpoch).atZone(zone).toLocalDate();
+										// If lease started within the same FY or within 1 year before the first demand, probe from lease start
+										if (leaseStart.getYear() == earliestDemandDate.getYear() || leaseStart.plusYears(1).isAfter(earliestDemandDate)) {
+											initialEpoch = d.getStartDate();
+										}
+									}
+									probeDate = Instant.ofEpochMilli(initialEpoch).atZone(zone).toLocalDate();
+								} else if (legacyCutoffDate != null) {
+									// Legacy allotment with no regular rent demands yet: start probing right after legacy cutoff
+									probeDate = legacyCutoffDate.plusDays(1);
+								} else {
+									// If no demand exists till date: start from allotment lease startDate (or createdTime)
+									long initialEpoch = (d.getStartDate() != null && d.getStartDate() > 0)
+											? d.getStartDate()
+											: ((d.getCreatedTime() > 0) ? d.getCreatedTime() : System.currentTimeMillis());
+									probeDate = Instant.ofEpochMilli(initialEpoch).atZone(zone).toLocalDate();
+								}
+								if (legacyCutoffDate != null && !probeDate.isAfter(legacyCutoffDate)) {
+									probeDate = legacyCutoffDate.plusDays(1);
+								}
+
+								// 2. Step through missing periods financial-year wise up to current date without depending on MDMS
+								while (true) {
+									LocalDate[] period = getFinancialYearPeriod(probeDate, cycle);
+									LocalDate periodStart = period[0];
+									LocalDate periodEnd = period[1];
+
+									// Stop when period start is after today (do not generate future cycles)
+									if (periodStart.isAfter(today)) {
+										break;
+									}
+
+									// Skip if period ended on or before legacy billing/paid cutoff
+									if (legacyCutoffDate != null && !periodEnd.isAfter(legacyCutoffDate)) {
+										probeDate = periodEnd.plusDays(1);
+										continue;
+									}
+
+									long periodFrom = periodStart.atStartOfDay(zone).toInstant().toEpochMilli();
+									long periodTo = periodEnd.atTime(23, 59, 59).atZone(zone).toInstant().toEpochMilli();
+
+									// Stop if allotment ended before this period started
+									if (d.getEndDate() != null && d.getEndDate() > 0 && periodFrom > d.getEndDate()) {
+										break;
+									}
+
+									// Skip if period ended before allotment lease started
+									if (d.getStartDate() != null && d.getStartDate() > 0 && periodTo < d.getStartDate()) {
+										probeDate = periodEnd.plusDays(1);
+										continue;
+									}
+
+									long startDay = (d.getStartDate() != null && d.getStartDate() > periodFrom) ? d.getStartDate() : periodFrom;
+									long endDay = (d.getEndDate() != null && d.getEndDate() < periodTo && d.getEndDate() > 0) ? d.getEndDate() : periodTo;
+
+									// Inverted period safety check (cannot bill if start is after or equal to end)
+									if (startDay >= endDay) {
+										probeDate = periodEnd.plusDays(1);
+										continue;
+									}
+
+									// Check if an ACTIVE demand already covers this exact period (with 1000ms tolerance)
+									boolean activeDemandExists = activeDemands.stream().anyMatch(existing ->
+											(Math.abs(existing.getTaxPeriodFrom() - startDay) <= 1000 || Math.abs(existing.getTaxPeriodFrom() - periodFrom) <= 1000) &&
+											(Math.abs(existing.getTaxPeriodTo() - endDay) <= 1000 || Math.abs(existing.getTaxPeriodTo() - periodTo) <= 1000)
+									);
+
+									if (activeDemandExists) {
+										probeDate = periodEnd.plusDays(1);
+										continue;
+									}
+
+									long expiryDate = periodTo;
+
+									// Clone allotment to prevent mutating original dates across multiple period iterations
+									AllotmentDetails periodAllotment = mapper.convertValue(mapper.valueToTree(d), AllotmentDetails.class);
+									Demand demand = schedulerService.billGenerateByCycle(startDay, endDay, expiryDate, periodAllotment,
+											requestInfo, cycle);
+									if (demand != null) {
+										demandList.add(demand);
+										activeDemands.add(demand);
+									}
+
+									// Advance to next financial year cycle
+									probeDate = periodEnd.plusDays(1);
+								}
+							} catch (Exception ex) {
+								log.error("Error generating demands for application: {}", d.getApplicationNumber(), ex);
 							}
 						});
-//						log.info
-						System.out.println("------::List of consummercode which have to generate bulk demand::-----");
-						if (demandList.isEmpty()) {
-							System.out.println("------::All demand alreday has been generated::-----");
-						}
-						demandList.stream().forEach(d -> {
-//							log.info("{} Demand consummerCode :{} ",currentDate,d.getConsumerCode());
-							System.out.println(currentDate + " Demand consummerCode : " + d.getConsumerCode());
 
+						log.info("Batch demand generation summary for tenant {}: total demands={}", tenantId, demandList.size());
+						if (demandList.isEmpty()) {
+							log.info("All demands have already been generated for tenant: {}", tenantId);
+						}
+						demandList.forEach(d -> {
+							log.info("{} Demand generated for consumerCode: {} from: {} to: {} amount: {}",
+									currentDate, d.getConsumerCode(), d.getTaxPeriodFrom(), d.getTaxPeriodTo(), d.getMinimumAmountPayable());
 						});
 
 						batchDemanService.batchRun(demandList, batchSize, requestInfo);
@@ -1363,12 +1579,21 @@ public class DemandService {
 
 		List<Penalty> penaltySlabs = masterDataService.getPenaltySlabs(requestInfo, tenantId);
 
-		// Populate demand details for expired demands
-		expiredDemands.forEach(d -> {
-			if (CollectionUtils.isEmpty(d.getDemandDetails())) {
-				d.setDemandDetails(demandRepository.getDemandsDetailsByDemandId(Arrays.asList(d.getId())));
-			}
-		});
+		// Populate demand details for expired demands in a single batched query
+		List<String> missingDetailDemandIds = expiredDemands.stream()
+				.filter(d -> CollectionUtils.isEmpty(d.getDemandDetails()))
+				.map(Demand::getId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+
+		if (!missingDetailDemandIds.isEmpty()) {
+			Map<String, List<DemandDetail>> detailsMap = demandRepository.getDemandDetailsByDemandIds(missingDetailDemandIds);
+			expiredDemands.forEach(d -> {
+				if (CollectionUtils.isEmpty(d.getDemandDetails())) {
+					d.setDemandDetails(detailsMap.getOrDefault(d.getId(), Collections.emptyList()));
+				}
+			});
+		}
 
 		RequestInfoWrapper wrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 		List<Demand> demandsToUpdate = new ArrayList<>();
@@ -1386,8 +1611,33 @@ public class DemandService {
 		}
 
 		if (!demandsToUpdate.isEmpty()) {
-			demandRepository.updateDemand(requestInfo, demandsToUpdate);
-			log.info("Successfully updated {} demands with penalty engine in scheduler for tenant: {}", demandsToUpdate.size(), tenantId);
+			List<Demand> successfullyUpdated = new ArrayList<>();
+			try {
+				demandRepository.updateDemand(requestInfo, demandsToUpdate);
+				successfullyUpdated.addAll(demandsToUpdate);
+				log.info("Successfully updated {} demands with penalty engine in scheduler for tenant: {}", demandsToUpdate.size(), tenantId);
+			} catch (Exception e) {
+				log.warn("Batch demand update failed for tenant: {}. Falling back to individual updates. Error: {}", tenantId, e.getMessage());
+				for (Demand d : demandsToUpdate) {
+					try {
+						demandRepository.updateDemand(requestInfo, Collections.singletonList(d));
+						successfullyUpdated.add(d);
+					} catch (Exception individualEx) {
+						log.error("Failed to update demand for consumerCode: {} (ID: {}). Reason: {}",
+								d.getConsumerCode(), d.getId(), individualEx.getMessage());
+					}
+				}
+				log.info("Individually updated {} of {} demands for tenant: {}",
+						successfullyUpdated.size(), demandsToUpdate.size(), tenantId);
+			}
+
+			if (!successfullyUpdated.isEmpty()) {
+				try {
+					notificationService.sendOverduePenaltyNotifications(requestInfo, tenantId, successfullyUpdated);
+				} catch (Exception ex) {
+					log.error("Error sending overdue penalty notifications for tenant: {}", tenantId, ex);
+				}
+			}
 		}
 	}
 
@@ -1464,7 +1714,15 @@ public class DemandService {
 		Integer dueDay = (dueDateConfig != null && dueDateConfig.getDueDay() != null) ? dueDateConfig.getDueDay() : 10;
 		Demand tempDemand = Demand.builder().taxPeriodFrom(allotmentDetails.getStartDate()).build();
 		long absoluteExpiry = getDueCutoffEpoch(tempDemand, dueDay);
-		long durationMillis = Math.max(0L, absoluteExpiry - System.currentTimeMillis());
+		long now = System.currentTimeMillis();
+		if (absoluteExpiry <= now) {
+			long window = TimeUnit.DAYS.toMillis(
+					config.getArrearPayableWindowDays() != null && config.getArrearPayableWindowDays() > 0
+							? config.getArrearPayableWindowDays()
+							: 30);
+			absoluteExpiry = now + window;
+		}
+		long durationMillis = Math.max(0L, absoluteExpiry - now);
 
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(payerUser)
 				.minimumAmountPayable(amountPayable).tenantId(allotmentDetails.getTenantId())
@@ -1473,6 +1731,107 @@ public class DemandService {
 				.businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
 		demands.add(demand);
 		return demand;
+	}
+
+	/**
+	 * Checks whether a given billing cycle is configured with "active": true in the tenant's MDMS billingPeriod.json.
+	 * If missing or false, demand will not be generated for that cycle.
+	 */
+	private boolean isCycleActiveForTenant(List<BillingPeriod> billingPeriods, String cycle) {
+		if (CollectionUtils.isEmpty(billingPeriods) || cycle == null) {
+			return false;
+		}
+		for (BillingPeriod bp : billingPeriods) {
+			if (bp != null && Boolean.TRUE.equals(bp.getActive()) && isCycleMatch(bp.getBillingCycle(), cycle)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Matches MDMS billingCycle against application feesPeriodCycle accommodating common spelling variants.
+	 */
+	private boolean isCycleMatch(String mdmsCycle, String appCycle) {
+		if (mdmsCycle == null || appCycle == null) {
+			return false;
+		}
+		String m = mdmsCycle.trim();
+		String a = appCycle.trim();
+		if (m.equalsIgnoreCase(a)) {
+			return true;
+		}
+		if (("QUATERLY".equalsIgnoreCase(m) || "QUARTERLY".equalsIgnoreCase(m)) &&
+				("QUATERLY".equalsIgnoreCase(a) || "QUARTERLY".equalsIgnoreCase(a))) {
+			return true;
+		}
+		if (("BIANNUAL".equalsIgnoreCase(m) || "BIAANNUALY".equalsIgnoreCase(m)) &&
+				("BIANNUAL".equalsIgnoreCase(a) || "BIAANNUALY".equalsIgnoreCase(a))) {
+			return true;
+		}
+		if (("ANNUAL".equalsIgnoreCase(m) || "YEARLY".equalsIgnoreCase(m)) &&
+				("ANNUAL".equalsIgnoreCase(a) || "YEARLY".equalsIgnoreCase(a))) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the Indian Financial Year (April 1 to March 31) period boundaries [startDate, endDate]
+	 * for a given date and billing cycle:
+	 * - QUATERLY: Q1 (Apr 1 - Jun 30), Q2 (Jul 1 - Sep 30), Q3 (Oct 1 - Dec 31), Q4 (Jan 1 - Mar 31)
+	 * - BIANNUAL: H1 (Apr 1 - Sep 30), H2 (Oct 1 - Mar 31)
+	 * - ANNUAL: Full FY (Apr 1 - Mar 31)
+	 * - MONTHLY: Calendar month (1st to last day of month)
+	 */
+	public static LocalDate[] getFinancialYearPeriod(LocalDate date, String cycle) {
+		int month = date.getMonthValue();
+		int year = date.getYear();
+
+		if (cycle != null && (cycle.equalsIgnoreCase(RLConstants.RL_QUATERLY_CYCLE) || "QUARTERLY".equalsIgnoreCase(cycle))) {
+			if (month >= 4 && month <= 6) {
+				return new LocalDate[] { LocalDate.of(year, 4, 1), LocalDate.of(year, 6, 30) };
+			} else if (month >= 7 && month <= 9) {
+				return new LocalDate[] { LocalDate.of(year, 7, 1), LocalDate.of(year, 9, 30) };
+			} else if (month >= 10 && month <= 12) {
+				return new LocalDate[] { LocalDate.of(year, 10, 1), LocalDate.of(year, 12, 31) };
+			} else {
+				return new LocalDate[] { LocalDate.of(year, 1, 1), LocalDate.of(year, 3, 31) };
+			}
+		} else if (cycle != null && (cycle.equalsIgnoreCase(RLConstants.RL_BIAANNUALY_CYCLE) || "BIANNUAL".equalsIgnoreCase(cycle))) {
+			if (month >= 4 && month <= 9) {
+				return new LocalDate[] { LocalDate.of(year, 4, 1), LocalDate.of(year, 9, 30) };
+			} else if (month >= 10 && month <= 12) {
+				return new LocalDate[] { LocalDate.of(year, 10, 1), LocalDate.of(year + 1, 3, 31) };
+			} else {
+				return new LocalDate[] { LocalDate.of(year - 1, 10, 1), LocalDate.of(year, 3, 31) };
+			}
+		} else if (cycle != null && (cycle.equalsIgnoreCase(RLConstants.RL_YEARLY_CYCLE) || "ANNUAL".equalsIgnoreCase(cycle))) {
+			if (month >= 4) {
+				return new LocalDate[] { LocalDate.of(year, 4, 1), LocalDate.of(year + 1, 3, 31) };
+			} else {
+				return new LocalDate[] { LocalDate.of(year - 1, 4, 1), LocalDate.of(year, 3, 31) };
+			}
+		} else {
+			// Monthly cycle: 1st of month to end of month
+			return new LocalDate[] { date.withDayOfMonth(1), date.withDayOfMonth(date.lengthOfMonth()) };
+		}
+	}
+
+	private int getStepMonthsForCycle(String cycle) {
+		if (cycle == null) {
+			return 1;
+		}
+		if (cycle.equalsIgnoreCase(RLConstants.RL_QUATERLY_CYCLE) || "QUARTERLY".equalsIgnoreCase(cycle)) {
+			return 3;
+		}
+		if (cycle.equalsIgnoreCase(RLConstants.RL_BIAANNUALY_CYCLE) || "BIANNUAL".equalsIgnoreCase(cycle)) {
+			return 6;
+		}
+		if (cycle.equalsIgnoreCase(RLConstants.RL_YEARLY_CYCLE) || "ANNUAL".equalsIgnoreCase(cycle)) {
+			return 12;
+		}
+		return 1;
 	}
 
 	/** Due day from a resolved DueDate row, defaulting to 10 when the master does not define one. */
@@ -1663,23 +2022,35 @@ public class DemandService {
 			}
 		}
 		if (penaltyDetail != null && penaltyDetail.getTaxAmount() != null) {
-			BigDecimal initialAmount = penaltyDetail.getTaxAmount();
-			if (demand != null) {
-				try {
-					com.fasterxml.jackson.databind.node.ObjectNode detailsNode;
-					if (demand.getAdditionalDetails() instanceof com.fasterxml.jackson.databind.node.ObjectNode) {
-						detailsNode = (com.fasterxml.jackson.databind.node.ObjectNode) demand.getAdditionalDetails();
-					} else if (demand.getAdditionalDetails() != null) {
-						detailsNode = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.valueToTree(demand.getAdditionalDetails());
-					} else {
-						detailsNode = mapper.createObjectNode();
-					}
-					detailsNode.put("migratedPenalty", initialAmount);
-					demand.setAdditionalDetails(detailsNode);
-				} catch (Exception ignored) {}
-			}
-			return initialAmount;
+			return penaltyDetail.getTaxAmount();
 		}
 		return BigDecimal.ZERO;
+	}
+
+	/**
+	 * Permanently stores the migrated penalty amount in demand.additionalDetails so subsequent recalculations
+	 * do not stack accrued penalty on top of the previous total.
+	 */
+	private void preserveMigratedPenalty(Demand demand, BigDecimal migratedPenalty) {
+		if (demand == null || migratedPenalty == null) {
+			return;
+		}
+		try {
+			JsonNode current = (demand.getAdditionalDetails() != null)
+					? mapper.convertValue(demand.getAdditionalDetails(), JsonNode.class)
+					: null;
+			com.fasterxml.jackson.databind.node.ObjectNode details;
+			if (current instanceof com.fasterxml.jackson.databind.node.ObjectNode) {
+				details = (com.fasterxml.jackson.databind.node.ObjectNode) current;
+			} else {
+				details = mapper.createObjectNode();
+			}
+			if (!details.hasNonNull("migratedPenalty")) {
+				details.put("migratedPenalty", migratedPenalty.toString());
+				demand.setAdditionalDetails(details);
+			}
+		} catch (Exception e) {
+			log.warn("Could not preserve migratedPenalty on demand {}: {}", demand.getId(), e.getMessage());
+		}
 	}
 }

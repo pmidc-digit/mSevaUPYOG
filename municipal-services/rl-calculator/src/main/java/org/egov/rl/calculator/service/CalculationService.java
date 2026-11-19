@@ -100,28 +100,36 @@ public class CalculationService {
 				fee = new BigDecimal(amount.getBaseRent());
 				AllotmentDetails allotmentDetails=allotmentRequest.getAllotment().get(0);
 				JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
-				String cycle = additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText();
+				String rawCycle = (additionalDetails != null && additionalDetails.path("propertyDetails").get(0) != null)
+						? additionalDetails.path("propertyDetails").get(0).path("feesPeriodCycle").asText()
+						: null;
+				String cycle = (rawCycle != null && !rawCycle.isEmpty() && !"null".equalsIgnoreCase(rawCycle))
+						? rawCycle
+						: RLConstants.RL_MONTHLY_CYCLE;
 
-				List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(allotmentRequest.getRequestInfo(), tenantId);
+				List<BillingPeriod> billingPeriods = null;
+				try {
+					billingPeriods = masterDataService.getBillingPeriod(allotmentRequest.getRequestInfo(), tenantId);
+				} catch (Exception e) {
+					log.warn("Could not fetch MDMS billing period, relying on allotment dates: {}", e.getMessage());
+				}
 				BillingPeriod billingPeriod = billingPeriods != null ? billingPeriods.stream()
 						.filter(b -> b.getBillingCycle().equalsIgnoreCase(cycle)).findFirst().orElse(null) : null;
-				//Basically getting the rent fromt the table otherwise we fallback to the original additional details
-				BigDecimal activeRent = getActiveRent(allotmentDetails, billingPeriod != null ? billingPeriod.getTaxPeriodFrom() : System.currentTimeMillis(), fee);
+				
+				long effectivePeriodStart = (allotmentDetails.getStartDate() != null && allotmentDetails.getStartDate() > 0)
+						? allotmentDetails.getStartDate()
+						: (billingPeriod != null ? billingPeriod.getTaxPeriodFrom() : System.currentTimeMillis());
+				BigDecimal activeRent = getActiveRent(allotmentDetails, effectivePeriodStart, fee);
 
-				if (billingPeriod != null) {
-					long startDay = billingPeriod.getTaxPeriodFrom() <= allotmentDetails.getStartDate()
-							? allotmentDetails.getStartDate()
-							: billingPeriod.getTaxPeriodFrom();
-
-					long endDay = billingPeriod.getTaxPeriodTo() <= allotmentDetails.getEndDate()
-							? billingPeriod.getTaxPeriodTo()
-							: allotmentDetails.getEndDate();
-					fee = calculatePaybleAmount(startDay, endDay, activeRent, cycle);
-				} else {
-					fee = activeRent;
+				int stepMonths = 1;
+				if (RLConstants.RL_QUATERLY_CYCLE.equalsIgnoreCase(cycle) || "QUARTERLY".equalsIgnoreCase(cycle)) {
+					stepMonths = 3;
+				} else if (RLConstants.RL_BIAANNUALY_CYCLE.equalsIgnoreCase(cycle) || "BIANNUAL".equalsIgnoreCase(cycle)) {
+					stepMonths = 6;
+				} else if (RLConstants.RL_YEARLY_CYCLE.equalsIgnoreCase(cycle) || "ANNUAL".equalsIgnoreCase(cycle)) {
+					stepMonths = 12;
 				}
-				
-				
+				fee = activeRent.multiply(BigDecimal.valueOf(stepMonths));
 				
 				demandDetails.add(DemandDetail.builder().taxAmount(fee)
 //						.collectionAmount(fee)
@@ -407,6 +415,14 @@ public class CalculationService {
         if (lastPaidUpto != null && lastPaidUpto <= 0) {
             lastPaidUpto = null;
         }
+        Long lastBillingPeriod = criteria.getLastBillingPeriod();
+        if ((lastBillingPeriod == null || lastBillingPeriod <= 0) && additionalDetails != null) {
+            lastBillingPeriod = readLegacyDateMillis(additionalDetails,
+                    RLConstants.LEGACY_LAST_BILLING_PERIOD_KEY, "lastBillingPeriod", "arrearEndDate");
+        }
+        if (lastBillingPeriod != null && lastBillingPeriod <= 0) {
+            lastBillingPeriod = null;
+        }
         boolean hasUnpaidCycles = lastPaidUpto != null;
         if (hasUnpaidCycles) {
             log.info("Legacy arrear generation for application {}: lastPaidUpto={}, cycle={}",
@@ -432,27 +448,13 @@ public class CalculationService {
         // Tax heads (SGST/CGST/Cowcess) - loaded lazily once and reused by every generated period.
         List<TaxRate> taxRates = null;
 
-        // Generate Current Period Demand
-        long taxPeriodFrom;
-        long taxPeriodTo;
-        
-        List<BillingPeriod> billingPeriods = masterDataService.getBillingPeriod(requestInfo, tenantId);
-        BillingPeriod billingPeriod = null;
-        if (!CollectionUtils.isEmpty(billingPeriods)) {
-            String matchCycle = cycle;
-            billingPeriod = billingPeriods.stream()
-                    .filter(b -> b.getBillingCycle().equalsIgnoreCase(matchCycle))
-                    .findFirst().orElse(null);
-        }
-
-        if (billingPeriod != null) {
-            taxPeriodFrom = billingPeriod.getTaxPeriodFrom();
-            taxPeriodTo = billingPeriod.getTaxPeriodTo();
-        } else {
-            YearMonth currentMonth = YearMonth.from(entryDate);
-            taxPeriodFrom = currentMonth.atDay(1).atStartOfDay(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
-            taxPeriodTo = currentMonth.atEndOfMonth().atTime(23, 59, 59).atZone(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
-        }
+        // Generate Current Period Demand using dynamic FY period boundaries matching DemandService.generateBatchDemand
+        ZoneId zone = ZoneId.of(RLConstants.TIME_ZONE);
+        LocalDate[] currentFYPeriod = DemandService.getFinancialYearPeriod(entryDate, cycle);
+        LocalDate currentPeriodStart = currentFYPeriod[0];
+        LocalDate currentPeriodEnd = currentFYPeriod[1];
+        long taxPeriodFrom = currentPeriodStart.atStartOfDay(zone).toInstant().toEpochMilli();
+        long taxPeriodTo = currentPeriodEnd.atTime(23, 59, 59).atZone(zone).toInstant().toEpochMilli();
 
         BigDecimal currentPeriodRent = BigDecimal.ZERO;
 
@@ -530,8 +532,8 @@ public class CalculationService {
                 stepMonths = 12;
             }
 
-            // Generate demands stepping by cycle duration (1, 3, 6, or 12 months)
-            YearMonth currentIterMonth = lastPaidMonth.plusMonths(stepMonths);
+            // Generate demands stepping by cycle duration (1, 3, 6, or 12 months) starting from the first unpaid month
+            YearMonth currentIterMonth = lastPaidMonth.plusMonths(1);
             while (!currentIterMonth.isAfter(entryMonth)) {
                 YearMonth endIterMonth = currentIterMonth.plusMonths(stepMonths - 1);
                 long periodFrom = currentIterMonth.atDay(1).atStartOfDay(ZoneId.of(RLConstants.TIME_ZONE)).toInstant().toEpochMilli();
@@ -597,8 +599,16 @@ public class CalculationService {
                 currentIterMonth = currentIterMonth.plusMonths(stepMonths);
             }
         } else {
-            // Default legacy demand generation: current period demand
-            generatedDemands.add(monthlyDemand);
+            LocalDate lastBillingDate = (lastBillingPeriod != null)
+                    ? Instant.ofEpochMilli(lastBillingPeriod).atZone(zone).toLocalDate()
+                    : null;
+            if (lastBillingDate == null || currentPeriodEnd.isAfter(lastBillingDate)) {
+                // Default legacy demand generation: current period demand
+                generatedDemands.add(monthlyDemand);
+            } else {
+                log.info("Current period {} - {} for application {} ended on or before lastBillingPeriod {} - skipping regular rent demand.",
+                        currentPeriodStart, currentPeriodEnd, consumerCode, lastBillingDate);
+            }
         }
 
         // ---- Arrear demand: breakdown (baseArrear / arrearGST / arrearPenalty) or lump sum ----
@@ -619,7 +629,36 @@ public class CalculationService {
                     + "penalty after their due day.", consumerCode);
         }
 
-        if (hasBreakdown || arrearAmount.compareTo(BigDecimal.ZERO) > 0) {
+        BigDecimal rawArrear = resolveRawAmount(
+                (criteria.getBaseArrear() != null && criteria.getBaseArrear().compareTo(BigDecimal.ZERO) != 0)
+                        ? criteria.getBaseArrear()
+                        : criteria.getArrearAmount(),
+                additionalDetails, "baseArrear", "arrear", "arrearAmount");
+
+        if (rawArrear != null && rawArrear.compareTo(BigDecimal.ZERO) < 0) {
+            // Negative arrear is set as advance demand (RL_ADVANCE_CARRYFORWARD)
+            BigDecimal advanceAmount = rawArrear.abs();
+            BigDecimal advanceTaxAmount = advanceAmount.negate();
+            List<DemandDetail> advanceDetails = new ArrayList<>();
+            advanceDetails.add(DemandDetail.builder()
+                    .taxAmount(advanceTaxAmount)
+                    .taxHeadMasterCode(RLConstants.RL_ADVANCE_CARRYFORWARD)
+                    .tenantId(tenantId)
+                    .collectionAmount(BigDecimal.ZERO)
+                    .build());
+
+            long arrearDemandTime = entryDateEpoch;
+
+            Demand advanceDemand = Demand.builder().consumerCode(consumerCode).demandDetails(advanceDetails).payer(payerUser)
+                    .minimumAmountPayable(BigDecimal.ZERO).tenantId(tenantId)
+                    .taxPeriodFrom(arrearStartDate != null ? arrearStartDate : arrearDemandTime).taxPeriodTo(arrearDemandTime)
+                    .fixedbillexpirydate(calculatedExpiry).billExpiryTime(durationMillis)
+                    .consumerType(RLConstants.APPLICATION_TYPE_LEGACY)
+                    .businessService(RLConstants.RL_SERVICE_NAME).additionalDetails(null).build();
+
+            generatedDemands.add(advanceDemand);
+            log.info("Generated advance demand for application {}: advanceAmount={}", consumerCode, advanceAmount);
+        } else if (hasBreakdown || arrearAmount.compareTo(BigDecimal.ZERO) > 0) {
             List<DemandDetail> arrearDetails = new ArrayList<>();
 
             if (hasBreakdown) {
@@ -697,9 +736,10 @@ public class CalculationService {
 		String tenantId = allotmentDetails.getTenantId();
 		JsonNode additionalDetails = allotmentDetails.getAdditionalDetails();
 		BigDecimal adhocPenalty = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_PENALTY_KEY);
-		BigDecimal adhocRebate = resolveLegacyAmount(null, additionalDetails, CalculatorConstants.ADHOC_REBATE_KEY);
+		BigDecimal adhocRebate = resolveAdhocRebateAmount(additionalDetails,
+				CalculatorConstants.ADHOC_REBATE_ALT_KEY, CalculatorConstants.ADHOC_REBATE_KEY, "rebateAmount");
 
-		if (adhocPenalty != null) {
+		if (adhocPenalty != null && adhocPenalty.compareTo(BigDecimal.ZERO) > 0) {
 			adhocDetails.add(DemandDetail.builder().taxAmount(adhocPenalty)
 					.taxHeadMasterCode(CalculatorConstants.RL_ADHOC_PENALTY).tenantId(tenantId)
 					.collectionAmount(BigDecimal.ZERO).build());
@@ -708,15 +748,55 @@ public class CalculationService {
 					readAdhocText(additionalDetails, CalculatorConstants.ADHOC_PENALTY_REASON_KEY));
 		}
 
-		if (adhocRebate != null) {
-			adhocDetails.add(DemandDetail.builder().taxAmount(adhocRebate.negate())
+		if (adhocRebate != null && adhocRebate.compareTo(BigDecimal.ZERO) < 0) {
+			adhocDetails.add(DemandDetail.builder().taxAmount(adhocRebate)
 					.taxHeadMasterCode(CalculatorConstants.RL_ADHOC_REBATE).tenantId(tenantId)
 					.collectionAmount(BigDecimal.ZERO).build());
 			log.info("Adhoc exemption {} for application {} (reason: {}).", adhocRebate,
 					allotmentDetails.getApplicationNumber(),
-					readAdhocText(additionalDetails, CalculatorConstants.ADHOC_REBATE_REASON_KEY));
+					readAdhocRebateReason(additionalDetails));
 		}
 		return adhocDetails;
+	}
+
+	private BigDecimal resolveAdhocRebateAmount(JsonNode details, String... keys) {
+		if (details == null || keys == null) {
+			return null;
+		}
+		for (String key : keys) {
+			if (key == null || !details.has(key)) {
+				continue;
+			}
+			JsonNode node = details.get(key);
+			if (node == null || node.isNull()) {
+				continue;
+			}
+			String raw = node.asText();
+			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+				continue;
+			}
+			try {
+				BigDecimal amount = new BigDecimal(raw.trim());
+				if (amount.compareTo(BigDecimal.ZERO) != 0) {
+					return amount.abs().negate();
+				}
+			} catch (NumberFormatException e) {
+				throw new CustomException("INVALID_ADHOC_REBATE",
+						"Unable to parse '" + key + "' value '" + raw + "'. Expected a numeric amount.");
+			}
+		}
+		return null;
+	}
+
+	private static String readAdhocRebateReason(JsonNode details) {
+		String reason = readAdhocText(details, CalculatorConstants.ADHOC_REBATE_ALT_REASON_KEY);
+		if (reason == null) {
+			reason = readAdhocText(details, CalculatorConstants.ADHOC_REBATE_REASON_KEY);
+		}
+		if (reason == null) {
+			reason = readAdhocText(details, "rebateReason");
+		}
+		return reason;
 	}
 
 	/** Free text of an adhoc reason, for logging only. */
@@ -852,7 +932,7 @@ public class CalculationService {
 	 * blank, and throws for a present but unusable value: Jackson's {@code asLong()} silently returns 0 and
 	 * would turn 1970-01-01 into the arrear start date, producing an absurd penalty.
 	 */
-	private Long readLegacyDateMillis(JsonNode details, String... keys) {
+	Long readLegacyDateMillis(JsonNode details, String... keys) {
 		if (details == null || keys == null) {
 			return null;
 		}
@@ -918,6 +998,38 @@ public class CalculationService {
 			try {
 				BigDecimal amount = new BigDecimal(raw.trim());
 				if (amount.compareTo(BigDecimal.ZERO) > 0) {
+					return amount;
+				}
+			} catch (NumberFormatException e) {
+				throw new CustomException("INVALID_LEGACY_AMOUNT",
+						"Unable to parse '" + key + "' value '" + raw + "'. Expected a numeric amount.");
+			}
+		}
+		return null;
+	}
+
+	private BigDecimal resolveRawAmount(BigDecimal fromRequest, JsonNode details, String... keys) {
+		if (fromRequest != null && fromRequest.compareTo(BigDecimal.ZERO) != 0) {
+			return fromRequest;
+		}
+		if (details == null || keys == null) {
+			return null;
+		}
+		for (String key : keys) {
+			if (key == null || !details.has(key)) {
+				continue;
+			}
+			JsonNode node = details.get(key);
+			if (node == null || node.isNull()) {
+				continue;
+			}
+			String raw = node.asText();
+			if (raw == null || raw.trim().isEmpty() || "null".equalsIgnoreCase(raw.trim())) {
+				continue;
+			}
+			try {
+				BigDecimal amount = new BigDecimal(raw.trim());
+				if (amount.compareTo(BigDecimal.ZERO) != 0) {
 					return amount;
 				}
 			} catch (NumberFormatException e) {

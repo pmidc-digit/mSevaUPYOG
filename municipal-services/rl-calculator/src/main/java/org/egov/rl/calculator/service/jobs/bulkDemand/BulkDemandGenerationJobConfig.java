@@ -11,7 +11,7 @@ import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 
 /**
  * Configures the Quartz Job and CronTrigger for bulk demand generation.
- * Default cron: every day at 03:30 AM IST.
+ * Default cron: every day at 03:30 AM IST (once a day).
  * Override via property: scheduler.bulk.cron
  */
 @Configuration

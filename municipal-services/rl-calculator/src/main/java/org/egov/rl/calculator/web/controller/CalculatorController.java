@@ -61,7 +61,13 @@ public class CalculatorController {
 	public ResponseEntity<Void> batchDemandGenerate(@Valid @RequestBody RequestInfo requestInfo,
 			@ModelAttribute GetBillCriteria getBillCriteria) {
 		log.info("Starting bulk demands for rent/lease demands.");
-		demandService.generateBatchDemand(requestInfo,getBillCriteria.getTenantId(),getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining()));
+		String consumerCode = null;
+		if (getBillCriteria.getConsumerCodes() != null && !getBillCriteria.getConsumerCodes().isEmpty()) {
+			consumerCode = getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining(","));
+		} else if (getBillCriteria.getApplicationNumber() != null && !getBillCriteria.getApplicationNumber().isEmpty()) {
+			consumerCode = getBillCriteria.getApplicationNumber();
+		}
+		demandService.generateBatchDemand(requestInfo, getBillCriteria.getTenantId(), consumerCode, getBillCriteria.getPropertyId());
 		log.info("Finished bulk demands for rent/lease demands.");
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -69,10 +75,12 @@ public class CalculatorController {
 	@PostMapping("/_generateBill")
 	public ResponseEntity<Void> generateBill(@RequestBody(required = false) JsonNode requestBody,
 			@ModelAttribute GetBillCriteria getBillCriteria) {
-		log.info("Generating bill for tenant: {} consumerCodes: {}", getBillCriteria.getTenantId(), getBillCriteria.getConsumerCodes());
+		log.info("Generating bill for tenant: {} consumerCodes: {} propertyId: {}", getBillCriteria.getTenantId(), getBillCriteria.getConsumerCodes(), getBillCriteria.getPropertyId());
 		String consumerCode = null;
 		if (getBillCriteria.getConsumerCodes() != null && !getBillCriteria.getConsumerCodes().isEmpty()) {
-			consumerCode = getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining());
+			consumerCode = getBillCriteria.getConsumerCodes().stream().collect(Collectors.joining(","));
+		} else if (getBillCriteria.getApplicationNumber() != null && !getBillCriteria.getApplicationNumber().isEmpty()) {
+			consumerCode = getBillCriteria.getApplicationNumber();
 		}
 
 		JsonNode requestInfoNode = null;
@@ -97,7 +105,7 @@ public class CalculatorController {
 			log.warn("Unable to parse RequestInfo from request body. node={}", requestInfoNode, e);
 		}
 
-		demandService.generateBatchDemand(requestInfo, getBillCriteria.getTenantId(), consumerCode);
+		demandService.generateBatchDemand(requestInfo, getBillCriteria.getTenantId(), consumerCode, getBillCriteria.getPropertyId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 }

@@ -272,14 +272,24 @@ public class InboxService {
         // Fetch full status count map for the UI.
         // Citizen inbox uses a searcher-based path (multi-tenant, by applicationNo);
         // every other module goes directly through the workflow status-count API.
+        //
+        // For cross-tenant (pb.punjab) BPA/Layout/CLU the status-count routine fetches
+        // ALL matching rows from the un-paginated searcher endpoint and counts them in
+        // memory.  We hold onto that full list so the main-search path can apply
+        // in-memory pagination from it — avoiding a second searcher call that would
+        // again return thousands of rows and overflow BPA-service / WF requests.
         List<HashMap<String, Object>> fullStatusCountMap;
+        List<Map<String, String>> prefetchedCrossTenantApplns = null;   // reused below
         if (isCitizenInboxCall) {
             fullStatusCountMap = getCitizenStatusCount(
                     criteria, allActionableStatuses, requestInfo, businessServiceName, moduleName);
         }
         else if (isPunjabCrossTenant) {
-            fullStatusCountMap = getCrossTenantEmployeeStatusCount(
-                    criteria, allActionableStatuses, businessSrvs, requestInfo, businessServiceName, moduleName);
+            // Fetch ALL cross-tenant rows once; reuse for both status counting and pagination.
+            prefetchedCrossTenantApplns = fetchAllCrossTenantApplications(
+                    criteria, allActionableStatuses, requestInfo, businessServiceName, moduleName);
+            fullStatusCountMap = computeCrossTenantStatusCount(
+                    prefetchedCrossTenantApplns, allActionableStatuses, businessSrvs);
         }
         else
         {
@@ -306,7 +316,7 @@ public class InboxService {
 
         List<Map<String, String>> crossTenantApplns = new ArrayList<>();
         handleModuleSearchCriteria(moduleName, criteria, statusIdNameMap, requestInfo,
-                moduleSearchCriteria, businessKeys, crossTenantApplns);
+                moduleSearchCriteria, businessKeys, crossTenantApplns, prefetchedCrossTenantApplns);
 
         if (CollectionUtils.isEmpty(businessKeys)) {
         	response.setTotalCount(0);
@@ -616,7 +626,8 @@ public class InboxService {
             RequestInfo requestInfo,
             Map<String, Object> moduleSearchCriteria,
             List<String> businessKeys,
-            List<Map<String, String>> crossTenantApplns) {
+            List<Map<String, String>> crossTenantApplns,
+            List<Map<String, String>> prefetchedCrossTenantApplns) {
 
         if (moduleName == null) return moduleSearchCriteria;
         List<String> roles = requestInfo.getUserInfo().getRoles().stream().map(Role::getCode).collect(Collectors.toList());
@@ -664,14 +675,31 @@ public class InboxService {
             case "bpa-service":
             case "bpa":
                 if (criteria.getTenantId() != null && criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
-                    List<Map<String, String>> tenantWiseApplns = bpaInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(
-                            criteria, statusIdNameStringMap, requestInfo);
-                    if (!CollectionUtils.isEmpty(tenantWiseApplns)) {
-                        applicationNumbers = tenantWiseApplns.stream()
+                    // The cross-tenant (pb.punjab) searcher endpoint is intentionally un-paginated:
+                    // it returns ALL matching rows so callers can count per-status in memory.
+                    // We re-use the list already fetched during status-count computation
+                    // (passed in via prefetchedCrossTenantApplns) rather than making a second
+                    // searcher call that would again deliver thousands of rows.
+                    // The requested page window is then applied in Java before the results
+                    // flow through to the workflow and BPA-service calls.
+                    List<Map<String, String>> allCrossTenantApplns =
+                            (prefetchedCrossTenantApplns != null)
+                                    ? prefetchedCrossTenantApplns
+                                    : bpaInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(
+                                            criteria, statusIdNameStringMap, requestInfo);
+
+                    if (!CollectionUtils.isEmpty(allCrossTenantApplns)) {
+                        int pageOffset = criteria.getOffset() != null ? criteria.getOffset() : 0;
+                        int pageLimit  = criteria.getLimit()  != null ? criteria.getLimit()  : 10;
+                        int fromIdx = Math.min(pageOffset, allCrossTenantApplns.size());
+                        int toIdx   = Math.min(pageOffset + pageLimit, allCrossTenantApplns.size());
+                        List<Map<String, String>> pagedApplns = allCrossTenantApplns.subList(fromIdx, toIdx);
+
+                        applicationNumbers = pagedApplns.stream()
                                 .map(m -> m.get("applicationno"))
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList());
-                        crossTenantApplns.addAll(tenantWiseApplns);
+                        crossTenantApplns.addAll(pagedApplns);
                     }
                 } else {
                     applicationNumbers = bpaInboxFilterService.fetchApplicationNumbersFromSearcher(
@@ -2495,6 +2523,12 @@ public class InboxService {
      * grouping the requested applications by their actual city-level tenant IDs.
      * The tenant-wise rows come straight from the searcher page already filtered,
      * so they are grouped directly without re-checking businessIds membership.
+     *
+     * <p>If a single ULB has more than {@code wf.cross.tenant.batch.size} applications,
+     * the list is split into equal-sized batches and each batch is fetched with a
+     * separate WF call.  This prevents oversized query-string URLs and keeps
+     * individual WF requests within safe payload limits while remaining fully
+     * transparent to the caller.
      */
     private ProcessInstanceResponse workflowCrossTenantFetching(
             ProcessInstanceSearchCriteria processCriteria,
@@ -2508,11 +2542,12 @@ public class InboxService {
             return workflowService.getProcessInstance(processCriteria, requestInfo);
         }
 
-        Map<String, List<String>> tenantToBusinessIds = new HashMap<>();
+        // --- Group applications by ULB tenant ---
+        Map<String, List<String>> tenantToBusinessIds = new LinkedHashMap<>();
         if (!CollectionUtils.isEmpty(tenantWiseApplns)) {
             for (Map<String, String> row : tenantWiseApplns) {
                 String tenant = row.get("tenantid");
-                String appNo = row.get("applicationno");
+                String appNo  = row.get("applicationno");
                 if (tenant != null && appNo != null) {
                     tenantToBusinessIds.computeIfAbsent(tenant, k -> new ArrayList<>()).add(appNo);
                 }
@@ -2523,19 +2558,35 @@ public class InboxService {
             return workflowService.getProcessInstance(processCriteria, requestInfo);
         }
 
-        String originalTenant = processCriteria.getTenantId();
+        // Safe-guard original criteria so callers are not affected
+        String originalTenant      = processCriteria.getTenantId();
         List<String> originalBusinessIds = new ArrayList<>(processCriteria.getBusinessIds());
 
+        int batchSize = config.getWfCrossTenantBatchSize() > 0
+                ? config.getWfCrossTenantBatchSize()
+                : 100;
+
         for (Map.Entry<String, List<String>> entry : tenantToBusinessIds.entrySet()) {
-            processCriteria.setTenantId(entry.getKey());
-            processCriteria.setBusinessIds(entry.getValue());
-            ProcessInstanceResponse piResponse = workflowService.getProcessInstance(processCriteria, requestInfo);
-            if (piResponse != null && !CollectionUtils.isEmpty(piResponse.getProcessInstances())) {
-                processInstanceRes.getProcessInstances().addAll(piResponse.getProcessInstances());
+            String          tenant     = entry.getKey();
+            List<String>    allIds     = entry.getValue();
+
+            // Partition this ULB's application list into batches of `batchSize`
+            List<List<String>> batches = partitionList(allIds, batchSize);
+
+            for (List<String> batch : batches) {
+                processCriteria.setTenantId(tenant);
+                processCriteria.setBusinessIds(batch);
+                ProcessInstanceResponse piResponse =
+                        workflowService.getProcessInstance(processCriteria, requestInfo);
+                if (piResponse != null
+                        && !CollectionUtils.isEmpty(piResponse.getProcessInstances())) {
+                    processInstanceRes.getProcessInstances()
+                            .addAll(piResponse.getProcessInstances());
+                }
             }
         }
 
-        // Restore original criteria
+        // Restore original criteria to avoid side-effects on the calling frame
         processCriteria.setTenantId(originalTenant);
         processCriteria.setBusinessIds(originalBusinessIds);
 
@@ -2543,9 +2594,31 @@ public class InboxService {
     }
 
     /**
+     * Splits {@code list} into consecutive sublists of at most {@code size} elements.
+     * The last sublist may be smaller.  The returned sublists are views of the original
+     * list, so no data is copied.
+     *
+     * @param list source list; must not be {@code null}
+     * @param size maximum elements per partition; must be {@code > 0}
+     * @return an ordered list of partitions, never {@code null}
+     */
+    private <T> List<List<T>> partitionList(List<T> list, int size) {
+        List<List<T>> partitions = new ArrayList<>();
+        for (int from = 0; from < list.size(); from += size) {
+            int to = Math.min(from + size, list.size());
+            partitions.add(list.subList(from, to));
+        }
+        return partitions;
+    }
+
+    /**
      * Aggregates workflow status counts in memory across all ULBs for state-level employees (pb.punjab)
      * by utilizing the status_id returned directly in the searcher response rows.
      * Zero external HTTP calls required!
+     *
+     * <p>Delegates to {@link #fetchAllCrossTenantApplications} then
+     * {@link #computeCrossTenantStatusCount} so that the fetched list can also be
+     * reused for in-memory pagination in the main-search path.
      */
     private List<HashMap<String, Object>> getCrossTenantEmployeeStatusCount(
             InboxSearchCriteria criteria,
@@ -2554,6 +2627,70 @@ public class InboxService {
             RequestInfo requestInfo,
             List<String> businessService,
             String moduleName) {
+
+        List<Map<String, String>> tenantWiseApplns =
+                fetchAllCrossTenantApplications(criteria, allActionableStatuses, requestInfo,
+                        businessService, moduleName);
+        return computeCrossTenantStatusCount(tenantWiseApplns, allActionableStatuses, businessSrvs);
+    }
+
+    /**
+     * Fetches <em>all</em> matching cross-tenant (pb.punjab) applications from the
+     * un-paginated searcher endpoint.  The result is intentionally un-paginated so it
+     * can be used both for per-status counting and (after in-memory slicing) as the
+     * source of the requested page.
+     *
+     * <p>Callers must apply {@code criteria.getOffset()} / {@code criteria.getLimit()}
+     * themselves before passing individual rows to downstream services.
+     */
+    private List<Map<String, String>> fetchAllCrossTenantApplications(
+            InboxSearchCriteria criteria,
+            Map<String, String> allActionableStatuses,
+            RequestInfo requestInfo,
+            List<String> businessService,
+            String moduleName) {
+
+        ProcessInstanceSearchCriteria statusProcessCriteria = new ProcessInstanceSearchCriteria();
+        statusProcessCriteria.setModuleName(moduleName);
+        statusProcessCriteria.setBusinessService(businessService);
+        statusProcessCriteria.setTenantId(criteria.getTenantId());
+        if (!CollectionUtils.isEmpty(allActionableStatuses)) {
+            statusProcessCriteria.setStatus(new ArrayList<>(allActionableStatuses.keySet()));
+        }
+
+        // Create a criteria object without pagination so the searcher returns every row.
+        // We will apply the user's page window in Java after receiving the full list.
+        InboxSearchCriteria unpaginatedCriteria = new InboxSearchCriteria();
+        unpaginatedCriteria.setTenantId(criteria.getTenantId());
+        unpaginatedCriteria.setProcessSearchCriteria(statusProcessCriteria);
+        unpaginatedCriteria.setModuleSearchCriteria(criteria.getModuleSearchCriteria() != null
+                ? new HashMap<>(criteria.getModuleSearchCriteria()) : new HashMap<>());
+        unpaginatedCriteria.setOffset(0);
+        unpaginatedCriteria.setLimit(100000);
+
+        List<Map<String, String>> tenantWiseApplns = null;
+        if ("layout-service".equalsIgnoreCase(moduleName)) {
+            tenantWiseApplns = layoutInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(
+                    unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
+        } else if ("clu-service".equalsIgnoreCase(moduleName)) {
+            tenantWiseApplns = cluInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(
+                    unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
+        } else if ("bpa-service".equalsIgnoreCase(moduleName) || "bpa-services".equalsIgnoreCase(moduleName)
+                || "bpa".equalsIgnoreCase(moduleName) || BPA.equalsIgnoreCase(moduleName)) {
+            tenantWiseApplns = bpaInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(
+                    unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
+        }
+        return tenantWiseApplns != null ? tenantWiseApplns : Collections.emptyList();
+    }
+
+    /**
+     * Computes the per-status count map from an already-fetched list of cross-tenant
+     * application rows.  Each row must carry a {@code status_id} field.
+     */
+    private List<HashMap<String, Object>> computeCrossTenantStatusCount(
+            List<Map<String, String>> tenantWiseApplns,
+            Map<String, String> allActionableStatuses,
+            List<BusinessService> businessSrvs) {
 
         List<HashMap<String, Object>> statusCountMapList = new ArrayList<>();
         Map<String, HashMap<String, Object>> statusToMap = new HashMap<>();
@@ -2584,31 +2721,6 @@ public class InboxService {
                 statusToMap.put(entry.getKey(), map);
                 statusCountMapList.add(map);
             }
-        }
-
-        ProcessInstanceSearchCriteria statusProcessCriteria = new ProcessInstanceSearchCriteria();
-        statusProcessCriteria.setModuleName(moduleName);
-        statusProcessCriteria.setBusinessService(businessService);
-        statusProcessCriteria.setTenantId(criteria.getTenantId());
-        if (!CollectionUtils.isEmpty(allActionableStatuses)) {
-            statusProcessCriteria.setStatus(new ArrayList<>(allActionableStatuses.keySet()));
-        }
-
-        InboxSearchCriteria unpaginatedCriteria = new InboxSearchCriteria();
-        unpaginatedCriteria.setTenantId(criteria.getTenantId());
-        unpaginatedCriteria.setProcessSearchCriteria(statusProcessCriteria);
-        unpaginatedCriteria.setModuleSearchCriteria(criteria.getModuleSearchCriteria() != null 
-                ? new HashMap<>(criteria.getModuleSearchCriteria()) : new HashMap<>());
-        unpaginatedCriteria.setOffset(0);
-        unpaginatedCriteria.setLimit(100000);
-
-        List<Map<String, String>> tenantWiseApplns = null;
-        if ("layout-service".equalsIgnoreCase(moduleName)) {
-            tenantWiseApplns = layoutInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
-        } else if ("clu-service".equalsIgnoreCase(moduleName)) {
-            tenantWiseApplns = cluInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
-        } else if ("bpa-service".equalsIgnoreCase(moduleName) || "bpa-services".equalsIgnoreCase(moduleName) || "bpa".equalsIgnoreCase(moduleName) || BPA.equalsIgnoreCase(moduleName)) {
-            tenantWiseApplns = bpaInboxFilterService.fetchTenantWiseApplicationNumbersFromSearcher(unpaginatedCriteria, new HashMap<>(allActionableStatuses), requestInfo);
         }
 
         if (!CollectionUtils.isEmpty(tenantWiseApplns)) {

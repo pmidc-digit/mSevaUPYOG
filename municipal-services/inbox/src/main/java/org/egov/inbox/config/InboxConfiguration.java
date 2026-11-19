@@ -136,5 +136,14 @@ public class InboxConfiguration {
 
 	@Value("${inbox.cross.tenant.excluded.tenantid:pb.testing}")
 	private String crossTenantExcludedTenantId;
+
+	/**
+	 * Maximum number of businessIds (applicationNos) sent in a single workflow
+	 * process/_search call during cross-tenant (pb.punjab) fetching.
+	 * Keeping this ≤ 100 avoids query-string URL-length limits and WF service
+	 * payload pressure. Configurable via {@code wf.cross.tenant.batch.size}.
+	 */
+	@Value("${wf.cross.tenant.batch.size:100}")
+	private int wfCrossTenantBatchSize;
 }
 

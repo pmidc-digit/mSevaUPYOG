@@ -63,6 +63,9 @@ public class EmployeeSearchCriteria {
     public List<String> zones;
     public List<String> assignedtenattids;
     public List<String> modulenames;
+    
+    @Size(max = 250)
+    public String jurisdiction;
 
     public void setModulename(String modulename) {
         if (modulename != null && !modulename.trim().isEmpty()) {
@@ -88,6 +91,7 @@ public class EmployeeSearchCriteria {
                 && CollectionUtils.isEmpty(criteria.getSubcategories())
                 && CollectionUtils.isEmpty(criteria.getZones())
                 && CollectionUtils.isEmpty(criteria.getModulenames())
+                && StringUtils.isEmpty(criteria.getJurisdiction())
         ) {
             return true;
         } else {

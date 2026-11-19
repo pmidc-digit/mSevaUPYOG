@@ -245,6 +245,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const Webview = !Digit.Utils.browser.isMobile()
 
   const ismultiple = ownershipCategory?.code?.includes("MULTIPLEOWNERS") ? true : false
+  const isPropertyOwners = currentStepData?.PlotDetails?.landInfo?.owners?.length > 0 || (currentStepData?.createdResponse?.landInfo?.owners?.length > 0 && Boolean(currentStepData?.createdResponse?.additionalDetails?.propertyuid));
 
   formData?.owners?.owners?.forEach((owner) => {
     if (owner.isPrimaryOwner == "false") owner.isPrimaryOwner = false
@@ -1102,7 +1103,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
             {fields.map((field, index) => {
               return (
                 <div key={`${field}-${index}`}>
-                  {ismultiple && (
+                  {ismultiple && !isPropertyOwners && (
                       <LinkButton
                         label={
                           <DeleteIcon className="bpa-owner-delete-icon" fill={!(fields.length == 1) ? "#494848" : "#FAFAFA"} />
@@ -1277,7 +1278,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                 </div>
               )
             })}
-            {ismultiple ? (
+            {ismultiple && !isPropertyOwners ? (
               <div>
                 <div className="bpa-owner-add-owner-row">
                   <button type="button" className="bpa-owner-add-owner-button" onClick={() => handleAdd()}>

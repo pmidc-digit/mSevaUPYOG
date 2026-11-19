@@ -398,6 +398,10 @@ const NOCApplicantDetails = (_props) => {
       const u = users[0];
 
       // Write EVERYTHING into RHF state
+      setValue(`owners[${idx}].userName`, u.userName || u.uuid || currentMobile, { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].uuid`, u.uuid || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].tenantId`, u.tenantId || "", { shouldValidate: true, shouldDirty: true });
+      setValue(`owners[${idx}].roles`, u.roles || [], { shouldValidate: true, shouldDirty: true });
       setValue(`owners[${idx}].ownerOrFirmName`, u.name || "", { shouldValidate: true, shouldDirty: true });
       setValue(`owners[${idx}].emailId`, u.emailId || "", { shouldValidate: true, shouldDirty: true });
       setValue(`owners[${idx}].fatherOrHusbandName`, u.fatherOrHusbandName || "", { shouldValidate: true, shouldDirty: true });
@@ -405,7 +409,11 @@ const NOCApplicantDetails = (_props) => {
 
       // Normalize DOB to YYYY-MM-DD for <input type="date">
       const dobStr = typeof u.dob === "string" ? u.dob : "";
-      const yyyyMmDd = dobStr ? dobStr.slice(0, 10) : ""; // handles "YYYY-MM-DDTHH:mm:ss"
+      const yyyyMmDd = dobStr
+        ? dobStr.slice(0, 10)
+        : typeof u.dob === "number"
+        ? new Date(u.dob).toISOString().slice(0, 10)
+        : "";
       setValue(`owners[${idx}].dateOfBirth`, yyyyMmDd, { shouldValidate: true, shouldDirty: true });
 
       // Gender must be the option object the RadioButtons expects

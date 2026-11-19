@@ -133,7 +133,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     config: {
       select: (data) => ({
         statuses: data.statusMap,
-        table: data?.items.map((application) => ({
+        table: (data?.items || []).map((application) => ({
           _searchData: application,
           applicationId: application.businessObject.applicationNo || application.businessObject.applicationNumber,
           date: application.businessObject.auditDetails.createdTime,

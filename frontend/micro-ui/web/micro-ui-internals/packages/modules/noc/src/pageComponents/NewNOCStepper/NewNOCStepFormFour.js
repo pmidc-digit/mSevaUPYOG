@@ -234,18 +234,21 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return outerOwner;
     });
     const transformedInnerOwners = (innerOwners || []).map((item, index) => ({
-      mobileNumber: item?.mobileNumber || "",
-      name: item?.ownerOrFirmName || "",
-      emailId: item?.emailId || "",
-      userName: item?.mobileNumber || "",
-      fatherOrHusbandName: item?.fatherOrHusbandName || "",
-      permanentAddress: item?.address || "",
-      gender: item?.gender?.code || "",
-      dob: Digit.Utils.pt.convertDateToEpoch(item?.dateOfBirth || ""),
       additionalDetails: {
-        ownerPhoto: { ...ownerPhotos?.ownerPhotoList?.[index] },
         ownerId: { ...ownerIds?.ownerIdList?.[index] },
+        ownerPhoto: { ...ownerPhotos?.ownerPhotoList?.[index] },
       },
+      dob: item?.dateOfBirth ? Digit.Utils.pt.convertDateToEpoch(item.dateOfBirth) : item?.dob || null,
+      emailId: item?.emailId || "",
+      fatherOrHusbandName: item?.fatherOrHusbandName || "",
+      gender: item?.gender?.code || item?.gender || "",
+      mobileNumber: item?.mobileNumber || "",
+      name: item?.ownerOrFirmName || item?.name || "",
+      permanentAddress: item?.permanentAddress || item?.address || "",
+      roles: item?.roles || [],
+      tenantId: item?.tenantId || tenantId,
+      userName: item?.userName || item?.uuid || item?.mobileNumber || "",
+      uuid: item?.uuid || "",
     }));
 
     // Final owners array = outer owners + transformed inner owners

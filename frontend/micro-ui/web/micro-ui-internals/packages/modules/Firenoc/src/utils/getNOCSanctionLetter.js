@@ -1,10 +1,11 @@
-const getNOCSanctionLetter = async ({application, t,EmpData,approverComment,matchedCity = {}}) => {
+const getNOCSanctionLetter = async ({application, t,EmpData,approverComment,matchedCity = {},selectedLocality= ""}) => {
 
   const currentDate = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "long",
     year: "numeric",
-  });
+  })
+  
 
 
 
@@ -154,7 +155,7 @@ const zoneLabel = fireNOCDetails?.zone || " ";
 const validityPeriod = `${fireNOCDetails?.validityPeriod || fireNOCDetails?.additionalDetail?.validityYears || 1} Year(s)`;
 
 
-const locality = addr?.locality?.code;
+const locality = selectedLocality;
 const doorNo = addr?.doorNo;
 const street = addr?.street;
 const landmark = addr?.landmark;

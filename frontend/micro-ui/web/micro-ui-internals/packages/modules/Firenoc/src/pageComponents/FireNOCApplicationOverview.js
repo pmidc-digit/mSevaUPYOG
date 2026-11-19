@@ -82,7 +82,15 @@ const FireNOCApplicationOverview = () => {
   const [getEmployees, setEmployees] = useState([]);
   const [getWorkflowService, setWorkflowService] = useState([]);
   const [loading, setLoading] = useState(false);
-  const cities = Digit.Hooks.useTenants();
+  const stateId = Digit.ULBService.getStateId();
+  const { data: tenantMdms } = Digit.Hooks.useCustomMDMS(stateId, "tenant", [{ name: "tenants" }], { retry: false }  );
+  const localityTenantId = fireNOC?.fireNOCDetails?.propertyDetails?.address?.city;
+  const { data: fetchedLocalities = [] } = Digit.Hooks.useBoundaryLocalities(
+    localityTenantId,
+    "revenue",
+    { enabled: !!localityTenantId },
+    t
+  );
 
 
   const menuRef = React.useRef();
@@ -245,7 +253,9 @@ const FireNOCApplicationOverview = () => {
   const owners = details?.applicantDetails?.owners || [];
   const buildings = details?.buildings || [];
   const address = details?.propertyDetails?.address;
-
+  const selectedLocality = fetchedLocalities.find(
+    ({ code }) => code === address?.locality?.code
+  )?.name || address?.locality?.name || address?.locality?.code || "";
   const remainingDocs = (fireNOC?.documents || details?.applicantDetails?.additionalDetail?.ownerAuditionalDetail?.documents || [])
     ?.filter(
       (doc) =>
@@ -275,7 +285,7 @@ const FireNOCApplicationOverview = () => {
   const getRecieptSearch = async ({ tenantId, payments, pdfkey, EmpData = null, ...params }) => {
     try {
       setLoading(true);
-      const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData});
+      const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData , selectedLocality: selectedLocality});
       let filestoreID = null;
         try {
           const response = await Digit.PaymentService.generatePdf(
@@ -304,10 +314,16 @@ const FireNOCApplicationOverview = () => {
 
       const tenantCode = address?.city; 
 
-      const matchedCity = cities?.status === "success" && cities?.data?.find((city) => city?.code === tenantCode);
+      const matchedCity = tenantMdms?.tenant?.tenants?.find((city) => city?.code === tenantCode);
 
 
-      const nocSanctionData = await getNOCSanctionLetter({application: fireNOC, t, EmpData , matchedCity : matchedCity});
+      const nocSanctionData = await getNOCSanctionLetter({
+        application: fireNOC,
+        t,
+        EmpData,
+        matchedCity,
+        selectedLocality,
+      });
 
       const prevGetLang = Digit.StoreData.getCurrentLanguage;
 
@@ -438,7 +454,7 @@ const FireNOCApplicationOverview = () => {
           <StatusTable>
             <Row label={t("NOC_CITY")} text={address?.city || address?.tenantId || "-"} />
             <Row label={t("NOC_AREA_TYPE")} text={address?.areaType || "-"} />
-            <Row label={t("NOC_LOCALITY")} text={address?.locality?.code || "-"} />
+            <Row label={t("NOC_LOCALITY")} text={selectedLocality || "-"} />
           </StatusTable>
         </Card>
 

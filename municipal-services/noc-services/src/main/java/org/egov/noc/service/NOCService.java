@@ -327,6 +327,16 @@ public class NOCService {
 					if(CollectionUtils.isEmpty(assignee))
 						noc.getWorkflow().setAssignes(null);
 				}
+				
+				if (NOCConstants.CITIZEN_ACTION_REQUIRED.equalsIgnoreCase(nextState.getState())) {
+				    String createdBy = nocRequest.getNoc()
+				            .getAuditDetails().getCreatedBy();
+				    noc.getWorkflow().setAssignes(
+				            createdBy != null
+				                    ? Collections.singletonList(createdBy)
+				                    : null
+				    );
+				}
 
 //				if (CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
 //					String createdBy = null;

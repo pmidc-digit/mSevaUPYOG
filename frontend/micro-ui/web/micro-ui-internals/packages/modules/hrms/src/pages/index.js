@@ -55,9 +55,9 @@ const EmployeeApp = ({ path, url, userType }) => {
       });
     }
     // Employee Mapping
-    else if (pathname.includes("/empMaping")) {
+    else if (pathname.includes("/empMaping") || pathname.includes("/empJurisSearch")) {
       baseCrumbs.push({
-        path: `${path}/empMaping`,
+        path: pathname.includes("/empJurisSearch") ? `${path}/empJurisSearch` : `${path}/empMaping`,
         content: t("HR_EMPLOYEE_MAPPING") || "Employee Mapping",
         show: true,
         isclickable: false,
@@ -149,6 +149,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />
           <PrivateRoute path={`${path}/report/rainmaker-hrms/HRMSEmployeewiseReport`} component={() => <HRMSEmployeewiseReport />} />
           <PrivateRoute path={`${path}/empMaping`} component={() => <EmpMaping />} />
+          <PrivateRoute path={`${path}/empJurisSearch`} component={() => <EmpMaping hideMappingControls showRoles showExport isJurisdictionSearch />} />
         </div>
       </React.Fragment>
     </Switch>

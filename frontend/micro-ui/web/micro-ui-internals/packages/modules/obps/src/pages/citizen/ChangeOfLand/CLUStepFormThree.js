@@ -45,7 +45,12 @@ const CLUStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-     if(!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()) ||  !(coordinates?.Longitude1?.trim()) || !(coordinates?.Longitude2?.trim())){
+    if (
+      !Number(coordinates?.Latitude1) ||
+      !Number(coordinates?.Latitude2) ||
+      !Number(coordinates?.Longitude1) ||
+      !Number(coordinates?.Longitude2)
+    ) {       
       setError(`${t("BPA_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
       setShowToast(true);
       setTimeout(()=>{

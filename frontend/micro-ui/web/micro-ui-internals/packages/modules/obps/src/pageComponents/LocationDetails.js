@@ -481,7 +481,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepD
     if (!file) return;
 
     const geo = await extractGeoLocation(file);
-    if (!geo.latitude || !geo.longitude) {
+    if (!Number(geo.latitude) || !Number(geo.longitude)) {
       setError(t("This image does not contain GPS location data"));
       setUploadedFile(null);
       setGeoLocationFromImg({ latitude: null, longitude: null });
@@ -524,7 +524,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepD
     if (!file) return;
 
     const geo = await extractGeoLocation(file);
-    if (!geo.latitude || !geo.longitude) {
+    if (!Number(geo.latitude) || !Number(geo.longitude)) {
       setError(t("This image does not contain GPS location data"));
       setUploadedFileTwo(null);
       setGeoLocationFromImgTwo({ latitude: null, longitude: null });

@@ -804,12 +804,22 @@
 
 .obps-page-components-cluimge-view--style-2 {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   margin-top: 10px;
   padding: 0px 20px;
 }
 
 .obps-page-components-cluimge-view--style-3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.obps-page-components-cluimge-view--style-2 .obps-page-components-cluimge-view--style-3 .clu-owner-photo-heading {
+  width: 100%;
+  margin: 0;
   text-align: center;
 }
 

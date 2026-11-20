@@ -398,6 +398,37 @@ $hover-bg: #f5f5f5;
     color: #333;
   }
 
+  &__results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .hrms-emp-mapping__results-heading {
+      margin-bottom: 0;
+    }
+
+    .multilinkWrapper {
+      position: relative;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .multilink-labelWrap {
+      position: static;
+      inset: auto;
+      margin: 0;
+    }
+
+    .multilink-optionWrap {
+      top: 100%;
+      right: 0;
+      margin: 4px 0 0;
+    }
+  }
+
   &__filter-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

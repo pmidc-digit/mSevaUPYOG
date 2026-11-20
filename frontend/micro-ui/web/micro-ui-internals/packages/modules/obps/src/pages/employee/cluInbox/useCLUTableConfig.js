@@ -1,9 +1,10 @@
-import useLocalColumnSearch from "../../../../../templates/Inbox/components/useLocalColumnSearch";
+import useLocalColumnSearch, { getColumnText } from "../../../../../templates/Inbox/components/useLocalColumnSearch";
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils";
+import { getStatusChangeDateColumn } from "../../../../../templates/Inbox/components/workflowColumns";
 
 const useCLUTableConfig = ({ enableColumnSearch = false,
   parentRoute,
@@ -101,7 +102,7 @@ const useCLUTableConfig = ({ enableColumnSearch = false,
       },
       {
         Header: t("CATEGORY"),
-        accessor: (row) => row?.category,
+        accessor: (row) => getColumnText(row?.category),
         disableSortBy: true,
       },
       {
@@ -115,6 +116,7 @@ const useCLUTableConfig = ({ enableColumnSearch = false,
         accessor: (row) => t(`BPA_STATUS_${row?.status}`),
         disableSortBy: true,
       },
+      getStatusChangeDateColumn(t),
       {
         Header: t("ZONE"),
         accessor: (row) => t(row?.zone),
@@ -144,6 +146,7 @@ const useCLUTableConfig = ({ enableColumnSearch = false,
         },
       };
     },
+    stickyHeader: true,
     disableSort: false,
     autoSort: false,
     manualPagination: true,

@@ -1,3 +1,4 @@
+import getApplicationStatusText from "../../../../../templates/ApplicationDetails/getApplicationStatusText";
 import {
   TextInput,
   Header,
@@ -48,7 +49,8 @@ import {
   fetchUrl,
   fetchOnlyFileStore,
   fetchOnlyUrl,
-  EmployeeData
+  EmployeeData,
+  getBPAValidityDate
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview";
@@ -701,9 +703,10 @@ const BpaApplicationDetail = () => {
     }
   }, [data?.applicationData?.edcrNumber]);
 
-  const getTranslatedValues = (dataValue, isNotTranslated) => {
+  const getTranslatedValues = (dataValue, isNotTranslated, title) => {
     if (dataValue) {
-      return !isNotTranslated ? t(dataValue) : dataValue;
+      const text = !isNotTranslated ? t(dataValue) : dataValue;
+      return title === "APPLICATION_STATUS" ? getApplicationStatusText(text, workflowDetails) : text;
     } else {
       return t("NA");
     }
@@ -765,12 +768,9 @@ const BpaApplicationDetail = () => {
       if (!fileStoreId) {
         const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
         Digit.StoreData.getCurrentLanguage = () => "pn_IN";
-        const newValidityDate =
+        const validityBaseDate =
           data?.applicationData?.approvalDate !== 0 && data?.applicationData?.approvalDate ? data.applicationData.approvalDate : Date.now();
-
-        // validity date = approval date + 3 as per feedback
-        newValidityDate.setFullYear(newValidityDate.getFullYear() + 3);
-        const approvalDatePlusThree = newValidityDate.getTime();
+        const approvalDatePlusThree = getBPAValidityDate(data?.applicationData, data?.edcrDetails, validityBaseDate);
 
         const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
         const requestData = {
@@ -927,11 +927,7 @@ const BpaApplicationDetail = () => {
 
       const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
 
-      const newValidityDate = Date.now();
-      const validityDateObj = new Date(newValidityDate);
-      // validity date = approval date + 3 as per feedback
-      validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
-      const approvalDatePlusThree = validityDateObj.getTime();
+      const approvalDatePlusThree = getBPAValidityDate(data?.applicationData, data?.edcrDetails);
 
       const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
       const requestData = {
@@ -1034,12 +1030,7 @@ const BpaApplicationDetail = () => {
         ?.filter((v, i, arr) => v && arr.indexOf(v) === i)
         .join(", ");
       Digit.StoreData.getCurrentLanguage = () => "pn_IN";
-      const newValidityDate = Date.now();
-
-      // validity date = approval date + 3 as per feedback
-      const validityDateObj = new Date(newValidityDate);
-      validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
-      const approvalDatePlusThree = validityDateObj.getTime();
+      const approvalDatePlusThree = getBPAValidityDate(data?.applicationData, data?.edcrDetails);
       let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
 
       if (!fileStoreId) {
@@ -2179,7 +2170,7 @@ const BpaApplicationDetail = () => {
                                     className="border-none"
                                     label={t(value?.title)}
                                     text={
-                                      value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}` : t("CS_NA")
+                                      value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated, value?.title)} ${t(value?.isUnit)}` : t("CS_NA")
                                     }
                                   />
                                 );
@@ -2204,7 +2195,7 @@ const BpaApplicationDetail = () => {
                                   <Row
                                     className="border-none"
                                     label={t(value?.title)}
-                                    text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
+                                    text={getTranslatedValues(value?.value, value?.isNotTranslated, value?.title) || t("CS_NA")}
                                   />
                                 );
                             })
@@ -2218,7 +2209,7 @@ const BpaApplicationDetail = () => {
                                     className="border-none"
                                     label={t(value?.title)}
                                     textStyle={value?.value === "Paid" ? { color: "darkgreen" } : value?.value === "Unpaid" ? { color: "red" } : {}}
-                                    text={value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated) : t("CS_NA")}
+                                    text={value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated, value?.title) : t("CS_NA")}
                                   />
                                 ) : null}
                                 {!detail?.isTitleRepeat && value?.isUnit ? (
@@ -2226,7 +2217,7 @@ const BpaApplicationDetail = () => {
                                     className="border-none"
                                     label={t(value?.title)}
                                     text={
-                                      value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}` : t("CS_NA")
+                                      value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated, value?.title)} ${t(value?.isUnit)}` : t("CS_NA")
                                     }
                                   />
                                 ) : null}
@@ -2298,7 +2289,7 @@ const BpaApplicationDetail = () => {
                                   <Row
                                     className="border-none"
                                     label={t(value?.title)}
-                                    text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
+                                    text={getTranslatedValues(value?.value, value?.isNotTranslated, value?.title) || t("CS_NA")}
                                     key={value?.title}
                                   />
                                 ))}

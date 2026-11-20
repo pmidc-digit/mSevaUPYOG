@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Table } from "@mseva/digit-ui-react-components";
 import BadgeCell from "../common/BadgeCell";
+import InboxExportMenu from "../../../../templates/Inbox/components/InboxExportMenu";
 
 
 const MappingTable = ({ 
@@ -9,7 +10,11 @@ const MappingTable = ({
   mappingData, 
   hasSearched, 
   filterULB, 
-  tenantId 
+  tenantId,
+  showRoles = false,
+  showExport = false,
+  hideMappingColumns = false,
+  title
 }) => {
   const columns = useMemo(
     () => [
@@ -26,7 +31,7 @@ const MappingTable = ({
           </Link>
         ),
       },
-      {
+      ...(!hideMappingColumns ? [{
         Header: t("HR_CATEGORY_LABEL"),
         accessor: "categoryName",
         disableSortBy: false,
@@ -43,48 +48,77 @@ const MappingTable = ({
         accessor: "zoneName",
         disableSortBy: false,
         Cell: ({ value }) => <BadgeCell value={value} type="zone" />,
-      },
+      }] : []),
+      ...(showRoles
+        ? [{
+            Header: t("Roles"),
+            accessor: "roleNames",
+            disableSortBy: false,
+          }]
+        : []),
     ],
-    [t, filterULB?.code, tenantId]
+    [t, filterULB?.code, tenantId, showRoles, hideMappingColumns]
   );
+
+  const heading = title ? <h3 className="hrms-emp-mapping__results-heading">{title}</h3> : null;
 
   if (!hasSearched) {
     return (
-      <div className="hrms-emp-mapping__no-search">
-        <div className="hrms-emp-mapping__no-search-icon">🔍</div>
-        <h3 className="hrms-emp-mapping__no-search-title">
-          {t("COMMON_NO_SEARCH_YET") || "Apply filters to search"}
-        </h3>
-        <p className="hrms-emp-mapping__no-search-text">
-          {t("COMMON_SELECT_FILTERS_MESSAGE") ||
-            "Select one or more filters above and click Search to view employee mappings"}
-        </p>
-      </div>
+      <>
+        {heading}
+        <div className="hrms-emp-mapping__no-search">
+          <div className="hrms-emp-mapping__no-search-icon">🔍</div>
+          <h3 className="hrms-emp-mapping__no-search-title">
+            {t("COMMON_NO_SEARCH_YET") || "Apply filters to search"}
+          </h3>
+          <p className="hrms-emp-mapping__no-search-text">
+            {t("COMMON_SELECT_FILTERS_MESSAGE") ||
+              "Select one or more filters above and click Search to view employee mappings"}
+          </p>
+        </div>
+      </>
     );
   }
 
   // Safety check: Ensure mappingData is a valid array
   if (!Array.isArray(mappingData) || mappingData.length === 0) {
     return (
-      <div className="hrms-emp-mapping__no-data">
-        <p>{t("COMMON_TABLE_NO_RECORD_FOUND")}</p>
-      </div>
+      <>
+        {heading}
+        <div className="hrms-emp-mapping__no-data">
+          <p>{t("COMMON_TABLE_NO_RECORD_FOUND")}</p>
+        </div>
+      </>
     );
   }
 
   return (
-    <Table
-      t={t}
-      data={mappingData}
-      columns={columns}
-      getCellProps={(cellInfo) => ({
-        style: cellInfo.column.style || {},
-      })}
-      className="customTable table-border-style hrms-emp-mapping__table"
-      manualPagination={true}
-      isPaginationRequired={false}
-      disableSort={false}
-    />
+    <>
+      {showExport ? (
+        <div className="hrms-emp-mapping__results-header">
+          {heading}
+          <InboxExportMenu
+            columns={columns}
+            data={mappingData}
+            totalCount={mappingData.length}
+            fileName="Employee_Jurisdictions"
+            t={t}
+          />
+        </div>
+      ) : heading}
+      <Table
+        t={t}
+        data={mappingData}
+        columns={columns}
+        getCellProps={(cellInfo) => ({
+          style: cellInfo.column.style || {},
+        })}
+        className="customTable table-border-style hrms-emp-mapping__table"
+        manualPagination={true}
+        isPaginationRequired={false}
+        disableSort={false}
+      />
+    </>
   );
 };
 

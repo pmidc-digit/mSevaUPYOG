@@ -4,6 +4,16 @@ import { Link, useLocation } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encodeURIComponentCustom } from "../../../utils";
+import { getStatusChangeDateColumn } from "../../../../../templates/Inbox/components/workflowColumns";
+
+const getCellText = (value) => {
+  if (value == null) return "";
+  if (Array.isArray(value)) return value.map(getCellText).join(", ");
+  if (typeof value === "object") return getCellText(value.name || value.label || value.code || "");
+  return String(value);
+};
+
+const TextCell = ({ value }) => <span className="cell-text styled-cell">{getCellText(value)}</span>;
 
 const useInboxTableConfig = ({ enableColumnSearch = false,
   parentRoute,
@@ -130,6 +140,7 @@ const useInboxTableConfig = ({ enableColumnSearch = false,
         accessor: (row) => t(row?.status),
         disableSortBy: true,
       },
+      getStatusChangeDateColumn(t),
       {
         Header: t("ZONE"),
         accessor: (row) => t(row?.zone),
@@ -159,10 +170,10 @@ const useInboxTableConfig = ({ enableColumnSearch = false,
       //   Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
       //   accessor: (row) => GetStatusCell(row?.sla),
       // },
-    ];
+    ].map((column) => ({ ...column, Cell: column.Cell || TextCell }));
   }, [cities]);
 
-  const localTable = useLocalColumnSearch(tableColumnConfig, table, enableColumnSearch);
+  const localTable = useLocalColumnSearch(tableColumnConfig, Array.isArray(table) ? table : [], enableColumnSearch);
 
   return {
     getCellProps: (cellInfo) => {
@@ -173,6 +184,7 @@ const useInboxTableConfig = ({ enableColumnSearch = false,
         },
       };
     },
+    stickyHeader: true,
     disableSort: false,
     autoSort: false,
     manualPagination: true,

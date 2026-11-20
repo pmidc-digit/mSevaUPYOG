@@ -10,53 +10,15 @@
 -- =========================================================================================
 
 -- -----------------------------------------------------------------------------------------
--- PART 1: REMOVE DUPLICATES & CLEANUP MISPLACED MODULES
+-- PART 1: REASSIGN DEMAND NOTIFICATIONS TO 'rl-calculator' (IF STORED UNDER 'rl-services')
 -- -----------------------------------------------------------------------------------------
-
--- 1A. Delete all notification SMS and Emails from UI module 'rainmaker-rl'
-DELETE FROM message
-WHERE module = 'rainmaker-rl'
-  AND tenantid = 'pb'
-  AND (
-      code LIKE 'rl.demand.%'
-      OR code LIKE 'rl.application.%'
-      OR code LIKE 'rl.payment.%'
-      OR code LIKE 'rl.lease.%'
-  );
-
--- 1B. Move demand/calculator notifications from 'rl-services' to 'rl-calculator' (if existing under rl-services)
 UPDATE message
 SET 
     module = 'rl-calculator',
     lastmodifieddate = CURRENT_TIMESTAMP
 WHERE module = 'rl-services'
   AND tenantid = 'pb'
-  AND code LIKE 'rl.demand.%'
-  AND NOT EXISTS (
-      SELECT 1 FROM message m2 
-      WHERE m2.module = 'rl-calculator' 
-        AND m2.code = message.code 
-        AND m2.tenantid = message.tenantid 
-        AND m2.locale = message.locale
-  );
-
--- If any demand rows still remain under 'rl-services' after update, remove them
-DELETE FROM message
-WHERE module = 'rl-services'
-  AND tenantid = 'pb'
   AND code LIKE 'rl.demand.%';
-
--- 1C. Delete any service workflow messages from 'rl-calculator' (if any exist)
-DELETE FROM message
-WHERE module = 'rl-calculator'
-  AND tenantid = 'pb'
-  AND (
-      code LIKE 'rl.application.%'
-      OR code LIKE 'rl.payment.%'
-      OR code LIKE 'rl.lease.%'
-  );
-
-
 -- -----------------------------------------------------------------------------------------
 -- PART 2: UPDATE 'rl-services' SMS TEMPLATES WITH DLT ENTITY ID & TEMPLATE IDs
 -- -----------------------------------------------------------------------------------------

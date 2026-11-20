@@ -9,58 +9,8 @@
 -- Principal Entity ID (PE ID): 1301157492438182299 (Department of Local Government, Punjab)
 -- =========================================================================================
 
--- -----------------------------------------------------------------------------------------
--- STEP 1: CLEANUP PREVIOUS DUPLICATES & MISPLACED ENTRIES
--- -----------------------------------------------------------------------------------------
-
--- 1A. Remove all notification messages from UI module 'rainmaker-rl' (Notifications belong to backend microservices)
-DELETE FROM message 
-WHERE module = 'rainmaker-rl' 
-  AND tenantid = 'pb'
-  AND (
-      code LIKE 'rl.demand.%' 
-      OR code LIKE 'rl.application.%' 
-      OR code LIKE 'rl.payment.%' 
-      OR code LIKE 'rl.lease.%'
-  );
-
--- 1B. Remove calculator demand notifications mistakenly placed under 'rl-services'
-DELETE FROM message 
-WHERE module = 'rl-services' 
-  AND tenantid = 'pb'
-  AND code LIKE 'rl.demand.%';
-
--- 1C. Remove service workflow/payment notifications mistakenly placed under 'rl-calculator' (if any)
-DELETE FROM message 
-WHERE module = 'rl-calculator' 
-  AND tenantid = 'pb'
-  AND (
-      code LIKE 'rl.application.%' 
-      OR code LIKE 'rl.payment.%' 
-      OR code LIKE 'rl.lease.%'
-  );
-
--- 1D. Remove existing rows for clean idempotent re-insertion
-DELETE FROM message 
-WHERE tenantid = 'pb' 
-  AND (
-      (module = 'rl-services' AND code IN (
-          'rl.application.approved.email', 'rl.payment.success.email', 
-          'rl.lease.settlement.email', 'rl.lease.closed.email',
-          'rl.application.approved.sms', 'rl.payment.success.sms', 
-          'rl.lease.settlement.sms', 'rl.lease.closed.sms'
-      ))
-      OR
-      (module = 'rl-calculator' AND code IN (
-          'rl.demand.generated.email', 'rl.demand.due.reminder.email', 
-          'rl.demand.overdue.penalty.email', 'rl.demand.overdue.detailed.email',
-          'rl.demand.generated.sms', 'rl.demand.due.reminder.sms', 
-          'rl.demand.overdue.penalty.sms', 'rl.demand.overdue.detailed.sms'
-      ))
-  );
-
 -- =========================================================================================
--- STEP 2: INSERTS FOR MODULE 'rl-services' (4 Emails + 4 SMS = 8 rows)
+-- SECTION 1: INSERTS FOR MODULE 'rl-services' (4 Emails + 4 SMS = 8 rows)
 -- Events: Application Approval, Payment Confirmation, Settlement Payment, Allotment Closure
 -- =========================================================================================
 -- Email: RL_APP_APPROVED_NOTICE (rl.application.approved.email)
@@ -632,7 +582,7 @@ INSERT INTO message (id, locale, code, message, tenantid, module, createdby, cre
 VALUES ('0a07164a-9485-439d-8a33-96b517cc7286', 'en_IN', 'rl.lease.closed.sms', 'Dear {1}, Rent & Lease Allotment {2} has been successfully CLOSED in records of {3}. All dues are cleared. Thank you - mSeva Punjab|1301157492438182299|1477179457006970259', 'pb', 'rl-services', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
 
 -- =========================================================================================
--- STEP 3: INSERTS FOR MODULE 'rl-calculator' (4 Emails + 4 SMS = 8 rows)
+-- SECTION 2: INSERTS FOR MODULE 'rl-calculator' (4 Emails + 4 SMS = 8 rows)
 -- Events: Rent Bill Generated, Due Date Reminder, Overdue Penalty Applied, Detailed Notice
 -- =========================================================================================
 -- Email: RL_BILL_GENERATED_NOTICE (rl.demand.generated.email)
@@ -1216,7 +1166,7 @@ INSERT INTO message (id, locale, code, message, tenantid, module, createdby, cre
 VALUES ('25196490-25ce-4aa5-a1f2-939a6f0c4618', 'en_IN', 'rl.demand.overdue.detailed.sms', 'Dear {1}, your rent of Rs.{2} for property {3} is overdue since {4}. Penalty fee Rs.{5} levied. Total due Rs.{6}. Pay at {7} - {8}, Punjab|1301157492438182299|1477179456929015120', 'pb', 'rl-calculator', 1, CURRENT_TIMESTAMP, 1, CURRENT_TIMESTAMP);
 
 -- =========================================================================================
--- STEP 4: VERIFICATION QUERY
+-- SECTION 3: VERIFICATION QUERY
 -- Expected result: Exactly 8 rows in 'rl-services' and 8 rows in 'rl-calculator' (0 in 'rainmaker-rl')
 -- =========================================================================================
 SELECT module, 

@@ -52,11 +52,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootApplication
+@EnableAsync
 @ComponentScan(basePackages = { "org.egov.hrms", "org.egov.hrms.web.controllers" , "org.egov.hrms.config"})
 @Import({TracerConfiguration.class, MultiStateInstanceUtil.class})
 public class EgovEmployeeApplication {

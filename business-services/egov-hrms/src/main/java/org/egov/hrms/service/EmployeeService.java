@@ -63,6 +63,7 @@ import org.egov.hrms.web.contract.*;
 import org.egov.tracer.kafka.LogAwareKafkaTemplate;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -136,7 +137,9 @@ public class EmployeeService {
 	}
 	
 	
-	public ObpassEmployeeResponse create(ObpasEmployeeRequest employeeRequest) {
+	@Async
+//	public ObpassEmployeeResponse create(ObpasEmployeeRequest employeeRequest) {
+	public void create(ObpasEmployeeRequest employeeRequest) {
 
 	    RequestInfo requestInfo = employeeRequest.getRequestInfo();
 
@@ -182,10 +185,12 @@ public class EmployeeService {
 	    }
 
 	    // 5️⃣ Generate response
-	    return generateObpassResponse(employeeRequest);
+//	    return generateObpassResponse(employeeRequest);
 	}
 
-	public ObpassEmployeeResponse delete(ObpasEmployeeRequest deleteRequest) {
+	@Async
+//	public ObpassEmployeeResponse delete(ObpasEmployeeRequest deleteRequest) {
+	public void delete(ObpasEmployeeRequest deleteRequest) {
 
 	    RequestInfo requestInfo = deleteRequest.getRequestInfo();
 	    List<ObpasEmployee> employeesToDelete = new ArrayList<>();
@@ -317,10 +322,10 @@ public class EmployeeService {
 		    hrmsProducer.push(propertiesManager.getDeleteObpasEmployeeTopic(), key, kafkaPayload);
 	    }
 
-	    return ObpassEmployeeResponse.builder()
-	            .responseInfo(factory.createResponseInfoFromRequestInfo(deleteRequest.getRequestInfo(), true))
-	            .employees(employeesToDelete)
-	            .build();
+//	    return ObpassEmployeeResponse.builder()
+//	            .responseInfo(factory.createResponseInfoFromRequestInfo(deleteRequest.getRequestInfo(), true))
+//	            .employees(employeesToDelete)
+//	            .build();
 
 	}
 
@@ -822,7 +827,7 @@ public class EmployeeService {
 				.employees(employeeRequest.getEmployees()).build();
 	}
 	
-	private ObpassEmployeeResponse generateObpassResponse(ObpasEmployeeRequest employeeRequest) {
+	public ObpassEmployeeResponse generateObpassResponse(ObpasEmployeeRequest employeeRequest) {
 	    return ObpassEmployeeResponse.builder()
 	            .responseInfo(factory.createResponseInfoFromRequestInfo(employeeRequest.getRequestInfo(), true))
 	            .employees(employeeRequest.getEmployees())

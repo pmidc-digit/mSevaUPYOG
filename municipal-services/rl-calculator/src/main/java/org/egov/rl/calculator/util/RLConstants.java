@@ -253,7 +253,7 @@ public class RLConstants {
     
     public static final String WF_STATUS_PAID_LOCALE = "PT_NOTIF_WF_STATE_LOCALE_PAID";
 
-	public static final String NOTIFICATION_MODULENAME = "rl-services";
+	public static final String NOTIFICATION_MODULENAME = "rl-calculator";
 	
 	/* PT notif loc codes */
 	

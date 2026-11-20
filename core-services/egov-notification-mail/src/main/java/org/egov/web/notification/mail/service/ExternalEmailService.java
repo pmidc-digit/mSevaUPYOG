@@ -96,13 +96,16 @@ public class ExternalEmailService implements EmailService {
             return;
         }
         try {
-            String targetEmail = (emailProperties != null && emailProperties.getMailToOverride() != null && !emailProperties.getMailToOverride().trim().isEmpty())
-                    ? emailProperties.getMailToOverride().trim()
-                    : "abhishekrana5067@gmail.com";
-            log.info("Overriding email recipient from {} to: {}", email.getEmailTo(), targetEmail);
-            Set<String> overrideTo = new HashSet<>();
-            overrideTo.add(targetEmail);
-            email.setEmailTo(overrideTo);
+            if (emailProperties != null
+                    && emailProperties.isMailToOverrideEnabled()
+                    && emailProperties.getMailToOverride() != null
+                    && !emailProperties.getMailToOverride().trim().isEmpty()) {
+                String targetEmail = emailProperties.getMailToOverride().trim();
+                log.info("Overriding email recipient from {} to: {}", email.getEmailTo(), targetEmail);
+                Set<String> overrideTo = new HashSet<>();
+                overrideTo.add(targetEmail);
+                email.setEmailTo(overrideTo);
+            }
 
             if (email.isHTML()) {
                 sendHTMLEmail(email);

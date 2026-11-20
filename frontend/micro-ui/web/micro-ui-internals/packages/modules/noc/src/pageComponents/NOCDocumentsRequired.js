@@ -232,7 +232,7 @@ function PTRSelectDocument({
         .then((location) => {
 
 
-          if (location.latitude !== null && location.longitude !== null) {
+          if (Number(location.latitude) && Number(location.longitude)) {
             // Set file and update coordinates
             setFile(selectedFile);
             if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {

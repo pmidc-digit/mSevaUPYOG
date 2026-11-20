@@ -7,12 +7,22 @@
         <mirror>
             <id>nexus</id>
             <mirrorOf>central</mirrorOf>
-            <url>http://pmidc-nexus.lgpunjab.gov.in/nexus/content/groups/public/</url>
+            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-public/</url>
         </mirror>
     </mirrors>
     <servers>
         <server>
             <id>repo.digit.org</id>
+            <username>${nexus.user}</username>
+            <password>${nexus.password}</password>
+        </server>
+        <server>
+            <id>repo.egovernments.org</id>
+            <username>${nexus.user}</username>
+            <password>${nexus.password}</password>
+        </server>
+        <server>
+            <id>snapshots.repo.egovernments.org</id>
             <username>${nexus.user}</username>
             <password>${nexus.password}</password>
         </server>

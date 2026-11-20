@@ -28,6 +28,7 @@ import org.egov.hrms.web.contract.UserResponse;
 import org.egov.mdms.model.MdmsResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -72,6 +73,7 @@ public class EmployeeValidator {
 			throw new CustomException(errorMap);
 	}
 	
+	@Async
 	public void validateRequest(ObpasEmployeeRequest obpasrequest) {
         if (obpasrequest == null) {
             throw new IllegalArgumentException("ObpasEmployeeRequest cannot be null");

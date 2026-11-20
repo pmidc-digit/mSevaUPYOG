@@ -313,4 +313,14 @@ public class CollectionServiceConstants {
 	
 	public static final String SEWERAGE = "SW";
 
+	// Roles code for POS
+	public static final String PROPERTY_SERVICE_COUNTER_EMPLOYEE = "PTCEMP";
+	
+	public static final String TL_SERVICE_SERVICE_COUNTER_EMPLOYEE = "TL_CEMP";
+	
+	public static final String ECHALLAN_ADMIN = "CHALLAN_ADMIN";
+	
+	public static final String WATER_COUNTER_EMPLOYEE = "WS_CEMP";
+	
+	public static final String SEWERAGE_COUNTER_EMPLOYEE = "SW_CEMP";
 }

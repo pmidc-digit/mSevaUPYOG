@@ -322,21 +322,24 @@ public class NOCService {
 					noc.getWorkflow().setAssignes(assignee);
 				}
 
-				if (!CollectionUtils.isEmpty(roles)) {
-					List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), true, mdmsData);
-					if(CollectionUtils.isEmpty(assignee))
-						noc.getWorkflow().setAssignes(null);
-				}
+				if (NOCConstants.CITIZEN_ACTION_REQUIRED.equalsIgnoreCase(nextState.getState())) {						   
+				    noc.getWorkflow().setAssignes(noc.getWorkflow().getAssignes());
+				}else				
+					if (!CollectionUtils.isEmpty(roles)) {
+						List<String> assignee = userService.getAssigneeFromNOC(noc, roles, nocRequest.getRequestInfo(), true, mdmsData);
+						if(CollectionUtils.isEmpty(assignee)) 
+							noc.getWorkflow().setAssignes(null);											
+					}
 				
-				if (NOCConstants.CITIZEN_ACTION_REQUIRED.equalsIgnoreCase(nextState.getState())) {
-				    String createdBy = nocRequest.getNoc()
-				            .getAuditDetails().getCreatedBy();
-				    noc.getWorkflow().setAssignes(
-				            createdBy != null
-				                    ? Collections.singletonList(createdBy)
-				                    : null
-				    );
-				}
+//				if (NOCConstants.CITIZEN_ACTION_REQUIRED.equalsIgnoreCase(nextState.getState())) {
+//				    String createdBy = nocRequest.getNoc()
+//				            .getAuditDetails().getCreatedBy();
+//				    noc.getWorkflow().setAssignes(
+//				            createdBy != null
+//				                    ? Collections.singletonList(createdBy)
+//				                    : null
+//				    );
+//				}
 
 //				if (CollectionUtils.isEmpty(noc.getWorkflow().getAssignes())) {
 //					String createdBy = null;

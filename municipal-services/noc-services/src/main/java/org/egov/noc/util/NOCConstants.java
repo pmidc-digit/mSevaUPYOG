@@ -95,4 +95,5 @@ public class NOCConstants {
 	
 	public static final String ACTION_UPDATE_FEE = "UPDATE_FEE";
 
+	public static final String CITIZEN_ACTION_REQUIRED = "CITIZENACTIONREQUIRED";
 }

@@ -13,6 +13,7 @@ const MappingTable = ({
   tenantId,
   showRoles = false,
   showExport = false,
+  hideMappingColumns = false,
   title
 }) => {
   const columns = useMemo(
@@ -30,7 +31,7 @@ const MappingTable = ({
           </Link>
         ),
       },
-      {
+      ...(!hideMappingColumns ? [{
         Header: t("HR_CATEGORY_LABEL"),
         accessor: "categoryName",
         disableSortBy: false,
@@ -47,7 +48,7 @@ const MappingTable = ({
         accessor: "zoneName",
         disableSortBy: false,
         Cell: ({ value }) => <BadgeCell value={value} type="zone" />,
-      },
+      }] : []),
       ...(showRoles
         ? [{
             Header: t("Roles"),
@@ -56,7 +57,7 @@ const MappingTable = ({
           }]
         : []),
     ],
-    [t, filterULB?.code, tenantId, showRoles]
+    [t, filterULB?.code, tenantId, showRoles, hideMappingColumns]
   );
 
   const heading = title ? <h3 className="hrms-emp-mapping__results-heading">{title}</h3> : null;

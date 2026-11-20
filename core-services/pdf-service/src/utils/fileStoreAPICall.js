@@ -1,4 +1,4 @@
-﻿import request from "request";
+import request from "request";
 import fs from "fs";
 import get from "lodash/get";
 import axios, { post } from "axios";
@@ -20,26 +20,33 @@ let urlShorteningHost = envVariables.EGOV_URL_SHORTENING_HOST || "http://egov-ur
  * @param {*} expiryDate - expiry date in epoch milliseconds
  */
 export const fileStoreAPICall = async function(filename, tenantId, fileData, module, tag, expiryDate) {
-  var moduleParam = module || "pdfgen";
-  var tagParam = tag || "00040-2017-QR";
-  var url = `${egovFileHost}/filestore/v1/files?tenantId=${tenantId}&module=${encodeURIComponent(moduleParam)}&tag=${encodeURIComponent(tagParam)}`;
-  var form = new FormData({ maxDataSize: 80 * 1024 * 1024 });
-  form.append("file", fileData, {
-    filename: filename,
-    contentType: "application/pdf"
-  });
   try {
-    let response = await axios.post(url, form, {
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-      headers: {
-        ...form.getHeaders()
+    var moduleParam = module || "pdfgen";
+    var tagParam = tag || "00040-2017-QR";
+    var url = `${egovFileHost}/filestore/v1/files?tenantId=${tenantId}&module=${encodeURIComponent(moduleParam)}&tag=${encodeURIComponent(tagParam)}`;
+    let response = await new Promise((resolve, reject) => {
+      var form = new FormData({ maxDataSize: 80 * 1024 * 1024 });
+      form.on("error", reject);
+      if (fileData && typeof fileData.once === "function") {
+        fileData.once("error", reject);
       }
+      form.append("file", fileData, {
+        filename: filename,
+        contentType: "application/pdf"
+      });
+      axios.post(url, form, {
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+        headers: { ...form.getHeaders() }
+      }).then(resolve, reject);
     });
-    console.log(response.data, "files[0].fileStoreId");
-    return get(response.data, "files[0].fileStoreId");
+    const fileStoreId = get(response.data, "files[0].fileStoreId");
+    if (!fileStoreId) {
+      throw new Error("File upload response did not contain a fileStoreId");
+    }
+    return fileStoreId;
   } catch (error) {
-    console.error("File upload failed:", error.response);
+    logger.error("File upload failed: " + (error.stack || error));
     throw error;
   }
 };
@@ -119,5 +126,6 @@ export const deleteFileStoreFile = async function(fileStoreId, tenantId) {
     return response.data;
   } catch (error) {
     logger.error(`Failed to delete fileStoreId: ${fileStoreId} from filestore: ${error && error.response ? JSON.stringify(error.response.data) : error}`);
+    throw error;
   }
 };

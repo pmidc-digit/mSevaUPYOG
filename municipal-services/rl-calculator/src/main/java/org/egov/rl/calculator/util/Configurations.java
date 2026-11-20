@@ -95,10 +95,10 @@ public class Configurations {
     @Value("${egov.localization.statelevel}")
     private Boolean isStateLevel;
 
-    @Value("${notif.sms.enabled}")
+    @Value("${notif.sms.enabled:true}")
     private Boolean isSMSNotificationEnabled;
 
-    @Value("${notif.email.enabled}")
+    @Value("${notif.email.enabled:true}")
     private Boolean isEmailNotificationEnabled;
     
     //Localization

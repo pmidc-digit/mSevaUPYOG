@@ -86,7 +86,7 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
 
   // Fetch search employee list separately
   useEffect(() => {
-    if (!filterULB || obpsRoles.codes.length === 0) {
+    if (!filterULB || (!isJurisdictionSearch && obpsRoles.codes.length === 0)) {
       setSearchEmployeeList([]);
       setFilterEmployee(null);
       return;
@@ -94,12 +94,19 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
 
     const fetchEmployees = async () => {
       try {
-        const response = await Digit.HRMSService.search(filterULB.code, {
-          tenantId: filterULB.code,
-          roles: obpsRoles.codes.join(","),
-          limit: 100,
-          offset: 0,
-        });
+        const response = isJurisdictionSearch
+          ? await Digit.HRMSService.search(
+              undefined,
+              { jurisdiction: filterULB.code, limit: 100, offset: 0 },
+              undefined,
+              { skipTenantId: true }
+            )
+          : await Digit.HRMSService.search(filterULB.code, {
+              tenantId: filterULB.code,
+              roles: obpsRoles.codes.join(","),
+              limit: 100,
+              offset: 0,
+            });
 
         if (response?.Employees) {
           const employeeOptions = response.Employees.map((emp) => {
@@ -121,7 +128,7 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
     };
 
     fetchEmployees();
-  }, [filterULB, obpsRoles.codes]);
+  }, [filterULB, obpsRoles.codes, isJurisdictionSearch]);
 
   // Sync filterEmployee reference when searchEmployeeList updates
   useEffect(() => {
@@ -235,20 +242,26 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
   // Derived mapping table data and pagination
   const mappingData = useMemo(() => {
     const rows = transformMappingData(rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap);
-    if (!showRoles) return rows;
+    if (!showRoles && !isJurisdictionSearch) return rows;
 
     const roleTenantId = filterULB?.code || tenantId;
-    return rows.map((row) => {
-      const employee = employeeMap[row.uuid] || employeeMap[row.employeeCode];
-      const roles = employee?.employeeObj?.user?.roles;
+    return rows.map((row, index) => {
+      const employee = isJurisdictionSearch
+        ? rawEmployees[index]
+        : (employeeMap[row.uuid] || employeeMap[row.employeeCode])?.employeeObj;
+      const roles = employee?.user?.roles;
       const roleNames = (Array.isArray(roles) ? roles : [])
         .filter((role) => role?.tenantId === roleTenantId)
         .map((role) => role.name || obpsRoles.map?.[role.code] || role.code)
         .filter(Boolean);
 
-      return { ...row, roleNames: [...new Set(roleNames)].join(", ") || "N/A" };
+      return {
+        ...row,
+        ...(isJurisdictionSearch ? { userTenantId: employee?.user?.tenantId || employee?.tenantId } : {}),
+        ...(showRoles ? { roleNames: [...new Set(roleNames)].join(", ") || "N/A" } : {}),
+      };
     });
-  }, [rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap, showRoles, filterULB?.code, tenantId, obpsRoles.map]);
+  }, [rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap, showRoles, isJurisdictionSearch, filterULB?.code, tenantId, obpsRoles.map]);
 
   const { totalRecords, currentPage, totalPages } = useMemo(() => {
     return calculatePagination(mappingData.length, pageSize, pageOffset);
@@ -312,6 +325,22 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
 
     try {
       setLoading(true);
+
+      if (isJurisdictionSearch) {
+        const response = await Digit.HRMSService.search(
+          undefined,
+          {
+            jurisdiction: activeULB.code,
+            limit: activePageSize,
+            offset: activeOffset,
+            ...(activeEmployee?.code ? { codes: activeEmployee.code } : {}),
+          },
+          undefined,
+          { skipTenantId: true }
+        );
+        setRawEmployees(Array.isArray(response?.Employees) ? response.Employees : []);
+        return;
+      }
 
       const searchTenantId = activeEmployee?.employeeObj?.user?.tenantId || activeULB.code;
       const filters = { limit: activePageSize, offset: activeOffset, assignedTenantId: activeULB.code };
@@ -620,8 +649,7 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
               />
             </div>
 
-            {!hideMappingControls && (
-              <div>
+            <div>
                 <CardLabel>{t("HR_EMPLOYEE_CODE")}</CardLabel>
                 <Dropdown
                   t={t}
@@ -632,8 +660,7 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
                   placeholder={t("COMMON_SELECT_EMPLOYEE") || "Select Employee"}
                   disabled={!filterULB}
                 />
-              </div>
-            )}
+            </div>
 
             {!hideMappingControls && (
               <div>
@@ -690,6 +717,7 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
             tenantId={tenantId}
             showRoles={showRoles}
             showExport={showExport}
+            hideMappingColumns={isJurisdictionSearch}
           />
 
           {/* Pagination */}

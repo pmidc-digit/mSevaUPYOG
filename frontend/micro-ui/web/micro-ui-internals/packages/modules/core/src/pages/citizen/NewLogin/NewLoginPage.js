@@ -12,6 +12,21 @@ import ProfileSelectPopup from "./ProfileSelectPopup";
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
 const DEFAULT_BPA_REDIRECT_URL = "/digit-ui/citizen/obps/home";
 
+// Extract the exact message returned by the API, falling back when none is present.
+// Supports { error: { fields: [{ message }], message } }, { Errors: [{ message }] } and OAuth { error_description }.
+const getApiErrorMessage = (err, fallback) => {
+  const data = err?.response?.data || err?.data || err;
+  return (
+    data?.error?.description ||
+    data?.error?.fields?.[0]?.message ||
+    data?.error?.message ||
+    data?.Errors?.[0]?.message ||
+    data?.error_description ||
+    (typeof data?.message === "string" ? data.message : null) ||
+    fallback
+  );
+};
+
 const NewLogin = ({ stateCode }) => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -137,11 +152,13 @@ const NewLogin = ({ stateCode }) => {
           // User not registered, redirect to registration page
           setIsRegistering(true);
         } else {
-          setError(t("CS_COMMON_ERROR"));
+          setIsError(true);
+          setError(getApiErrorMessage(err, t("CS_COMMON_ERROR")));
         }
       }
     } catch (e) {
-      setError(t("CS_COMMON_ERROR"));
+      setIsError(true);
+      setError(getApiErrorMessage(e, t("CS_COMMON_ERROR")));
     } finally {
       setCanSubmit(true);
     }
@@ -179,7 +196,11 @@ const NewLogin = ({ stateCode }) => {
             const profileMobile = String(profile?.mobileNumber ?? mobileNumber ?? "").trim();
             return userName && userName === profileMobile;
           }) || null;
-        setProfiles(profileList);
+        // Show the default profile first in the list
+        const orderedProfiles = defaultProfile
+          ? [defaultProfile, ...profileList.filter((profile) => profile !== defaultProfile)]
+          : profileList;
+        setProfiles(orderedProfiles);
         setVerificationToken(verificationToken);
         setSelectedProfile(defaultProfile);
         setShowProfilePopup(true);
@@ -189,7 +210,7 @@ const NewLogin = ({ stateCode }) => {
 
       completeLogin(info, tokens);
     } catch (e) {
-      const errorMessage = e?.response?.data?.error_description || e?.error_description || t("CS_COMMON_ERROR");
+      const errorMessage = getApiErrorMessage(e, t("CS_COMMON_ERROR"));
       setError(errorMessage);
       setIsError(true);
       setCanSubmit(true);
@@ -236,7 +257,7 @@ const NewLogin = ({ stateCode }) => {
       completeLogin(info, tokens);
     } catch (e) {
       setIsError(true);
-      setError(e?.response?.data?.error_description || e?.error_description || t("CS_COMMON_ERROR"));
+      setError(getApiErrorMessage(e, t("CS_COMMON_ERROR")));
     } finally {
       setIsProfileLoginLoading(false);
     }
@@ -291,7 +312,7 @@ const NewLogin = ({ stateCode }) => {
       setError("OTP has been sent to your registered mobile number.");
     } catch (err) {
       setIsError(true);
-      setError(err?.response?.data?.error_description || "Invalid login credentials.");
+      setError(getApiErrorMessage(err, "Invalid login credentials."));
     } finally {
       setCanSubmit(true);
       setIsEmployeeLoginLoading(false);
@@ -317,7 +338,7 @@ const NewLogin = ({ stateCode }) => {
       window.location.href = "/digit-ui/employee";
     } catch (err) {
       setIsError(true);
-      setError(err?.response?.data?.error_description || "Invalid login credentials.");
+      setError(getApiErrorMessage(err, "Invalid login credentials."));
       setCanSubmit(true);
       setIsOtpValid(false);
     }
@@ -335,7 +356,8 @@ const NewLogin = ({ stateCode }) => {
       );
       history.push(`/digit-ui/employee/user/change-password?mobile_number=${resetMobileNumber}&tenantId=${resetCity.code}`);
     } catch (err) {
-      setError(err?.response?.data?.error?.fields?.[0]?.message || "Unable to send password reset OTP.");
+      setIsError(true);
+      setError(getApiErrorMessage(err, "Unable to send password reset OTP."));
     }
   };
 

@@ -58,8 +58,8 @@ public class BPAQueryBuilder {
     public String getBPASearchQuery(BPASearchCriteria criteria, List<Object> preparedStmtList, List<String> edcrNos, boolean isCount) {
 
         StringBuilder builder = new StringBuilder(QUERY);
-      
-        if (criteria.getTenantId() != null) {
+
+        if (criteria.getTenantId() != null && !criteria.getTenantId().equalsIgnoreCase("pb.punjab")) {
             if (criteria.getTenantId().split("\\.").length == 1) {
 
                 addClauseIfRequired(preparedStmtList, builder);

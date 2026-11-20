@@ -30,6 +30,7 @@ import org.egov.collection.model.Payment;
 import org.egov.collection.model.PaymentDetail;
 import org.egov.collection.model.PaymentRequest;
 import org.egov.collection.model.enums.InstrumentStatusEnum;
+import org.egov.collection.model.enums.PaymentModeEnum;
 import org.egov.collection.model.enums.PaymentStatusEnum;
 import org.egov.collection.model.enums.Purpose;
 import org.egov.collection.model.enums.ReceiptType;
@@ -64,6 +65,9 @@ public class PaymentEnricher {
 
 		Payment payment = paymentRequest.getPayment();
 		String tenantId = payment.getTenantId();
+		if(PaymentModeEnum.paymentModeValidation(payment.getPaymentMode())){
+			PaymentValidator.validateRolesToBusinessService(paymentRequest.getRequestInfo(),payment, tenantId);
+        }
 		List<String> billIds = payment.getPaymentDetails().stream().map(PaymentDetail::getBillId).collect(Collectors.toList());
 		Set<String> billIdSet = payment.getPaymentDetails().stream().map(PaymentDetail::getBillId)
 				.collect(Collectors.toSet());

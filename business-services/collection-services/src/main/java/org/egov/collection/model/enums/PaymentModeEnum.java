@@ -16,7 +16,11 @@ public enum PaymentModeEnum {
     CARD("CARD"),
     BBPS("BBPS"),
 
-    QR_CODE("QR_CODE");
+    QR_CODE("QR_CODE"),
+    POS_UPI("POS_UPI"),
+    POS_CASH("POS_CASH"),
+    POS_CARD("POS_CARD"),
+    BHARAT_PAY("BHARAT_PAY");
 
 
     private String value;
@@ -48,5 +52,12 @@ public enum PaymentModeEnum {
             }
         }
         return null;
+    }
+    
+    public static boolean paymentModeValidation(PaymentModeEnum paymentMode) {
+        return paymentMode == POS_UPI
+                || paymentMode == POS_CASH
+                || paymentMode == POS_CARD
+                || paymentMode == BHARAT_PAY;
     }
 }

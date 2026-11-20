@@ -156,8 +156,27 @@ public class EmployeeService {
 	    }
 
 	    // 4️⃣ Push to Kafka
-	    String key = employeeRequest.getEmployees().get(0).getUuid();
-	    hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), key, employeeRequest);
+//	    String key = employeeRequest.getEmployees().get(0).getUuid();
+//	    hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), key, employeeRequest);
+	    
+	    int noOfBatches = employeeRequest.getEmployees().size() % propertiesManager.getObpasEmployeeBatchSize() == 0 ?
+	    		employeeRequest.getEmployees().size() / propertiesManager.getObpasEmployeeBatchSize() :
+	    			(employeeRequest.getEmployees().size() / propertiesManager.getObpasEmployeeBatchSize()) + 1;
+	    
+	    for(int batch = 0 ; batch < noOfBatches ; batch++) {
+	    	int fromIndex = batch * propertiesManager.getObpasEmployeeBatchSize();
+	    	int toIndex = (batch + 1) * propertiesManager.getObpasEmployeeBatchSize();
+	    	toIndex = toIndex > employeeRequest.getEmployees().size() ? employeeRequest.getEmployees().size() : toIndex;
+	    	List<ObpasEmployee> employeesBatchToCreate = employeeRequest.getEmployees().subList(fromIndex, toIndex);
+	    	Map<String, Object> kafkaPayload = new HashMap<>();
+		    kafkaPayload.put("Employees", employeesBatchToCreate);
+		    
+		    ObpasEmployeeRequest employeeRequestBatch = new ObpasEmployeeRequest();
+		    employeeRequestBatch.setRequestInfo(employeeRequest.getRequestInfo());
+		    employeeRequestBatch.setEmployees(employeesBatchToCreate);
+	    	String key = employeesBatchToCreate.get(0).getUuid();
+	    	hrmsProducer.push(propertiesManager.getSaveObpasEmployeeTopic(), key, employeeRequestBatch);
+	    }
 
 	    // 5️⃣ Generate response
 	    return generateObpassResponse(employeeRequest);
@@ -279,12 +298,21 @@ public class EmployeeService {
 	        }
 	    }
 
-	 
-	    Map<String, Object> kafkaPayload = new HashMap<>();
-	    kafkaPayload.put("Employees", employeesToDelete);
+	    int noOfBatches = employeesToDelete.size() % propertiesManager.getObpasEmployeeBatchSize() == 0 ?
+	    		employeesToDelete.size() / propertiesManager.getObpasEmployeeBatchSize() :
+	    			(employeesToDelete.size() / propertiesManager.getObpasEmployeeBatchSize()) + 1;
+	    
+	    for(int batch = 0 ; batch < noOfBatches ; batch++) {
+	    	int fromIndex = batch * propertiesManager.getObpasEmployeeBatchSize();
+	    	int toIndex = (batch + 1) * propertiesManager.getObpasEmployeeBatchSize();
+	    	toIndex = toIndex > employeesToDelete.size() ? employeesToDelete.size() : toIndex;
+	    	List<ObpasEmployee> employeesBatchToDelete = employeesToDelete.subList(fromIndex, toIndex);
+	    	Map<String, Object> kafkaPayload = new HashMap<>();
+		    kafkaPayload.put("Employees", employeesBatchToDelete);
 
-    	String key = deleteRequest.getEmployees().get(0).getUuid();
-	    hrmsProducer.push(propertiesManager.getDeleteObpasEmployeeTopic(), key, kafkaPayload);
+	    	String key = employeesBatchToDelete.get(0).getUuid();
+		    hrmsProducer.push(propertiesManager.getDeleteObpasEmployeeTopic(), key, kafkaPayload);
+	    }
 
 	    return ObpassEmployeeResponse.builder()
 	            .responseInfo(factory.createResponseInfoFromRequestInfo(deleteRequest.getRequestInfo(), true))

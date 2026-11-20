@@ -189,6 +189,11 @@ public class EmployeeQueryBuilder {
 			preparedStmtList.add(criteria.getIsActive());
 		}
 		
+		if(!StringUtils.isEmpty(criteria.getJurisdiction())){
+		    builder.append(" and employee.uuid IN (SELECT j.employeeid FROM eg_hrms_jurisdiction j WHERE j.boundary = ?)");
+		    preparedStmtList.add(criteria.getJurisdiction());
+		}
+		
 		  // -------------------------
 	    // OBPAS FIELDS
 	    // -------------------------

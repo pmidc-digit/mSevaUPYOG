@@ -1842,6 +1842,15 @@ const BpaApplicationDetail = () => {
           },
         };
       }
+      const action = payload?.BPA?.workflow?.action
+        ?.replace(/[^a-zA-Z0-9]/g, "")
+        ?.toUpperCase();
+      if (action?.includes("PULLBACK") || action?.includes("ROLLBACK")) {
+        payload.BPA.workflow = {
+          ...payload.BPA.workflow,
+          assignes: [Digit.UserService.getUser()?.info?.uuid],
+        };
+      }
       if (mutate) {
         setIsEnableLoader(true);
         mutate(payload, {

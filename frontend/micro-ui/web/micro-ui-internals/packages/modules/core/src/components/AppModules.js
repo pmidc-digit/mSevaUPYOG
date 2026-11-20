@@ -63,6 +63,14 @@ export const AppModules = ({ stateCode, userType, modules, appTenants }) => {
     <div className="ground-container">
       <Switch>
         {appRoutes}
+        <Route path={[`${path}/transferappointment`, `${path}/transferAppointment`]}>
+          {(() => {
+            const TransferAppointmentModule = Digit.ComponentRegistryService.getComponent("TransferAppointmentModule");
+            return TransferAppointmentModule ? (
+              <TransferAppointmentModule stateCode={stateCode} moduleCode="TransferAppointment" userType={userType} tenants={appTenants} />
+            ) : null;
+          })()}
+        </Route>
         <Route path={`${path}/login`}>
           <Redirect to={{ pathname: "/digit-ui/select-language", state: { from: location.pathname + location.search, portal: "employee" } }} />
         </Route>

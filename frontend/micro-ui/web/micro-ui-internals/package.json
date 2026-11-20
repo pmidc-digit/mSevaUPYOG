@@ -31,7 +31,8 @@
     "packages/modules/garbageCollection",
     "packages/modules/rentAndLease",
     "packages/modules/ndc",
-    "packages/modules/Firenoc"
+    "packages/modules/Firenoc",
+    "packages/modules/transferAppointment"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",

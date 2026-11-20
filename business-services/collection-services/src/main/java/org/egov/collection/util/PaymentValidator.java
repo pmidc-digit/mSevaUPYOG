@@ -571,11 +571,14 @@ bill.setTotalAmount(  bill.getTotalAmount().setScale(0, RoundingMode.HALF_UP).se
     	
     	// Get authorized roles for business service
     	String businessService = payment.getPaymentDetails().get(0).getBusinessService();
+    	if (businessService != null && businessService.startsWith("CH.")) {
+    		businessService = CollectionServiceConstants.ECHALLAN;
+    	}
     	List<String> authorizedRoles = BusinessServiceToRoleMapping.getAuthorizedRoles(businessService);
 
         if (authorizedRoles.isEmpty()) {
         	throw new CustomException("ABSENT_BUSINESS_SERVICE_ROLE_MAPPING", "No role mapping configured for business service: " + businessService 
-            		+ " for the selected Payment Mode: " + payment.getPaymentMode() );
+            		+ ", for the selected Payment Mode: " + payment.getPaymentMode() );
         }
 
         // Get user roles matching tenant ID
@@ -590,7 +593,7 @@ bill.setTotalAmount(  bill.getTotalAmount().setScale(0, RoundingMode.HALF_UP).se
 
         if (!isAuthorized) {
         	throw new CustomException("UNAUTHORIZED_USER_ROLE", "User does not have all required roles for business service: " + businessService 
-            		+ " for the selected Payment Mode: " + payment.getPaymentMode());
+            		+ ", for the selected Payment Mode: " + payment.getPaymentMode());
         }
     }
     

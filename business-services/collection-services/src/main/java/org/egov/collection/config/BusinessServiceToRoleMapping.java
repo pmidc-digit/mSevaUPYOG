@@ -7,10 +7,11 @@ public class BusinessServiceToRoleMapping {
     private static final Map<String, List<String>> BUSINESS_SERVICE_ROLE_MAP = new HashMap<>();
 
     static {
-    	BUSINESS_SERVICE_ROLE_MAP.put("PT", Arrays.asList("PT_APPROVER", "PTCEMP"));
-        BUSINESS_SERVICE_ROLE_MAP.put("TL", Arrays.asList("TL_APPROVER", "TL_CEMP"));
-        //BUSINESS_SERVICE_ROLE_MAP.put("echallan", Arrays.asList("CHALLAN_ADMIN"));
-        BUSINESS_SERVICE_ROLE_MAP.put("BPA", Arrays.asList("BPA_APPROVER", "BPA_VERIFIER"));
+    	BUSINESS_SERVICE_ROLE_MAP.put(CollectionServiceConstants.PROPERTY_SERVICE, Arrays.asList("PTCEMP"));
+        BUSINESS_SERVICE_ROLE_MAP.put(CollectionServiceConstants.TL_SERVICE, Arrays.asList("TL_CEMP"));
+        BUSINESS_SERVICE_ROLE_MAP.put(CollectionServiceConstants.ECHALLAN, Arrays.asList("CHALLAN_ADMIN"));
+        BUSINESS_SERVICE_ROLE_MAP.put(CollectionServiceConstants.WATER, Arrays.asList("WS_CEMP"));
+        BUSINESS_SERVICE_ROLE_MAP.put(CollectionServiceConstants.SEWERAGE, Arrays.asList("SW_CEMP"));
     }
 
     public static List<String> getAuthorizedRoles(String businessService) {

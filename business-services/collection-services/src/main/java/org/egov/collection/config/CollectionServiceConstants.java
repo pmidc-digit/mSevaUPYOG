@@ -301,5 +301,16 @@ public class CollectionServiceConstants {
     public static final String UI_COMMON_PAY_PATH = "$.MdmsRes.common-masters.uiCommonPay";
 
     public static final String DEFAULT_RECEIPT_KEY = "consolidatedreceipt";
+    
+    // Business Services
+    public static final String PROPERTY_SERVICE = "PT";
+    
+	public static final String TL_SERVICE = "TL";
+	
+	public static final String ECHALLAN = "CH";
+	
+	public static final String WATER = "WS";
+	
+	public static final String SEWERAGE = "SW";
 
 }

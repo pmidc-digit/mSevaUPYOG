@@ -2856,3 +2856,85 @@ input[type="date"] {
     word-break: break-word;
   }
 }
+
+/* Login: OTP show/hide toggle (NewSelectOtp.js) */
+.otp-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0 4px;
+}
+.otp-visibility-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border: 1.5px solid var(--mseva-blue-600, #1675d1);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--mseva-blue-900, #074b98);
+  background: var(--mseva-blue-100, #e9f2fc);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.otp-visibility-toggle:hover {
+  color: #ffffff;
+  background: var(--mseva-blue-600, #1675d1);
+  box-shadow: 0 4px 12px rgba(22, 117, 209, 0.25);
+}
+.otp-visibility-toggle:active {
+  transform: scale(0.96);
+}
+.otp-visibility-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(22, 117, 209, 0.3);
+}
+.otp-visibility-toggle.is-visible {
+  border-color: var(--mseva-green-700, #287f1d);
+  color: #ffffff;
+  background: var(--mseva-green-700, #287f1d);
+}
+.otp-visibility-toggle.is-visible:hover {
+  background: #1f6a16;
+  box-shadow: 0 4px 12px rgba(40, 127, 29, 0.25);
+}
+
+/* Login: employee password show/hide toggle (NewLoginPage.js) */
+.pwd-field {
+  position: relative;
+  display: block;
+}
+.pwd-toggle {
+  position: absolute;
+  top: calc(50% + 4px);
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  color: var(--mseva-text-muted, #3d709f);
+  background: transparent;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background 0.15s, color 0.15s;
+}
+.pwd-toggle:hover {
+  color: var(--mseva-blue-900, #074b98);
+  background: var(--mseva-blue-100, #e9f2fc);
+}
+.pwd-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(22, 117, 209, 0.3);
+}
+.pwd-toggle.is-visible {
+  color: var(--mseva-green-700, #287f1d);
+}
+.pwd-toggle.is-visible:hover {
+  background: var(--mseva-green-100, #eef8eb);
+}

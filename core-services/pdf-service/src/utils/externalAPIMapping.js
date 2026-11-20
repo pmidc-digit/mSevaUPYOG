@@ -388,9 +388,7 @@ export const externalAPIMapping = async function (
   }
   catch (error) {
     logger.error(error.stack || error);
-    throw{
-      message: `Error in localisation service call: ${error.Errors[0].message}`
-    }; 
+    throw new Error("Error in localisation service call: " + get(error, "Errors[0].message", error.message || String(error))); 
   }
 
   Object.keys(variableTovalueMap).forEach(function(key) {

@@ -179,13 +179,19 @@ const createPdfBinary = async (
   moduleName,
   recordsMetadata = []
 ) => {
+  let errorReported = false;
+  const reportError = (error) => {
+    if (errorReported) return;
+    errorReported = true;
+    errorCallback(error);
+  };
   try {
     let noOfDefinitions = listDocDefinition.length;
 
     var jobid = `${key}${new Date().getTime()}`;
     if (noOfDefinitions == 0) {
       logger.error("no file generated for pdf");
-      errorCallback({
+      reportError({
         message: " error: no file generated for pdf"
       });
     } else {
@@ -206,14 +212,17 @@ const createPdfBinary = async (
             entityIds,
             starttime,
             successCallback,
-            errorCallback,
+            reportError,
             tenantId,
             totalobjectcount,
             userid,
             documentType,
             moduleName,
             recordsMetadata
-          ),
+          ).catch((err) => {
+            logger.error(err.stack || err);
+            reportError({ message: "error occurred while creating pdf: " + (err.message || String(err)) });
+          });
           uploadFiles(
             dbInsertSingleRecords,
             dbInsertBulkRecords,
@@ -226,19 +235,22 @@ const createPdfBinary = async (
             entityIds,
             starttime,
             successCallback,
-            errorCallback,
+            reportError,
             tenantId,
             totalobjectcount,
             userid,
             documentType,
             moduleName,
             recordsMetadata
-          )
+          ).catch((err) => {
+            logger.error(err.stack || err);
+            reportError({ message: "error occurred while creating pdf: " + (err.message || String(err)) });
+          });
       });
     }
   } catch (err) {
     logger.error(err.stack || err);
-    errorCallback({
+    reportError({
       message: ` error occured while creating pdf: ${
         typeof err === "string" ? err : err.message
       }`,
@@ -300,114 +312,124 @@ const uploadFiles = async (
     //storing file on local computer/server
 
     var chunks = [];
+    let pdfFailed = false;
 
     doc.on("data", function (chunk) {
       chunks.push(chunk);
     });
+    doc.on("error", function (err) {
+      pdfFailed = true;
+      logger.error(err.stack || err);
+      errorCallback({ message: "error occurred while generating pdf: " + (err.message || String(err)) });
+    });
     doc.on("end", function () {
-      // console.log("enddddd "+cr++);
-      var data = Buffer.concat(chunks);
-      let isBill = (key && key.toLowerCase().includes("bill")) || 
-                   (moduleName && moduleName.toLowerCase().includes("bill")) || 
-                   (documentType && documentType.toLowerCase().includes("bill"));
+      if (pdfFailed) return;
+      try {
+        // console.log("enddddd "+cr++);
+        var data = Buffer.concat(chunks);
+        let isBill = (key && key.toLowerCase().includes("bill")) || 
+                     (moduleName && moduleName.toLowerCase().includes("bill")) || 
+                     (documentType && documentType.toLowerCase().includes("bill"));
 
-      let meta = (recordsMetadata && recordsMetadata[i]) || {};
-      let itemTag = (isBill && meta.consumerCode) ? meta.consumerCode : (entityIds[i] || "00040-2017-QR");
-      let itemExpiry = isBill ? (meta.expiryDate || null) : null;
-      let itemModule = moduleName || key || "pdfgen";
+        let meta = (recordsMetadata && recordsMetadata[i]) || {};
+        let itemTag = (isBill && meta.consumerCode) ? meta.consumerCode : (entityIds[i] || "00040-2017-QR");
+        let itemExpiry = isBill ? (meta.expiryDate || null) : null;
+        let itemModule = moduleName || key || "pdfgen";
 
-      if (isconsolidated && isBill) {
-        let batchDays = envVariables.BATCH_EXPIRATION_DAYS || 15;
-        if (envVariables.BATCH_EXPIRATION_SECONDS && envVariables.BATCH_EXPIRATION_SECONDS > 0) {
-          itemExpiry = new Date().getTime() + (envVariables.BATCH_EXPIRATION_SECONDS * 1000);
-        } else {
-          itemExpiry = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
+        if (isconsolidated && isBill) {
+          let batchDays = envVariables.BATCH_EXPIRATION_DAYS || 15;
+          if (envVariables.BATCH_EXPIRATION_SECONDS && envVariables.BATCH_EXPIRATION_SECONDS > 0) {
+            itemExpiry = new Date().getTime() + (envVariables.BATCH_EXPIRATION_SECONDS * 1000);
+          } else {
+            itemExpiry = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
+          }
+          itemTag = jobid;
+          itemModule = "bulk-bill";
         }
-        itemTag = jobid;
-        itemModule = "bulk-bill";
-      }
 
-      fileStoreAPICall(filename, tenantId, data, itemModule, itemTag, itemExpiry)
-        .then((result) => {
-          listOfFilestoreIds.push(result);
-          logger.info("listOfFilestoreIds size :" + listOfFilestoreIds.length)
+        fileStoreAPICall(filename, tenantId, data, itemModule, itemTag, itemExpiry)
+          .then(async (result) => {
+            listOfFilestoreIds.push(result);
+            logger.info("listOfFilestoreIds size :" + listOfFilestoreIds.length)
 
-          if (!isconsolidated) {
-            logger.info("Not consolidated")
-            dbInsertSingleRecords.push({
-              jobid,
-              id: uuidv4(),
-              createdby: userid,
-              modifiedby: userid,
-              entityid: entityIds[i],
-              isconsolidated: false,
-              filestoreids: [result],
-              tenantId,
-              createdtime: starttime,
-              endtime: new Date().getTime(),
-              totalcount: 1,
-              key,
-              documentType,
-              moduleName,
-            });
+            if (!isconsolidated) {
+              logger.info("Not consolidated")
+              if (isBill) {
+                let meta = (recordsMetadata && recordsMetadata[i]) || {};
+                let effectiveTenantId = meta.billTenantId || tenantId;
+                await updateBillFileStoreId(meta.billId, meta.billNumber, meta.consumerCode, effectiveTenantId, result, userid);
+              }
+              dbInsertSingleRecords.push({
+                jobid,
+                id: uuidv4(),
+                createdby: userid,
+                modifiedby: userid,
+                entityid: entityIds[i],
+                isconsolidated: false,
+                filestoreids: [result],
+                tenantId,
+                createdtime: starttime,
+                endtime: new Date().getTime(),
+                totalcount: 1,
+                key,
+                documentType,
+                moduleName,
+              });
 
-            if (isBill) {
-              let meta = (recordsMetadata && recordsMetadata[i]) || {};
-              let effectiveTenantId = meta.billTenantId || tenantId;
-              updateBillFileStoreId(meta.billId, meta.billNumber, meta.consumerCode, effectiveTenantId, result, userid);
+
+              // insertStoreIds(jobid,entityIds[i],[result],tenantId,starttime,successCallback,errorCallback,1,false);
+            } else if (
+              isconsolidated &&
+              listOfFilestoreIds.length == noOfDefinitions
+            ) {
+              // insertStoreIds("",);
+              // logger.info("PDF uploaded to filestore");
+              dbInsertBulkRecords.push({
+                jobid,
+                id: uuidv4(),
+                createdby: userid,
+                modifiedby: userid,
+                entityid: null,
+                isconsolidated: true,
+                filestoreids: listOfFilestoreIds,
+                tenantId,
+                createdtime: starttime,
+                endtime: new Date().getTime(),
+                totalcount: totalobjectcount,
+                key,
+                documentType,
+                moduleName
+              });
             }
-
-            // insertStoreIds(jobid,entityIds[i],[result],tenantId,starttime,successCallback,errorCallback,1,false);
-          } else if (
-            isconsolidated &&
-            listOfFilestoreIds.length == noOfDefinitions
-          ) {
-            // insertStoreIds("",);
-            // logger.info("PDF uploaded to filestore");
-            dbInsertBulkRecords.push({
-              jobid,
-              id: uuidv4(),
-              createdby: userid,
-              modifiedby: userid,
-              entityid: null,
-              isconsolidated: true,
-              filestoreids: listOfFilestoreIds,
-              tenantId,
-              createdtime: starttime,
-              endtime: new Date().getTime(),
-              totalcount: totalobjectcount,
-              key,
-              documentType,
-              moduleName
+            if (
+              dbInsertSingleRecords.length == totalobjectcount &&
+              dbInsertBulkRecords.length == 1
+            ) {
+              insertStoreIds(
+                dbInsertSingleRecords.concat(dbInsertBulkRecords),
+                jobid,
+                listOfFilestoreIds,
+                tenantId,
+                starttime,
+                successCallback,
+                errorCallback,
+                totalobjectcount,
+                key,
+                documentType,
+                moduleName
+              );
+            }
+          })
+          .catch((err) => {
+            logger.error(err.stack || err);
+            errorCallback({
+              message: "error occurred while uploading pdf: " + (typeof err === "string" ? err : err.message),
             });
-          }
-          if (
-            dbInsertSingleRecords.length == totalobjectcount &&
-            dbInsertBulkRecords.length == 1
-          ) {
-            insertStoreIds(
-              dbInsertSingleRecords.concat(dbInsertBulkRecords),
-              jobid,
-              listOfFilestoreIds,
-              tenantId,
-              starttime,
-              successCallback,
-              errorCallback,
-              totalobjectcount,
-              key,
-              documentType,
-              moduleName
-            );
-          }
-        })
-        .catch((err) => {
-          logger.error(err.stack || err);
-          errorCallback({
-            message: "error occurred while uploading pdf: " + (typeof err === "string") ?
-              err :
-              err.message,
           });
-        });
+      } catch (err) {
+        logger.error(err.stack || err);
+        errorCallback({ message: "error occurred while processing pdf: " + (err.message || String(err)) });
+      }
     });
     doc.end();
   });
@@ -423,6 +445,7 @@ app.post(
         req,
         res,
         (response) => {
+          if (res.headersSent) return;
           // doc successfully created
           res.status(201);
           res.json({
@@ -440,6 +463,8 @@ app.post(
           });
         },
         (error) => {
+          logger.error(error.stack || error);
+          if (res.headersSent) return;
           res.status(400);
           // doc creation error
           res.json({
@@ -451,6 +476,7 @@ app.post(
       //
     } catch (error) {
       logger.error(error.stack || error);
+      if (res.headersSent) return;
       res.status(400);
       res.json({
         ResponseInfo: requestInfo,
@@ -495,27 +521,35 @@ app.post(
         let fileNameAppend = "-" + new Date().getTime();
         let filename = key + "" + fileNameAppend + ".pdf";
 
-        var chunks = [];
-        doc.on("data", function (chunk) {
-          chunks.push(chunk);
-        });
-        doc.on("end", function () {
-          // console.log("enddddd "+cr++);
-          var data = Buffer.concat(chunks);
-          res.writeHead(201, {
-            // 'Content-Type': mimetype,
-            "Content-disposition": "attachment;filename=" + filename,
-            "Content-Length": data.length,
+        await new Promise((resolve, reject) => {
+          var chunks = [];
+          let failed = false;
+          doc.on("error", (error) => {
+            failed = true;
+            reject(error);
           });
-          logger.info(
-            `createnosave success for pdf with key: ${key}, entityId ${entityIds}`
-          );
-          res.end(Buffer.from(data, "binary"));
+          doc.on("data", (chunk) => chunks.push(chunk));
+          doc.on("end", () => {
+            if (failed) return;
+            try {
+              var data = Buffer.concat(chunks);
+              res.writeHead(201, {
+                "Content-disposition": "attachment;filename=" + filename,
+                "Content-Length": data.length,
+              });
+              res.end(Buffer.from(data, "binary"));
+              logger.info(`createnosave success for pdf with key: ${key}, entityId ${entityIds}`);
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          });
+          doc.end();
         });
-        doc.end();
       }
     } catch (error) {
       logger.error(error.stack || error);
+      if (res.headersSent) return;
       res.status(400);
       res.json({
         message: "some unknown error while creating: " + error.message,
@@ -725,8 +759,8 @@ app.post(
   asyncHandler(async (req, res) => {
     let requestInfo = get(req.body, "RequestInfo");
     let jobId = get(req.query, "jobId");
-    let uuid = requestInfo.userInfo.uuid;
     try {
+      let uuid = get(requestInfo, "userInfo.uuid");
 
       if( !jobId || !uuid){
         res.status(400);
@@ -992,9 +1026,7 @@ export const createAndSave = async (
     ).catch((err) => {
       logger.error(err.stack || err);
       errorCallback({
-        message: "error occurred in createPdfBinary call: " + (typeof err === "string") ?
-          err :
-          err.message,
+        message: "error occurred in createPdfBinary call: " + (typeof err === "string" ? err : err.message),
       });
     });
   }
@@ -1064,42 +1096,58 @@ export const createNoSave = async (
       let filename = directory + "/"  + key + "" + fileNameAppend + ".pdf";
 
       var chunks = [];
+      let failed = false;
+      const reportError = (error) => {
+        logger.error(error.stack || error);
+        if (failed) return;
+        failed = true;
+        errorCallback({ message: "error occurred while creating pdf: " + (error.message || String(error)) });
+      };
+      doc.on("error", reportError);
       doc.on("data", function (chunk) {
         chunks.push(chunk);
       });
       doc.on("end", function () {
-        var data = Buffer.concat(chunks);
-         //fs.createWriteStream(filename).write(data);
-         var tempFile = fs.createWriteStream(filename);
-         tempFile.on('error', function(e) { console.error(e); });
-         tempFile.on('open', function(fd) {
-           tempFile.write(data);
-           tempFile.end();
-         });
-        logger.info(
-          `createnosave success for pdf creation with job id: ${bulkPdfJobId} with key: ${key}, entityId ${entityIds}`
-        );
-        (async () => {
-          if(key== "pt-defaulternotice")
-          {
-            await insertRecordsForDN(bulkPdfJobId, totalPdfRecords, currentPdfRecords, userid, tenantId, locality,propertytype, bussinessService, consumerCode, isConsolidated);
-            await mergePdfForDN(bulkPdfJobId, tenantId, userid, numberOfFiles, mobileNumber);
-            
-          }
-          else{
-          await insertRecords(bulkPdfJobId, totalPdfRecords, currentPdfRecords, userid, tenantId, locality, bussinessService, consumerCode, isConsolidated);
-          await mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mobileNumber);
-          }
-        })();
+        if (failed) return;
+        try {
+          var data = Buffer.concat(chunks);
+          var tempFile = fs.createWriteStream(filename);
+          tempFile.on("error", reportError);
+          tempFile.on("open", function (fd) {
+            try {
+              tempFile.write(data);
+              tempFile.end();
+            } catch (error) {
+              reportError(error);
+            }
+          });
+          tempFile.on("finish", function () {
+            if (failed) return;
+            (async () => {
+              logger.info(
+                `createnosave success for pdf creation with job id: ${bulkPdfJobId} with key: ${key}, entityId ${entityIds}`
+              );
+              if(key== "pt-defaulternotice")
+              {
+                await insertRecordsForDN(bulkPdfJobId, totalPdfRecords, currentPdfRecords, userid, tenantId, locality,propertytype, bussinessService, consumerCode, isConsolidated);
+                await mergePdfForDN(bulkPdfJobId, tenantId, userid, numberOfFiles, mobileNumber);
+              }
+              else{
+                await insertRecords(bulkPdfJobId, totalPdfRecords, currentPdfRecords, userid, tenantId, locality, bussinessService, consumerCode, isConsolidated);
+                await mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mobileNumber);
+              }
+            })().catch(reportError);
+          });
+        } catch (error) {
+          reportError(error);
+        }
       });
       doc.end();
 
     }
   } catch (error) {
     logger.error(error.stack || error);
-    // res.json({
-    //   message: "some unknown error while creating: " + error.message,
-    // });
+    errorCallback({ message: "error occurred while creating pdf: " + (error.message || String(error)) });
   }
 
 };

@@ -161,6 +161,7 @@ export async function insertRecords(bulkPdfJobId, totalPdfRecords, currentPdfRec
     }
   } catch (err) {
     logger.error(err.stack || err);
+    throw err;
   } 
 }
 
@@ -179,17 +180,18 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
       var merger = new PDFMerger();
     
       logger.info('Files to be merged: ',fileNames);
-      (async () => {
+      await (async () => {
         var processStatus = updateResult.rows[0].status;
         if(processStatus != 'CANCEL'){
           try {
             for (let i = 0; i < fileNames.length; i++){
               logger.info(baseFolder+fileNames[i]);
-              merger.add(baseFolder+fileNames[i]);            //merge all pages. parameter is the path to file and filename.
+              await merger.add(baseFolder+fileNames[i]);            //merge all pages. parameter is the path to file and filename.
             }
             await merger.save(baseFolder+'/output.pdf');        //save under given name and reset the internal document
           } catch (err) {
             logger.error(err.stack || err);
+            throw err;
           }
       
           var mergePdfData = fs.createReadStream(baseFolder+'output.pdf');
@@ -203,17 +205,18 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
           } else {
             batchExpiryDate = new Date().getTime() + (batchDays * 24 * 60 * 60 * 1000);
           }
-          await fileStoreAPICall('output.pdf', tenantId, mergePdfData, "bulk-bill", bulkPdfJobId, batchExpiryDate).then((filestoreid) => {
+          await fileStoreAPICall('output.pdf', tenantId, mergePdfData, "bulk-bill", bulkPdfJobId, batchExpiryDate).then(async (filestoreid) => {
             const updateQuery = 'UPDATE egov_bulk_pdf_info SET filestoreid = $1, lastmodifiedby = $2, lastmodifiedtime = $3, status = $5, expirydate = $6 WHERE jobid = $4';
             const curentTimeStamp = new Date().getTime();
             const status = 'DONE';
-            pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status, batchExpiryDate]);
+            await pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status, batchExpiryDate]);
             sendNoitification(filestoreid, mobileNumber, tenantId, batchExpiryText).catch(err => {
               logger.error("Error sending notification: " + (err.stack || err));
             });
         
           }).catch((err) => {
             logger.error(err.stack || err);
+            throw err;
           });
         }
 
@@ -252,6 +255,7 @@ export async function mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mo
     }
   } catch (err) {
     logger.error(err.stack || err);
+    throw err;
   }
   
 }
@@ -334,6 +338,7 @@ export async function getBulkPdfRecordsDetails(userid, offset, limit, jobId){
     
   } catch (err) {
     logger.error(err.stack || err);
+    throw err;
     
   }
 
@@ -420,6 +425,7 @@ export async function getDefaulterPdfRecordsDetails(userid, offset, limit, jobId
     
   } catch (err) {
     logger.error(err.stack || err);
+    throw err;
     
   }
 
@@ -444,6 +450,7 @@ export async function insertRecordsForDN(bulkPdfJobId, totalPdfRecords, currentP
     }
   } catch (err) {
     logger.error(err.stack || err);
+    throw err;
   } 
 }
 
@@ -462,29 +469,31 @@ export async function mergePdfForDN(bulkPdfJobId, tenantId, userid, numberOfFile
       var merger = new PDFMerger();
     
       logger.info('Files to be merged: ',fileNames);
-      (async () => {
+      await (async () => {
         var processStatus = updateResult.rows[0].status;
         if(processStatus != 'CANCEL'){
           try {
             for (let i = 0; i < fileNames.length; i++){
               logger.info(baseFolder+fileNames[i]);
-              merger.add(baseFolder+fileNames[i]);            //merge all pages. parameter is the path to file and filename.
+              await merger.add(baseFolder+fileNames[i]);            //merge all pages. parameter is the path to file and filename.
             }
             await merger.save(baseFolder+'/output.pdf');        //save under given name and reset the internal document
           } catch (err) {
             logger.error(err.stack || err);
+            throw err;
           }
       
           var mergePdfData = fs.createReadStream(baseFolder+'output.pdf');
-          await fileStoreAPICall('output.pdf', tenantId, mergePdfData).then((filestoreid) => {
+          await fileStoreAPICall('output.pdf', tenantId, mergePdfData).then(async (filestoreid) => {
             const updateQuery = 'UPDATE egov_defaulter_notice_pdf_info SET filestoreid = $1, lastmodifiedby = $2, lastmodifiedtime = $3, status = $5 WHERE jobid = $4';
             const curentTimeStamp = new Date().getTime();
             const status = 'DONE';
-            pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status]);
+            await pool.query(updateQuery,[filestoreid, userid, curentTimeStamp, bulkPdfJobId, status]);
             sendNoitification(filestoreid, mobileNumber, tenantId, null);
         
           }).catch((err) => {
             logger.error(err.stack || err);
+            throw err;
           });
         }
 
@@ -523,6 +532,7 @@ export async function mergePdfForDN(bulkPdfJobId, tenantId, userid, numberOfFile
     }
   } catch (err) {
     logger.error(err.stack || err);
+    throw err;
   }
   
 }
@@ -576,6 +586,7 @@ export async function updateBillFileStoreId(billId, billNumber, consumerCode, te
     logger.warn(`Could not find bill in egbs_bill_v1 to update filestoreid ${fileStoreId}. billId: ${billId}, billNumber: ${billNumber}, consumerCode: ${consumerCode}, tenantId: ${tenantId}`);
   } catch (err) {
     logger.error(`Error updating filestoreid in egbs_bill_v1: ${err.stack || err.message}`);
+    throw err;
   }
 }
 
@@ -622,7 +633,8 @@ export async function cleanupExpiredBulkPdfs() {
       }
     }
   } catch (err) {
-    logger.error(`Error in cleanupExpiredBulkPdfs: ${err.message || err}`);
+    logger.error(`Error in cleanupExpiredBulkPdfs: ${err.stack || err.message || err}`);
+    throw err;
   }
   return deletedJobs;
 }

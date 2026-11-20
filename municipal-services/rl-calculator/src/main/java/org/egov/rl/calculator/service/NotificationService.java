@@ -61,10 +61,10 @@ public class NotificationService {
 	public static final String CODE_DUE_REMINDER_EMAIL = "rl.demand.due.reminder.email";
 
 	// Fallback DLT Templates (Punjab mSeva)
-	private static final String FALLBACK_OVERDUE_SMS = "Dear {1}, rent payment of Rs.{2} for Allotment No.{3} is overdue. Penalty of Rs.{4} applied. Pay now at {5} to avoid lease action - mSeva Punjab";
-	private static final String FALLBACK_OVERDUE_DETAILED_SMS = "Dear {1}, your rent of Rs.{2} for property {3} is overdue since {4}. Penalty fee Rs.{5} levied. Total due Rs.{6}. Pay at {7} - {8}, Punjab";
-	private static final String FALLBACK_BILL_GENERATED_SMS = "Dear {1}, rent bill of Rs.{2} for {3} has been generated for Allotment {4}. Due date is {5}. Pay online at {6} - mSeva Punjab";
-	private static final String FALLBACK_DUE_REMINDER_SMS = "Dear {1}, friendly reminder that rent of Rs.{2} for Allotment {3} is due on {4}. Pay at {5} to avoid late fee penalty - mSeva Punjab";
+	private static final String FALLBACK_OVERDUE_SMS = "Dear {1}, rent payment of Rs.{2} for Allotment No.{3} is overdue. Penalty of Rs.{4} applied. Pay now at {5} to avoid lease action - mSeva Punjab|1301157492438182299|1477179456910508069";
+	private static final String FALLBACK_OVERDUE_DETAILED_SMS = "Dear {1}, your rent of Rs.{2} for property {3} is overdue since {4}. Penalty fee Rs.{5} levied. Total due Rs.{6}. Pay at {7} - {8}, Punjab|1301157492438182299|1477179456929015120";
+	private static final String FALLBACK_BILL_GENERATED_SMS = "Dear {1}, rent bill of Rs.{2} for {3} has been generated for Allotment {4}. Due date is {5}. Pay online at {6} - mSeva Punjab|1301157492438182299|1477179456948449244";
+	private static final String FALLBACK_DUE_REMINDER_SMS = "Dear {1}, friendly reminder that rent of Rs.{2} for Allotment {3} is due on {4}. Pay at {5} to avoid late fee penalty - mSeva Punjab|1301157492438182299|1477179456962813261";
 
 	/**
 	 * Sends Overdue Rent & Penalty Applied SMS and Email notifications to tenants
@@ -362,7 +362,7 @@ public class NotificationService {
 		RequestInfo requestInfo = request.getRequestInfo();
 		Map<String, String> mobileNumberToOwner = new HashMap<>();
 		String tenantId = allotmentDetails.getTenantId();
-		String moduleName = "rl-services";
+		String moduleName = NOTIFICATION_MODULENAME;
 		String action = "RLREMENDER";
 		msg = notifUtil.getMessageTemplate(action, msg);
 		List<String> configuredChannelNames = notifUtil.fetchChannelList(requestInfo, tenantId, moduleName, action);

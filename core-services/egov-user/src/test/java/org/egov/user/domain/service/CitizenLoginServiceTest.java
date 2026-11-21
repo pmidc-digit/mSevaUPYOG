@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 
 import java.util.*;
 
@@ -64,6 +65,9 @@ public class CitizenLoginServiceTest {
                 responseInfoFactory
         );
         when(userService.getStateLevelTenantForCitizen(anyString(), any(UserType.class))).thenReturn("pb");
+        when(userService.getMaxInvalidLoginAttempts()).thenReturn(7L);
+        when(userService.handleFailedLogin(any(), any(), any())).thenReturn(6L);
+        when(userService.buildAccountLockedException(any())).thenReturn(new OAuth2Exception("Account is locked due to multiple failed login attempts."));
     }
 
     @Test
@@ -338,7 +342,7 @@ public class CitizenLoginServiceTest {
         citizenLoginService.login(request);
     }
 
-    @Test(expected = CustomException.class)
+    @Test
     public void test_should_throw_exception_when_otp_is_invalid() {
         CitizenLoginRequest request = CitizenLoginRequest.builder()
                 .mobileNumber("9876543210")
@@ -348,7 +352,16 @@ public class CitizenLoginServiceTest {
 
         when(otpRepository.validateOtp(any(OtpValidateRequest.class))).thenReturn(false);
 
-        citizenLoginService.login(request);
+        try {
+            citizenLoginService.login(request);
+            fail("Expected OAuth2Exception");
+        } catch (OAuth2Exception e) {
+            assertEquals("invalid_request", e.getOAuth2ErrorCode());
+            assertEquals("OTP", e.getAdditionalInformation().get("auth_type"));
+            assertEquals("6", e.getAdditionalInformation().get("attempts_left"));
+            assertEquals("7", e.getAdditionalInformation().get("max_attempts"));
+            assertTrue(e.getMessage().contains("attempt(s) remaining"));
+        }
     }
 
     @Test(expected = CustomException.class)
@@ -395,7 +408,7 @@ public class CitizenLoginServiceTest {
         citizenLoginService.login(request);
     }
 
-    @Test(expected = CustomException.class)
+    @Test(expected = OAuth2Exception.class)
     public void test_should_throw_exception_when_account_is_locked_in_profile_selection() {
         CitizenLoginRequest request = CitizenLoginRequest.builder()
                 .verificationToken("valid-token")
@@ -425,8 +438,46 @@ public class CitizenLoginServiceTest {
                 .thenAnswer(inv -> inv.getArguments()[0]);
         when(userRepository.findAll(any(UserSearchCriteria.class))).thenReturn(Collections.singletonList(lockedUser));
         when(encryptionDecryptionUtil.decryptObject(any(), any(), eq(User.class), any())).thenReturn(Collections.singletonList(lockedUser));
+        when(userService.isAccountUnlockAble(any())).thenReturn(false);
 
         citizenLoginService.login(request);
+    }
+
+    @Test
+    public void test_should_throw_account_locked_exception_in_step_1_when_user_is_locked() {
+        CitizenLoginRequest request = CitizenLoginRequest.builder()
+                .mobileNumber("9876543210")
+                .otp("123456")
+                .tenantId("pb.testing")
+                .build();
+
+        User lockedUser = User.builder()
+                .uuid("uuid-1")
+                .userName("9876543210")
+                .name("Locked Citizen")
+                .mobileNumber("9876543210")
+                .type(UserType.CITIZEN)
+                .tenantId("pb")
+                .accountLocked(true)
+                .build();
+
+        when(encryptionDecryptionUtil.encryptObject(any(UserSearchCriteria.class), eq("UserSearchCriteria"), eq(UserSearchCriteria.class)))
+                .thenAnswer(inv -> inv.getArguments()[0]);
+        when(userRepository.findAll(any(UserSearchCriteria.class))).thenReturn(Collections.singletonList(lockedUser));
+        when(encryptionDecryptionUtil.decryptObject(any(), any(), eq(User.class), any())).thenReturn(Collections.singletonList(lockedUser));
+        when(userService.isAccountUnlockAble(any())).thenReturn(false);
+        OAuth2Exception lockedEx = new OAuth2Exception("Account is locked due to multiple failed login attempts.");
+        lockedEx.addAdditionalInformation("account_locked", "true");
+        when(userService.buildAccountLockedException(any())).thenReturn(lockedEx);
+
+        try {
+            citizenLoginService.login(request);
+            fail("Expected OAuth2Exception");
+        } catch (OAuth2Exception e) {
+            assertEquals("invalid_request", e.getOAuth2ErrorCode());
+            assertEquals("true", e.getAdditionalInformation().get("account_locked"));
+            assertTrue(e.getMessage().contains("Account is locked"));
+        }
     }
 
     @Test(expected = CustomException.class)

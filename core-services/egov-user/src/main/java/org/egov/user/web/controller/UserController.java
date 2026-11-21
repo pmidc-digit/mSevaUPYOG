@@ -1,4 +1,4 @@
-package org.egov.user.web.controller;
+﻿package org.egov.user.web.controller;
 
 import static org.egov.tracer.http.HttpUtils.isInterServiceCall;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -35,11 +35,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,10 +67,10 @@ public class UserController {
     @Value("${citizen.registration.withlogin.enabled}")
     private boolean isRegWithLoginEnabled;
 
-    @Value("${egov.user.search.default.size}")
+    @Value("${egov.user.search.default.size:50}")
     private Integer defaultSearchSize;
 
-    @Value("${egov.user.internal.search.default.size}")
+    @Value("${egov.user.internal.search.default.size:500}")
     private Integer defaultInternalSearchSize;
 
     @Autowired
@@ -114,6 +119,18 @@ public class UserController {
         }
         CitizenLoginResponse response = citizenLoginService.login(loginRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @ExceptionHandler(OAuth2Exception.class)
+    public ResponseEntity<Map<String, Object>> handleOAuth2Exception(OAuth2Exception ex) {
+        log.warn("OAuth2Exception in UserController: {}", ex.getMessage());
+        Map<String, Object> errorMap = new LinkedHashMap<>();
+        errorMap.put("error", ex.getOAuth2ErrorCode());
+        errorMap.put("error_description", ex.getMessage());
+        if (ex.getAdditionalInformation() != null) {
+            errorMap.putAll(ex.getAdditionalInformation());
+        }
+        return new ResponseEntity<>(errorMap, HttpStatus.BAD_REQUEST);
     }
 
     /**

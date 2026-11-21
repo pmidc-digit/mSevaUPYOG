@@ -5,10 +5,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.tracer.model.CustomException;
+import org.egov.tracer.model.ServiceCallException;
 import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.UserSearchCriteria;
 import org.egov.user.domain.model.enums.UserType;
 import org.egov.user.domain.service.utils.EncryptionDecryptionUtil;
+import org.egov.user.domain.service.utils.IpAddressUtil;
 import org.egov.user.persistence.dto.CitizenLoginSession;
 import org.egov.user.persistence.repository.OtpRepository;
 import org.egov.user.persistence.repository.UserRepository;
@@ -17,6 +19,7 @@ import org.egov.user.web.contract.*;
 import org.egov.user.web.contract.factory.ResponseInfoFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -184,8 +187,12 @@ public class CitizenLoginService {
             throw new CustomException("ACCOUNT_INACTIVE", "Your account is deactivated. Please contact support.");
         }
         if (Boolean.TRUE.equals(selectedUser.getAccountLocked())) {
-            log.warn("Access denied: user {} is temporarily locked", sanitizeForLog(userUuid));
-            throw new CustomException("ACCOUNT_LOCKED", "Your account is temporarily locked due to multiple failed login attempts. Please try again later.");
+            if (userService.isAccountUnlockAble(selectedUser)) {
+                selectedUser = unlockAccount(selectedUser, request.getRequestInfo());
+            } else {
+                log.warn("Access denied: user {} is temporarily locked", sanitizeForLog(userUuid));
+                throw userService.buildAccountLockedException(selectedUser);
+            }
         }
 
         // 9. Cross-Account Profile Integrity Guard: Match DB user mobile with verified session mobile
@@ -208,10 +215,23 @@ public class CitizenLoginService {
         return buildSuccessResponse(tokenResponse, request.getRequestInfo());
     }
 
+    private User unlockAccount(User user, RequestInfo requestInfo) {
+        User updatedUser = userService.updateWithoutOtpValidation(
+                user.toBuilder()
+                        .accountLocked(false)
+                        .password(null)
+                        .build(),
+                requestInfo
+        );
+        userService.resetFailedLoginAttempts(updatedUser);
+        return updatedUser;
+    }
+
     /**
      * Step 1: Handle OTP validation and profile lookup.
-     * Enforces strict OTP check BEFORE database lookup to prevent phone-number enumeration.
-     * Returns direct token if single profile, or profile summary list with verificationToken if multiple.
+     * Validates input, checks account lock status, validates OTP against egov-otp,
+     * tracks failed login attempts and locks the account when max attempts are exceeded,
+     * and returns direct token if single profile, or profile summary list with verificationToken if multiple.
      */
     private CitizenLoginResponse handleOtpVerificationAndProfileLookup(CitizenLoginRequest request) {
         if (StringUtils.isBlank(request.getMobileNumber())) {
@@ -248,29 +268,119 @@ public class CitizenLoginService {
             stateTenant = tenantId;
         }
 
-        // 1. Critical Security Step: Validate OTP first before touching database.
-        // Prevents unauthenticated users from probing phone numbers or extracting profile info.
-        validateOtp(mobileNumber, otp, stateTenant, request.getRequestInfo());
+        RequestInfo requestInfo = request.getRequestInfo() != null ? request.getRequestInfo() : RequestInfo.builder().build();
 
-        // 2. Query registered citizen accounts for this verified mobile number
+        // 1. Fetch matching citizen accounts for this mobile number (include all active/inactive/locked)
         UserSearchCriteria criteria = UserSearchCriteria.builder()
                 .mobileNumber(mobileNumber)
                 .tenantId(stateTenant)
                 .type(UserType.CITIZEN)
-                .active(true)
                 .build();
 
-        criteria = encryptionDecryptionUtil.encryptObject(criteria, "UserSearchCriteria", UserSearchCriteria.class);
-        List<User> users = userRepository.findAll(criteria);
-        RequestInfo requestInfo = request.getRequestInfo() != null ? request.getRequestInfo() : RequestInfo.builder().build();
-        users = encryptionDecryptionUtil.decryptObject(users, "UserListSelf", User.class, requestInfo);
+        List<User> users = Collections.emptyList();
+        try {
+            criteria = encryptionDecryptionUtil.encryptObject(criteria, "UserSearchCriteria", UserSearchCriteria.class);
+            List<User> foundUsers = userRepository.findAll(criteria);
+            if (!CollectionUtils.isEmpty(foundUsers)) {
+                users = encryptionDecryptionUtil.decryptObject(foundUsers, "UserListSelf", User.class, requestInfo);
+            }
+        } catch (Exception e) {
+            log.error("Error searching/decrypting citizen accounts for mobile: {}", maskMobileNumber(mobileNumber), e);
+        }
+
+        // 2. Account Lock Check: If all accounts for this mobile are locked, check cooldown or block
+        boolean allLocked = !CollectionUtils.isEmpty(users);
+        User lockedUserForException = null;
+        if (!CollectionUtils.isEmpty(users)) {
+            for (User u : users) {
+                if (Boolean.TRUE.equals(u.getAccountLocked())) {
+                    if (userService.isAccountUnlockAble(u)) {
+                        unlockAccount(u, requestInfo);
+                        allLocked = false;
+                    } else {
+                        lockedUserForException = u;
+                    }
+                } else {
+                    allLocked = false;
+                }
+            }
+            if (allLocked && lockedUserForException != null) {
+                log.warn("Citizen account is locked for mobile: {}", maskMobileNumber(mobileNumber));
+                throw userService.buildAccountLockedException(lockedUserForException);
+            }
+        }
+
+        // 3. Validate OTP
+        boolean isOtpValid = false;
+        if (fixedOTPEnabled && StringUtils.isNotBlank(fixedOTPPassword) && fixedOTPPassword.equals(otp)) {
+            log.info("Fixed OTP matched for mobile: {}", maskMobileNumber(mobileNumber));
+            isOtpValid = true;
+        } else {
+            Otp otpObj = Otp.builder()
+                    .otp(otp)
+                    .identity(mobileNumber)
+                    .tenantId(stateTenant)
+                    .userType(UserType.CITIZEN)
+                    .build();
+
+            RequestInfo reqInfo = requestInfo.getAction() != null ? requestInfo
+                    : RequestInfo.builder().action("validate").ts(System.currentTimeMillis()).build();
+            OtpValidateRequest otpValidateRequest = OtpValidateRequest.builder()
+                    .requestInfo(reqInfo)
+                    .otp(otpObj)
+                    .build();
+
+            try {
+                isOtpValid = otpRepository.validateOtp(otpValidateRequest);
+            } catch (ServiceCallException e) {
+                log.warn("OTP validation service call failed for mobile: {}. Error: {}",
+                        maskMobileNumber(mobileNumber), e.getMessage());
+                isOtpValid = false;
+            } catch (Exception e) {
+                log.error("Unexpected error validating OTP for mobile: {}. Error: {}",
+                        maskMobileNumber(mobileNumber), e.getMessage(), e);
+                isOtpValid = false;
+            }
+        }
+
+        // 4. Handle Invalid OTP: Track failed login attempts and construct OAuth2Exception
+        if (!isOtpValid) {
+            log.warn("OTP validation failed for mobile: {}", maskMobileNumber(mobileNumber));
+            long attemptsLeft = userService.getMaxInvalidLoginAttempts() - 1;
+
+            if (!CollectionUtils.isEmpty(users)) {
+                for (User u : users) {
+                    attemptsLeft = userService.handleFailedLogin(u, IpAddressUtil.getClientIp(), requestInfo);
+                }
+            }
+
+            String errMsg;
+            if (attemptsLeft == 1) {
+                errMsg = "Invalid OTP. Warning: You have only 1 attempt remaining before your account is locked.";
+            } else {
+                errMsg = "Invalid OTP. Please enter the valid OTP. You have " + attemptsLeft + " attempt(s) remaining.";
+            }
+
+            OAuth2Exception exception = new OAuth2Exception(errMsg);
+            exception.addAdditionalInformation("auth_type", "OTP");
+            exception.addAdditionalInformation("attempts_left", String.valueOf(attemptsLeft));
+            exception.addAdditionalInformation("max_attempts", String.valueOf(userService.getMaxInvalidLoginAttempts()));
+            throw exception;
+        }
+
+        // 5. OTP is Valid: Reset failed login attempts
+        if (!CollectionUtils.isEmpty(users)) {
+            for (User u : users) {
+                userService.resetFailedLoginAttempts(u);
+            }
+        }
 
         if (CollectionUtils.isEmpty(users)) {
             log.warn("No active citizen found for mobileNumber: {}", maskMobileNumber(mobileNumber));
             throw new CustomException("USER_NOT_FOUND", "No registered citizen account found for mobile number: " + mobileNumber + ". Please register.");
         }
 
-        // 3. Filter valid, active, non-locked CITIZEN profiles
+        // 6. Filter valid, active, non-locked CITIZEN profiles
         List<User> validUsers = users.stream()
                 .filter(u -> u != null && StringUtils.isNotBlank(u.getUuid()))
                 .filter(u -> u.getType() == null || UserType.CITIZEN.equals(u.getType()))
@@ -329,32 +439,6 @@ public class CitizenLoginService {
                 .verificationToken(verificationToken)
                 .profiles(profiles)
                 .build();
-    }
-
-    private void validateOtp(String mobileNumber, String otpValue, String tenantId, RequestInfo requestInfo) {
-        if (fixedOTPEnabled && StringUtils.isNotBlank(fixedOTPPassword) && fixedOTPPassword.equals(otpValue)) {
-            log.info("Fixed OTP matched for mobile: {}", maskMobileNumber(mobileNumber));
-            return;
-        }
-
-        Otp otp = Otp.builder()
-                .otp(otpValue)
-                .identity(mobileNumber)
-                .tenantId(tenantId)
-                .userType(UserType.CITIZEN)
-                .build();
-
-        RequestInfo reqInfo = requestInfo != null ? requestInfo : RequestInfo.builder().action("validate").ts(System.currentTimeMillis()).build();
-        OtpValidateRequest otpValidateRequest = OtpValidateRequest.builder()
-                .requestInfo(reqInfo)
-                .otp(otp)
-                .build();
-
-        boolean isOtpValid = otpRepository.validateOtp(otpValidateRequest);
-        if (!isOtpValid) {
-            log.warn("OTP validation failed for mobile: {}", maskMobileNumber(mobileNumber));
-            throw new CustomException("INVALID_OTP", "Invalid OTP. Please enter the valid OTP.");
-        }
     }
 
     private CitizenLoginResponse buildSuccessResponse(Map<String, Object> tokenResponse, RequestInfo requestInfo) {

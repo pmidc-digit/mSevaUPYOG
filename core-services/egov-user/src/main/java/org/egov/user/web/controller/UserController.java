@@ -10,13 +10,17 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.egov.common.contract.response.ResponseInfo;
+import org.egov.tracer.model.CustomException;
 import org.egov.user.domain.model.UpdateRequest;
 import org.egov.user.domain.model.UpdateResponse;
 import org.egov.user.domain.model.User;
 import org.egov.user.domain.model.UserDetail;
 import org.egov.user.domain.model.UserSearchCriteria;
+import org.egov.user.domain.service.CitizenLoginService;
 import org.egov.user.domain.service.TokenService;
 import org.egov.user.domain.service.UserService;
+import org.egov.user.web.contract.CitizenLoginRequest;
+import org.egov.user.web.contract.CitizenLoginResponse;
 import org.egov.user.web.contract.CreateUserRequest;
 import org.egov.user.web.contract.UserDetailResponse;
 import org.egov.user.web.contract.UserRequest;
@@ -31,11 +35,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,6 +55,9 @@ public class UserController {
     private UserService userService;
     private TokenService tokenService;
 
+    @Autowired(required = false)
+    private CitizenLoginService citizenLoginService;
+
     @Value("${mobile.number.validation.workaround.enabled}")
     private String mobileValidationWorkaroundEnabled;
 
@@ -55,10 +67,10 @@ public class UserController {
     @Value("${citizen.registration.withlogin.enabled}")
     private boolean isRegWithLoginEnabled;
 
-    @Value("${egov.user.search.default.size}")
+    @Value("${egov.user.search.default.size:50}")
     private Integer defaultSearchSize;
 
-    @Value("${egov.user.internal.search.default.size}")
+    @Value("${egov.user.internal.search.default.size:500}")
     private Integer defaultInternalSearchSize;
 
     @Autowired
@@ -85,6 +97,40 @@ public class UserController {
         }
         User createdUser = userService.createCitizen(user, createUserRequest.getRequestInfo());
         return createResponse(createdUser);
+    }
+
+    /**
+     * Endpoint for citizen login with multi-profile support.
+     * Step 1: Validates mobile + OTP, returns direct token if 1 user exists or profile list with verificationToken if >1 users exist.
+     * Step 2: Validates verificationToken + userUuid and returns the token for the selected user.
+     *
+     * @param loginRequest
+     * @return CitizenLoginResponse
+     */
+    @PostMapping({"/citizen/_login", "/users/citizen/_login"})
+    public ResponseEntity<CitizenLoginResponse> citizenLogin(@RequestBody @Valid CitizenLoginRequest loginRequest) {
+        log.info("Received citizen login request");
+        if (loginRequest == null) {
+            throw new CustomException("INVALID_REQUEST", "Request body cannot be null");
+        }
+        if (citizenLoginService == null) {
+            log.error("CitizenLoginService is not initialized");
+            throw new CustomException("SERVICE_UNAVAILABLE", "Citizen login service is currently unavailable");
+        }
+        CitizenLoginResponse response = citizenLoginService.login(loginRequest);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @ExceptionHandler(OAuth2Exception.class)
+    public ResponseEntity<Map<String, Object>> handleOAuth2Exception(OAuth2Exception ex) {
+        log.warn("OAuth2Exception in UserController: {}", ex.getMessage());
+        Map<String, Object> errorMap = new LinkedHashMap<>();
+        errorMap.put("error", ex.getOAuth2ErrorCode());
+        errorMap.put("error_description", ex.getMessage());
+        if (ex.getAdditionalInformation() != null) {
+            errorMap.putAll(ex.getAdditionalInformation());
+        }
+        return new ResponseEntity<>(errorMap, HttpStatus.BAD_REQUEST);
     }
 
     /**

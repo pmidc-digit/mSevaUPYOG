@@ -91,6 +91,7 @@ public class EmployeeValidator {
 
         Map<String, String> errorMap = new HashMap<>();
         Map<String, String> processedZoneToUserMap = new HashMap<>();
+        Map<String, Set<String>> userRolesCache = new HashMap<>();
 
         for (ObpasEmployee emp : employees) {
             validateEmployee(emp, errorMap);
@@ -107,7 +108,7 @@ public class EmployeeValidator {
                     }
                 } else {
                     processedZoneToUserMap.put(zoneKey, emp.getUserUUID());
-                    validateZoneAccessUniqueness(emp, requestInfo, errorMap);
+                    validateZoneAccessUniqueness(emp, requestInfo, errorMap, userRolesCache);
                 }
             }
         }
@@ -125,27 +126,39 @@ public class EmployeeValidator {
 	 * @param emp         the OBPAS employee being created/assigned
 	 * @param requestInfo the request info from the incoming request
 	 */
-	private void validateZoneAccessUniqueness(ObpasEmployee emp, RequestInfo requestInfo, Map<String, String> errorMap) {
+	private void validateZoneAccessUniqueness(ObpasEmployee emp, RequestInfo requestInfo, Map<String, String> errorMap, Map<String, Set<String>> userRolesCache) {
 	    // 1. Fetch current employee's roles
-	    EmployeeSearchCriteria empCriteria = new EmployeeSearchCriteria();
-	    empCriteria.setTenantId(emp.getTenantId());
-	    empCriteria.setUuids(Collections.singletonList(emp.getUserUUID()));
-	    EmployeeResponse empResponse = employeeService.search(empCriteria, requestInfo);
-	    
-	    if (empResponse == null || CollectionUtils.isEmpty(empResponse.getEmployees())) {
-	        return; // Current employee not found in HRMS, cannot check roles
+	    Set<String> roleCodes = userRolesCache.get(emp.getUserUUID());
+	    if (roleCodes == null) {
+	        EmployeeSearchCriteria empCriteria = new EmployeeSearchCriteria();
+	        empCriteria.setTenantId(emp.getTenantId());
+	        empCriteria.setUuids(Collections.singletonList(emp.getUserUUID()));
+	        EmployeeResponse empResponse = employeeService.search(empCriteria, requestInfo);
+	        
+	        if (empResponse == null || CollectionUtils.isEmpty(empResponse.getEmployees())) {
+	            userRolesCache.put(emp.getUserUUID(), Collections.emptySet());
+	            return; // Current employee not found in HRMS, cannot check roles
+	        }
+	        
+	        Employee currentEmployee = empResponse.getEmployees().get(0);
+	        if (currentEmployee.getUser() == null || CollectionUtils.isEmpty(currentEmployee.getUser().getRoles())) {
+	            userRolesCache.put(emp.getUserUUID(), Collections.emptySet());
+	            return; // Current employee has no roles, nothing to conflict with
+	        }
+	        
+	        roleCodes = currentEmployee.getUser().getRoles().stream()
+	                .map(org.egov.hrms.model.Role::getCode)
+	                .collect(Collectors.toSet());
+	        userRolesCache.put(emp.getUserUUID(), roleCodes);
 	    }
-	    
-	    Employee currentEmployee = empResponse.getEmployees().get(0);
-	    if (currentEmployee.getUser() == null || CollectionUtils.isEmpty(currentEmployee.getUser().getRoles())) {
+
+	    if (CollectionUtils.isEmpty(roleCodes)) {
 	        return; // Current employee has no roles, nothing to conflict with
 	    }
-	    
-	    Set<String> currentRoleCodes = currentEmployee.getUser().getRoles().stream()
-	            .map(org.egov.hrms.model.Role::getCode)
-	            .collect(Collectors.toSet());
 
-	    // 2. Build search criteria using zone + category + subcategory + tenantId + assignedTenantId + roles
+	    final Set<String> currentRoleCodes = roleCodes;
+
+	    // 2. Build search criteria using zone + category + subcategory + tenantId + assignedTenantId
 	    EmployeeSearchCriteria conflictCriteria = new EmployeeSearchCriteria();
 	    conflictCriteria.setTenantId(emp.getTenantId());
 	    conflictCriteria.setIsActive(true);
@@ -155,7 +168,9 @@ public class EmployeeValidator {
 	    if (!StringUtils.isEmpty(emp.getAssignedTenantId())) {
 	        conflictCriteria.setAssignedtenattids(Collections.singletonList(emp.getAssignedTenantId()));
 	    }
-	    conflictCriteria.setRoles(new ArrayList<>(currentRoleCodes));
+	    // Note: Do not set roles on conflictCriteria here, as EmployeeService.search with roles triggers
+	    // an external call to User Service to fetch all users with those roles across the ULB on every iteration.
+	    // Role equality check is already performed accurately below in stream comparison.
 
 	    EmployeeResponse conflictResponse = employeeService.search(conflictCriteria, requestInfo);
 

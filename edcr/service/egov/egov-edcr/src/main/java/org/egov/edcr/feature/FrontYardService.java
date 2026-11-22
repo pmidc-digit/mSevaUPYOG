@@ -566,53 +566,60 @@ private class FrontYardResult {
 
 	private void validateFrontYard(Plan pl) {
 
-	    boolean isUnitFaPlan = pl.getBlocks().stream()
-	            .anyMatch(block -> Boolean.TRUE.equals(block.getIsUnitFa()));
+    // Dwelling units not defined is already reported by the extract step;
+    // skip so we don't add a misleading "Front Setback not defined" error.
+    if (pl.getErrors() != null
+            && pl.getErrors().containsKey(SetBackService.ERR_DWELLING_UNITS_NOT_DEFINED)) {
+        return;
+    }
 
-	    // If any block is marked as UnitFA, skip block-wise
-	    // front setback mandatory validation.
-	    if (isUnitFaPlan) {
-	        return;
-	    }
+    boolean isUnitFaPlan = pl.getBlocks().stream()
+            .anyMatch(block -> Boolean.TRUE.equals(block.getIsUnitFa()));
 
-	    for (Block block : pl.getBlocks()) {
+    // If any block is marked as UnitFA, skip block-wise
+    // front setback mandatory validation.
+    if (isUnitFaPlan) {
+        return;
+    }
 
-	        if (!block.getCompletelyExisting()) {
+    for (Block block : pl.getBlocks()) {
 
-	            boolean frontYardDefined = false;
+        if (!block.getCompletelyExisting()) {
 
-	            for (SetBack setback : block.getSetBacks()) {
+            boolean frontYardDefined = false;
 
-	                if (setback.getFrontYard() != null
-	                        && setback.getFrontYard().getMean() != null
-	                        && setback.getFrontYard().getMean()
-	                                .compareTo(BigDecimal.ZERO) > 0) {
+            for (SetBack setback : block.getSetBacks()) {
 
-	                    frontYardDefined = true;
-	                    break;
-	                }
-	            }
+                if (setback.getFrontYard() != null
+                        && setback.getFrontYard().getMean() != null
+                        && setback.getFrontYard().getMean()
+                                .compareTo(BigDecimal.ZERO) > 0) {
 
-	            if (!frontYardDefined) {
+                    frontYardDefined = true;
+                    break;
+                }
+            }
 
-	                HashMap<String, String> errors = new HashMap<>();
+            if (!frontYardDefined) {
 
-	                if (!Far.shouldSkipValidation(
-	                        pl.getEdcrRequest(),
-	                        DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {
+                HashMap<String, String> errors = new HashMap<>();
 
-	                    errors.put(
-	                            FRONT_YARD_DESC,
-	                            prepareMessage(
-	                                    OBJECTNOTDEFINED,
-	                                    FRONT_YARD_DESC + " for Block " + block.getName()));
+                if (!Far.shouldSkipValidation(
+                        pl.getEdcrRequest(),
+                        DcrConstants.EDCR_SKIP_FRONT_SETBACK)) {
 
-	                    pl.addErrors(errors);
-	                }
-	            }
-	        }
-	    }
-	}
+                    errors.put(
+                            FRONT_YARD_DESC,
+                            prepareMessage(
+                                    OBJECTNOTDEFINED,
+                                    FRONT_YARD_DESC + " for Block " + block.getName()));
+
+                    pl.addErrors(errors);
+                }
+            }
+        }
+    }
+}
 	
 	private Boolean checkFrontYardUptoSixteenMts(SetBack setback, Building building, BigDecimal blockBuildingHeight,
 			Plan pl, Integer level, Block block, Plot plot, String frontYardFieldName, BigDecimal min, BigDecimal mean,

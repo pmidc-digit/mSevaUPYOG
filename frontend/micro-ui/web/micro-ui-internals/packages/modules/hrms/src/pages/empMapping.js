@@ -470,6 +470,24 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
       }, 5000);
       return;
     }
+    const categoriesMissingSubCategory = actualCategories?.filter((category) => {
+      const categoryId = category?.categoryId || category?.code;
+      return !actualSubCategories?.some(
+        (subCategory) => String(subCategory?.categoryId) === String(categoryId)
+      );
+    });
+    if (categoriesMissingSubCategory?.length) {
+      const categoryNames = categoriesMissingSubCategory?.map((category) => category?.name).join(", ");
+      setModalToast({
+        key: true,
+        label: `Select a sub-category for each selected category. Missing for: ${categoryNames}`,
+        error: true,
+      });
+      setTimeout(() => {
+        setModalToast(null);
+      }, 5000);
+      return;
+    }
     if (!actualZones.length) {
       setModalToast({ key: true, label: "Please select at least one zone", error: true });
       setTimeout(() => {

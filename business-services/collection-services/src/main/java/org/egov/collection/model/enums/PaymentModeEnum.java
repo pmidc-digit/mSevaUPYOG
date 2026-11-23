@@ -20,7 +20,7 @@ public enum PaymentModeEnum {
     POS_UPI("POS_UPI"),
     POS_CASH("POS_CASH"),
     POS_CARD("POS_CARD"),
-    BHARAT_PAY("BHARAT_PAY");
+    POS_BHARAT_PAY("POS_BHARAT_PAY");
 
 
     private String value;
@@ -58,6 +58,6 @@ public enum PaymentModeEnum {
         return paymentMode == POS_UPI
                 || paymentMode == POS_CASH
                 || paymentMode == POS_CARD
-                || paymentMode == BHARAT_PAY;
+                || paymentMode == POS_BHARAT_PAY;
     }
 }

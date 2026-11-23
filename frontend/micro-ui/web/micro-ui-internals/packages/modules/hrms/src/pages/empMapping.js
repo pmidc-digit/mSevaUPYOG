@@ -30,6 +30,7 @@ const EmpMaping = () => {
   // Modal Form States
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedULB, setSelectedULB] = useState(null);
+  const [showPreviewTable, setShowPreviewTable] = useState(true);
   const [formData, setFormData] = useState({
     employeeCode: null,
     designationCode: null,
@@ -62,6 +63,7 @@ const EmpMaping = () => {
 
   // Custom Hooks from HRMS
   const { obpsRoles } = Digit.Hooks.hrms.useOBPSRoles(stateId);
+  console.log(obpsRoles,"obpsRoles")
   const { employeeList: modalEmployeeList } = Digit.Hooks.hrms.useEmployeeList(selectedULB, obpsRoles.codes);
   const { zones: filterZones } = Digit.Hooks.hrms.useZones(stateId, filterULB);
   const { zones: modalZones } = Digit.Hooks.hrms.useZones(stateId, selectedULB || filterULB);
@@ -240,6 +242,8 @@ const EmpMaping = () => {
     let designation = "";
     let roleNames = "No OBPS Roles";
 
+    console.log(employee,"employee")
+
     if (employee && employee.employeeObj) {
       if (employee.employeeObj.assignments && employee.employeeObj.assignments.length > 0) {
         designation = employee.employeeObj.assignments[0].designation || "";
@@ -347,7 +351,7 @@ const EmpMaping = () => {
 
   // Modal handlers
   const handleAddNew = () => {
-    if (filterULB && !selectedULB) {
+    if (filterULB) {
       setSelectedULB(filterULB);
     }
     setFormData({
@@ -362,6 +366,7 @@ const EmpMaping = () => {
     });
     setFormErrors({});
     setMappingsToCreate([]);
+    setShowPreviewTable(true);
     setShowAddModal(true);
   };
 
@@ -379,19 +384,20 @@ const EmpMaping = () => {
     });
     setFormErrors({});
     setMappingsToCreate([]);
+    setShowPreviewTable(true);
     setModalToast(null);
   };
 
-  // Add mappings to preview list (cartesian product)
-  const handleAddToList = () => {
-    if (!formData.employeeCode) {
-      setModalToast({ key: true, label: "Please select an employee", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
-      return;
+  // Validation helper for current modal form state
+  const validateCurrentForm = (silent = false) => {
+    if (!selectedULB) {
+      if (!silent) setModalToast({ key: true, label: "Please select a ULB first", error: true });
+      return false;
     }
-
+    if (!formData.employeeCode) {
+      if (!silent) setModalToast({ key: true, label: "Please select an employee", error: true });
+      return false;
+    }
     const actualCategories = filterSelectAll(formData.category);
     const actualSubCategories = filterSelectAll(formData.subCategory);
     const actualZones = filterSelectAll(formData.zone);
@@ -399,37 +405,24 @@ const EmpMaping = () => {
     const actualRoles = filterSelectAll(formData.role);
 
     if (!actualCategories.length) {
-      setModalToast({ key: true, label: "Please select at least one category", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
-      return;
+      if (!silent) setModalToast({ key: true, label: "Please select at least one category", error: true });
+      return false;
     }
     if (!actualSubCategories.length) {
-      setModalToast({ key: true, label: "Please select at least one sub-category", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
-      return;
+      if (!silent) setModalToast({ key: true, label: "Please select at least one sub-category", error: true });
+      return false;
     }
     if (!actualZones.length) {
-      setModalToast({ key: true, label: "Please select at least one zone", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
-      return;
+      if (!silent) setModalToast({ key: true, label: "Please select at least one zone", error: true });
+      return false;
     }
     if (!actualModules.length) {
-      setModalToast({ key: true, label: "Please select at least one module", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
-      return;
+      if (!silent) setModalToast({ key: true, label: "Please select at least one module", error: true });
+      return false;
     }
-
     if (!actualRoles.length) {
-      setModalToast({ key: true, label: "Please select at least one role", error: true });
-      return;
+      if (!silent) setModalToast({ key: true, label: "Please select at least one role", error: true });
+      return false;
     }
     const groups = roleGroups?.["ACCESSCONTROL-ROLES"]?.roleGroups || [];
     if (
@@ -437,10 +430,53 @@ const EmpMaping = () => {
         (module) => !actualRoles.some((role) => groups.some((group) => group.groupCode === module.code && group.groupId === role.groupId))
       )
     ) {
-      setModalToast({ key: true, label: "Please select at least one role for each selected module", error: true });
+      if (!silent) setModalToast({ key: true, label: "Please select at least one role for each selected module", error: true });
+      return false;
+    }
+    return true;
+  };
+
+  // Live calculation of mapping combinations from the currently filled form
+  const currentFormCombinations = useMemo(() => {
+    if (!formData.employeeCode) return [];
+    const actualCategories = filterSelectAll(formData.category);
+    const actualSubCategories = filterSelectAll(formData.subCategory);
+    const actualZones = filterSelectAll(formData.zone);
+    const actualModules = filterSelectAll(formData.module);
+    const actualRoles = filterSelectAll(formData.role);
+
+    if (!actualCategories.length || !actualSubCategories.length || !actualZones.length || !actualModules.length || !actualRoles.length) {
+      return [];
+    }
+    const groups = roleGroups?.["ACCESSCONTROL-ROLES"]?.roleGroups || [];
+    return createMappingCombinations(
+      formData.employeeCode,
+      formData.category,
+      formData.subCategory,
+      formData.zone,
+      formData.module,
+      formData.role,
+      groups
+    );
+  }, [formData, roleGroups]);
+
+  // Combined list for preview: staged mappings + current form combinations
+  const allPreviewList = useMemo(() => {
+    return [...mappingsToCreate, ...currentFormCombinations];
+  }, [mappingsToCreate, currentFormCombinations]);
+
+  const totalEffectiveMappingsCount = allPreviewList.length;
+
+  // Add mappings to preview list (stages current combination for adding another set)
+  const handleAddToList = () => {
+    if (!validateCurrentForm(false)) {
+      setTimeout(() => {
+        setModalToast(null);
+      }, 5000);
       return;
     }
 
+    const groups = roleGroups?.["ACCESSCONTROL-ROLES"]?.roleGroups || [];
     const newMappings = createMappingCombinations(
       formData.employeeCode,
       formData.category,
@@ -453,42 +489,70 @@ const EmpMaping = () => {
 
     setMappingsToCreate((prev) => [...prev, ...newMappings]);
     setFormData((prev) => ({
-      employeeCode: prev.employeeCode,
-      roleNames: prev.roleNames,
+      ...prev,
       category: [],
       subCategory: [],
       zone: [],
       module: [],
       role: [],
     }));
-    setModalToast({ key: true, label: `${newMappings.length} mapping(s) added to list` });
+    setModalToast({ key: false, label: `${newMappings.length} mapping(s) staged successfully! You can add another configuration or click Submit.` });
     setTimeout(() => {
       setModalToast(null);
     }, 5000);
   };
 
   const handleRemoveFromList = (mappingId) => {
-    setMappingsToCreate((prev) => prev.filter((m) => m.id !== mappingId));
+    if (mappingsToCreate.some((m) => m.id === mappingId)) {
+      setMappingsToCreate((prev) => prev.filter((m) => m.id !== mappingId));
+    } else {
+      const remaining = currentFormCombinations.filter((m) => m.id !== mappingId);
+      setMappingsToCreate((prev) => [...prev, ...remaining]);
+      setFormData((prev) => ({
+        ...prev,
+        category: [],
+        subCategory: [],
+        zone: [],
+        module: [],
+        role: [],
+      }));
+    }
   };
 
   const handleClearList = () => {
     setMappingsToCreate([]);
+    setFormData((prev) => ({
+      ...prev,
+      category: [],
+      subCategory: [],
+      zone: [],
+      module: [],
+      role: [],
+    }));
   };
 
-  // Submit all mappings
+  // Submit all mappings (Supports both direct 1-click submit and multi-batch staged submission)
   const handleAddSubmit = async () => {
-    if (!mappingsToCreate.length) {
-      setModalToast({ key: true, label: "Please add at least one mapping to the list", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
+    let finalMappings = [...mappingsToCreate];
+
+    // If current form has complete valid combinations, include them directly
+    if (currentFormCombinations.length > 0) {
+      if (!validateCurrentForm(false)) {
+        setTimeout(() => setModalToast(null), 5000);
+        return;
+      }
+      finalMappings = [...finalMappings, ...currentFormCombinations];
+    }
+
+    if (!finalMappings.length) {
+      validateCurrentForm(false);
+      setTimeout(() => setModalToast(null), 5000);
       return;
     }
+
     if (!selectedULB) {
       setModalToast({ key: true, label: "Please select a ULB first", error: true });
-      setTimeout(() => {
-        setModalToast(null);
-      }, 5000);
+      setTimeout(() => setModalToast(null), 5000);
       return;
     }
 
@@ -496,7 +560,7 @@ const EmpMaping = () => {
       setLoading(true);
 
       const payload = {
-        Employees: mappingsToCreate?.map((mapping) => ({
+        Employees: finalMappings.map((mapping) => ({
           tenantId: mapping?.employeeInfo?.employeeObj?.user?.tenantId || selectedULB.code,
           userUUID: mapping.employeeUUID,
           category: mapping.category.categoryId,
@@ -510,14 +574,12 @@ const EmpMaping = () => {
 
       console.log("payload", payload);
 
-      // return;
-
       const response = await Digit.HRMSService.CreateEmpMapping(selectedULB.code, payload);
 
       if (response?.ResponseInfo?.status === "successful" || response?.Employees?.length > 0) {
         const mappedULB = selectedULB;
-        const mappedEmployee = formData.employeeCode || mappingsToCreate[0]?.employeeInfo;
-        const count = mappingsToCreate.length;
+        const mappedEmployee = formData.employeeCode || finalMappings[0]?.employeeInfo;
+        const count = finalMappings.length;
 
         closeAddModal();
         setShowToast({ key: true, label: `${count} mapping(s) created successfully!` });
@@ -673,165 +735,69 @@ const EmpMaping = () => {
         {/* Add Mapping Modal */}
         {showAddModal && (
           <Modal
-            headerBarMain={<h2 className="hrms-emp-mapping__modal-header">{t("HR_ADD_NEW_MAPPING")}</h2>}
+            headerBarMain={
+              <div style={{ display: "flex", flexDirection: "column", padding: "16px 20px" }}>
+                <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700, color: "#0b0c0c" }}>
+                  {t("HR_ADD_NEW_MAPPING") || "Add New Employee Mapping"}
+                </h2>
+                <span style={{ fontSize: "0.85rem", color: "#616161", marginTop: "4px" }}>
+                  {t("HR_ADD_MAPPING_SUBTITLE") || "Configure zones, categories, and module roles for the employee"}
+                </span>
+              </div>
+            }
             headerBarEnd={<CloseBtn onClick={closeAddModal} />}
             actionCancelLabel={t("COMMON_CANCEL")}
             actionCancelOnSubmit={closeAddModal}
-            actionSaveLabel={`${t("COMMON_SUBMIT")} ${mappingsToCreate.length > 0 ? `(${mappingsToCreate.length})` : ""}`}
+            actionSaveLabel={`${t("COMMON_SUBMIT")} ${totalEffectiveMappingsCount > 0 ? `(${totalEffectiveMappingsCount})` : ""}`}
             actionSaveOnSubmit={handleAddSubmit}
             formId="add-mapping-form"
-            popupStyles={{ width: "900px", maxHeight: "90vh" }}
+            popupStyles={{
+              width: "960px",
+              maxWidth: "95vw",
+              maxHeight: "90vh",
+              display: "flex",
+              flexDirection: "column",
+              borderRadius: "8px",
+              overflow: "hidden",
+              margin: "auto",
+            }}
+            popupModuleMianStyles={{
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              minHeight: 0,
+              overflow: "hidden",
+              padding: 0,
+            }}
+            popupModuleActionBarStyles={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              alignItems: "center",
+              gap: "16px",
+              padding: "14px 24px",
+              borderTop: "1px solid #e0e0e0",
+              backgroundColor: "#ffffff",
+              flexShrink: 0,
+              boxSizing: "border-box",
+              width: "100%",
+            }}
           >
-            <div className="hrms-emp-mapping__modal-content">
-              {/* ULB Selection */}
-              <div className="hrms-emp-mapping__form-group">
-                <CardLabel className="hrms-emp-mapping__label">
-                  {t("ULB_CODE")} <span className="hrms-emp-mapping__required-asterisk">*</span>
-                </CardLabel>
-                <Dropdown
-                  t={t}
-                  option={ulbList}
-                  optionKey="name"
-                  selected={selectedULB}
-                  select={setSelectedULB}
-                  placeholder={t("COMMON_SELECT_ULB") || "Select ULB"}
-                />
-              </div>
-
-              {/* Employee Selection */}
-              <div className="hrms-emp-mapping__form-group">
-                <CardLabel className="hrms-emp-mapping__label">
-                  {t("HR_EMPLOYEE_CODE")} <span className="hrms-emp-mapping__required-asterisk">*</span>
-                </CardLabel>
-                <Dropdown
-                  t={t}
-                  option={modalEmployeeList}
-                  optionKey="name"
-                  selected={formData.employeeCode}
-                  select={handleEmployeeSelect}
-                  placeholder={t("COMMON_SELECT_EMPLOYEE")}
-                />
-                {formErrors.employeeCode && <CardLabelError>{formErrors.employeeCode}</CardLabelError>}
-              </div>
-
-              {/* Designation  */}
-              {/* <div style={{ marginBottom: "20px" }}>
-                <CardLabel>
-                  {t("HR_DESIGNATION_CODE")} <span style={{ color: "red" }}>*</span>
-                </CardLabel>
-                <input
-                  type="text"
-                  value={formData.designationCode}
-                  readOnly
-                  style={{
-                    width: "100%",
-                    padding: "8px",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    background: "#f9f9f9",
-                    fontSize: "14px",
-                  }}
-                />
-                {formErrors.designationCode && <CardLabelError>{formErrors.designationCode}</CardLabelError>}
-              </div> */}
-
-              {/* Role(s) - Read-only */}
-              <div className="hrms-emp-mapping__form-group">
-                <CardLabel className="hrms-emp-mapping__label">{t("HR_ROLES_LABEL") || "Role(s)"}</CardLabel>
-                <input type="text" value={formData.roleNames || "No OBPS Roles"} readOnly className="hrms-emp-mapping__input" disabled />
-              </div>
-
-              {/* Category Multi-Select */}
-              <div className="hrms-emp-mapping__form-group">
-                <CardLabel className="hrms-emp-mapping__label">
-                  {t("HR_CATEGORY_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
-                </CardLabel>
-                <MultiSelectDropdown
-                  options={categoriesWithSelectAll}
-                  optionsKey="name"
-                  selected={formData.category}
-                  onSelect={(items) => handleSelectWithAll(items, categories, "category")}
-                  defaultLabel={t("COMMON_SELECT_CATEGORY") || "Select Categories"}
-                  defaultUnit={t("HR_CATEGORIES_SELECTED") || "selected"}
-                />
-                {formErrors.category && <CardLabelError>{formErrors.category}</CardLabelError>}
-              </div>
-
-              {/* Sub-Category Multi-Select */}
-              <div className="hrms-emp-mapping__form-group">
-                <CardLabel className="hrms-emp-mapping__label">
-                  {t("HR_SUB_CATEGORY_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
-                </CardLabel>
-                <MultiSelectDropdown
-                  options={filteredSubCategoriesWithSelectAll}
-                  optionsKey="name"
-                  selected={formData.subCategory}
-                  onSelect={(items) => handleSelectWithAll(items, filteredSubCategories, "subCategory")}
-                  defaultLabel={
-                    formData.category?.length > 0
-                      ? t("COMMON_SELECT_SUB_CATEGORY") || "Select Sub-Categories"
-                      : t("HR_SELECT_CATEGORY_FIRST") || "Select category first"
-                  }
-                  defaultUnit={t("HR_SUB_CATEGORIES_SELECTED") || "selected"}
-                />
-                {formErrors.subCategory && <CardLabelError>{formErrors.subCategory}</CardLabelError>}
-              </div>
-
-              {/* Module Multi-Select */}
-              <div className="hrms-emp-mapping__form-group">
-                <CardLabel className="hrms-emp-mapping__label">
-                  {t("Module")} <span className="hrms-emp-mapping__required-asterisk">*</span>
-                </CardLabel>
-                <MultiSelectDropdown
-                  // options={moduleNames?.["common-masters"]?.obpasmodules}
-                  options={modulesWithSelectAll}
-                  optionsKey="name"
-                  selected={formData.module}
-                  onSelect={(items) => {
-                    handleSelectWithAll(items, moduleNames?.["common-masters"]?.obpasmodules, "module");
-                  }}
-                  defaultLabel={t("Select Module") || "Select Module"}
-                  defaultUnit={t("Module Selected") || "selected"}
-                />
-                {formErrors.module && <CardLabelError>{formErrors.module}</CardLabelError>}
-              </div>
-
-              {/* Role Multi-Select */}
-              <div className="hrms-emp-mapping__form-group">
-                <CardLabel className="hrms-emp-mapping__label">
-                  {t("Role")} <span className="hrms-emp-mapping__required-asterisk">*</span>
-                </CardLabel>
-                <MultiSelectDropdown
-                  options={rolesWithSelectAll}
-                  optionsKey="name"
-                  selected={formData.role}
-                  onSelect={(items) => handleSelectWithAll(items, filteredRoles, "role")}
-                  defaultLabel={t(filterSelectAll(formData.module).length ? "Select Role" : "Select module first")}
-                  defaultUnit={t("Roles Selected")}
-                />
-                {formErrors.role && <CardLabelError>{formErrors.role}</CardLabelError>}
-              </div>
-
-              {/* Zone Multi-Select */}
-              <div className="hrms-emp-mapping__form-group">
-                <CardLabel className="hrms-emp-mapping__label">
-                  {t("HR_ZONE_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
-                </CardLabel>
-                <MultiSelectDropdown
-                  options={modalZonesWithSelectAll}
-                  optionsKey="name"
-                  selected={formData.zone}
-                  onSelect={(items) => handleSelectWithAll(items, modalZones, "zone")}
-                  defaultLabel={t("COMMON_SELECT_ZONE") || "Select Zones"}
-                  defaultUnit={t("HR_ZONES_SELECTED") || "selected"}
-                />
-                {formErrors.zone && <CardLabelError>{formErrors.zone}</CardLabelError>}
-              </div>
-
-              {/* Modal Toast for Errors */}
+            <div
+              className="hrms-emp-mapping__modal-content"
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
+                padding: "20px 24px",
+                boxSizing: "border-box",
+              }}
+            >
+              {/* Modal Toast for Errors / Notifications */}
               {modalToast && (
                 <div
                   className={`hrms-emp-mapping__toast ${modalToast.error ? "hrms-emp-mapping__toast--error" : "hrms-emp-mapping__toast--success"}`}
+                  style={{ marginBottom: "16px" }}
                 >
                   <span className="hrms-emp-mapping__toast-message">{modalToast.label}</span>
                   <button onClick={() => setModalToast(null)} className="hrms-emp-mapping__toast-close-btn">
@@ -840,58 +806,418 @@ const EmpMaping = () => {
                 </div>
               )}
 
-              {/* Add to List Button */}
-              <div className="hrms-emp-mapping__form-group">
-                <button onClick={handleAddToList} className="hrms-emp-mapping__add-to-list-button">
-                  + {t("HR_ADD_TO_LIST") || "Add to List"}
-                </button>
-              </div>
-
-              {/* Preview Table */}
-              {mappingsToCreate.length > 0 && (
-                <div className="hrms-emp-mapping__preview-section">
-                  <div className="hrms-emp-mapping__preview-header">
-                    <h3 className="hrms-emp-mapping__preview-heading">
-                      {t("HR_MAPPINGS_TO_CREATE") || "Mappings to Create"} ({mappingsToCreate.length})
+              {/* 2-Column Responsive Grid */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                  gap: "1.25rem",
+                  alignItems: "stretch",
+                }}
+              >
+                {/* COLUMN 1: Employee & Location */}
+                <div
+                  style={{
+                    backgroundColor: "#fcfcfc",
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "14px",
+                      borderBottom: "2px solid #e8e8e8",
+                      paddingBottom: "8px",
+                    }}
+                  >
+                    <span style={{ fontSize: "1.1rem" }}>👤</span>
+                    <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: "#0b0c0c" }}>
+                      {t("HR_TARGET_EMPLOYEE_AND_ZONE") || "1. Employee & Location"}
                     </h3>
-                    <button onClick={handleClearList} className="hrms-emp-mapping__clear-list-button">
-                      {t("COMMON_CLEAR_ALL") || "Clear All"}
-                    </button>
                   </div>
-                  <div className="hrms-emp-mapping__preview-table-wrapper">
-                    <table className="hrms-emp-mapping__preview-table">
-                      <thead>
-                        <tr>
-                          <th>{t("HR_EMPLOYEE_CODE")}</th>
-                          <th>{t("HR_CATEGORY_LABEL")}</th>
-                          <th>{t("HR_SUB_CATEGORY_LABEL")}</th>
-                          <th>{t("HR_ZONE_LABEL")}</th>
-                          <th>{t("Module")}</th>
-                          <th>{t("Role")}</th>
-                          <th>{t("COMMON_ACTION")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {mappingsToCreate.map((mapping, index) => (
-                          <tr key={mapping.id}>
-                            <td>{mapping.employeeCode}</td>
-                            <td>{mapping.category.name}</td>
-                            <td>{mapping.subCategory.name}</td>
-                            <td>{mapping.zone.name}</td>
-                            <td>{mapping.module.name}</td>
-                            <td>{mapping.role.name}</td>
-                            <td className="hrms-emp-mapping__table-action-cell">
-                              <button onClick={() => handleRemoveFromList(mapping.id)} className="hrms-btn hrms-btn--delete">
-                                {t("COMMON_DELETE")}
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+
+                  {/* ULB Selection */}
+                  <div className="hrms-emp-mapping__form-group" style={{ marginBottom: "14px" }}>
+                    <CardLabel className="hrms-emp-mapping__label" style={{ marginBottom: "6px", fontWeight: 600 }}>
+                      {t("ULB_CODE")} <span className="hrms-emp-mapping__required-asterisk">*</span>
+                    </CardLabel>
+                    <Dropdown
+                      t={t}
+                      option={ulbList}
+                      optionKey="name"
+                      selected={selectedULB}
+                      select={setSelectedULB}
+                      placeholder={t("COMMON_SELECT_ULB") || "Select ULB"}
+                    />
+                  </div>
+
+                  {/* Employee Selection */}
+                  <div className="hrms-emp-mapping__form-group" style={{ marginBottom: "14px" }}>
+                    <CardLabel className="hrms-emp-mapping__label" style={{ marginBottom: "6px", fontWeight: 600 }}>
+                      {t("HR_EMPLOYEE_CODE")} <span className="hrms-emp-mapping__required-asterisk">*</span>
+                    </CardLabel>
+                    <Dropdown
+                      t={t}
+                      option={modalEmployeeList}
+                      optionKey="name"
+                      selected={formData.employeeCode}
+                      select={handleEmployeeSelect}
+                      placeholder={t("COMMON_SELECT_EMPLOYEE")}
+                    />
+                    {formErrors.employeeCode && <CardLabelError>{formErrors.employeeCode}</CardLabelError>}
+
+                    {/* Employee Quick Info Badge */}
+                    {formData.employeeCode && (
+                      <div
+                        style={{
+                          marginTop: "8px",
+                          padding: "8px 12px",
+                          backgroundColor: "#f1f8e9",
+                          borderRadius: "6px",
+                          border: "1px solid #dcedc8",
+                          fontSize: "0.82rem",
+                        }}
+                      >
+                        <div style={{ color: "#2e7d32", fontWeight: 600 }}>
+                          <strong>{t("HR_DESIGNATION") || "Designation"}:</strong> {formData.designationCode || "N/A"}
+                        </div>
+                        <div style={{ color: "#558b2f", fontSize: "0.78rem", marginTop: "3px" }}>
+                          <strong>{t("HR_ROLES_LABEL") || "Existing Roles"}:</strong> {formData.roleNames || "No OBPS Roles"}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Zone Multi-Select */}
+                  <div className="hrms-emp-mapping__form-group" style={{ marginBottom: "0", marginTop: "auto", position: "relative" }}>
+                    <CardLabel className="hrms-emp-mapping__label" style={{ marginBottom: "6px", fontWeight: 600 }}>
+                      {t("HR_ZONE_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
+                    </CardLabel>
+                    <MultiSelectDropdown
+                      options={modalZonesWithSelectAll}
+                      optionsKey="name"
+                      selected={formData.zone}
+                      onSelect={(items) => handleSelectWithAll(items, modalZones, "zone")}
+                      defaultLabel={t("COMMON_SELECT_ZONE") || "Select Zones"}
+                      defaultUnit={t("HR_ZONES_SELECTED") || "selected"}
+                      ServerStyle={{
+                        bottom: "44px",
+                        top: "auto",
+                        zIndex: 1000,
+                        maxHeight: "190px",
+                        overflowY: "auto",
+                        boxShadow: "0 -4px 14px rgba(0,0,0,0.15)",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "4px",
+                        backgroundColor: "#ffffff",
+                      }}
+                    />
+                    {formErrors.zone && <CardLabelError>{formErrors.zone}</CardLabelError>}
                   </div>
                 </div>
+
+                {/* COLUMN 2: Scope & Permissions */}
+                <div
+                  style={{
+                    backgroundColor: "#fcfcfc",
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "14px",
+                      borderBottom: "2px solid #e8e8e8",
+                      paddingBottom: "8px",
+                    }}
+                  >
+                    <span style={{ fontSize: "1.1rem" }}>🛡️</span>
+                    <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: "#0b0c0c" }}>
+                      {t("HR_SCOPE_AND_PERMISSIONS") || "2. Scope & Permissions"}
+                    </h3>
+                  </div>
+
+                  {/* Category Multi-Select */}
+                  <div className="hrms-emp-mapping__form-group" style={{ marginBottom: "14px", position: "relative" }}>
+                    <CardLabel className="hrms-emp-mapping__label" style={{ marginBottom: "6px", fontWeight: 600 }}>
+                      {t("HR_CATEGORY_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
+                    </CardLabel>
+                    <MultiSelectDropdown
+                      options={categoriesWithSelectAll}
+                      optionsKey="name"
+                      selected={formData.category}
+                      onSelect={(items) => handleSelectWithAll(items, categories, "category")}
+                      defaultLabel={t("COMMON_SELECT_CATEGORY") || "Select Categories"}
+                      defaultUnit={t("HR_CATEGORIES_SELECTED") || "selected"}
+                      ServerStyle={{
+                        top: "42px",
+                        zIndex: 1000,
+                        maxHeight: "190px",
+                        overflowY: "auto",
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "4px",
+                        backgroundColor: "#ffffff",
+                      }}
+                    />
+                    {formErrors.category && <CardLabelError>{formErrors.category}</CardLabelError>}
+                  </div>
+
+                  {/* Sub-Category Multi-Select */}
+                  <div className="hrms-emp-mapping__form-group" style={{ marginBottom: "14px", position: "relative" }}>
+                    <CardLabel className="hrms-emp-mapping__label" style={{ marginBottom: "6px", fontWeight: 600 }}>
+                      {t("HR_SUB_CATEGORY_LABEL")} <span className="hrms-emp-mapping__required-asterisk">*</span>
+                    </CardLabel>
+                    <MultiSelectDropdown
+                      options={filteredSubCategoriesWithSelectAll}
+                      optionsKey="name"
+                      selected={formData.subCategory}
+                      onSelect={(items) => handleSelectWithAll(items, filteredSubCategories, "subCategory")}
+                      defaultLabel={
+                        formData.category?.length > 0
+                          ? t("COMMON_SELECT_SUB_CATEGORY") || "Select Sub-Categories"
+                          : t("HR_SELECT_CATEGORY_FIRST") || "Select category first"
+                      }
+                      defaultUnit={t("HR_SUB_CATEGORIES_SELECTED") || "selected"}
+                      ServerStyle={{
+                        top: "42px",
+                        zIndex: 1000,
+                        maxHeight: "190px",
+                        overflowY: "auto",
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "4px",
+                        backgroundColor: "#ffffff",
+                      }}
+                    />
+                    {formErrors.subCategory && <CardLabelError>{formErrors.subCategory}</CardLabelError>}
+                  </div>
+
+                  {/* Module Multi-Select */}
+                  <div className="hrms-emp-mapping__form-group" style={{ marginBottom: "14px", position: "relative" }}>
+                    <CardLabel className="hrms-emp-mapping__label" style={{ marginBottom: "6px", fontWeight: 600 }}>
+                      {t("Module")} <span className="hrms-emp-mapping__required-asterisk">*</span>
+                    </CardLabel>
+                    <MultiSelectDropdown
+                      options={modulesWithSelectAll}
+                      optionsKey="name"
+                      selected={formData.module}
+                      onSelect={(items) => {
+                        handleSelectWithAll(items, moduleNames?.["common-masters"]?.obpasmodules, "module");
+                      }}
+                      defaultLabel={t("Select Module") || "Select Module"}
+                      defaultUnit={t("Module Selected") || "selected"}
+                      ServerStyle={{
+                        top: "42px",
+                        zIndex: 1000,
+                        maxHeight: "190px",
+                        overflowY: "auto",
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.15)",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "4px",
+                        backgroundColor: "#ffffff",
+                      }}
+                    />
+                    {formErrors.module && <CardLabelError>{formErrors.module}</CardLabelError>}
+                  </div>
+
+                  {/* Role Multi-Select */}
+                  <div className="hrms-emp-mapping__form-group" style={{ marginBottom: "0", marginTop: "auto", position: "relative" }}>
+                    <CardLabel className="hrms-emp-mapping__label" style={{ marginBottom: "6px", fontWeight: 600 }}>
+                      {t("Role")} <span className="hrms-emp-mapping__required-asterisk">*</span>
+                    </CardLabel>
+                    <MultiSelectDropdown
+                      options={rolesWithSelectAll}
+                      optionsKey="name"
+                      selected={formData.role}
+                      onSelect={(items) => handleSelectWithAll(items, filteredRoles, "role")}
+                      defaultLabel={t(filterSelectAll(formData.module).length ? "Select Role" : "Select module first")}
+                      defaultUnit={t("Roles Selected")}
+                      ServerStyle={{
+                        bottom: "44px",
+                        top: "auto",
+                        zIndex: 1000,
+                        maxHeight: "190px",
+                        overflowY: "auto",
+                        boxShadow: "0 -4px 14px rgba(0,0,0,0.15)",
+                        border: "1px solid #d1d5db",
+                        borderRadius: "4px",
+                        backgroundColor: "#ffffff",
+                      }}
+                    />
+                    {formErrors.role && <CardLabelError>{formErrors.role}</CardLabelError>}
+                  </div>
+                </div>
+              </div>
+
+              {/* LIVE SUMMARY CARD & CALCULATION */}
+              {totalEffectiveMappingsCount > 0 && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    padding: "12px 16px",
+                    backgroundColor: "#e8f4fd",
+                    border: "1px solid #b3e5fc",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      gap: "10px",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 700, color: "#01579b", fontSize: "0.95rem" }}>
+                        ⚡ Ready to Map:{" "}
+                        <span style={{ color: "#c84c0e", fontSize: "1.05rem" }}>
+                          {totalEffectiveMappingsCount} Total Mapping(s)
+                        </span>
+                        {mappingsToCreate.length > 0 && currentFormCombinations.length > 0 && (
+                          <span style={{ fontSize: "0.8rem", color: "#546e7a", marginLeft: "6px" }}>
+                            ({mappingsToCreate.length} staged + {currentFormCombinations.length} active)
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: "0.82rem", color: "#455a64", marginTop: "3px" }}>
+                        {formData.employeeCode?.name || mappingsToCreate[0]?.employeeName} &bull;{" "}
+                        {filterSelectAll(formData.zone).length || mappingsToCreate[0]?.zone ? `${filterSelectAll(formData.zone).length} Zone(s)` : ""} &bull;{" "}
+                        {filterSelectAll(formData.category).length || mappingsToCreate[0]?.category ? `${filterSelectAll(formData.category).length} Category(ies)` : ""} &bull;{" "}
+                        {filterSelectAll(formData.role).length || mappingsToCreate[0]?.role ? `${filterSelectAll(formData.role).length} Role(s)` : ""}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                      <button
+                        type="button"
+                        onClick={handleAddToList}
+                        style={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #c84c0e",
+                          color: "#c84c0e",
+                          padding: "5px 12px",
+                          borderRadius: "4px",
+                          fontSize: "0.82rem",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                        }}
+                        title="Stage current configuration and clear inputs to configure another batch"
+                      >
+                        + {t("HR_ADD_NEW") || "Add New"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowPreviewTable((prev) => !prev)}
+                        style={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #0288d1",
+                          color: "#0288d1",
+                          padding: "5px 12px",
+                          borderRadius: "4px",
+                          fontSize: "0.82rem",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {showPreviewTable
+                          ? `Hide Preview ▲`
+                          : `Preview Rows (${totalEffectiveMappingsCount}) ▼`}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleClearList}
+                        style={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #e57373",
+                          color: "#c62828",
+                          padding: "5px 10px",
+                          borderRadius: "4px",
+                          fontSize: "0.82rem",
+                          cursor: "pointer",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {t("COMMON_CLEAR_ALL") || "Clear All"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Collapsible Preview Table */}
+                  {showPreviewTable && (
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        maxHeight: "220px",
+                        overflowY: "auto",
+                        border: "1px solid #cfd8dc",
+                        borderRadius: "6px",
+                        backgroundColor: "#fff",
+                      }}
+                    >
+                      <table className="hrms-emp-mapping__preview-table" style={{ width: "100%", fontSize: "0.85rem" }}>
+                        <thead>
+                          <tr style={{ backgroundColor: "#f5f5f5", textAlign: "left" }}>
+                            <th style={{ padding: "8px 10px" }}>{t("HR_EMPLOYEE_CODE")}</th>
+                            <th style={{ padding: "8px 10px" }}>{t("HR_CATEGORY_LABEL")}</th>
+                            <th style={{ padding: "8px 10px" }}>{t("HR_SUB_CATEGORY_LABEL")}</th>
+                            <th style={{ padding: "8px 10px" }}>{t("HR_ZONE_LABEL")}</th>
+                            <th style={{ padding: "8px 10px" }}>{t("Module")}</th>
+                            <th style={{ padding: "8px 10px" }}>{t("Role")}</th>
+                            <th style={{ padding: "8px 10px", textAlign: "center" }}>{t("COMMON_ACTION")}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allPreviewList.map((mapping) => (
+                            <tr key={mapping.id} style={{ borderBottom: "1px solid #eeeeee" }}>
+                              <td style={{ padding: "6px 10px" }}>{mapping.employeeCode}</td>
+                              <td style={{ padding: "6px 10px" }}>{mapping.category?.name}</td>
+                              <td style={{ padding: "6px 10px" }}>{mapping.subCategory?.name}</td>
+                              <td style={{ padding: "6px 10px" }}>{mapping.zone?.name}</td>
+                              <td style={{ padding: "6px 10px" }}>{mapping?.module?.name}</td>
+                              <td style={{ padding: "6px 10px" }}>{mapping.role?.name}</td>
+                              <td style={{ padding: "6px 10px", textAlign: "center" }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveFromList(mapping.id)}
+                                  style={{
+                                    border: "none",
+                                    background: "none",
+                                    color: "#d32f2f",
+                                    cursor: "pointer",
+                                    fontWeight: 600,
+                                    fontSize: "0.8rem",
+                                  }}
+                                >
+                                  ✖ {t("COMMON_DELETE")}
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
               )}
+
             </div>
           </Modal>
         )}

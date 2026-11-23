@@ -27,6 +27,9 @@ public class BillController {
 	@Autowired
 	private ResponseFactory responseFactory;
 	
+	@Autowired
+	private org.egov.demand.service.BillServicev2 billServiceV2;
+	
 	@PostMapping("_search")
 	@ResponseBody
 	public ResponseEntity<?> search(@RequestBody @Valid final RequestInfoWrapper requestInfoWrapper,
@@ -66,5 +69,16 @@ public class BillController {
 		final ErrorResponse errorResponse = responseFactory.getErrorResponse(billRequest.getRequestInfo());
 		return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 
+	}
+
+	
+
+	@PostMapping("_reconcile")
+	@ResponseBody
+	public ResponseEntity<?> reconcileBill(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper, 
+			@ModelAttribute @Valid org.egov.demand.model.BillReconciliationCriteria criteria){
+		
+		org.egov.demand.web.contract.BillResponseV2 billResponse = billServiceV2.reconcileBill(criteria, requestInfoWrapper.getRequestInfo());
+		return new ResponseEntity<>(billResponse, HttpStatus.OK);
 	}
 }

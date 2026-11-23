@@ -1,5 +1,7 @@
 package org.egov.hrms.model;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -33,5 +35,25 @@ public class ObpasEmployee {
     public void setModulename(String modulename) {
         this.modulename = modulename;
     }
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ObpasEmployee other = (ObpasEmployee) obj;
+		return Objects.equals(assignedTenantId, other.assignedTenantId) && Objects.equals(category, other.category)
+				&& Objects.equals(modulename, other.modulename) && Objects.equals(roles, other.roles)
+				&& Objects.equals(subcategory, other.subcategory) && Objects.equals(tenantId, other.tenantId)
+				&& Objects.equals(zone, other.zone);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(assignedTenantId, category, modulename, roles, subcategory, tenantId, zone);
+	}
 
 }

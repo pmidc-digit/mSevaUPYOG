@@ -76,7 +76,7 @@ public class EmployeeRepository {
 	}
 	
 	
-	public List<ObpasEmployee> fetchObpasEmployees(ObpasEmployeeSearchCriteria criteria, RequestInfo requestInfo) {
+	public List<ObpasEmployee> fetchObpasEmployees(List<ObpasEmployeeSearchCriteria> criterias, RequestInfo requestInfo) {
 
 	    List<ObpasEmployee> employees = new ArrayList<>();
 	    List<Object> preparedStmtList = new ArrayList<>();
@@ -84,7 +84,7 @@ public class EmployeeRepository {
 	    // 🔥 Assignment search block removed completely
 
 	    // 1️⃣ Build SQL
-	    String query = queryBuilder.getObpasEmployeeSearchQuery(criteria, preparedStmtList);
+	    String query = queryBuilder.getObpasEmployeeSearchQuery(criterias, preparedStmtList);
 
 	    try {
 	        // 2️⃣ Execute query

@@ -1,12 +1,17 @@
 -- =========================================================================================
--- SQL INSERT SCRIPT FOR PUNJAB WORKFLOW ASSIGNEE NOTIFICATIONS
+-- SQL SCRIPT FOR PUNJAB WORKFLOW ASSIGNEE NOTIFICATIONS
 -- Database: PostgreSQL | Table: message (egov-localization service)
 -- State: Punjab (tenantid = 'pb') | Locale: en_IN
 -- Module: rainmaker-workflow
 --
--- 1) SMS Template Code   : EG_WF_ASSIGNEE_MSG
--- 2) Email Template Code : EG_WF_ASSIGNEE_EMAIL
+-- Unique Constraint in egov-localization:
+--   unique (tenantid, locale, module, code)
 -- =========================================================================================
+
+
+-- -----------------------------------------------------------------------------------------
+-- STEP 2: INSERT NOTIFICATION TEMPLATES
+-- -----------------------------------------------------------------------------------------
 
 -- 1. Workflow Assignee SMS Notification (DLT Template: EG_WF_ASSIGNEE_MSG)
 INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
@@ -21,10 +26,7 @@ VALUES (
     CURRENT_TIMESTAMP,
     1,
     CURRENT_TIMESTAMP
-)
-ON CONFLICT (code, locale, tenantid, module) DO UPDATE
-SET message = EXCLUDED.message,
-    lastmodifieddate = CURRENT_TIMESTAMP;
+);
 
 -- 2. Workflow Assignee HTML Email Notification (Code: EG_WF_ASSIGNEE_EMAIL)
 INSERT INTO message (id, locale, code, message, tenantid, module, createdby, createddate, lastmodifiedby, lastmodifieddate)
@@ -246,7 +248,13 @@ VALUES (
     CURRENT_TIMESTAMP,
     1,
     CURRENT_TIMESTAMP
-)
-ON CONFLICT (code, locale, tenantid, module) DO UPDATE
-SET message = EXCLUDED.message,
-    lastmodifieddate = CURRENT_TIMESTAMP;
+);
+
+-- -----------------------------------------------------------------------------------------
+-- STEP 3: VERIFICATION
+-- -----------------------------------------------------------------------------------------
+SELECT id, code, locale, module, tenantid, length(message) AS template_char_length, lastmodifieddate 
+FROM message 
+WHERE code IN ('EG_WF_ASSIGNEE_MSG', 'EG_WF_ASSIGNEE_EMAIL')
+  AND tenantid = 'pb'
+  AND module = 'rainmaker-workflow';

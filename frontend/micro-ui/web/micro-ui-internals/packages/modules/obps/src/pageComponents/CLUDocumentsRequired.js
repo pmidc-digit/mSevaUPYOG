@@ -180,7 +180,7 @@ function CLUSelectDocument({
       extractGeoLocation(selectedFile).then((location) => {
 
         if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
-          if (location.latitude !== null && location.longitude !== null) {
+          if (Number(location.latitude) && Number(location.longitude)) {
             dispatch(UPDATE_OBPS_CoOrdinates("Latitude1", location.latitude));
             dispatch(UPDATE_OBPS_CoOrdinates("Longitude1", location.longitude));
             setGeoCoordinates((prev) => {

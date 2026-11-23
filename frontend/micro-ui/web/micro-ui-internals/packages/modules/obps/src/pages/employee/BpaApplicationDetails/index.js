@@ -1,3 +1,4 @@
+import getApplicationStatusText from "../../../../../templates/ApplicationDetails/getApplicationStatusText";
 import {
   ActionBar,
   BreakLine,
@@ -48,6 +49,7 @@ import {
   fetchOnlyUrl,
   fetchOnlyFileStore,
   formatDate,
+  getBPAValidityDate,
 } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
@@ -536,11 +538,9 @@ const BpaApplicationDetail = () => {
 
     try {
       if (!fileStoreId) {
-        const newValidityDate =
+        const validityBaseDate =
           data?.applicationData?.approvalDate !== 0 && data?.applicationData?.approvalDate ? data.applicationData.approvalDate : Date.now();
-        const validityDateObj = new Date(newValidityDate);
-        validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
-        const approvalDatePlusThree = validityDateObj.getTime();
+        const approvalDatePlusThree = getBPAValidityDate(data?.applicationData, data?.edcrDetails, validityBaseDate);
 
         let currentDate = new Date();
         data.applicationData.additionalDetails.runDate = convertDateToEpoch(
@@ -1152,13 +1152,14 @@ const BpaApplicationDetail = () => {
 
   const getTextValue = (value) => {
     if (value?.skip) return value.value;
-    else if (value?.isUnit) return value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}` : t("N/A");
-    else return value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated) : t("N/A");
+    else if (value?.isUnit) return value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated, value?.title)} ${t(value?.isUnit)}` : t("N/A");
+    else return value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated, value?.title) : t("N/A");
   };
 
-  const getTranslatedValues = (dataValue, isNotTranslated) => {
+  const getTranslatedValues = (dataValue, isNotTranslated, title) => {
     if (dataValue) {
-      return !isNotTranslated ? t(dataValue) : dataValue;
+      const text = !isNotTranslated ? t(dataValue) : dataValue;
+      return title === "APPLICATION_STATUS" ? getApplicationStatusText(text, workflowDetails) : text;
     } else {
       return t("NA");
     }
@@ -1270,7 +1271,6 @@ const BpaApplicationDetail = () => {
     const prevGetLang = Digit.StoreData.getCurrentLanguage;
     try {
       const nowIST = new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour12: false }).replace(",", "") + " IST";
-      const newValidityDate = Date.now()
       const rawOwnersList =
         data?.applicationData?.additionalDetails?.owners?.length > 0
           ? data?.applicationData?.additionalDetails?.owners
@@ -1283,11 +1283,7 @@ const BpaApplicationDetail = () => {
         .join(", ");
       Digit.StoreData.getCurrentLanguage = () => "pn_IN";
 
-      const validityDateObj = new Date(newValidityDate);
-
-      validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
-
-      const approvalDatePlusThree = validityDateObj.getTime();
+      const approvalDatePlusThree = getBPAValidityDate(data?.applicationData, data?.edcrDetails);
 
       const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
       const requestData = {
@@ -1394,12 +1390,7 @@ const BpaApplicationDetail = () => {
         ?.filter((v, i, arr) => v && arr.indexOf(v) === i)
         .join(", ");
 
-      const newValidityDate = Date.now();
-
-      // validity date = approval date + 3 as per feedback
-      const validityDateObj = new Date(newValidityDate);
-      validityDateObj.setFullYear(validityDateObj.getFullYear() + 3);
-      const approvalDatePlusThree = validityDateObj.getTime();
+      const approvalDatePlusThree = getBPAValidityDate(data?.applicationData, data?.edcrDetails);
       let fileStoreId = data?.applicationData?.additionalDetails?.sanctionLetterFilestoreId;
 
       if (!fileStoreId) {
@@ -1849,6 +1840,15 @@ const BpaApplicationDetail = () => {
               assignee: [],
             },
           },
+        };
+      }
+      const action = payload?.BPA?.workflow?.action
+        ?.replace(/[^a-zA-Z0-9]/g, "")
+        ?.toUpperCase();
+      if (action?.includes("PULLBACK") || action?.includes("ROLLBACK")) {
+        payload.BPA.workflow = {
+          ...payload.BPA.workflow,
+          assignes: [Digit.UserService.getUser()?.info?.uuid],
         };
       }
       if (mutate) {
@@ -2381,7 +2381,7 @@ const BpaApplicationDetail = () => {
                                         label={t(value?.title)}
                                         text={
                                           value?.value
-                                            ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}`
+                                            ? `${getTranslatedValues(value?.value, value?.isNotTranslated, value?.title)} ${t(value?.isUnit)}`
                                             : t("CS_NA")
                                         }
                                       />
@@ -2405,7 +2405,7 @@ const BpaApplicationDetail = () => {
                                       <Row
                                         className="border-none"
                                         label={t(value?.title)}
-                                        text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
+                                        text={getTranslatedValues(value?.value, value?.isNotTranslated, value?.title) || t("CS_NA")}
                                       />
                                     );
                                 })
@@ -2421,7 +2421,7 @@ const BpaApplicationDetail = () => {
                                         textStyle={
                                           value?.value === "Paid" ? { color: "darkgreen" } : value?.value === "Unpaid" ? { color: "red" } : {}
                                         }
-                                        text={value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated) : t("CS_NA")}
+                                        text={value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated, value?.title) : t("CS_NA")}
                                       />
                                     ) : null}
                                     {!detail?.isTitleRepeat && value?.isUnit ? (
@@ -2430,7 +2430,7 @@ const BpaApplicationDetail = () => {
                                         label={t(value?.title)}
                                         text={
                                           value?.value
-                                            ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}`
+                                            ? `${getTranslatedValues(value?.value, value?.isNotTranslated, value?.title)} ${t(value?.isUnit)}`
                                             : t("CS_NA")
                                         }
                                       />
@@ -2529,7 +2529,7 @@ const BpaApplicationDetail = () => {
                                       <Row
                                         className="border-none"
                                         label={t(value?.title)}
-                                        text={getTranslatedValues(value?.value, value?.isNotTranslated) || t("CS_NA")}
+                                        text={getTranslatedValues(value?.value, value?.isNotTranslated, value?.title) || t("CS_NA")}
                                         key={value?.title}
                                       />
                                     ))}

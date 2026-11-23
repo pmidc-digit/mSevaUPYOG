@@ -159,6 +159,7 @@ body {
 
 .citizen-and-architect-photo-header {
     font-size: 24px;
+    text-align: center;
 }
 
 .citizen-and-architect-photo-container {
@@ -170,10 +171,24 @@ body {
 }
 
 .citizen-and-architect-photo-item {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.citizen-and-architect-photo-container .citizen-and-architect-photo-item .citizen-and-architect-photo-header {
+    width: 100%;
+    margin: 0;
     text-align: center;
 }
 
 .citizen-and-architect-photo-image {
+    display: block;
+    flex-shrink: 0;
     width: 100px;
     height: 100px;
     object-fit: cover;
@@ -186,7 +201,7 @@ body {
 }
 
 .citizen-and-architect-photo-label {
-    /* Add any label styling if needed */
+    text-align: center;
 }
 .bpa-summary-page {
   padding: 2rem;

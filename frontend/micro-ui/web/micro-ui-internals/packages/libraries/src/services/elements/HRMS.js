@@ -7,14 +7,15 @@ import { CreateEmpMapping } from "../molecules/HRMS/CreateEmpMapping";
 import { DeleteEmpMapping } from "../molecules/HRMS/DeleteEmpMapping";
 
 const HrmsService = {
-  search: (tenantId, filters, searchParams) =>
+  search: (tenantId, filters, searchParams, { skipTenantId = false } = {}) =>
     Request({
       url: Urls.hrms.search,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
-      params: { tenantId, ...filters, ...searchParams },
+      params: { ...(!skipTenantId ? { tenantId } : {}), ...filters, ...searchParams },
+      skipTenantId,
     }),
   create: (data, tenantId) =>
     Request({

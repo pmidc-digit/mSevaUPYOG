@@ -4,6 +4,43 @@ import { useParams, useLocation } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import { v4 as uuidv4Lib } from "uuid";
 
+const containsStilt = (value) => {
+  if (!value) return false;
+  if (typeof value === "string") return value.toLowerCase().includes("stilt");
+  if (Array.isArray(value)) return value.some(containsStilt);
+  if (typeof value !== "object") return false;
+
+  return Object.entries(value).some(([key, nestedValue]) => {
+    if (key.toLowerCase().includes("stilt")) {
+      return nestedValue === true || (typeof nestedValue === "number" && nestedValue > 0) || (typeof nestedValue === "string" && nestedValue.length > 0);
+    }
+    return containsStilt(nestedValue);
+  });
+};
+
+export const getBPAValidityYears = (applicationData = {}, edcrDetails = {}) => {
+  const additionalDetails = applicationData?.additionalDetails || {};
+  const proposedSite = String(additionalDetails?.proposedSite || "").toLowerCase();
+  if (proposedSite.includes("addition") || proposedSite.includes("alteration")) return 2;
+
+  const height = Number(
+    additionalDetails?.height ?? edcrDetails?.planDetail?.blocks?.[0]?.building?.buildingHeight ?? edcrDetails?.planDetail?.plot?.height
+  );
+  const occupancyType = edcrDetails?.planDetail?.virtualBuilding?.occupancyTypes?.[0]?.type;
+  const category = `${additionalDetails?.categoriesName || ""} ${occupancyType?.name || ""} ${occupancyType?.code || ""}`.toLowerCase();
+  const isResidential = category.includes("residential");
+  const hasStilt = isResidential && (containsStilt(additionalDetails) || containsStilt(edcrDetails));
+  const threeYearHeightLimit = hasStilt ? 17.5 : 15;
+
+  return Number.isFinite(height) && height > threeYearHeightLimit ? 4 : 3;
+};
+
+export const getBPAValidityDate = (applicationData = {}, edcrDetails = {}, baseDate = Date.now()) => {
+  const date = new Date(baseDate);
+  date.setFullYear(date.getFullYear() + getBPAValidityYears(applicationData, edcrDetails));
+  return date.getTime();
+};
+
 export const getPattern = (type) => {
   switch (type) {
     case "Name":

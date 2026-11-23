@@ -1,3 +1,4 @@
+import getApplicationStatusText from "../../../../../templates/ApplicationDetails/getApplicationStatusText";
 import {
   CardSectionHeader,
   Header,
@@ -847,7 +848,8 @@ const NOCEmployeeApplicationOverview = () => {
   };
   function onActionSelect(action) {
     const validationMsg = validateSiteImages(action);
-    // console.log("selected action", action);
+
+        // console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
     const allDocumentsUploaded = siteImages?.documents?.every((doc) => doc?.filestoreId != null && doc?.filestoreId !== "");
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
@@ -1108,11 +1110,11 @@ const NOCEmployeeApplicationOverview = () => {
       };
     }
 
-    //console.log("filtData", filtData);
+    // console.log("filtData", filtData);
     updatedApplicant.workflow = {
       action: filtData.action,
       assignes:
-        applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
+        applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" || filtData.action?.replace(/[^a-zA-Z0-9]/g, "")?.toUpperCase()?.includes("ROLLBACK") 
           ? [Digit.UserService.getUser()?.info?.uuid]
           : filtData?.assignee,
       comment: filtData?.comment,
@@ -1304,11 +1306,11 @@ const NOCEmployeeApplicationOverview = () => {
         )}
       </div>
       <Card>
-        <CardSubHeader>{t("OWNER_OWNERPHOTO")}</CardSubHeader>
-
         <NOCImageView
+          photoLabel={t("OWNER_OWNERPHOTO")}
           ownerFileStoreId={displayData?.ownerPhotoList?.[0]?.filestoreId}
           ownerName={displayData?.applicantDetails?.[0]?.owners?.[0]?.ownerOrFirmName}
+          centered
         />
       </Card>
       {id.length > 0 && (
@@ -1320,11 +1322,12 @@ const NOCEmployeeApplicationOverview = () => {
                 <Row
                   label={t("APPLICATION_STATUS")}
                   text={
-                    applicationDetails?.Noc?.[0]?.applicationStatus
-                      ? t(
-                          `WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService}_${applicationDetails?.Noc?.[0]?.applicationStatus}`
-                        )
-                      : "N/A"
+                    getApplicationStatusText(
+                      applicationDetails?.Noc?.[0]?.applicationStatus
+                        ? t(`WF_${applicationDetails?.Noc?.[0]?.nocDetails?.additionalDetails?.businessService}_${applicationDetails?.Noc?.[0]?.applicationStatus}`)
+                        : "N/A",
+                      workflowDetails
+                    )
                   }
                 />
               </StatusTable>

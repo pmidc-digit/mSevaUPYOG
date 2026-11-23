@@ -96,6 +96,7 @@ const Table = ({
   isReportTable = false,
   inboxStyles,
   getRowProps,
+  stickyHeader = false,
 }) => {
   const {
     getTableProps,
@@ -155,12 +156,11 @@ const Table = ({
   const tableClassName = `${className || "table"} ndc-new-table`.trim();
   const hasExternalScrollbars = customTableWrapperClassName.includes("inbox-table-top-scroll");
   const useInboxScrollbars = !hasExternalScrollbars && /inbox/i.test(window.location.pathname);
-  const tableWrapperClassName = `${customTableWrapperClassName} ndc-new-table-wrapper${useInboxScrollbars ? " inbox-table-top-scroll" : ""}`.trim();
+  const tableWrapperClassName = `${customTableWrapperClassName} ndc-new-table-wrapper${useInboxScrollbars ? " inbox-table-top-scroll" : ""} ${stickyHeader ? "digit-table-sticky-header" : ""}`.trim();
   const tableStyles = {
     width: "100%",
     borderCollapse: "collapse",
     borderRadius: "16px",
-    overflow: "hidden",
     background: "#ffffff",
     ...styles,
   };
@@ -310,7 +310,7 @@ const Table = ({
                 // rows.slice(0, 10).map((row, i) => {
                 prepareRow(row);
                 const statusCell = row?.cells?.find((cell) =>
-                  [cell.column?.id, cell.column?.accessor, cell.column?.Header]
+                  cell.column?.isStatusColumn !== false && [cell.column?.id, cell.column?.accessor, cell.column?.Header]
                     .map((field) => String(field || "").toLowerCase())
                     .join(" ")
                     .includes("status")
@@ -379,7 +379,7 @@ const Table = ({
                               const columnMeta = [cell.column?.id, cell.column?.accessor, cell.column?.Header]
                                 .map((field) => String(field || "").toLowerCase())
                                 .join(" ");
-                              const isStatusColumn = columnMeta.includes("status");
+                              const isStatusColumn = cell.column?.isStatusColumn ?? columnMeta.includes("status");
                               const cellValue = extractTextValue(cell.value) || extractTextValue(cell.render("Cell"));
                               const canPill = isStatusColumn && !!String(cellValue || "").trim();
                               if (!canPill) return <React.Fragment> {cell.render("Cell")} </React.Fragment>;

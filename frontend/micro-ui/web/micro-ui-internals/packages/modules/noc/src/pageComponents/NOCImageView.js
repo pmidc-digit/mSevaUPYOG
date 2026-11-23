@@ -2,7 +2,7 @@ import React, { useEffect, useState} from "react";
 import {ImageViewer, Card, CardSubHeader} from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
-const NOCImageView = ({ownerFileStoreId, ownerName}) => {
+const NOCImageView = ({ownerFileStoreId, ownerName, centered = false, photoLabel}) => {
     const stateCode = Digit.ULBService.getStateId();
     const { t } = useTranslation();
     const [imageCitizenZoom, setImageCitizenZoom] = useState(null);
@@ -23,10 +23,11 @@ const NOCImageView = ({ownerFileStoreId, ownerName}) => {
     })();
   }, [ownerFileStoreId]);
 
-return (
-  <div className="noc-page-components-nocimage-view--style-1">
+  return (
+  <div className={`noc-page-components-nocimage-view--style-1 ${centered ? "noc-owner-photo-centered" : ""}`}>
     <div className="noc-page-components-nocimage-view--style-2">
       <div className="noc-page-components-nocimage-view--style-3">
+        {photoLabel && <CardSubHeader className="noc-owner-photo-heading">{photoLabel}</CardSubHeader>}
         <img
           src={imageCitizenZoom}
           alt="Primary Owner Photo"

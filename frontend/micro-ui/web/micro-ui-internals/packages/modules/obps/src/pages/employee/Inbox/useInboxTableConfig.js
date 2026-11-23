@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { encryptId } from "../../../utils/index";
+import { getColumnText } from "../../../../../templates/Inbox/components/useLocalColumnSearch";
+import { getStatusChangeDateColumn } from "../../../../../templates/Inbox/components/workflowColumns";
 
 const ColumnSearchHeader = ({ column }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+  <div className="inbox-column-search-header">
     <span>{column.searchLabel}</span>
     <input
       type="search"
@@ -15,17 +17,7 @@ const ColumnSearchHeader = ({ column }) => (
       onChange={(event) => column.updateSearch(event.target.value)}
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
-      style={{
-        width: "100%",
-        minWidth: 110,
-        padding: "8px 10px",
-        border: "1px solid #cbd5e1",
-        borderRadius: 6,
-        fontSize: 14,
-        fontWeight: 400,
-        background: "white",
-        color: "#334155",
-      }}
+      className="inbox-column-search-input"
     />
   </div>
 );
@@ -165,14 +157,17 @@ const useInboxTableConfig = ({
       },
       !isCitizenOthers && {
         Header: t("CATEGORY"),
-        accessor: (row) => row?.category,
+        id: "category",
+        accessor: (row) => getColumnText(row?.category),
         disableSortBy: true,
       },
       {
         Header: t("EVENTS_STATUS_LABEL"),
-        accessor: (row) => (row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t(`-`)),
+        id: "status",
+        accessor: (row) => (row?.state ? t(`WF_${row?.businessService}_${row?.state}`) : t("-")),
         disableSortBy: true,
       },
+      getStatusChangeDateColumn(t),
       !isCitizenOthers && {
         Header: t("ZONE"),
         accessor: (row) => t(row?.zone),
@@ -269,6 +264,7 @@ const useInboxTableConfig = ({
     tableStyle: { overflowX: "auto" },
     className: "table cancel-table",
     customTableWrapperClassName: "obps-inbox-table-scroll",
+    stickyHeader: true,
     stickyHorizontalScrollbar: true,
     disableSort: false,
     autoSort: false,

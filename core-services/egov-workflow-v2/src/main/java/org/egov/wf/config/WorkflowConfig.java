@@ -89,8 +89,48 @@ public class WorkflowConfig {
     @Value("${egov.wf.escalation.batch.size}")
     private Integer escalationBatchSize;
 
+    // Notification
+    @Value("${kafka.topics.notification.sms:egov.core.notification.sms}")
+    private String smsNotifTopic;
 
+    @Value("${kafka.topics.notification.email:org.egov.core.notification.email}")
+    private String emailNotifTopic;
 
+    @Value("${notification.sms.enabled:true}")
+    private Boolean isSmsNotificationEnabled;
 
+    @Value("${notification.email.enabled:true}")
+    private Boolean isEmailNotificationEnabled;
+
+    @Value("${notification.employee.portal.url:https://mseva-dev.lgpunjab.gov.in/digit-ui/employee/user/login}")
+    private String employeePortalUrl;
+
+    @Value("${notification.citizen.portal.url:https://mseva-dev.lgpunjab.gov.in/digit-ui/citizen/login}")
+    private String citizenPortalUrl;
+
+    @Value("${notification.sms.template.id:EG_WF_ASSIGNEE_MSG}")
+    private String smsTemplateId;
+
+    @Value("${notification.email.template.id:EG_WF_ASSIGNEE_EMAIL}")
+    private String emailTemplateId;
+
+    // Localization
+    @Value("${egov.localization.host:https://dev.digit.org/}")
+    private String localizationHost;
+
+    @Value("${egov.localization.context.path:localization/messages/v1}")
+    private String localizationContextPath;
+
+    @Value("${egov.localization.search.endpoint:/_search}")
+    private String localizationSearchEndpoint;
+
+    @Value("${egov.localization.statelevel:true}")
+    private Boolean isLocalizationStateLevel;
+
+    @Value("${egov.localization.fallback.locale:en_IN}")
+    private String fallbackLocale;
+
+    @Value("${egov.localization.module:rainmaker-workflow}")
+    private String localizationModule;
 
 }

@@ -134,9 +134,9 @@ public class EmployeeService {
 	}
 	
 	
-	@Async
-//	public ObpassEmployeeResponse create(ObpasEmployeeRequest employeeRequest) {
-	public void create(ObpasEmployeeRequest employeeRequest) {
+//	@Async
+	public ObpassEmployeeResponse create(ObpasEmployeeRequest employeeRequest) {
+//	public void create(ObpasEmployeeRequest employeeRequest) {
 
 	    RequestInfo requestInfo = employeeRequest.getRequestInfo();
 
@@ -196,12 +196,12 @@ public class EmployeeService {
 	    }
 
 	    // 5️⃣ Generate response
-//	    return generateObpassResponse(employeeRequest);
+	    return generateObpassResponse(employeeRequest);
 	}
 
-	@Async
-//	public ObpassEmployeeResponse delete(ObpasEmployeeRequest deleteRequest) {
-	public void delete(ObpasEmployeeRequest deleteRequest) {
+//	@Async
+	public ObpassEmployeeResponse delete(ObpasEmployeeRequest deleteRequest) {
+//	public void delete(ObpasEmployeeRequest deleteRequest) {
 
 	    RequestInfo requestInfo = deleteRequest.getRequestInfo();
 	    List<ObpasEmployee> employeesToDelete = new ArrayList<>();
@@ -333,10 +333,10 @@ public class EmployeeService {
 		    hrmsProducer.push(propertiesManager.getDeleteObpasEmployeeTopic(), key, kafkaPayload);
 	    }
 
-//	    return ObpassEmployeeResponse.builder()
-//	            .responseInfo(factory.createResponseInfoFromRequestInfo(deleteRequest.getRequestInfo(), true))
-//	            .employees(employeesToDelete)
-//	            .build();
+	    return ObpassEmployeeResponse.builder()
+	            .responseInfo(factory.createResponseInfoFromRequestInfo(deleteRequest.getRequestInfo(), true))
+	            .employees(employeesToDelete)
+	            .build();
 
 	}
 

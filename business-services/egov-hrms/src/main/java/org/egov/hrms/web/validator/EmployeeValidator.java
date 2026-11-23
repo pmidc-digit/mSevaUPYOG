@@ -73,7 +73,7 @@ public class EmployeeValidator {
 			throw new CustomException(errorMap);
 	}
 	
-	@Async
+//	@Async
 	public void validateRequest(ObpasEmployeeRequest obpasrequest) {
         if (obpasrequest == null) {
             throw new IllegalArgumentException("ObpasEmployeeRequest cannot be null");

@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.demand.helper.BillHelperV2;
+import org.egov.demand.model.BillReconciliationCriteria;
 import org.egov.demand.model.BillSearchCriteria;
 import org.egov.demand.model.GenerateBillCriteria;
 import org.egov.demand.model.UpdateBillCriteria;
@@ -169,5 +170,14 @@ public class BillControllerv2 {
 		responseMap.put("status", "SUCCESS");
 		responseMap.put("message", "Bill " + billId + " reactivated successfully");
 		return new ResponseEntity<>(responseMap, HttpStatus.OK);
+	}
+
+	@PostMapping("_reconcile")
+	@ResponseBody
+	public ResponseEntity<?> reconcileBill(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper, 
+			@ModelAttribute @Valid BillReconciliationCriteria criteria){
+		
+		BillResponseV2 billResponse = billService.reconcileBill(criteria, requestInfoWrapper.getRequestInfo());
+		return new ResponseEntity<>(billResponse, HttpStatus.OK);
 	}
 }

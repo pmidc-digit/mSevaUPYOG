@@ -317,7 +317,8 @@ public class UserService {
 		}
 		noc.getOwners().forEach(owner ->
 		{
-			if (owner.getUuid() == null) {
+			if (StringUtils.isEmpty(owner.getUuid())) {
+				owner.setUuid(null);
 				addUserDefaultFields(noc.getTenantId(), role, owner);
 
 				UserResponse existingUserResponse = userExists(owner, requestInfo);
@@ -332,7 +333,7 @@ public class UserService {
 					StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userCreateEndpoint);
 					setUserName(owner);
 					UserResponse userResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);
-					if (userResponse.getUser().get(0).getUuid() == null) {
+					if (StringUtils.isEmpty(userResponse.getUser().get(0).getUuid())) {
 						throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");
 					}
 					log.info("owner created --> " + userResponse.getUser().get(0).getUuid());

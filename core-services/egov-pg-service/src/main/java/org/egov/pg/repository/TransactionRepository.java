@@ -43,4 +43,11 @@ public class TransactionRepository {
         return jdbcTemplate.query(query, params.toArray(), rowMapper);
     }
 
+    public List<Transaction> fetchTransactionsByTimeRangeWithStatus(TransactionCriteria transactionCriteria, Long startTime, Long endTime) {
+        List<Object> params = new ArrayList<>();
+        String query = TransactionQueryBuilder.getPaymentSearchQueryByCreatedTimeRangeWithStatus(transactionCriteria, startTime, endTime, params);
+        log.debug(query);
+        return jdbcTemplate.query(query, params.toArray(), rowMapper);
+    }
+
 }

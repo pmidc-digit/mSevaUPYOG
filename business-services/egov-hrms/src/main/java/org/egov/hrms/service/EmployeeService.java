@@ -60,6 +60,7 @@ import org.egov.hrms.utils.HRMSConstants;
 import org.egov.hrms.utils.HRMSUtils;
 import org.egov.hrms.utils.ResponseInfoFactory;
 import org.egov.hrms.web.contract.*;
+import org.egov.hrms.web.validator.EmployeeValidator;
 import org.egov.tracer.kafka.LogAwareKafkaTemplate;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +110,9 @@ public class EmployeeService {
 
 	@Autowired
 	private MDMSService mdmsService;
+	
+	@Autowired
+	private EmployeeValidator validator;
 
 	/**
 	 * Service method for create employee. Does following:
@@ -137,11 +141,31 @@ public class EmployeeService {
 	}
 	
 	
-//	@Async
 	public ObpassEmployeeResponse create(ObpasEmployeeRequest employeeRequest) {
-//	public void create(ObpasEmployeeRequest employeeRequest) {
 
 	    RequestInfo requestInfo = employeeRequest.getRequestInfo();
+	    List<ObpasEmployeeSearchCriteria> criterias = new ArrayList<ObpasEmployeeSearchCriteria>();
+	    
+	    employeeRequest.getEmployees().stream().forEach(emp -> {
+	    	ObpasEmployeeSearchCriteria criteria = ObpasEmployeeSearchCriteria.builder()
+	    			.tenantId(emp.getTenantId())
+	    			.category(emp.getCategory())
+	    			.subcategory(emp.getSubcategory())
+	    			.zone(emp.getZone())
+	    			.modulename(emp.getModulename())
+	    			.roles(emp.getRoles())
+	    			.assignedTenantId(emp.getAssignedTenantId())
+	    			.build();
+	    	criterias.add(criteria);
+	    });
+	    
+	    List<ObpasEmployee> employees = repository.fetchObpasEmployees(criterias, requestInfo);
+	    Set<ObpasEmployee> employeesSet = new HashSet<ObpasEmployee>();
+	    employees.forEach(emp -> {
+	    	employeesSet.add(emp);
+	    });
+	    
+	    validator.validateRequest(employeeRequest, employeesSet);
 
 	    // Group distinct userUUIDs by tenantId to validate user existence in bulk
 	    Map<String, Set<String>> tenantToUuidsMap = new HashMap<>();
@@ -202,9 +226,7 @@ public class EmployeeService {
 	    return generateObpassResponse(employeeRequest);
 	}
 
-//	@Async
 	public ObpassEmployeeResponse delete(ObpasEmployeeRequest deleteRequest) {
-//	public void delete(ObpasEmployeeRequest deleteRequest) {
 
 	    RequestInfo requestInfo = deleteRequest.getRequestInfo();
 	    List<ObpasEmployee> employeesToDelete = new ArrayList<>();
@@ -291,35 +313,38 @@ public class EmployeeService {
 	        }
 
 	        // -------------------------
-	        // SEARCH EMPLOYEES
-	        // -------------------------
-
-	        ObpassEmployeeResponse searchResponse = obpasSearch(searchCriteria, requestInfo);
-
-	        if (CollectionUtils.isEmpty(searchResponse.getEmployees())) {
-	            throw new CustomException(
-	                    "EMPLOYEE_NOT_FOUND",
-	                    "No employee found for the given criteria in tenant " + criteria.getTenantId()
-	            );
-	        }
-
-	        // -------------------------
 	        // BUILD DELETE LIST
 	        // -------------------------
 
-	        for (ObpasEmployee emp : searchResponse.getEmployees()) {
+            ObpasEmployee empToDelete = new ObpasEmployee();
+            empToDelete.setUuid(criteria.getUuid());               // required for delete
+            empToDelete.setTenantId(criteria.getTenantId());       // required for delete
+            empToDelete.setUserUUID(criteria.getUserUUID());       // optional but useful
+            empToDelete.setModulename(criteria.getModulename());
+            empToDelete.setRoles(criteria.getRoles());
 
-	            ObpasEmployee empToDelete = new ObpasEmployee();
-	            empToDelete.setUuid(emp.getUuid());               // required for delete
-	            empToDelete.setTenantId(emp.getTenantId());       // required for delete
-	            empToDelete.setUserUUID(emp.getUserUUID());       // optional but useful
-	            empToDelete.setModulename(emp.getModulename());
-	            empToDelete.setRoles(emp.getRoles());
-
-	            employeesToDelete.add(empToDelete);
-	        }
+            employeesToDelete.add(empToDelete);
+        
 	    }
 
+	    List<ObpasEmployeeSearchCriteria> criterias = new ArrayList<ObpasEmployeeSearchCriteria>();
+	    employeesToDelete.stream().forEach(emp -> {
+	    	ObpasEmployeeSearchCriteria criteria = ObpasEmployeeSearchCriteria.builder()
+	    			.tenantId(emp.getTenantId())
+	    			.category(emp.getCategory())
+	    			.subcategory(emp.getSubcategory())
+	    			.zone(emp.getZone())
+	    			.modulename(emp.getModulename())
+	    			.roles(emp.getRoles())
+	    			.assignedTenantId(emp.getAssignedTenantId())
+	    			.userUUID(emp.getUserUUID())
+	    			.uuid(emp.getUuid())
+	    			.build();
+	    	criterias.add(criteria);
+	    });
+	    
+	    employeesToDelete = repository.fetchObpasEmployees(criterias, requestInfo);
+	    
 	    int noOfBatches = employeesToDelete.size() % propertiesManager.getObpasEmployeeBatchSize() == 0 ?
 	    		employeesToDelete.size() / propertiesManager.getObpasEmployeeBatchSize() :
 	    			(employeesToDelete.size() / propertiesManager.getObpasEmployeeBatchSize()) + 1;
@@ -481,7 +506,7 @@ public class EmployeeService {
 	    }
 
 	    // Fetch results
-	    List<ObpasEmployee> employees = repository.fetchObpasEmployees(criteria, requestInfo);
+	    List<ObpasEmployee> employees = repository.fetchObpasEmployees(Collections.singletonList(criteria), requestInfo);
 
 	    return ObpassEmployeeResponse.builder()
 	            .responseInfo(factory.createResponseInfoFromRequestInfo(requestInfo, true))

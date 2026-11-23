@@ -344,6 +344,13 @@ public class EmployeeService {
 	    });
 	    
 	    employeesToDelete = repository.fetchObpasEmployees(criterias, requestInfo);
+	    AuditDetails auditDetails = AuditDetails.builder()
+	    		.createdDate(System.currentTimeMillis())
+	    		.lastModifiedDate(System.currentTimeMillis())
+	    		.lastModifiedBy(requestInfo.getUserInfo().getUuid())
+	    		.createdBy(requestInfo.getUserInfo().getUuid())
+	    		.build();
+	    employeesToDelete.forEach(emp -> emp.setAuditDetails(auditDetails));
 	    
 	    int noOfBatches = employeesToDelete.size() % propertiesManager.getObpasEmployeeBatchSize() == 0 ?
 	    		employeesToDelete.size() / propertiesManager.getObpasEmployeeBatchSize() :

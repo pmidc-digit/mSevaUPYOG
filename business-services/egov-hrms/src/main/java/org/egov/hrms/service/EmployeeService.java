@@ -143,16 +143,30 @@ public class EmployeeService {
 
 	    RequestInfo requestInfo = employeeRequest.getRequestInfo();
 
+	    // Group distinct userUUIDs by tenantId to validate user existence in bulk
+	    Map<String, Set<String>> tenantToUuidsMap = new HashMap<>();
 	    for (ObpasEmployee employee : employeeRequest.getEmployees()) {
+	        if (!StringUtils.isEmpty(employee.getTenantId()) && !StringUtils.isEmpty(employee.getUserUUID())) {
+	            tenantToUuidsMap.computeIfAbsent(employee.getTenantId(), k -> new HashSet<>()).add(employee.getUserUUID());
+	        }
+	    }
 
-	        // 1️⃣ Check if user exists in HRMS using UUID
+	    Set<String> existingUserUuids = new HashSet<>();
+	    for (Map.Entry<String, Set<String>> entry : tenantToUuidsMap.entrySet()) {
 	        Map<String, Object> userSearchCriteria = new HashMap<>();
-	        userSearchCriteria.put("tenantId", employee.getTenantId());
-	        userSearchCriteria.put("uuid", Collections.singletonList(employee.getUserUUID())); // ✅ wrap in list
+	        userSearchCriteria.put("tenantId", entry.getKey());
+	        userSearchCriteria.put("uuid", new ArrayList<>(entry.getValue()));
 
 	        UserResponse userResponse = userService.getUser(requestInfo, userSearchCriteria);
+	        if (userResponse != null && !CollectionUtils.isEmpty(userResponse.getUser())) {
+	            for (User user : userResponse.getUser()) {
+	                existingUserUuids.add(user.getUuid());
+	            }
+	        }
+	    }
 
-	        if (CollectionUtils.isEmpty(userResponse.getUser())) {
+	    for (ObpasEmployee employee : employeeRequest.getEmployees()) {
+	        if (!existingUserUuids.contains(employee.getUserUUID())) {
 	            throw new RuntimeException(
 	                "User with UUID " + employee.getUserUUID() +
 	                " does not exist in tenant " + employee.getTenantId()

@@ -76,6 +76,10 @@ public class AppProperties {
 
     private final String billingServiceSearchEndpoint;
 
+    private final String billingServiceFetchBillPath;
+
+    private final String billingServiceReconcilePath;
+
     private final String notificationHost;
 
     private final String stateLevelTenantId;
@@ -135,6 +139,8 @@ public class AppProperties {
         this.urlShortnerEndpoint =environment.getRequiredProperty("egov.url.shortner.endpoint");
         this.billingServiceHost = environment.getRequiredProperty("egov.billing.service.host");
         this.billingServiceSearchEndpoint = environment.getRequiredProperty("egov.bill.searchendpoint");
+        this.billingServiceFetchBillPath = environment.getProperty("egov.billingservice.fetchbill.path", "billing-service/bill/_fetchbill");
+        this.billingServiceReconcilePath = environment.getProperty("egov.billingservice.reconcile.path", "billing-service/bill/v2/_reconcile");
         this.notificationHost = environment.getRequiredProperty("notification.url");
         this.stateLevelTenantId = environment.getRequiredProperty("state.level.tenant.id");
         this.egovPgReconciliationSystemUserUuid = environment.getRequiredProperty("egov.pg.reconciliation.system.user.uuid");

@@ -7,10 +7,12 @@ import java.util.Map;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pg.config.AppProperties;
+import org.egov.pg.models.TaxAndPayment;
 import org.egov.pg.models.Transaction;
 import org.egov.pg.models.TransactionDump;
 import org.egov.pg.models.TransactionDumpRequest;
 import org.egov.pg.producer.Producer;
+import org.egov.pg.repository.BillingRepository;
 import org.egov.pg.repository.TransactionRepository;
 import org.egov.pg.validator.TransactionValidator;
 import org.egov.pg.web.models.TransactionCriteria;
@@ -19,6 +21,7 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,15 +39,23 @@ public class TransactionService {
     private AppProperties appProperties;
     private TransactionRepository transactionRepository;
     private PaymentsService paymentsService;
+    private BillingRepository billingRepository;
 
-
-
-    @Autowired
-    TransactionService(TransactionValidator validator, GatewayService gatewayService, Producer producer,
+    public TransactionService(TransactionValidator validator, GatewayService gatewayService, Producer producer,
                        TransactionRepository
                                transactionRepository, PaymentsService paymentsService,
                        EnrichmentService enrichmentService,
                        AppProperties appProperties) {
+        this(validator, gatewayService, producer, transactionRepository, paymentsService, enrichmentService, appProperties, null);
+    }
+
+    @Autowired
+    public TransactionService(TransactionValidator validator, GatewayService gatewayService, Producer producer,
+                       TransactionRepository
+                               transactionRepository, PaymentsService paymentsService,
+                       EnrichmentService enrichmentService,
+                       AppProperties appProperties,
+                       BillingRepository billingRepository) {
         this.validator = validator;
         this.gatewayService = gatewayService;
         this.producer = producer;
@@ -52,6 +63,7 @@ public class TransactionService {
         this.paymentsService = paymentsService;
         this.enrichmentService = enrichmentService;
         this.appProperties = appProperties;
+        this.billingRepository = billingRepository;
     }
 
     /**
@@ -165,6 +177,9 @@ public class TransactionService {
                   enrichmentService.enrichUpdateTransaction(new TransactionRequest(requestInfo, currentTxnStatus), newTxn);
                // Check if transaction is successful, amount matches etc
                   if (validator.shouldGenerateReceipt(currentTxnStatus, newTxn)) {
+                      if (!Transaction.TxnStatusEnum.SUCCESS.equals(currentTxnStatus.getTxnStatus())) {
+                          handleBillReconciliation(requestInfo, currentTxnStatus);
+                      }
                   	TransactionRequest request = TransactionRequest.builder().requestInfo(requestInfo).transaction(newTxn).build();
                   	try {
                   		paymentsService.registerPayment(request);
@@ -213,6 +228,9 @@ public class TransactionService {
               enrichmentService.enrichUpdateTransaction(new TransactionRequest(requestInfo, currentTxnStatus), newTxn);
             // Check if transaction is successful, amount matches etc
                if (validator.shouldGenerateReceipt(currentTxnStatus, newTxn)) {
+                   if (!Transaction.TxnStatusEnum.SUCCESS.equals(currentTxnStatus.getTxnStatus())) {
+                       handleBillReconciliation(requestInfo, currentTxnStatus);
+                   }
                	TransactionRequest request = TransactionRequest.builder().requestInfo(requestInfo).transaction(newTxn).build();
               	paymentsService.registerPayment(request);
                }
@@ -227,6 +245,9 @@ public class TransactionService {
                   enrichmentService.enrichUpdateTransaction(new TransactionRequest(requestInfo, currentTxnStatus), newTxn);
                // Check if transaction is successful, amount matches etc
                   if (validator.shouldGenerateReceipt(currentTxnStatus, newTxn)) {
+                      if (!Transaction.TxnStatusEnum.SUCCESS.equals(currentTxnStatus.getTxnStatus())) {
+                          handleBillReconciliation(requestInfo, currentTxnStatus);
+                      }
                 	  log.info("id"+ currentTxnStatus.getTxnId());
                   	TransactionRequest request = TransactionRequest.builder().requestInfo(requestInfo).transaction(newTxn).build();
                   	paymentsService.registerPayment(request);
@@ -248,5 +269,44 @@ public class TransactionService {
         return Collections.singletonList(newTxn);
     }
 
+	/**
+	 * Handles bill reconciliation when a non-success transaction (PENDING, FAILURE, etc.) succeeds at the payment gateway:
+	 * Calls billing-service _reconcile endpoint to handle expiring any conflicting bills and activating /
+	 * extending the transaction's bill.
+	 *
+	 * @param requestInfo RequestInfo
+	 * @param currentTxnStatus Current transaction status in the database
+	 */
+	private void handleBillReconciliation(RequestInfo requestInfo, Transaction currentTxnStatus) {
+		if (billingRepository == null) {
+			log.warn("BillingRepository is not configured, skipping bill reconciliation for txnId: {}",
+					currentTxnStatus.getTxnId());
+			return;
+		}
+
+		String tenantId = currentTxnStatus.getTenantId();
+		String consumerCode = currentTxnStatus.getConsumerCode();
+		String businessService = currentTxnStatus.getModule();
+		String txnBillId = currentTxnStatus.getBillId();
+
+		log.info("Invoking billing-service reconciliation for txnId: {}, previousStatus: {}, billId: {}, consumerCode: {}, businessService: {}",
+				currentTxnStatus.getTxnId(), currentTxnStatus.getTxnStatus(), txnBillId, consumerCode, businessService);
+
+		try {
+			billingRepository.reconcileBill(requestInfo, tenantId, consumerCode, businessService, txnBillId);
+
+			// Also reconcile any other bills in taxAndPayments if different from txnBillId
+			if (!CollectionUtils.isEmpty(currentTxnStatus.getTaxAndPayments())) {
+				for (TaxAndPayment taxAndPayment : currentTxnStatus.getTaxAndPayments()) {
+					if (taxAndPayment.getBillId() != null && !taxAndPayment.getBillId().equals(txnBillId)) {
+						billingRepository.reconcileBill(requestInfo, tenantId, consumerCode, businessService,
+								taxAndPayment.getBillId());
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Failed to reconcile bill via billing-service for txnId: {}", currentTxnStatus.getTxnId(), e);
+		}
+	}
 	
 }

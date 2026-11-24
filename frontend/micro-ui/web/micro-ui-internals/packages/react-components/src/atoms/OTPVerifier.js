@@ -14,6 +14,7 @@ const OTPVerifier = ({
   tenantId,
   userType = "CITIZEN",
   otpType = "login",
+  anonymous = false,
   otpLength = 6,
   maxTime = 30,
   t: customT,
@@ -43,16 +44,28 @@ const OTPVerifier = ({
       setIsOtpSending(true);
       setError(null);
       
-      const payload = {
-        otp: {
-          mobileNumber,
-          tenantId: activeTenantId,
-          userType,
-          type: otpType,
-        },
-      };
+      const payload = anonymous
+        ? {
+            RequestInfo: {
+              apiId: "org.egov.user-otp",
+              ver: "1.0",
+              action: "_send",
+              msgId: `${Date.now()}`,
+            },
+            otp: { mobileNumber, tenantId: activeTenantId },
+          }
+        : {
+            otp: {
+              mobileNumber,
+              tenantId: activeTenantId,
+              userType,
+              type: otpType,
+            },
+          };
 
-      const res = await Digit.UserService.sendOtp(payload, activeTenantId);
+      const res = anonymous
+        ? await Digit.UserService.sendOtpAnonymous(payload)
+        : await Digit.UserService.sendOtp(payload, activeTenantId);
       
       if (res && (res.isSuccessful || res.ResponseInfo?.status === "successful" || !res.error)) {
         setIsOtpSent(true);
@@ -118,13 +131,25 @@ const OTPVerifier = ({
         response = await onVerify(otp, mobileNumber);
       } else {
         // Default verification flow using authentication
-        const requestData = {
-          username: mobileNumber,
-          password: otp,
-          tenantId: activeTenantId,
-          userType,
-        };
-        response = await Digit.UserService.authenticate(requestData);
+        if (anonymous) {
+          response = await Digit.UserService.validateOtpAnonymous({
+            RequestInfo: {
+              apiId: "org.egov.user-otp",
+              ver: "1.0",
+              action: "_validate",
+              msgId: `${Date.now()}`,
+            },
+            otp: { mobileNumber, otp, tenantId: activeTenantId },
+          });
+        } else {
+          const requestData = {
+            username: mobileNumber,
+            password: otp,
+            tenantId: activeTenantId,
+            userType,
+          };
+          response = await Digit.UserService.authenticate(requestData);
+        }
       }
 
       if (onSuccess) {
@@ -215,6 +240,7 @@ OTPVerifier.propTypes = {
   tenantId: PropTypes.string,
   userType: PropTypes.string,
   otpType: PropTypes.string,
+  anonymous: PropTypes.bool,
   otpLength: PropTypes.number,
   maxTime: PropTypes.number,
   t: PropTypes.func,

@@ -1,4 +1,4 @@
-﻿package org.egov.domain.exception;
+package org.egov.domain.exception;
 
 import lombok.Getter;
 import org.egov.web.contract.ErrorField;

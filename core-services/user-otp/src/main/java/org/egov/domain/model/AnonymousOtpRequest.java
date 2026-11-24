@@ -1,4 +1,4 @@
-﻿package org.egov.domain.model;
+package org.egov.domain.model;
 
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;

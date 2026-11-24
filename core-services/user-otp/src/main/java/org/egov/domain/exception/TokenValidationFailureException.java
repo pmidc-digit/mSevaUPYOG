@@ -1,4 +1,4 @@
-﻿package org.egov.domain.exception;
+package org.egov.domain.exception;
 
 public class TokenValidationFailureException extends RuntimeException {
     public TokenValidationFailureException() {

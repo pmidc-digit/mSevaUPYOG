@@ -1,4 +1,4 @@
-﻿package org.egov.web.controller;
+package org.egov.web.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.egov.domain.service.OtpService;

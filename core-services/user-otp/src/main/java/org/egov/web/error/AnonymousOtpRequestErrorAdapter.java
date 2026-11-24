@@ -1,4 +1,4 @@
-﻿package org.egov.web.error;
+package org.egov.web.error;
 
 import org.egov.domain.exception.InvalidAnonymousOtpRequestException;
 import org.egov.web.contract.Error;

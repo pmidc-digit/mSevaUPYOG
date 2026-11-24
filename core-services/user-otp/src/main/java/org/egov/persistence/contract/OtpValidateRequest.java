@@ -1,4 +1,4 @@
-﻿package org.egov.persistence.contract;
+package org.egov.persistence.contract;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;

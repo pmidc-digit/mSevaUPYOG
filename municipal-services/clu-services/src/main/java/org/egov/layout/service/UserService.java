@@ -52,6 +52,8 @@ public class UserService {
 	@Autowired
 	private ObjectMapper mapper;
 
+	private static final String[] DOB_FALLBACK_FORMATS = { "yyyy-MM-dd", "dd/MM/yyyy", "dd-MM-yyyy" };
+	
 	/**
 	 * Call search in user service based on ownerids from criteria
 	 * 
@@ -186,21 +188,58 @@ public class UserService {
 	 *            Format of the date
 	 * @return Long value of date
 	 */
+//	private Long dateTolong(String date, String format) {
+//		log.info(format);
+//		log.info(date);
+//		SimpleDateFormat f = new SimpleDateFormat(format);
+//		log.info(f.toString());
+//
+//		Date d = null;
+//		try {
+//			d = f.parse(date);
+//			log.info(d.toString());
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//		return d.getTime();
+//	}
+	
 	private Long dateTolong(String date, String format) {
-		log.info(format);
-		log.info(date);
-		SimpleDateFormat f = new SimpleDateFormat(format);
-		log.info(f.toString());
-
-		Date d = null;
-		try {
-			d = f.parse(date);
-			log.info(d.toString());
-		} catch (ParseException e) {
-			e.printStackTrace();
+		if (StringUtils.isBlank(date)) {
+			return null;
 		}
-		return d.getTime();
+
+		// 1. Try the expected format first (keeps existing behaviour)
+		Long result = tryParse(date, format);
+		if (result != null) {
+			return result;
+		}
+
+		// 2. Fallback to other known formats
+		for (String fallback : DOB_FALLBACK_FORMATS) {
+			if (!fallback.equals(format)) {
+				result = tryParse(date, fallback);
+				if (result != null) {
+					log.warn("Date '{}' did not match '{}', parsed with fallback '{}'", date, format, fallback);
+					return result;
+				}
+			}
+		}
+
+		throw new CustomException("INVALID_DATE_FORMAT",
+				"Unable to parse date '" + date + "' with format '" + format + "' or any supported fallback format");
 	}
+	
+	private Long tryParse(String date, String format) {
+		try {
+			SimpleDateFormat f = new SimpleDateFormat(format);
+			f.setLenient(false);   // reject e.g. 31/02/1997 or mismatched patterns
+			return f.parse(date).getTime();
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+	
 	private Role getCitizenRole(String tenantId){
 		Role role = new Role();
 		role.setCode("CITIZEN");
@@ -281,7 +320,7 @@ public class UserService {
 		}
 		noc.getOwners().forEach(owner ->
 		{
-			if (owner.getUuid() == null) {
+			if (StringUtils.isEmpty(owner.getUuid())) {
 				addUserDefaultFields(noc.getTenantId(), role, owner);
 
 				UserResponse existingUserResponse = userExists(owner, requestInfo);
@@ -296,7 +335,7 @@ public class UserService {
 					StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userCreateEndpoint);
 					setUserName(owner);
 					UserResponse userResponse = userCall(new CreateUserRequest(requestInfo, owner), uri);
-					if (userResponse.getUser().get(0).getUuid() == null) {
+					if (StringUtils.isEmpty(userResponse.getUser().get(0).getUuid())) {
 						throw new CustomException("INVALID USER RESPONSE", "The user created has uuid as null");
 					}
 					log.info("owner created --> " + userResponse.getUser().get(0).getUuid());

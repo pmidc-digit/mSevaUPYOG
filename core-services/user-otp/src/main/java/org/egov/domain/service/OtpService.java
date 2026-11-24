@@ -1,10 +1,13 @@
 package org.egov.domain.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.domain.exception.UserAlreadyExistInSystemException;
 import org.egov.domain.exception.UserMobileNumberNotFoundException;
 import org.egov.domain.exception.UserNotExistingInSystemException;
 import org.egov.domain.exception.UserNotFoundException;
+import org.egov.domain.model.AnonymousOtpRequest;
+import org.egov.domain.model.AnonymousValidateRequest;
 import org.egov.domain.model.OtpRequest;
 import org.egov.domain.model.User;
 import org.egov.persistence.repository.OtpEmailRepository;
@@ -12,6 +15,7 @@ import org.egov.persistence.repository.OtpRepository;
 import org.egov.persistence.repository.OtpSMSRepository;
 import org.egov.persistence.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -41,28 +45,43 @@ public class OtpService {
         }
     }
 
-	private void sendOtpForUserRegistration(OtpRequest otpRequest) {
-		final User matchingUser = userRepository.fetchUser(otpRequest.getMobileNumber(), otpRequest.getTenantId(),
-				otpRequest.getUserType());
+    public void sendAnonymousOtp(AnonymousOtpRequest otpRequest) {
+        otpRequest.validate();
+        final String otpNumber = otpRepository.fetchOtp(otpRequest);
+        otpSMSSender.sendAnonymousOtp(otpRequest, otpNumber);
+        if (StringUtils.isNotBlank(otpRequest.getEmailId())) {
+            otpEmailRepository.sendAnonymousOtp(otpRequest.getEmailId(), otpNumber, otpRequest);
+        }
+    }
 
-		if (otpRequest.isRegistrationRequestType() && null != matchingUser)
-			throw new UserAlreadyExistInSystemException();
-		else if (otpRequest.isLoginRequestType() && null == matchingUser)
-			throw new UserNotExistingInSystemException();
-		if ((otpRequest.getEmailId() == null || otpRequest.getEmailId().isEmpty())
+    public ResponseEntity<?> validateAnonymousOtp(AnonymousValidateRequest validateRequest) {
+        validateRequest.validate();
+        return otpRepository.validateOtp(validateRequest);
+    }
+
+    private void sendOtpForUserRegistration(OtpRequest otpRequest) {
+        final User matchingUser = userRepository.fetchUser(otpRequest.getMobileNumber(), otpRequest.getTenantId(),
+                otpRequest.getUserType());
+
+        if (otpRequest.isRegistrationRequestType() && null != matchingUser)
+            throw new UserAlreadyExistInSystemException();
+        else if (otpRequest.isLoginRequestType() && null == matchingUser)
+            throw new UserNotExistingInSystemException();
+
+        		if ((otpRequest.getEmailId() == null || otpRequest.getEmailId().isEmpty())
 		        && matchingUser != null
 		        && matchingUser.getEmail() != null
 		        && !matchingUser.getEmail().isEmpty()) {
 
 		    otpRequest.setEmailId(matchingUser.getEmail());
 		}
-		if (!otpRequest.getIsThirdParty()) {
-			final String otpNumber = otpRepository.fetchOtp(otpRequest);
-			otpSMSSender.send(otpRequest, otpNumber);
-			if (otpRequest.getEmailId() != null && !otpRequest.getEmailId().isEmpty())
-				otpEmailRepository.send(otpRequest.getEmailId(), otpNumber, otpRequest);
-		}
-	}
+        if (!otpRequest.getIsThirdParty())
+        { final String otpNumber = otpRepository.fetchOtp(otpRequest);
+                otpSMSSender.send(otpRequest, otpNumber);
+                if (otpRequest.getEmailId() != null && !otpRequest.getEmailId().isEmpty())
+                otpEmailRepository.send(otpRequest.getEmailId(), otpNumber, otpRequest);
+        }
+    }
 
     private void sendOtpForPasswordReset(OtpRequest otpRequest) {
         final User matchingUser = userRepository.fetchUser(otpRequest.getMobileNumber(), otpRequest.getTenantId(),

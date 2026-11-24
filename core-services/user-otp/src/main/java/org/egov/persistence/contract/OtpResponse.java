@@ -23,6 +23,10 @@ public class OtpResponse {
     public boolean isOtpNumberAbsent() {
         return isEmpty(getOtpNumber());
     }
+
+    public boolean isValidationSuccessful() {
+        return otp != null && otp.isValidationSuccessful();
+    }
 }
 
 

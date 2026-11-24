@@ -103,7 +103,7 @@ export const CustomImageUploadHandler = (props) => {
 
         setIsFileUploading(true);
         const geo = await extractGeoLocation(file);
-        if (!geo.latitude || !geo.longitude) {
+        if (!Number(geo.latitude) || !Number(geo.longitude)) {
             setError(t("This image does not contain GPS location data"));
             setIsFileUploading(false);
             return;

@@ -847,7 +847,8 @@ const NOCEmployeeApplicationOverview = () => {
   };
   function onActionSelect(action) {
     const validationMsg = validateSiteImages(action);
-    // console.log("selected action", action);
+
+        // console.log("selected action", action);
     const appNo = applicationDetails?.Noc?.[0]?.applicationNo;
     const allDocumentsUploaded = siteImages?.documents?.every((doc) => doc?.filestoreId != null && doc?.filestoreId !== "");
     const filterNexState = action?.state?.actions?.filter((item) => item.action == action?.action);
@@ -1108,11 +1109,11 @@ const NOCEmployeeApplicationOverview = () => {
       };
     }
 
-    //console.log("filtData", filtData);
+    // console.log("filtData", filtData);
     updatedApplicant.workflow = {
       action: filtData.action,
       assignes:
-        applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS"
+        applicationDetails?.Noc?.[0]?.applicationStatus === "FIELDINSPECTION_INPROGRESS" || filtData.action?.replace(/[^a-zA-Z0-9]/g, "")?.toUpperCase()?.includes("ROLLBACK") 
           ? [Digit.UserService.getUser()?.info?.uuid]
           : filtData?.assignee,
       comment: filtData?.comment,

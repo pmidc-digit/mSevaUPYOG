@@ -92,7 +92,7 @@ export const filterSelectAll = (items) => {
   return items?.filter((item) => item.code !== "ALL") || [];
 };
 
-// Utility: Create cartesian product for mappings
+// Create mappings only for category/sub-category pairs that belong together.
 export const createMappingCombinations = (employeeData, categories, subCategories, zones, module, roles, roleGroups = []) => {
   const newMappings = [];
   const actualCategories = filterSelectAll(categories);
@@ -101,7 +101,12 @@ export const createMappingCombinations = (employeeData, categories, subCategorie
   const actualModules = filterSelectAll(module);
 
   actualCategories.forEach((category) => {
-    actualSubCategories.forEach((subCategory) => {
+    const categoryId = category?.categoryId || category?.code;
+    const matchingSubCategories = actualSubCategories?.filter(
+      (subCategory) => String(subCategory?.categoryId) === String(categoryId)
+    );
+
+    matchingSubCategories.forEach((subCategory) => {
       actualModules.forEach((module) => {
         const moduleRoles = filterSelectAll(roles).filter((role) =>
           roleGroups.some((group) => group.groupCode === module.code && group.groupId === role.groupId)

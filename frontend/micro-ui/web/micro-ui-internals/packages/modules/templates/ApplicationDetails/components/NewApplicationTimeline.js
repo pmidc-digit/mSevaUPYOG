@@ -353,9 +353,6 @@ export default function NewApplicationTimeline({ workflowDetails, prefix = null,
                             <div className="custom-officer-info">
                               <div className="custom-officer-name">
                                 {item.assignes[0]?.name}
-                                {deptMap[item.assignes[0]?.userName] && (
-                                  <span className="custom-officer-email">- {t(deptMap[item.assignes[0]?.userName])}</span>
-                                )}
                               </div>
                               {designationKeyAssignee && (
                               <div className="custom-officer-name">

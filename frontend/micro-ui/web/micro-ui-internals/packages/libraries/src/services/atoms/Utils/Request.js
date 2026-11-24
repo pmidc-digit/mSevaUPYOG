@@ -56,6 +56,7 @@ export const Request = async ({
   headers = {},
   useCache = false,
   params = {},
+  skipTenantId = false,
   auth,
   urlParams = {},
   userService,
@@ -152,7 +153,7 @@ export const Request = async ({
     Digit.SessionStorage.get("userType") === "citizen"
       ? Digit.ULBService.getStateId()
       : Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getStateId();
-  if (!params["tenantId"] && window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")) {
+  if (!skipTenantId && !params["tenantId"] && window?.globalConfigs?.getConfig("ENABLE_SINGLEINSTANCE")) {
     params["tenantId"] = tenantInfo;
   }
 

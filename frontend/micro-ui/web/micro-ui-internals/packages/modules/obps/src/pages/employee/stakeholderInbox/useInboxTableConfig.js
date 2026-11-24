@@ -1,4 +1,5 @@
 import React, { Fragment, useMemo } from "react";
+import { getStatusChangeDateColumn } from "../../../../../templates/Inbox/components/workflowColumns";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -38,12 +39,14 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       },
       {
         Header: t("EVENTS_STATUS_LABEL"),
+        id: "status",
         accessor: (row) => t(`WF_${row?.businessService}_${row?.status}`),
         Cell: ({ row }) => {
           const statusValue = row.original?.status || "-";
           return <span className="ndc-new-status-pill">{String(statusValue || "-").toLowerCase()}</span>;
         },
       },
+      getStatusChangeDateColumn(t),
       {
         Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
         accessor: (row) => row?.assignedOwner,

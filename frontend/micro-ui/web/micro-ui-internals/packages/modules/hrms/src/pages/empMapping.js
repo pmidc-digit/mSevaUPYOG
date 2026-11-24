@@ -15,7 +15,7 @@ import {
   calculatePagination,
 } from "../utils/empMappingUtils";
 
-const EmpMaping = () => {
+const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport = false, isJurisdictionSearch = false }) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -86,7 +86,7 @@ const EmpMaping = () => {
 
   // Fetch search employee list separately
   useEffect(() => {
-    if (!filterULB || obpsRoles.codes.length === 0) {
+    if (!filterULB || (!isJurisdictionSearch && obpsRoles.codes.length === 0)) {
       setSearchEmployeeList([]);
       setFilterEmployee(null);
       return;
@@ -94,12 +94,19 @@ const EmpMaping = () => {
 
     const fetchEmployees = async () => {
       try {
-        const response = await Digit.HRMSService.search(filterULB.code, {
-          tenantId: filterULB.code,
-          roles: obpsRoles.codes.join(","),
-          limit: 100,
-          offset: 0,
-        });
+        const response = isJurisdictionSearch
+          ? await Digit.HRMSService.search(
+              undefined,
+              { jurisdiction: filterULB.code, limit: 100, offset: 0 },
+              undefined,
+              { skipTenantId: true }
+            )
+          : await Digit.HRMSService.search(filterULB.code, {
+              tenantId: filterULB.code,
+              roles: obpsRoles.codes.join(","),
+              limit: 100,
+              offset: 0,
+            });
 
         if (response?.Employees) {
           const employeeOptions = response.Employees.map((emp) => {
@@ -121,7 +128,7 @@ const EmpMaping = () => {
     };
 
     fetchEmployees();
-  }, [filterULB, obpsRoles.codes]);
+  }, [filterULB, obpsRoles.codes, isJurisdictionSearch]);
 
   // Sync filterEmployee reference when searchEmployeeList updates
   useEffect(() => {
@@ -234,8 +241,27 @@ const EmpMaping = () => {
 
   // Derived mapping table data and pagination
   const mappingData = useMemo(() => {
-    return transformMappingData(rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap);
-  }, [rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap]);
+    const rows = transformMappingData(rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap);
+    if (!showRoles && !isJurisdictionSearch) return rows;
+
+    const roleTenantId = filterULB?.code || tenantId;
+    return rows.map((row, index) => {
+      const employee = isJurisdictionSearch
+        ? rawEmployees[index]
+        : (employeeMap[row.uuid] || employeeMap[row.employeeCode])?.employeeObj;
+      const roles = employee?.user?.roles;
+      const roleNames = (Array.isArray(roles) ? roles : [])
+        .filter((role) => role?.tenantId === roleTenantId)
+        .map((role) => role.name || obpsRoles.map?.[role.code] || role.code)
+        .filter(Boolean);
+
+      return {
+        ...row,
+        ...(isJurisdictionSearch ? { userTenantId: employee?.user?.tenantId || employee?.tenantId } : {}),
+        ...(showRoles ? { roleNames: [...new Set(roleNames)].join(", ") || "N/A" } : {}),
+      };
+    });
+  }, [rawEmployees, pageOffset, categoryMap, subCategoryMap, zoneMap, employeeMap, showRoles, isJurisdictionSearch, filterULB?.code, tenantId, obpsRoles.map]);
 
   const { totalRecords, currentPage, totalPages } = useMemo(() => {
     return calculatePagination(mappingData.length, pageSize, pageOffset);
@@ -299,6 +325,22 @@ const EmpMaping = () => {
 
     try {
       setLoading(true);
+
+      if (isJurisdictionSearch) {
+        const response = await Digit.HRMSService.search(
+          undefined,
+          {
+            jurisdiction: activeULB.code,
+            limit: activePageSize,
+            offset: activeOffset,
+            ...(activeEmployee?.code ? { codes: activeEmployee.code } : {}),
+          },
+          undefined,
+          { skipTenantId: true }
+        );
+        setRawEmployees(Array.isArray(response?.Employees) ? response.Employees : []);
+        return;
+      }
 
       const searchTenantId = activeEmployee?.employeeObj?.user?.tenantId || activeULB.code;
       const filters = { limit: activePageSize, offset: activeOffset, assignedTenantId: activeULB.code };
@@ -423,6 +465,24 @@ const EmpMaping = () => {
     }
     if (!actualSubCategories.length) {
       setModalToast({ key: true, label: "Please select at least one sub-category", error: true });
+      setTimeout(() => {
+        setModalToast(null);
+      }, 5000);
+      return;
+    }
+    const categoriesMissingSubCategory = actualCategories?.filter((category) => {
+      const categoryId = category?.categoryId || category?.code;
+      return !actualSubCategories?.some(
+        (subCategory) => String(subCategory?.categoryId) === String(categoryId)
+      );
+    });
+    if (categoriesMissingSubCategory?.length) {
+      const categoryNames = categoriesMissingSubCategory?.map((category) => category?.name).join(", ");
+      setModalToast({
+        key: true,
+        label: `Select a sub-category for each selected category. Missing for: ${categoryNames}`,
+        error: true,
+      });
       setTimeout(() => {
         setModalToast(null);
       }, 5000);
@@ -582,7 +642,9 @@ const EmpMaping = () => {
   return (
     <React.Fragment>
       <div className="hrms-emp-mapping__container">
-        <Header className="hrms-emp-mapping__header">{t("HR_EMPLOYEE_CATEGORY_ZONE_MAPPING")}</Header>
+        <Header className="hrms-emp-mapping__header">
+          {isJurisdictionSearch ? t("Search Employees by jurisdiction") : t("HR_EMPLOYEE_CATEGORY_ZONE_MAPPING")}
+        </Header>
 
         {/* Search Filters */}
         <Card className="hrms-emp-mapping__search-card">
@@ -606,29 +668,31 @@ const EmpMaping = () => {
             </div>
 
             <div>
-              <CardLabel>{t("HR_EMPLOYEE_CODE")}</CardLabel>
-              <Dropdown
-                t={t}
-                option={searchEmployeeList}
-                optionKey="name"
-                selected={filterEmployee}
-                select={setFilterEmployee}
-                placeholder={t("COMMON_SELECT_EMPLOYEE") || "Select Employee"}
-                disabled={!filterULB}
-              />
+                <CardLabel>{t("HR_EMPLOYEE_CODE")}</CardLabel>
+                <Dropdown
+                  t={t}
+                  option={searchEmployeeList}
+                  optionKey="name"
+                  selected={filterEmployee}
+                  select={setFilterEmployee}
+                  placeholder={t("COMMON_SELECT_EMPLOYEE") || "Select Employee"}
+                  disabled={!filterULB}
+                />
             </div>
 
-            <div>
-              <CardLabel>{t("HR_CATEGORY_LABEL")}</CardLabel>
-              <Dropdown
-                t={t}
-                option={categories}
-                optionKey="name"
-                selected={filterCategory}
-                select={setFilterCategory}
-                placeholder={t("COMMON_SELECT_CATEGORY")}
-              />
-            </div>
+            {!hideMappingControls && (
+              <div>
+                <CardLabel>{t("HR_CATEGORY_LABEL")}</CardLabel>
+                <Dropdown
+                  t={t}
+                  option={categories}
+                  optionKey="name"
+                  selected={filterCategory}
+                  select={setFilterCategory}
+                  placeholder={t("COMMON_SELECT_CATEGORY")}
+                />
+              </div>
+            )}
           </div>
 
           <div className="hrms-emp-mapping__button-container">
@@ -652,19 +716,27 @@ const EmpMaping = () => {
               </button>
             </div>
 
-            <button onClick={handleAddNew} className="hrms-emp-mapping__add-button">
-              + {t("HR_ADD_NEW_MAPPING")}
-            </button>
+            {!hideMappingControls && (
+              <button onClick={handleAddNew} className="hrms-emp-mapping__add-button">
+                + {t("HR_ADD_NEW_MAPPING")}
+              </button>
+            )}
           </div>
         </Card>
 
         {/* Results Table */}
         <Card className="hrms-emp-mapping__results-card">
-          <h3 className="hrms-emp-mapping__results-heading">
-            {t("HR_MAPPING_RESULTS")} ({totalRecords})
-          </h3>
-
-          <MappingTable t={t} mappingData={mappingData} hasSearched={hasSearched} filterULB={filterULB} tenantId={tenantId} />
+          <MappingTable
+            t={t}
+            title={`${t("HR_MAPPING_RESULTS")} (${totalRecords})`}
+            mappingData={mappingData}
+            hasSearched={hasSearched}
+            filterULB={filterULB}
+            tenantId={tenantId}
+            showRoles={showRoles}
+            showExport={showExport}
+            hideMappingColumns={isJurisdictionSearch}
+          />
 
           {/* Pagination */}
           {hasSearched && mappingData.length > 0 && (

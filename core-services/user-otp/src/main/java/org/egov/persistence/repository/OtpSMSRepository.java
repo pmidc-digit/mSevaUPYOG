@@ -1,6 +1,8 @@
-package org.egov.persistence.repository;
+﻿package org.egov.persistence.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.egov.domain.model.AnonymousOtpRequest;
 import org.egov.domain.model.Category;
 import org.egov.domain.model.OtpRequest;
 import org.egov.domain.service.LocalizationService;
@@ -49,6 +51,38 @@ public class OtpSMSRepository {
 		Long currentTime = System.currentTimeMillis() + maxExecutionTime;
 		final String message = getMessage(otpNumber, otpRequest);
         kafkaTemplate.send(smsTopic, new SMSRequest(otpRequest.getMobileNumber(), message, Category.OTP, currentTime));
+    }
+
+    public void sendAnonymousOtp(AnonymousOtpRequest otpRequest, String otpNumber) {
+        if (otpRequest == null || StringUtils.isBlank(otpRequest.getMobileNumber()) || !otpRequest.isMobileNumberValid()) {
+            return;
+        }
+        try {
+            final String message = getAnonymousMessage(otpNumber, otpRequest);
+            if (StringUtils.isBlank(message)) {
+                return;
+            }
+            Long currentTime = System.currentTimeMillis() + maxExecutionTime;
+            kafkaTemplate.send(smsTopic, new SMSRequest(otpRequest.getMobileNumber(), message, Category.OTP, currentTime));
+        } catch (Exception e) {
+            log.error("Failed to dispatch anonymous OTP SMS to Kafka: ", e);
+        }
+    }
+
+    private String getAnonymousMessage(String otpNumber, AnonymousOtpRequest otpRequest) {
+        String tenantId = getRequiredTenantId(otpRequest.getTenantId());
+        Map<String, String> localisedMsgs = localizationService.getLocalisedMessages(tenantId, "en_IN", "egov-user");
+        if (localisedMsgs == null || localisedMsgs.isEmpty()) {
+            return null;
+        }
+        String template = localisedMsgs.get("sms.anonymous.otp.msg");
+        if (StringUtils.isBlank(template)) {
+            template = localisedMsgs.get(LOCALIZATION_KEY_LOGIN_SMS);
+        }
+        if (StringUtils.isNotBlank(template)) {
+            return format(template, StringUtils.defaultString(otpNumber));
+        }
+        return null;
     }
 
     private String getMessage(String otpNumber, OtpRequest otpRequest) {

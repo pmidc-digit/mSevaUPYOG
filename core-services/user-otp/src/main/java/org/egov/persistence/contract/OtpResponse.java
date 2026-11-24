@@ -1,4 +1,4 @@
-package org.egov.persistence.contract;
+﻿package org.egov.persistence.contract;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +22,10 @@ public class OtpResponse {
 
     public boolean isOtpNumberAbsent() {
         return isEmpty(getOtpNumber());
+    }
+
+    public boolean isValidationSuccessful() {
+        return otp != null && otp.isValidationSuccessful();
     }
 }
 

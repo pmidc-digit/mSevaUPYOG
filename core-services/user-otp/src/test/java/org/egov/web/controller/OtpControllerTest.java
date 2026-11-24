@@ -1,4 +1,4 @@
-package org.egov.web.controller;
+﻿package org.egov.web.controller;
 
 import org.egov.Resources;
 import org.egov.TestConfiguration;
@@ -20,6 +20,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -113,6 +114,34 @@ public class OtpControllerTest {
 		mockMvc.perform(post("/v1/_send").contentType(MediaType.APPLICATION_JSON_UTF8)
 				.content(resources.getFileContents("invalidOtpSendRequest.json")))
 				.andExpect(status().isInternalServerError()).andExpect(content().string(exceptionMessage));
+	}
+
+	@Test
+	public void test_should_return_success_response_when_anonymous_otp_is_sent() throws Exception {
+		String requestJson = "{\"RequestInfo\":{},\"otp\":{\"mobileNumber\":\"9876543210\",\"tenantId\":\"pb\"}}";
+
+		mockMvc.perform(post("/v1/_sendAnonymous").contentType(MediaType.APPLICATION_JSON_UTF8)
+				.content(requestJson))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.isSuccessful").value(true));
+
+		org.egov.domain.model.AnonymousOtpRequest expectedRequest =
+				new org.egov.domain.model.AnonymousOtpRequest("9876543210", "pb", null);
+		verify(otpService).sendAnonymousOtp(expectedRequest);
+	}
+
+	@Test
+	public void test_should_return_success_response_when_anonymous_otp_is_validated() throws Exception {
+		String requestJson = "{\"RequestInfo\":{},\"otp\":{\"mobileNumber\":\"9876543210\",\"otp\":\"123456\",\"tenantId\":\"pb\"}}";
+		org.egov.domain.model.AnonymousValidateRequest expectedRequest =
+				new org.egov.domain.model.AnonymousValidateRequest("9876543210", "123456", "pb");
+		org.mockito.Mockito.when(otpService.validateAnonymousOtp(expectedRequest)).thenReturn(true);
+
+		mockMvc.perform(post("/v1/_validateAnonymous").contentType(MediaType.APPLICATION_JSON_UTF8)
+				.content(requestJson))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.isSuccessful").value(true))
+				.andExpect(jsonPath("$.isOtpValid").value(true));
 	}
 
 }

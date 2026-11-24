@@ -1,11 +1,16 @@
-package org.egov.persistence.repository;
+﻿package org.egov.persistence.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.egov.domain.exception.OtpNumberNotPresentException;
+import org.egov.domain.exception.TokenValidationFailureException;
+import org.egov.domain.model.AnonymousOtpRequest;
+import org.egov.domain.model.AnonymousValidateRequest;
 import org.egov.domain.model.OtpRequest;
 import org.egov.persistence.contract.OtpResponse;
+import org.egov.persistence.contract.OtpValidateRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -13,18 +18,37 @@ import org.springframework.web.client.RestTemplate;
 public class OtpRepository {
 
     private final String otpCreateUrl;
+    private final String otpValidateUrl;
     private RestTemplate restTemplate;
 
     public OtpRepository(RestTemplate restTemplate,
+                         String otpHost,
+                         String otpCreateUrl) {
+        this(restTemplate, otpHost, otpCreateUrl, "/v1/_validate");
+    }
+
+    public OtpRepository(RestTemplate restTemplate,
                          @Value("${otp.host}") String otpHost,
-                         @Value("${otp.create.url}") String otpCreateUrl) {
+                         @Value("${otp.create.url}") String otpCreateUrl,
+                         @Value("${otp.validate.url:/v1/_validate}") String otpValidateUrl) {
         this.restTemplate = restTemplate;
         this.otpCreateUrl = otpHost + otpCreateUrl;
+        this.otpValidateUrl = otpHost + otpValidateUrl;
     }
 
     public String fetchOtp(OtpRequest otpRequest) {
         final org.egov.persistence.contract.OtpRequest request =
                 new org.egov.persistence.contract.OtpRequest(otpRequest);
+        return callOtpCreate(request);
+    }
+
+    public String fetchOtp(AnonymousOtpRequest anonymousOtpRequest) {
+        final org.egov.persistence.contract.OtpRequest request =
+                new org.egov.persistence.contract.OtpRequest(anonymousOtpRequest);
+        return callOtpCreate(request);
+    }
+
+    private String callOtpCreate(org.egov.persistence.contract.OtpRequest request) {
         try {
             final OtpResponse otpResponse =
                     restTemplate.postForObject(otpCreateUrl, request, OtpResponse.class);
@@ -35,6 +59,26 @@ public class OtpRepository {
         } catch (Exception e) {
             log.error("Exception while fetching OTP: ", e);
             throw new OtpNumberNotPresentException();
+        }
+    }
+
+    public boolean validateOtp(AnonymousValidateRequest validateRequest) {
+        final OtpValidateRequest request = new OtpValidateRequest(validateRequest);
+        try {
+            final OtpResponse otpResponse =
+                    restTemplate.postForObject(otpValidateUrl, request, OtpResponse.class);
+            if (otpResponse != null && otpResponse.isValidationSuccessful()) {
+                return true;
+            }
+            throw new TokenValidationFailureException("OTP validation unsuccessful");
+        } catch (HttpStatusCodeException e) {
+            log.info("OTP validation returned status {} from egov-otp", e.getStatusCode());
+            throw new TokenValidationFailureException("OTP validation unsuccessful");
+        } catch (TokenValidationFailureException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Exception while validating OTP: ", e);
+            throw new TokenValidationFailureException("Error validating OTP");
         }
     }
 

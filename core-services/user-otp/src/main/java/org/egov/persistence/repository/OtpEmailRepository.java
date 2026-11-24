@@ -1,5 +1,8 @@
-package org.egov.persistence.repository;
+﻿package org.egov.persistence.repository;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.egov.domain.model.AnonymousOtpRequest;
 import org.egov.domain.model.OtpRequest;
 import org.egov.domain.service.LocalizationService;
 import org.egov.persistence.contract.EmailMessage;
@@ -15,6 +18,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class OtpEmailRepository {
 	private static final String PASSWORD_RESET_SUBJECT = "mSeva Punjab - Password Reset Verification";
 	private static final String REGISTER_SUBJECT = "mSeva Punjab - Registration OTP";
@@ -43,6 +47,46 @@ public class OtpEmailRepository {
 			return;
 		}
 		sendEmail(email, otpNumber, otpRequest);
+    }
+
+    public void sendAnonymousOtp(String email, String otpNumber, AnonymousOtpRequest otpRequest) {
+        if (StringUtils.isBlank(email) || otpRequest == null || !otpRequest.isEmailValid()) {
+            return;
+        }
+        try {
+            sendAnonymousEmail(email, otpNumber, otpRequest);
+        } catch (Exception e) {
+            log.error("Failed to dispatch anonymous OTP email to Kafka: ", e);
+        }
+    }
+
+    private void sendAnonymousEmail(String email, String otpNumber, AnonymousOtpRequest otpRequest) {
+        String tenantId = "pb";
+        Map<String, String> localisedMsgs = localizationService.getLocalisedMessages(tenantId, "en_IN", "egov-user");
+        if (localisedMsgs == null || localisedMsgs.isEmpty()) {
+            return;
+        }
+        String messageFormat = localisedMsgs.get("email_anonymous_otp");
+        if (StringUtils.isBlank(messageFormat)) {
+            messageFormat = localisedMsgs.get(LOCALIZATION_KEY_LOGIN_MAIL);
+        }
+        if (StringUtils.isBlank(messageFormat)) {
+            return;
+        }
+        String finalBody = messageFormat
+                .replace("{otp}", StringUtils.defaultString(otpNumber))
+                .replace("{userName}", "Citizen")
+                .replace("{expiryMinutes}", "15")
+                .replace("{cityName}", "Punjab");
+        final EmailMessage emailMessage = EmailMessage.builder()
+                .body(finalBody)
+                .subject("mSeva Punjab - OTP Verification")
+                .emailTo(email)
+                .isHTML(true)
+                .sender(EMPTY)
+                .build();
+
+        kafkaTemplate.send(emailTopic, emailMessage);
     }
 
     private void sendEmail(String email, String otpNumber, OtpRequest otpRequest) {

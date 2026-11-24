@@ -1,10 +1,13 @@
-package org.egov.domain.service;
+﻿package org.egov.domain.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.domain.exception.UserAlreadyExistInSystemException;
 import org.egov.domain.exception.UserMobileNumberNotFoundException;
 import org.egov.domain.exception.UserNotExistingInSystemException;
 import org.egov.domain.exception.UserNotFoundException;
+import org.egov.domain.model.AnonymousOtpRequest;
+import org.egov.domain.model.AnonymousValidateRequest;
 import org.egov.domain.model.OtpRequest;
 import org.egov.domain.model.User;
 import org.egov.persistence.repository.OtpEmailRepository;
@@ -39,6 +42,20 @@ public class OtpService {
         } else {
             sendOtpForPasswordReset(otpRequest);
         }
+    }
+
+    public void sendAnonymousOtp(AnonymousOtpRequest otpRequest) {
+        otpRequest.validate();
+        final String otpNumber = otpRepository.fetchOtp(otpRequest);
+        otpSMSSender.sendAnonymousOtp(otpRequest, otpNumber);
+        if (StringUtils.isNotBlank(otpRequest.getEmailId())) {
+            otpEmailRepository.sendAnonymousOtp(otpRequest.getEmailId(), otpNumber, otpRequest);
+        }
+    }
+
+    public boolean validateAnonymousOtp(AnonymousValidateRequest validateRequest) {
+        validateRequest.validate();
+        return otpRepository.validateOtp(validateRequest);
     }
 
     private void sendOtpForUserRegistration(OtpRequest otpRequest) {

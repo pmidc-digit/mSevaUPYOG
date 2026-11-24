@@ -1,4 +1,4 @@
-package org.egov.persistence.contract;
+﻿package org.egov.persistence.contract;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +14,13 @@ public class OtpRequest {
         this.otp = Otp.builder()
                 .tenantId(otpRequest.getTenantId())
                 .identity(otpRequest.getMobileNumber())
+                .build();
+    }
+
+    public OtpRequest(org.egov.domain.model.AnonymousOtpRequest anonymousOtpRequest) {
+        this.otp = Otp.builder()
+                .tenantId(anonymousOtpRequest.getTenantId())
+                .identity(anonymousOtpRequest.getMobileNumber())
                 .build();
     }
 }

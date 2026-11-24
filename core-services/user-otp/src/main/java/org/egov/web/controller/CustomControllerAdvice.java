@@ -1,16 +1,10 @@
 package org.egov.web.controller;
 
-import org.egov.domain.exception.InvalidOtpRequestException;
-import org.egov.domain.exception.UserAlreadyExistInSystemException;
-import org.egov.domain.exception.UserMobileNumberNotFoundException;
-import org.egov.domain.exception.UserNotExistingInSystemException;
-import org.egov.domain.exception.UserNotFoundException;
+import org.egov.domain.exception.*;
+import org.egov.web.contract.Error;
+import org.egov.web.contract.ErrorField;
 import org.egov.web.contract.ErrorResponse;
-import org.egov.web.error.OtpRequestErrorAdapter;
-import org.egov.web.error.UserAlreadyExistErrorAdapter;
-import org.egov.web.error.UserMobileNumberNotFoundErrorAdapter;
-import org.egov.web.error.UserNotExistErrorAdapter;
-import org.egov.web.error.UserNotFoundErrorAdapter;
+import org.egov.web.error.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,6 +12,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collections;
+import java.util.List;
 
 @ControllerAdvice
 @RestController
@@ -54,6 +51,30 @@ public class CustomControllerAdvice {
 	public ErrorResponse handleUserNotExistException() {
 		return new UserNotExistErrorAdapter().adapt(null);
 	}
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InvalidAnonymousOtpRequestException.class)
+    public ErrorResponse handleInvalidAnonymousOtpRequestException(InvalidAnonymousOtpRequestException ex) {
+        return new AnonymousOtpRequestErrorAdapter().adapt(ex);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(TokenValidationFailureException.class)
+    public ErrorResponse handleTokenValidationFailureException(TokenValidationFailureException ex) {
+        List<ErrorField> fields = Collections.singletonList(
+                ErrorField.builder()
+                        .code("OTP.VALIDATION_UNSUCCESSFUL")
+                        .message(ex.getMessage() != null ? ex.getMessage() : "OTP validation unsuccessful")
+                        .field("otp.otp")
+                        .build()
+        );
+        Error error = Error.builder()
+                .code(HttpStatus.BAD_REQUEST.value())
+                .message("OTP validation unsuccessful")
+                .fields(fields)
+                .build();
+        return new ErrorResponse(null, error);
+    }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)

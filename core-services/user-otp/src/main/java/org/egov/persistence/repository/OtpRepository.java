@@ -69,18 +69,13 @@ public class OtpRepository {
         try {
             final OtpResponse otpResponse =
                     restTemplate.postForObject(otpValidateUrl, request, OtpResponse.class);
-            if (otpResponse != null && otpResponse.isValidationSuccessful()) {
-                return true;
-            }
-            throw new TokenValidationFailureException("OTP validation unsuccessful");
+            return otpResponse != null && otpResponse.isValidationSuccessful();
         } catch (HttpStatusCodeException e) {
-            log.info("OTP validation returned status {} from egov-otp", e.getStatusCode());
-            throw new TokenValidationFailureException("OTP validation unsuccessful");
-        } catch (TokenValidationFailureException e) {
-            throw e;
+            log.info("OTP validation returned status {} from egov-otp: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            return false;
         } catch (Exception e) {
             log.error("Exception while validating OTP: ", e);
-            throw new TokenValidationFailureException("Error validating OTP");
+            return false;
         }
     }
 

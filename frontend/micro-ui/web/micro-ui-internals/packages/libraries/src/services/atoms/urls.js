@@ -26,6 +26,8 @@ const Urls = {
   Swach_attendence: `/swach-services/v2/request/image/_create`,
   Swach_ViewAttendence: `/swach-services/v2/attendance/_search`,
   OTP_Send: "/user-otp/v1/_send",
+  OTP_SendAnonymous: "/user-otp/v1/_sendAnonymous",
+  OTP_ValidateAnonymous: "/user-otp/v1/_validateAnonymous",
   Authenticate: "/user/oauth/token",
   Authenticatev1: "/user/employee/_login",
   RegisterUser: "/user/citizen/_create",

@@ -8,6 +8,7 @@ import org.egov.domain.model.AnonymousValidateRequest;
 import org.egov.domain.model.OtpRequest;
 import org.egov.persistence.contract.OtpResponse;
 import org.egov.persistence.contract.OtpValidateRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -27,6 +28,7 @@ public class OtpRepository {
         this(restTemplate, otpHost, otpCreateUrl, "/v1/_validate");
     }
 
+    @Autowired
     public OtpRepository(RestTemplate restTemplate,
                          @Value("${otp.host}") String otpHost,
                          @Value("${otp.create.url}") String otpCreateUrl,

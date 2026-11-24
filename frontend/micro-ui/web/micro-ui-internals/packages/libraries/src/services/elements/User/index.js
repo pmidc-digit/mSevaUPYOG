@@ -1,6 +1,7 @@
 import Urls from "../../atoms/urls";
 import { Request, ServiceRequest } from "../../atoms/Utils/Request";
 import { Storage } from "../../atoms/Utils/Storage";
+import Axios from "axios";
 
 export const UserService = {
   authenticate: (details) => {
@@ -116,6 +117,14 @@ export const UserService = {
       auth: false,
       params: { tenantId: stateCode },
     }),
+  sendOtpAnonymous: (details) =>
+    Axios.post(Urls.OTP_SendAnonymous, details, {
+      headers: { "Content-Type": "application/json" },
+    }).then((response) => response.data),
+  validateOtpAnonymous: (details) =>
+    Axios.post(Urls.OTP_ValidateAnonymous, details, {
+      headers: { "Content-Type": "application/json" },
+    }).then((response) => response.data),
   setUser: (data) => {
     return Digit.SessionStorage.set("User", data);
   },

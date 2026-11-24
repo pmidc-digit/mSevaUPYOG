@@ -1314,6 +1314,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         >
           <OTPVerifier
             mobileNumber={fields[activeOtpIndex]?.mobileNumber}
+            tenantId={stateId}
+            anonymous
             onSuccess={() => handleOtpSuccess(activeOtpIndex)}
             onError={(err) => {
               setShowToast({ key: "true", error: true, message: err?.message || t("CS_OTP_VERIFICATION_FAILED") });

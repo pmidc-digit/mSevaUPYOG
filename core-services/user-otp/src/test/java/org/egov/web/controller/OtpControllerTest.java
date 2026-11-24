@@ -135,13 +135,41 @@ public class OtpControllerTest {
 		String requestJson = "{\"RequestInfo\":{},\"otp\":{\"mobileNumber\":\"9876543210\",\"otp\":\"123456\",\"tenantId\":\"pb\"}}";
 		org.egov.domain.model.AnonymousValidateRequest expectedRequest =
 				new org.egov.domain.model.AnonymousValidateRequest("9876543210", "123456", "pb");
-		org.mockito.Mockito.when(otpService.validateAnonymousOtp(expectedRequest)).thenReturn(true);
+		org.egov.web.contract.AnonymousOtpValidationResponse responseBody = org.egov.web.contract.AnonymousOtpValidationResponse.builder()
+				.successful(true)
+				.isOtpValid(true)
+				.message("OTP has been validated successfully")
+				.build();
+		org.mockito.Mockito.doReturn(new org.springframework.http.ResponseEntity<>(responseBody, org.springframework.http.HttpStatus.OK))
+				.when(otpService).validateAnonymousOtp(expectedRequest);
 
 		mockMvc.perform(post("/v1/_validateAnonymous").contentType(MediaType.APPLICATION_JSON_UTF8)
 				.content(requestJson))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.isSuccessful").value(true))
-				.andExpect(jsonPath("$.isOtpValid").value(true));
+				.andExpect(jsonPath("$.isOtpValid").value(true))
+				.andExpect(jsonPath("$.message").value("OTP has been validated successfully"));
+	}
+
+	@Test
+	public void test_should_pass_through_egov_otp_error_when_validation_fails() throws Exception {
+		String requestJson = "{\"RequestInfo\":{},\"otp\":{\"mobileNumber\":\"9876543210\",\"otp\":\"999999\",\"tenantId\":\"pb\"}}";
+		org.egov.domain.model.AnonymousValidateRequest expectedRequest =
+				new org.egov.domain.model.AnonymousValidateRequest("9876543210", "999999", "pb");
+		java.util.Map<String, Object> errorMap = new java.util.HashMap<>();
+		java.util.Map<String, Object> innerError = new java.util.HashMap<>();
+		innerError.put("code", 400);
+		innerError.put("message", "OTP validation unsuccessful");
+		errorMap.put("error", innerError);
+
+		org.mockito.Mockito.doReturn(new org.springframework.http.ResponseEntity<>(errorMap, org.springframework.http.HttpStatus.BAD_REQUEST))
+				.when(otpService).validateAnonymousOtp(expectedRequest);
+
+		mockMvc.perform(post("/v1/_validateAnonymous").contentType(MediaType.APPLICATION_JSON_UTF8)
+				.content(requestJson))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.error.code").value(400))
+				.andExpect(jsonPath("$.error.message").value("OTP validation unsuccessful"));
 	}
 
 }

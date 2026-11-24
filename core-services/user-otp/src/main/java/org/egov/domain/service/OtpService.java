@@ -15,6 +15,7 @@ import org.egov.persistence.repository.OtpRepository;
 import org.egov.persistence.repository.OtpSMSRepository;
 import org.egov.persistence.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -53,7 +54,7 @@ public class OtpService {
         }
     }
 
-    public boolean validateAnonymousOtp(AnonymousValidateRequest validateRequest) {
+    public ResponseEntity<?> validateAnonymousOtp(AnonymousValidateRequest validateRequest) {
         validateRequest.validate();
         return otpRepository.validateOtp(validateRequest);
     }

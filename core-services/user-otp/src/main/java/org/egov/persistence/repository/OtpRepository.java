@@ -1,15 +1,17 @@
 package org.egov.persistence.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.domain.exception.OtpNumberNotPresentException;
-import org.egov.domain.exception.TokenValidationFailureException;
 import org.egov.domain.model.AnonymousOtpRequest;
 import org.egov.domain.model.AnonymousValidateRequest;
 import org.egov.domain.model.OtpRequest;
 import org.egov.persistence.contract.OtpResponse;
 import org.egov.persistence.contract.OtpValidateRequest;
+import org.egov.web.contract.AnonymousOtpValidationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -21,21 +23,24 @@ public class OtpRepository {
     private final String otpCreateUrl;
     private final String otpValidateUrl;
     private RestTemplate restTemplate;
+    private ObjectMapper objectMapper;
 
     public OtpRepository(RestTemplate restTemplate,
                          String otpHost,
                          String otpCreateUrl) {
-        this(restTemplate, otpHost, otpCreateUrl, "/v1/_validate");
+        this(restTemplate, otpHost, otpCreateUrl, "/v1/_validate", new ObjectMapper());
     }
 
     @Autowired
     public OtpRepository(RestTemplate restTemplate,
                          @Value("${otp.host}") String otpHost,
                          @Value("${otp.create.url}") String otpCreateUrl,
-                         @Value("${otp.validate.url:/v1/_validate}") String otpValidateUrl) {
+                         @Value("${otp.validate.url:/v1/_validate}") String otpValidateUrl,
+                         ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.otpCreateUrl = otpHost + otpCreateUrl;
         this.otpValidateUrl = otpHost + otpValidateUrl;
+        this.objectMapper = objectMapper != null ? objectMapper : new ObjectMapper();
     }
 
     public String fetchOtp(OtpRequest otpRequest) {
@@ -64,18 +69,32 @@ public class OtpRepository {
         }
     }
 
-    public boolean validateOtp(AnonymousValidateRequest validateRequest) {
+    public ResponseEntity<?> validateOtp(AnonymousValidateRequest validateRequest) {
         final OtpValidateRequest request = new OtpValidateRequest(validateRequest);
         try {
-            final OtpResponse otpResponse =
-                    restTemplate.postForObject(otpValidateUrl, request, OtpResponse.class);
-            return otpResponse != null && otpResponse.isValidationSuccessful();
+            final ResponseEntity<Object> response =
+                    restTemplate.postForEntity(otpValidateUrl, request, Object.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                AnonymousOtpValidationResponse successResponse = AnonymousOtpValidationResponse.builder()
+                        .responseInfo(null)
+                        .successful(true)
+                        .isOtpValid(true)
+                        .message("OTP has been validated successfully")
+                        .build();
+                return ResponseEntity.ok(successResponse);
+            }
+            return response;
         } catch (HttpStatusCodeException e) {
             log.info("OTP validation returned status {} from egov-otp: {}", e.getStatusCode(), e.getResponseBodyAsString());
-            return false;
+            try {
+                Object errorBody = objectMapper.readValue(e.getResponseBodyAsString(), Object.class);
+                return ResponseEntity.status(e.getStatusCode()).body(errorBody);
+            } catch (Exception parseEx) {
+                return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
+            }
         } catch (Exception e) {
             log.error("Exception while validating OTP: ", e);
-            return false;
+            throw e;
         }
     }
 

@@ -5,6 +5,7 @@ import org.egov.domain.service.OtpService;
 import org.egov.web.contract.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -40,14 +41,8 @@ public class OtpController {
     }
 
     @PostMapping("/v1/_validateAnonymous")
-    @ResponseStatus(HttpStatus.OK)
-    public AnonymousOtpValidationResponse validateAnonymousOtp(@RequestBody AnonymousOtpValidateRequest validateRequest) {
-        boolean isValid = otpService.validateAnonymousOtp(validateRequest.toDomain());
-        return AnonymousOtpValidationResponse.builder()
-                .responseInfo(null)
-                .successful(true)
-                .isOtpValid(isValid)
-                .build();
+    public ResponseEntity<?> validateAnonymousOtp(@RequestBody AnonymousOtpValidateRequest validateRequest) {
+        return otpService.validateAnonymousOtp(validateRequest.toDomain());
     }
 
 }

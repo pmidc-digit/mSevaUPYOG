@@ -18,4 +18,7 @@ public class AnonymousOtpValidationResponse {
 
     @JsonProperty("isOtpValid")
     private boolean isOtpValid;
+
+    @JsonProperty("message")
+    private String message;
 }

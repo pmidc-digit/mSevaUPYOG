@@ -259,6 +259,7 @@ const ApplicationOverview = () => {
 
   useEffect(() => {
     const ndcObject = applicationDetails?.Applications?.[0];
+      console.log("applicationDetails",applicationDetails)
     if (ndcObject) {
       const applicantData = {
         name: ndcObject?.owners?.[0]?.name,
@@ -302,6 +303,7 @@ const ApplicationOverview = () => {
 
   const handleDownloadPdf = async () => {
     try {
+      console.log("propertyDetailsFetch",propertyDetailsFetch)
       setLoader(true);
       const Property = applicationDetails;
       const owners = propertyDetailsFetch?.Properties?.[0]?.owners || [];
@@ -310,7 +312,7 @@ const ApplicationOverview = () => {
       Property.propertyOwnerNames = propertyOwnerNames;
       Property.propertyOwnerMobiles = propertyOwnerMobiles;
       const landArea = propertyDetailsFetch?.Properties?.[0]?.landArea;
-
+      const surveyId = propertyDetailsFetch?.Properties[0]?.surveyId || 'NA';
       const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.Applications?.[0]?.tenantId);
       const ulbType = tenantInfo?.city?.ulbType;
       const vasikaNo =
@@ -330,7 +332,8 @@ const ApplicationOverview = () => {
           approverStatement,
           landArea,
           approverComment,
-          vasikaNo
+          vasikaNo,
+          surveyId
         );
       }
       setTimeout(() => {

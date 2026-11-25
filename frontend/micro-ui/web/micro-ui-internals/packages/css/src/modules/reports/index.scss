@@ -1,5 +1,5 @@
-// Generic report page (modules/reports): search form, results toolbar, totals and result table.
-// The shared Table component sets inline styles on th/td/pagination, hence the !important overrides.
+/* Generic report page (modules/reports): search form, results toolbar, totals and result table.
+   The shared Table component sets inline styles on th/td/pagination, hence the !important overrides. */
 .rpt-page {
   --rpt-primary: #1d4ed8;
   --rpt-primary-hover: #1e40af;

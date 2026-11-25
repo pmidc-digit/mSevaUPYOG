@@ -1070,22 +1070,56 @@ private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
         
     }
     
-    private void processMechanicalParking(Plan pl) {
-        int count = 0;
-        for (Measurement m : pl.getParkingDetails().getMechParking())
-            if (m.getWidth().compareTo(BigDecimal.valueOf(MECH_PARKING_WIDTH)) < 0
-                    || m.getHeight().compareTo(BigDecimal.valueOf(MECH_PARKING_HEIGHT)) < 0)
-                count++;
-        if (count > 0) {
-            setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, MECH_PARKING_DIM_DESC,
-                    count + MECH_PARKING_DIM_DESC_NA,
-                    Result.Not_Accepted.getResultVal());
-        } else {
-            setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, MECH_PARKING_DIM_DESC,
-                    count + MECH_PARKING_DIM_DESC_NA,
-                    Result.Accepted.getResultVal());
-        }
-    }
+
+	private void processMechanicalParking(Plan pl) {
+
+		int count = 0;
+
+		BigDecimal plotArea = (pl.getPlot() != null && pl.getPlot().getArea() != null) ? pl.getPlot().getArea()
+				: BigDecimal.ZERO;
+
+		OccupancyTypeHelper mostRestrictiveOccupancy = pl.getVirtualBuilding() != null
+				? pl.getVirtualBuilding().getMostRestrictiveFarHelper()
+				: null;
+
+		boolean isResidentialPlotted = mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null
+				&& A.equals(mostRestrictiveOccupancy.getType().getCode())
+				&& mostRestrictiveOccupancy.getSubtype() != null
+				&& A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode());
+
+		boolean hasMechanicalParking = pl.getParkingDetails() != null && pl.getParkingDetails().getMechParking() != null
+				&& !pl.getParkingDetails().getMechParking().isEmpty();
+
+		// Residential plotted (A / A-R) specific condition
+		if (isResidentialPlotted && plotArea.compareTo(BigDecimal.valueOf(100)) < 0 && hasMechanicalParking) {
+
+			pl.addError("MECHANICAL_PARKING_NOT_ALLOWED",
+					"Mechanical parking is not allowed for Residential Plotted buildings having plot area below 100 sqm.");
+
+			return;
+		}
+
+		// Normal mechanical parking dimension validation
+		if (hasMechanicalParking) {
+
+			for (Measurement m : pl.getParkingDetails().getMechParking()) {
+
+				if (m.getWidth().compareTo(BigDecimal.valueOf(MECH_PARKING_WIDTH)) < 0
+						|| m.getHeight().compareTo(BigDecimal.valueOf(MECH_PARKING_HEIGHT)) < 0) {
+					count++;
+				}
+			}
+			if (count > 0) {
+				setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, MECH_PARKING_DIM_DESC,
+						count + MECH_PARKING_DIM_DESC_NA, Result.Not_Accepted.getResultVal());
+			} else {
+				setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, MECH_PARKING_DIM_DESC,
+						count + MECH_PARKING_DIM_DESC_NA, Result.Accepted.getResultVal());
+			}
+		}
+
+		
+	}
 
     /*
      * private double processMechanicalParking(Plan pl, ParkingHelper helper) { Integer noOfMechParkingFromPlInfo =

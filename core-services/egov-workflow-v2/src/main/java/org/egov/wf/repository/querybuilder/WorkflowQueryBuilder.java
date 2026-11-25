@@ -627,6 +627,12 @@ public class WorkflowQueryBuilder {
         builder.append(") ");
 
         if (criteria != null) {
+            if (StringUtils.isNotBlank(criteria.getAssignee())) {
+                builder.append("AND (EXISTS (SELECT 1 FROM eg_wf_assignee_v2 asg_sub WHERE asg_sub.processinstanceid = pi.id AND asg_sub.assignee = ?) OR pi.assignee = ?) ");
+                preparedStmtList.add(criteria.getAssignee().trim());
+                preparedStmtList.add(criteria.getAssignee().trim());
+            }
+
             if (StringUtils.isNotBlank(criteria.getTenantId())) {
                 String tenantId = criteria.getTenantId().trim();
                 if (tenantId.contains(".")) {
@@ -674,6 +680,12 @@ public class WorkflowQueryBuilder {
         builder.append(") ");
 
         if (criteria != null) {
+            if (StringUtils.isNotBlank(criteria.getAssignee())) {
+                builder.append("AND (EXISTS (SELECT 1 FROM eg_wf_assignee_v2 asg_sub WHERE asg_sub.processinstanceid = pi.id AND asg_sub.assignee = ?) OR pi.assignee = ?) ");
+                preparedStmtList.add(criteria.getAssignee().trim());
+                preparedStmtList.add(criteria.getAssignee().trim());
+            }
+
             if (StringUtils.isNotBlank(criteria.getTenantId())) {
                 String tenantId = criteria.getTenantId().trim();
                 if (tenantId.contains(".")) {
@@ -733,6 +745,12 @@ public class WorkflowQueryBuilder {
         builder.append(") ");
 
         if (criteria != null) {
+            if (StringUtils.isNotBlank(criteria.getAssignee())) {
+                builder.append("AND (asg.assignee = ? OR pi.assignee = ?) ");
+                preparedStmtList.add(criteria.getAssignee().trim());
+                preparedStmtList.add(criteria.getAssignee().trim());
+            }
+
             if (StringUtils.isNotBlank(criteria.getTenantId())) {
                 String tenantId = criteria.getTenantId().trim();
                 if (tenantId.contains(".")) {

@@ -168,4 +168,6 @@ public class WorkflowConfig {
     @Value("${egov.wf.reminder.sla.completing.hours:48}")
     private Long reminderSlaCompletingHours;
 
+    @Value("${egov.wf.reminder.lock.timeout.minutes:15}")
+    private Long reminderLockTimeoutMinutes;
 }

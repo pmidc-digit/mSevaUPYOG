@@ -28,4 +28,10 @@ public class ProcessInstanceReminderCriteria {
 
     @JsonProperty("limit")
     private Integer limit;
+
+    @JsonProperty("assignee")
+    private String assignee;
+
+    @JsonProperty("force")
+    private Boolean force;
 }

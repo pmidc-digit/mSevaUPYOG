@@ -64,7 +64,7 @@ public class UserService {
         StringBuilder url = new StringBuilder(config.getUserHost());
         url.append(config.getUserSearchEndpoint());
         UserDetailResponse userDetailResponse = userCall(userSearchRequest,url);
-        if(CollectionUtils.isEmpty(userDetailResponse.getUser()))
+        if(userDetailResponse == null || CollectionUtils.isEmpty(userDetailResponse.getUser()))
             throw new CustomException("INVALID USER","No user found for the uuids: "+uuids);
         Map<String,User> idToUserMap = new HashMap<>();
         userDetailResponse.getUser().forEach(user -> {
@@ -118,6 +118,9 @@ public class UserService {
      * @param responeMap LinkedHashMap got from user api response
      */
     private void parseResponse(LinkedHashMap responeMap,String dobFormat){
+        if (responeMap == null) {
+            return;
+        }
         List<LinkedHashMap> users = (List<LinkedHashMap>)responeMap.get("user");
         String format1 = "dd-MM-yyyy HH:mm:ss";
         if(users!=null){

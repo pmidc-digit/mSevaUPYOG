@@ -19,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @Slf4j
@@ -44,12 +45,15 @@ public class WorkflowReminderService {
 
     private final AtomicBoolean isReminderRunning = new AtomicBoolean(false);
     private final AtomicBoolean isCancelRequested = new AtomicBoolean(false);
+    private final AtomicLong jobStartTime = new AtomicLong(0L);
+    private volatile Thread activeWorkerThread;
 
     /**
      * Entry point for triggering reminders. Runs asynchronously on a low-priority daemon thread (default)
-     * or synchronously for testing. Prevents concurrent executions using an atomic flag.
+     * or synchronously for testing. Prevents concurrent executions using an atomic flag with automatic
+     * stale lock expiry and manual force override capabilities.
      *
-     * @param request WorkflowReminderRequest containing criteria, optional tenantId, and async flag
+     * @param request WorkflowReminderRequest containing criteria, optional tenantId, force flag, and async flag
      * @return WorkflowReminderResponse containing status, message, and diagnostic SLA metrics
      */
     public WorkflowReminderResponse triggerDailyReminders(WorkflowReminderRequest request) {
@@ -61,70 +65,145 @@ public class WorkflowReminderService {
                     .build();
         }
 
+        long timeoutMs = (config != null && config.getReminderLockTimeoutMinutes() != null && config.getReminderLockTimeoutMinutes() > 0)
+                ? config.getReminderLockTimeoutMinutes() * 60 * 1000L
+                : 15 * 60 * 1000L;
+
+        boolean isForce = request != null && Boolean.TRUE.equals(request.getForce());
+
+        // Check if previous job is running or stale
+        if (isReminderRunning.get()) {
+            long runningDuration = System.currentTimeMillis() - jobStartTime.get();
+            if (isForce) {
+                log.warn("Force execution requested. Overriding existing reminder job lock (held for {} ms).", runningDuration);
+                resetReminderJob();
+            } else if (runningDuration > timeoutMs) {
+                log.warn("Previous reminder job appears hung or stale (running for {} ms > threshold {} ms). Forcing automatic lock reset.",
+                        runningDuration, timeoutMs);
+                resetReminderJob();
+            } else {
+                long runningSeconds = Math.max(1, runningDuration / 1000);
+                log.warn("A workflow reminder job is already running (running for {}s). Skipping duplicate trigger.", runningSeconds);
+                return WorkflowReminderResponse.builder()
+                        .status("ALREADY_RUNNING")
+                        .message("Workflow daily reminder job is already in progress (running for " + runningSeconds
+                                + "s). Please wait for it to finish, pass force=true to override, or call /process/_resetreminder.")
+                        .build();
+            }
+        }
+
         if (!isReminderRunning.compareAndSet(false, true)) {
-            log.warn("A workflow reminder job is already running. Skipping duplicate trigger.");
+            log.warn("Concurrent trigger contention detected. Another reminder job acquired the lock.");
             return WorkflowReminderResponse.builder()
                     .status("ALREADY_RUNNING")
                     .message("Workflow daily reminder job is already in progress. Please wait for it to finish.")
                     .build();
         }
 
+        jobStartTime.set(System.currentTimeMillis());
         isCancelRequested.set(false);
         boolean isAsync = request == null || request.getAsync() == null || Boolean.TRUE.equals(request.getAsync());
 
-        ProcessInstanceReminderCriteria criteria = ProcessInstanceReminderCriteria.builder()
-                .tenantId(request != null ? request.getTenantId() : null)
-                .businessService(request != null ? request.getBusinessService() : null)
-                .businessServices(request != null ? request.getBusinessServices() : null)
-                .build();
+        Map<String, UserWorkloadDigest> userDigestMap;
+        WorkflowReminderResponse response;
 
-        Map<String, UserWorkloadDigest> userDigestMap = workflowRepository.getActiveWorkloadSummary(criteria);
-        int totalEmployees = (userDigestMap != null) ? userDigestMap.size() : 0;
-        int totalApplications = (userDigestMap != null)
-                ? userDigestMap.values().stream().mapToInt(UserWorkloadDigest::getTotalApplications).sum() : 0;
-        int totalUnderSla = (userDigestMap != null)
-                ? userDigestMap.values().stream().mapToInt(UserWorkloadDigest::getUnderSlaCount).sum() : 0;
-        int totalCompletingSla = (userDigestMap != null)
-                ? userDigestMap.values().stream().mapToInt(UserWorkloadDigest::getCompletingSlaCount).sum() : 0;
-        int totalOverSla = (userDigestMap != null)
-                ? userDigestMap.values().stream().mapToInt(UserWorkloadDigest::getOverSlaCount).sum() : 0;
+        try {
+            ProcessInstanceReminderCriteria criteria = ProcessInstanceReminderCriteria.builder()
+                    .tenantId(request != null ? request.getTenantId() : null)
+                    .businessService(request != null ? request.getBusinessService() : null)
+                    .businessServices(request != null ? request.getBusinessServices() : null)
+                    .assignee(request != null ? request.getAssignee() : null)
+                    .force(isForce)
+                    .build();
 
-        String message = isAsync
-                ? "Workflow daily reminder notifications triggered in background for " + totalEmployees + " user(s) with " + totalApplications + " pending application(s)."
-                : "Workflow daily reminder notifications dispatched successfully for " + totalEmployees + " user(s).";
+            userDigestMap = workflowRepository.getActiveWorkloadSummary(criteria);
+            int totalEmployees = (userDigestMap != null) ? userDigestMap.size() : 0;
+            int totalApplications = (userDigestMap != null)
+                    ? userDigestMap.values().stream().mapToInt(UserWorkloadDigest::getTotalApplications).sum() : 0;
+            int totalUnderSla = (userDigestMap != null)
+                    ? userDigestMap.values().stream().mapToInt(UserWorkloadDigest::getUnderSlaCount).sum() : 0;
+            int totalCompletingSla = (userDigestMap != null)
+                    ? userDigestMap.values().stream().mapToInt(UserWorkloadDigest::getCompletingSlaCount).sum() : 0;
+            int totalOverSla = (userDigestMap != null)
+                    ? userDigestMap.values().stream().mapToInt(UserWorkloadDigest::getOverSlaCount).sum() : 0;
 
-        WorkflowReminderResponse response = WorkflowReminderResponse.builder()
-                .status(isAsync ? "TRIGGERED" : "COMPLETED")
-                .message(message)
-                .totalProcessed(totalEmployees)
-                .totalApplications(totalApplications)
-                .totalUnderSla(totalUnderSla)
-                .totalCompletingSla(totalCompletingSla)
-                .totalOverSla(totalOverSla)
-                .build();
+            String message = isAsync
+                    ? "Workflow daily reminder notifications triggered in background for " + totalEmployees + " user(s) with " + totalApplications + " pending application(s)."
+                    : "Workflow daily reminder notifications dispatched successfully for " + totalEmployees + " user(s).";
+
+            response = WorkflowReminderResponse.builder()
+                    .status(isAsync ? "TRIGGERED" : "COMPLETED")
+                    .message(message)
+                    .totalProcessed(totalEmployees)
+                    .totalApplications(totalApplications)
+                    .totalUnderSla(totalUnderSla)
+                    .totalCompletingSla(totalCompletingSla)
+                    .totalOverSla(totalOverSla)
+                    .build();
+        } catch (Throwable t) {
+            log.error("Failed during preparation phase of workflow reminder job. Releasing lock immediately: ", t);
+            isReminderRunning.set(false);
+            jobStartTime.set(0L);
+            isCancelRequested.set(false);
+            throw t;
+        }
 
         if (isAsync) {
-            Thread worker = new Thread(() -> {
+            final Map<String, UserWorkloadDigest> finalDigestMap = userDigestMap;
+            activeWorkerThread = new Thread(() -> {
                 try {
-                    executeWorkloadDigestJobWithMap(request, userDigestMap);
+                    executeWorkloadDigestJobWithMap(request, finalDigestMap);
+                } catch (Throwable t) {
+                    log.error("Fatal exception in workflow reminder background worker: ", t);
                 } finally {
                     isReminderRunning.set(false);
+                    jobStartTime.set(0L);
                     isCancelRequested.set(false);
+                    activeWorkerThread = null;
+                    log.info("Workflow reminder background worker completed and released lock.");
                 }
             }, "wf-reminder-worker");
-            worker.setPriority(Thread.MIN_PRIORITY);
-            worker.setDaemon(true);
-            worker.start();
+            activeWorkerThread.setPriority(Thread.MIN_PRIORITY);
+            activeWorkerThread.setDaemon(true);
+            activeWorkerThread.start();
         } else {
             try {
                 executeWorkloadDigestJobWithMap(request, userDigestMap);
+            } catch (Throwable t) {
+                log.error("Fatal exception during synchronous workflow reminder execution: ", t);
+                throw t;
             } finally {
                 isReminderRunning.set(false);
+                jobStartTime.set(0L);
                 isCancelRequested.set(false);
             }
         }
 
         return response;
+    }
+
+    /**
+     * Forcibly resets the running state of the reminder job. Interrupts the worker thread if alive.
+     *
+     * @return true if a job was actively running and was reset, false otherwise
+     */
+    public boolean resetReminderJob() {
+        boolean wasRunning = isReminderRunning.getAndSet(false);
+        jobStartTime.set(0L);
+        isCancelRequested.set(true);
+
+        Thread worker = activeWorkerThread;
+        if (worker != null && worker.isAlive()) {
+            try {
+                log.info("Interrupting active workflow reminder worker thread: {}", worker.getName());
+                worker.interrupt();
+            } catch (Exception e) {
+                log.warn("Failed to interrupt active worker thread: ", e);
+            }
+        }
+        activeWorkerThread = null;
+        log.info("Workflow daily reminder lock has been reset. Was previously running: {}", wasRunning);
+        return wasRunning;
     }
 
     /**

@@ -34,4 +34,10 @@ public class WorkflowReminderRequest {
 
     @JsonProperty("maxPerUser")
     private Integer maxPerUser;
+
+    @JsonProperty("assignee")
+    private String assignee;
+
+    @JsonProperty("force")
+    private Boolean force;
 }

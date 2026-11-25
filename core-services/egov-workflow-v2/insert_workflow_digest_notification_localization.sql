@@ -327,7 +327,7 @@ VALUES (
                       <!-- Official Sign-off -->
                       <p style="margin:0; font-size:13px; line-height:1.65; color:#334155;">
                         Issued by,<br>
-                        <strong style="color:#0b2545;">State Workflow Monitoring Cell</strong><br>
+                        <strong style="color:#0b2545;">PMIDC IT Team</strong><br>
                         Department of Local Government, Government of Punjab
                       </p>
 
@@ -656,7 +656,7 @@ VALUES (
                       <!-- Official Sign-off -->
                       <p style="margin:0; font-size:13px; line-height:1.65; color:#334155;">
                         Issued by,<br>
-                        <strong style="color:#0b2545;">State Workflow Monitoring Cell</strong><br>
+                        <strong style="color:#0b2545;">PMIDC IT Team</strong><br>
                         Department of Local Government, Government of Punjab
                       </p>
 

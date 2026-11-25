@@ -776,7 +776,7 @@ const jsPdfGeneratorNDC = async ({
   pdfMake.vfs = Fonts;
   let locale = Digit.SessionStorage.get("locale") || "pn_IN";
   let Hind = pdfFonts[locale] || pdfFonts["Hind"];
-  pdfMake.fonts = { Hind: { ...Hind } };
+  pdfMake.fonts = { Hind: { ...Hind }, Punjabi: { ...pdfFonts["pn_IN"] } };
 
   const generatedPDF = pdfMake.createPdf(dd);
   downloadPDFFileUsingBase64(generatedPDF, "ndc_certificate.pdf");

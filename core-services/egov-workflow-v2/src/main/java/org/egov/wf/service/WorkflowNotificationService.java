@@ -313,10 +313,19 @@ public class WorkflowNotificationService {
                     if (serviceName.contains(" (") && serviceName.endsWith(")")) {
                         int openParen = serviceName.lastIndexOf(" (");
                         String mainName = serviceName.substring(0, openParen);
-                        String codeName = serviceName.substring(openParen + 1); // e.g. "(NewTL)"
-                        serviceDisplayHtml = escapeHtml(mainName) + " <span style=\"font-size:12px; font-weight:normal; color:#475569;\">" + escapeHtml(codeName) + "</span>";
+                        String rawCode = serviceName.substring(openParen + 2, serviceName.length() - 1);
+                        String friendlyMain = formatBusinessServiceName(mainName);
+                        String friendlySub = formatBusinessServiceSubCode(rawCode);
+
+                        if (StringUtils.isNotBlank(friendlySub)
+                                && !friendlyMain.equalsIgnoreCase(friendlySub)
+                                && !friendlyMain.toLowerCase().contains(friendlySub.toLowerCase())) {
+                            serviceDisplayHtml = escapeHtml(friendlyMain) + " <span style=\"font-size:12px; font-weight:normal; color:#475569;\">(" + escapeHtml(friendlySub) + ")</span>";
+                        } else {
+                            serviceDisplayHtml = escapeHtml(friendlyMain);
+                        }
                     } else {
-                        serviceDisplayHtml = escapeHtml(serviceName);
+                        serviceDisplayHtml = escapeHtml(formatBusinessServiceName(serviceName));
                     }
 
                     String tenantBreakdownHtml = "";
@@ -816,6 +825,174 @@ public class WorkflowNotificationService {
                 if (sb.length() > 0) sb.append(" ");
                 sb.append(Character.toUpperCase(part.charAt(0)))
                   .append(part.substring(1).toLowerCase());
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Formats raw technical service/module names (e.g. 'tl-services', 'ws-service', 'bpa-services')
+     * into clean, official, human-readable titles (e.g. 'Trade License', 'Water Service', 'Building Plan Approval').
+     */
+    public static String formatBusinessServiceName(String rawName) {
+        if (StringUtils.isBlank(rawName)) {
+            return "Municipal Service";
+        }
+        String cleaned = rawName.trim();
+        String normalized = cleaned.toLowerCase()
+                .replace("-services", "")
+                .replace("-service", "")
+                .replace("_services", "")
+                .replace("_service", "")
+                .replaceAll("[_\\-\\.]", "");
+
+        switch (normalized) {
+            case "tl":
+            case "tradelicense":
+            case "tradelicence":
+            case "newtl":
+            case "directnewtl":
+            case "editrenewtl":
+            case "renewtl":
+                return "Trade License";
+
+            case "ws":
+            case "water":
+            case "waterconnection":
+            case "waterservice":
+            case "waterservices":
+            case "wsheader":
+                return "Water Service";
+
+            case "sw":
+            case "sewerage":
+            case "sewerageconnection":
+            case "sewerageservice":
+            case "sewerageservices":
+            case "swheader":
+                return "Sewerage Service";
+
+            case "bpa":
+            case "bpareg":
+            case "bpalowrisk":
+            case "buildingplan":
+            case "buildingplanapproval":
+                return "Building Plan Approval (BPA)";
+
+            case "noc":
+            case "firenoc":
+            case "provisionalfirenoc":
+                return "Fire NOC";
+
+            case "pt":
+            case "property":
+            case "propertytax":
+                return "Property Tax";
+
+            case "pgr":
+            case "rainmakerpgr":
+            case "complaint":
+            case "grievance":
+                return "Public Grievance Redressal (PGR)";
+
+            case "fsm":
+            case "fsmdisposer":
+                return "Faecal Sludge Management (FSM)";
+
+            case "mcollect":
+            case "echallan":
+            case "challangeneration":
+            case "challan":
+            case "uc":
+                return "mCollect / e-Challan";
+
+            case "pet":
+            case "ptr":
+                return "Pet Registration";
+
+            case "birthdeath":
+            case "bnd":
+            case "birth":
+            case "death":
+                return "Birth & Death Registration";
+
+            case "marriage":
+                return "Marriage Registration";
+
+            case "chb":
+            case "communityhall":
+            case "communityhallbooking":
+                return "Community Hall Booking";
+
+            case "clu":
+                return "Change of Land Use (CLU)";
+
+            case "land":
+                return "Land Services";
+
+            case "ndc":
+                return "No Dues Certificate (NDC)";
+
+            case "gc":
+                return "Garbage Clearance";
+
+            case "rl":
+                return "Road Cutting / Restoration (RL)";
+
+            case "vendor":
+            case "streetvending":
+            case "sv":
+                return "Street Vending";
+
+            case "advertisement":
+            case "adv":
+                return "Advertisement Hoarding";
+
+            default:
+                String formatted = cleaned.replace("-services", "")
+                        .replace("-service", "")
+                        .replace("_services", "")
+                        .replace("_service", "")
+                        .replaceAll("[_\\-]+", " ")
+                        .trim();
+                return capitalizeWords(formatted);
+        }
+    }
+
+    /**
+     * Formats technical sub-service codes into friendly descriptors.
+     * e.g. "NewTL" -> "NewTL", "WS.ONE_TIME_FEE" -> "New Connection"
+     */
+    public static String formatBusinessServiceSubCode(String subCode) {
+        if (StringUtils.isBlank(subCode)) {
+            return "";
+        }
+        String trimmed = subCode.trim();
+        if (trimmed.equalsIgnoreCase("WS.ONE_TIME_FEE") || trimmed.equalsIgnoreCase("SW.ONE_TIME_FEE")) {
+            return "New Connection";
+        }
+        if (trimmed.equalsIgnoreCase("EDITRENEWTL")) {
+            return "Renewal with Edit";
+        }
+        if (trimmed.equalsIgnoreCase("DIRECTNEWTL")) {
+            return "Direct Application";
+        }
+        return trimmed;
+    }
+
+    private static String capitalizeWords(String str) {
+        if (StringUtils.isBlank(str)) {
+            return "";
+        }
+        String[] words = str.split("\\s+");
+        StringBuilder sb = new StringBuilder();
+        for (String w : words) {
+            if (!w.isEmpty()) {
+                if (sb.length() > 0) sb.append(" ");
+                sb.append(Character.toUpperCase(w.charAt(0)));
+                if (w.length() > 1) {
+                    sb.append(w.substring(1).toLowerCase());
+                }
             }
         }
         return sb.toString();

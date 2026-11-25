@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.wf.repository.querybuilder.WorkflowQueryBuilder;
 import org.egov.wf.repository.rowmapper.WorkflowRowMapper;
+import org.egov.wf.service.WorkflowNotificationService;
 import org.egov.wf.web.models.ProcessInstance;
 import org.egov.wf.web.models.ProcessInstanceReminderCriteria;
 import org.egov.wf.web.models.ProcessInstanceSearchCriteria;
@@ -233,12 +234,17 @@ public class WorKflowRepository {
             int completingSlaCount = rs.getInt("completing_sla_count");
             int underSlaCount = rs.getInt("under_sla_count");
 
+            String formattedBusinessName = WorkflowNotificationService.formatBusinessServiceName(businessName);
             String displayServiceName;
-            if (StringUtils.isNotBlank(businessName) && StringUtils.isNotBlank(businessServiceCode)
-                    && !businessName.trim().equalsIgnoreCase(businessServiceCode.trim())) {
-                displayServiceName = businessName.trim() + " (" + businessServiceCode.trim() + ")";
+            if (StringUtils.isNotBlank(formattedBusinessName) && StringUtils.isNotBlank(businessServiceCode)
+                    && !formattedBusinessName.trim().equalsIgnoreCase(businessServiceCode.trim())
+                    && !formattedBusinessName.trim().toLowerCase().contains(businessServiceCode.trim().toLowerCase())) {
+                String subCode = WorkflowNotificationService.formatBusinessServiceSubCode(businessServiceCode);
+                displayServiceName = formattedBusinessName.trim() + " (" + subCode.trim() + ")";
             } else {
-                displayServiceName = StringUtils.isNotBlank(businessName) ? businessName.trim() : businessServiceCode.trim();
+                displayServiceName = StringUtils.isNotBlank(formattedBusinessName)
+                        ? formattedBusinessName.trim()
+                        : WorkflowNotificationService.formatBusinessServiceName(businessServiceCode);
             }
 
             if (StringUtils.isNotBlank(assigneeUuid)) {

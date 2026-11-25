@@ -108,27 +108,33 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
 
   function submit(data) {
     // useHRMSUpdate
-    data.effectiveFrom = new Date(data.effectiveFrom).getTime();
-    data.reasonForDeactivation = selectedReason.code;
+    const effectiveTimestamp = data?.effectiveFrom && !isNaN(new Date(data.effectiveFrom).getTime())
+      ? new Date(data.effectiveFrom).getTime()
+      : new Date().getTime();
+    const reasonCode = selectedReason?.code || data?.reasonForDeactivation;
     let Employees = [...applicationData.Employees];
+
     if (action !== "ACTIVATE_EMPLOYEE_HEAD") {
-      if (file) {
+      if (file && uploadedFile) {
         let documents = {
           referenceType: "DEACTIVATION",
           documentId: uploadedFile,
           documentName: file.name,
         };
-        applicationData.Employees[0]["documents"].push(documents);
+        if (!Employees[0].documents) {
+          Employees[0].documents = [];
+        }
+        Employees[0].documents.push(documents);
       }
 
       const existingDeactivation = Employees[0]?.deactivationDetails?.[0];
       Employees[0].deactivationDetails = [
         {
           ...(existingDeactivation?.id && { id: existingDeactivation.id }),
-          reasonForDeactivation: data?.reasonForDeactivation,
+          reasonForDeactivation: reasonCode,
           orderNo: data?.orderNo || "",
           remarks: data?.remarks || "",
-          effectiveFrom: new Date(),
+          effectiveFrom: effectiveTimestamp,
           tenantId: Employees[0]?.tenantId,
           ...(existingDeactivation?.auditDetails && { auditDetails: existingDeactivation.auditDetails }),
         },
@@ -137,20 +143,24 @@ const EmployeeAction = ({ t, action, tenantId, closeModal, submitAction, applica
       Employees[0].isActive = false;
       history.replace("/digit-ui/employee/hrms/response", { Employees, key: "UPDATE", action: "DEACTIVATION" });
     } else {
-      if (file) {
+      if (file && uploadedFile) {
         let documents = {
           referenceType: "ACTIVATION",
           documentId: uploadedFile,
           documentName: file.name,
         };
-        applicationData.Employees[0]["documents"].push(documents);
+        if (!Employees[0].documents) {
+          Employees[0].documents = [];
+        }
+        Employees[0].documents.push(documents);
       }
 
-      set(Employees[0], 'reactivationDetails[0].effectiveFrom', new Date()?.getTime());
-      set(Employees[0], 'reactivationDetails[0].orderNo', data?.orderNo);
-      set(Employees[0], 'reactivationDetails[0].reasonForDeactivation', data?.reasonForDeactivation);
-      set(Employees[0], 'reactivationDetails[0].remarks', data?.remarks);
+      set(Employees[0], 'reactivationDetails[0].effectiveFrom', effectiveTimestamp);
+      set(Employees[0], 'reactivationDetails[0].orderNo', data?.orderNo || "");
+      set(Employees[0], 'reactivationDetails[0].reasonForReactivation', reasonCode);
+      set(Employees[0], 'reactivationDetails[0].remarks', data?.remarks || "");
       Employees[0].isActive = true;
+      Employees[0].reActivateEmployee = true;
 
       history.replace("/digit-ui/employee/hrms/response", { Employees, key: "UPDATE", action: "ACTIVATION" });
     }

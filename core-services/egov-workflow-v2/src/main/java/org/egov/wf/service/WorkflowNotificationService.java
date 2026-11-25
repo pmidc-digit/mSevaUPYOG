@@ -225,7 +225,8 @@ public class WorkflowNotificationService {
             if (config != null && Boolean.TRUE.equals(config.getIsSmsNotificationEnabled())
                     && StringUtils.isNotBlank(smsDigestTemplate)
                     && StringUtils.isNotBlank(user.getMobileNumber())) {
-                sendDigestSms(smsDigestTemplate, user.getMobileNumber().trim(), assigneeName, totalCount, servicesCount, digest.getTenantId());
+                String effectiveTenantId = digest.getEffectiveTenantId(config.getStateLevelTenantId());
+                sendDigestSms(smsDigestTemplate, user.getMobileNumber().trim(), assigneeName, totalCount, servicesCount, effectiveTenantId);
             }
 
             // 2. Send Email if enabled and valid email is present
@@ -318,9 +319,29 @@ public class WorkflowNotificationService {
                         serviceDisplayHtml = escapeHtml(serviceName);
                     }
 
+                    String tenantBreakdownHtml = "";
+                    if (sla != null && sla.getTenantCounts() != null && !sla.getTenantCounts().isEmpty()) {
+                        StringBuilder tb = new StringBuilder();
+                        tb.append("<div style=\"font-size:11.5px; margin-top:4px; margin-bottom:2px; color:#475569;\">");
+                        tb.append("<span style=\"color:#0284c7; font-weight:700;\">&#9679;</span>&nbsp;");
+                        boolean first = true;
+                        for (Map.Entry<String, Integer> tEntry : sla.getTenantCounts().entrySet()) {
+                            if (!first) {
+                                tb.append(" &nbsp;&bull;&nbsp; ");
+                            }
+                            String ulbName = formatTenantName(tEntry.getKey());
+                            tb.append("<strong style=\"color:#1e293b;\">").append(escapeHtml(ulbName)).append("</strong>");
+                            tb.append(" <span style=\"color:#64748b; font-weight:normal;\">(").append(tEntry.getValue()).append(")</span>");
+                            first = false;
+                        }
+                        tb.append("</div>");
+                        tenantBreakdownHtml = tb.toString();
+                    }
+
                     tableRows.append("<tr style=\"background-color:").append(bg).append(";\">")
                             .append("<td style=\"padding:12px 18px; font-size:13px; font-weight:600; color:#1e293b; border-bottom:1px solid #e2e8f0; border-right:1px solid #cbd5e1;\">")
                             .append(serviceDisplayHtml)
+                            .append(tenantBreakdownHtml)
                             .append(slaSubtext)
                             .append("</td>")
                             .append("<td style=\"padding:12px 18px; font-size:13px; font-weight:bold; color:#0f172a; border-bottom:1px solid #e2e8f0; text-align:right;\">")
@@ -776,5 +797,27 @@ public class WorkflowNotificationService {
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;")
                 .replace("'", "&#39;");
+    }
+
+    private String formatTenantName(String tenantId) {
+        if (StringUtils.isBlank(tenantId)) {
+            return "Punjab State";
+        }
+        String clean = tenantId.trim();
+        if (clean.toLowerCase().startsWith("pb.")) {
+            clean = clean.substring(3);
+        } else if (clean.equalsIgnoreCase("pb")) {
+            return "Punjab State";
+        }
+        String[] parts = clean.split("[_\\-\\s]+");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            if (!part.isEmpty()) {
+                if (sb.length() > 0) sb.append(" ");
+                sb.append(Character.toUpperCase(part.charAt(0)))
+                  .append(part.substring(1).toLowerCase());
+            }
+        }
+        return sb.toString();
     }
 }

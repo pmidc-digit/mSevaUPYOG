@@ -844,157 +844,92 @@ public class WorkflowNotificationService {
                 .replace("-service", "")
                 .replace("_services", "")
                 .replace("_service", "")
-                .replaceAll("[_\\-\\.]", "");
+                .replaceAll("[\\s_.-]", "");
 
-        switch (normalized) {
-            case "tl":
-            case "tradelicense":
-            case "tradelicence":
-            case "newtl":
-            case "directnewtl":
-            case "editrenewtl":
-            case "renewtl":
-            case "editrenewal":
-            case "directrenewal":
-                return "Trade License";
-
-            case "ws":
-            case "water":
-            case "waterconnection":
-            case "waterservice":
-            case "waterservices":
-            case "wsheader":
-                return "Water Service";
-
-            case "sw":
-            case "sewerage":
-            case "sewerageconnection":
-            case "sewerageservice":
-            case "sewerageservices":
-            case "swheader":
-                return "Sewerage Service";
-
-            case "bpareg":
-            case "bparegupgrade":
-                return "Technical Personnel Registration (BPA)";
-
-            case "bpa":
-            case "bpalowrisk":
-            case "buildingplan":
-            case "buildingplanapproval":
-            case "bpabkp":
-            case "bpalow":
-            case "bpaoc":
-                return "Building Plan Approval (BPA)";
-
-            case "noc":
-            case "firenoc":
-            case "provisionalfirenoc":
-            case "obpasnoc":
-            case "obpasnocbkp":
-                return "Fire NOC";
-
-            case "pt":
-            case "property":
-            case "propertytax":
-                return "Property Tax";
-
-            case "pgr":
-            case "pgrdgr":
-            case "rainmakerpgr":
-            case "complaint":
-            case "grievance":
-                return "Public Grievance Redressal (PGR)";
-
-            case "fsm":
-            case "fsmdisposer":
-                return "Faecal Sludge Management (FSM)";
-
-            case "mcollect":
-            case "echallan":
-            case "challangeneration":
-            case "challan":
-            case "uc":
-                return "mCollect / e-Challan";
-
-            case "pet":
-            case "ptr":
-                return "Pet Registration";
-
-            case "birthdeath":
-            case "bnd":
-            case "birth":
-            case "death":
-                return "Birth & Death Registration";
-
-            case "marriage":
-                return "Marriage Registration";
-
-            case "chb":
-            case "communityhall":
-            case "communityhallbooking":
-            case "chbbackup":
-                return "Community Hall Booking";
-
-            case "clu":
-                return "Change of Land Use (CLU)";
-
-            case "land":
-                return "Land Services";
-
-            case "ndc":
-                return "No Dues Certificate (NDC)";
-
-            case "gc":
-            case "garbage":
-                return "Garbage Clearance";
-
-            case "layout":
-            case "layoutservice":
-                return "Town Planning Layout Approval";
-
-            case "rl":
-            case "rentnlease":
-            case "rentandlease":
-            case "rentlease":
-                return "Rent & Lease (Municipal Property)";
-
-            case "swachreform":
-            case "swach":
-            case "sbm":
-            case "sbmr":
-                return "Swachh Bharat Mission (SBMR)";
-
-            case "assetmanagement":
-            case "assetservices":
-            case "asset":
-                return "Municipal Asset Management";
-
-            case "bs":
-            case "bsamendment":
-                return "Business Service Amendment";
-
-            case "vendor":
-            case "streetvending":
-            case "sv":
-                return "Street Vending";
-
-            case "advertisement":
-            case "adv":
-            case "advandhoarding":
-            case "advandhoardingservices":
-            case "advbkp":
-                return "Advertisement & Hoarding";
-
-            default:
-                String formatted = cleaned.replace("-services", "")
-                        .replace("-service", "")
-                        .replace("_services", "")
-                        .replace("_service", "")
-                        .replaceAll("[_\\-]+", " ")
-                        .trim();
-                return capitalizeWords(formatted);
+        if (normalized.startsWith("challangeneration") || normalized.startsWith("challan")
+                || normalized.equals("mcollect") || normalized.equals("echallan") || normalized.equals("uc")) {
+            return "mCollect / e-Challan";
         }
+        if (normalized.startsWith("adv") || normalized.contains("hoarding")) {
+            return "Advertisement & Hoarding";
+        }
+        if (normalized.startsWith("swach") || normalized.startsWith("sbm")) {
+            return "Swachh Bharat Mission (SBMR)";
+        }
+        if (normalized.startsWith("chb") || normalized.contains("communityhall")) {
+            return "Community Hall Booking";
+        }
+        if (normalized.startsWith("asset")) {
+            return "Municipal Asset Management";
+        }
+        if (normalized.startsWith("bpareg")) {
+            return "Technical Personnel Registration (BPA)";
+        }
+        if (normalized.startsWith("bpa")) {
+            return "Building Plan Approval (BPA)";
+        }
+        if (normalized.startsWith("fire")) {
+            return "Fire NOC";
+        }
+        if (normalized.startsWith("noc") || normalized.startsWith("obpas") || normalized.contains("noobjection")) {
+            return "No Objection Service";
+        }
+        if (normalized.startsWith("layout")) {
+            return "Town Planning Layout Approval";
+        }
+        if (normalized.startsWith("clu")) {
+            return "Change of Land Use (CLU)";
+        }
+        if (normalized.startsWith("rl") || normalized.contains("rent") || normalized.contains("lease")) {
+            return "Rent & Lease (Municipal Property)";
+        }
+        if (normalized.startsWith("gc") || normalized.contains("garbage")) {
+            return "Garbage Clearance";
+        }
+        if (normalized.startsWith("tl") || normalized.contains("tradelicen")) {
+            return "Trade License";
+        }
+        if (normalized.startsWith("ws") || normalized.contains("water")) {
+            return "Water Service";
+        }
+        if (normalized.startsWith("sw") || normalized.contains("sewerage")) {
+            return "Sewerage Service";
+        }
+        if (normalized.startsWith("pt") || normalized.contains("property")) {
+            return "Property Tax";
+        }
+        if (normalized.startsWith("pgr") || normalized.contains("grievance") || normalized.contains("complaint")) {
+            return "Public Grievance Redressal (PGR)";
+        }
+        if (normalized.startsWith("pet") || normalized.equals("ptr")) {
+            return "Pet Registration";
+        }
+        if (normalized.equals("bs") || normalized.equals("bsamendment")) {
+            return "Business Service Amendment";
+        }
+        if (normalized.equals("ndc") || normalized.equals("ndcservices")) {
+            return "No Dues Certificate (NDC)";
+        }
+        if (normalized.equals("fsm") || normalized.equals("fsmdisposer")) {
+            return "Faecal Sludge Management (FSM)";
+        }
+        if (normalized.equals("vendor") || normalized.equals("streetvending") || normalized.equals("sv")) {
+            return "Street Vending";
+        }
+        if (normalized.equals("birthdeath") || normalized.equals("bnd") || normalized.equals("birth") || normalized.equals("death")) {
+            return "Birth & Death Registration";
+        }
+        if (normalized.equals("marriage")) {
+            return "Marriage Registration";
+        }
+
+        String formatted = cleaned.replace("-services", "")
+                .replace("-service", "")
+                .replace("_services", "")
+                .replace("_service", "")
+                .replaceAll("[_\\-]+", " ")
+                .trim();
+        return capitalizeWords(formatted);
     }
 
     /**
@@ -1048,6 +983,9 @@ public class WorkflowNotificationService {
         }
 
         // Technical Personnel Registration (BPAREG)
+        if (upper.equals("ARCHITECT_UPGRADE")) {
+            return "Architect Upgrade";
+        }
         if (upper.startsWith("ARCHITECT")) {
             return "Architect";
         }
@@ -1080,22 +1018,25 @@ public class WorkflowNotificationService {
             return "Closure";
         }
 
-        // Local Bodies (MC / NP / MCL)
-        if (upper.contains("_MC_") || upper.endsWith("_MC") || upper.startsWith("CLU_MC") || upper.startsWith("BPA_MC") || upper.startsWith("NOC_MC")) {
-            return "Municipal Corp";
-        }
-        if (upper.contains("_NP_") || upper.endsWith("_NP") || upper.startsWith("CLU_NP") || upper.startsWith("BPA_NP") || upper.startsWith("NOC_NP")) {
-            return "Nagar Panchayat";
-        }
-        if (upper.startsWith("CLU_MCL") || upper.startsWith("LAYOUT_MCL")) {
+        // Local Bodies (MC / NP / MCL) - check MCL first!
+        if (upper.contains("MCL") || upper.startsWith("CLU_MCL") || upper.startsWith("LAYOUT_MCL")) {
             return "Municipal Council";
         }
+        if (upper.contains("_MC") || upper.contains("MC_") || upper.startsWith("CLU_MC") || upper.startsWith("LAYOUT_MC") || upper.startsWith("BPA_MC") || upper.startsWith("NOC_MC")) {
+            return "Municipal Corporation";
+        }
+        if (upper.contains("_NP") || upper.contains("NP_") || upper.startsWith("CLU_NP") || upper.startsWith("BPA_NP") || upper.startsWith("NOC_NP")) {
+            return "Nagar Panchayat";
+        }
 
-        // Redundant codes matching module name directly
-        if (upper.equals("BPA") || upper.equals("FIRENOC") || upper.equals("PGR") || upper.equals("SBMR")
-                || upper.startsWith("CHALLAN_GENERATION") || upper.equals("TEST") || upper.equals("ABCTEST")
-                || upper.equals("BPAREG") || upper.equals("CHB-SERVICES") || upper.equals("NDC-SERVICES")
-                || upper.equals("ASSET-SERVICES") || upper.equals("PTR") || upper.equals("BS.AMENDMENT")) {
+        // Redundant / technical / test / backup codes to suppress
+        if (upper.equals("BPA") || upper.equals("FIRENOC") || upper.equals("PGR") || upper.equals("PGR_DGR")
+                || upper.equals("SBMR") || upper.startsWith("CHALLAN_GENERATION") || upper.equals("TEST")
+                || upper.equals("ABCTEST") || upper.equals("BPAREG") || upper.startsWith("CHB-SERVICES")
+                || upper.equals("NDC-SERVICES") || upper.equals("ASSET-SERVICES") || upper.equals("PTR")
+                || upper.equals("BS.AMENDMENT") || upper.equals("BPA_BKP") || upper.startsWith("OBPAS_NOC")
+                || upper.startsWith("CITIZEN") || upper.startsWith("ADV_BKP") || upper.equals("NOC")
+                || upper.startsWith("NOC-SERVICES") || upper.startsWith("NOC_SERVICES")) {
             return "";
         }
 

@@ -45,6 +45,7 @@ import org.egov.collection.repository.ServiceRequestRepository;
 import org.egov.collection.service.PaymentWorkflowService;
 import org.egov.collection.web.contract.Bill;
 import org.egov.collection.web.contract.BillDetail;
+import org.egov.collection.config.BusinessServiceToRoleMapping;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.joda.time.DateTime;
@@ -88,7 +89,9 @@ public class PaymentValidator {
         Map<String, String> errorMap = new HashMap<>();
         Payment payment = paymentRequest.getPayment();
         List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
-        validateUserInfo(paymentRequest.getRequestInfo(), errorMap);
+        if(!PaymentModeEnum.paymentModeValidation(payment.getPaymentMode())){
+        	validateUserInfo(paymentRequest.getRequestInfo(), errorMap);
+        }
         validateInstrument(paymentRequest.getPayment(),errorMap);
         Set<String> billIds = payment.getPaymentDetails().stream().map(PaymentDetail :: getBillId).collect(Collectors.toSet());
         
@@ -551,5 +554,54 @@ bill.setTotalAmount(  bill.getTotalAmount().setScale(0, RoundingMode.HALF_UP).se
 		}
 
 	}
+    /**
+     * Validates user info and verifies that the user has all authorized roles
+     * required for the POS payment's business service under the specified tenant.
+     * @param requestInfo
+     * @param payments
+     * @param tenantId
+     * 
+     * */
+    public static void validateRolesToBusinessService(RequestInfo requestInfo, Payment payment, String tenantId) {
+        // Validate User Info
+    	if (null == requestInfo) {
+    		throw new CustomException("INVALID_REQUEST_INFO", "RequestInfo cannot be null");
+        } else {
+            if (null == requestInfo.getUserInfo()) {
+            	throw new CustomException("INVALID_USER_INFO", "UserInfo within RequestInfo cannot be null");
+            } else {
+                if (StringUtils.isEmpty(requestInfo.getUserInfo().getUuid())) {
+                	throw new CustomException("INVALID_USER_ID", "UUID of the user within RequestInfo cannot be null");
+                }
+            }
+        }
+    	
+    	// Get authorized roles for business service
+    	String businessService = payment.getPaymentDetails().get(0).getBusinessService();
+    	if (businessService != null && businessService.startsWith("CH.")) {
+    		businessService = CollectionServiceConstants.ECHALLAN;
+    	}
+    	List<String> authorizedRoles = BusinessServiceToRoleMapping.getAuthorizedRoles(businessService);
+
+        if (authorizedRoles.isEmpty()) {
+        	throw new CustomException("ABSENT_BUSINESS_SERVICE_ROLE_MAPPING", "No role mapping configured for business service: " + businessService 
+            		+ ", for the selected Payment Mode: " + payment.getPaymentMode() );
+        }
+
+        // Get user roles matching tenant ID
+        List<String> userRoles = requestInfo.getUserInfo().getRoles()
+                .stream()
+                .filter(role -> tenantId.equals(role.getTenantId()))
+                .map(role -> role.getCode())
+                .collect(Collectors.toList());
+
+        // Check whether ALL authorized roles are present
+        boolean isAuthorized = userRoles.containsAll(authorizedRoles);
+
+        if (!isAuthorized) {
+        	throw new CustomException("UNAUTHORIZED_USER_ROLE", "User does not have all required roles for business service: " + businessService 
+            		+ ", for the selected Payment Mode: " + payment.getPaymentMode());
+        }
+    }
 
 }

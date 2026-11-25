@@ -1,283 +1,427 @@
-import React, { Fragment, useState, useEffect, useMemo, useCallback, useRef, useReducer } from 'react'
-import SearchFormFieldsComponent from './SearchFormFieldsComponent'
+import React, { useState, useEffect, useMemo, useRef, useReducer, useCallback } from "react";
+import SearchFormFieldsComponent from "./SearchFormFieldsComponent";
 import { useForm, Controller } from "react-hook-form";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 import {
-    CloseSvg,
-    SearchForm,
-    Table,
-    Card,
-    SearchAction,
-    PopUp,
-    DetailsCard,
-    Loader,
-    Toast,
-    MultiLink,
-    Header
+  CloseSvg,
+  SearchForm,
+  Table,
+  SearchAction,
+  PopUp,
+  DetailsCard,
+  Loader,
+  Header,
 } from "@mseva/digit-ui-react-components";
+import { epochToDisplayDate, formatAmount, getInitialFieldValue, getReportTitle, isAmountColumn, toNumber } from "../util";
 
+// Result rendering follows the old rainmaker reportResult.js:
+//  - S. No column, hidden columns (showColumn: false) are not shown
+//  - epoch columns as dd/mm/yyyy, currency / total columns with Indian digit grouping, right aligned
+//  - "Total" row for columns marked total: true (over all rows)
+//  - PDF (page size from additionalConfig.print.pdfPageSize, landscape when > 6 columns) and XLS of ALL rows
 
-const ReportSearchApplication = ({ onSubmit, isLoading, data, tableData, isTableDataLoading, Count, searchData, reportName }) => {
-    const { t } = useTranslation()
-    const { register, control, handleSubmit, setValue, getValues, reset, formState } = useForm({
-        defaultValues: {
-            ...searchData
-        }
-    }
-    )
-
-    //this resets the form after every search
-    // useEffect(() => {
-    //     if (formState.isSubmitSuccessful) {
-    //         let resetObj = {}
-    //         data?.reportDetails?.searchParams?.map(el => el.type === "multivaluelist" ? resetObj[el?.name] = [] : resetObj[el?.name] = "")
-    //         reset({ ...resetObj, isSubmitSuccessful: false, })
-    //     }
-    // }, [formState])
-
-
-    const searchFormFieldsComponentProps = { formState, Controller, register, control, t, reset, data };
-    const rowData = tableData?.reportData;
-    if(rowData?.[0]?.[0]!=1){
-        rowData?.map((row, index) => {
-            row?.unshift(index + 1)
-        })
-    }
-    
-
-    const rowHeaders = tableData?.reportHeader
-    
-    
-    if(rowHeaders?.[0]?.label!=="#"){
-        rowHeaders?.unshift({
-            label: "#"
-        }) 
-    }
-    
-    const rowHeadersCopy = rowHeaders && JSON.parse(JSON.stringify(rowHeaders))//deep copy
-    
-    const headersXLS = rowHeadersCopy?.map(header => t(header.label))
-    let rowDataXLS = rowData && JSON.parse(JSON.stringify(rowData))//deep copy
-    rowDataXLS?.unshift(headersXLS)
-    //rowDataXLS = rowDataXLS?.map(row => row.splice(1))
-    const getCellValue = (row, header, index) => {
-
-        if (header.type === "stringarray") {
-            const rowVal = row?.[index]?.split(',')
-            let finalRowVal;
-            if (header.localisationRequired) {
-                finalRowVal = rowVal.map(role => t(`${header.localisationPrefix}${role}`))
-                return finalRowVal.toString().replaceAll(",", " ")
-            } else {
-                finalRowVal = rowVal.map(role => role)
-                return finalRowVal.toString().replaceAll(",", " ")
-            }
-        }
-        const rowVal = header?.localisationRequired ? t(`${header?.localisationPrefix}${row[index]}`) : row?.[index]
-        return rowVal ? rowVal : "-"
-    }
-
-    const columns = useMemo(() => {
-        const colArray = rowHeaders?.map((header, index) => {
-            return {
-                Header: t(header.label),
-                disableSortBy: true,
-                accessor: (row) => <span className="cell-text">{getCellValue(row, header, index)}</span>
-            }
-        })
-        return colArray
-    }, [rowHeaders])
-    const [isDisplayDownloadMenu, setIsDisplayDownloadMenu] = useState(false)
-    const downloadOptions = [
-        {
-            label: "pdf",
-            onClick: () => Digit.Download.PDF(tableRef, reportName)
-        },
-        {
-            label: "xls",
-            onClick: () => {
-              return  Digit.Download.Excel(rowDataXLS, reportName)
-            }
-
-        }
-    ]
-    const tableRef = useRef()
-
-    const isMobile = window.Digit.Utils.browser.isMobile();
-
-    const propsMobileInboxCards = useMemo(
-        () =>
-            !rowData?.length > 0 ? [] : rowData?.map((data) => {
-                //map over columns and display the data in this format
-                //[t(columnheader)]:data to display
-                //here finalObj is each row
-                const finalObj = {}
-                columns?.map((col, index) => {
-                    finalObj[[t(`${col?.Header}`)]] = getCellValue(data, rowHeaders[index], index)
-                })
-                return finalObj;
-            }),
-        [rowData, isTableDataLoading]
-    );
-
-    if (isMobile) {
-
-        function activateModal(state, action) {
-            switch (action.type) {
-                case "set":
-                    return action.payload;
-                case "remove":
-                    return false;
-                default:
-                    break;
-            }
-        }
-
-        const [currentlyActiveMobileModal, setActiveMobileModal] = useReducer(activateModal, false);
-
-        const closeMobilePopupModal = () => {
-            setActiveMobileModal({ type: "remove" });
-        };
-
-        const MobilePopUpCloseButton = () => (
-            <div className="InboxMobilePopupCloseButtonWrapper" onClick={closeMobilePopupModal}>
-                <CloseSvg />
-            </div>
-        );
-
-        const MobileComponentDirectory = ({ currentlyActiveMobileModal, searchFormFieldsComponentProps, ...props }) => {
-            const { closeMobilePopupModal } = props;
-            switch (currentlyActiveMobileModal) {
-                case "SearchFormComponent":
-                    return (
-                        <SearchForm {...props}>
-                            <MobilePopUpCloseButton />
-                            <div className="MobilePopupHeadingWrapper">
-                                <h2>{t("ES_COMMON_SEARCH")}:</h2>
-                            </div>
-                            <SearchFormFieldsComponent {...searchFormFieldsComponentProps} {...{ closeMobilePopupModal }} />
-                        </SearchForm>
-                    );
-                default:
-                    return <span></span>;
-            }
-        };
-
-        const CurrentMobileModalComponent = useCallback(
-            ({ currentlyActiveMobileModal, searchFormFieldsComponentProps, ...props }) =>
-                MobileComponentDirectory({ currentlyActiveMobileModal, searchFormFieldsComponentProps, ...props }),
-            [currentlyActiveMobileModal]
-        );
-
-        if (isLoading) {
-            return <Loader />;
-        }
-        return (
-            <React.Fragment>
-                <div className="searchBox">
-                    <SearchAction
-                        text={t("ES_COMMON_SEARCH")}
-                        handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SearchFormComponent" })}
-                    />
-                </div>
-                {currentlyActiveMobileModal ? (
-                    <PopUp>
-                        <CurrentMobileModalComponent
-                            onSubmit={(data) => {
-                                setActiveMobileModal({ type: "remove" });
-                                onSubmit(data);
-                            }}
-                            handleSubmit={handleSubmit}
-                            id="search-form"
-                            className="rm-mb form-field-flex-one inboxPopupMobileWrapper"
-                            {...{ searchFormFieldsComponentProps, currentlyActiveMobileModal, closeMobilePopupModal }}
-                        />
-                    </PopUp>
-                ) : null}
-                {!isTableDataLoading && tableData?.display ? (
-                    <Card style={{ marginTop: 20 }}>
-                        {
-                            t(tableData?.display)
-                                .split("\\n")
-                                .map((text, index) => (
-                                    <p key={index} style={{ textAlign: "center" }}>
-                                        {text}
-                                    </p>
-                                ))
-                        }
-                    </Card>
-                ) : !isTableDataLoading ? (
-                    <DetailsCard
-                        {...{
-                            data: propsMobileInboxCards,
-                            isTwoDynamicPrefix: true,
-                        }}
-                    />
-                ) : <Loader />}
-            </React.Fragment>
-        );
-
-    }
-
-    return (
-        <React.Fragment>
-            {/* <Header>{reportName}</Header> */}
-            <Header>{data?.reportDetails?.reportName}</Header>
-            {isLoading ? <Loader /> :
-                <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
-                    <SearchFormFieldsComponent {...searchFormFieldsComponentProps} />
-                </SearchForm>}
-
-            {!isTableDataLoading && tableData?.display ? (
-                <Card style={{ marginTop: 20 }}>
-                    {
-                        t(tableData?.display)
-                            .split("\\n")
-                            .map((text, index) => (
-                                <p key={index} style={{ textAlign: "center" }}>
-                                    {text}
-                                </p>
-                            ))
-                    }
-                </Card>
-            ) : !isTableDataLoading ? (<Table
-                tableRef={tableRef}
-                t={t}
-                className={"table reports-table "}
-                data={rowData}
-                columns={columns}
-                getCellProps={(cellInfo) => {
-                    
-                    return {
-                        style: {
-                            padding: "20px 18px",
-                            fontSize: "16px",
-                            // overflowWrap:"break-work",
-                            //whiteSpace: 'pre-wrap',
-                            wordBreak: cellInfo?.column?.Header === t("reports.hrms.role") ? "break-all" : null,
-                            minWidth: cellInfo?.column?.Header === "#" ? "100px" : null,
-                            width: cellInfo?.column?.Header === "#" ? "100px" : null
-                            //whiteSpace:"break-space"
-                        },
-                    };
-                }}
-                manualPagination={false}
-                totalRecords={Count}
-                tableTopComponent={<MultiLink
-                    className="multilinkWrapper"
-                    // optionsStyle={{ "position": "relative" }}
-                    // style={{"position":"relative"}}
-                    onHeadClick={() => setIsDisplayDownloadMenu(!isDisplayDownloadMenu)}
-                    displayOptions={isDisplayDownloadMenu}
-                    options={downloadOptions}
-                    downloadBtnClassName={"reports-download-btn"}
-                    downloadOptionsClassName={"reports-options-download"}
-                    reportStyles={{"position":"relative"}}
-                />}
-                isReportTable={true}
-            />) : <Loader />}
-        </React.Fragment>
-    )
+function activateModal(state, action) {
+  switch (action.type) {
+    case "set":
+      return action.payload;
+    case "remove":
+      return false;
+    default:
+      return state;
+  }
 }
 
-export default ReportSearchApplication
+const Icon = ({ d, ...rest }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...rest}>
+    {d}
+  </svg>
+);
+const SearchIcon = () => <Icon d={[<circle key="c" cx="11" cy="11" r="7" />, <path key="p" d="M20 20l-3.5-3.5" />]} />;
+const DownloadIcon = () => <Icon d={[<path key="a" d="M12 4v11" />, <path key="b" d="M7 10l5 5 5-5" />, <path key="c" d="M5 20h14" />]} />;
+const ChevronIcon = () => <Icon d={<path d="M6 9l6 6 6-6" />} />;
+const EmptyIcon = () => <Icon d={[<rect key="r" x="4" y="3" width="16" height="18" rx="2" />, <path key="l" d="M8 8h8M8 12h8M8 16h5" />]} />;
+
+const DownloadMenu = ({ options, label, disabled }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  return (
+    <div className="rpt-download" ref={ref}>
+      <button type="button" className="rpt-btn rpt-btn--secondary" aria-haspopup="menu" aria-expanded={open} disabled={disabled} onClick={() => setOpen(!open)}>
+        <DownloadIcon />
+        {label}
+        <ChevronIcon />
+      </button>
+      {open ? (
+        <div className="rpt-menu" role="menu">
+          {options.map((o) => (
+            <button
+              key={o.key}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                o.onClick();
+              }}
+            >
+              <span className="rpt-file-badge" style={{ background: o.color }}>
+                {o.badge}
+              </span>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const ReportSearchApplication = ({
+  onSubmit,
+  onReset,
+  isLoading,
+  isMetaError,
+  data,
+  tableData,
+  isTableDataLoading,
+  Count,
+  searchData,
+  reportName,
+  resultLabel,
+  tenantId,
+}) => {
+  const { t } = useTranslation();
+  const { register, control, handleSubmit, getValues, reset, formState } = useForm({
+    defaultValues: { ...searchData },
+  });
+  const tableRef = useRef();
+  const [searchText, setSearchText] = useState("");
+  const [currentlyActiveMobileModal, setActiveMobileModal] = useReducer(activateModal, false);
+  const isMobile = window.Digit.Utils.browser.isMobile();
+
+  const reportDetails = data?.reportDetails;
+  const reportTitle = getReportTitle(reportDetails, reportName, t);
+
+  // initialValue from metadata (old componentWillReceiveProps)
+  useEffect(() => {
+    const fields = reportDetails?.searchParams || [];
+    const init = {};
+    fields.forEach((f) => {
+      const v = getInitialFieldValue(f, t);
+      if (v !== undefined) init[f.name] = v;
+    });
+    if (Object.keys(init).length) reset({ ...getValues(), ...init });
+  }, [reportDetails]);
+
+  const headers = tableData?.reportHeader || [];
+  const rowData = tableData?.reportData || [];
+
+  useEffect(() => setSearchText(""), [tableData]);
+
+  const visibleIdx = useMemo(() => headers.map((h, i) => (h?.showColumn === false ? -1 : i)).filter((i) => i > -1), [headers]);
+
+  const formatCell = useCallback(
+    (row, index) => {
+      const header = headers[index] || {};
+      const raw = row?.[index];
+      if (raw === null || raw === undefined || raw === "") return "-";
+      if (header.type === "epoch") return epochToDisplayDate(raw);
+      if (header.type === "stringarray") {
+        const parts = String(raw).split(",");
+        return parts.map((p) => (header.localisationRequired ? t(`${header.localisationPrefix || ""}${p}`) : p)).join(" ");
+      }
+      if (isAmountColumn(header)) return formatAmount(raw);
+      if (header.localisationRequired) return t(`${header.localisationPrefix || ""}${raw}`);
+      return raw;
+    },
+    [headers, t]
+  );
+
+  const totals = useMemo(() => {
+    const result = {};
+    visibleIdx.forEach((i) => {
+      if (!headers[i]?.total) return;
+      let sum;
+      rowData.forEach((row) => {
+        const n = toNumber(row?.[i]);
+        if (typeof n === "number" && !isNaN(n)) sum = (sum || 0) + n;
+      });
+      result[i] = sum;
+    });
+    return result;
+  }, [rowData, headers, visibleIdx]);
+  const hasTotals = Object.keys(totals).length > 0 && rowData.length > 0;
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: t("REPORTS_SNO") !== "REPORTS_SNO" ? t("REPORTS_SNO") : "S. No",
+        id: "__sno",
+        disableSortBy: true,
+        accessor: (row, rowIndex) => rowIndex + 1,
+        Cell: ({ row }) => <span className="cell-text rpt-sno">{row.index + 1}</span>,
+      },
+      ...visibleIdx.map((index) => {
+        const label = t(headers[index]?.label);
+        const isAmount = isAmountColumn(headers[index]);
+        return {
+          // amount headers are right aligned to sit above their right aligned values
+          Header: isAmount ? () => <span className="rpt-th--num">{label}</span> : label,
+          isStatusColumn: !isAmount && /status/i.test(String(label)),
+          id: `col_${index}`,
+          disableSortBy: true,
+          accessor: (row) => row?.[index],
+          Cell: ({ row }) => <span className="cell-text">{formatCell(row.original, index)}</span>,
+        };
+      }),
+    ],
+    [visibleIdx, headers, formatCell, t]
+  );
+
+  // ---- downloads (all rows, not only the visible page) ----
+  const exportHeaders = useMemo(() => ["S. No", ...visibleIdx.map((i) => t(headers[i]?.label))], [visibleIdx, headers, t]);
+  const getExportRows = () => {
+    const rows = rowData.map((row, r) => [r + 1, ...visibleIdx.map((i) => formatCell(row, i))]);
+    if (hasTotals) rows.push(["Total", ...visibleIdx.map((i) => (i in totals && totals[i] !== undefined ? formatAmount(totals[i]) : ""))]);
+    return rows;
+  };
+
+  const downloadOptions = [
+    {
+      key: "pdf",
+      label: "PDF document",
+      badge: "PDF",
+      color: "#dc2626",
+      onClick: () => {
+        const pageSize = String(reportDetails?.additionalConfig?.print?.pdfPageSize || "LEGAL").toUpperCase();
+        const pageOrientation = visibleIdx.length > 6 ? "landscape" : "portrait";
+        Digit.Download.TablePDF(`mSeva Reports - ${reportTitle}`, exportHeaders, getExportRows(), reportName, {
+          pageSize,
+          pageOrientation,
+          subtitle: resultLabel,
+        });
+      },
+    },
+    {
+      key: "xls",
+      label: "Excel spreadsheet",
+      badge: "XLS",
+      color: "#16a34a",
+      onClick: () => {
+        // unique column keys so two columns with the same label don't overwrite each other
+        const keys = [];
+        exportHeaders.forEach((h) => {
+          let k = `${h}`;
+          let n = 2;
+          while (keys.includes(k)) k = `${h} (${n++})`;
+          keys.push(k);
+        });
+        const json = getExportRows().map((row) => {
+          const obj = {};
+          keys.forEach((k, i) => (obj[k] = row[i]));
+          return obj;
+        });
+        Digit.Download.Excel(json, reportName);
+      },
+    },
+  ];
+
+  const searchFormFieldsComponentProps = { formState, Controller, register, control, t, reset, data, tenantId, onReset };
+
+  const totalLabel = t("REPORTS_TOTAL") !== "REPORTS_TOTAL" ? t("REPORTS_TOTAL") : "Total";
+  const totalIdx = visibleIdx.filter((i) => i in totals);
+
+  const TotalsRow = () =>
+    hasTotals ? (
+      <div className="rpt-summary" aria-label={totalLabel}>
+        {totalIdx.map((i, n) => (
+          <div key={i} className={`rpt-stat${n === totalIdx.length - 1 ? " rpt-stat--accent" : ""}`}>
+            <div className="rpt-stat-label" title={t(headers[i]?.label)}>
+              {totalLabel} {t(headers[i]?.label)}
+            </div>
+            <div className="rpt-stat-value">{totals[i] === undefined ? "-" : formatAmount(totals[i])}</div>
+          </div>
+        ))}
+      </div>
+    ) : null;
+
+  const NoData = () => (
+    <div className="rpt-empty">
+      <EmptyIcon />
+      {t(tableData?.display)
+        .split("\\n")
+        .map((text, index) => (
+          <p key={index}>{text}</p>
+        ))}
+    </div>
+  );
+
+  const recordCount = rowData.length;
+  const recordsText = `${recordCount} ${recordCount === 1 ? "record" : "records"}`;
+
+  if (isLoading) return <Loader />;
+  if (isMetaError || (data && !reportDetails)) {
+    return (
+      <div className="rpt-page">
+        <div className="rpt-card">
+          <div className="rpt-empty">
+            <EmptyIcon />
+            <p>{t("REPORTS_NOT_FOUND") !== "REPORTS_NOT_FOUND" ? t("REPORTS_NOT_FOUND") : `Report "${reportName}" could not be loaded`}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    const mobileCards = rowData.map((row, r) => {
+      const obj = { "S. No": r + 1 };
+      visibleIdx.forEach((i) => (obj[t(headers[i]?.label)] = formatCell(row, i)));
+      return obj;
+    });
+    return (
+      <div className="rpt-page">
+        <Header>{reportTitle}</Header>
+        <div className="searchBox">
+          <SearchAction text={t("ES_COMMON_SEARCH")} handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SearchFormComponent" })} />
+        </div>
+        {currentlyActiveMobileModal ? (
+          <PopUp>
+            <SearchForm
+              onSubmit={(formData) => {
+                setActiveMobileModal({ type: "remove" });
+                onSubmit(formData);
+              }}
+              handleSubmit={handleSubmit}
+              id="search-form"
+              className="rm-mb form-field-flex-one inboxPopupMobileWrapper"
+            >
+              <div className="InboxMobilePopupCloseButtonWrapper" onClick={() => setActiveMobileModal({ type: "remove" })}>
+                <CloseSvg />
+              </div>
+              <div className="MobilePopupHeadingWrapper">
+                <h2>{t("ES_COMMON_SEARCH")}:</h2>
+              </div>
+              <SearchFormFieldsComponent {...searchFormFieldsComponentProps} />
+            </SearchForm>
+          </PopUp>
+        ) : null}
+        {resultLabel && tableData && !tableData.display ? (
+          <div className="rpt-meta">
+            <span>{resultLabel}</span>
+            <span className="rpt-chip">{recordsText}</span>
+          </div>
+        ) : null}
+        {isTableDataLoading ? (
+          <Loader />
+        ) : tableData?.display ? (
+          <div className="rpt-card">
+            <NoData />
+          </div>
+        ) : tableData ? (
+          <React.Fragment>
+            <TotalsRow />
+            <DetailsCard data={mobileCards} isTwoDynamicPrefix={true} />
+          </React.Fragment>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className="rpt-page">
+      <div className="rpt-page-header">
+        <h1>{reportTitle}</h1>
+        <p>Set the search criteria and click Search to generate the report.</p>
+      </div>
+
+      <section className="rpt-card">
+        <div className="rpt-card-head">
+          <h2>Search criteria</h2>
+          <span className="rpt-hint">
+            Fields marked <span className="rpt-required">*</span> are required
+          </span>
+        </div>
+        <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit} className="rpt-filter-form">
+          <SearchFormFieldsComponent {...searchFormFieldsComponentProps} />
+        </SearchForm>
+      </section>
+
+      {isTableDataLoading ? (
+        <section className="rpt-card">
+          <Loader />
+        </section>
+      ) : tableData?.display ? (
+        <section className="rpt-card">
+          <NoData />
+        </section>
+      ) : tableData ? (
+        <section className="rpt-card">
+          <div className="rpt-results-head">
+            <div>
+              <h2>Results</h2>
+              <div className="rpt-meta">
+                <span className="rpt-chip">{recordsText}</span>
+                {resultLabel ? <span>{resultLabel}</span> : null}
+              </div>
+            </div>
+            <div className="rpt-toolbar">
+              <div className="rpt-search">
+                <SearchIcon />
+                <input
+                  type="search"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  placeholder={t("REPORTS_SEARCH_IN_RESULTS") !== "REPORTS_SEARCH_IN_RESULTS" ? t("REPORTS_SEARCH_IN_RESULTS") : "Search in results"}
+                  aria-label="Search in results"
+                />
+              </div>
+              <DownloadMenu options={downloadOptions} label={t("CS_COMMON_DOWNLOAD")} disabled={!recordCount} />
+            </div>
+          </div>
+
+          <TotalsRow />
+
+          <div className="rpt-table-wrap">
+            <Table
+              tableRef={tableRef}
+              t={t}
+              className={"table reports-table"}
+              data={rowData}
+              columns={columns}
+              onSearch={searchText}
+              searchAllFields={true}
+              getCellProps={(cellInfo) => {
+                const index = cellInfo?.column?.id?.startsWith("col_") ? Number(cellInfo.column.id.slice(4)) : -1;
+                return {
+                  style: {
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    textAlign: index > -1 && isAmountColumn(headers[index]) ? "right" : "left",
+                    wordBreak: cellInfo?.column?.Header === t("reports.hrms.role") ? "break-all" : null,
+                    width: cellInfo?.column?.id === "__sno" ? "64px" : null,
+                  },
+                };
+              }}
+              manualPagination={false}
+              totalRecords={Count}
+              isReportTable={true}
+            />
+          </div>
+        </section>
+      ) : null}
+    </div>
+  );
+};
+
+export default ReportSearchApplication;

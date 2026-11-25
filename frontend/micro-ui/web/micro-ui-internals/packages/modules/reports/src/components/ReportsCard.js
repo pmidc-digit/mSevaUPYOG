@@ -13,17 +13,17 @@ const ReportsCard = () => {
     let links = [
         {
             label: t("ACTION_TEST_RECEIPTREGISTER"),
-            link: `/digit-ui/employee/reports/search/pt-reports/PTReceiptRegister`,
+            link: `/digit-ui/employee/reports/search/rainmaker-pt/ReceiptRegister_without_locality_V2`,
             roles: ["UC_EMP", "PT_CEMP"]
         },
         {
             label: t("ACTION_TEST_COLLECTION_REGISTER"),
-            link: `/digit-ui/employee/reports/search/pt-reports/PTCollectionReport`,
+            link: `/digit-ui/employee/reports/search/rainmaker-pt/PTCollectionReport`,
             roles: ["PT_CEMP"]
         },
         {
             label: t("ACTION_TEST_DEFAULTER_REPORT"),
-            link: `/digit-ui/employee/reports/search/pt-reports/DefaulterReport`,
+            link: `/digit-ui/employee/reports/search/rainmaker-pt/DefaulterReport`,
             roles: ["PT_COLLECTION_EMP",]
         },
         {

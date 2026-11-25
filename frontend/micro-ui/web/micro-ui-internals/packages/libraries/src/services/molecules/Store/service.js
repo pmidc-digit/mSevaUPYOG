@@ -76,6 +76,15 @@ export const StoreService = {
     };
 
   
+    // Fallback: "Reports" is not configured in MDMS tenant/citymodule, so no
+    // /employee/reports route gets created. Register it locally until MDMS has it.
+    if (enabledModules?.includes("Reports") && !initData.modules?.some((m) => m?.code === "Reports")) {
+      initData.modules = [
+        ...(initData.modules || []),
+        { code: "Reports", module: "Reports", active: true, order: 999, tenants: (MdmsRes?.tenant?.tenants || []).map((t) => ({ code: t.code })) },
+      ];
+    }
+
     initData.selectedLanguage = Digit.SessionStorage.get("locale") || initData.languages[0].value;
 
     ApiCacheService.saveSetting(MdmsRes["DIGIT-UI"]?.ApiCachingSettings);

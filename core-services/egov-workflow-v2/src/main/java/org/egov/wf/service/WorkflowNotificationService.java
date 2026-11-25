@@ -854,6 +854,8 @@ public class WorkflowNotificationService {
             case "directnewtl":
             case "editrenewtl":
             case "renewtl":
+            case "editrenewal":
+            case "directrenewal":
                 return "Trade License";
 
             case "ws":
@@ -872,16 +874,24 @@ public class WorkflowNotificationService {
             case "swheader":
                 return "Sewerage Service";
 
-            case "bpa":
             case "bpareg":
+            case "bparegupgrade":
+                return "Technical Personnel Registration (BPA)";
+
+            case "bpa":
             case "bpalowrisk":
             case "buildingplan":
             case "buildingplanapproval":
+            case "bpabkp":
+            case "bpalow":
+            case "bpaoc":
                 return "Building Plan Approval (BPA)";
 
             case "noc":
             case "firenoc":
             case "provisionalfirenoc":
+            case "obpasnoc":
+            case "obpasnocbkp":
                 return "Fire NOC";
 
             case "pt":
@@ -890,6 +900,7 @@ public class WorkflowNotificationService {
                 return "Property Tax";
 
             case "pgr":
+            case "pgrdgr":
             case "rainmakerpgr":
             case "complaint":
             case "grievance":
@@ -922,6 +933,7 @@ public class WorkflowNotificationService {
             case "chb":
             case "communityhall":
             case "communityhallbooking":
+            case "chbbackup":
                 return "Community Hall Booking";
 
             case "clu":
@@ -934,10 +946,33 @@ public class WorkflowNotificationService {
                 return "No Dues Certificate (NDC)";
 
             case "gc":
+            case "garbage":
                 return "Garbage Clearance";
 
+            case "layout":
+            case "layoutservice":
+                return "Town Planning Layout Approval";
+
             case "rl":
-                return "Road Cutting / Restoration (RL)";
+            case "rentnlease":
+            case "rentandlease":
+            case "rentlease":
+                return "Rent & Lease (Municipal Property)";
+
+            case "swachreform":
+            case "swach":
+            case "sbm":
+            case "sbmr":
+                return "Swachh Bharat Mission (SBMR)";
+
+            case "assetmanagement":
+            case "assetservices":
+            case "asset":
+                return "Municipal Asset Management";
+
+            case "bs":
+            case "bsamendment":
+                return "Business Service Amendment";
 
             case "vendor":
             case "streetvending":
@@ -946,7 +981,10 @@ public class WorkflowNotificationService {
 
             case "advertisement":
             case "adv":
-                return "Advertisement Hoarding";
+            case "advandhoarding":
+            case "advandhoardingservices":
+            case "advbkp":
+                return "Advertisement & Hoarding";
 
             default:
                 String formatted = cleaned.replace("-services", "")
@@ -961,22 +999,106 @@ public class WorkflowNotificationService {
 
     /**
      * Formats technical sub-service codes into friendly descriptors.
-     * e.g. "NewTL" -> "NewTL", "WS.ONE_TIME_FEE" -> "New Connection"
+     * e.g. "NewTL" -> "New Application", "WS.ONE_TIME_FEE" -> "New Connection", "PT.MUTATION" -> "Mutation"
      */
     public static String formatBusinessServiceSubCode(String subCode) {
         if (StringUtils.isBlank(subCode)) {
             return "";
         }
         String trimmed = subCode.trim();
-        if (trimmed.equalsIgnoreCase("WS.ONE_TIME_FEE") || trimmed.equalsIgnoreCase("SW.ONE_TIME_FEE")) {
+        String upper = trimmed.toUpperCase();
+
+        // Water, Sewerage & Garbage connections & disconnections
+        if (upper.startsWith("NEWWS") || upper.startsWith("NEWSW") || upper.equals("WS.ONE_TIME_FEE") || upper.equals("SW.ONE_TIME_FEE") || upper.startsWith("NEWGC")) {
             return "New Connection";
         }
-        if (trimmed.equalsIgnoreCase("EDITRENEWTL")) {
+        if (upper.startsWith("MODIFYWS") || upper.startsWith("MODIFYSW") || upper.startsWith("MODIFYGC")) {
+            return "Modify Connection";
+        }
+        if (upper.startsWith("DISCONNECTWS") || upper.startsWith("DISCONNECTSW") || upper.startsWith("DISCONNECTGC")) {
+            return "Disconnection";
+        }
+
+        // Trade License
+        if (upper.equals("NEWTL") || upper.equals("NEWTL.NHAZ")) {
+            return "New Application";
+        }
+        if (upper.equals("NEWTL.HAZ")) {
+            return "Hazardous License";
+        }
+        if (upper.equals("DIRECTRENEWAL") || upper.equals("DIRECTNEWTL") || upper.equals("RENEWTL")) {
+            return "Direct Renewal";
+        }
+        if (upper.equals("EDITRENEWAL") || upper.equals("EDITRENEWTL")) {
             return "Renewal with Edit";
         }
-        if (trimmed.equalsIgnoreCase("DIRECTNEWTL")) {
-            return "Direct Application";
+
+        // Property Tax
+        if (upper.equals("PT.CREATE")) {
+            return "New Assessment";
         }
+        if (upper.equals("PT.UPDATE")) {
+            return "Update Assessment";
+        }
+        if (upper.equals("PT.MUTATION")) {
+            return "Mutation";
+        }
+        if (upper.startsWith("PT.CREATEWITHWNS")) {
+            return "With Water & Sewerage";
+        }
+
+        // Technical Personnel Registration (BPAREG)
+        if (upper.startsWith("ARCHITECT")) {
+            return "Architect";
+        }
+        if (upper.startsWith("ENGINEER")) {
+            return "Engineer";
+        }
+        if (upper.startsWith("TOWNPLANNER")) {
+            return "Town Planner";
+        }
+        if (upper.startsWith("SUPERVISOR")) {
+            return "Supervisor";
+        }
+        if (upper.equals("BPAREG_UPGRADE")) {
+            return "License Upgrade";
+        }
+
+        // Building Plan Approval
+        if (upper.equals("BPA_OC")) {
+            return "Occupancy Certificate";
+        }
+        if (upper.equals("BPA_LOW")) {
+            return "Low Risk Plan";
+        }
+
+        // Rent & Lease
+        if (upper.startsWith("RENT_N_LEASE_NEW") || upper.startsWith("RENT_AND_LEASE")) {
+            return "New Lease";
+        }
+        if (upper.equals("CLOSE_RENT_N_LEASE")) {
+            return "Closure";
+        }
+
+        // Local Bodies (MC / NP / MCL)
+        if (upper.contains("_MC_") || upper.endsWith("_MC") || upper.startsWith("CLU_MC") || upper.startsWith("BPA_MC") || upper.startsWith("NOC_MC")) {
+            return "Municipal Corp";
+        }
+        if (upper.contains("_NP_") || upper.endsWith("_NP") || upper.startsWith("CLU_NP") || upper.startsWith("BPA_NP") || upper.startsWith("NOC_NP")) {
+            return "Nagar Panchayat";
+        }
+        if (upper.startsWith("CLU_MCL") || upper.startsWith("LAYOUT_MCL")) {
+            return "Municipal Council";
+        }
+
+        // Redundant codes matching module name directly
+        if (upper.equals("BPA") || upper.equals("FIRENOC") || upper.equals("PGR") || upper.equals("SBMR")
+                || upper.startsWith("CHALLAN_GENERATION") || upper.equals("TEST") || upper.equals("ABCTEST")
+                || upper.equals("BPAREG") || upper.equals("CHB-SERVICES") || upper.equals("NDC-SERVICES")
+                || upper.equals("ASSET-SERVICES") || upper.equals("PTR") || upper.equals("BS.AMENDMENT")) {
+            return "";
+        }
+
         return trimmed;
     }
 

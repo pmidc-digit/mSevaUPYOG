@@ -240,7 +240,11 @@ public class WorKflowRepository {
                     && !formattedBusinessName.trim().equalsIgnoreCase(businessServiceCode.trim())
                     && !formattedBusinessName.trim().toLowerCase().contains(businessServiceCode.trim().toLowerCase())) {
                 String subCode = WorkflowNotificationService.formatBusinessServiceSubCode(businessServiceCode);
-                displayServiceName = formattedBusinessName.trim() + " (" + subCode.trim() + ")";
+                if (StringUtils.isNotBlank(subCode)) {
+                    displayServiceName = formattedBusinessName.trim() + " (" + subCode.trim() + ")";
+                } else {
+                    displayServiceName = formattedBusinessName.trim();
+                }
             } else {
                 displayServiceName = StringUtils.isNotBlank(formattedBusinessName)
                         ? formattedBusinessName.trim()

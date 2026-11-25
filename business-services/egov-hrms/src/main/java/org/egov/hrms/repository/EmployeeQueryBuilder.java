@@ -57,57 +57,63 @@ public class EmployeeQueryBuilder {
 	    return paginationClause(criteria, builder);
 	}
 
-	public String getObpasEmployeeSearchQuery(ObpasEmployeeSearchCriteria criteria, List<Object> preparedStmtList) {
+	public String getObpasEmployeeSearchQuery(List<ObpasEmployeeSearchCriteria> criterias, List<Object> preparedStmtList) {
 		StringBuilder builder = new StringBuilder(EmployeeQueries.OBPAS_EMPLOYEE_LIST);
+		StringBuilder whereClause = new StringBuilder();
+		
+		criterias.forEach(criteria -> {
+			 builder.append(" OR ( 1=1 ");
+			 
+			 if (criteria.getTenantId() != null) {
+			        builder.append(" AND tenantid = ? ");
+			        preparedStmtList.add(criteria.getTenantId());
+			    }
 
-	    if (criteria.getTenantId() != null) {
-	        builder.append(" AND tenantid = ? ");
-	        preparedStmtList.add(criteria.getTenantId());
-	    }
+			    if (criteria.getUserUUID() != null) {
+			        builder.append(" AND userid = ? "); // keep as userid
+			        preparedStmtList.add(criteria.getUserUUID());
+			    }
+			    
+			    if (criteria.getUuid() != null) {
+			        builder.append(" AND uuid = ?::uuid ");
+			        preparedStmtList.add(criteria.getUuid());
+			    }
 
-	    if (criteria.getUserUUID() != null) {
-	        builder.append(" AND userid = ? "); // keep as userid
-	        preparedStmtList.add(criteria.getUserUUID());
-	    }
-	    
-	    if (criteria.getUuid() != null) {
-	        builder.append(" AND uuid = ?::uuid ");
-	        preparedStmtList.add(criteria.getUuid());
-	    }
+			    if (criteria.getCategory() != null) {
+			        builder.append(" AND category = ? ");
+			        preparedStmtList.add(criteria.getCategory());
+			    }
 
+			    if (criteria.getSubcategory() != null) {
+			        builder.append(" AND subcategory = ? ");
+			        preparedStmtList.add(criteria.getSubcategory());
+			    }
 
+			    if (criteria.getZone() != null) {
+			        builder.append(" AND zone = ? ");
+			        preparedStmtList.add(criteria.getZone());
+			    }
 
-	    if (criteria.getCategory() != null) {
-	        builder.append(" AND category = ? ");
-	        preparedStmtList.add(criteria.getCategory());
-	    }
+			    if (criteria.getAssignedTenantId() != null) {
+			        builder.append(" AND assigned_tenantid = ? ");
+			        preparedStmtList.add(criteria.getAssignedTenantId());
+			    }
 
-	    if (criteria.getSubcategory() != null) {
-	        builder.append(" AND subcategory = ? ");
-	        preparedStmtList.add(criteria.getSubcategory());
-	    }
+			    if (criteria.getModulename() != null && !criteria.getModulename().isEmpty()) {
+			        builder.append(" AND modulename = ? ");
+			        preparedStmtList.add(criteria.getModulename());
+			    }
+			    
+			    if (criteria.getRoles() != null && !criteria.getRoles().isEmpty()) {
+			        builder.append(" AND role_code = ? ");
+			        preparedStmtList.add(criteria.getRoles());
+			    }
+			 
+			 builder.append(")");
+		});
+		
 
-	    if (criteria.getZone() != null) {
-	        builder.append(" AND zone = ? ");
-	        preparedStmtList.add(criteria.getZone());
-	    }
-
-	    if (criteria.getAssignedTenantId() != null) {
-	        builder.append(" AND assigned_tenantid = ? ");
-	        preparedStmtList.add(criteria.getAssignedTenantId());
-	    }
-
-	    if (criteria.getModulename() != null && !criteria.getModulename().isEmpty()) {
-	        builder.append(" AND modulename = ? ");
-	        preparedStmtList.add(criteria.getModulename());
-	    }
-	    
-	    if (criteria.getRoles() != null && !criteria.getRoles().isEmpty()) {
-	        builder.append(" AND role_code = ? ");
-	        preparedStmtList.add(criteria.getRoles());
-	    }
-
-	    return builder.toString();
+	    return builder.toString().replace("WHERE 1=1  OR", "WHERE");
 	}
 
 

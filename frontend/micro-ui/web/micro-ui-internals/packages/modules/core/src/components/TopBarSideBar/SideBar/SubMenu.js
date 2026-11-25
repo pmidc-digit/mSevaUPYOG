@@ -29,7 +29,10 @@ const SubMenu = ({ item, onLinkClick }) => {
   // Empty or "/" navigationURL (the Home item) points to the employee root under /digit-ui
   const employeeHref = (url) => {
     const path = url?.replace(/^\/+/, "") || "";
-    return path ? `${window.location.origin}/employee/${path}` : `${window.location.origin}/digit-ui/employee/`;
+    // Old rainmaker report links open in the new reports module
+    const reportMatch = path.match(/^(report|report-v2)\/([^/?#]+)\/([^/?#]+)\/?$/);
+    if (reportMatch) return `${window.location.origin}/digit-ui/employee/reports/${reportMatch[1]}/${reportMatch[2]}/${reportMatch[3]}`;
+    return path ?`${window.location.origin}/employee/${path}` : `${window.location.origin}/digit-ui/employee/`;
   };
   const IconsObject = {
     home: <HomeIcon />,

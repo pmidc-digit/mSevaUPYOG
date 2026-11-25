@@ -714,6 +714,10 @@ public class WorkflowQueryBuilder {
                 ? config.getReminderSlaCompletingHours() * 3600000L
                 : 172800000L; // default 48 hours in milliseconds
 
+        long citizenMaxOverdueMs = (config != null && config.getReminderCitizenSlaPassedMaxHours() != null && config.getReminderCitizenSlaPassedMaxHours() > 0)
+                ? config.getReminderCitizenSlaPassedMaxHours() * 3600000L
+                : 172800000L; // default 2 days (48 hours) in milliseconds
+
         StringBuilder builder = new StringBuilder();
         builder.append("SELECT COALESCE(NULLIF(asg.assignee, ''), NULLIF(pi.assignee, '')) AS assignee_uuid, ");
         builder.append("       pi.businessservice AS business_service_code, ");
@@ -729,7 +733,10 @@ public class WorkflowQueryBuilder {
         builder.append("           THEN pi.id END) AS completing_sla_count, ");
         builder.append("       count(DISTINCT CASE ");
         builder.append("           WHEN (COALESCE(pi.businessservicesla, st.sla, 0) - ((extract(epoch from current_timestamp) * 1000) - pi.lastmodifiedtime)) > ").append(completingSlaMs).append(" ");
-        builder.append("           THEN pi.id END) AS under_sla_count ");
+        builder.append("           THEN pi.id END) AS under_sla_count, ");
+        builder.append("       count(DISTINCT CASE ");
+        builder.append("           WHEN (COALESCE(pi.businessservicesla, st.sla, 0) - ((extract(epoch from current_timestamp) * 1000) - pi.lastmodifiedtime)) < -").append(citizenMaxOverdueMs).append(" ");
+        builder.append("           THEN pi.id END) AS over_sla_exceeded_limit_count ");
         builder.append("FROM eg_wf_processinstance_v2 pi ");
         builder.append("INNER JOIN eg_wf_state_v2 st ON st.uuid = pi.status ");
         builder.append("LEFT OUTER JOIN eg_wf_assignee_v2 asg ON asg.processinstanceid = pi.id ");

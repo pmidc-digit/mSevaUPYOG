@@ -332,8 +332,18 @@ public class WorkflowReminderService {
                 user = User.builder().uuid(userUuid).build();
             }
 
+            boolean isCitizen = notificationService.isCitizen(user);
+            if (isCitizen) {
+                digest.filterForCitizen();
+                if (digest.getTotalApplications() <= 0) {
+                    log.info("Skipping reminder digest for citizen {}: all pending application(s) have SLA passed by more than {} days.",
+                            user.getUuid(), (config != null && config.getReminderCitizenSlaPassedMaxDays() != null) ? config.getReminderCitizenSlaPassedMaxDays() : 2);
+                    continue;
+                }
+            }
+
             String targetEmailTemplate = emailDigestTemplate;
-            if (notificationService.isCitizen(user) && StringUtils.isNotBlank(emailDigestCitizenTemplate)) {
+            if (isCitizen && StringUtils.isNotBlank(emailDigestCitizenTemplate)) {
                 targetEmailTemplate = emailDigestCitizenTemplate;
             }
 
@@ -490,6 +500,24 @@ public class WorkflowReminderService {
                 for (User assignee : pi.getAssignes()) {
                     if (assignee == null || StringUtils.isBlank(assignee.getUuid())) {
                         continue;
+                    }
+
+                    // Citizens whose SLA has passed by more than configured days (default: 2 days) should not receive reminders
+                    if (notificationService.isCitizen(assignee)) {
+                        long maxOverdueMs = (config != null && config.getReminderCitizenSlaPassedMaxHours() != null && config.getReminderCitizenSlaPassedMaxHours() > 0)
+                                ? config.getReminderCitizenSlaPassedMaxHours() * 3600000L
+                                : 172800000L; // default 2 days in milliseconds
+                        long sla = pi.getBusinesssServiceSla() != null ? pi.getBusinesssServiceSla()
+                                : (pi.getStateSla() != null ? pi.getStateSla()
+                                : (pi.getState() != null && pi.getState().getSla() != null ? pi.getState().getSla() : 0L));
+                        long lastModifiedTime = (pi.getAuditDetails() != null && pi.getAuditDetails().getLastModifiedTime() != null)
+                                ? pi.getAuditDetails().getLastModifiedTime() : 0L;
+                        long remainingSla = sla - (System.currentTimeMillis() - lastModifiedTime);
+                        if (remainingSla < -maxOverdueMs) {
+                            log.debug("Skipping individual reminder for citizen {}: application {} SLA passed by more than 2 days.",
+                                    assignee.getUuid(), pi.getBusinessId());
+                            continue;
+                        }
                     }
 
                     String userKey = (config != null && Boolean.TRUE.equals(config.getReminderPerBusinessService()))

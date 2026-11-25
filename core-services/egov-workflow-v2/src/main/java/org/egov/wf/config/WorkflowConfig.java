@@ -170,4 +170,10 @@ public class WorkflowConfig {
 
     @Value("${egov.wf.reminder.lock.timeout.minutes:15}")
     private Long reminderLockTimeoutMinutes;
+
+    @Value("${egov.wf.reminder.citizen.sla.passed.max.days:2}")
+    private Integer reminderCitizenSlaPassedMaxDays;
+
+    @Value("${egov.wf.reminder.citizen.sla.passed.max.hours:48}")
+    private Long reminderCitizenSlaPassedMaxHours;
 }

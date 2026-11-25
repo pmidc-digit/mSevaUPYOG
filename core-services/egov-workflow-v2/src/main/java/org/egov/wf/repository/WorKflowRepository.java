@@ -233,6 +233,7 @@ public class WorKflowRepository {
             int overSlaCount = rs.getInt("over_sla_count");
             int completingSlaCount = rs.getInt("completing_sla_count");
             int underSlaCount = rs.getInt("under_sla_count");
+            int overSlaExceededLimitCount = rs.getInt("over_sla_exceeded_limit_count");
 
             String formattedBusinessName = WorkflowNotificationService.formatBusinessServiceName(businessName);
             String displayServiceName;
@@ -259,7 +260,7 @@ public class WorKflowRepository {
                                 .serviceWiseCounts(new LinkedHashMap<>())
                                 .serviceWiseSla(new LinkedHashMap<>())
                                 .build());
-                digest.addServiceSla(displayServiceName, tenantId, appCount, underSlaCount, completingSlaCount, overSlaCount);
+                digest.addServiceSla(displayServiceName, tenantId, appCount, underSlaCount, completingSlaCount, overSlaCount, overSlaExceededLimitCount);
                 if (StringUtils.isNotBlank(tenantId) && StringUtils.isBlank(digest.getTenantId())) {
                     digest.setTenantId(tenantId);
                 }

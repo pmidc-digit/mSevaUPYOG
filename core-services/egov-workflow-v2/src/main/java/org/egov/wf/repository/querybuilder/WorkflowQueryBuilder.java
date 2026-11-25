@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.wf.config.WorkflowConfig;
+import org.egov.wf.web.models.ProcessInstanceReminderCriteria;
 import org.egov.wf.web.models.ProcessInstanceSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -612,4 +613,149 @@ public class WorkflowQueryBuilder {
 
 		return query;
 	}
+
+    public String getActiveAssignedProcessInstanceIdsQuery(ProcessInstanceReminderCriteria criteria, List<Object> preparedStmtList) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT DISTINCT pi.id FROM eg_wf_processinstance_v2 pi ");
+        builder.append("INNER JOIN eg_wf_state_v2 st ON st.uuid = pi.status ");
+        builder.append("WHERE pi.latest = true ");
+        builder.append("AND (st.isstartstate IS NULL OR st.isstartstate = false) ");
+        builder.append("AND (st.isterminatestate IS NULL OR st.isterminatestate = false) ");
+        builder.append("AND ( ");
+        builder.append("    EXISTS (SELECT 1 FROM eg_wf_assignee_v2 asg WHERE asg.processinstanceid = pi.id AND asg.assignee IS NOT NULL AND asg.assignee != '') ");
+        builder.append("    OR (pi.assignee IS NOT NULL AND pi.assignee != '') ");
+        builder.append(") ");
+
+        if (criteria != null) {
+            if (StringUtils.isNotBlank(criteria.getTenantId())) {
+                String tenantId = criteria.getTenantId().trim();
+                if (tenantId.contains(".")) {
+                    builder.append("AND pi.tenantid = ? ");
+                    preparedStmtList.add(tenantId);
+                } else {
+                    builder.append("AND pi.tenantid LIKE ? ");
+                    preparedStmtList.add(tenantId + "%");
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(criteria.getBusinessServices())) {
+                builder.append("AND pi.businessservice IN (").append(createQuery(criteria.getBusinessServices())).append(") ");
+                addToPreparedStatement(preparedStmtList, criteria.getBusinessServices());
+            } else if (StringUtils.isNotBlank(criteria.getBusinessService())) {
+                builder.append("AND pi.businessservice = ? ");
+                preparedStmtList.add(criteria.getBusinessService().trim());
+            }
+
+            if (StringUtils.isNotBlank(criteria.getLastId())) {
+                builder.append("AND pi.id > ? ");
+                preparedStmtList.add(criteria.getLastId().trim());
+            }
+        }
+
+        builder.append("ORDER BY pi.id ASC LIMIT ? ");
+        int limit = (criteria != null && criteria.getLimit() != null && criteria.getLimit() > 0)
+                ? criteria.getLimit()
+                : config.getReminderBatchSize();
+        preparedStmtList.add(limit);
+
+        return builder.toString();
+    }
+
+    public String getActiveAssignedProcessInstanceCountQuery(ProcessInstanceReminderCriteria criteria, List<Object> preparedStmtList) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT count(DISTINCT pi.id) FROM eg_wf_processinstance_v2 pi ");
+        builder.append("INNER JOIN eg_wf_state_v2 st ON st.uuid = pi.status ");
+        builder.append("WHERE pi.latest = true ");
+        builder.append("AND (st.isstartstate IS NULL OR st.isstartstate = false) ");
+        builder.append("AND (st.isterminatestate IS NULL OR st.isterminatestate = false) ");
+        builder.append("AND ( ");
+        builder.append("    EXISTS (SELECT 1 FROM eg_wf_assignee_v2 asg WHERE asg.processinstanceid = pi.id AND asg.assignee IS NOT NULL AND asg.assignee != '') ");
+        builder.append("    OR (pi.assignee IS NOT NULL AND pi.assignee != '') ");
+        builder.append(") ");
+
+        if (criteria != null) {
+            if (StringUtils.isNotBlank(criteria.getTenantId())) {
+                String tenantId = criteria.getTenantId().trim();
+                if (tenantId.contains(".")) {
+                    builder.append("AND pi.tenantid = ? ");
+                    preparedStmtList.add(tenantId);
+                } else {
+                    builder.append("AND pi.tenantid LIKE ? ");
+                    preparedStmtList.add(tenantId + "%");
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(criteria.getBusinessServices())) {
+                builder.append("AND pi.businessservice IN (").append(createQuery(criteria.getBusinessServices())).append(") ");
+                addToPreparedStatement(preparedStmtList, criteria.getBusinessServices());
+            } else if (StringUtils.isNotBlank(criteria.getBusinessService())) {
+                builder.append("AND pi.businessservice = ? ");
+                preparedStmtList.add(criteria.getBusinessService().trim());
+            }
+        }
+
+        return builder.toString();
+    }
+
+    public String getActiveWorkloadSummaryQuery(ProcessInstanceReminderCriteria criteria, List<Object> preparedStmtList) {
+        long completingSlaMs = (config != null && config.getReminderSlaCompletingHours() != null && config.getReminderSlaCompletingHours() > 0)
+                ? config.getReminderSlaCompletingHours() * 3600000L
+                : 172800000L; // default 48 hours in milliseconds
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("SELECT COALESCE(NULLIF(asg.assignee, ''), NULLIF(pi.assignee, '')) AS assignee_uuid, ");
+        builder.append("       pi.businessservice AS business_service_code, ");
+        builder.append("       COALESCE(NULLIF(bs.business, ''), pi.businessservice) AS business_name, ");
+        builder.append("       pi.tenantid AS tenant_id, ");
+        builder.append("       count(DISTINCT pi.id) AS app_count, ");
+        builder.append("       count(DISTINCT CASE ");
+        builder.append("           WHEN (COALESCE(pi.businessservicesla, st.sla, 0) - ((extract(epoch from current_timestamp) * 1000) - pi.lastmodifiedtime)) < 0 ");
+        builder.append("           THEN pi.id END) AS over_sla_count, ");
+        builder.append("       count(DISTINCT CASE ");
+        builder.append("           WHEN (COALESCE(pi.businessservicesla, st.sla, 0) - ((extract(epoch from current_timestamp) * 1000) - pi.lastmodifiedtime)) >= 0 ");
+        builder.append("            AND (COALESCE(pi.businessservicesla, st.sla, 0) - ((extract(epoch from current_timestamp) * 1000) - pi.lastmodifiedtime)) <= ").append(completingSlaMs).append(" ");
+        builder.append("           THEN pi.id END) AS completing_sla_count, ");
+        builder.append("       count(DISTINCT CASE ");
+        builder.append("           WHEN (COALESCE(pi.businessservicesla, st.sla, 0) - ((extract(epoch from current_timestamp) * 1000) - pi.lastmodifiedtime)) > ").append(completingSlaMs).append(" ");
+        builder.append("           THEN pi.id END) AS under_sla_count ");
+        builder.append("FROM eg_wf_processinstance_v2 pi ");
+        builder.append("INNER JOIN eg_wf_state_v2 st ON st.uuid = pi.status ");
+        builder.append("LEFT OUTER JOIN eg_wf_assignee_v2 asg ON asg.processinstanceid = pi.id ");
+        builder.append("LEFT OUTER JOIN eg_wf_businessservice_v2 bs ON bs.businessservice = pi.businessservice ");
+        builder.append("WHERE pi.latest = true ");
+        
+        builder.append("AND (st.isstartstate IS NULL OR st.isstartstate = false) ");
+        builder.append("AND (st.isterminatestate IS NULL OR st.isterminatestate = false) ");
+        builder.append("AND ( ");
+        
+        builder.append("    (asg.assignee IS NOT NULL AND asg.assignee != '') ");
+        builder.append("    OR (pi.assignee IS NOT NULL AND pi.assignee != '') ");
+        builder.append(") ");
+
+        if (criteria != null) {
+            if (StringUtils.isNotBlank(criteria.getTenantId())) {
+                String tenantId = criteria.getTenantId().trim();
+                if (tenantId.contains(".")) {
+                    builder.append("AND pi.tenantid = ? ");
+                    preparedStmtList.add(tenantId);
+                } else {
+                    builder.append("AND pi.tenantid LIKE ? ");
+                    preparedStmtList.add(tenantId + "%");
+                }
+            }
+
+            if (!CollectionUtils.isEmpty(criteria.getBusinessServices())) {
+                builder.append("AND pi.businessservice IN (").append(createQuery(criteria.getBusinessServices())).append(") ");
+                addToPreparedStatement(preparedStmtList, criteria.getBusinessServices());
+            } else if (StringUtils.isNotBlank(criteria.getBusinessService())) {
+                builder.append("AND pi.businessservice = ? ");
+                preparedStmtList.add(criteria.getBusinessService().trim());
+            }
+        }
+
+        builder.append("GROUP BY COALESCE(NULLIF(asg.assignee, ''), NULLIF(pi.assignee, '')), pi.businessservice, COALESCE(NULLIF(bs.business, ''), pi.businessservice), pi.tenantid ");
+        builder.append("ORDER BY assignee_uuid ASC ");
+
+        return builder.toString();
+    }
 }

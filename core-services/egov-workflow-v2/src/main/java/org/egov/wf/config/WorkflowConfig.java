@@ -133,4 +133,39 @@ public class WorkflowConfig {
     @Value("${egov.localization.module:rainmaker-workflow}")
     private String localizationModule;
 
+    // Daily Reminder Notification Configuration & Load Protection
+    @Value("${egov.wf.reminder.enabled:true}")
+    private Boolean isReminderEnabled;
+
+    @Value("${egov.wf.reminder.batch.size:50}")
+    private Integer reminderBatchSize;
+
+    @Value("${egov.wf.reminder.batch.delay.ms:100}")
+    private Long reminderBatchDelayMs;
+
+    @Value("${egov.wf.reminder.tenant.delay.ms:500}")
+    private Long reminderTenantDelayMs;
+
+    @Value("${egov.wf.reminder.max.per.user:1}")
+    private Integer reminderMaxPerUser;
+
+    @Value("${egov.wf.reminder.per.business.service:false}")
+    private Boolean reminderPerBusinessService;
+
+    // Consolidated Workload Digest Templates
+    @Value("${notification.sms.digest.template.id:EG_WF_DIGEST_MSG}")
+    private String smsDigestTemplateId;
+
+    @Value("${notification.email.digest.template.id:EG_WF_DIGEST_EMAIL}")
+    private String emailDigestTemplateId;
+
+    @Value("${notification.email.digest.citizen.template.id:EG_WF_DIGEST_EMAIL_CITIZEN}")
+    private String emailDigestCitizenTemplateId;
+
+    @Value("${egov.wf.reminder.digest.enabled:true}")
+    private Boolean isReminderDigestEnabled;
+
+    @Value("${egov.wf.reminder.sla.completing.hours:48}")
+    private Long reminderSlaCompletingHours;
+
 }

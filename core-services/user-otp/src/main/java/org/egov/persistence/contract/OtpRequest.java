@@ -16,6 +16,13 @@ public class OtpRequest {
                 .identity(otpRequest.getMobileNumber())
                 .build();
     }
+
+    public OtpRequest(org.egov.domain.model.AnonymousOtpRequest anonymousOtpRequest) {
+        this.otp = Otp.builder()
+                .tenantId(anonymousOtpRequest.getTenantId())
+                .identity(anonymousOtpRequest.getMobileNumber())
+                .build();
+    }
 }
 
 

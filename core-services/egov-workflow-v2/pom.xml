@@ -150,29 +150,20 @@
     </dependencies>
     <repositories>
         <repository>
-            <id>pmidc-releases</id>
-            <name>PMIDC Maven Releases Repository</name>
-            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-releases/</url>
-        </repository>
-        <repository>
-            <id>pmidc-snapshots</id>
-            <name>PMIDC Maven Snapshots Repository</name>
-            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
-        </repository>
-        <repository>
-            <id>pmidc-public</id>
-            <name>PMIDC Maven Public Repository</name>
-            <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-public/</url>
-        </repository>
-        <repository>
             <id>repo.egovernments.org</id>
             <name>eGov ERP Releases Repository</name>
             <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-releases/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>repo.egovernments.org.snapshots</id>
-            <name>eGov ERP Releases Repository</name>
+            <name>eGov ERP Snapshots Repository</name>
             <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
         </repository>
         <repository>
             <id>repo.egovernments.org.public</id>
@@ -182,8 +173,8 @@
     </repositories>
     <pluginRepositories>
         <pluginRepository>
-            <id>pmidc-public</id>
-            <name>PMIDC Maven Public Repository</name>
+            <id>repo.egovernments.org.public</id>
+            <name>eGov Public Repository Group</name>
             <url>https://mseva.lgpunjab.gov.in/nexus/repository/maven-public/</url>
         </pluginRepository>
     </pluginRepositories>

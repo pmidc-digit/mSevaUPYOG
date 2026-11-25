@@ -249,7 +249,7 @@ public class WorKflowRepository {
                                 .serviceWiseCounts(new LinkedHashMap<>())
                                 .serviceWiseSla(new LinkedHashMap<>())
                                 .build());
-                digest.addServiceSla(displayServiceName, appCount, underSlaCount, completingSlaCount, overSlaCount);
+                digest.addServiceSla(displayServiceName, tenantId, appCount, underSlaCount, completingSlaCount, overSlaCount);
                 if (StringUtils.isNotBlank(tenantId) && StringUtils.isBlank(digest.getTenantId())) {
                     digest.setTenantId(tenantId);
                 }

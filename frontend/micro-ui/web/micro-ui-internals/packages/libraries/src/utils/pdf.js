@@ -249,7 +249,7 @@ const jsPdfGenerator = async ({
   }
 };
 
-export const downloadTablePDF = (title = "Application Details", headers = [], rows = [], filename = "Applications") => {
+export const downloadTablePDF = (title = "Application Details", headers = [], rows = [], filename = "Applications", options = {}) => {
   pdfMake.vfs = Fonts;
   let locale = window?.Digit?.SessionStorage?.get("locale") || "en_IN";
   let Hind = pdfFonts[locale] || pdfFonts["Hind"] || pdfFonts["en_IN"];
@@ -287,8 +287,8 @@ export const downloadTablePDF = (title = "Application Details", headers = [], ro
   ];
 
   const dd = {
-    pageOrientation: "landscape",
-    pageSize: "A4",
+    pageOrientation: options.pageOrientation || "landscape",
+    pageSize: options.pageSize || "A4",
     pageMargins: [20, 25, 20, 25],
     defaultStyle: {
       font: "Hind",
@@ -302,7 +302,8 @@ export const downloadTablePDF = (title = "Application Details", headers = [], ro
       };
     },
     content: [
-      { text: normalizedTitle, fontSize: 13, bold: true, color: "#0f172a", margin: [0, 0, 0, 8] },
+      { text: normalizedTitle, fontSize: 13, bold: true, color: "#0f172a", margin: [0, 0, 0, options.subtitle ? 2 : 8] },
+      ...(options.subtitle ? [{ text: options.subtitle, fontSize: 9, color: "#334155", margin: [0, 0, 0, 8] }] : []),
       {
         table: {
           headerRows: 1,

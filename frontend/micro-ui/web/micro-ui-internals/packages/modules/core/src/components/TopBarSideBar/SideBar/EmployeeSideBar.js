@@ -18,6 +18,14 @@ import {
   CollectionIcon,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+
+// Old rainmaker report menu links ("report/{module}/{report}", "report-v2/{module}/{report}")
+// open in the new reports module instead of the old /employee/report app.
+const REPORT_URL_PATTERN = /^\/?(report|report-v2)\/([^/?#]+)\/([^/?#]+)\/?$/;
+const mapReportUrl = (url) => {
+  const match = typeof url === "string" ? url.trim().match(REPORT_URL_PATTERN) : null;
+  return match ? `/digit-ui/employee/reports/${match[1]}/${match[2]}/${match[3]}` : url;
+};
 import _ from "lodash";
 const { some, orderBy } = _;
 
@@ -99,7 +107,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
             url: item.url,
             queryParams: item.queryParams,
             orderNumber: item.orderNumber,
-            navigationURL: item.navigationURL,
+            navigationURL: mapReportUrl(item.navigationURL),
             leftIcon: item.leftIcon ? item.leftIcon.split(".")[0] : null,
             displayName: item.displayName || topLevel,
             moduleName: item.displayName || topLevel,
@@ -118,7 +126,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
             url: "",
             queryParams: item.queryParams,
             orderNumber: item.orderNumber,
-            navigationURL: item.navigationURL,
+            navigationURL: mapReportUrl(item.navigationURL),
             leftIcon,
             displayName: topLevel,
             moduleName: topLevel,
@@ -163,7 +171,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
             url: item.url,
             queryParams: item.queryParams,
             orderNumber: item.orderNumber,
-            navigationURL: item.navigationURL,
+            navigationURL: mapReportUrl(item.navigationURL),
             leftIcon,
             displayName,
             moduleName: displayName,
@@ -188,7 +196,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
         url: item.url,
         queryParams: item.queryParams,
         orderNumber: item.orderNumber,
-        navigationURL: item.navigationURL,
+        navigationURL: mapReportUrl(item.navigationURL),
         leftIcon: item.leftIcon,
         displayName: item.displayName,
         moduleName: item.displayName,
@@ -255,7 +263,7 @@ const EmployeeSideBar = ({ mobileView, isSidebarOpen, toggleSidebar, handleLogou
           item={{
             type: "single",
             moduleName: item.originalItem?.displayName,
-            navigationURL: item.navigationURL,
+            navigationURL: mapReportUrl(item.navigationURL),
             leftIcon: item.originalItem?.leftIcon,
             isKibana: false,
           }}

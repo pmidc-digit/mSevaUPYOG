@@ -137,8 +137,8 @@ const Download = {
     XLSX.writeFile(wb, `${file}.xlsx`);
   },
 
-  TablePDF: (title, headers, rows, filename) => {
-    return downloadTablePDF(title, headers, rows, filename);
+  TablePDF: (title, headers, rows, filename, options) => {
+    return downloadTablePDF(title, headers, rows, filename, options);
   },
 
   PDF: (node, fileName, share, resolve = null) => {

@@ -47,9 +47,8 @@ public class ObpasEmployeeHrms {
 	@PostMapping(value = "/_create")
 	@ResponseBody
 	public ResponseEntity<?> create(@RequestBody @Valid ObpasEmployeeRequest employeeRequest) {
-		validator.validateRequest(employeeRequest);
-		employeeService.create(employeeRequest);
-		ObpassEmployeeResponse employeeResponse = employeeService.generateObpassResponse(employeeRequest);
+		
+		ObpassEmployeeResponse employeeResponse = employeeService.create(employeeRequest);
         return new ResponseEntity<>(employeeResponse, HttpStatus.ACCEPTED);
 	}
 
@@ -75,10 +74,8 @@ public class ObpasEmployeeHrms {
 		@ResponseBody
 		public ResponseEntity<?> delete(@RequestBody @Valid ObpasEmployeeRequest employeeRequest) {
 //			validator.validateRequest(employeeRequest);
-			employeeService.delete(employeeRequest);
-			
-			ObpassEmployeeResponse employeeResponse =  employeeService.generateObpassResponse(employeeRequest);
-			
+		 ObpassEmployeeResponse employeeResponse =  employeeService.delete(employeeRequest);
+						
 	        return new ResponseEntity<>(employeeResponse, HttpStatus.ACCEPTED);
 		}
 

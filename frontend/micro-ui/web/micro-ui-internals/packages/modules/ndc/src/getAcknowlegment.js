@@ -62,7 +62,7 @@ const getReadableCity = (tenantId = "") => {
 
 const capitalize = (text) => text?.charAt(0).toUpperCase() + text?.slice(1);
 
-const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType, empData, approverStatement, landArea, approverComment, vasikaNo) => {
+const getAcknowledgementData = async (application, formattedAddress, tenantInfo, t, approver,ulbType, empData, approverStatement, landArea, approverComment, vasikaNo, surveyId) => {
   const appData = application?.Applications?.[0] || {};
   const owner = appData?.owners?.[0] || {};
   const ndc = appData?.NdcDetails?.[0] || {};
@@ -73,7 +73,9 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   const designation = designationKey ? t(designationKey, { defaultValue: designationCode }) : "NA";
   const applicationNumber = appData?.applicationNo || "NA";
   // const propertyId = ndc?.consumerCode || "NA";
+  console.log("appDataappData",appData)
   const ptObj = appData?.NdcDetails?.find(item => item.businessService === 'PT');
+  console.log("ptObj",ptObj)
   const propertyId = ptObj?.consumerCode;
 
   const propertyType = add?.propertyType ? t(add.propertyType) : "NA";
@@ -100,6 +102,8 @@ const getAcknowledgementData = async (application, formattedAddress, tenantInfo,
   { text: `${appData?.applicationNo}`, bold: true,  fontSize: 8, },
   { text: ", Property ID: ", bold: false , fontSize: 8,},
   { text: `${propertyId}`, bold: true ,  fontSize: 8,},
+  { text: ", Survey Id/UID: ", bold: false , fontSize: 8,},
+  { text: `${surveyId}`, bold: true ,  fontSize: 8,},
   { text: ", Property Type: ", bold: false ,  fontSize: 8, },
   { text: `${propertyType}`, bold: true ,  fontSize: 8, },
   { text: ", Land Area: ", bold: false ,  fontSize: 8, },

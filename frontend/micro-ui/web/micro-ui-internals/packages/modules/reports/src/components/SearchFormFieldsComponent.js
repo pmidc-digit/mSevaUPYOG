@@ -1,7 +1,6 @@
 import React, { Fragment } from "react";
 import {
   TextInput,
-  SubmitBar,
   DatePicker,
   SearchField,
   Dropdown,
@@ -32,10 +31,17 @@ const toDateLimit = (v) => {
 };
 
 const Label = ({ field, t }) => (
-  <label>
+  <label className="rpt-field-label">
     {t(field.label)}
-    {field.isMandatory ? " *" : ""}
+    {field.isMandatory ? <span className="rpt-required">*</span> : null}
   </label>
+);
+
+const SearchIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-3.5-3.5" />
+  </svg>
 );
 
 const RequiredError = ({ formErrors, field, t }) =>
@@ -200,18 +206,22 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
           {...{ field, formState, Controller, register, control, t, tenantId, dates }}
         />
       ))}
-      <SearchField className="submit">
-        <SubmitBar label={t("REPORTS_SEARCH_APPLY_LABEL") !== "REPORTS_SEARCH_APPLY_LABEL" ? t("REPORTS_SEARCH_APPLY_LABEL") : t("ES_COMMON_SEARCH")} submit />
-        <p
-          style={{ marginTop: "24px", cursor: "pointer" }}
+      <div className="rpt-filter-actions">
+        <button
+          type="button"
+          className="rpt-btn rpt-btn--secondary"
           onClick={() => {
             reset(resetObj);
             onReset?.();
           }}
         >
           {t(`ES_COMMON_CLEAR_ALL`)}
-        </p>
-      </SearchField>
+        </button>
+        <button type="submit" className="rpt-btn rpt-btn--primary">
+          <SearchIcon />
+          {t("REPORTS_SEARCH_APPLY_LABEL") !== "REPORTS_SEARCH_APPLY_LABEL" ? t("REPORTS_SEARCH_APPLY_LABEL") : t("ES_COMMON_SEARCH")}
+        </button>
+      </div>
     </Fragment>
   );
 };

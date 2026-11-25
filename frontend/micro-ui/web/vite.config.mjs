@@ -138,6 +138,9 @@ export default defineConfig(({ mode }) => {
         { find: /^@mseva\/upyog-ui-module-pgrai$/, replacement: path.resolve(__dirname, "./micro-ui-internals/packages/modules/pgrai/src/Module.js") },
         { find: /^@mseva\/upyog-ui-module-pgrai\/(.*)/, replacement: path.resolve(__dirname, "./micro-ui-internals/packages/modules/pgrai/$1") },
 
+        { find: /^@mseva\/digit-ui-module-transferappointment$/, replacement: path.resolve(__dirname, "./micro-ui-internals/packages/modules/transferAppointment/src/Module.js") },
+        { find: /^@mseva\/digit-ui-module-transferappointment\/(.*)/, replacement: path.resolve(__dirname, "./micro-ui-internals/packages/modules/transferAppointment/$1") },
+
         { find: "src", replacement: path.resolve(__dirname, 'src') },
       ],
       dedupe: ['react', 'react-dom', 'i18next', 'react-i18next', 'react-query'],

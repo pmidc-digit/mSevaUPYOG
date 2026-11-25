@@ -6,14 +6,11 @@ import {
   CloseSvg,
   SearchForm,
   Table,
-  Card,
   SearchAction,
   PopUp,
   DetailsCard,
   Loader,
-  MultiLink,
   Header,
-  TextInput,
 } from "@mseva/digit-ui-react-components";
 import { epochToDisplayDate, formatAmount, getInitialFieldValue, getReportTitle, isAmountColumn, toNumber } from "../util";
 
@@ -33,6 +30,61 @@ function activateModal(state, action) {
       return state;
   }
 }
+
+const Icon = ({ d, ...rest }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...rest}>
+    {d}
+  </svg>
+);
+const SearchIcon = () => <Icon d={[<circle key="c" cx="11" cy="11" r="7" />, <path key="p" d="M20 20l-3.5-3.5" />]} />;
+const DownloadIcon = () => <Icon d={[<path key="a" d="M12 4v11" />, <path key="b" d="M7 10l5 5 5-5" />, <path key="c" d="M5 20h14" />]} />;
+const ChevronIcon = () => <Icon d={<path d="M6 9l6 6 6-6" />} />;
+const EmptyIcon = () => <Icon d={[<rect key="r" x="4" y="3" width="16" height="18" rx="2" />, <path key="l" d="M8 8h8M8 12h8M8 16h5" />]} />;
+
+const DownloadMenu = ({ options, label, disabled }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef();
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+  return (
+    <div className="rpt-download" ref={ref}>
+      <button type="button" className="rpt-btn rpt-btn--secondary" aria-haspopup="menu" aria-expanded={open} disabled={disabled} onClick={() => setOpen(!open)}>
+        <DownloadIcon />
+        {label}
+        <ChevronIcon />
+      </button>
+      {open ? (
+        <div className="rpt-menu" role="menu">
+          {options.map((o) => (
+            <button
+              key={o.key}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                o.onClick();
+              }}
+            >
+              <span className="rpt-file-badge" style={{ background: o.color }}>
+                {o.badge}
+              </span>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 const ReportSearchApplication = ({
   onSubmit,
@@ -54,7 +106,6 @@ const ReportSearchApplication = ({
   });
   const tableRef = useRef();
   const [searchText, setSearchText] = useState("");
-  const [isDisplayDownloadMenu, setIsDisplayDownloadMenu] = useState(false);
   const [currentlyActiveMobileModal, setActiveMobileModal] = useReducer(activateModal, false);
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -74,6 +125,8 @@ const ReportSearchApplication = ({
 
   const headers = tableData?.reportHeader || [];
   const rowData = tableData?.reportData || [];
+
+  useEffect(() => setSearchText(""), [tableData]);
 
   const visibleIdx = useMemo(() => headers.map((h, i) => (h?.showColumn === false ? -1 : i)).filter((i) => i > -1), [headers]);
 
@@ -116,15 +169,21 @@ const ReportSearchApplication = ({
         id: "__sno",
         disableSortBy: true,
         accessor: (row, rowIndex) => rowIndex + 1,
-        Cell: ({ row }) => <span className="cell-text">{row.index + 1}</span>,
+        Cell: ({ row }) => <span className="cell-text rpt-sno">{row.index + 1}</span>,
       },
-      ...visibleIdx.map((index) => ({
-        Header: t(headers[index]?.label),
-        id: `col_${index}`,
-        disableSortBy: true,
-        accessor: (row) => row?.[index],
-        Cell: ({ row }) => <span className="cell-text">{formatCell(row.original, index)}</span>,
-      })),
+      ...visibleIdx.map((index) => {
+        const label = t(headers[index]?.label);
+        const isAmount = isAmountColumn(headers[index]);
+        return {
+          // amount headers are right aligned to sit above their right aligned values
+          Header: isAmount ? () => <span className="rpt-th--num">{label}</span> : label,
+          isStatusColumn: !isAmount && /status/i.test(String(label)),
+          id: `col_${index}`,
+          disableSortBy: true,
+          accessor: (row) => row?.[index],
+          Cell: ({ row }) => <span className="cell-text">{formatCell(row.original, index)}</span>,
+        };
+      }),
     ],
     [visibleIdx, headers, formatCell, t]
   );
@@ -139,7 +198,10 @@ const ReportSearchApplication = ({
 
   const downloadOptions = [
     {
-      label: "pdf",
+      key: "pdf",
+      label: "PDF document",
+      badge: "PDF",
+      color: "#dc2626",
       onClick: () => {
         const pageSize = String(reportDetails?.additionalConfig?.print?.pdfPageSize || "LEGAL").toUpperCase();
         const pageOrientation = visibleIdx.length > 6 ? "landscape" : "portrait";
@@ -148,11 +210,13 @@ const ReportSearchApplication = ({
           pageOrientation,
           subtitle: resultLabel,
         });
-        setIsDisplayDownloadMenu(false);
       },
     },
     {
-      label: "xls",
+      key: "xls",
+      label: "Excel spreadsheet",
+      badge: "XLS",
+      color: "#16a34a",
       onClick: () => {
         // unique column keys so two columns with the same label don't overwrite each other
         const keys = [];
@@ -168,46 +232,54 @@ const ReportSearchApplication = ({
           return obj;
         });
         Digit.Download.Excel(json, reportName);
-        setIsDisplayDownloadMenu(false);
       },
     },
   ];
 
   const searchFormFieldsComponentProps = { formState, Controller, register, control, t, reset, data, tenantId, onReset };
 
+  const totalLabel = t("REPORTS_TOTAL") !== "REPORTS_TOTAL" ? t("REPORTS_TOTAL") : "Total";
+  const totalIdx = visibleIdx.filter((i) => i in totals);
+
   const TotalsRow = () =>
     hasTotals ? (
-      <Card style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: "12px 32px" }}>
-        <strong style={{ width: "100%" }}>{t("REPORTS_TOTAL") !== "REPORTS_TOTAL" ? t("REPORTS_TOTAL") : "Total"}</strong>
-        {visibleIdx
-          .filter((i) => i in totals)
-          .map((i) => (
-            <div key={i}>
-              <span style={{ color: "#505A5F" }}>{t(headers[i]?.label)}: </span>
-              <strong>{totals[i] === undefined ? "-" : formatAmount(totals[i])}</strong>
+      <div className="rpt-summary" aria-label={totalLabel}>
+        {totalIdx.map((i, n) => (
+          <div key={i} className={`rpt-stat${n === totalIdx.length - 1 ? " rpt-stat--accent" : ""}`}>
+            <div className="rpt-stat-label" title={t(headers[i]?.label)}>
+              {totalLabel} {t(headers[i]?.label)}
             </div>
-          ))}
-      </Card>
+            <div className="rpt-stat-value">{totals[i] === undefined ? "-" : formatAmount(totals[i])}</div>
+          </div>
+        ))}
+      </div>
     ) : null;
 
   const NoData = () => (
-    <Card style={{ marginTop: 20 }}>
+    <div className="rpt-empty">
+      <EmptyIcon />
       {t(tableData?.display)
         .split("\\n")
         .map((text, index) => (
-          <p key={index} style={{ textAlign: "center" }}>
-            {text}
-          </p>
+          <p key={index}>{text}</p>
         ))}
-    </Card>
+    </div>
   );
+
+  const recordCount = rowData.length;
+  const recordsText = `${recordCount} ${recordCount === 1 ? "record" : "records"}`;
 
   if (isLoading) return <Loader />;
   if (isMetaError || (data && !reportDetails)) {
     return (
-      <Card style={{ marginTop: 20 }}>
-        <p style={{ textAlign: "center" }}>{t("REPORTS_NOT_FOUND") !== "REPORTS_NOT_FOUND" ? t("REPORTS_NOT_FOUND") : `Report "${reportName}" could not be loaded`}</p>
-      </Card>
+      <div className="rpt-page">
+        <div className="rpt-card">
+          <div className="rpt-empty">
+            <EmptyIcon />
+            <p>{t("REPORTS_NOT_FOUND") !== "REPORTS_NOT_FOUND" ? t("REPORTS_NOT_FOUND") : `Report "${reportName}" could not be loaded`}</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -218,7 +290,7 @@ const ReportSearchApplication = ({
       return obj;
     });
     return (
-      <React.Fragment>
+      <div className="rpt-page">
         <Header>{reportTitle}</Header>
         <div className="searchBox">
           <SearchAction text={t("ES_COMMON_SEARCH")} handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SearchFormComponent" })} />
@@ -244,84 +316,111 @@ const ReportSearchApplication = ({
             </SearchForm>
           </PopUp>
         ) : null}
-        {resultLabel && tableData && !tableData.display ? <p style={{ margin: "12px 0" }}>{resultLabel}</p> : null}
+        {resultLabel && tableData && !tableData.display ? (
+          <div className="rpt-meta">
+            <span>{resultLabel}</span>
+            <span className="rpt-chip">{recordsText}</span>
+          </div>
+        ) : null}
         {isTableDataLoading ? (
           <Loader />
         ) : tableData?.display ? (
-          <NoData />
+          <div className="rpt-card">
+            <NoData />
+          </div>
         ) : tableData ? (
           <React.Fragment>
-            <DetailsCard data={mobileCards} isTwoDynamicPrefix={true} />
             <TotalsRow />
+            <DetailsCard data={mobileCards} isTwoDynamicPrefix={true} />
           </React.Fragment>
         ) : null}
-      </React.Fragment>
+      </div>
     );
   }
 
   return (
-    <React.Fragment>
-      <Header>{reportTitle}</Header>
-      <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
-        <SearchFormFieldsComponent {...searchFormFieldsComponentProps} />
-      </SearchForm>
+    <div className="rpt-page">
+      <div className="rpt-page-header">
+        <h1>{reportTitle}</h1>
+        <p>Set the search criteria and click Search to generate the report.</p>
+      </div>
+
+      <section className="rpt-card">
+        <div className="rpt-card-head">
+          <h2>Search criteria</h2>
+          <span className="rpt-hint">
+            Fields marked <span className="rpt-required">*</span> are required
+          </span>
+        </div>
+        <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit} className="rpt-filter-form">
+          <SearchFormFieldsComponent {...searchFormFieldsComponentProps} />
+        </SearchForm>
+      </section>
 
       {isTableDataLoading ? (
-        <Loader />
+        <section className="rpt-card">
+          <Loader />
+        </section>
       ) : tableData?.display ? (
-        <NoData />
+        <section className="rpt-card">
+          <NoData />
+        </section>
       ) : tableData ? (
-        <React.Fragment>
-          {resultLabel ? <p className="report-result-table-header" style={{ margin: "16px 0 8px" }}>{resultLabel}</p> : null}
-          <Table
-            tableRef={tableRef}
-            t={t}
-            className={"table reports-table "}
-            data={rowData}
-            columns={columns}
-            onSearch={searchText}
-            searchAllFields={true}
-            getCellProps={(cellInfo) => {
-              const index = cellInfo?.column?.id?.startsWith("col_") ? Number(cellInfo.column.id.slice(4)) : -1;
-              return {
-                style: {
-                  padding: "20px 18px",
-                  fontSize: "16px",
-                  textAlign: index > -1 && isAmountColumn(headers[index]) ? "right" : "left",
-                  wordBreak: cellInfo?.column?.Header === t("reports.hrms.role") ? "break-all" : null,
-                  minWidth: cellInfo?.column?.id === "__sno" ? "80px" : null,
-                },
-              };
-            }}
-            manualPagination={false}
-            totalRecords={Count}
-            tableTopComponent={
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                <div style={{ minWidth: 240, maxWidth: 360, flex: 1 }}>
-                  <TextInput
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    placeholder={t("ES_COMMON_SEARCH")}
-                    style={{ marginBottom: 0 }}
-                  />
-                </div>
-                <MultiLink
-                  className="multilinkWrapper"
-                  onHeadClick={() => setIsDisplayDownloadMenu(!isDisplayDownloadMenu)}
-                  displayOptions={isDisplayDownloadMenu}
-                  options={downloadOptions}
-                  downloadBtnClassName={"reports-download-btn"}
-                  downloadOptionsClassName={"reports-options-download"}
-                  reportStyles={{ position: "relative" }}
+        <section className="rpt-card">
+          <div className="rpt-results-head">
+            <div>
+              <h2>Results</h2>
+              <div className="rpt-meta">
+                <span className="rpt-chip">{recordsText}</span>
+                {resultLabel ? <span>{resultLabel}</span> : null}
+              </div>
+            </div>
+            <div className="rpt-toolbar">
+              <div className="rpt-search">
+                <SearchIcon />
+                <input
+                  type="search"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  placeholder={t("REPORTS_SEARCH_IN_RESULTS") !== "REPORTS_SEARCH_IN_RESULTS" ? t("REPORTS_SEARCH_IN_RESULTS") : "Search in results"}
+                  aria-label="Search in results"
                 />
               </div>
-            }
-            isReportTable={true}
-          />
+              <DownloadMenu options={downloadOptions} label={t("CS_COMMON_DOWNLOAD")} disabled={!recordCount} />
+            </div>
+          </div>
+
           <TotalsRow />
-        </React.Fragment>
+
+          <div className="rpt-table-wrap">
+            <Table
+              tableRef={tableRef}
+              t={t}
+              className={"table reports-table"}
+              data={rowData}
+              columns={columns}
+              onSearch={searchText}
+              searchAllFields={true}
+              getCellProps={(cellInfo) => {
+                const index = cellInfo?.column?.id?.startsWith("col_") ? Number(cellInfo.column.id.slice(4)) : -1;
+                return {
+                  style: {
+                    padding: "12px 16px",
+                    fontSize: "14px",
+                    textAlign: index > -1 && isAmountColumn(headers[index]) ? "right" : "left",
+                    wordBreak: cellInfo?.column?.Header === t("reports.hrms.role") ? "break-all" : null,
+                    width: cellInfo?.column?.id === "__sno" ? "64px" : null,
+                  },
+                };
+              }}
+              manualPagination={false}
+              totalRecords={Count}
+              isReportTable={true}
+            />
+          </div>
+        </section>
       ) : null}
-    </React.Fragment>
+    </div>
   );
 };
 

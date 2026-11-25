@@ -95,9 +95,7 @@ public class WorkflowNotificationService {
                 }
 
                 String businessId = StringUtils.defaultString(pi.getBusinessId());
-                String moduleName = StringUtils.isNotBlank(pi.getModuleName())
-                        ? pi.getModuleName()
-                        : StringUtils.defaultString(pi.getBusinessService());
+                String moduleName = getDisplayServiceName(pi.getModuleName(), pi.getBusinessService());
                 String status = (pi.getState() != null && StringUtils.isNotBlank(pi.getState().getState()))
                         ? pi.getState().getState()
                         : (psa.getResultantState() != null ? StringUtils.defaultString(psa.getResultantState().getState(), "PENDING") : "PENDING");
@@ -151,9 +149,7 @@ public class WorkflowNotificationService {
             }
 
             String businessId = StringUtils.defaultString(pi.getBusinessId());
-            String moduleName = StringUtils.isNotBlank(pi.getModuleName())
-                    ? pi.getModuleName()
-                    : StringUtils.defaultString(pi.getBusinessService());
+            String moduleName = getDisplayServiceName(pi.getModuleName(), pi.getBusinessService());
             String status = (pi.getState() != null && StringUtils.isNotBlank(pi.getState().getState()))
                     ? pi.getState().getState()
                     : (pi.getState() != null && StringUtils.isNotBlank(pi.getState().getApplicationStatus())
@@ -831,6 +827,40 @@ public class WorkflowNotificationService {
     }
 
     /**
+     * Formats raw module name and business service code into an official, human-readable display title.
+     * E.g. ("noc-service", "obpas_noc") -> "No Objection Service"
+     *      ("noc-service", "NOC_MC") -> "No Objection Service (Municipal Corporation)"
+     *      ("tl-services", "NewTL") -> "Trade License (New Application)"
+     *      ("ws-services", "NewWS1") -> "Water Service (New Connection)"
+     *      ("PT", "PT.MUTATION") -> "Property Tax (Mutation)"
+     *      (null, "FIRENOC") -> "Fire NOC"
+     */
+    public static String getDisplayServiceName(String rawModuleName, String rawBusinessServiceCode) {
+        String mainCandidate = StringUtils.isNotBlank(rawModuleName) ? rawModuleName.trim() : rawBusinessServiceCode;
+        String formattedMain = formatBusinessServiceName(mainCandidate);
+
+        // If mainCandidate was not recognized or fell back to raw/generic, try with businessServiceCode
+        if (("Municipal Service".equalsIgnoreCase(formattedMain) || formattedMain.equalsIgnoreCase(mainCandidate))
+                && StringUtils.isNotBlank(rawBusinessServiceCode) && !rawBusinessServiceCode.equalsIgnoreCase(mainCandidate)) {
+            String altFormatted = formatBusinessServiceName(rawBusinessServiceCode);
+            if (!"Municipal Service".equalsIgnoreCase(altFormatted)) {
+                formattedMain = altFormatted;
+            }
+        }
+
+        if (StringUtils.isNotBlank(rawBusinessServiceCode)) {
+            String subCode = formatBusinessServiceSubCode(rawBusinessServiceCode);
+            if (StringUtils.isNotBlank(subCode)
+                    && !formattedMain.equalsIgnoreCase(subCode)
+                    && !formattedMain.toLowerCase().contains(subCode.toLowerCase())) {
+                return formattedMain + " (" + subCode.trim() + ")";
+            }
+        }
+
+        return StringUtils.isNotBlank(formattedMain) ? formattedMain : "Municipal Service";
+    }
+
+    /**
      * Formats raw technical service/module names (e.g. 'tl-services', 'ws-service', 'bpa-services')
      * into clean, official, human-readable titles (e.g. 'Trade License', 'Water Service', 'Building Plan Approval').
      */
@@ -862,7 +892,8 @@ public class WorkflowNotificationService {
         if (normalized.startsWith("asset")) {
             return "Municipal Asset Management";
         }
-        if (normalized.startsWith("bpareg")) {
+        if (normalized.startsWith("bpareg") || normalized.startsWith("architect") || normalized.startsWith("engineer")
+                || normalized.startsWith("townplanner") || normalized.startsWith("supervisor")) {
             return "Technical Personnel Registration (BPA)";
         }
         if (normalized.startsWith("bpa")) {
@@ -886,13 +917,16 @@ public class WorkflowNotificationService {
         if (normalized.startsWith("gc") || normalized.contains("garbage")) {
             return "Garbage Clearance";
         }
-        if (normalized.startsWith("tl") || normalized.contains("tradelicen")) {
+        if (normalized.startsWith("tl") || normalized.contains("tradelicen")
+                || normalized.contains("newtl") || normalized.contains("renewal")) {
             return "Trade License";
         }
-        if (normalized.startsWith("ws") || normalized.contains("water")) {
+        if (normalized.startsWith("ws") || normalized.contains("water")
+                || normalized.contains("wsconnection") || normalized.contains("ws1")) {
             return "Water Service";
         }
-        if (normalized.startsWith("sw") || normalized.contains("sewerage")) {
+        if (normalized.startsWith("sw") || normalized.contains("sewerage")
+                || normalized.contains("swconnection") || normalized.contains("sw1")) {
             return "Sewerage Service";
         }
         if (normalized.startsWith("pt") || normalized.contains("property")) {

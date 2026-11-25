@@ -235,22 +235,7 @@ public class WorKflowRepository {
             int underSlaCount = rs.getInt("under_sla_count");
             int overSlaExceededLimitCount = rs.getInt("over_sla_exceeded_limit_count");
 
-            String formattedBusinessName = WorkflowNotificationService.formatBusinessServiceName(businessName);
-            String displayServiceName;
-            if (StringUtils.isNotBlank(formattedBusinessName) && StringUtils.isNotBlank(businessServiceCode)
-                    && !formattedBusinessName.trim().equalsIgnoreCase(businessServiceCode.trim())
-                    && !formattedBusinessName.trim().toLowerCase().contains(businessServiceCode.trim().toLowerCase())) {
-                String subCode = WorkflowNotificationService.formatBusinessServiceSubCode(businessServiceCode);
-                if (StringUtils.isNotBlank(subCode)) {
-                    displayServiceName = formattedBusinessName.trim() + " (" + subCode.trim() + ")";
-                } else {
-                    displayServiceName = formattedBusinessName.trim();
-                }
-            } else {
-                displayServiceName = StringUtils.isNotBlank(formattedBusinessName)
-                        ? formattedBusinessName.trim()
-                        : WorkflowNotificationService.formatBusinessServiceName(businessServiceCode);
-            }
+            String displayServiceName = WorkflowNotificationService.getDisplayServiceName(businessName, businessServiceCode);
 
             if (StringUtils.isNotBlank(assigneeUuid)) {
                 UserWorkloadDigest digest = userDigestMap.computeIfAbsent(assigneeUuid.trim(), k ->

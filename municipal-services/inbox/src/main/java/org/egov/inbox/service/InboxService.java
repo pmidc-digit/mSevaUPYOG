@@ -2388,8 +2388,22 @@ public class InboxService {
 
         LinkedHashMap responseMap;
         try {
-            responseMap = mapper.convertValue(result, LinkedHashMap.class);
-        } catch (IllegalArgumentException e) {
+            responseMap = (LinkedHashMap) result;
+
+            // Filter out inactive objects for pet services
+            if (businessServiceName != null && businessServiceName.contains("ptr")) {
+
+                List<Map<String, Object>> applications =
+                        (List<Map<String, Object>>) responseMap.get("PetRegistrationApplications");
+
+                if (applications != null) {
+                    applications.removeIf(application ->
+                            "INACTIVE".equals(application.get("status"))
+                    );
+                }
+            }
+
+        }catch (IllegalArgumentException e) {
             throw new CustomException(ErrorConstants.PARSING_ERROR, "Failed to parse response of ProcessInstance Count");
         }
         

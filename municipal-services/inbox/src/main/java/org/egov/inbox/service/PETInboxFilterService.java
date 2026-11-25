@@ -90,6 +90,7 @@ public class PETInboxFilterService {
         // Paginating searcher results
         searchCriteria.put(OFFSET_PARAM, criteria.getOffset());
         searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
+//        searchCriteria
         moduleSearchCriteria.put(LIMIT_PARAM, criteria.getLimit());
 
         searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
@@ -105,7 +106,7 @@ public class PETInboxFilterService {
         }
 
         Object result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
-        List<String> applicationNumbers = JsonPath.read(result, "$.PetRegistrationApplications.[*].applicationnumber");
+        List<String> applicationNumbers = JsonPath.read(result, "$.PetRegistrationApplications[?(@.status_id != '55cc09f2-86df-4e5f-a408-223196b55aed')].applicationnumber");
 
         return applicationNumbers == null ? new ArrayList<>() : applicationNumbers;
     }
@@ -127,6 +128,7 @@ public class PETInboxFilterService {
             // Collect the UUIDs (keys) whose values match the requested statuses
             List<String> matchingIdsPet = StatusIdNameMap.entrySet().stream()
                     .filter(entry -> requestedStatuses.contains(entry.getValue()))
+                    .filter(entry -> !"INACTIVE".equals(entry.getValue()))
                     .map(Map.Entry::getKey) // ✅ UUIDs (keys) from the map
                     .collect(Collectors.toList());
 
@@ -137,7 +139,12 @@ public class PETInboxFilterService {
         }
 		else {
 			// If no status filter is provided, include all statuses
-			searchCriteria.put("status", new ArrayList<>(StatusIdNameMap.keySet()));
+			List<String> matchingIdsPet = StatusIdNameMap.entrySet().stream()
+		            .filter(entry -> !"INACTIVE".equals(entry.getValue()))
+		            .map(Map.Entry::getKey)
+		            .collect(Collectors.toList());
+
+		    searchCriteria.put("status", matchingIdsPet);
 		}
         if (moduleSearchCriteria != null && (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) || userRoles.contains(CITIZEN))
                 && !CollectionUtils.isEmpty(userUUIDs)) {

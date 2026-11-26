@@ -1127,3 +1127,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/sw-billscheduler/src/main/resources/db"
         image-name: "sw-billscheduler-db"
+
+  - name: "builds/upyog/municipal-services/invest-punjab-integration"
+    build:
+      - work-dir: "municipal-services/invest-punjab-integration"
+        image-name: "invest-punjab-integration"
+        dockerfile: 'build/maven/Dockerfile'
+   #   - work-dir: "municipal-services/invest-punjab-integration/migration"
+    #    image-name: "invest-punjab-integration-db"

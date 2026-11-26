@@ -50,6 +50,7 @@ export const getEmployeeOBPSRoles = (employee, obpsRoleMap) => {
 // Utility: Add "Select All" option to array
 export const addSelectAllOption = (items, codeKey = "code", nameKey = "name") => {
   if (!items || items.length === 0) return [];
+  if (items.length === 1) return items;
   return [{ [codeKey]: "ALL", [nameKey]: "Select All" }, ...items];
 };
 

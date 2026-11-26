@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this module will be documented in this file.
 
+## 1.3.0 - 2026-11-12
+- Standardized user-search query building on prepared-statement parameter binding; fuzzy-name (`fuzzyLogic: true`) search now binds the LIKE pattern as a parameter.
+- **Behavior change**: the `sort` field in user search is now validated against an allowlist of `eg_user` columns. `password`, `pan`, `aadhaarnumber`, `signature` and `photo` are no longer sortable. An optional `asc`/`desc` direction is supported (e.g. `"createddate desc"`). Unrecognized sort values fall back to the default `name` ordering instead of producing a database error. All other previously sortable columns continue to work unchanged.
+
 ## 1.3.0 - 2023-02-06
 
 - Transition from 1.3.0-beta version to 1.3.0 version

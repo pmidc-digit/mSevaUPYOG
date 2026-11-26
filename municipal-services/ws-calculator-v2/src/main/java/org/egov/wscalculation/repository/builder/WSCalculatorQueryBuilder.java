@@ -304,7 +304,7 @@ public class WSCalculatorQueryBuilder {
 	/**
 	 * Bill expire query builder
 	 * 
-	 * @param billIds
+//	 * @param billIds
 	 * @param preparedStmtList
 	 */
 	public String getBillSchedulerUpdateQuery(String schedulerId, List<Object> preparedStmtList) {
@@ -355,9 +355,10 @@ public class WSCalculatorQueryBuilder {
 		return query.toString();
 	}
 
-	public String getConnectionNumberList(String tenantId, String connectionType, String status, Long taxPeriodFrom,
+	public String getConnectionNumberList(String tenantId, String locality, String connectionType, String status, Long taxPeriodFrom,
 			Long taxPeriodTo, String cone, List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoListQuery);
+        query.append(" INNER JOIN eg_pt_property p ON conn.property_id = p.propertyid INNER JOIN eg_pt_address a ON a.propertyid = p.id ");
 
 		// Add connection type
 		addClauseIfRequired(preparedStatement, query);
@@ -380,6 +381,11 @@ public class WSCalculatorQueryBuilder {
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
 
+        if (locality != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" a.locality = ? ");
+            preparedStatement.add(locality);
+        }
 //		 Test with connection number
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" conn.connectionno = '0603000900' ");
@@ -457,7 +463,7 @@ public class WSCalculatorQueryBuilder {
 
 	}
 
-	public String getConnectionsNoByLocality(String tenantId, String connectionType, String status, String locality,String groups,
+	public String getConnectionsNoByLocalityTenantOrGroup(String tenantId, String connectionType, String status, String locality,String groups,
 			List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoByLocality);
 
@@ -579,12 +585,6 @@ public class WSCalculatorQueryBuilder {
 		addClauseIfRequired(preparedStmtList, query);
 		query.append(" tenantid = ? ");
 		preparedStmtList.add(tenantId);
-
-		if (locality != null) {
-			addClauseIfRequired(preparedStmtList, query);
-			query.append(" locality = ? ");
-			preparedStmtList.add(locality);
-		}
 		if (billFromDate != null) {
 			addClauseIfRequired(preparedStmtList, query);
 			query.append(" billingcyclestartdate = ? ");
@@ -594,6 +594,18 @@ public class WSCalculatorQueryBuilder {
 			addClauseIfRequired(preparedStmtList, query);
 			query.append(" billingcycleenddate = ? ");
 			preparedStmtList.add(billToDate);
+		}
+		
+		if (locality == null && group == null) {
+	        query.append(" AND locality IS NULL");
+	        query.append(" AND groups IS NULL");
+	        return query.toString();
+	    }
+		
+		if (locality != null) {
+			addClauseIfRequired(preparedStmtList, query);
+			query.append(" locality = ? ");
+			preparedStmtList.add(locality);
 		}
 		if (group != null) {
 			addClauseIfRequired(preparedStmtList, query);
@@ -686,7 +698,7 @@ public class WSCalculatorQueryBuilder {
 	}
 
 	/**
-	 * @param billIds
+//	 * @param billIds
 	 * @param preparedStmtList
 	 * @param builder
 	 */
@@ -1086,8 +1098,29 @@ StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
 			query.append(" status = ? ");
 			preparedStatement.add(criteria.getStatus());
 		}
-		query.append(" and groups is not null ");
-		query.append(" ORDER BY createdtime ");
+		
+		if (criteria.getGroup() != null) {
+			query.append(" and groups is not null ");
+		}
+		
+		query.append(" ORDER BY createdtime DESC");
+		return query.toString();
+	}
+	
+	public String searchBillGenerationSchedulerTenantQuery(BillGenerationSearchCriteria criteria,
+			List<Object> preparedStatement) {
+		StringBuilder query = new StringBuilder(billGenerationSchedulerSearchQuery);
+		addClauseIfRequired(preparedStatement, query);
+		query.append(" tenantid= ? ");
+		preparedStatement.add(criteria.getTenantId());
+		
+		if (criteria.getStatus() != null) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" status = ? ");
+			preparedStatement.add(criteria.getStatus());
+		}
+		
+		query.append(" ORDER BY createdtime DESC");
 		return query.toString();
 	}
 	

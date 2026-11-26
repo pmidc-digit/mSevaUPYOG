@@ -241,7 +241,9 @@ private class FrontYardResult {
 					      buildingHeight = buildingHeight.setScale(2, RoundingMode.HALF_UP);
 					    }
 
-						if (buildingHeight != null && (min.doubleValue() > 0 || mean.doubleValue() > 0)) {
+					    if (buildingHeight != null && (min.doubleValue() > 0 || mean.doubleValue() > 0)
+					            && block.getBuilding().getTotalArea() != null
+					            && !block.getBuilding().getTotalArea().isEmpty()) {
 							for (final Occupancy occupancy : block.getBuilding().getTotalArea()) {
 								scrutinyDetail.setKey("Block_" + block.getName() + "_" + FRONT_YARD_DESC);
 

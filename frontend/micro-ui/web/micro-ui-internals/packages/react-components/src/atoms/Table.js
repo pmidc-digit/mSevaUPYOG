@@ -64,6 +64,14 @@ const allFieldsGlobalFilter = (rows, _columnIds, filterValue) => {
   return rows.filter((row) => getSearchableRowText(row.original).toLowerCase().includes(query));
 };
 
+// up/down arrows after a sortable column's name: both grey when unsorted, the active one dark when sorted
+const SortIndicator = ({ direction }) => (
+  <svg width="10" height="14" viewBox="0 0 10 14" aria-hidden="true" style={{ flex: "0 0 auto", display: "inline-block" }}>
+    <path d="M5 1 L9 5.5 H1 Z" fill={direction === "asc" ? "#1f2937" : "#c4c9d1"} />
+    <path d="M5 13 L1 8.5 H9 Z" fill={direction === "desc" ? "#1f2937" : "#c4c9d1"} />
+  </svg>
+);
+
 const Table = ({
   className = "table",
   t,
@@ -97,6 +105,10 @@ const Table = ({
   inboxStyles,
   getRowProps,
   stickyHeader = false,
+  // optional summary row rendered as the last row (e.g. totals): { [columnId]: content }
+  footerRow = null,
+  // false = sort rows on the client (react-table sorts the data itself)
+  manualSort = true,
 }) => {
   const {
     getTableProps,
@@ -124,7 +136,7 @@ const Table = ({
       manualPagination: manualPagination,
       disableMultiSort: false,
       disableSortBy: disableSort,
-      manualSortBy: autoSort ? false : true,
+      manualSortBy: autoSort ? false : manualSort,
       autoResetPage: false,
       autoResetSortBy: false,
       disableSortRemove: true,
@@ -296,10 +308,21 @@ const Table = ({
                         background: "#f3f4f6",
                         borderBottom: "1px solid #e5e7eb",
                         fontWeight: 700,
+                        cursor: column.canSort ? "pointer" : undefined,
+                        userSelect: column.canSort ? "none" : undefined,
                       }}
                     >
-                      {column.render("Header")}
-                      <span>{column.isSorted ? column.isSortedDesc ? <SortDown /> : <SortUp /> : ""}</span>
+                      {column.canSort ? (
+                        <span className="digit-th-sort" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          {column.render("Header")}
+                          <SortIndicator direction={column.isSorted ? (column.isSortedDesc ? "desc" : "asc") : null} />
+                        </span>
+                      ) : (
+                        <React.Fragment>
+                          {column.render("Header")}
+                          <span>{column.isSorted ? column.isSortedDesc ? <SortDown /> : <SortUp /> : ""}</span>
+                        </React.Fragment>
+                      )}
                     </th>
                   ))}
                 </tr>
@@ -410,6 +433,26 @@ const Table = ({
                 );
               })}
             </tbody>
+            {footerRow && headerGroups.length > 0 && (
+              <tfoot>
+                <tr style={{ background: "#f3f4f6" }}>
+                  {showAutoSerialNo && <td style={{ padding: "14px 20px", borderTop: "2px solid #cbd5e1" }} />}
+                  {headerGroups[headerGroups.length - 1].headers.map((column) => (
+                    <td
+                      key={column.id}
+                      style={{
+                        ...(getCellProps({ column, isFooter: true })?.style || {}),
+                        fontWeight: 700,
+                        color: "#0f172a",
+                        borderTop: "2px solid #cbd5e1",
+                      }}
+                    >
+                      {footerRow[column.id] !== undefined && footerRow[column.id] !== null ? footerRow[column.id] : ""}
+                    </td>
+                  ))}
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
         <TableHorizontalScrollbar containerRef={tref} enabled={useInboxScrollbars} tableData={page} position="bottom" />

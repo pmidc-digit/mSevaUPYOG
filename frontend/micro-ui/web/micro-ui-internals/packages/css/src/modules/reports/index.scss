@@ -374,6 +374,10 @@
   display: block;
   text-align: right;
 }
+/* sortable amount header: label stays right aligned, sort arrows sit after it */
+.digit-th-sort .rpt-th--num {
+  flex: 1 1 auto;
+}
 .rpt-sno {
   color: var(--rpt-muted);
 }

@@ -16,7 +16,11 @@ import JurisdictionHistoryModal from "./components/JurisdictionHistoryModal";
 export const TransferAppointmentModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "TRANSFER_APPOINTMENT";
   const language = Digit.StoreData.getCurrentLanguage();
-  const { path, url } = useRouteMatch();
+  const match = useRouteMatch();
+  const rawPath = match?.path;
+  const path = (Array.isArray(rawPath) ? rawPath[0] : (typeof rawPath === "string" ? rawPath.split(",")[0] : rawPath)) || "/digit-ui/employee/transferAppointment";
+  const rawUrl = match?.url;
+  const url = (Array.isArray(rawUrl) ? rawUrl[0] : (typeof rawUrl === "string" ? rawUrl.split(",")[0] : rawUrl)) || path;
 
   // Load module store / localization if available
   Digit.Services.useStore({ stateCode, moduleCode, language });

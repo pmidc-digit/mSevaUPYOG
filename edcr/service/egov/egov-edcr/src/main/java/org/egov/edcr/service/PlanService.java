@@ -1169,7 +1169,7 @@ public class PlanService {
 		} else if (e.getMessage() != null && !e.getMessage().trim().isEmpty() && !e.getMessage().equalsIgnoreCase("null") && !e.getMessage().startsWith("Index:")) {
 			return e.getMessage().trim();
 		} else {
-			return ruleLabel + " not defined into the plan.";
+			return " Error While Processing " + ruleLabel;
 		}
 	}
 	

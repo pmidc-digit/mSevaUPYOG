@@ -181,4 +181,13 @@ public class EmailProperties {
     @Getter
     private String gmailSmtpDebug;
 
+    // ─── Recipient Override ──────────────────────────────────────────────────
+    @Value("${mail.to.override.enabled:false}")
+    @Getter
+    private boolean mailToOverrideEnabled;
+
+    @Value("${mail.to.override:}")
+    @Getter
+    private String mailToOverride;
+
 }

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>mSeva Punjab - Daily Digest Email Previews (Citizen vs Employee)</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #e2e8f0; margin: 0; padding: 20px; }
+    .tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 24px; }
+    .tab-btn { padding: 10px 22px; font-size: 14px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; background: #cbd5e1; color: #1e293b; transition: all 0.2s; }
+    .tab-btn.active { background: #0b2545; color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .preview-container { display: none; max-width: 650px; margin: 0 auto; }
+    .preview-container.active { display: block; }
+    .note-badge { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 12px; }
+    .note-citizen { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .note-employee { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  </style>
+  <script>
+    function showTab(tabId) {
+      document.querySelectorAll('.preview-container').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      document.getElementById('btn-' + tabId).classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <div class="tabs">
+    <button id="btn-citizen-view" class="tab-btn active" onclick="showTab('citizen-view')">Citizen Email Preview (Strict Role Segregation)</button>
+    <button id="btn-employee-view" class="tab-btn" onclick="showTab('employee-view')">Employee Email Preview (Strict Role Segregation)</button>
+  </div>
+
+  <!-- CITIZEN EMAIL PREVIEW -->
+  <div id="citizen-view" class="preview-container active">
+    <div class="note-badge note-citizen">
+      Citizen Recipient: Zero mention of "Employee", "Officer", or "Queue". Includes 5-Day Submission Deadline notice & Citizen Portal CTA.
+    </div>
+
+    
+
+    <div class="email-shell" style="background-color:#ffffff; border:1px solid #d5dde7; border-radius:10px; overflow:hidden; box-shadow:0 4px 14px rgba(11, 37, 69, 0.06);">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; background-color:#ffffff;">
+
+                  <!-- Top Official Accent Strip -->
+                  <tr>
+                    <td style="background-color:#d97706; height:5px; font-size:0; line-height:0;">&nbsp;</td>
+                  </tr>
+
+                  <!-- Official Government Header -->
+                  <tr>
+                    <td class="header-padding" style="background-color:#0b2545; padding:24px 32px; border-bottom:3px solid #1d4ed8;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                          <td class="header-stack" align="left" valign="middle">
+                            <p style="margin:0 0 4px 0; font-size:11px; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; color:#fbbf24;">
+                              Government of Punjab
+                            </p>
+                            <h1 style="margin:0; font-size:21px; font-weight:700; color:#ffffff; letter-spacing:0.2px; line-height:1.25;">
+                              Department of Local Government
+                            </h1>
+                            <p style="margin:6px 0 0 0; font-size:12.5px; color:#cbd5e1; letter-spacing:0.2px;">
+                              mSeva Punjab &nbsp;&bull;&nbsp; Citizen Services Portal
+                            </p>
+                          </td>
+                          <td class="header-stack badge-wrap" align="right" valign="middle" style="padding-left:14px;">
+                            <span style="display:inline-block; background-color:#17365d; border:1px solid #fbbf24; border-radius:20px; color:#fbbf24; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:6px 12px; white-space:nowrap;">
+                              &#9679;&nbsp; Action Required
+                            </span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Subject & Reference Ribbon -->
+                  <tr>
+                    <td class="ribbon-padding" style="background-color:#f8fafc; padding:14px 32px; border-bottom:1px solid #e2e8f0;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                          <td align="left" style="font-size:12.5px; font-weight:700; color:#0b2545; text-transform:uppercase; letter-spacing:0.4px;">
+                            Subject: Notice Regarding Pending Municipal Application(s)
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="left" style="padding-top:5px; font-size:11.5px; color:#64748b;">
+                            Generated On: <strong style="color:#1e293b;">25-11-2026 10:15 AM</strong> &nbsp;&nbsp;|&nbsp;&nbsp; Notice Type: <strong style="color:#1e293b;">Submission &amp; Status Reminder</strong>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Main Body Content -->
+                  <tr>
+                    <td class="content-padding" style="padding:28px 32px;">
+
+                      <!-- Salutation -->
+                      <p style="margin:0 0 14px 0; font-size:15px; color:#0f172a;">
+                        Dear <strong style="color:#0b2545;">Om Aditya Dutta</strong>,
+                      </p>
+
+                      <!-- Formal Administrative Text -->
+                      <p style="margin:0 0 24px 0; font-size:14px; line-height:1.65; color:#334155;">
+                        This is to place before you the daily status report of municipal applications currently awaiting your action on the <strong>mSeva Punjab</strong> portal. You are requested to review the pending cases listed below and submit the required details or documents at the earliest.
+                      </p>
+
+                      <!-- Summary Metrics (Enhanced Executive KPI Cards) -->
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 26px 0;">
+                        <tr>
+
+                          <!-- Card 1: Total Pending Applications -->
+                          <td class="kpi-col" width="48%" valign="top">
+                            <div style="background-color:#ffffff; border:1px solid #cbd5e1; border-radius:10px; overflow:hidden; box-shadow:0 3px 10px rgba(11, 37, 69, 0.06);">
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                  <td style="background-color:#0b2545; height:4px; font-size:0; line-height:0;">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:16px 18px 14px 18px;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;">
+                                      <tr>
+                                        <td align="left" valign="middle" style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#475569; line-height:1.3;">
+                                          Total Pending<br>Applications
+                                        </td>
+                                        <td align="right" valign="top" style="padding-left:6px;">
+                                          <span style="display:inline-block; background-color:#e0e7ff; color:#1e3a8a; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; padding:3px 8px; border-radius:12px; white-space:nowrap;">
+                                            Pending
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <div style="font-size:38px; font-weight:700; color:#0b2545; line-height:1.05; letter-spacing:-0.5px;">
+                                      6
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td style="background-color:#f1f5f9; border-top:1px solid #e2e8f0; padding:9px 18px; font-size:11.5px; font-weight:600; color:#475569; line-height:1.4;">
+                                    <span style="color:#1d4ed8; font-size:10px; vertical-align:middle;">&#9679;</span>&nbsp; Awaiting your action / submission
+                                  </td>
+                                </tr>
+                              </table>
+                            </div>
+                          </td>
+
+                          <!-- Responsive Spacer -->
+                          <td class="kpi-spacer" width="4%" style="font-size:0; line-height:0;">&nbsp;</td>
+
+                          <!-- Card 2: Active Services / Modules -->
+                          <td class="kpi-col" width="48%" valign="top">
+                            <div style="background-color:#ffffff; border:1px solid #f3d9a4; border-radius:10px; overflow:hidden; box-shadow:0 3px 10px rgba(180, 83, 9, 0.07);">
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                  <td style="background-color:#d97706; height:4px; font-size:0; line-height:0;">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:16px 18px 14px 18px;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;">
+                                      <tr>
+                                        <td align="left" valign="middle" style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#785a28; line-height:1.3;">
+                                          Active Services /<br>Modules
+                                        </td>
+                                        <td align="right" valign="top" style="padding-left:6px;">
+                                          <span style="display:inline-block; background-color:#fef3c7; color:#92400e; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; padding:3px 8px; border-radius:12px; white-space:nowrap;">
+                                            Impacted
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <div style="font-size:38px; font-weight:700; color:#b45309; line-height:1.05; letter-spacing:-0.5px;">
+                                      2
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td style="background-color:#fffbeb; border-top:1px solid #fde68a; padding:9px 18px; font-size:11.5px; font-weight:600; color:#78350f; line-height:1.4;">
+                                    <span style="color:#d97706; font-size:10px; vertical-align:middle;">&#9679;</span>&nbsp; Municipal departments impacted
+                                  </td>
+                                </tr>
+                              </table>
+                            </div>
+                          </td>
+
+                        </tr>
+                      </table>
+
+                                    <!-- SLA Performance Breakdown Grid -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px 0;">
+                <tr>
+                  <td class="kpi-col" width="31%" style="background-color:#f0fdf4; border:1px solid #bbf7d0; border-top:3px solid #16a34a; border-radius:8px; padding:12px 14px; vertical-align:top;">
+                    <div style="font-size:10.5px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px; color:#15803d; margin-bottom:4px;">Within Timeline</div>
+                    <div style="font-size:24px; font-weight:bold; color:#166534; line-height:1.1; margin-bottom:3px;">5</div>
+                    <div style="font-size:11px; color:#16a34a;">Comfortable timeline</div>
+                  </td>
+                  <td class="kpi-spacer" width="3%" style="font-size:0; line-height:0;">&nbsp;</td>
+                  <td class="kpi-col" width="32%" style="background-color:#fffbeb; border:1px solid #fde68a; border-top:3px solid #d97706; border-radius:8px; padding:12px 14px; vertical-align:top;">
+                    <div style="font-size:10.5px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:4px;">Action Needed Soon</div>
+                    <div style="font-size:24px; font-weight:bold; color:#92400e; line-height:1.1; margin-bottom:3px;">1</div>
+                    <div style="font-size:11px; color:#d97706;">Due within 48 hours</div>
+                  </td>
+                  <td class="kpi-spacer" width="3%" style="font-size:0; line-height:0;">&nbsp;</td>
+                  <td class="kpi-col" width="31%" style="background-color:#fef2f2; border:1px solid #fecaca; border-top:3px solid #dc2626; border-radius:8px; padding:12px 14px; vertical-align:top;">
+                    <div style="font-size:10.5px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px; color:#b91c1c; margin-bottom:4px;">Overdue Applications</div>
+                    <div style="font-size:24px; font-weight:bold; color:#991b1b; line-height:1.1; margin-bottom:3px;">0</div>
+                    <div style="font-size:11px; color:#dc2626;">Timeline exceeded</div>
+                  </td>
+                </tr>
+              </table>
+
+                      <!-- Service Breakdown Table -->
+                      <div style="border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; margin:0 0 24px 0;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                          <thead>
+                            <tr>
+                              <th colspan="2" align="left" style="background-color:#f1f5f9; padding:10px 16px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#0b2545; border-bottom:1px solid #cbd5e1;">
+                                Service-Wise Breakdown
+                              </th>
+                            </tr>
+                            <tr style="background-color:#0b2545;">
+                              <th align="left" style="padding:11px 16px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#ffffff; border-right:1px solid #1e3a8a;">
+                                Municipal Service / Module
+                              </th>
+                              <th align="right" style="padding:11px 16px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#ffffff; width:135px;">
+                                Pending Count
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr style="background-color:#ffffff;">
+                              <td style="padding:12px 18px; font-size:13px; font-weight:600; color:#1e293b; border-bottom:1px solid #e2e8f0; border-right:1px solid #cbd5e1;">
+                                Water Service <span style="font-size:12px; font-weight:normal; color:#475569;">(New Connection)</span>
+                                <div style="font-size:11.5px; margin-top:4px; margin-bottom:2px; color:#475569;">
+                                  <span style="color:#0284c7; font-weight:700;">&#9679;</span>&nbsp;
+                                  <strong style="color:#1e293b;">Amritsar</strong> <span style="color:#64748b; font-weight:normal;">(2)</span> &nbsp;&bull;&nbsp; 
+                                  <strong style="color:#1e293b;">Jalandhar</strong> <span style="color:#64748b; font-weight:normal;">(1)</span>
+                                </div>
+                                <div style="font-size:11px; margin-top:3px; font-weight:normal;">
+                                  <span style="color:#16a34a; font-weight:600;">2 Within Timeline</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#d97706; font-weight:600;">1 Due Soon</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#dc2626; font-weight:600;">0 Overdue</span>
+                                </div>
+                              </td>
+                              <td style="padding:12px 18px; font-size:13px; font-weight:bold; color:#0f172a; border-bottom:1px solid #e2e8f0; text-align:right;">
+                                <span style="display:inline-block; min-width:32px; padding:3px 10px; background-color:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:12px; font-size:12.5px; font-weight:bold; text-align:center;">3</span>
+                              </td>
+                            </tr>
+                            <tr style="background-color:#f8fafc;">
+                              <td style="padding:12px 18px; font-size:13px; font-weight:600; color:#1e293b; border-bottom:1px solid #e2e8f0; border-right:1px solid #cbd5e1;">
+                                Sewerage Service <span style="font-size:12px; font-weight:normal; color:#475569;">(New Connection)</span>
+                                <div style="font-size:11.5px; margin-top:4px; margin-bottom:2px; color:#475569;">
+                                  <span style="color:#0284c7; font-weight:700;">&#9679;</span>&nbsp;
+                                  <strong style="color:#1e293b;">Amritsar</strong> <span style="color:#64748b; font-weight:normal;">(3)</span>
+                                </div>
+                                <div style="font-size:11px; margin-top:3px; font-weight:normal;">
+                                  <span style="color:#16a34a; font-weight:600;">3 Within Timeline</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#d97706; font-weight:600;">0 Due Soon</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#dc2626; font-weight:600;">0 Overdue</span>
+                                </div>
+                              </td>
+                              <td style="padding:12px 18px; font-size:13px; font-weight:bold; color:#0f172a; border-bottom:1px solid #e2e8f0; text-align:right;">
+                                <span style="display:inline-block; min-width:32px; padding:3px 10px; background-color:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:12px; font-size:12.5px; font-weight:bold; text-align:center;">3</span>
+                              </td>
+                            </tr>
+                            <tr style="background-color:#f8fafc;">
+                              <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#0b2545; border-top:2px solid #94a3b8; border-right:1px solid #cbd5e1;">
+                                Grand Total (Pending Applications)
+                              </td>
+                              <td align="right" style="padding:12px 16px; font-size:15px; font-weight:700; color:#b45309; border-top:2px solid #94a3b8;">
+                                6
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Action Required Notice Box -->
+                      <div style="background-color:#fffbeb; border:1px solid #fde68a; border-left:4px solid #d97706; border-radius:8px; overflow:hidden; margin:0 0 26px 0;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                          <tr>
+                            <td style="padding:14px 18px;">
+                              <div style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#92400e; margin-bottom:5px;">
+                                &#9888;&nbsp; ACTION REQUIRED: SUBMISSION TIMELINE
+                              </div>
+                              <div style="font-size:13px; line-height:1.55; color:#78350f;">
+                                <strong>Action Required:</strong> Please submit your application / required documents within <strong>5 days</strong> of it being assigned to you to ensure timely processing and avoid cancellation.
+                              </div>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+
+                      <!-- Official CTA Button -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto 14px auto;">
+                        <tr>
+                          <td align="center">
+                            <a href="https://mseva-dev.lgpunjab.gov.in/digit-ui/citizen/login" target="_blank" class="btn-block" style="display:inline-block; background-color:#0b2545; padding:13px 32px; font-size:14px; font-weight:700; color:#ffffff; text-decoration:none; letter-spacing:0.3px; border-radius:6px; border:1px solid #0b2545;">
+                              Access mSeva Citizen Portal
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Direct Link Fallback -->
+                      <p style="margin:0 0 26px 0; font-size:11.5px; color:#64748b; text-align:center; line-height:1.55;">
+                        If the button above does not open, copy and paste this URL into your browser:<br>
+                        <a href="https://mseva-dev.lgpunjab.gov.in/digit-ui/citizen/login" target="_blank" style="color:#1d4ed8; word-break:break-all; text-decoration:underline;">https://mseva-dev.lgpunjab.gov.in/digit-ui/citizen/login</a>
+                      </p>
+
+                      <!-- Divider -->
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 18px 0;">
+                        <tr>
+                          <td style="border-top:1px solid #e2e8f0; height:1px; font-size:0; line-height:0;">&nbsp;</td>
+                        </tr>
+                      </table>
+
+                      <!-- Official Sign-off -->
+                      <p style="margin:0; font-size:13px; line-height:1.65; color:#334155;">
+                        Issued by,<br>
+                        <strong style="color:#0b2545;">State Workflow Monitoring Cell</strong><br>
+                        Department of Local Government, Government of Punjab
+                      </p>
+
+                    </td>
+                  </tr>
+
+                  <!-- Official Government Footer -->
+                  <tr>
+                    <td style="background-color:#f1f5f9; border-top:1px solid #dbe3ec; padding:18px 32px; text-align:center;">
+                      <p style="margin:0 0 4px 0; font-size:12px; font-weight:700; color:#0f172a;">
+                        Punjab Municipal Infrastructure Development Company (PMIDC)
+                      </p>
+                      <p style="margin:0 0 8px 0; font-size:11px; color:#475569; line-height:1.45;">
+                        Municipal Bhawan, Plot No. 3, Sector 35-A, Chandigarh, Punjab &ndash; 160022
+                      </p>
+                      <p style="margin:0; font-size:10.5px; color:#64748b; line-height:1.45;">
+                        This is an automated system-generated notification from mSeva Punjab. Please do not reply directly to this email.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </div>
+  
+  </div>
+
+  <!-- EMPLOYEE EMAIL PREVIEW -->
+  <div id="employee-view" class="preview-container">
+    <div class="note-badge note-employee">
+      Employee Recipient: Zero mention of "Citizen" or "Applicant". Includes RTS Statutory SLA scrutiny & Employee Portal CTA.
+    </div>
+
+    
+
+    <div class="email-shell" style="background-color:#ffffff; border:1px solid #d5dde7; border-radius:10px; overflow:hidden; box-shadow:0 4px 14px rgba(11, 37, 69, 0.06);">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; background-color:#ffffff;">
+
+                  <!-- Top Official Accent Strip -->
+                  <tr>
+                    <td style="background-color:#d97706; height:5px; font-size:0; line-height:0;">&nbsp;</td>
+                  </tr>
+
+                  <!-- Official Government Header -->
+                  <tr>
+                    <td class="header-padding" style="background-color:#0b2545; padding:24px 32px; border-bottom:3px solid #1d4ed8;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                          <td class="header-stack" align="left" valign="middle">
+                            <p style="margin:0 0 4px 0; font-size:11px; font-weight:700; letter-spacing:1.6px; text-transform:uppercase; color:#fbbf24;">
+                              Government of Punjab
+                            </p>
+                            <h1 style="margin:0; font-size:21px; font-weight:700; color:#ffffff; letter-spacing:0.2px; line-height:1.25;">
+                              Department of Local Government
+                            </h1>
+                            <p style="margin:6px 0 0 0; font-size:12.5px; color:#cbd5e1; letter-spacing:0.2px;">
+                              mSeva Punjab &nbsp;&bull;&nbsp; Municipal Governance &amp; Workflow Portal
+                            </p>
+                          </td>
+                          <td class="header-stack badge-wrap" align="right" valign="middle" style="padding-left:14px;">
+                            <span style="display:inline-block; background-color:#17365d; border:1px solid #fbbf24; border-radius:20px; color:#fbbf24; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:6px 12px; white-space:nowrap;">
+                              &#9679;&nbsp; Pendency Report
+                            </span>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Subject & Reference Ribbon -->
+                  <tr>
+                    <td class="ribbon-padding" style="background-color:#f8fafc; padding:14px 32px; border-bottom:1px solid #e2e8f0;">
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                          <td align="left" style="font-size:12.5px; font-weight:700; color:#0b2545; text-transform:uppercase; letter-spacing:0.4px;">
+                            Subject: Daily Pendency Report of Assigned Applications
+                          </td>
+                        </tr>
+                        <tr>
+                          <td align="left" style="padding-top:5px; font-size:11.5px; color:#64748b;">
+                            Generated On: <strong style="color:#1e293b;">25-11-2026 10:15 AM</strong> &nbsp;&nbsp;|&nbsp;&nbsp; Report Type: <strong style="color:#1e293b;">Daily Consolidated Report</strong>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Main Body Content -->
+                  <tr>
+                    <td class="content-padding" style="padding:28px 32px;">
+
+                      <!-- Salutation -->
+                      <p style="margin:0 0 14px 0; font-size:15px; color:#0f172a;">
+                        Dear <strong style="color:#0b2545;">Er. Rajesh Sharma</strong>,
+                      </p>
+
+                      <!-- Formal Administrative Text -->
+                      <p style="margin:0 0 24px 0; font-size:14px; line-height:1.65; color:#334155;">
+                        This is to place before you the daily pendency report of municipal workflow applications currently assigned to your queue on the <strong>mSeva Punjab</strong> portal. You are requested to review the pending cases listed below and ensure timely scrutiny, approval, or onward disposal.
+                      </p>
+
+                      <!-- Summary Metrics (Enhanced Executive KPI Cards) -->
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 26px 0;">
+                        <tr>
+
+                          <!-- Card 1: Total Pending Applications -->
+                          <td class="kpi-col" width="48%" valign="top">
+                            <div style="background-color:#ffffff; border:1px solid #cbd5e1; border-radius:10px; overflow:hidden; box-shadow:0 3px 10px rgba(11, 37, 69, 0.06);">
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                  <td style="background-color:#0b2545; height:4px; font-size:0; line-height:0;">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:16px 18px 14px 18px;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;">
+                                      <tr>
+                                        <td align="left" valign="middle" style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#475569; line-height:1.3;">
+                                          Total Pending<br>Applications
+                                        </td>
+                                        <td align="right" valign="top" style="padding-left:6px;">
+                                          <span style="display:inline-block; background-color:#e0e7ff; color:#1e3a8a; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; padding:3px 8px; border-radius:12px; white-space:nowrap;">
+                                            Pending
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <div style="font-size:38px; font-weight:700; color:#0b2545; line-height:1.05; letter-spacing:-0.5px;">
+                                      5
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td style="background-color:#f1f5f9; border-top:1px solid #e2e8f0; padding:9px 18px; font-size:11.5px; font-weight:600; color:#475569; line-height:1.4;">
+                                    <span style="color:#1d4ed8; font-size:10px; vertical-align:middle;">&#9679;</span>&nbsp; Awaiting action in your queue
+                                  </td>
+                                </tr>
+                              </table>
+                            </div>
+                          </td>
+
+                          <!-- Responsive Spacer -->
+                          <td class="kpi-spacer" width="4%" style="font-size:0; line-height:0;">&nbsp;</td>
+
+                          <!-- Card 2: Active Services / Modules -->
+                          <td class="kpi-col" width="48%" valign="top">
+                            <div style="background-color:#ffffff; border:1px solid #f3d9a4; border-radius:10px; overflow:hidden; box-shadow:0 3px 10px rgba(180, 83, 9, 0.07);">
+                              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                  <td style="background-color:#d97706; height:4px; font-size:0; line-height:0;">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                  <td style="padding:16px 18px 14px 18px;">
+                                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;">
+                                      <tr>
+                                        <td align="left" valign="middle" style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.7px; color:#785a28; line-height:1.3;">
+                                          Active Services /<br>Modules
+                                        </td>
+                                        <td align="right" valign="top" style="padding-left:6px;">
+                                          <span style="display:inline-block; background-color:#fef3c7; color:#92400e; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; padding:3px 8px; border-radius:12px; white-space:nowrap;">
+                                            Impacted
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    </table>
+                                    <div style="font-size:38px; font-weight:700; color:#b45309; line-height:1.05; letter-spacing:-0.5px;">
+                                      2
+                                    </div>
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td style="background-color:#fffbeb; border-top:1px solid #fde68a; padding:9px 18px; font-size:11.5px; font-weight:600; color:#78350f; line-height:1.4;">
+                                    <span style="color:#d97706; font-size:10px; vertical-align:middle;">&#9679;</span>&nbsp; Municipal departments impacted
+                                  </td>
+                                </tr>
+                              </table>
+                            </div>
+                          </td>
+
+                        </tr>
+                      </table>
+
+                                    <!-- SLA Performance Breakdown Grid -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px 0;">
+                <tr>
+                  <td class="kpi-col" width="31%" style="background-color:#f0fdf4; border:1px solid #bbf7d0; border-top:3px solid #16a34a; border-radius:8px; padding:12px 14px; vertical-align:top;">
+                    <div style="font-size:10.5px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px; color:#15803d; margin-bottom:4px;">Under SLA</div>
+                    <div style="font-size:24px; font-weight:bold; color:#166534; line-height:1.1; margin-bottom:3px;">4</div>
+                    <div style="font-size:11px; color:#16a34a;">Within time limit</div>
+                  </td>
+                  <td class="kpi-spacer" width="3%" style="font-size:0; line-height:0;">&nbsp;</td>
+                  <td class="kpi-col" width="32%" style="background-color:#fffbeb; border:1px solid #fde68a; border-top:3px solid #d97706; border-radius:8px; padding:12px 14px; vertical-align:top;">
+                    <div style="font-size:10.5px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px; color:#b45309; margin-bottom:4px;">Completing SLA</div>
+                    <div style="font-size:24px; font-weight:bold; color:#92400e; line-height:1.1; margin-bottom:3px;">1</div>
+                    <div style="font-size:11px; color:#d97706;">Due in &le; 48 hours</div>
+                  </td>
+                  <td class="kpi-spacer" width="3%" style="font-size:0; line-height:0;">&nbsp;</td>
+                  <td class="kpi-col" width="31%" style="background-color:#fef2f2; border:1px solid #fecaca; border-top:3px solid #dc2626; border-radius:8px; padding:12px 14px; vertical-align:top;">
+                    <div style="font-size:10.5px; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px; color:#b91c1c; margin-bottom:4px;">Over SLA</div>
+                    <div style="font-size:24px; font-weight:bold; color:#991b1b; line-height:1.1; margin-bottom:3px;">0</div>
+                    <div style="font-size:11px; color:#dc2626;">Statutory deadline breached</div>
+                  </td>
+                </tr>
+              </table>
+
+                      <!-- Service Breakdown Table -->
+                      <div style="border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; margin:0 0 24px 0;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">
+                          <thead>
+                            <tr>
+                              <th colspan="2" align="left" style="background-color:#f1f5f9; padding:10px 16px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#0b2545; border-bottom:1px solid #cbd5e1;">
+                                Service-Wise Pendency Breakdown
+                              </th>
+                            </tr>
+                            <tr style="background-color:#0b2545;">
+                              <th align="left" style="padding:11px 16px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#ffffff; border-right:1px solid #1e3a8a;">
+                                Municipal Service / Module
+                              </th>
+                              <th align="right" style="padding:11px 16px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#ffffff; width:135px;">
+                                Pending Count
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr style="background-color:#ffffff;">
+                              <td style="padding:12px 18px; font-size:13px; font-weight:600; color:#1e293b; border-bottom:1px solid #e2e8f0; border-right:1px solid #cbd5e1;">
+                                Trade License <span style="font-size:12px; font-weight:normal; color:#475569;">(NewTL)</span>
+                                <div style="font-size:11.5px; margin-top:4px; margin-bottom:2px; color:#475569;">
+                                  <span style="color:#0284c7; font-weight:700;">&#9679;</span>&nbsp;
+                                  <strong style="color:#1e293b;">Begowal</strong> <span style="color:#64748b; font-weight:normal;">(1)</span>
+                                </div>
+                                <div style="font-size:11px; margin-top:3px; font-weight:normal;">
+                                  <span style="color:#16a34a; font-weight:600;">0 Under SLA</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#d97706; font-weight:600;">0 Completing</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#dc2626; font-weight:600;">1 Over SLA</span>
+                                </div>
+                              </td>
+                              <td style="padding:12px 18px; font-size:13px; font-weight:bold; color:#0f172a; border-bottom:1px solid #e2e8f0; text-align:right;">
+                                <span style="display:inline-block; min-width:32px; padding:3px 10px; background-color:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:12px; font-size:12.5px; font-weight:bold; text-align:center;">1</span>
+                              </td>
+                            </tr>
+                            <tr style="background-color:#f8fafc;">
+                              <td style="padding:12px 18px; font-size:13px; font-weight:600; color:#1e293b; border-bottom:1px solid #e2e8f0; border-right:1px solid #cbd5e1;">
+                                Building Plan Approval (BPA)
+                                <div style="font-size:11.5px; margin-top:4px; margin-bottom:2px; color:#475569;">
+                                  <span style="color:#0284c7; font-weight:700;">&#9679;</span>&nbsp;
+                                  <strong style="color:#1e293b;">Amritsar</strong> <span style="color:#64748b; font-weight:normal;">(4)</span>
+                                </div>
+                                <div style="font-size:11px; margin-top:3px; font-weight:normal;">
+                                  <span style="color:#16a34a; font-weight:600;">0 Under SLA</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#d97706; font-weight:600;">0 Completing</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#dc2626; font-weight:600;">4 Over SLA</span>
+                                </div>
+                              </td>
+                              <td style="padding:12px 18px; font-size:13px; font-weight:bold; color:#0f172a; border-bottom:1px solid #e2e8f0; text-align:right;">
+                                <span style="display:inline-block; min-width:32px; padding:3px 10px; background-color:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:12px; font-size:12.5px; font-weight:bold; text-align:center;">4</span>
+                              </td>
+                            </tr>
+                            <tr style="background-color:#ffffff;">
+                              <td style="padding:12px 18px; font-size:13px; font-weight:600; color:#1e293b; border-bottom:1px solid #e2e8f0; border-right:1px solid #cbd5e1;">
+                                Fire NOC
+                                <div style="font-size:11.5px; margin-top:4px; margin-bottom:2px; color:#475569;">
+                                  <span style="color:#0284c7; font-weight:700;">&#9679;</span>&nbsp;
+                                  <strong style="color:#1e293b;">Amritsar</strong> <span style="color:#64748b; font-weight:normal;">(1)</span>
+                                </div>
+                                <div style="font-size:11px; margin-top:3px; font-weight:normal;">
+                                  <span style="color:#16a34a; font-weight:600;">0 Under SLA</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#d97706; font-weight:600;">0 Completing</span> &nbsp;&bull;&nbsp;
+                                  <span style="color:#dc2626; font-weight:600;">1 Over SLA</span>
+                                </div>
+                              </td>
+                              <td style="padding:12px 18px; font-size:13px; font-weight:bold; color:#0f172a; border-bottom:1px solid #e2e8f0; text-align:right;">
+                                <span style="display:inline-block; min-width:32px; padding:3px 10px; background-color:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; border-radius:12px; font-size:12.5px; font-weight:bold; text-align:center;">1</span>
+                              </td>
+                            </tr>
+                            <tr style="background-color:#f8fafc;">
+                              <td style="padding:12px 16px; font-size:13px; font-weight:700; color:#0b2545; border-top:2px solid #94a3b8; border-right:1px solid #cbd5e1;">
+                                Grand Total (Pending Applications)
+                              </td>
+                              <td align="right" style="padding:12px 16px; font-size:15px; font-weight:700; color:#b45309; border-top:2px solid #94a3b8;">
+                                5
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Statutory SLA & RTS Advisory -->
+                      <div style="background-color:#fffbeb; border:1px solid #fde68a; border-left:4px solid #d97706; border-radius:8px; overflow:hidden; margin:0 0 26px 0;">
+                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                          <tr>
+                            <td style="padding:14px 18px;">
+                              <div style="font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:#92400e; margin-bottom:5px;">
+                                &#9888;&nbsp; STATUTORY SLA &amp; RTS WORKFLOW ADVISORY
+                              </div>
+                              <div style="font-size:13px; line-height:1.55; color:#78350f;">
+                                Under the Punjab Transparency in Delivery of Public Services (RTS) guidelines, all municipal applications are governed by strict Service Level Agreement (SLA) timelines. Cases pending beyond prescribed limits are monitored on the State Administrative Dashboard. Timely scrutiny, approval, and onward disposal are requested.
+                              </div>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+
+                      <!-- Official CTA Button -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto 14px auto;">
+                        <tr>
+                          <td align="center">
+                            <a href="https://mseva-dev.lgpunjab.gov.in/digit-ui/employee/login" target="_blank" class="btn-block" style="display:inline-block; background-color:#0b2545; padding:13px 32px; font-size:14px; font-weight:700; color:#ffffff; text-decoration:none; letter-spacing:0.3px; border-radius:6px; border:1px solid #0b2545;">
+                              Access mSeva Employee Portal
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+
+                      <!-- Direct Link Fallback -->
+                      <p style="margin:0 0 26px 0; font-size:11.5px; color:#64748b; text-align:center; line-height:1.55;">
+                        If the button above does not open, copy and paste this URL into your browser:<br>
+                        <a href="https://mseva-dev.lgpunjab.gov.in/digit-ui/employee/login" target="_blank" style="color:#1d4ed8; word-break:break-all; text-decoration:underline;">https://mseva-dev.lgpunjab.gov.in/digit-ui/employee/login</a>
+                      </p>
+
+                      <!-- Divider -->
+                      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 18px 0;">
+                        <tr>
+                          <td style="border-top:1px solid #e2e8f0; height:1px; font-size:0; line-height:0;">&nbsp;</td>
+                        </tr>
+                      </table>
+
+                      <!-- Official Sign-off -->
+                      <p style="margin:0; font-size:13px; line-height:1.65; color:#334155;">
+                        Issued by,<br>
+                        <strong style="color:#0b2545;">State Workflow Monitoring Cell</strong><br>
+                        Department of Local Government, Government of Punjab
+                      </p>
+
+                    </td>
+                  </tr>
+
+                  <!-- Official Government Footer -->
+                  <tr>
+                    <td style="background-color:#f1f5f9; border-top:1px solid #dbe3ec; padding:18px 32px; text-align:center;">
+                      <p style="margin:0 0 4px 0; font-size:12px; font-weight:700; color:#0f172a;">
+                        Punjab Municipal Infrastructure Development Company (PMIDC)
+                      </p>
+                      <p style="margin:0 0 8px 0; font-size:11px; color:#475569; line-height:1.45;">
+                        Municipal Bhawan, Plot No. 3, Sector 35-A, Chandigarh, Punjab &ndash; 160022
+                      </p>
+                      <p style="margin:0; font-size:10.5px; color:#64748b; line-height:1.45;">
+                        This is an automated system-generated daily pendency report from mSeva Punjab. Please do not reply directly to this email.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </div>
+  
+  </div>
+
+</body>
+</html>

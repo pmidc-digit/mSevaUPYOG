@@ -1,0 +1,51 @@
+{
+  "info": {
+    "_postman_id": "wf-reminder-trigger-001",
+    "name": "mSeva Punjab - Workflow Reminder Trigger API",
+    "description": "Single API to initiate daily workflow reminder notifications (Consolidated Workload Digest Email & SMS) across Punjab ULBs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Initiate Daily Workflow Reminder Trigger",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"RequestInfo\": {\n    \"apiId\": \"Rainmaker\",\n    \"ver\": \".01\",\n    \"ts\": \"\",\n    \"action\": \"_sendreminder\",\n    \"did\": \"1\",\n    \"key\": \"\",\n    \"msgId\": \"20170310130900|en_IN\",\n    \"authToken\": \"{{authToken}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{host}}/egov-wf/process/_sendreminder",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "egov-wf",
+            "process",
+            "_sendreminder"
+          ]
+        },
+        "description": "Triggers the daily consolidated workload digest across all 166 ULBs and all business services in a safe background thread."
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "host",
+      "value": "https://mseva-dev.lgpunjab.gov.in",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "YOUR_AUTH_TOKEN_HERE",
+      "type": "string"
+    }
+  ]
+}

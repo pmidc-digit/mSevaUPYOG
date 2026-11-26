@@ -134,7 +134,7 @@ const ReportSearchApplication = ({
     (row, index) => {
       const header = headers[index] || {};
       const raw = row?.[index];
-      if (raw === null || raw === undefined || raw === "") return "-";
+      if (raw === null || raw === undefined || raw === "") return "";
       if (header.type === "epoch") return epochToDisplayDate(raw);
       if (header.type === "stringarray") {
         const parts = String(raw).split(",");
@@ -162,6 +162,24 @@ const ReportSearchApplication = ({
   }, [rowData, headers, visibleIdx]);
   const hasTotals = Object.keys(totals).length > 0 && rowData.length > 0;
 
+  // numbers (incl. "1,234.50" and epoch dates) sort numerically, everything else by displayed text
+  const makeSortType = useCallback(
+    (index) => (rowA, rowB) => {
+      const a = rowA.original?.[index];
+      const b = rowB.original?.[index];
+      const isEmpty = (v) => v === null || v === undefined || v === "";
+      if (isEmpty(a) || isEmpty(b)) return isEmpty(a) === isEmpty(b) ? 0 : isEmpty(a) ? -1 : 1;
+      const na = Number(String(a).replace(/,/g, "").trim());
+      const nb = Number(String(b).replace(/,/g, "").trim());
+      if (Number.isFinite(na) && Number.isFinite(nb)) return na === nb ? 0 : na > nb ? 1 : -1;
+      return String(formatCell(rowA.original, index)).localeCompare(String(formatCell(rowB.original, index)), undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    },
+    [formatCell]
+  );
+
   const columns = useMemo(
     () => [
       {
@@ -169,7 +187,10 @@ const ReportSearchApplication = ({
         id: "__sno",
         disableSortBy: true,
         accessor: (row, rowIndex) => rowIndex + 1,
-        Cell: ({ row }) => <span className="cell-text rpt-sno">{row.index + 1}</span>,
+        // running number of the row as displayed (after sorting), not its position in the API data
+        Cell: ({ row, page, state }) => (
+          <span className="cell-text rpt-sno">{(state?.pageIndex || 0) * (state?.pageSize || 0) + (page || []).indexOf(row) + 1}</span>
+        ),
       },
       ...visibleIdx.map((index) => {
         const label = t(headers[index]?.label);
@@ -179,13 +200,14 @@ const ReportSearchApplication = ({
           Header: isAmount ? () => <span className="rpt-th--num">{label}</span> : label,
           isStatusColumn: !isAmount && /status/i.test(String(label)),
           id: `col_${index}`,
-          disableSortBy: true,
+          sortType: makeSortType(index),
+          sortDescFirst: false,
           accessor: (row) => row?.[index],
           Cell: ({ row }) => <span className="cell-text">{formatCell(row.original, index)}</span>,
         };
       }),
     ],
-    [visibleIdx, headers, formatCell, t]
+    [visibleIdx, headers, formatCell, makeSortType, t]
   );
 
   // ---- downloads (all rows, not only the visible page) ----
@@ -205,10 +227,12 @@ const ReportSearchApplication = ({
       onClick: () => {
         const pageSize = String(reportDetails?.additionalConfig?.print?.pdfPageSize || "LEGAL").toUpperCase();
         const pageOrientation = visibleIdx.length > 6 ? "landscape" : "portrait";
-        Digit.Download.TablePDF(`mSeva Reports - ${reportTitle}`, exportHeaders, getExportRows(), reportName, {
+        Digit.Download.TablePDF("mSeva Reports", exportHeaders, getExportRows(), reportName, {
+          subheading: reportTitle,
           pageSize,
           pageOrientation,
           subtitle: resultLabel,
+          emptyCellText: "",
         });
       },
     },
@@ -231,7 +255,18 @@ const ReportSearchApplication = ({
           keys.forEach((k, i) => (obj[k] = row[i]));
           return obj;
         });
-        Digit.Download.Excel(json, reportName);
+        const downloadedOn = new Date().toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        });
+        Digit.Download.Excel(json, reportName, {
+          headerRows: [["mSeva Reports"], [reportTitle], ...(resultLabel ? [[resultLabel]] : []), [`Downloaded on: ${downloadedOn}`]],
+        });
       },
     },
   ];
@@ -240,6 +275,14 @@ const ReportSearchApplication = ({
 
   const totalLabel = t("REPORTS_TOTAL") !== "REPORTS_TOTAL" ? t("REPORTS_TOTAL") : "Total";
   const totalIdx = visibleIdx.filter((i) => i in totals);
+
+  // last row of the table: totals for columns marked "total" in report metadata
+  const tableFooterRow = useMemo(() => {
+    if (!hasTotals) return null;
+    const row = { __sno: totalLabel };
+    totalIdx.forEach((i) => (row[`col_${i}`] = totals[i] === undefined ? "" : formatAmount(totals[i])));
+    return row;
+  }, [hasTotals, totals, totalIdx, totalLabel]);
 
   const TotalsRow = () =>
     hasTotals ? (
@@ -416,6 +459,9 @@ const ReportSearchApplication = ({
               manualPagination={false}
               totalRecords={Count}
               isReportTable={true}
+              footerRow={tableFooterRow}
+              disableSort={false}
+              manualSort={false}
             />
           </div>
         </section>

@@ -270,21 +270,37 @@ export const downloadTablePDF = (title = "Application Details", headers = [], ro
     headers.map((h) => ({
       text: String(h || ""),
       bold: true,
-      fillColor: "#f1f5f9",
-      color: "#1e293b",
-      fontSize: 8,
+      fillColor: "#e2e8f0",
+      color: "#000000",
+      fontSize: 10,
       margin: [3, 4, 3, 4],
     })),
     ...rows.map((row, rIdx) =>
       row.map((cell) => ({
-        text: String(cell !== null && cell !== undefined && cell !== "" && cell !== "null" && cell !== "undefined" ? cell : "-"),
-        fontSize: 7,
-        color: "#334155",
+        text: String(
+          cell !== null && cell !== undefined && cell !== "" && cell !== "null" && cell !== "undefined"
+            ? cell
+            : options.emptyCellText !== undefined
+            ? options.emptyCellText
+            : "-"
+        ),
+        fontSize: 9,
+        color: "#000000",
         fillColor: rIdx % 2 === 1 ? "#f8fafc" : "#ffffff",
         margin: [3, 3, 3, 3],
       }))
     ),
   ];
+
+  const generatedOn = new Date().toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
 
   const dd = {
     pageOrientation: options.pageOrientation || "landscape",
@@ -292,18 +308,38 @@ export const downloadTablePDF = (title = "Application Details", headers = [], ro
     pageMargins: [20, 25, 20, 25],
     defaultStyle: {
       font: "Hind",
-      fontSize: 8,
+      fontSize: 10,
     },
     header: function (currentPage, pageCount) {
       return {
         columns: [
-          { text: `Page ${currentPage} of ${pageCount}`, alignment: "right", fontSize: 8, color: "#64748b", margin: [0, 10, 20, 0] },
+          { text: `Generated on: ${generatedOn}`, alignment: "left", fontSize: 9, color: "#000000", margin: [20, 10, 0, 0] },
+          { text: `Page ${currentPage} of ${pageCount}`, alignment: "right", fontSize: 9, color: "#000000", margin: [0, 10, 20, 0] },
         ],
       };
     },
     content: [
-      { text: normalizedTitle, fontSize: 13, bold: true, color: "#0f172a", margin: [0, 0, 0, options.subtitle ? 2 : 8] },
-      ...(options.subtitle ? [{ text: options.subtitle, fontSize: 9, color: "#334155", margin: [0, 0, 0, 8] }] : []),
+      {
+        text: normalizedTitle,
+        alignment: "center",
+        fontSize: 16,
+        bold: true,
+        color: "#000000",
+        margin: [0, 0, 0, options.subheading || options.subtitle ? 2 : 8],
+      },
+      ...(options.subheading
+        ? [
+            {
+              text: options.subheading,
+              alignment: "center",
+              fontSize: 13,
+              bold: true,
+              color: "#000000",
+              margin: [0, 0, 0, options.subtitle ? 2 : 8],
+            },
+          ]
+        : []),
+      ...(options.subtitle ? [{ text: options.subtitle, alignment: "center", fontSize: 11, color: "#000000", margin: [0, 0, 0, 8] }] : []),
       {
         table: {
           headerRows: 1,
@@ -314,16 +350,16 @@ export const downloadTablePDF = (title = "Application Details", headers = [], ro
         },
         layout: {
           hLineWidth: function () {
-            return 0.5;
+            return 1;
           },
           vLineWidth: function () {
-            return 0.5;
+            return 1;
           },
           hLineColor: function () {
-            return "#cbd5e1";
+            return "#000000";
           },
           vLineColor: function () {
-            return "#e2e8f0";
+            return "#000000";
           },
         },
       },

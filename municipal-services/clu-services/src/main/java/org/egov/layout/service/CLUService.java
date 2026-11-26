@@ -319,8 +319,10 @@ public class CLUService {
 		List<Clu> nocs = new ArrayList<Clu>();
 
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
-
-		criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
+		log.info("request info : " + requestInfo.getUserInfo());
+		if(!StringUtils.isEmpty(requestInfo.getUserInfo())) {
+			criteria.setCreatedBy(requestInfo.getUserInfo().getUuid());
+		}
 		if (criteria.getMobileNumber() != null) {
 //			StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())
 //					.append(config.getBpaSearchEndpoint());

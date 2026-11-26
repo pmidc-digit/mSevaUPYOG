@@ -31,6 +31,9 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedULB, setSelectedULB] = useState(null);
   const [showPreviewTable, setShowPreviewTable] = useState(true);
+  const [showRolesPopover, setShowRolesPopover] = useState(false);
+  const [rolesPopoverPos, setRolesPopoverPos] = useState({ top: 0, left: 0 });
+  const rolesPillRef = React.useRef(null);
   const [formData, setFormData] = useState({
     employeeCode: null,
     designationCode: null,
@@ -63,7 +66,6 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
 
   // Custom Hooks from HRMS
   const { obpsRoles } = Digit.Hooks.hrms.useOBPSRoles(stateId);
-  console.log(obpsRoles,"obpsRoles")
   const { employeeList: modalEmployeeList } = Digit.Hooks.hrms.useEmployeeList(selectedULB, obpsRoles.codes);
   const { zones: filterZones } = Digit.Hooks.hrms.useZones(stateId, filterULB);
   const { zones: modalZones } = Digit.Hooks.hrms.useZones(stateId, selectedULB || filterULB);
@@ -291,7 +293,6 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
     let designation = "";
     let roleNames = "No OBPS Roles";
 
-    console.log(employee,"employee")
 
     if (employee && employee.employeeObj) {
       if (employee.employeeObj.assignments && employee.employeeObj.assignments.length > 0) {
@@ -692,7 +693,6 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
         })),
       };
 
-      console.log("payload", payload);
 
       const response = await Digit.HRMSService.CreateEmpMapping(selectedULB.code, payload);
 
@@ -1022,8 +1022,108 @@ const EmpMaping = ({ hideMappingControls = false, showRoles = false, showExport 
                         <div style={{ color: "#2e7d32", fontWeight: 600 }}>
                           <strong>{t("HR_DESIGNATION") || "Designation"}:</strong> {formData.designationCode || "N/A"}
                         </div>
-                        <div style={{ color: "#558b2f", fontSize: "0.78rem", marginTop: "3px" }}>
-                          <strong>{t("HR_ROLES_LABEL") || "Existing Roles"}:</strong> {formData.roleNames || "No OBPS Roles"}
+                        <div style={{ color: "#558b2f", fontSize: "0.78rem", marginTop: "4px" }}>
+                          <strong>{t("HR_ROLES_LABEL") || "Existing Roles"}:</strong>{" "}
+                          {(() => {
+                            const existingRolesList =
+                              formData.roleNames && formData.roleNames !== "No OBPS Roles"
+                                ? formData.roleNames.split(", ").filter(Boolean)
+                                : [];
+                            if (!existingRolesList.length) {
+                              return <span>No OBPS Roles</span>;
+                            }
+                            const openPopover = () => {
+                              const rect = rolesPillRef.current?.getBoundingClientRect();
+                              if (rect) {
+                                setRolesPopoverPos({
+                                  top: Math.min(rect.bottom, window.innerHeight - 230),
+                                  left: Math.min(rect.left, window.innerWidth - 440),
+                                });
+                              }
+                              setShowRolesPopover(true);
+                            };
+                            return (
+                              <div
+                                ref={rolesPillRef}
+                                style={{ display: "inline-block" }}
+                                onMouseEnter={openPopover}
+                                onMouseLeave={() => setShowRolesPopover(false)}
+                              >
+                                <span
+                                  onClick={() => (showRolesPopover ? setShowRolesPopover(false) : openPopover())}
+                                  style={{
+                                    display: "inline-block",
+                                    padding: "1px 8px",
+                                    backgroundColor: "#e8f5e9",
+                                    border: "1px solid #a5d6a7",
+                                    borderRadius: "12px",
+                                    cursor: "pointer",
+                                    fontWeight: 600,
+                                    color: "#1b5e20",
+                                    fontSize: "0.75rem",
+                                  }}
+                                >
+                                  {existingRolesList.length} Role(s)
+                                </span>
+                                {showRolesPopover && (
+                                  <div
+                                    style={{
+                                      position: "fixed",
+                                      top: `${rolesPopoverPos.top}px`,
+                                      left: `${Math.max(12, rolesPopoverPos.left)}px`,
+                                      paddingTop: "6px",
+                                      zIndex: 9999,
+                                      width: "420px",
+                                      maxWidth: "90vw",
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        backgroundColor: "#ffffff",
+                                        border: "1px solid #cbd5e1",
+                                        borderRadius: "8px",
+                                        boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+                                        padding: "10px 12px",
+                                        maxHeight: "200px",
+                                        overflowY: "auto",
+                                      }}
+                                    >
+                                      <div
+                                        style={{
+                                          fontWeight: 700,
+                                          fontSize: "0.78rem",
+                                          color: "#1b5e20",
+                                          marginBottom: "8px",
+                                          borderBottom: "1px solid #e2e8f0",
+                                          paddingBottom: "4px",
+                                        }}
+                                      >
+                                        Assigned Roles ({existingRolesList.length})
+                                      </div>
+                                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                                        {existingRolesList.map((roleName, index) => (
+                                          <span
+                                            key={index}
+                                            style={{
+                                              backgroundColor: "#f1f8e9",
+                                              border: "1px solid #c5e1a5",
+                                              color: "#2e7d32",
+                                              padding: "2px 8px",
+                                              borderRadius: "12px",
+                                              fontSize: "0.73rem",
+                                              fontWeight: 500,
+                                            }}
+                                          >
+                                            {roleName}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     )}

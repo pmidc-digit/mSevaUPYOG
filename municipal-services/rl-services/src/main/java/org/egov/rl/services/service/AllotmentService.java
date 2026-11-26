@@ -27,6 +27,7 @@ import org.egov.rl.services.util.RLConstants;
 import org.egov.rl.services.validator.AllotmentValidator;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -34,6 +35,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.log4j.Log4j2;
+
+import static org.egov.rl.services.util.RLConstants.*;
 
 @Log4j2
 @Service
@@ -72,6 +75,11 @@ public class AllotmentService {
 	@Autowired
 	AllotmentRepository allotmentRepository;
 
+    @Value("${egov.waterservice.updatebillstatus.topic}")
+    private String updateBillStatusTopic;
+
+    @Value("${egov.waterservice.updatedemandpayer.topic}")
+    private String updateDemandPayerTopic;
 	/**
 	 * States in which the application already has a demand - the only states in which a draft save may touch it.
 	 * Before approval nothing was raised, so a draft must only persist the edits.
@@ -121,9 +129,62 @@ public class AllotmentService {
 		Workflow workflow = (allotmentRequest.getAllotment() != null && !allotmentRequest.getAllotment().isEmpty())
 				? allotmentRequest.getAllotment().get(0).getWorkflow() : null;
 		String action = (workflow != null && workflow.getAction() != null) ? workflow.getAction().trim() : null;
-		allotmentValidator.validateUpdateAllotementRequest(allotmentRequest);
-		allotmentEnrichmentService.enrichUpdateRequest(allotmentRequest);
-		userService.createUser(allotmentRequest);
+        allotmentValidator.validateUpdateAllotementRequest(allotmentRequest);
+
+// Get the existing allotment before enrichment replaces its ownerInfo
+        AllotmentDetails incomingAllotment = allotmentRequest.getAllotment().get(0);
+
+        AllotmentCriteria criteria = new AllotmentCriteria();
+
+        Set<String> allotmentIds = new HashSet<>();
+        allotmentIds.add(incomingAllotment.getId());
+
+        criteria.setAllotmentIds(allotmentIds);
+        criteria.setTenantId(incomingAllotment.getTenantId());
+
+        List<AllotmentDetails> existingAllotments =
+                allotmentRepository.getAllotmentSearch(criteria);
+
+        if (existingAllotments == null || existingAllotments.isEmpty()) {
+            throw new RuntimeException(
+                    "Existing RL allotment not found for id: " + incomingAllotment.getId());
+        }
+
+        AllotmentDetails existingAllotment = existingAllotments.get(0);
+
+// Preserve the existing owner UUIDs before enrichment
+        Set<String> oldOwnerUuids =
+                getOwnerUserUuids(existingAllotment.getOwnerInfo());
+
+// Enrichment merges the incoming update with the existing allotment
+        allotmentEnrichmentService.enrichUpdateRequest(allotmentRequest);
+
+// Resolve incoming owner UUIDs through UserService
+        userService.createUser(allotmentRequest);
+
+// Get the updated owner information after UserService resolution
+        AllotmentDetails updatedAllotment = allotmentRequest.getAllotment().get(0);
+
+// Check whether the actual owner has changed
+        boolean ownerChanged = hasOwnerChanged(oldOwnerUuids, updatedAllotment.getOwnerInfo());
+
+        UpdateDemandPayerRequest updateDemandPayerRequest= UpdateDemandPayerRequest.builder()
+                .consumer(allotmentRequest.getAllotment().get(0).getApplicationNumber())
+                .payer(allotmentRequest.getAllotment().get(0).getOwnerInfo().get(0).getUserUuid())
+                .business(RL_SERVICE_NAME)
+                .tenant(allotmentRequest.getAllotment().get(0).getTenantId()).build();
+
+        UpdateBillStatusReq updateBillStatusReq = UpdateBillStatusReq.builder()
+                .consumer(allotmentRequest.getAllotment().get(0).getApplicationNumber())
+                .business(RL_SERVICE_NAME)
+                .status(EXPIRED)
+                .tenant(allotmentRequest.getAllotment().get(0).getTenantId()).build();
+
+        if(ownerChanged){
+            updatePayerIDForDemand(updateDemandPayerRequest);
+            updateOldBillStatus(updateBillStatusReq);
+        }
+
 		AllotmentDetails allotmentDetails = allotmentRequest.getAllotment().get(0);
 		allotmentRequest.setAllotment(Arrays.asList(allotmentDetails));
 		boolean isApprove = action != null && action.contains(RLConstants.APPROVED_RL_APPLICATION);
@@ -547,5 +608,51 @@ public class AllotmentService {
 			return null;
 		}
 	}
+
+    private Set<String> getOwnerUserUuids(List<OwnerInfo> ownerInfoList) {
+        Set<String> ownerUuids = new HashSet<>();
+
+        if (ownerInfoList != null) {
+            for (OwnerInfo ownerInfo : ownerInfoList) {
+                if (ownerInfo != null && ownerInfo.getUserUuid() != null) {
+                    ownerUuids.add(ownerInfo.getUserUuid());
+                }
+            }
+        }
+
+        return ownerUuids;
+    }
+
+    private boolean hasOwnerChanged(Set<String> oldOwnerUuids,
+                                    List<OwnerInfo> newOwnerInfo) {
+
+        Set<String> newOwnerUuids = getOwnerUserUuids(newOwnerInfo);
+
+        boolean ownerChanged = !oldOwnerUuids.equals(newOwnerUuids);
+
+        log.info("RL owner change check: oldOwnerUuids={}, newOwnerUuids={}, ownerChanged={}",
+                oldOwnerUuids, newOwnerUuids, ownerChanged);
+
+        return ownerChanged;
+    }
+
+    public void updateOldBillStatus(UpdateBillStatusReq updateBillStatusReq) {
+        String key = updateBillStatusReq.getConsumer();
+        try{
+            allotmentProducer.push(updateBillStatusTopic, key, updateBillStatusReq);
+        }catch (Exception e){
+            log.info("Exception",e);
+        }
+    }
+
+    public void updatePayerIDForDemand(UpdateDemandPayerRequest updateDemandPayerRequest) {
+        String key = updateDemandPayerRequest.getConsumer();
+        try{
+            allotmentProducer.push(updateDemandPayerTopic, key, updateDemandPayerRequest);
+        }catch (Exception e){
+            log.info("Exception",e);
+        }
+
+    }
 
 }

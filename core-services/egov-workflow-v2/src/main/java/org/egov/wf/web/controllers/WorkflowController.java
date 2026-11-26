@@ -6,6 +6,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.apache.commons.lang3.StringUtils;
+import org.egov.wf.service.WorkflowReminderService;
 import org.egov.wf.service.WorkflowService;
 import org.egov.wf.util.ResponseInfoFactory;
 import org.egov.wf.web.models.ProcessInstance;
@@ -14,6 +16,8 @@ import org.egov.wf.web.models.ProcessInstanceResponse;
 import org.egov.wf.web.models.ProcessInstanceSearchCriteria;
 import org.egov.wf.web.models.RequestInfoWrapper;
 import org.egov.wf.web.models.StatusCountRequest;
+import org.egov.wf.web.models.WorkflowReminderRequest;
+import org.egov.wf.web.models.WorkflowReminderResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +37,9 @@ public class WorkflowController {
     private final WorkflowService workflowService;
 
     private final ResponseInfoFactory responseInfoFactory;
+
+    @Autowired
+    private WorkflowReminderService workflowReminderService;
 
 
     @Autowired
@@ -127,4 +134,62 @@ public class WorkflowController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
+    /**
+     * Single Daily Reminder API to initiate notification triggers (SMS & Email) to assignees of
+     * active applications across business services that are neither in START state nor in TERMINATE/END state.
+     */
+    @RequestMapping(value = {"/process/_sendreminder", "/process/_remind"}, method = RequestMethod.POST)
+    public ResponseEntity<WorkflowReminderResponse> sendDailyReminders(
+            @Valid @RequestBody(required = false) WorkflowReminderRequest reminderRequest,
+            @RequestParam(value = "tenantId", required = false) String tenantId,
+            @RequestParam(value = "businessService", required = false) String businessService,
+            @RequestParam(value = "assignee", required = false) String assignee,
+            @RequestParam(value = "force", required = false) Boolean force) {
+
+        if (reminderRequest == null) {
+            reminderRequest = new WorkflowReminderRequest();
+        }
+        if (StringUtils.isNotBlank(tenantId)) {
+            reminderRequest.setTenantId(tenantId);
+        }
+        if (StringUtils.isNotBlank(businessService)) {
+            reminderRequest.setBusinessService(businessService);
+        }
+        if (StringUtils.isNotBlank(assignee)) {
+            reminderRequest.setAssignee(assignee);
+        }
+        if (Boolean.TRUE.equals(force) || Boolean.TRUE.equals(reminderRequest.getForce())) {
+            reminderRequest.setForce(true);
+        }
+        if (reminderRequest.getAsync() == null) {
+            reminderRequest.setAsync(true);
+        }
+
+        WorkflowReminderResponse response = workflowReminderService.triggerDailyReminders(reminderRequest);
+        response.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(reminderRequest.getRequestInfo(), true));
+
+        HttpStatus httpStatus = HttpStatus.OK;
+        if ("TRIGGERED".equalsIgnoreCase(response.getStatus())) {
+            httpStatus = HttpStatus.ACCEPTED;
+        } else if ("ALREADY_RUNNING".equalsIgnoreCase(response.getStatus())) {
+            httpStatus = HttpStatus.CONFLICT;
+        }
+
+        return new ResponseEntity<>(response, httpStatus);
+    }
+
+    /**
+     * Resets any stale or stuck reminder job lock so the reminder job can run immediately.
+     */
+    @RequestMapping(value = "/process/_resetreminder", method = RequestMethod.POST)
+    public ResponseEntity<WorkflowReminderResponse> resetReminderJob() {
+        boolean wasRunning = workflowReminderService.resetReminderJob();
+        WorkflowReminderResponse response = WorkflowReminderResponse.builder()
+                .status(wasRunning ? "RESET_SUCCESS" : "NOT_RUNNING")
+                .message(wasRunning
+                        ? "Workflow daily reminder job lock was actively held and has now been forcibly reset."
+                        : "Workflow daily reminder job lock was not actively held. Ready to accept new runs.")
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

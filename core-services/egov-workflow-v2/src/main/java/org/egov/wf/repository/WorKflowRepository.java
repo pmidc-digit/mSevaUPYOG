@@ -2,11 +2,15 @@ package org.egov.wf.repository;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.wf.repository.querybuilder.WorkflowQueryBuilder;
 import org.egov.wf.repository.rowmapper.WorkflowRowMapper;
+import org.egov.wf.service.WorkflowNotificationService;
 import org.egov.wf.web.models.ProcessInstance;
+import org.egov.wf.web.models.ProcessInstanceReminderCriteria;
 import org.egov.wf.web.models.ProcessInstanceSearchCriteria;
+import org.egov.wf.web.models.UserWorkloadDigest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -15,8 +19,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @Slf4j
@@ -179,5 +185,73 @@ public class WorKflowRepository {
         List<Object> preparedStmtList = new ArrayList<>();
         String query = queryBuilder.getAutoEscalationEligibleApplicationsSearchQuery(criteria, preparedStmtList);
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+    }
+
+    public List<String> getActiveAssignedProcessInstanceIds(ProcessInstanceReminderCriteria criteria) {
+        List<Object> preparedStmtList = new ArrayList<>();
+        String query = queryBuilder.getActiveAssignedProcessInstanceIdsQuery(criteria, preparedStmtList);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), new SingleColumnRowMapper<>(String.class));
+    }
+
+    public Integer getActiveAssignedProcessInstanceCount(ProcessInstanceReminderCriteria criteria) {
+        List<Object> preparedStmtList = new ArrayList<>();
+        String query = queryBuilder.getActiveAssignedProcessInstanceCountQuery(criteria, preparedStmtList);
+        return jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
+    }
+
+    public List<ProcessInstance> getProcessInstancesByIds(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return new ArrayList<>();
+        }
+        List<Object> preparedStmtList = new ArrayList<>();
+        String query = queryBuilder.getProcessInstanceSearchQueryById(ids, preparedStmtList);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+    }
+
+    public List<String> getDistinctTenantIds() {
+        String query = "SELECT DISTINCT tenantid FROM eg_wf_businessservice_v2 WHERE tenantid != 'pb' ORDER BY tenantid ASC";
+        try {
+            return jdbcTemplate.queryForList(query, String.class);
+        } catch (Exception e) {
+            log.warn("Could not fetch tenants from eg_wf_businessservice_v2, falling back to processinstance table: ", e);
+            String fallbackQuery = "SELECT DISTINCT tenantid FROM eg_wf_processinstance_v2 WHERE tenantid != 'pb' ORDER BY tenantid ASC";
+            return jdbcTemplate.queryForList(fallbackQuery, String.class);
+        }
+    }
+
+    public Map<String, UserWorkloadDigest> getActiveWorkloadSummary(ProcessInstanceReminderCriteria criteria) {
+        List<Object> preparedStmtList = new ArrayList<>();
+        String query = queryBuilder.getActiveWorkloadSummaryQuery(criteria, preparedStmtList);
+        Map<String, UserWorkloadDigest> userDigestMap = new LinkedHashMap<>();
+
+        jdbcTemplate.query(query, preparedStmtList.toArray(), rs -> {
+            String assigneeUuid = rs.getString("assignee_uuid");
+            String businessServiceCode = rs.getString("business_service_code");
+            String businessName = rs.getString("business_name");
+            String tenantId = rs.getString("tenant_id");
+            int appCount = rs.getInt("app_count");
+            int overSlaCount = rs.getInt("over_sla_count");
+            int completingSlaCount = rs.getInt("completing_sla_count");
+            int underSlaCount = rs.getInt("under_sla_count");
+            int overSlaExceededLimitCount = rs.getInt("over_sla_exceeded_limit_count");
+
+            String displayServiceName = WorkflowNotificationService.getDisplayServiceName(businessName, businessServiceCode);
+
+            if (StringUtils.isNotBlank(assigneeUuid)) {
+                UserWorkloadDigest digest = userDigestMap.computeIfAbsent(assigneeUuid.trim(), k ->
+                        UserWorkloadDigest.builder()
+                                .userUuid(k)
+                                .tenantId(tenantId)
+                                .serviceWiseCounts(new LinkedHashMap<>())
+                                .serviceWiseSla(new LinkedHashMap<>())
+                                .build());
+                digest.addServiceSla(displayServiceName, tenantId, appCount, underSlaCount, completingSlaCount, overSlaCount, overSlaExceededLimitCount);
+                if (StringUtils.isNotBlank(tenantId) && StringUtils.isBlank(digest.getTenantId())) {
+                    digest.setTenantId(tenantId);
+                }
+            }
+        });
+
+        return userDigestMap;
     }
 }

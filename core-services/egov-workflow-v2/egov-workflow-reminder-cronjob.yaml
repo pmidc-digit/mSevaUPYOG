@@ -1,0 +1,126 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: egov-workflow-daily-reminder
+  namespace: egov
+  labels:
+    app.kubernetes.io/name: egov-workflow-daily-reminder
+    app.kubernetes.io/part-of: uptyog
+    group: core-services
+spec:
+  # Schedule: Runs daily at 09:00 AM IST (03:30 UTC)
+  # Format: Minute Hour DayOfMonth Month DayOfWeek (in UTC)
+  # For 08:00 AM IST: "30 2 * * *"
+  # For 09:00 AM IST: "30 3 * * *"
+  schedule: "30 3 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: egov-workflow-daily-reminder
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: trigger-reminder
+              image: curlimages/curl:8.5.0
+              imagePullPolicy: IfNotPresent
+              resources:
+                requests:
+                  memory: "32Mi"
+                  cpu: "50m"
+                limits:
+                  memory: "64Mi"
+                  cpu: "100m"
+              env:
+                - name: WORKFLOW_HOST
+                  value: "http://egov-workflow-v2.egov.svc.cluster.local:8080"
+                - name: TENANT_ID
+                  value: "pb"
+                - name: SEND_EMAIL
+                  value: "true"
+                - name: SEND_SMS
+                  value: "true"
+                - name: TARGET_ROLES
+                  value: "CITIZEN,EMPLOYEE"
+                # Optional: Uncomment if internal gateway requires an explicit auth token
+                # - name: AUTH_TOKEN
+                #   valueFrom:
+                #     secretKeyRef:
+                #       name: egov-system-auth
+                #       key: auth-token
+                #       optional: true
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "=========================================================="
+                  echo "Starting Workflow Daily Reminder Trigger at $(date)"
+                  echo "Target Host: ${WORKFLOW_HOST}"
+                  echo "Tenant ID:   ${TENANT_ID}"
+                  echo "Send Email:  ${SEND_EMAIL}"
+                  echo "Send SMS:    ${SEND_SMS}"
+                  echo "Roles:       ${TARGET_ROLES}"
+                  echo "=========================================================="
+
+                  AUTH_TOKEN_VALUE="${AUTH_TOKEN:-}"
+
+                  PAYLOAD=$(cat <<EOF
+                  {
+                    "RequestInfo": {
+                      "apiId": "Rainmaker",
+                      "ver": ".01",
+                      "action": "_sendreminder",
+                      "did": "1",
+                      "key": "",
+                      "msgId": "$(date +%s)|en_IN",
+                      "authToken": "${AUTH_TOKEN_VALUE}",
+                      "userInfo": {
+                        "id": 1,
+                        "uuid": "cron-system-admin",
+                        "type": "SYSTEM",
+                        "roles": [
+                          {
+                            "name": "SUPERUSER",
+                            "code": "SUPERUSER"
+                          }
+                        ]
+                      }
+                    },
+                    "ProcessInstanceReminderCriteria": {
+                      "tenantId": "${TENANT_ID}",
+                      "sendEmail": ${SEND_EMAIL},
+                      "sendSms": ${SEND_SMS},
+                      "role": "${TARGET_ROLES}"
+                    }
+                  }
+                  EOF
+                  )
+
+                  TARGET_URL="${WORKFLOW_HOST}/egov-workflow-v2/egov-wf/process/_sendreminder"
+
+                  RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+                    -X POST "${TARGET_URL}" \
+                    -H "Content-Type: application/json" \
+                    -d "${PAYLOAD}")
+
+                  HTTP_BODY=$(echo "${RESPONSE}" | sed -e '$d')
+                  HTTP_STATUS=$(echo "${RESPONSE}" | tr -d '\r' | sed -n 's/HTTP_STATUS://p')
+
+                  echo "HTTP Status Code: ${HTTP_STATUS}"
+                  echo "Response Body:"
+                  echo "${HTTP_BODY}"
+                  echo ""
+
+                  if [ "${HTTP_STATUS}" -ge 200 ] && [ "${HTTP_STATUS}" -lt 300 ]; then
+                    echo "Workflow daily reminder job completed successfully at $(date)."
+                    exit 0
+                  else
+                    echo "ERROR: Workflow reminder job failed with HTTP status: ${HTTP_STATUS}"
+                    exit 1
+                  fi

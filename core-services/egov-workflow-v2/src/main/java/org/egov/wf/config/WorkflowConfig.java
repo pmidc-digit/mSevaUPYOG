@@ -89,8 +89,91 @@ public class WorkflowConfig {
     @Value("${egov.wf.escalation.batch.size}")
     private Integer escalationBatchSize;
 
+    // Notification
+    @Value("${kafka.topics.notification.sms:egov.core.notification.sms}")
+    private String smsNotifTopic;
 
+    @Value("${kafka.topics.notification.email:org.egov.core.notification.email}")
+    private String emailNotifTopic;
 
+    @Value("${notification.sms.enabled:true}")
+    private Boolean isSmsNotificationEnabled;
 
+    @Value("${notification.email.enabled:true}")
+    private Boolean isEmailNotificationEnabled;
 
+    @Value("${notification.employee.portal.url:https://mseva-dev.lgpunjab.gov.in/digit-ui/employee/user/login}")
+    private String employeePortalUrl;
+
+    @Value("${notification.citizen.portal.url:https://mseva-dev.lgpunjab.gov.in/digit-ui/citizen/login}")
+    private String citizenPortalUrl;
+
+    @Value("${notification.sms.template.id:EG_WF_ASSIGNEE_MSG}")
+    private String smsTemplateId;
+
+    @Value("${notification.email.template.id:EG_WF_ASSIGNEE_EMAIL}")
+    private String emailTemplateId;
+
+    // Localization
+    @Value("${egov.localization.host:https://dev.digit.org/}")
+    private String localizationHost;
+
+    @Value("${egov.localization.context.path:localization/messages/v1}")
+    private String localizationContextPath;
+
+    @Value("${egov.localization.search.endpoint:/_search}")
+    private String localizationSearchEndpoint;
+
+    @Value("${egov.localization.statelevel:true}")
+    private Boolean isLocalizationStateLevel;
+
+    @Value("${egov.localization.fallback.locale:en_IN}")
+    private String fallbackLocale;
+
+    @Value("${egov.localization.module:rainmaker-workflow}")
+    private String localizationModule;
+
+    // Daily Reminder Notification Configuration & Load Protection
+    @Value("${egov.wf.reminder.enabled:true}")
+    private Boolean isReminderEnabled;
+
+    @Value("${egov.wf.reminder.batch.size:50}")
+    private Integer reminderBatchSize;
+
+    @Value("${egov.wf.reminder.batch.delay.ms:100}")
+    private Long reminderBatchDelayMs;
+
+    @Value("${egov.wf.reminder.tenant.delay.ms:500}")
+    private Long reminderTenantDelayMs;
+
+    @Value("${egov.wf.reminder.max.per.user:1}")
+    private Integer reminderMaxPerUser;
+
+    @Value("${egov.wf.reminder.per.business.service:false}")
+    private Boolean reminderPerBusinessService;
+
+    // Consolidated Workload Digest Templates
+    @Value("${notification.sms.digest.template.id:EG_WF_DIGEST_MSG}")
+    private String smsDigestTemplateId;
+
+    @Value("${notification.email.digest.template.id:EG_WF_DIGEST_EMAIL}")
+    private String emailDigestTemplateId;
+
+    @Value("${notification.email.digest.citizen.template.id:EG_WF_DIGEST_EMAIL_CITIZEN}")
+    private String emailDigestCitizenTemplateId;
+
+    @Value("${egov.wf.reminder.digest.enabled:true}")
+    private Boolean isReminderDigestEnabled;
+
+    @Value("${egov.wf.reminder.sla.completing.hours:48}")
+    private Long reminderSlaCompletingHours;
+
+    @Value("${egov.wf.reminder.lock.timeout.minutes:15}")
+    private Long reminderLockTimeoutMinutes;
+
+    @Value("${egov.wf.reminder.citizen.sla.passed.max.days:2}")
+    private Integer reminderCitizenSlaPassedMaxDays;
+
+    @Value("${egov.wf.reminder.citizen.sla.passed.max.hours:48}")
+    private Long reminderCitizenSlaPassedMaxHours;
 }

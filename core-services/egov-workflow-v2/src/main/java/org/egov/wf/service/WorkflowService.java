@@ -62,6 +62,9 @@ public class WorkflowService {
     @Autowired
     private ServiceRequestRepository serviceRequestRepository;
 
+    @Autowired
+    private WorkflowNotificationService workflowNotificationService;
+
 
     @Autowired
     public WorkflowService(WorkflowConfig config, TransitionService transitionService,
@@ -92,6 +95,13 @@ public class WorkflowService {
         enrichmentService.enrichProcessRequest(requestInfo,processStateAndActions);
         workflowValidator.validateRequest(requestInfo,processStateAndActions);
         statusUpdateService.updateStatus(requestInfo,processStateAndActions);
+        if (workflowNotificationService != null) {
+            try {
+                workflowNotificationService.sendWorkflowTransitionNotification(requestInfo, processStateAndActions);
+            } catch (Exception ex) {
+                log.error("Failed to dispatch workflow transition notifications: ", ex);
+            }
+        }
         
         if(!CollectionUtils.isEmpty(request.getProcessInstances()) ) {
         	String moduleName = request.getProcessInstances().get(0).getModuleName();

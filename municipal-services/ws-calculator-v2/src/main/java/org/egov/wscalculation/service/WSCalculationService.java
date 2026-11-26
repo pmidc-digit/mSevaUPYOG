@@ -4,11 +4,13 @@ import java.util.List;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.wscalculation.web.models.BulkBillCriteria;
+import org.egov.wscalculation.web.models.BulkDemandCriteria;
 import org.egov.wscalculation.web.models.Calculation;
 import org.egov.wscalculation.web.models.CalculationReq;
 import org.egov.wscalculation.web.models.CancelDemand;
 import org.egov.wscalculation.web.models.SingleDemand;
 import org.egov.wscalculation.web.models.WaterConnection;
+import org.egov.wscalculation.web.models.WaterServiceSchedulerRequest;
 
 public interface WSCalculationService {
 
@@ -20,9 +22,9 @@ public interface WSCalculationService {
 	String  generateSingleDemand(SingleDemand singledemand);
 	
 //	String cancelDemand(CancelDemand cancelDemand);
-	void generateBillBasedLocality(RequestInfo requestInfo);
-
-	void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria);
+	void generateBillBasedLocalityOrTenant(WaterServiceSchedulerRequest waterServiceSchedulerRequest);
+	
+	void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkDemandCriteria bulkDemandCriteria);
 	
 	String generateDemandForConsumerCodeBasedOnTimePeriod(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria);
 	

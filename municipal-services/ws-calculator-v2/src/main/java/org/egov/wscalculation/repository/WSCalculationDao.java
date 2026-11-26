@@ -44,6 +44,8 @@ public interface WSCalculationDao {
 	
 	List<String> getConnectionsNoByLocality(String tenantId, String connectionType, String locality);
 	
+	List<String> getConnectionsNoByTenant(String tenantId, String connectionType);
+	
 	Long searchLastDemandGenFromDate(String consumerCode, String tenantId);
 	
 	Boolean isConnectionDemandAvailableForBillingCycle(String tenantId, Long taxPeriodFrom, Long taxPeriodTo, String consumerCode); 
@@ -52,7 +54,7 @@ public interface WSCalculationDao {
 	
 	List<WaterConnection> getConnection(String tenantId, String consumerCode,String connectionType,Long fromDate, Long toDate);
 	List<String> getLocalityList(String tenantId, String locality); 
-	List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String connectionType, Long taxPeriodFrom,
+	List<WaterDetails> getConnectionsNoListforsingledemand(String tenantId, String locality, String connectionType, Long taxPeriodFrom,
 			Long taxPeriodTo, String cone);
 
 	List<String> fetchUsageCategory(String consumerCodes);
@@ -92,5 +94,5 @@ public interface WSCalculationDao {
 	 */
 	List<BulkMeterReading> searchMeterReadingsV2(MeterReadingSearchCriteria criteria);
 
-	Boolean isBatchDemandExecuted(String tenantId, Long taxPeriodFrom, Long taxPeriodTo);
+	Boolean isBatchDemandExecuted(String tenantId, String locality, Long taxPeriodFrom, Long taxPeriodTo);
 }

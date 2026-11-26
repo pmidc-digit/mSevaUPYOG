@@ -168,10 +168,12 @@ public class SWCalculatorQueryBuilder {
 	}
 	
 	
-	public String getConnectionNumberListsingle(String tenantId, String connectionType, List<Object> preparedStatement,  Long fromDate, Long toDate, String Connectionno) {
+	public String getConnectionNumberListsingle(String tenantId, String locality, String connectionType, List<Object> preparedStatement,  Long fromDate, Long toDate, String Connectionno) {
 		StringBuilder query = new StringBuilder(connectionNoListQuerysingle);
+        query.append(" INNER JOIN eg_pt_property p ON conn.property_id = p.propertyid INNER JOIN eg_pt_address a ON a.propertyid = p.id ");
 
-		addClauseIfRequired(preparedStatement, query);
+
+        addClauseIfRequired(preparedStatement, query);
 		query.append(" sw.connectiontype = ? ");
 		preparedStatement.add(connectionType);
 		
@@ -191,7 +193,12 @@ public class SWCalculatorQueryBuilder {
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
-		
+
+        if (locality != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" a.locality = ? ");
+            preparedStatement.add(locality);
+        }
 		//Added connection number for testing Anonymous User issue
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append(" conn.connectionno ='0603001817' ");
@@ -327,6 +334,25 @@ public class SWCalculatorQueryBuilder {
 		return query.toString();
 	}
 	
+	
+	public String searchBillGenerationSchedulerTenantQuery(BillGenerationSearchCriteria criteria,
+			List<Object> preparedStatement) {
+		StringBuilder query = new StringBuilder(billGenerationSchedulerSearchQuery);
+		if(!StringUtils.isEmpty(criteria.getTenantId())) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" tenantid= ? ");
+			preparedStatement.add(criteria.getTenantId());
+		}
+		
+		if (criteria.getStatus() != null) {
+			addClauseIfRequired(preparedStatement, query);
+			query.append(" status = ? ");
+			preparedStatement.add(criteria.getStatus());
+		}
+		
+		query.append(" ORDER BY createdtime DESC");
+		return query.toString();
+	}
 
 	public String getConnectionNumber(String tenantId, String consumerCode,String connectionType, List<Object> preparedStatement,Long fromDate, Long toDate) {
 		//StringBuilder query = new StringBuilder(connectionNoListQuery);
@@ -392,7 +418,7 @@ public class SWCalculatorQueryBuilder {
 	/**
 	 * Bill expire query builder
 	 * 
-	 * @param billIds
+//	 * @param billIds
 	 * @param preparedStmtList
 	 */
 	public String getBillSchedulerUpdateQuery(String schedulerId, List<Object> preparedStmtList) {
@@ -411,7 +437,7 @@ public class SWCalculatorQueryBuilder {
 		}
 	}
 	
-	public String getConnectionsNoByLocality(String tenantId, String connectionType,String status,String locality, String groups,List<Object> preparedStatement) {
+	public String getConnectionsNoByLocalityGroupOrTenant(String tenantId, String connectionType,String status,String locality, String groups,List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoByLocality);
 		// add tenantid
 		if(tenantId != null) {
@@ -470,21 +496,30 @@ public class SWCalculatorQueryBuilder {
 		query.append(" tenantid = ? ");
 		preparedStmtList.add(tenantId);
 
-		if (locality != null) {
-			addClauseIfRequired(preparedStmtList, query);
-			query.append(" locality = ? ");
-			preparedStmtList.add(locality);
-		}
 		if (billFromDate != null) {
 			addClauseIfRequired(preparedStmtList, query);
 			query.append(" billingcyclestartdate = ? ");
 			preparedStmtList.add(billFromDate);
 		}
+		
 		if (billToDate != null) {
 			addClauseIfRequired(preparedStmtList, query);
 			query.append(" billingcycleenddate = ? ");
 			preparedStmtList.add(billToDate);
 		}
+		
+		if (locality == null && group == null) {
+	        query.append(" AND locality IS NULL");
+	        query.append(" AND groups IS NULL");
+	        return query.toString();
+	    }
+		
+		if (locality != null) {
+			addClauseIfRequired(preparedStmtList, query);
+			query.append(" locality = ? ");
+			preparedStmtList.add(locality);
+		}
+
 		if (group != null) {
 			addClauseIfRequired(preparedStmtList, query);
 			query.append(" groups = ? ");
@@ -517,9 +552,11 @@ public class SWCalculatorQueryBuilder {
 		return query.toString();
 	}
 	
-	public String getConnectionNumberListForNonCommercial(String tenantId, String connectionType, String status, Long taxPeriodFrom, Long taxPeriodTo, String cone, List<Object> preparedStatement) {
+	public String getConnectionNumberListForNonCommercial(String tenantId, String locality, String connectionType, String status, Long taxPeriodFrom, Long taxPeriodTo, String cone, List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(connectionNoNonCommercialListQuery);
-		// Add connection type
+        query.append(" INNER JOIN eg_pt_address a ON a.propertyid = pt.id ");
+
+        // Add connection type
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" sw.connectiontype = ? ");
 		preparedStatement.add(connectionType);
@@ -541,8 +578,12 @@ public class SWCalculatorQueryBuilder {
 		addClauseIfRequired(preparedStatement, query);
 		query.append(" conn.tenantid = ? ");
 		preparedStatement.add(tenantId);
-		
-		
+
+        if (locality != null) {
+            addClauseIfRequired(preparedStatement, query);
+            query.append(" a.locality = ? ");
+            preparedStatement.add(locality);
+        }
 //		// add Not commercial for amritsar
 //		addClauseIfRequired(preparedStatement, query);
 //		query.append("pt.usagecategory != ? ");

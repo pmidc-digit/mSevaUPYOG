@@ -340,8 +340,10 @@ private class FrontYardResult {
 //										frontYardResult.occupancyCode.equalsIgnoreCase("G-IT") ||
 //										frontYardResult.occupancyCode.equalsIgnoreCase("G-F")
 										) {
-									permissableValueWithPercentage = frontYardResult.expectedminimumDistance.abs().stripTrailingZeros().toPlainString();
-								    providedValue = frontYardResult.actualMinDistance.abs().stripTrailingZeros().toPlainString();
+//									permissableValueWithPercentage = frontYardResult.expectedminimumDistance.abs().stripTrailingZeros().toPlainString();
+//								    providedValue = frontYardResult.actualMinDistance.abs().stripTrailingZeros().toPlainString();
+									permissableValueWithPercentage = formatSetback(frontYardResult.expectedminimumDistance);
+									providedValue = formatSetback(frontYardResult.actualMinDistance);
 								    details.put("OccCode", frontYardResult.occupancyCode);
 								}else if (frontYardResult.setBackPercentage != null 
 								        && frontYardResult.setBackPercentage.contains("m")) {							    
@@ -1664,5 +1666,10 @@ private class FrontYardResult {
 		} else {
 			return BigDecimal.valueOf(6); // above 24m → 6m
 		}
-		}
+	}
+	
+	private String formatSetback(BigDecimal value) {
+	    return value == null ? "" : value.abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+	}
+	
 }

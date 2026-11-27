@@ -17,6 +17,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.tracer.model.CustomException;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.wscalculation.config.WSCalculationConfiguration;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.producer.WSCalculationProducer;
@@ -709,11 +710,33 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 //		List<String> tenantIds = wSCalculationDao.getTenantId();
 		List<String> tenantIds = new ArrayList<>();
         List<String> localities = new ArrayList<>();
-//		String tenat = requestInfo.getMsgId();
-        String tenant = bulkDemandCriteria.getTenantId();
-        String locality = bulkDemandCriteria.getLocality();
+		String tenant = null;
+		String locality = null;
 
-		if (!tenant.contains("pb")) {
+		// ── Step 1: Check BulkDemandCriteria first (explicit request payload) ──
+		if (bulkDemandCriteria != null) {
+			if (StringUtils.isNotBlank(bulkDemandCriteria.getTenantId())) {
+				tenant = bulkDemandCriteria.getTenantId().trim();
+				log.info("Tenant resolved from BulkDemandCriteria: {}", tenant);
+			}
+			locality = bulkDemandCriteria.getLocality();
+		}
+
+		// ── Step 2: If no tenantId in criteria, check msgId (e.g. "pb.amritsar" or "pb.amritsar|en_IN") ──
+		if (StringUtils.isBlank(tenant)) {
+			if (requestInfo != null && StringUtils.isNotBlank(requestInfo.getMsgId())) {
+				String rawMsgId = requestInfo.getMsgId().trim();
+				String potentialTenant = rawMsgId.contains("|") ? rawMsgId.split("\\|")[0].trim() : rawMsgId;
+				if (potentialTenant.startsWith("pb.") || potentialTenant.contains(".")) {
+					tenant = potentialTenant;
+					log.info("Tenant resolved from msgId: {}", tenant);
+				}
+			}
+		}
+
+		// ── Step 3: If still no valid child tenant, fall back to MDMS (all tenants) ──
+		boolean isValidChildTenant = StringUtils.isNotBlank(tenant) && tenant.contains(".");
+		if (!isValidChildTenant) {
 			MdmsCriteriaReq mdmsCriteriaReq = calculatorUtil.gettenants(requestInfo);
 			StringBuilder url = calculatorUtil.getMdmsSearchUrl();
 			Object res = repository.fetchResult(url, mdmsCriteriaReq);
@@ -749,7 +772,9 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 
 		} else {
 			tenantIds.add(tenant);
-            localities.add(locality);
+			if (StringUtils.isNotBlank(locality)) {
+				localities.add(locality);
+			}
 		}
 		if (tenantIds.isEmpty()) {
 			log.info("No tenants are found for generating demand");

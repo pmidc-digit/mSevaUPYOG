@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.swcalculation.config.SWCalculationConfiguration;
@@ -318,66 +319,79 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		LocalDateTime date = LocalDateTime.now();
 		log.info("Time schedule start for sewerage demand generation on : " + date.format(dateTimeFormatter));
-//		List<String> tenantIds = sewerageCalculatorDao.getTenantId();
-        List<String> tenantIds = new ArrayList<>();
-        List<String> localities = new ArrayList<>();
-        String tenant = null;
-        String locality = null;
-        if(bulkDemandCriteria.getTenantId() != null){
-            tenant = bulkDemandCriteria.getTenantId();
-        }
-        if(bulkDemandCriteria.getLocality() != null){
-            locality = bulkDemandCriteria.getLocality();
-        }
+		List<String> tenantIds = new ArrayList<>();
+		List<String> localities = new ArrayList<>();
+		String tenant = null;
+		String locality = null;
 
-        if (!tenant.contains("pb"))
-		{
-			 MdmsCriteriaReq mdmsCriteriaReq = ((CalculatorUtils) calculatorUtils).getenats(requestInfo);
-				Object res = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
-
-                if (res == null)
-                {
-                    throw new CustomException("MDMS_ERROR_FOR_BILLING_FREQUENCY",
-                            "ERROR IN FETCHING THE BILLING FREQUENCY");
-                }
-                else {
-
-                    Map<String, Object> resMap = (Map<String, Object>) res;
-                    Object mdmsResObj = resMap.get("MdmsRes");
-                    Map<String, Object> mdmsRes = (Map<String, Object>) mdmsResObj;
-                    Object tenantObj = mdmsRes.get("tenant");
-                    Map<String, Object> tenantMap = (Map<String, Object>) tenantObj;
-                    Object waterSewerageObj = tenantMap.get("waterSewerage");
-                    List<Object> waterSewerageList = (List<Object>) waterSewerageObj;
-                    for (Object obj : waterSewerageList)
-                    {
-                        if (obj instanceof Map)
-                        {
-                            Map<String, Object> waterSewerageMap = (Map<String, Object>) obj;
-                            Object codeObj = waterSewerageMap.get("code");
-                            Object localitiesObj = waterSewerageMap.get("localities");
-                            if (codeObj != null) {
-                                String code = codeObj.toString();
-                                tenantIds.add(code);
-                            }
-                            if (localitiesObj != null) {
-                                String local = localitiesObj.toString();
-                                localities.add(local);
-                            }
-                        }
-                    }
-
-                }
-			
+		// ── Step 1: Check BulkDemandCriteria first (explicit request payload) ──
+		if (bulkDemandCriteria != null) {
+			if (StringUtils.isNotBlank(bulkDemandCriteria.getTenantId())) {
+				tenant = bulkDemandCriteria.getTenantId().trim();
+				log.info("Tenant resolved from BulkDemandCriteria: {}", tenant);
+			}
+			locality = bulkDemandCriteria.getLocality();
 		}
-		else {
+
+		// ── Step 2: If no tenantId in criteria, check msgId (e.g. "pb.amritsar" or "pb.amritsar|en_IN") ──
+		if (StringUtils.isBlank(tenant)) {
+			if (requestInfo != null && StringUtils.isNotBlank(requestInfo.getMsgId())) {
+				String rawMsgId = requestInfo.getMsgId().trim();
+				String potentialTenant = rawMsgId.contains("|") ? rawMsgId.split("\\|")[0].trim() : rawMsgId;
+				if (potentialTenant.startsWith("pb.") || potentialTenant.contains(".")) {
+					tenant = potentialTenant;
+					log.info("Tenant resolved from msgId: {}", tenant);
+				}
+			}
+		}
+
+		// ── Step 3: If still no valid child tenant, fall back to MDMS (all tenants) ──
+		// A valid child tenant must contain "." (e.g. pb.nangal). State-level "pb" is NOT valid.
+		boolean isValidChildTenant = StringUtils.isNotBlank(tenant) && tenant.contains(".");
+		if (!isValidChildTenant) {
+			log.info("No specific child tenantId found (tenant={}). Fetching ALL tenants from MDMS.", tenant);
+			MdmsCriteriaReq mdmsCriteriaReq = ((CalculatorUtils) calculatorUtils).getenats(requestInfo);
+			Object res = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+
+			if (res == null) {
+				throw new CustomException("MDMS_ERROR_FOR_BILLING_FREQUENCY",
+						"ERROR IN FETCHING THE BILLING FREQUENCY");
+			} else {
+				Map<String, Object> resMap = (Map<String, Object>) res;
+				Object mdmsResObj = resMap.get("MdmsRes");
+				Map<String, Object> mdmsRes = (Map<String, Object>) mdmsResObj;
+				Object tenantObj = mdmsRes.get("tenant");
+				Map<String, Object> tenantMap = (Map<String, Object>) tenantObj;
+				Object waterSewerageObj = tenantMap.get("waterSewerage");
+				List<Object> waterSewerageList = (List<Object>) waterSewerageObj;
+				for (Object obj : waterSewerageList) {
+					if (obj instanceof Map) {
+						Map<String, Object> waterSewerageMap = (Map<String, Object>) obj;
+						Object codeObj = waterSewerageMap.get("code");
+						Object localitiesObj = waterSewerageMap.get("localities");
+						if (codeObj != null) {
+							String code = codeObj.toString();
+							tenantIds.add(code);
+						}
+						if (localitiesObj != null) {
+							String local = localitiesObj.toString();
+							localities.add(local);
+						}
+					}
+				}
+			}
+		} else {
 			tenantIds.add(tenant);
-            localities.add(locality);
+			if (StringUtils.isNotBlank(locality)) {
+				localities.add(locality);
+			}
 		}
-		
-		if (tenantIds.isEmpty())
+
+		if (tenantIds.isEmpty()) {
+			log.info("No tenants are found for generating demand");
 			return;
-		log.info("Tenant Ids : " + tenantIds.toString());
+		}
+		log.info("Tenant Ids resolved for sewerage demand generation: " + tenantIds.toString());
 
 		int tenantPoolSize = configs.getTenantThreadPoolSize() != null ? configs.getTenantThreadPoolSize() : 5;
 		int actualTenantThreads = Math.min(tenantPoolSize, tenantIds.size());
@@ -401,7 +415,7 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 			CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 				try { if(!localities.isEmpty()){
                     localities.forEach(localty -> {
-                        demandService.generateDemandForTenantId(tenantId, localty, requestInfo);
+                        demandService.generateDemandForTenantId(tenantId, localty, tenantRequestInfo);
                     });
                 }else {
 					log.info("▶️ Sewerage demand generation started for tenant: {}", tenantId);

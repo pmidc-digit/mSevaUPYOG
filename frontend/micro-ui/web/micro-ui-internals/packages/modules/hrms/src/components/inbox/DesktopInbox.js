@@ -79,6 +79,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   const [designation, setDesignation] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [quickSearchCache, setQuickSearchCache] = useState({ key: null, employees: null });
+  const [isQuickSearchLoading, setIsQuickSearchLoading] = useState(false);
 
   const isQuickSearchActive = Boolean(searchText.trim());
   const quickSearchFilterKey = useMemo(
@@ -86,23 +87,66 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     [activeTenantCode, props.searchParams]
   );
 
+  // Fetch all matching employees in batches so server-side max limit caps (e.g. 100/200) don't truncate results.
+  const fetchAllMatchingEmployees = useCallback(
+    async (isCancelled = () => false) => {
+      const BATCH_LIMIT = 500;
+      const MAX_RECORDS = 5000;
+      const knownTotal = Number(props.totalRecords) > 0 ? Number(props.totalRecords) : null;
+      const all = [];
+      let offset = 0;
+      let serverCap = null;
+
+      while (!isCancelled() && all.length < MAX_RECORDS) {
+        const response = await Digit.HRMSService.search(
+          activeTenantCode,
+          { limit: BATCH_LIMIT, offset },
+          props.searchParams || {}
+        );
+        const batch = response?.Employees || [];
+        if (batch.length === 0) break;
+
+        all.push(...batch);
+        offset += batch.length;
+
+        if (knownTotal !== null && all.length >= knownTotal) break;
+        if (serverCap === null && batch.length < BATCH_LIMIT && knownTotal === null) {
+          // If backend returned fewer than BATCH_LIMIT without a known total, probe once more only if batch looks like a round server cap (e.g. 50, 100, 200, 250)
+          if (batch.length % 50 === 0 && batch.length >= 50) {
+            serverCap = batch.length;
+            continue;
+          }
+          break;
+        }
+        if (serverCap !== null && batch.length < serverCap) break;
+        if (knownTotal === null && serverCap === null && batch.length < BATCH_LIMIT) break;
+      }
+
+      return all;
+    },
+    [activeTenantCode, props.searchParams, props.totalRecords]
+  );
+
   useEffect(() => {
     if (!isQuickSearchActive || quickSearchCache.key === quickSearchFilterKey) return;
     let cancelled = false;
-    const fetchLimit = Math.max(1000, Number(props.totalRecords) || 1000);
-    Digit.HRMSService.search(activeTenantCode, { limit: fetchLimit, offset: 0 }, props.searchParams || {})
-      .then((response) => {
+    setIsQuickSearchLoading(true);
+    fetchAllMatchingEmployees(() => cancelled)
+      .then((allEmployees) => {
         if (!cancelled) {
-          setQuickSearchCache({ key: quickSearchFilterKey, employees: response?.Employees || [] });
+          setQuickSearchCache({ key: quickSearchFilterKey, employees: allEmployees });
+          setIsQuickSearchLoading(false);
         }
       })
       .catch(() => {
-        // Fall back to current-page employees if background full fetch fails
+        if (!cancelled) {
+          setIsQuickSearchLoading(false);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [isQuickSearchActive, quickSearchCache.key, quickSearchFilterKey, activeTenantCode, props.searchParams, props.totalRecords]);
+  }, [isQuickSearchActive, quickSearchCache.key, quickSearchFilterKey, fetchAllMatchingEmployees]);
 
   const departmentOptions = useMemo(
     () => Digit.Utils.locale.convertToLocaleData(mdmsData?.MdmsRes?.["common-masters"]?.Department, "COMMON_MASTERS_DEPARTMENT") || [],
@@ -226,19 +270,36 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   const data = useMemo(() => {
     const query = searchText.trim().toLowerCase();
     if (!query || !sourceEmployees) return employees;
-    return sourceEmployees.filter((emp) => {
+
+    const scored = [];
+    for (const emp of sourceEmployees) {
       const assignment = getLatestAssignment(emp);
-      const values = [
-        emp?.code,
-        emp?.user?.name,
-        emp?.user?.mobileNumber,
-        t("COMMON_MASTERS_DESIGNATION_" + assignment?.designation),
-        t("COMMON_MASTERS_DEPARTMENT_" + assignment?.department),
-        t(emp?.isActive ? "ACTIVE" : "INACTIVE"),
-        ...(emp?.user?.roles || []).map((role) => t(`ACCESSCONTROL_ROLES_ROLES_${role.code}`)),
-      ];
-      return values.some((value) => value && String(value).toLowerCase().includes(query));
-    });
+      const codeStr = String(emp?.code || "").toLowerCase();
+      const nameStr = String(emp?.user?.name || "").toLowerCase();
+      const phoneStr = String(emp?.user?.mobileNumber || "").toLowerCase();
+      const desgStr = String(assignment?.designation ? t("COMMON_MASTERS_DESIGNATION_" + assignment.designation) : "").toLowerCase();
+      const deptStr = String(assignment?.department ? t("COMMON_MASTERS_DEPARTMENT_" + assignment.department) : "").toLowerCase();
+      const statusStr = String(t(emp?.isActive ? "ACTIVE" : "INACTIVE")).toLowerCase();
+      const roleMatch = (emp?.user?.roles || []).some((role) =>
+        String(t(`ACCESSCONTROL_ROLES_ROLES_${role.code}`)).toLowerCase().includes(query)
+      );
+
+      let priority = -1;
+      if (codeStr.includes(query) || nameStr.includes(query)) {
+        priority = codeStr === query || nameStr === query ? 0 : 1;
+      } else if (phoneStr.includes(query) || desgStr.includes(query) || deptStr.includes(query)) {
+        priority = 2;
+      } else if (statusStr.includes(query) || roleMatch) {
+        priority = 3;
+      }
+
+      if (priority !== -1) {
+        scored.push({ emp, priority });
+      }
+    }
+
+    scored.sort((a, b) => a.priority - b.priority);
+    return scored.map((item) => item.emp);
   }, [employees, sourceEmployees, searchText, t]);
 
   const GetCell = (value) => (
@@ -334,13 +395,11 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
       return quickSearchCache.employees;
     }
     try {
-      const fetchLimit = Math.max(1000, Number(props.totalRecords) || 1000);
-      const response = await Digit.HRMSService.search(activeTenantCode, { limit: fetchLimit, offset: 0 }, props.searchParams || {});
-      return response?.Employees || [];
+      return await fetchAllMatchingEmployees();
     } catch (e) {
       return data || [];
     }
-  }, [activeTenantCode, props.searchParams, props.totalRecords, quickSearchCache, quickSearchFilterKey, data]);
+  }, [fetchAllMatchingEmployees, quickSearchCache, quickSearchFilterKey, data]);
 
   const tableData = data || [];
 
@@ -359,7 +418,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     isPaginationRequired: true,
     manualPagination: !isQuickSearchActive,
     onPageSizeChange: props.onPageSizeChange,
-    currentPage: props.currentPage,
+    currentPage: isQuickSearchActive ? 0 : props.currentPage,
     onNextPage: props.onNextPage,
     onPrevPage: props.onPrevPage,
     pageSizeLimit: props.pageSizeLimit,
@@ -726,7 +785,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
       <InboxWrapper
         title={!props.isSearch ? t("HR_HOME_SEARCH_RESULTS_HEADING") : t("ES_COMMON_SEARCH")}
         totalCount={searchText.trim() ? tableData.length : props.badgeCount ?? props.totalRecords ?? tableData.length ?? 0}
-        isLoading={props.isLoading}
+        isLoading={props.isLoading || (isQuickSearchActive && isQuickSearchLoading)}
         tableData={tableData}
         tableProps={tableProps}
         tableHeader="HR_HOME_SEARCH_RESULTS_HEADING"

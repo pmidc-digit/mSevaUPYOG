@@ -61,8 +61,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
-import org.egov.demand.model.BillReconciliationCriteria;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -1057,55 +1055,4 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 		}
 	}
 	
-
-	public BillResponseV2 reconcileBill(BillReconciliationCriteria criteria, RequestInfo requestInfo) {
-		String tenantId = criteria.getTenantId();
-		String consumerCode = criteria.getConsumerCode();
-		String businessService = criteria.getBusinessService();
-		String txnBillId = criteria.getBillId();
-		String modifiedBy = (requestInfo != null && requestInfo.getUserInfo() != null
-				&& requestInfo.getUserInfo().getUuid() != null)
-				? requestInfo.getUserInfo().getUuid()
-				: "SYSTEM";
-
-		log.info("Reconciling bill for tenantId: {}, consumerCode: {}, businessService: {}, billId: {}",
-				tenantId, consumerCode, businessService, txnBillId);
-
-		Long extendedExpiryDate = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1);
-		Long expiryTime = System.currentTimeMillis();
-
-		BillSearchCriteria searchCriteria = BillSearchCriteria.builder()
-				.tenantId(tenantId)
-				.consumerCode(Collections.singleton(consumerCode))
-				.service(businessService)
-				.status(BillStatus.ACTIVE)
-				.build();
-		List<BillV2> activeBills = billRepository.findBill(searchCriteria);
-
-		String activeBillId = (!CollectionUtils.isEmpty(activeBills)) ? activeBills.get(0).getId() : null;
-		log.info("Currently active bill for consumerCode {}: {}, target txn billId: {}", consumerCode, activeBillId,
-				txnBillId);
-
-		if (activeBillId != null && activeBillId.equals(txnBillId)) {
-			log.info("Active bill matches transaction bill {}. Extending its expiry date.", txnBillId);
-			billRepository.activateAndExtendBill(tenantId, txnBillId, extendedExpiryDate, modifiedBy);
-		} else {
-			log.info("Active bill ({}) differs from transaction bill ({}). Expiring other bills and activating txn bill.",
-					activeBillId, txnBillId);
-			billRepository.expireBillsForConsumerCodeExcept(tenantId, consumerCode, txnBillId, modifiedBy, expiryTime);
-			billRepository.activateAndExtendBill(tenantId, txnBillId, extendedExpiryDate, modifiedBy);
-		}
-
-		BillSearchCriteria targetCriteria = BillSearchCriteria.builder()
-				.tenantId(tenantId)
-				.billId(Collections.singleton(txnBillId))
-				.build();
-		List<BillV2> resultBills = billRepository.findBill(targetCriteria);
-
-		return BillResponseV2.builder()
-				.resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
-				.bill(resultBills)
-				.build();
-	}
-
 }

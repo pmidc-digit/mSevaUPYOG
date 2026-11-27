@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.eg_hrms_obpass_employee_delete_audit
     isactive boolean DEFAULT true,
     modulename character varying(64) COLLATE pg_catalog."default",
     role_code character varying(64) COLLATE pg_catalog."default",
-    CONSTRAINT eg_hrms_obpass_employee_pkey PRIMARY KEY (uuid)
+    CONSTRAINT eg_hrms_obpass_employee_delete_audit_pkey PRIMARY KEY (uuid)
 );
 
 CREATE INDEX delete_assigned_tenantid_idx ON eg_hrms_obpass_employee_delete_audit ("assigned_tenantid");

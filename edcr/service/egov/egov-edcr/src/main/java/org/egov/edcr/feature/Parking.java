@@ -430,7 +430,8 @@ public class Parking extends FeatureProcess {
 
         if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
             if (mostRestrictiveOccupancy.getSubtype() != null && A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
-                ResidentialParkingStats parkingStats = getResidentialParkingStats(pl);
+            	validateDwellingUnits(pl);   // add this line;
+            	ResidentialParkingStats parkingStats = getResidentialParkingStats(pl);
                 if (parkingStats != null) {
                     double ecsPerDu = getApartmentFlatEcsPerDu(parkingStats.averageUnitAreaSqM);
                     double totalDuEcs = ecsPerDu * parkingStats.totalDwellingUnits;
@@ -610,6 +611,30 @@ public class Parking extends FeatureProcess {
     }
 }
 
+    private void validateDwellingUnits(Plan pl) {
+        if (pl.getBlocks() == null) {
+            return;
+        }
+
+        for (Block block : pl.getBlocks()) {
+            if (block == null || Boolean.TRUE.equals(block.getIsUnitFa())) {
+                continue;
+            }
+
+            boolean hasDwellingUnits = block.getBuilding() != null
+                    && block.getBuilding().getFloors() != null
+                    && block.getBuilding().getFloors().stream()
+                            .anyMatch(floor -> floor != null && floor.getUnits() != null
+                                    && !floor.getUnits().isEmpty());
+
+            if (!hasDwellingUnits) {
+                pl.addError("PARKING_DWELLING_UNITS_NOT_DEFINED_BLOCK_" + block.getNumber(),
+                        "Dwelling units are mandatory for parking calculation. Not defined in Block "
+                                + block.getNumber() + ".");
+            }
+        }
+    }
+    
 // Helper method to securely attach error messages without throwing NPEs
 private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
     if (pl != null) {

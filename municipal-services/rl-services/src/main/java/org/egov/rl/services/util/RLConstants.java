@@ -42,6 +42,8 @@ public class RLConstants {
     public static final String PENDING_FOR_PAYMENT_RL_APPLICATION = "PENDING_FOR_PAYMENT";
     
     public static final String PAY = "PAY";
+
+    public static final String EXPIRED = "EXPIRED";
     
     public static final String CURRENT_DATE = "CURRENT_DATE";
 

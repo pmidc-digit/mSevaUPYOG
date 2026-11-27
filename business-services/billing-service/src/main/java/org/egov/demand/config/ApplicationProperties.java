@@ -208,10 +208,10 @@ public class ApplicationProperties {
     @Value("${egov.shortener.host}")
    	private String shortenerHost;
 
-    @Value("${egov.waterservice.updatebillstatus.topic}")
+    @Value("${egov.updatebillstatus.topic}")
     private String updateBillStatusTopic;
 
-    @Value("${egov.waterservice.updatedemandpayer.topic}")
+    @Value("${egov.updatedemandpayer.topic}")
     private String updateDemandPayerTopic;
 
     @Value("${egov.filestore.host:http://localhost:8083/}")

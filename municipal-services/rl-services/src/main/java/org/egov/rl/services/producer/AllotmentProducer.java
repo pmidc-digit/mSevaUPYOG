@@ -28,6 +28,10 @@ public class AllotmentProducer {
 		addedKeyPush(topic, value);
 	}
 
+    public void push(String topic, String key,  Object value) {
+        kafkaTemplate.send(topic, key, value);
+    }
+
 	public void addedKeyPush(String topic, Object value) {
 		String key = UUID.randomUUID().toString();
 		kafkaTemplate.send(topic, key, value);

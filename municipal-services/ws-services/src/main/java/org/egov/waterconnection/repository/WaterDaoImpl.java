@@ -66,10 +66,10 @@ public class WaterDaoImpl implements WaterDao {
 	@Value("${egov.waterservice.updatewaterconnection.topic}")
 	private String updateWaterConnection;
 
-    @Value("${egov.waterservice.updatebillstatus.topic}")
+    @Value("${egov.updatebillstatus.topic}")
     private String updateBillStatusTopic;
 
-    @Value("${egov.waterservice.updatedemandpayer.topic}")
+    @Value("${egov.updatedemandpayer.topic}")
     private String updateDemandPayerTopic;
 
 	@Value("${egov.waterservice.oldDataEncryptionStatus.topic}")

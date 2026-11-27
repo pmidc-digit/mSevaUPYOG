@@ -149,12 +149,14 @@ export const PropertySearchBathinda = ({ key = "cpt", onSelect, formData, setApi
           doorNo: Fulladdress,
         };
 
-        setPropertyDetails({
+        const selectedProperty = {
           propertyId: `${Uidno}-${Uidno1}-${Uidno2}`,
           owners,
           address,
           landArea: Totalplotareasqyd,
-        });
+        };
+        setPropertyDetails(selectedProperty);
+        onSelect?.(selectedProperty);
 
         dispatch(UPDATE_NOCNewApplication_FORM(key, { ...formData[key], zonalMapping: { zone: Zone } }));
       } else {

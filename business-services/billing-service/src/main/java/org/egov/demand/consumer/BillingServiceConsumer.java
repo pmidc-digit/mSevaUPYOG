@@ -270,7 +270,7 @@ public class BillingServiceConsumer {
 
 
 
-    @KafkaListener( topics = "${egov.waterservice.updatedemandpayer.topic}")
+    @KafkaListener( topics = "${egov.updatedemandpayer.topic}")
     public void UpdateDemandpayer(@Payload Map<String, Object> consumerRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
         log.info("Received Water Service event on topic: {}, payload: {}", topic, consumerRecord);
         try {
@@ -283,7 +283,7 @@ public class BillingServiceConsumer {
         }
     }
 
-    @KafkaListener( topics = "${egov.waterservice.updatebillstatus.topic}")
+    @KafkaListener( topics = "${egov.updatebillstatus.topic}")
     public void UpdateBillstatus(
             @Payload Map<String, Object> consumerRecord,
             @Header(KafkaHeaders.RECEIVED_TOPIC) String topic

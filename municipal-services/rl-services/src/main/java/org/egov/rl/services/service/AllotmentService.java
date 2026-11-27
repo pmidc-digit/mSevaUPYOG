@@ -75,10 +75,10 @@ public class AllotmentService {
 	@Autowired
 	AllotmentRepository allotmentRepository;
 
-    @Value("${egov.waterservice.updatebillstatus.topic}")
+    @Value("${egov.updatebillstatus.topic}")
     private String updateBillStatusTopic;
 
-    @Value("${egov.waterservice.updatedemandpayer.topic}")
+    @Value("${egov.updatedemandpayer.topic}")
     private String updateDemandPayerTopic;
 	/**
 	 * States in which the application already has a demand - the only states in which a draft save may touch it.

@@ -302,12 +302,20 @@ public class SWCalculationUtil {
 	 */
 	public StringBuilder getUri(String tenantId, RequestInfo requestInfo) {
 
-		if (config.getIsLocalizationStateLevel())
-			tenantId = tenantId.split("\\.")[0];
+		if (Boolean.TRUE.equals(config.getIsLocalizationStateLevel()) && StringUtils.isNotBlank(tenantId)) {
+			String[] tenantParts = tenantId.split("\\.");
+			if (tenantParts.length > 0 && StringUtils.isNotBlank(tenantParts[0])) {
+				tenantId = tenantParts[0];
+			}
+		}
 
 		String locale = SWCalculationConstant.NOTIFICATION_LOCALE;
-		if (!StringUtils.isEmpty(requestInfo.getMsgId()) && requestInfo.getMsgId().split("|").length >= 2)
-			locale = requestInfo.getMsgId().split("\\|")[1];
+		if (requestInfo != null && !StringUtils.isEmpty(requestInfo.getMsgId()) && requestInfo.getMsgId().contains("|")) {
+			String[] parts = requestInfo.getMsgId().split("\\|");
+			if (parts.length >= 2 && !StringUtils.isEmpty(parts[1])) {
+				locale = parts[1];
+			}
+		}
 
 		StringBuilder uri = new StringBuilder();
 		uri.append(config.getLocalizationHost()).append(config.getLocalizationContextPath())
@@ -328,9 +336,11 @@ public class SWCalculationUtil {
 	 */
 	@SuppressWarnings("rawtypes")
 	public String getLocalizationMessages(String tenantId, RequestInfo requestInfo) {
-		return new JSONObject(
-				(LinkedHashMap) serviceRequestRepository.fetchResult(getUri(tenantId, requestInfo), requestInfo))
-						.toString();
+		Object response = serviceRequestRepository.fetchResult(getUri(tenantId, requestInfo), requestInfo);
+		if (response instanceof LinkedHashMap) {
+			return new JSONObject((LinkedHashMap) response).toString();
+		}
+		return "{}";
 	}
 
 	/**
@@ -344,14 +354,19 @@ public class SWCalculationUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	public String getMessageTemplate(String notificationCode, String localizationMessage) {
+		if (StringUtils.isBlank(notificationCode) || StringUtils.isBlank(localizationMessage)) {
+			return null;
+		}
 		String path = "$..messages[?(@.code==\"{}\")].message";
 		path = path.replace("{}", notificationCode);
 		String message = null;
 		try {
 			Object messageObj = JsonPath.parse(localizationMessage).read(path);
-			message = ((ArrayList<String>) messageObj).get(0);
+			if (messageObj instanceof List && !((List<?>) messageObj).isEmpty()) {
+				message = ((ArrayList<String>) messageObj).get(0);
+			}
 		} catch (Exception e) {
-			log.warn("Fetching from localization failed", e);
+			log.debug("Template {} not found in localization response", notificationCode);
 		}
 		return message;
 	}
@@ -781,7 +796,12 @@ public class SWCalculationUtil {
 			return emailIds;
 		}
 
-		String rootTenant = tenantIds.iterator().next().split("\\.")[0];
+		String firstTenant = tenantIds.iterator().next();
+		if (StringUtils.isBlank(firstTenant)) {
+			return emailIds;
+		}
+		String[] tenantParts = firstTenant.split("\\.");
+		String rootTenant = tenantParts.length > 0 ? tenantParts[0] : firstTenant;
 		StringBuilder uri = new StringBuilder();
 		uri.append(config.getMdmsHost()).append(config.getMdmsEndPoint());
 

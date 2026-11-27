@@ -190,23 +190,26 @@ useEffect(() => {
     });
 
     if (response?.IsSuccess && response?.Record) {
-      const { OwnerName, MobileNo, Zone, Block, ColonyName, PropertyNo, PropertyArea } = response.Record;
+      const { OwnerName, FatherName, MobileNo, Zone, Block, ColonyName, PropertyNo, PropertyArea } = response.Record;
 
       const owners = [{
         mobileNumber: MobileNo,
-        name: OwnerName?.split(",")?.[0]
+        name: OwnerName?.trim(),
+        fatherOrHusbandName: FatherName?.trim(),
       }];
 
       const address = {
         doorNo: [PropertyNo, Block, ColonyName].filter(Boolean).join(", ")
       };
 
-      setPropertyDetails({
+      const selectedProperty = {
         propertyId: response.Record.UIDNo,
         owners,
         address,
         landArea: PropertyArea
-      });
+      };
+      setPropertyDetails(selectedProperty);
+      onSelect?.(selectedProperty);
 
       dispatch(UPDATE_NOCNewApplication_FORM(key, { ...formData[key], zonalMapping: { zone: Zone } }));
     } else {

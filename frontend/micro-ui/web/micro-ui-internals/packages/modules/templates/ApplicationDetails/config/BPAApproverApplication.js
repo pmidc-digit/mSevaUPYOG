@@ -18,6 +18,7 @@ export const configBPAApproverApplication = ({
   error,
   blockReasonFiltered
 }) => {
+  const supportsAssigneeDropdown = ["BPA_LOW", "BPA_NP_OTH"].includes(businessService);
   let isRejectOrRevocate = false;
   if(action?.action == "REVOCATE" || action?.action == "REJECT" || action.action == "SKIP_PAYMENT" || action?.action == "SEND_BACK_TO_CITIZEN" || action?.action == "APPROVE" || action?.action == "PULLBACK") {
     isRejectOrRevocate = true;
@@ -43,9 +44,9 @@ export const configBPAApproverApplication = ({
       {
         body: [
           {
-            label: businessService === "BPA_LOW" ? ((action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT") || (action?.action=="ESIGN") || (action?.action=="UPDATE_FEE") || (action?.action=="SEND_BACK") || (action?.action=="UPDATE_ZONE")) ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`)) : null,
+            label: supportsAssigneeDropdown ? ((action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT") || (action?.action=="ESIGN") || (action?.action=="UPDATE_FEE") || (action?.action=="SEND_BACK") || (action?.action=="UPDATE_ZONE")) ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`)) : null,
             type: "dropdown",
-            populators: businessService === "BPA_LOW" ? ((action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT")) || (action?.action=="ESIGN") || (action?.action=="UPDATE_FEE") || (action?.action=="SEND_BACK") || (action?.action=="UPDATE_ZONE") ? null : (
+            populators: supportsAssigneeDropdown ? ((action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK") || (action?.action=="VERIFY")|| (action?.action=="SEND_FOR_INSPECTION_REPORT")) || (action?.action=="ESIGN") || (action?.action=="UPDATE_FEE") || (action?.action=="SEND_BACK") || (action?.action=="UPDATE_ZONE") ? null : (
               <DropdownWithDesignation
                 option={approvers}
                 autoComplete="off"

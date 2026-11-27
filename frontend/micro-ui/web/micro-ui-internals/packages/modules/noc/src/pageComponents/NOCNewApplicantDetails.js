@@ -567,6 +567,8 @@ const NOCNewApplicantDetails = (_props) => {
             ...updated[existingIdx],
             ...editingOwner,
             ...editedUser,
+            name: editedUser?.name || editingOwner?.name || updated[existingIdx]?.name || "",
+            mobileNumber: editedUser?.mobileNumber || editingOwner?.mobileNumber || updated[existingIdx]?.mobileNumber || "",
             isPrimaryOwner: editingOwner.isPrimaryOwner !== undefined ? editingOwner.isPrimaryOwner : updated[existingIdx].isPrimaryOwner,
             status: true,
           };
@@ -579,6 +581,8 @@ const NOCNewApplicantDetails = (_props) => {
             {
               ...editingOwner,
               ...editedUser,
+              name: editedUser?.name || editingOwner?.name || "",
+              mobileNumber: editedUser?.mobileNumber || editingOwner?.mobileNumber || "",
               isPrimaryOwner:
                 editedUser?.isPrimaryOwner !== undefined && editedUser?.isPrimaryOwner !== null
                   ? editedUser.isPrimaryOwner
@@ -882,10 +886,20 @@ const NOCNewApplicantDetails = (_props) => {
 
           {/* Property Tax Search Buttons for Ludhiana / Bathinda / Other ULBs */}
           {tenantId === LUDHIANA_TENANT && isPropertyAvailable?.value && (
-            <PropertySearchLudhiana formData={currentStepData} setApiLoading={setLoader} menuList={menuList} />
+            <PropertySearchLudhiana
+              formData={currentStepData}
+              setApiLoading={setLoader}
+              menuList={menuList}
+              onSelect={handlePropertySelect}
+            />
           )}
           {tenantId === BATHINDA_TENANT && isPropertyAvailable?.value && (
-            <PropertySearchBathinda formData={currentStepData} setApiLoading={setLoader} menuList={menuList} />
+            <PropertySearchBathinda
+              formData={currentStepData}
+              setApiLoading={setLoader}
+              menuList={menuList}
+              onSelect={handlePropertySelect}
+            />
           )}
           {tenantId !== LUDHIANA_TENANT && tenantId !== BATHINDA_TENANT && isPropertyAvailable?.value && (
             <button
@@ -949,12 +963,20 @@ const NOCNewApplicantDetails = (_props) => {
         {/* 4. Add Owner Button */}
         <div
           className="obps-page-components-layout-new-applicant-details--style-11"
-          style={{ display: isPropertyAvailable?.value === false ? undefined : "none" }}
+          style={{
+            display:
+              isPropertyAvailable?.value === false ||
+              (isPropertyAvailable?.value === true &&
+                !!propertyDetails?.propertyId &&
+                activeOwners.length === 0 &&
+                !(Array.isArray(propertyDetails?.propOwners) && propertyDetails.propOwners.length > 0))
+                ? undefined
+                : "none",
+          }}
         >
           <div
             onClick={() => {
-              if (isPropertyAvailable?.value !== false) return;
-              if (activeOwners.length === 0 && isPropertyAvailable?.value === true && propertyDetails?.propertyId) {
+              if (isPropertyAvailable?.value === true && propertyDetails?.propertyId && activeOwners.length === 0) {
                 const propOwners = Array.isArray(propertyDetails.propOwners) && propertyDetails.propOwners.length > 0
                   ? propertyDetails.propOwners
                   : [];

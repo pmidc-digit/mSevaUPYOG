@@ -152,6 +152,8 @@ public class SWCalculationConstant {
 
 	public static final String MODULE = "rainmaker-ws";
 
+	public static final String MODULE_SW = "rainmaker-sw";
+
 	public static final String NOTIFICATION_LOCALE = "en_IN";
 
 	public static final String SMS_RECEIVER_MASTER = "SMSReceiver";

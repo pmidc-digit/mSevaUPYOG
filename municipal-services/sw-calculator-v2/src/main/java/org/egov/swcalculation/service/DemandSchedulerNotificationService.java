@@ -376,12 +376,12 @@ public class DemandSchedulerNotificationService {
 
 		StringBuilder failedRowsBuilder = new StringBuilder();
 		if (failedConnectionNos.isEmpty()) {
-			failedRowsBuilder.append("<tr><td colspan=\"3\" style=\"color: #10b981; font-weight: bold; text-align: center;\">All connections processed successfully! No failures reported.</td></tr>");
+			failedRowsBuilder.append("<tr><td colspan=\"3\" style=\"padding: 12px 14px; color: #15803d; font-weight: 700; text-align: center;\">All connections processed successfully! No failures reported.</td></tr>");
 		} else {
 			int count = 1;
 			for (String failedConn : failedConnectionNos) {
 				if (count > 50) {
-					failedRowsBuilder.append("<tr><td colspan=\"3\" style=\"text-align: center; font-style: italic; color: #4b5563;\">... and ")
+					failedRowsBuilder.append("<tr><td colspan=\"3\" style=\"padding: 10px 14px; text-align: center; font-style: italic; color: #475569;\">... and ")
 							.append(failedConnectionNos.size() - 50)
 							.append(" more failed connections.</td></tr>");
 					break;
@@ -389,10 +389,10 @@ public class DemandSchedulerNotificationService {
 				String reason = StringUtils.defaultString(
 						failureReasons.getOrDefault(failedConn, "Calculation failed / check server logs"),
 						"Calculation failed / check server logs");
-				failedRowsBuilder.append("<tr>")
-						.append("<td>").append(count++).append("</td>")
-						.append("<td>").append(failedConn).append("</td>")
-						.append("<td style=\"color: #ef4444;\">").append(reason).append("</td>")
+				failedRowsBuilder.append("<tr style=\"border-bottom: 1px solid #e2e8f0;\">")
+						.append("<td style=\"padding: 10px 14px;\">").append(count++).append("</td>")
+						.append("<td style=\"padding: 10px 14px; font-weight: 600; color: #0f172a;\">").append(failedConn).append("</td>")
+						.append("<td style=\"padding: 10px 14px; color: #b91c1c;\">").append(reason).append("</td>")
 						.append("</tr>");
 			}
 		}

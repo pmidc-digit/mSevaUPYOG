@@ -1470,7 +1470,9 @@ public class DemandService {
 	 * @param tenantId TenantId for getting master data.
 	 */
 	public void generateDemandForTenantId(String tenantId, String locality, RequestInfo requestInfo) {
-		requestInfo.getUserInfo().setTenantId(tenantId);
+		if (requestInfo != null && requestInfo.getUserInfo() != null) {
+			requestInfo.getUserInfo().setTenantId(tenantId);
+		}
 		Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterData(requestInfo, tenantId);
 		long taxPeriodFrom = billingMasterData.get("taxPeriodFrom") == null ? 0l
 				: (long) billingMasterData.get("taxPeriodFrom");
@@ -1587,11 +1589,13 @@ public class DemandService {
 	@SuppressWarnings("unchecked")
 	public void generateDemandForULB(Map<String, Object> master, RequestInfo requestInfo, String tenantId, String locality,
 			Long taxPeriodFrom, Long taxPeriodTo) {
+		long startTime = System.currentTimeMillis();
 		try {
-			List<Role> roles = requestInfo.getUserInfo().getRoles()	!= null ? requestInfo.getUserInfo().getRoles() : new ArrayList<Role>();
+			List<Role> roles = (requestInfo != null && requestInfo.getUserInfo() != null && requestInfo.getUserInfo().getRoles() != null)
+					? requestInfo.getUserInfo().getRoles() : new ArrayList<Role>();
 			log.info("requestInfo Before removing Anonymous User: {}", mapper.writeValueAsString(requestInfo));
 			//Removing the ANONYMOUS role.
-			roles.removeIf(role -> role.getCode().equalsIgnoreCase("ANONYMOUS"));
+			roles.removeIf(role -> role.getCode() != null && role.getCode().equalsIgnoreCase("ANONYMOUS"));
 			log.info("requestInfo After removing Anonymous User: {}", mapper.writeValueAsString(requestInfo));
 
 			List<TaxPeriod> taxPeriods = calculatorUtils.getTaxPeriodsFromMDMS(requestInfo, tenantId);
@@ -1612,7 +1616,7 @@ public class DemandService {
 			}
 			
 			log.info("Billing master data values for non metered connection:: {}", master);
-			String cone=requestInfo.getKey();
+			String cone = requestInfo != null ? requestInfo.getKey() : null;
             List<SewerageDetails> connectionNos = null;
             if(locality!=null && !locality.trim().isEmpty()) {
                 connectionNos = sewerageCalculatorDao.getConnectionsNoListsingle(tenantId, locality, SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, cone);
@@ -1623,7 +1627,8 @@ public class DemandService {
 			//Generate bulk demands for connections in below count
 			int bulkSaveDemandCount = configs.getBulkSaveDemandCount() != null ? configs.getBulkSaveDemandCount() : 1;
 			
-			log.info("Total Sewerage Connections: {} and batch count: {}", connectionNos.size(), bulkSaveDemandCount);
+			log.info("Total Sewerage Connections: {} and batch count: {}",
+					connectionNos == null ? 0 : connectionNos.size(), bulkSaveDemandCount);
 
 			if (connectionNos == null || connectionNos.isEmpty()) {
 				log.info("No connections found for tenant: {} — skipping.", tenantId);
@@ -1726,7 +1731,7 @@ public class DemandService {
 				// Send Completion Email & Poll
 				try {
 					List<String> allConnNos = connectionNos.stream().map(SewerageDetails::getConnectionNo).collect(Collectors.toList());
-//					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, System.currentTimeMillis(), requestInfo);
+					demandSchedulerNotificationService.sendCompletionEmail(tenantId, taxPeriodFrom, taxPeriodTo, allConnNos, startTime, requestInfo);
 				} catch (Exception e) {
 					log.error("❌ Failed to send completion email for tenant: {} | {}", tenantId, e.getMessage(), e);
 				}

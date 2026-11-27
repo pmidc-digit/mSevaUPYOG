@@ -12,11 +12,13 @@ import static org.egov.swcalculation.constants.SWCalculationConstant.SW_TIME_ADH
 import static org.egov.swcalculation.web.models.TaxHeadCategory.CHARGES;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,7 +58,9 @@ import org.egov.swcalculation.web.models.RequestInfoWrapper;
 import org.egov.swcalculation.web.models.SchedulerLevel;
 import org.egov.swcalculation.web.models.SewerageConnection;
 import org.egov.swcalculation.web.models.SewerageConnectionRequest;
+import org.egov.swcalculation.web.models.SewerageDetails;
 import org.egov.swcalculation.web.models.SingleDemand;
+import org.egov.swcalculation.web.models.TenantDemandSummary;
 import org.egov.swcalculation.web.models.TaxHeadCategory;
 import org.egov.swcalculation.web.models.TaxHeadEstimate;
 import org.egov.swcalculation.web.models.TaxHeadMaster;
@@ -129,6 +133,9 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 
 	@Autowired
 	private BillSchedulerNotificationService billSchedulerNotificationService;
+
+	@Autowired
+	private DemandSchedulerNotificationService demandSchedulerNotificationService;
 
 	/**
 	 * Get CalculationReq and Calculate the Tax Head on Sewerage Charge
@@ -392,6 +399,70 @@ public class SWCalculationServiceImpl implements SWCalculationService {
 			return;
 		}
 		log.info("Tenant Ids resolved for sewerage demand generation: " + tenantIds.toString());
+
+		// Compute pre-generation counts and trigger consolidated start email (non-fatal)
+		try {
+			List<TenantDemandSummary> summaries = new ArrayList<>();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
+			String targetLocality = StringUtils.trimToNull(locality);
+			for (String tId : tenantIds) {
+				try {
+					RequestInfo clonedInfo = mapper.readValue(mapper.writeValueAsString(requestInfo), RequestInfo.class);
+					if (clonedInfo != null && clonedInfo.getUserInfo() != null) {
+						clonedInfo.getUserInfo().setTenantId(tId);
+					}
+					Map<String, Object> billingMasterData = calculatorUtils.loadBillingFrequencyMasterData(clonedInfo, tId);
+					long taxPeriodFrom = billingMasterData.get("taxPeriodFrom") == null ? 0L : ((Number) billingMasterData.get("taxPeriodFrom")).longValue();
+					long taxPeriodTo = billingMasterData.get("taxPeriodTo") == null ? 0L : ((Number) billingMasterData.get("taxPeriodTo")).longValue();
+
+					String billingCycle = (taxPeriodFrom > 0 && taxPeriodTo > 0)
+							? dateFormat.format(new Date(taxPeriodFrom)) + " to " + dateFormat.format(new Date(taxPeriodTo))
+							: "Current Period";
+
+					int connCount = 0;
+					String status = "Scheduled";
+
+					if (taxPeriodFrom == 0 || taxPeriodTo == 0) {
+						status = "Billing Period Missing";
+					} else if (Boolean.TRUE.equals(sewerageCalculatorDao.isBatchDemandExecuted(tId, targetLocality, taxPeriodFrom, taxPeriodTo))) {
+						status = "Already Executed";
+					} else {
+						List<SewerageDetails> connList = sewerageCalculatorDao.getConnectionsNoListsingle(
+								tId, targetLocality, SWCalculationConstant.nonMeterdConnection, taxPeriodFrom, taxPeriodTo, null);
+						connCount = connList != null ? connList.size() : 0;
+						if (connCount == 0) {
+							status = "No Eligible Connections";
+						}
+					}
+
+					String cityRaw = (tId != null && tId.contains(".")) ? tId.substring(tId.indexOf('.') + 1) : StringUtils.defaultString(tId);
+					String cityName = cityRaw.isEmpty() ? StringUtils.defaultString(tId) : cityRaw.substring(0, 1).toUpperCase() + cityRaw.substring(1).toLowerCase();
+
+					summaries.add(TenantDemandSummary.builder()
+							.tenantId(tId)
+							.cityName(cityName)
+							.billingCycle(billingCycle)
+							.taxPeriodFrom(taxPeriodFrom)
+							.taxPeriodTo(taxPeriodTo)
+							.connectionCount(connCount)
+							.status(status)
+							.build());
+				} catch (Exception ex) {
+					log.error("Error calculating pre-demand summary for sewerage tenant {}: {}", tId, ex.getMessage());
+					String cityName = (tId != null && tId.contains(".")) ? tId.substring(tId.indexOf('.') + 1) : StringUtils.defaultString(tId);
+					summaries.add(TenantDemandSummary.builder()
+							.tenantId(tId)
+							.cityName(cityName)
+							.billingCycle("N/A")
+							.connectionCount(0)
+							.status("Scheduled")
+							.build());
+				}
+			}
+			demandSchedulerNotificationService.sendConsolidatedStartEmail(summaries, requestInfo);
+		} catch (Exception e) {
+			log.error("Non-fatal: Failed to prepare/send consolidated sewerage start email: {}", e.getMessage(), e);
+		}
 
 		int tenantPoolSize = configs.getTenantThreadPoolSize() != null ? configs.getTenantThreadPoolSize() : 5;
 		int actualTenantThreads = Math.min(tenantPoolSize, tenantIds.size());

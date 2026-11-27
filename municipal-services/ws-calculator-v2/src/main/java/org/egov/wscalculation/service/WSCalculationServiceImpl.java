@@ -720,17 +720,15 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 			locality = bulkDemandCriteria.getLocality();
 		}
 
-		// ── Step 2: If no tenantId in criteria, try userInfo (must be a child tenant like pb.nangal) ──
+		// ── Step 2: If no tenantId in criteria, check msgId (e.g. "pb.amritsar" or "pb.amritsar|en_IN") ──
 		if (StringUtils.isBlank(tenant)) {
-			if (requestInfo != null && requestInfo.getUserInfo() != null
-					&& StringUtils.isNotBlank(requestInfo.getUserInfo().getTenantId())
-					&& requestInfo.getUserInfo().getTenantId().contains(".")) {
-				tenant = requestInfo.getUserInfo().getTenantId().trim();
-				log.info("Tenant resolved from userInfo: {}", tenant);
-			} else if (requestInfo != null && StringUtils.isNotBlank(requestInfo.getMsgId())
-					&& requestInfo.getMsgId().contains(".")) {
-				tenant = requestInfo.getMsgId().split("\\|")[0].trim();
-				log.info("Tenant resolved from msgId: {}", tenant);
+			if (requestInfo != null && StringUtils.isNotBlank(requestInfo.getMsgId())) {
+				String rawMsgId = requestInfo.getMsgId().trim();
+				String potentialTenant = rawMsgId.contains("|") ? rawMsgId.split("\\|")[0].trim() : rawMsgId;
+				if (potentialTenant.startsWith("pb.") || potentialTenant.contains(".")) {
+					tenant = potentialTenant;
+					log.info("Tenant resolved from msgId: {}", tenant);
+				}
 			}
 		}
 

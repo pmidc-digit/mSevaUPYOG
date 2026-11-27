@@ -17,6 +17,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.tracer.model.CustomException;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.wscalculation.config.WSCalculationConfiguration;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.producer.WSCalculationProducer;
@@ -128,9 +129,12 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				}
 			}
 			connectionRequest = request.getIsDisconnectionRequest();
-			masterMap = masterDataService.loadMasterData(request.getRequestInfo(),
+//			masterMap = masterDataService.loadMasterData(request.getRequestInfo(),
+//					request.getCalculationCriteria().get(0).getTenantId());
+//			calculations = getCalculations(request, masterMap);
+			masterMap = masterDataService.loadExemptionMaster(request.getRequestInfo(),
 					request.getCalculationCriteria().get(0).getTenantId());
-			calculations = getCalculations(request, masterMap);
+			calculations = getFeeCalculation(request, masterMap);
 		} else if (request.getIsconnectionCalculation()) {
 			connectionRequest = request.getIsconnectionCalculation();
 			masterMap = masterDataService.loadMasterData(request.getRequestInfo(),
@@ -391,23 +395,20 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		    .sorted(Comparator.comparing(MeterReading::getLastReadingDate).reversed())
 		    .findFirst()
 		    .orElse(null);
-		    
+
 		    BigDecimal breakdownCharge = BigDecimal.ZERO;
 		    if (previousReading != null
 		            && MeterReading.MeterStatusEnum.BREAKDOWN
 		                    .equals(previousReading.getMeterStatus())) {
 
 		        // 🔥 Consecutive BREAKDOWN → penalty
-		    	breakdownCharge  = getChargeFromDemand(previousReading, criteria, requestInfo);
-		        penalty = breakdownCharge .multiply(BigDecimal.valueOf(2))
+		        breakdownCharge = getChargeFromDemand(previousReading, criteria, requestInfo);
+		        penalty = breakdownCharge.multiply(BigDecimal.valueOf(2))
 		                .setScale(2, RoundingMode.HALF_UP);
-
-//		        log.info("Consecutive BREAKDOWN | prevFrom={} charge={} penalty={}",
-//		                previousReading.getLastReadingDate(), waterCharge, penalty);
 
 		    } else {
 		        // ✅ First BREAKDOWN
-		    	breakdownCharge  = getAverageFromLastThreeDemands(criteria, requestInfo);
+		        breakdownCharge = getAverageFromLastThreeDemands(criteria, requestInfo);
 		        penalty = BigDecimal.ZERO;
 
 		        log.info("First BREAKDOWN | avgCharge={}", breakdownCharge);
@@ -422,7 +423,8 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		        }
 		    } else {
 		        log.info("BREAKDOWN average was 0 or not found; using estimation charge = {}", waterCharge);
-		    }		
+		    }
+		
 
 				    // Add WS_CHARGE estimate
 				    estimates.removeIf(e -> TaxHeadCategory.CHARGES.equals(e.getCategory()));
@@ -701,15 +703,40 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	/**
 	 * Generate Demand Based on Time (Monthly, Quarterly, Yearly)
 	 */
-	public void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkBillCriteria bulkBillCriteria) {
+	public void generateDemandBasedOnTimePeriod(RequestInfo requestInfo, BulkDemandCriteria bulkDemandCriteria) {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		LocalDateTime date = LocalDateTime.now();
 		log.info("Time schedule start for water demand generation on : " + date.format(dateTimeFormatter));
 //		List<String> tenantIds = wSCalculationDao.getTenantId();
 		List<String> tenantIds = new ArrayList<>();
-		String tenat = requestInfo.getMsgId();
+        List<String> localities = new ArrayList<>();
+		String tenant = null;
+		String locality = null;
 
-		if (!tenat.contains("pb")) {
+		// ── Step 1: Check BulkDemandCriteria first (explicit request payload) ──
+		if (bulkDemandCriteria != null) {
+			if (StringUtils.isNotBlank(bulkDemandCriteria.getTenantId())) {
+				tenant = bulkDemandCriteria.getTenantId().trim();
+				log.info("Tenant resolved from BulkDemandCriteria: {}", tenant);
+			}
+			locality = bulkDemandCriteria.getLocality();
+		}
+
+		// ── Step 2: If no tenantId in criteria, check msgId (e.g. "pb.amritsar" or "pb.amritsar|en_IN") ──
+		if (StringUtils.isBlank(tenant)) {
+			if (requestInfo != null && StringUtils.isNotBlank(requestInfo.getMsgId())) {
+				String rawMsgId = requestInfo.getMsgId().trim();
+				String potentialTenant = rawMsgId.contains("|") ? rawMsgId.split("\\|")[0].trim() : rawMsgId;
+				if (potentialTenant.startsWith("pb.") || potentialTenant.contains(".")) {
+					tenant = potentialTenant;
+					log.info("Tenant resolved from msgId: {}", tenant);
+				}
+			}
+		}
+
+		// ── Step 3: If still no valid child tenant, fall back to MDMS (all tenants) ──
+		boolean isValidChildTenant = StringUtils.isNotBlank(tenant) && tenant.contains(".");
+		if (!isValidChildTenant) {
 			MdmsCriteriaReq mdmsCriteriaReq = calculatorUtil.gettenants(requestInfo);
 			StringBuilder url = calculatorUtil.getMdmsSearchUrl();
 			Object res = repository.fetchResult(url, mdmsCriteriaReq);
@@ -723,25 +750,31 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 				Object mdmsResObj = resMap.get("MdmsRes");
 				Map<String, Object> mdmsRes = (Map<String, Object>) mdmsResObj;
 				Object tenantObj = mdmsRes.get("tenant");
-				Map<String, Object> tenant = (Map<String, Object>) tenantObj;
-				Object waterSewerageObj = tenant.get("waterSewerage");
+				Map<String, Object> tenantMap = (Map<String, Object>) tenantObj;
+				Object waterSewerageObj = tenantMap.get("waterSewerage");
 				List<Object> waterSewerageList = (List<Object>) waterSewerageObj;
 				for (Object obj : waterSewerageList) {
 					if (obj instanceof Map) {
 						Map<String, Object> waterSewerageMap = (Map<String, Object>) obj;
 						Object codeObj = waterSewerageMap.get("code");
+                        Object localitiesObj = waterSewerageMap.get("localities");
 						if (codeObj != null) {
 							String code = codeObj.toString();
 							tenantIds.add(code);
 						}
+                        if (localitiesObj != null ) {
+                            String local = localitiesObj.toString();
+                            localities.add(local);
+                        }
 					}
 				}
-
 			}
 
 		} else {
-			tenantIds.add(tenat);
-
+			tenantIds.add(tenant);
+			if (StringUtils.isNotBlank(locality)) {
+				localities.add(locality);
+			}
 		}
 		if (tenantIds.isEmpty()) {
 			log.info("No tenants are found for generating demand");
@@ -750,9 +783,13 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		log.info("Tenant Ids : " + tenantIds.toString());
 		tenantIds.forEach(tenantId -> {
 			try {
-
-				demandService.generateDemandForTenantId(tenantId, requestInfo);
-
+                if(!localities.isEmpty()){
+                    localities.forEach(localty -> {
+                        demandService.generateDemandForTenantId(tenantId, localty, requestInfo);
+                    });
+                }else {
+                    demandService.generateDemandForTenantId(tenantId,null, requestInfo);
+                }
 			} catch (Exception e) {
 				log.error("Exception occured while generating demand for tenant: " + tenantId);
 				e.printStackTrace();
@@ -853,8 +890,7 @@ So, both lists are now filtered to include only records with INITIATED status, w
 						: requestInfo.getUserInfo().getTenantId());
 				RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 				
-				if ("pb.patiala".equalsIgnoreCase(billSchedular.getTenantId()) &&
-					    billSchedular.getGrup() != null && !billSchedular.getGrup().isEmpty()) {
+				if (billSchedular.getGrup() != null && !billSchedular.getGrup().isEmpty()) {
 					    
 					    connectionNos = wSCalculationDao.getConnectionsNoByGroups(
 					        billSchedular.getTenantId(),

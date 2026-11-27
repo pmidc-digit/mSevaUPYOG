@@ -1,5 +1,6 @@
 package org.egov.wscalculation.web.models;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.egov.common.contract.request.RequestInfo;
@@ -21,6 +22,7 @@ public class BulkDemandReq {
     private RequestInfo requestInfo;
 
     @JsonProperty("BulkDemandCriteria")
+    @JsonAlias({"bulkDemandCriteria", "BulkDemandCriteria"})
     private BulkDemandCriteria bulkDemandCriteria;
 
 }

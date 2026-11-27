@@ -38,7 +38,7 @@ public class NDCRepository {
 
 	public Set<String> getExistingUuids(String tableName, List<String> uuids) {
 		String sql = queryBuilder.getExistingUuids(tableName, uuids);
-		return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("uuid")).stream().collect(Collectors.toSet());
+		return jdbcTemplate.query(sql, uuids.toArray(), (rs, rowNum) -> rs.getString("uuid")).stream().collect(Collectors.toSet());
 	}
 
 	public boolean checkApplicationExists(String uuid) {

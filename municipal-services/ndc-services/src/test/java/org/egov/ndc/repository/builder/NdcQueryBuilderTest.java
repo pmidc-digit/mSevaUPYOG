@@ -86,7 +86,7 @@ class NdcQueryBuilderTest {
         List<String> uuids = Arrays.asList("uuid-1", "uuid-2");
         String query = queryBuilder.getExistingUuids("eg_ndc_application", uuids);
 
-        assertEquals("SELECT uuid FROM eg_ndc_application WHERE uuid IN ('uuid-1','uuid-2')", query);
+        assertEquals("SELECT uuid FROM eg_ndc_application WHERE uuid IN (?,?)", query);
     }
 
     @Test

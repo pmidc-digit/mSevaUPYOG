@@ -40,6 +40,8 @@
 
 package org.egov.commons.repository.builder;
 
+import org.egov.commons.util.SortValidator;
+
 import java.util.List;
 
 import org.egov.commons.config.ApplicationProperties;
@@ -109,7 +111,7 @@ public class UOMCategoryQueryBuilder {
 	private void addOrderByClause(StringBuilder selectQuery, UOMCategoryGetRequest uomCategoryGetRequest) {
 		String sortBy = (uomCategoryGetRequest.getSortBy() == null ? "name" : uomCategoryGetRequest.getSortBy());
 		String sortOrder = (uomCategoryGetRequest.getSortOrder() == null ? "ASC" : uomCategoryGetRequest.getSortOrder());
-		selectQuery.append(" ORDER BY " + sortBy + " " + sortOrder);
+		selectQuery.append(" ORDER BY " + SortValidator.column(sortBy) + " " + SortValidator.order(sortOrder));
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

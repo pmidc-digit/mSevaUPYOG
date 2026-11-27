@@ -49,7 +49,7 @@ class RemittanceServiceTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");

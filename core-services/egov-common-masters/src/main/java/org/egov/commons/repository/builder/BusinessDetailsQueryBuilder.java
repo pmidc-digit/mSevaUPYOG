@@ -1,5 +1,7 @@
 package org.egov.commons.repository.builder;
 
+import org.egov.commons.util.SortValidator;
+
 import java.util.List;
 
 import org.egov.commons.model.BusinessDetailsCriteria;
@@ -127,14 +129,14 @@ public class BusinessDetailsQueryBuilder {
 
 		if (criteria.getBusinessDetailsCodes() != null && !criteria.getBusinessDetailsCodes().isEmpty()) {
 			isAppendAndClause = addAndClauseIfRequired(isAppendAndClause, selectQuery);
-			selectQuery.append(" bd.code IN " + getCodeQuery(criteria.getBusinessDetailsCodes()));
+			selectQuery.append(" bd.code IN " + getCodeQuery(criteria.getBusinessDetailsCodes(), preparedStatementValues));
 		}
 	}
 
 	private void addOrderByClause(StringBuilder selectQuery, BusinessDetailsCriteria criteria) {
 		String sortBy = (criteria.getSortBy() == null ? "bd.name" : "bd." + criteria.getSortBy());
 		String sortOrder = (criteria.getSortOrder() == null ? "ASC" : criteria.getSortOrder());
-		selectQuery.append(" ORDER BY " + sortBy + " " + sortOrder);
+		selectQuery.append(" ORDER BY " + SortValidator.column(sortBy) + " " + SortValidator.order(sortOrder));
 	}
 
 	private boolean addAndClauseIfRequired(boolean appendAndClauseFlag, StringBuilder queryString) {
@@ -154,13 +156,12 @@ public class BusinessDetailsQueryBuilder {
 		return query.append(")").toString();
 	}
 
-    private static String getCodeQuery(List<String> codeList) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static String getCodeQuery(List<String> codeList, List preparedStatementValues) {
         StringBuilder query = new StringBuilder("(");
-        if (codeList.size() >= 1) {
-            query.append("'" + codeList.get(0).toString() + "'");
-            for (int i = 1; i < codeList.size(); i++) {
-                query.append("," + "'"  + codeList.get(i) + "'" );
-            }
+        for (int i = 0; i < codeList.size(); i++) {
+            query.append(i == 0 ? "?" : ",?");
+            preparedStatementValues.add(codeList.get(i));
         }
         return query.append(")").toString();
     }

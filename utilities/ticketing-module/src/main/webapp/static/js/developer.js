@@ -1,3 +1,13 @@
+// Escape server-supplied text before it is placed into HTML built by string concatenation
+function escHtml(val) {
+	return String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+// Allow only http(s) or relative links in href/src attributes
+function safeUrl(val) {
+	var url = String(val).trim();
+	if (/^[a-z][a-z0-9+.-]*:/i.test(url) && !/^https?:/i.test(url)) { return '#'; }
+	return escHtml(url);
+}
 /**
  * 
  */
@@ -282,20 +292,20 @@ function viewAssignedTicket(tktId, userId, tyId, tyVal, userType, location, oper
         	var obj = JSON.parse(data);
         	var ext = null;
         	htm1 = htm1+"<table class='det' >" +
-			"<tr><td>PROJECT</td><td class='dtd'>"+obj.project+"</td></tr>" +
-			"<tr><td>TICKET-NO</td><td class='dtd'>TKT-"+obj.tktId+"</td></tr>" +
-			"<tr><td>ISSUE CATEGORY</td><td class='dtd'>"+obj.issueCategoryName+"</td></tr>" +
-			"<tr><td>ISSUE TYPE</td><td class='dtd'>"+obj.tktType+"</td></tr>" +
-			"<tr><td>SUMMARY</td><td class='dtd'>"+obj.tktSummary+"</td></tr>" +
-			"<tr><td>RAISED BY</td><td class='dtd'>"+obj.raiserName +"</td></tr>" +
-			"<tr><td>ENVIRONMENT</td><td class='dtd'>"+obj.environment+"</td></tr>" +
-			"<tr><td>ULB NAME</td><td class='dtd'>"+obj.ulbName +"</td></tr>" +
-			"<tr><td>ASSIGNED DATE</td><td class='dtd'>"+obj.raisedDate+"</td></tr>";
+			"<tr><td>PROJECT</td><td class='dtd'>"+escHtml(obj.project)+"</td></tr>" +
+			"<tr><td>TICKET-NO</td><td class='dtd'>TKT-"+escHtml(obj.tktId)+"</td></tr>" +
+			"<tr><td>ISSUE CATEGORY</td><td class='dtd'>"+escHtml(obj.issueCategoryName)+"</td></tr>" +
+			"<tr><td>ISSUE TYPE</td><td class='dtd'>"+escHtml(obj.tktType)+"</td></tr>" +
+			"<tr><td>SUMMARY</td><td class='dtd'>"+escHtml(obj.tktSummary)+"</td></tr>" +
+			"<tr><td>RAISED BY</td><td class='dtd'>"+escHtml(obj.raiserName)+"</td></tr>" +
+			"<tr><td>ENVIRONMENT</td><td class='dtd'>"+escHtml(obj.environment)+"</td></tr>" +
+			"<tr><td>ULB NAME</td><td class='dtd'>"+escHtml(obj.ulbName)+"</td></tr>" +
+			"<tr><td>ASSIGNED DATE</td><td class='dtd'>"+escHtml(obj.raisedDate)+"</td></tr>";
         	 if(obj.tktTypeId==5){
-        		 htm1 = htm1+ "<tr><td>RESOLVED DATE</td><td class='dtd'>"+obj.updatedDate+"</td></tr>";
+        		 htm1 = htm1+ "<tr><td>RESOLVED DATE</td><td class='dtd'>"+escHtml(obj.updatedDate)+"</td></tr>";
         		 $('#updateDiv').hide();
         	 }
-					 htm1 = htm1+"<tr><td>FEEDBACK</td><td class='dtd'>"+obj.issueFeedbackName+"</td></tr>";
+					 htm1 = htm1+"<tr><td>FEEDBACK</td><td class='dtd'>"+escHtml(obj.issueFeedbackName)+"</td></tr>";
 					
         	if(obj.attachment==null || obj.attachment=="null")
     		{
@@ -310,17 +320,17 @@ function viewAssignedTicket(tktId, userId, tyId, tyVal, userType, location, oper
     		if(ext=="jpg" || ext=="JPG" || ext=="png" || ext=="PNG")
 			{
 			
-			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
+			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+safeUrl(obj.imageUrl)+"' target='_blank'><img src='"+safeUrl(obj.imageUrl)+"' alt='image' width='110px' height='120px'/></a></td> ";
     		
 			}
 		else
 			{
-			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
+			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+safeUrl(obj.imageUrl)+"' target='_blank'><img src='"+safeUrl(obj.imageUrl)+"' alt='image' width='110px' height='120px'/></a></td> ";
     		
 			}
 			});
     		}
-    	htm1 = htm1+"<tr><td>DISCRIPTION</td><td class='dtd'>"+obj.tktDescription+"</td></tr>" +
+    	htm1 = htm1+"<tr><td>DISCRIPTION</td><td class='dtd'>"+escHtml(obj.tktDescription)+"</td></tr>" +
     	"</table>";
     	
     	if(operation=='push')
@@ -388,7 +398,7 @@ $(document).ready(function(){
              	var obj = JSON.parse(data);
              //	console.log(data);
                  $.each(obj, function(index,item) {        
-htm = htm +' <option value='+item.id+'>'+item.feedback+'</option>';
+htm = htm +' <option value='+escHtml(item.id)+'>'+escHtml(item.feedback)+'</option>';
                  });
                  htm = htm+'</select></div>';
                  $('#tkt-issue-type').html(htm);  
@@ -420,7 +430,7 @@ htm = htm +' <option value='+item.id+'>'+item.feedback+'</option>';
 	             	var obj = JSON.parse(data);
 	             	//console.log(data);
 	                 $.each(obj, function(index,item) {        
-	htm = htm +' <option value='+item.id+'>'+item.issue_category+'</option>';
+	htm = htm +' <option value='+escHtml(item.id)+'>'+escHtml(item.issue_category)+'</option>';
 	                 });
 	                 htm = htm+'</select></div>';
 	                 $('#issueCategoryId').html(htm);  
@@ -455,20 +465,20 @@ function viewRaisdTicket(tktId, userId, tyId, tyVal, userType, location)
         	var htm1 = '';
         	var ext = null;
         	htm1 = htm1+"<table class='det' >" +
-        	"<tr><td>PROJECT</td><td class='dtd'>"+obj.project+"</td></tr>" +
-        	"<tr><td>TKET-NO</td><td class='dtd'>TKT-"+obj.tktId+"</td></tr>" +
-			"<tr><td>ISSUE CATEGORY</td><td class='dtd'>"+obj.issueCategoryName+"</td></tr>" +
-			"<tr><td>ISSUE TYPE</td><td class='dtd'>"+obj.tktType+"</td></tr>" +
-			"<tr><td>SUMMARY</td><td class='dtd'>"+obj.tktSummary+"</td></tr>" +
-			"<tr><td>ENVIRONMENT</td><td class='dtd'>"+obj.environment+"</td></tr>" +
-			"<tr><td>ULB NAME</td><td class='dtd'>"+obj.ulbName +"</td></tr>" +
-			"<tr><td>ASSIGNED DATE</td><td class='dtd'>"+obj.raisedDate+"</td></tr>" +
-			"<tr><td>RESOLVED DATE</td><td class='dtd'>"+obj.updatedDate+"</td></tr>"+
-			"<tr><td>FEEDBACK</td><td class='dtd'>"+obj.issueFeedbackName+"</td></tr>";
+        	"<tr><td>PROJECT</td><td class='dtd'>"+escHtml(obj.project)+"</td></tr>" +
+        	"<tr><td>TKET-NO</td><td class='dtd'>TKT-"+escHtml(obj.tktId)+"</td></tr>" +
+			"<tr><td>ISSUE CATEGORY</td><td class='dtd'>"+escHtml(obj.issueCategoryName)+"</td></tr>" +
+			"<tr><td>ISSUE TYPE</td><td class='dtd'>"+escHtml(obj.tktType)+"</td></tr>" +
+			"<tr><td>SUMMARY</td><td class='dtd'>"+escHtml(obj.tktSummary)+"</td></tr>" +
+			"<tr><td>ENVIRONMENT</td><td class='dtd'>"+escHtml(obj.environment)+"</td></tr>" +
+			"<tr><td>ULB NAME</td><td class='dtd'>"+escHtml(obj.ulbName)+"</td></tr>" +
+			"<tr><td>ASSIGNED DATE</td><td class='dtd'>"+escHtml(obj.raisedDate)+"</td></tr>" +
+			"<tr><td>RESOLVED DATE</td><td class='dtd'>"+escHtml(obj.updatedDate)+"</td></tr>"+
+			"<tr><td>FEEDBACK</td><td class='dtd'>"+escHtml(obj.issueFeedbackName)+"</td></tr>";
 	
         	if(obj.attachment==null)
         		{
-        		htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='#'><img src='"+BUCKET_URL+""+obj.attachment+"' alt='image' width='80px' height='90px'/></a></td> ";
+        		htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='#'><img src='"+BUCKET_URL+""+escHtml(obj.attachment)+"' alt='image' width='80px' height='90px'/></a></td> ";
         		}
         	else
         		{
@@ -479,18 +489,18 @@ function viewRaisdTicket(tktId, userId, tyId, tyVal, userType, location)
         		//ext = (obj.attachment).substr(((obj.attachment).lastIndexOf('.') + 1));
         		if(ext=="jpg" || ext=="JPG" || ext=="png" || ext=="PNG")
         			{
-        			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
+        			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+safeUrl(obj.imageUrl)+"' target='_blank'><img src='"+safeUrl(obj.imageUrl)+"' alt='image' width='110px' height='120px'/></a></td> ";
             		
         			}
         		else
         			{
-        			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
+        			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+safeUrl(obj.imageUrl)+"' target='_blank'><img src='"+safeUrl(obj.imageUrl)+"' alt='image' width='110px' height='120px'/></a></td> ";
             		
 							}
 						});
         		
         		}
-        	htm1 = htm1+"<tr><td>DISCRIPTION</td><td class='dtd'>"+obj.tktDescription+"</td></tr>" +
+        	htm1 = htm1+"<tr><td>DISCRIPTION</td><td class='dtd'>"+escHtml(obj.tktDescription)+"</td></tr>" +
         	"</table>";
         	
         	var type = '';
@@ -661,22 +671,22 @@ function getAllComments(tktId,userID)
         			  {
 									if(value.attachment==null || value.attachment=='null')
 									{
-        			  htm1 = htm1+"<li class='left'><h4><i class='fa fa-user avatar' aria-hidden='true'></i>"+value.userName+"</h4><div class='commentText'><pre class='chat'>"+value.commentDesc+"<br><span class='spdate'>"+(value.dateTime).slice(0, -2)+"</span></pre></div></li><div class='clear'></div>";
+        			  htm1 = htm1+"<li class='left'><h4><i class='fa fa-user avatar' aria-hidden='true'></i>"+escHtml(value.userName)+"</h4><div class='commentText'><pre class='chat'>"+escHtml(value.commentDesc)+"<br><span class='spdate'>"+escHtml((value.dateTime).slice(0, -2))+"</span></pre></div></li><div class='clear'></div>";
 									}
 								else
 								{
-									htm1 = htm1+"<li class='left'><h4><i class='fa fa-user avatar' aria-hidden='true'></i>"+value.userName+"</h4><div class='commentText'><pre class='chat'>"+value.commentDesc+"<br><span class='cmtattachment'><a href='"+value.imageUrl+"' target='_blank'>"+value.attachment+"</a></span><br><span class='spdate'>"+(value.dateTime).slice(0, -2)+"</span></pre></div></li><div class='clear'></div>";
+									htm1 = htm1+"<li class='left'><h4><i class='fa fa-user avatar' aria-hidden='true'></i>"+escHtml(value.userName)+"</h4><div class='commentText'><pre class='chat'>"+escHtml(value.commentDesc)+"<br><span class='cmtattachment'><a href='"+safeUrl(value.imageUrl)+"' target='_blank'>"+escHtml(value.attachment)+"</a></span><br><span class='spdate'>"+escHtml((value.dateTime).slice(0, -2))+"</span></pre></div></li><div class='clear'></div>";
 							}
 						}
         		  else
         			  {
 									if(value.attachment==null || value.attachment=='null')
 									{
-        			  htm1 = htm1+"<li class='right'><h4><i class='fa fa-user-plus' aria-hidden='true'></i>"+value.userName+"</h4><div class='commentText'><pre class='chat'>"+value.commentDesc+"<br><span class='spdate'>"+(value.dateTime).slice(0, -2)+"</span></pre></div></li><div class='clear'></div>";
+        			  htm1 = htm1+"<li class='right'><h4><i class='fa fa-user-plus' aria-hidden='true'></i>"+escHtml(value.userName)+"</h4><div class='commentText'><pre class='chat'>"+escHtml(value.commentDesc)+"<br><span class='spdate'>"+escHtml((value.dateTime).slice(0, -2))+"</span></pre></div></li><div class='clear'></div>";
 									}
 									else
 									{
-										htm1 = htm1+"<li class='right'><h4><i class='fa fa-user-plus' aria-hidden='true'></i>"+value.userName+"</h4><div class='commentText'><pre class='chat'>"+value.commentDesc+"<br><span class='cmtattachment'><a href='"+value.imageUrl+"' target='_blank'>"+value.attachment+"</a></span><br> <span class='spdate'>"+(value.dateTime).slice(0, -2)+"</span></pre></div></li><div class='clear'></div>";
+										htm1 = htm1+"<li class='right'><h4><i class='fa fa-user-plus' aria-hidden='true'></i>"+escHtml(value.userName)+"</h4><div class='commentText'><pre class='chat'>"+escHtml(value.commentDesc)+"<br><span class='cmtattachment'><a href='"+safeUrl(value.imageUrl)+"' target='_blank'>"+escHtml(value.attachment)+"</a></span><br> <span class='spdate'>"+escHtml((value.dateTime).slice(0, -2))+"</span></pre></div></li><div class='clear'></div>";
 									}
 							}
         		});
@@ -853,25 +863,25 @@ function searchAllTkt() {
 	        	else
 	        		{
 	        	htm1 = htm1+"<table class='det' >" +
-				"<tr><td>PROJECT</td><td class='dtd'>"+obj.project+"</td></tr>" +
-				"<tr><td>TICKET-NO</td><td class='dtd'>TKT-"+obj.tktId+"</td></tr>" +
-				"<tr><td>ISSUE CATEGORY</td><td class='dtd'>"+obj.issueCategoryName+"</td></tr>" +
-				"<tr><td>STATUS</td><td class='dtd'>"+obj.tktType+"</td></tr>" +
-				"<tr><td>SUMMARY</td><td class='dtd'>"+obj.tktSummary+"</td></tr>" +
-				"<tr><td>RAISED BY</td><td class='dtd'>"+obj.raiserName +"</td></tr>" +
-				"<tr><td>ASSIGNED TO</td><td class='dtd'>"+(obj.assignedToId==0 ? "COMMON POOL" : obj.assigneeName)+"</td></tr>" +
-				"<tr><td>ENVIRONMENT</td><td class='dtd'>"+obj.environment+"</td></tr>" +
-				"<tr><td>ULB NAME</td><td class='dtd'>"+obj.ulbName +"</td></tr>" +
-				"<tr><td>LAST UPDATE</td><td class='dtd'>"+obj.updatedDate +"</td></tr>" +
-				"<tr><td>ASSIGNED DATE</td><td class='dtd'>"+obj.raisedDate+"</td></tr>";
+				"<tr><td>PROJECT</td><td class='dtd'>"+escHtml(obj.project)+"</td></tr>" +
+				"<tr><td>TICKET-NO</td><td class='dtd'>TKT-"+escHtml(obj.tktId)+"</td></tr>" +
+				"<tr><td>ISSUE CATEGORY</td><td class='dtd'>"+escHtml(obj.issueCategoryName)+"</td></tr>" +
+				"<tr><td>STATUS</td><td class='dtd'>"+escHtml(obj.tktType)+"</td></tr>" +
+				"<tr><td>SUMMARY</td><td class='dtd'>"+escHtml(obj.tktSummary)+"</td></tr>" +
+				"<tr><td>RAISED BY</td><td class='dtd'>"+escHtml(obj.raiserName)+"</td></tr>" +
+				"<tr><td>ASSIGNED TO</td><td class='dtd'>"+(obj.assignedToId==0 ? "COMMON POOL" : escHtml(obj.assigneeName))+"</td></tr>" +
+				"<tr><td>ENVIRONMENT</td><td class='dtd'>"+escHtml(obj.environment)+"</td></tr>" +
+				"<tr><td>ULB NAME</td><td class='dtd'>"+escHtml(obj.ulbName)+"</td></tr>" +
+				"<tr><td>LAST UPDATE</td><td class='dtd'>"+escHtml(obj.updatedDate)+"</td></tr>" +
+				"<tr><td>ASSIGNED DATE</td><td class='dtd'>"+escHtml(obj.raisedDate)+"</td></tr>";
 	        	 if(obj.tktTypeId==5){
-	        		 htm1 = htm1+ "<tr><td>RESOLVED DATE</td><td class='dtd'>"+obj.updatedDate+"</td></tr>";
+	        		 htm1 = htm1+ "<tr><td>RESOLVED DATE</td><td class='dtd'>"+escHtml(obj.updatedDate)+"</td></tr>";
 	        		 $('#updateDiv').hide();
 	        	 }
-	        	 htm1 = htm1+"<tr><td>FEEDBACK</td><td class='dtd'>"+obj.issueFeedbackName+"</td></tr>";
+	        	 htm1 = htm1+"<tr><td>FEEDBACK</td><td class='dtd'>"+escHtml(obj.issueFeedbackName)+"</td></tr>";
 	        	 if(obj.attachment==null)
 	    		{
-	    		htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='#'><img src='"+BUCKET_URL+""+obj.attachment+"' alt='image' width='80px' height='90px'/></a></td> ";
+	    		htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='#'><img src='"+BUCKET_URL+""+escHtml(obj.attachment)+"' alt='image' width='80px' height='90px'/></a></td> ";
 	    		}
 	    	else
 	    		{
@@ -879,16 +889,16 @@ function searchAllTkt() {
 	    		ext = (obj.attachment).substr(((obj.attachment).lastIndexOf('.') + 1));
 	    		if(ext=="jpg" || ext=="JPG" || ext=="png" || ext=="PNG")
     			{
-    			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
+    			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+safeUrl(obj.imageUrl)+"' target='_blank'><img src='"+safeUrl(obj.imageUrl)+"' alt='image' width='110px' height='120px'/></a></td> ";
         		
     			}
     		else
     			{
-    			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+obj.imageUrl+"' target='_blank'><img src='"+obj.imageUrl+"' alt='image' width='110px' height='120px'/></a></td> ";
+    			htm1 = htm1+"<tr><td>IMAGES</td><td class='dtd'><a href='"+safeUrl(obj.imageUrl)+"' target='_blank'><img src='"+safeUrl(obj.imageUrl)+"' alt='image' width='110px' height='120px'/></a></td> ";
         		
     			}
 	    		}
-	    	htm1 = htm1+"<tr><td>DISCRIPTION</td><td class='dtd'>"+obj.tktDescription+"</td></tr></table>";
+	    	htm1 = htm1+"<tr><td>DISCRIPTION</td><td class='dtd'>"+escHtml(obj.tktDescription)+"</td></tr></table>";
 	        		}
 	        $('.alldetail-div').html(htm1);
 	        $('#searchModal').modal('toggle');
@@ -916,7 +926,7 @@ function getAllTowns() {
 	        	 var data = JSON.stringify(responce);
 	             	var obj = JSON.parse(data);
 	                 $.each(obj, function(index,item) {        
-	htm = htm +' <option value='+item.town_id+'>'+item.town_name+'</option>';
+	htm = htm +' <option value='+escHtml(item.town_id)+'>'+escHtml(item.town_name)+'</option>';
 	                 });
 	                 htm = htm;
 	                 $('#select_twn').html(htm);  

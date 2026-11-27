@@ -40,6 +40,8 @@
 
 package org.egov.commons.repository.builder;
 
+import org.egov.commons.util.SortValidator;
+
 import org.egov.commons.config.ApplicationProperties;
 import org.egov.commons.web.contract.HolidayGetRequest;
 import org.slf4j.Logger;
@@ -171,7 +173,7 @@ public class HolidayQueryBuilder {
         String sortBy = (holidayGetRequest.getSortBy() == null ? "h.calendarYear"
                 : "h." + holidayGetRequest.getSortBy());
         String sortOrder = (holidayGetRequest.getSortOrder() == null ? "DESC" : holidayGetRequest.getSortOrder());
-        selectQuery.append(" ORDER BY " + sortBy + " " + sortOrder);
+        selectQuery.append(" ORDER BY " + SortValidator.column(sortBy) + " " + SortValidator.order(sortOrder));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

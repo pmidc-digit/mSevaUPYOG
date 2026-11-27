@@ -104,7 +104,7 @@ public class VehicleTripRepository {
 		List<String> ids = null;
 		String query = queryBuilder.getTripIdFromReferenceNosQuery(refernceNos);
 		try {
-			ids = jdbcTemplate.queryForList(query, String.class);
+			ids = jdbcTemplate.queryForList(query, refernceNos.toArray(), String.class);
 		} catch (Exception e) {
 			throw new CustomException("INVALID_TRIP_FROM_REFERENCES", "INVALID_TRIP_FROM_REFERENCES");
 		}

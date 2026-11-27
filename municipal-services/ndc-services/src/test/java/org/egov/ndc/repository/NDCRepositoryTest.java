@@ -54,7 +54,7 @@ class NDCRepositoryTest {
         when(queryBuilder.getExistingUuids(tableName, inputUuids)).thenReturn(sql);
 
         // simulate two rows with uuid column
-        when(jdbcTemplate.query(eq(sql), any(RowMapper.class)))
+        when(jdbcTemplate.query(eq(sql), any(Object[].class), any(RowMapper.class)))
                 .thenReturn(Arrays.asList("u1", "u2"));
 
         Set<String> result = ndcRepository.getExistingUuids(tableName, inputUuids);
@@ -63,7 +63,7 @@ class NDCRepositoryTest {
         assertTrue(result.contains("u1"));
         assertTrue(result.contains("u2"));
         verify(queryBuilder).getExistingUuids(tableName, inputUuids);
-        verify(jdbcTemplate).query(eq(sql), any(RowMapper.class));
+        verify(jdbcTemplate).query(eq(sql), any(Object[].class), any(RowMapper.class));
     }
 
     @Test

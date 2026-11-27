@@ -140,12 +140,12 @@ public class TicketController {
 				else {notificationImagePath="<span class='notifi'>"+tkt.getReadStatus()+"</span>"; } 
 				sb.append("<tr>");
 				sb.append("<th scope=\"row\">TKT-" + tkt.getTktId() + "</th>\r\n" + "									<td>"
-						+ tkt.getProject() + "</td>\r\n" + "									<td>" + tkt.getUlbName()
-						+ "									<td>" + tkt.getIssueCategoryName() + "</td>\r\n"
-						+ "									<td>" + tkt.getRaisedDate() + "</td>\r\n"
-						+ "									<td>" + tkt.getIssueFeedbackName() + "</td>\r\n"
+						+ esc(tkt.getProject()) + "</td>\r\n" + "									<td>" + esc(tkt.getUlbName())
+						+ "									<td>" + esc(tkt.getIssueCategoryName()) + "</td>\r\n"
+						+ "									<td>" + esc(tkt.getRaisedDate()) + "</td>\r\n"
+						+ "									<td>" + esc(tkt.getIssueFeedbackName()) + "</td>\r\n"
 						+ "									<td><span class='btn btn-compose' onclick=viewRaisdTicket("
-						+  tkt.getTktId() +","+userId+","+tkt.getTktTypeId()+",'"+tkt.getTktType()+"',"+userType+",'assign')><i class='fa fa-eye parent'> </i>"+notificationImagePath+"</span></span></td>");
+						+  tkt.getTktId() +","+userId+","+tkt.getTktTypeId()+",'"+jsArg(tkt.getTktType())+"',"+userType+",'assign')><i class='fa fa-eye parent'> </i>"+notificationImagePath+"</span></span></td>");
 				sb.append("</tr>");
 			}
 			sb.append("</tbody></table></div></section>");
@@ -193,13 +193,13 @@ public class TicketController {
 				else {notificationImagePath="<span class='notifi'>"+tkt.getReadStatus()+"</span>"; } 
 				sb.append("<tr>");
 				sb.append("<th scope=\"row\">TKT-" + tkt.getTktId() + "</th>\r\n" + "									<td>"
-						+ tkt.getProject() + "</td>\r\n" + "									<td>" + tkt.getUlbName()
-						+ "</td>\r\n" + "									<td>" + tkt.getRaiserName() + "</td>\r\n"
-						+ "									<td>" + tkt.getIssueCategoryName() + "</td>\r\n"
-						+ "									<td>" + tkt.getRaisedDate() + "</td>\r\n"
-						+ "									<td>" + tkt.getUpdatedDate() + "</td>\r\n"
+						+ esc(tkt.getProject()) + "</td>\r\n" + "									<td>" + esc(tkt.getUlbName())
+						+ "</td>\r\n" + "									<td>" + esc(tkt.getRaiserName()) + "</td>\r\n"
+						+ "									<td>" + esc(tkt.getIssueCategoryName()) + "</td>\r\n"
+						+ "									<td>" + esc(tkt.getRaisedDate()) + "</td>\r\n"
+						+ "									<td>" + esc(tkt.getUpdatedDate()) + "</td>\r\n"
 						+"									<td><span class='btn btn-compose' onclick=viewAssignedTicket("
-						+ tkt.getTktId() + ","+userId+","+tkt.getTktTypeId()+",'"+tkt.getTktType()+"',"+userType+",'assign','push')><i class='fa fa-eye parent'> </i>"+notificationImagePath+"</span></td>");
+						+ tkt.getTktId() + ","+userId+","+tkt.getTktTypeId()+",'"+jsArg(tkt.getTktType())+"',"+userType+",'assign','push')><i class='fa fa-eye parent'> </i>"+notificationImagePath+"</span></td>");
 				sb.append("</tr>");
 			}
 			sb.append("</tbody></table></div></section>");
@@ -381,13 +381,13 @@ public class TicketController {
 			for (Ticket tkt : lists) {
 				sb.append("<tr>");
 				sb.append("<th scope=\"row\">TKT-" + tkt.getTktId() + "</th>\r\n" + "									<td>"
-						+ tkt.getProject() + "</td>\r\n" + "									<td>" + tkt.getUlbName()
-						+ "</td>\r\n" + "									<td>" + tkt.getRaiserName() + "</td>\r\n"
-						+ "									<td>" + tkt.getIssueCategoryName() + "</td>\r\n"
-						+ "									<td>" + tkt.getRaisedDate() + "</td>\r\n"
-						+ "									<td>" + tkt.getUpdatedDate() + "</td>\r\n"
+						+ esc(tkt.getProject()) + "</td>\r\n" + "									<td>" + esc(tkt.getUlbName())
+						+ "</td>\r\n" + "									<td>" + esc(tkt.getRaiserName()) + "</td>\r\n"
+						+ "									<td>" + esc(tkt.getIssueCategoryName()) + "</td>\r\n"
+						+ "									<td>" + esc(tkt.getRaisedDate()) + "</td>\r\n"
+						+ "									<td>" + esc(tkt.getUpdatedDate()) + "</td>\r\n"
 						+ "									<td><span class='btn btn-compose' onclick=viewAssignedTicket("
-						+ tkt.getTktId() + ","+userId+","+tkt.getTktTypeId()+",'"+tkt.getTktType()+"',"+userType+",'assign','pop')><i class='fa fa-eye'> </i></span></td>");
+						+ tkt.getTktId() + ","+userId+","+tkt.getTktTypeId()+",'"+jsArg(tkt.getTktType())+"',"+userType+",'assign','pop')><i class='fa fa-eye'> </i></span></td>");
 				sb.append("</tr>");
 			}
 			sb.append("</tbody></table></div></section>");
@@ -418,4 +418,13 @@ public class TicketController {
 	}
 	
 	
+	// Escape values before they are concatenated into HTML returned to the browser
+	private static String esc(Object value) {
+		return org.springframework.web.util.HtmlUtils.htmlEscape(String.valueOf(value));
+	}
+
+	// Value is placed inside an inline onclick handler, so keep only characters that cannot break out of it
+	private static String jsArg(Object value) {
+		return String.valueOf(value).replaceAll("[^A-Za-z0-9_-]", "");
+	}
 }

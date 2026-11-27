@@ -9,6 +9,7 @@ import org.egov.pgr.contract.ParamValue;
 import org.egov.pgr.contract.ReportRequest;
 import org.egov.pgr.service.NotificationService;
 import org.egov.pgr.utils.ReportConstants;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -154,24 +155,26 @@ public class ReportQueryBuilder {
 	public String addWhereClause(String query, ReportRequest reportRequest) {
 		List<ParamValue> searchParams = reportRequest.getSearchParams();
 		StringBuilder queryBuilder = new StringBuilder();
+		// Values are concatenated into the query, so they are restricted to safe formats first
+		String tenantId = sanitizeTenantId(reportRequest.getTenantId());
 		if (reportRequest.getReportName().equalsIgnoreCase(ReportConstants.ULBEMPLOYEE_REPORT)) {
-			queryBuilder.append(" AND eg_pgr_service.tenantid = ").append("'" + reportRequest.getTenantId() + "'");
+			queryBuilder.append(" AND eg_pgr_service.tenantid = ").append("'" + tenantId + "'");
 		} else {
-			queryBuilder.append("WHERE eg_pgr_service.tenantid = ").append("'" + reportRequest.getTenantId() + "'");
+			queryBuilder.append("WHERE eg_pgr_service.tenantid = ").append("'" + tenantId + "'");
 		}
 		if (reportRequest.getReportName().equalsIgnoreCase(ReportConstants.AO_REPORT)) {
 			queryBuilder.append(" AND (by LIKE '%Grievance Routing Officer' OR by LIKE '%Employee') ");
-			query = query.replace("$subwhere", "WHERE tenantid = '" + reportRequest.getTenantId() + "'");
+			query = query.replace("$subwhere", "WHERE tenantid = '" + tenantId + "'");
 		}
 		if (!CollectionUtils.isEmpty(searchParams)) {
 			for (ParamValue param : searchParams) {
 				if (param.getName().equalsIgnoreCase("fromDate")) {
 					if (!StringUtils.isEmpty(param.getInput().toString())) {
-						queryBuilder.append(" AND createdtime >= ").append(param.getInput());
+						queryBuilder.append(" AND createdtime >= ").append(toEpoch(param.getName(), param.getInput()));
 					}
 				} else if (param.getName().equalsIgnoreCase("toDate")) {
 					if (!StringUtils.isEmpty(param.getInput().toString())) {
-						queryBuilder.append(" AND createdtime <= ").append(param.getInput());
+						queryBuilder.append(" AND createdtime <= ").append(toEpoch(param.getName(), param.getInput()));
 					}
 				}
 			}
@@ -179,6 +182,22 @@ public class ReportQueryBuilder {
 		queryBuilder.append(" AND eg_pgr_service.active = true");
 		query = query.replace("$where", queryBuilder.toString());
 		return query;
+	}
+
+	private String sanitizeTenantId(String tenantId) {
+		if (tenantId == null || !tenantId.matches("^[a-zA-Z0-9._-]{1,64}$"))
+			throw new CustomException("INVALID_TENANT_ID", "tenantId is missing or contains invalid characters");
+		return tenantId;
+	}
+
+	private long toEpoch(String name, Object input) {
+		if (input instanceof Number)
+			return ((Number) input).longValue();
+		try {
+			return Long.parseLong(input.toString().trim());
+		} catch (NumberFormatException e) {
+			throw new CustomException("INVALID_DATE", name + " must be a numeric epoch value");
+		}
 	}
 
 }

@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Floor;
 import org.egov.common.entity.edcr.Measurement;
+import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
@@ -49,6 +50,22 @@ public class Cinema extends FeatureProcess {
 				continue;
 			}
 
+			// Process the block only when at least one cinema is present
+			boolean hasCinema = block.getBuilding().getFloors().stream()
+					.anyMatch(floor -> floor.getCinemas() != null && !floor.getCinemas().isEmpty());
+
+			if (!hasCinema) {
+				continue;
+			}
+
+			OccupancyTypeHelper farHelper = block.getBuilding().getMostRestrictiveFarHelper();
+
+			if (farHelper == null || farHelper.getSubtype() == null) {
+				LOG.warn("Cinema rule skipped for block {}: {} is null", block.getNumber(),
+						farHelper == null ? "mostRestrictiveFarHelper" : "subtype");
+				continue;
+			}
+
 			ScrutinyDetail cinemaCountDetail = new ScrutinyDetail();
 		    cinemaCountDetail.setKey("Block_" + block.getNumber() + "_Cinemas - Number of Cinemas");
 
@@ -69,7 +86,7 @@ public class Cinema extends FeatureProcess {
 		    cinemaDetail.addColumnHeading(5, PROVIDED);
 		    cinemaDetail.addColumnHeading(6, STATUS);
 		    
-		    String subType = block.getBuilding().getMostRestrictiveFarHelper().getSubtype().getCode();
+		    String subType = farHelper.getSubtype().getCode();
 
 		    int minCinemaCount;
 		    int maxCinemaCount;

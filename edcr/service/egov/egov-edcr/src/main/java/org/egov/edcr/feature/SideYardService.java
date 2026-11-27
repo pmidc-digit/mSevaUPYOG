@@ -701,8 +701,11 @@ public class SideYardService extends GeneralRule {
 //					sideYard1Result.occupancyCode.equalsIgnoreCase("G-IT") ||
 //					sideYard1Result.occupancyCode.equalsIgnoreCase("G-F")					
 					)) {
-				permissableValueWithPercentage = sideYard1Result.expectedDistance.abs().stripTrailingZeros().toPlainString();
-			    providedValue = sideYard1Result.actualDistance.abs().stripTrailingZeros().toPlainString();
+//				permissableValueWithPercentage = sideYard1Result.expectedDistance.abs().stripTrailingZeros().toPlainString();
+//			    providedValue = sideYard1Result.actualDistance.abs().stripTrailingZeros().toPlainString();
+				permissableValueWithPercentage = formatSetback(sideYard1Result.expectedDistance);
+				providedValue = formatSetback(sideYard1Result.actualDistance);
+				
 			    details.put("OccCode", sideYard1Result.occupancyCode);
 			    details.put("isSetbackCombine", String.valueOf(sideYard1Result.isSetbackCombine));
 			}else if (sideYard1Result.setBackPercentage != null 
@@ -778,8 +781,10 @@ public class SideYardService extends GeneralRule {
 //    					sideYard2Result.occupancyCode.equalsIgnoreCase("G-IT") ||
 //    					sideYard2Result.occupancyCode.equalsIgnoreCase("G-F"))
     					)) {
-    				permissableValueWithPercentage = sideYard2Result.expectedDistance.toString();
-    			    providedValue = sideYard2Result.actualDistance.abs().stripTrailingZeros().toPlainString();
+//    				permissableValueWithPercentage = sideYard2Result.expectedDistance.toString();
+//    			    providedValue = sideYard2Result.actualDistance.abs().stripTrailingZeros().toPlainString();
+    				permissableValueWithPercentage = formatSetback(sideYard2Result.expectedDistance);
+    				providedValue = formatSetback(sideYard2Result.actualDistance);
     			    detailsSideYard2.put("OccCode", sideYard2Result.occupancyCode);
     			    detailsSideYard2.put("isSetbackCombine", String.valueOf(sideYard2Result.isSetbackCombine));
     			}else if (sideYard2Result.setBackPercentage != null 
@@ -2279,4 +2284,8 @@ public class SideYardService extends GeneralRule {
 	        return BigDecimal.valueOf(16);
 	}
     
+ 	private String formatSetback(BigDecimal value) {
+	    return value == null ? "" : value.abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+	}
+ 	
 }

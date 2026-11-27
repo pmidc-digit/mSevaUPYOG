@@ -10,6 +10,7 @@ import org.egov.swcalculation.web.models.CalculationCriteria;
 import org.egov.swcalculation.web.models.CalculationReq;
 import org.egov.swcalculation.producer.SWCalculationProducer;
 import org.egov.swcalculation.service.BulkDemandAndBillGenService;
+import org.egov.swcalculation.service.DemandSchedulerNotificationService;
 import org.egov.swcalculation.service.MasterDataService;
 import org.egov.swcalculation.service.SWCalculationServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,9 @@ public class DemandGenerationConsumer {
 	
 	@Autowired
 	private SWCalculationServiceImpl sWCalculationServiceImpl;
+
+	@Autowired
+	private DemandSchedulerNotificationService demandSchedulerNotificationService;
 	
 	@Value("${kafka.topics.bulk.bill.generation.audit}")
 	private String bulkBillGenAuditTopic;
@@ -188,6 +192,7 @@ public class DemandGenerationConsumer {
 			log.info("✅ Sewerage Demand generated successfully for: {}", connectionNoStrings);
 		} catch (Exception ex) {
 			log.error("❌ Sewerage Demand generation error: ", ex);
+			demandSchedulerNotificationService.recordBatchFailure(request, ex);
 			try {
 				if (request.getMigrationCount() != null) {
 					request.getMigrationCount().setMessage("Error: " + ex.getMessage());

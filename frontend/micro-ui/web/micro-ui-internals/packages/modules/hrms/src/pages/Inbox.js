@@ -6,15 +6,14 @@ import MobileInbox from "../components/inbox/MobileInbox";
 
 const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filterComponent, isInbox }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  // const { isLoading: isLoading, Errors, data: res } = Digit.Hooks.hrms.useHRMSCount(tenantId);
+  const { data: countRes } = Digit.Hooks.hrms.useHRMSCount(tenantId);
 
   const { t } = useTranslation();
   const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
   const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
   const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: false }]);
-  const [totalRecords, setTotalReacords] = useState(undefined);
   const [searchParams, setSearchParams] = useState(() => {
-    return initialStates.searchParams || {};
+    return { isActive: true, ...(initialStates.searchParams || {}) };
   });
 
   let isMobile = window.Digit.Utils.browser.isMobile();
@@ -99,6 +98,40 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
     ];
   };
 
+  // Hybrid total count:
+  // 1) When no extra filters (only optional isActive/tenantId) are active, use tenant-wide EmployeCount from useHRMSCount.
+  // 2) When extra filters are active (or count API hasn't returned), derive exact total if the current slice < pageSize;
+  //    otherwise leave totalRecords undefined so pagination can advance and display "<loaded>+" in the header badge.
+  const hasExtraFilters = Object.keys(searchParams || {}).some(
+    (key) => key !== "isActive" && key !== "tenantId" && searchParams[key] !== undefined && searchParams[key] !== "" && searchParams[key] !== null
+  );
+  const currentEmployees = data?.Employees;
+  let totalRecords;
+  let badgeCount;
+
+  if (!hasExtraFilters && countRes?.EmployeCount) {
+    const { totalEmployee, activeEmployee, inactiveEmployee } = countRes.EmployeCount;
+    if (searchParams?.isActive === false) {
+      totalRecords =
+        inactiveEmployee !== undefined
+          ? Number(inactiveEmployee)
+          : Math.max(0, Number(totalEmployee || 0) - Number(activeEmployee || 0));
+    } else if (searchParams?.isActive === true) {
+      totalRecords = Number(activeEmployee || 0);
+    } else {
+      totalRecords = Number(totalEmployee || 0);
+    }
+    badgeCount = totalRecords;
+  } else if (Array.isArray(currentEmployees)) {
+    if (currentEmployees.length < pageSize) {
+      totalRecords = pageOffset + currentEmployees.length;
+      badgeCount = totalRecords;
+    } else {
+      totalRecords = undefined;
+      badgeCount = `${pageOffset + currentEmployees.length}+`;
+    }
+  }
+
   // if (isLoading) {
   //   return <Loader />;
   // }
@@ -135,7 +168,6 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
     } else {
       return (
         <div className="hrms-overflow--x-auto">
-          {isInbox && <Header>{t("HR_HOME_SEARCH_RESULTS_HEADING")}</Header>}
           <DesktopInbox
             businessService={businessService}
             data={data}
@@ -156,6 +188,7 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
             searchParams={searchParams}
             sortParams={sortParams}
             totalRecords={totalRecords}
+            badgeCount={badgeCount}
             filterComponent={filterComponent}
           />
         </div>

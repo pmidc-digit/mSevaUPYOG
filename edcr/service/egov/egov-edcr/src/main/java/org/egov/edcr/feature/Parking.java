@@ -151,7 +151,7 @@ public class Parking extends FeatureProcess {
     public static final String VISITOR_PARKING = "Visitor parking";
     public static final String SPECIAL_PARKING_DIM_DESC = "Special parking ECS dimension ";
     public static final String TWO_WHEELER_DIM_DESC = "Two wheeler parking dimension ";
-    public static final String MECH_PARKING_DESC = "Mechanical parking dimension ";
+    public static final String MECH_PARKING_DESC = "Mechanical Parking Provision";
     public static final String MECH_PARKING_DIM_DESC = "All Mechanical parking polylines should have dimension 2.7*5.5 m²";
     public static final String MECH_PARKING_DIM_DESC_NA = " mechanical parking polyines does not have dimensions 2.7*5.5 m²";
     
@@ -273,6 +273,31 @@ public class Parking extends FeatureProcess {
 						+ " number of two wheeler Parking slot polygon not having only 4 points.");
 		}
     }
+    
+    private boolean isMechanicalParkingAllowed(Plan pl) {
+        OccupancyTypeHelper occupancy = pl.getVirtualBuilding() != null
+                ? pl.getVirtualBuilding().getMostRestrictiveFarHelper()
+                : null;
+
+        boolean isResidentialPlotted = occupancy != null && occupancy.getType() != null
+                && A.equals(occupancy.getType().getCode())
+                && occupancy.getSubtype() != null
+                && A_R.equalsIgnoreCase(occupancy.getSubtype().getCode());
+
+        BigDecimal plotArea = (pl.getPlot() != null && pl.getPlot().getArea() != null)
+                ? pl.getPlot().getArea()
+                : BigDecimal.ZERO;
+
+        return !(isResidentialPlotted && plotArea.compareTo(BigDecimal.valueOf(100)) < 0);
+    }
+
+    private boolean hasValidMechanicalSize(Measurement m) {
+        return m.getWidth() != null && m.getHeight() != null
+                && m.getWidth().compareTo(BigDecimal.valueOf(MECH_PARKING_WIDTH)) >= 0
+                && m.getHeight().compareTo(BigDecimal.valueOf(MECH_PARKING_HEIGHT)) >= 0;
+    }
+
+    
 
     public void processParking(Plan pl) {
     try {
@@ -405,7 +430,8 @@ public class Parking extends FeatureProcess {
 
         if (mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null && A.equals(mostRestrictiveOccupancy.getType().getCode())) {
             if (mostRestrictiveOccupancy.getSubtype() != null && A_AF.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode())) {
-                ResidentialParkingStats parkingStats = getResidentialParkingStats(pl);
+            	validateDwellingUnits(pl);   // add this line;
+            	ResidentialParkingStats parkingStats = getResidentialParkingStats(pl);
                 if (parkingStats != null) {
                     double ecsPerDu = getApartmentFlatEcsPerDu(parkingStats.averageUnitAreaSqM);
                     double totalDuEcs = ecsPerDu * parkingStats.totalDwellingUnits;
@@ -516,7 +542,9 @@ public class Parking extends FeatureProcess {
         BigDecimal requiredVisitorParkingArea = Util.roundOffTwoDecimal(BigDecimal.valueOf(requiredVisitorParkArea));
         BigDecimal providedVisitorParkingArea = Util.roundOffTwoDecimal(providedVisitorParkArea);
         
-        BigDecimal totalECS = BigDecimal.valueOf(roundedValueOpen + roundedValueCover + roundedValueBsmnt + roundedValueStilt)
+        int mechanicalEcs = processMechanicalParking(pl);
+        
+        BigDecimal totalECS = BigDecimal.valueOf(roundedValueOpen + roundedValueCover + roundedValueBsmnt + roundedValueStilt + mechanicalEcs)
                 .setScale(2, RoundingMode.HALF_UP);
 
         if (requiredParkingText == null) {
@@ -569,6 +597,12 @@ public class Parking extends FeatureProcess {
                 setReportOutputDetails(pl, "4.2.1", "Stilt Parking Area", "",
                         roundedValueStilt + " ECS (" + stiltParkingArea + SQMTRS + ")", "");
             }
+            
+            if (mechanicalEcs > 0) {
+                setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, "",
+                        mechanicalEcs + " ECS", "");
+            }
+            
             LOGGER.info("******************Require no of Car Parking***************" + helper.totalRequiredCarParking);
         }
     } catch (Exception e) {
@@ -577,6 +611,30 @@ public class Parking extends FeatureProcess {
     }
 }
 
+    private void validateDwellingUnits(Plan pl) {
+        if (pl.getBlocks() == null) {
+            return;
+        }
+
+        for (Block block : pl.getBlocks()) {
+            if (block == null || Boolean.TRUE.equals(block.getIsUnitFa())) {
+                continue;
+            }
+
+            boolean hasDwellingUnits = block.getBuilding() != null
+                    && block.getBuilding().getFloors() != null
+                    && block.getBuilding().getFloors().stream()
+                            .anyMatch(floor -> floor != null && floor.getUnits() != null
+                                    && !floor.getUnits().isEmpty());
+
+            if (!hasDwellingUnits) {
+                pl.addError("PARKING_DWELLING_UNITS_NOT_DEFINED_BLOCK_" + block.getNumber(),
+                        "Dwelling units are mandatory for parking calculation. Not defined in Block "
+                                + block.getNumber() + ".");
+            }
+        }
+    }
+    
 // Helper method to securely attach error messages without throwing NPEs
 private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
     if (pl != null) {
@@ -1070,22 +1128,92 @@ private void addErrorMessage(Plan pl, String errorKey, String errorMessage) {
         
     }
     
-    private void processMechanicalParking(Plan pl) {
-        int count = 0;
-        for (Measurement m : pl.getParkingDetails().getMechParking())
-            if (m.getWidth().compareTo(BigDecimal.valueOf(MECH_PARKING_WIDTH)) < 0
-                    || m.getHeight().compareTo(BigDecimal.valueOf(MECH_PARKING_HEIGHT)) < 0)
-                count++;
-        if (count > 0) {
-            setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, MECH_PARKING_DIM_DESC,
-                    count + MECH_PARKING_DIM_DESC_NA,
-                    Result.Not_Accepted.getResultVal());
-        } else {
-            setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, MECH_PARKING_DIM_DESC,
-                    count + MECH_PARKING_DIM_DESC_NA,
-                    Result.Accepted.getResultVal());
+    private int processMechanicalParking(Plan pl) {
+        if (pl.getParkingDetails() == null || pl.getParkingDetails().getMechParking() == null
+                || pl.getParkingDetails().getMechParking().isEmpty()) {
+            return 0;
         }
+
+        if (!isMechanicalParkingAllowed(pl)) {
+            pl.addError("MECHANICAL_PARKING_NOT_ALLOWED",
+                    "Mechanical parking is not allowed for Residential Plotted buildings having plot area below 100 sqm.");
+            return 0;
+        }
+
+        long totalCount = pl.getParkingDetails().getMechParking().stream()
+                .filter(Objects::nonNull)
+                .count();
+
+        long validCount = pl.getParkingDetails().getMechParking().stream()
+                .filter(Objects::nonNull)
+                .filter(this::hasValidMechanicalSize)
+                .count();
+
+        long invalidCount = totalCount - validCount;
+
+        if (invalidCount > 0) {
+            pl.addError("MECHANICAL_PARKING_INVALID_DIMENSION",
+                    "All mechanical parking spaces should have minimum dimension " + MECH_PARKING_WIDTH + " m x "
+                            + MECH_PARKING_HEIGHT + " m.");
+        }
+
+        return (int) validCount;
     }
+
+//	private void processMechanicalParking(Plan pl) {
+//
+//		int count = 0;
+//
+//		BigDecimal plotArea = (pl.getPlot() != null && pl.getPlot().getArea() != null) ? pl.getPlot().getArea()
+//				: BigDecimal.ZERO;
+//
+//		OccupancyTypeHelper mostRestrictiveOccupancy = pl.getVirtualBuilding() != null
+//				? pl.getVirtualBuilding().getMostRestrictiveFarHelper()
+//				: null;
+//
+//		boolean isResidentialPlotted = mostRestrictiveOccupancy != null && mostRestrictiveOccupancy.getType() != null
+//				&& A.equals(mostRestrictiveOccupancy.getType().getCode())
+//				&& mostRestrictiveOccupancy.getSubtype() != null
+//				&& A_R.equalsIgnoreCase(mostRestrictiveOccupancy.getSubtype().getCode());
+//
+//		boolean hasMechanicalParking = pl.getParkingDetails() != null && pl.getParkingDetails().getMechParking() != null
+//				&& !pl.getParkingDetails().getMechParking().isEmpty();
+//
+//		// Residential plotted (A / A-R) specific condition
+//		if (isResidentialPlotted && plotArea.compareTo(BigDecimal.valueOf(100)) < 0 && hasMechanicalParking) {
+//
+//			pl.addError("MECHANICAL_PARKING_NOT_ALLOWED",
+//					"Mechanical parking is not allowed for Residential Plotted buildings having plot area below 100 sqm.");
+//
+//			return;
+//		}
+//
+//		// Normal mechanical parking dimension validation
+//		if (hasMechanicalParking) {
+//
+//			for (Measurement m : pl.getParkingDetails().getMechParking()) {
+//
+//				if (m.getWidth().compareTo(BigDecimal.valueOf(MECH_PARKING_WIDTH)) < 0
+//						|| m.getHeight().compareTo(BigDecimal.valueOf(MECH_PARKING_HEIGHT)) < 0) {
+//					count++;
+//				}
+//			}
+////			if (count > 0) {
+////				setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, MECH_PARKING_DIM_DESC,
+////						count + MECH_PARKING_DIM_DESC_NA, Result.Not_Accepted.getResultVal());
+////			} else {
+////				setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, MECH_PARKING_DIM_DESC,
+////						count + MECH_PARKING_DIM_DESC_NA, Result.Accepted.getResultVal());
+////			}
+//			
+//			if (count > 0) {
+//				setReportOutputDetails(pl, SUB_RULE_34_2, MECH_PARKING_DESC, "",
+//						count + " ECS", "");
+//			} 
+//		}
+//
+//		
+//	}
 
     /*
      * private double processMechanicalParking(Plan pl, ParkingHelper helper) { Integer noOfMechParkingFromPlInfo =

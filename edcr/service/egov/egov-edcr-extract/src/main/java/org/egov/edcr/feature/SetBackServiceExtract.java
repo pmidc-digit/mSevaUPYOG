@@ -5,6 +5,7 @@ import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -61,7 +62,9 @@ public class SetBackServiceExtract extends FeatureExtract {
         for (Block b : pl.getBlocks()) {
             checkAndSetUnitFaFlag(pl, b);
         }
-
+        
+        validateDwellingUnitsDefined(pl, doc);
+        
         boolean unitFaSetbackValidated = false;
         for (Block block : pl.getBlocks()) {
             LOG.info("Block....   " + block.getName());
@@ -768,5 +771,29 @@ public class SetBackServiceExtract extends FeatureExtract {
 //        }
 //        return hasOverlap; 
 //    }
+    
+    private void validateDwellingUnitsDefined(PlanDetail pl, DXFDocument doc) {
+        for (Block b : pl.getBlocks()) {
+            if (Boolean.TRUE.equals(b.getIsUnitFa())) {
+                return; // dwelling units exist, the normal UnitFA validation handles the rest
+            }
+        }
+
+        String[] plainSetbackLayers = { layerNames.getLayerName("LAYER_NAME_FRONT_YARD"),
+                layerNames.getLayerName("LAYER_NAME_REAR_YARD"), layerNames.getLayerName("LAYER_NAME_SIDE_YARD_1"),
+                layerNames.getLayerName("LAYER_NAME_SIDE_YARD_2") };
+
+        List<String> found = new ArrayList<>();
+        for (String name : plainSetbackLayers) {
+            if (name != null && doc.containsDXFLayer(name)) {
+                found.add(name);
+            }
+        }
+
+        if (!found.isEmpty()) {
+            pl.addError("UNITFA_DWELLING_UNITS_NOT_DEFINED",
+                    "Dwelling units are not defined in the plan.");
+        }
+    }
     
 }

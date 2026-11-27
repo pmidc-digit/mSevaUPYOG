@@ -81,7 +81,13 @@ const InboxExportMenu = ({
           }
 
           let cellText = "";
-          if (col.Cell && typeof col.Cell === "function") {
+          if (typeof col.exportValue === "function") {
+            try {
+              cellText = extractText(col.exportValue(row, rowIndex));
+            } catch (e) {}
+          }
+
+          if (!cellText && col.Cell && typeof col.Cell === "function") {
             try {
               cellText = extractText(col.Cell({ row: { original: row, index: rowIndex } }));
             } catch (e) {}

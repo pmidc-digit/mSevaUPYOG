@@ -321,8 +321,10 @@ public class RearYardService extends GeneralRule {
 //									rearYardResult.occupancyCode.equalsIgnoreCase("G-IT") ||
 //									rearYardResult.occupancyCode.equalsIgnoreCase("G-F")
 									) {
-								permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toString();
-							    providedValue = rearYardResult.actualMinDistance.abs().stripTrailingZeros().toPlainString();
+//								permissableValueWithPercentage = rearYardResult.expectedminimumDistance.toString();
+//							    providedValue = rearYardResult.actualMinDistance.abs().stripTrailingZeros().toPlainString();
+								permissableValueWithPercentage = formatSetback(rearYardResult.expectedminimumDistance);
+								providedValue = formatSetback(rearYardResult.actualMinDistance);
 							    details.put("OccCode", rearYardResult.occupancyCode);
 							    details.put("isSetbackCombine", String.valueOf(rearYardResult.isSetbackCombine));
 							    
@@ -458,6 +460,9 @@ public class RearYardService extends GeneralRule {
 	                 setback -> LOG.info("Setback for Height " + buildingHeight + ": " + setback)
 	             );
 	             minVal = requiredSetback.get().abs().stripTrailingZeros();
+	             if (minVal.scale() < 0) {
+	                 minVal = minVal.setScale(0);
+	             }
 	        }
 	    }else {
 	    	// getting permissible value from mdms
@@ -1734,5 +1739,10 @@ public class RearYardService extends GeneralRule {
 	    else
 	        return BigDecimal.valueOf(16);
 	}
+	
+	private String formatSetback(BigDecimal value) {
+	    return value == null ? "" : value.abs().setScale(2, RoundingMode.HALF_UP).toPlainString();
+	}
+	
 	
 }

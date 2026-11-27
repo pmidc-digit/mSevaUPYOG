@@ -1,13 +1,16 @@
 package org.egov.swcalculation.service;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.swcalculation.config.SWCalculationConfiguration;
+import org.egov.swcalculation.constants.SWCalculationConstant;
 import org.egov.swcalculation.producer.SWCalculationProducer;
 import org.egov.swcalculation.util.SWCalculationUtil;
 import org.egov.swcalculation.web.models.*;
@@ -31,95 +34,349 @@ public class DemandSchedulerNotificationService {
 	@Autowired
 	private NamedParameterJdbcTemplate jdbcTemplate;
 
-	public void sendStartEmail(String tenantId, Long from, Long to, int totalCount, RequestInfo requestInfo) {
-		if (configs.getIsMailEnabled() == null || !configs.getIsMailEnabled() || StringUtils.isEmpty(configs.getMailRecipients())) return;
+	private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat("#,##,##0.00");
+	private static final DecimalFormat COUNT_FORMAT = new DecimalFormat("#,##,###");
 
-		String localizationMessage = "";
-		try {
-			localizationMessage = utils.getLocalizationMessages(tenantId, requestInfo);
-		} catch (Exception e) {
-			log.warn("Failed to fetch localization messages", e);
+	private Set<String> getToRecipients() {
+		String recipients = configs.getMailRecipients();
+		if (StringUtils.isBlank(recipients)) {
+			recipients = "rabhi5067@gmail.com";
 		}
+		return Arrays.stream(recipients.split(","))
+				.map(String::trim)
+				.filter(StringUtils::isNotBlank)
+				.collect(Collectors.toSet());
+	}
 
-		String template = utils.getMessageTemplate("SW_DEMAND_GEN_START_EMAIL_TEMPLATE", localizationMessage);
-		if (StringUtils.isEmpty(template)) {
-			log.warn("⚠️ SW_DEMAND_GEN_START_EMAIL_TEMPLATE not found in localization service. Skipping start email.");
+	private Set<String> getCcRecipients() {
+		String ccRecipients = configs.getMailCcRecipients();
+		if (StringUtils.isBlank(ccRecipients)) {
+			return Collections.emptySet();
+		}
+		return Arrays.stream(ccRecipients.split(","))
+				.map(String::trim)
+				.filter(StringUtils::isNotBlank)
+				.collect(Collectors.toSet());
+	}
+
+	private String getCityName(String tenantId) {
+		if (StringUtils.isBlank(tenantId)) {
+			return "Unknown";
+		}
+		String city = tenantId.contains(".")
+				? tenantId.substring(tenantId.indexOf('.') + 1)
+				: tenantId;
+		if (city.isEmpty()) {
+			return tenantId;
+		}
+		return city.substring(0, 1).toUpperCase() + city.substring(1).toLowerCase();
+	}
+
+	/**
+	 * Sends a single consolidated email containing all tenants and connection counts on scheduler hit.
+	 * Template fetched strictly from localization service (message table).
+	 */
+	public void sendConsolidatedStartEmail(List<TenantDemandSummary> summaries, RequestInfo requestInfo) {
+		if (configs.getIsMailEnabled() == null || !configs.getIsMailEnabled()) {
+			log.info("Email notifications are disabled. Skipping sewerage start email.");
 			return;
 		}
 
-		String formattedFrom = getIstDateFormat("dd-MMM-yyyy").format(new Date(from));
-		String formattedTo = getIstDateFormat("dd-MMM-yyyy").format(new Date(to));
+		if (summaries == null || summaries.isEmpty()) {
+			log.info("No tenant summaries provided for consolidated sewerage start email.");
+			return;
+		}
 
-		String htmlBody = template
-				.replace("{tenantId}", tenantId)
-				.replace("{formattedFrom}", formattedFrom)
-				.replace("{formattedTo}", formattedTo)
-				.replace("{totalCount}", String.valueOf(totalCount));
+		String primaryTenant = summaries.get(0).getTenantId();
+		String localizationMessage = "";
+		try {
+			localizationMessage = utils.getLocalizationMessages(primaryTenant, requestInfo);
+		} catch (Exception e) {
+			log.debug("Failed to fetch localization messages for sewerage start email: {}", e.getMessage());
+		}
 
-		Set<String> toRecipients = utils.getTenantEmailIds(Collections.singleton(tenantId), requestInfo);
+		String template = utils.getMessageTemplate(SWCalculationConstant.SW_DEMAND_GEN_START_EMAIL_TEMPLATE, localizationMessage);
+		if (StringUtils.isEmpty(template)) {
+			log.debug("{} not found in localization service. Skipping consolidated sewerage start email.",
+					SWCalculationConstant.SW_DEMAND_GEN_START_EMAIL_TEMPLATE);
+			return;
+		}
+
+		int totalConnectionsAllTenants = summaries.stream().mapToInt(TenantDemandSummary::getConnectionCount).sum();
+		int totalTenantsCount = summaries.size();
+		String triggerDate = getIstDateFormat("dd-MMM-yyyy hh:mm a").format(new Date());
+
+		StringBuilder tableRows = new StringBuilder();
+		int sNo = 1;
+		for (TenantDemandSummary summary : summaries) {
+			String status = StringUtils.defaultIfBlank(summary.getStatus(), "Scheduled");
+			String statusBadgeColor = "Scheduled".equalsIgnoreCase(status) ? "#10b981" : "#f59e0b";
+			String cityDisplay = StringUtils.isNotBlank(summary.getCityName())
+					? summary.getCityName() : getCityName(summary.getTenantId());
+			String billingDisplay = StringUtils.defaultIfBlank(summary.getBillingCycle(), "N/A");
+			tableRows.append("<tr style=\"border-bottom: 1px solid #e5e7eb;\">")
+					.append("<td style=\"padding: 10px 12px; text-align: center;\">").append(sNo++).append("</td>")
+					.append("<td style=\"padding: 10px 12px; font-weight: 600; color: #1f2937;\">")
+					.append(StringUtils.defaultString(summary.getTenantId())).append("</td>")
+					.append("<td style=\"padding: 10px 12px;\">").append(cityDisplay).append("</td>")
+					.append("<td style=\"padding: 10px 12px;\">").append(billingDisplay).append("</td>")
+					.append("<td style=\"padding: 10px 12px; text-align: right; font-weight: 600; color: #2563eb;\">")
+					.append(COUNT_FORMAT.format(summary.getConnectionCount())).append("</td>")
+					.append("<td style=\"padding: 10px 12px; text-align: center;\"><span style=\"background-color: ")
+					.append(statusBadgeColor).append("20; color: ").append(statusBadgeColor)
+					.append("; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;\">")
+					.append(status).append("</span></td>")
+					.append("</tr>");
+		}
+
+		String customizedMsg = template
+				.replace("{triggerDate}", StringUtils.defaultString(triggerDate))
+				.replace("{totalTenants}", String.valueOf(totalTenantsCount))
+				.replace("{totalConnections}", COUNT_FORMAT.format(totalConnectionsAllTenants))
+				.replace("{tenantRows}", tableRows.toString());
+
+		String subject;
+		String body;
+		if (customizedMsg.contains("<h2>") && customizedMsg.contains("</h2>")
+				&& customizedMsg.indexOf("<h2>") < customizedMsg.indexOf("</h2>")) {
+			subject = customizedMsg.substring(customizedMsg.indexOf("<h2>") + 4, customizedMsg.indexOf("</h2>"));
+			body = customizedMsg.substring(customizedMsg.indexOf("</h2>") + 5);
+		} else {
+			subject = "Sewerage Demand Generation Scheduled - Summary Report (" + getIstDateFormat("dd-MMM-yyyy").format(new Date()) + ")";
+			body = customizedMsg;
+		}
+
+		Set<String> tenantIds = summaries.stream()
+				.map(TenantDemandSummary::getTenantId)
+				.filter(StringUtils::isNotBlank)
+				.collect(Collectors.toSet());
+		Set<String> toRecipients = utils.getTenantEmailIds(tenantIds, requestInfo);
 		if (toRecipients == null || toRecipients.isEmpty()) {
-			toRecipients = Arrays.stream(configs.getMailRecipients().split(",")).map(String::trim).collect(Collectors.toSet());
+			toRecipients = getToRecipients();
 		}
 
 		Email email = Email.builder()
 				.emailTo(toRecipients)
-				.subject("Sewerage Demand Generation Started - " + tenantId)
-				.body(htmlBody)
+				.emailCc(getCcRecipients())
+				.subject(subject)
+				.body(body)
 				.isHTML(true)
 				.build();
-		swCalculationProducer.push(configs.getEmailNotifTopic(), EmailRequest.builder().email(email).build());
-		log.info("📧 Start email notification pushed to Kafka for tenant: {}", tenantId);
+
+		swCalculationProducer.push(configs.getEmailNotifTopic(), EmailRequest.builder().requestInfo(requestInfo).email(email).build());
+		log.info("Consolidated sewerage start email pushed to Kafka topic {} (To: {}, Cc: {})",
+				configs.getEmailNotifTopic(), toRecipients, getCcRecipients());
 	}
 
+	public void sendStartEmail(String tenantId, Long from, Long to, int totalCount, RequestInfo requestInfo) {
+		if (configs.getIsMailEnabled() == null || !configs.getIsMailEnabled()) return;
+
+		String formattedFrom = from != null ? getIstDateFormat("dd-MMM-yyyy").format(new Date(from)) : "N/A";
+		String formattedTo = to != null ? getIstDateFormat("dd-MMM-yyyy").format(new Date(to)) : "N/A";
+
+		TenantDemandSummary singleSummary = TenantDemandSummary.builder()
+				.tenantId(tenantId)
+				.cityName(getCityName(tenantId))
+				.billingCycle(formattedFrom + " to " + formattedTo)
+				.taxPeriodFrom(from)
+				.taxPeriodTo(to)
+				.connectionCount(totalCount)
+				.status("Scheduled")
+				.build();
+
+		sendConsolidatedStartEmail(Collections.singletonList(singleSummary), requestInfo);
+	}
+
+	/**
+	 * Sends completion email per tenant asynchronously with success, failure, and total revenue metrics.
+	 * Template fetched strictly from localization service (message table).
+	 */
 	public void sendCompletionEmail(String tenantId, Long from, Long to, List<String> allConnectionNos, long startTime, RequestInfo requestInfo) {
-		if (configs.getIsMailEnabled() == null || !configs.getIsMailEnabled() || StringUtils.isEmpty(configs.getMailRecipients())) return;
+		if (configs.getIsMailEnabled() == null || !configs.getIsMailEnabled()) return;
 
-		// Inline Poll until consumers finish processing
-		long pollStartTime = System.currentTimeMillis();
-		long totalCount = allConnectionNos.size();
-		long successCount = 0;
-		BigDecimal totalAmount = BigDecimal.ZERO;
-
-		while (System.currentTimeMillis() - pollStartTime < 15 * 60 * 1000) { // 15 mins timeout
+		CompletableFuture.runAsync(() -> {
 			try {
-				Map<String, Object> stats = getBatchStats(tenantId, from, to);
-				successCount = ((Number) stats.get("success_count")).longValue();
-				totalAmount = new BigDecimal(stats.get("total_amount").toString());
+				long totalCount = allConnectionNos != null ? allConnectionNos.size() : 0;
+				long successCount = 0;
+				BigDecimal totalAmount = BigDecimal.ZERO;
 
-				if (successCount >= totalCount) {
-					log.info("🎯 All Sewerage connections processed successfully for tenant: {}", tenantId);
-					break;
+				// Wait for Kafka consumers to pick up batches and log results to eg_sw_batch_connection_log
+				long initialWaitMs = Math.max(60000L, totalCount * 500L);
+				initialWaitMs = Math.min(initialWaitMs, 5 * 60 * 1000L);
+				log.info("Waiting {}s for Kafka consumer to process {} sewerage connections for tenant: {}",
+						initialWaitMs / 1000, totalCount, tenantId);
+
+				try {
+					Thread.sleep(initialWaitMs);
+				} catch (InterruptedException ie) {
+					Thread.currentThread().interrupt();
+					log.error("Initial wait interrupted for sewerage completion email (tenant: {})", tenantId);
+					return;
 				}
+
+				long pollStartTime = System.currentTimeMillis();
+				long prevSuccessCount = -1;
+				int unchangedCount = 0;
+
+				while (System.currentTimeMillis() - pollStartTime < 3 * 60 * 1000L) {
+					try {
+						Map<String, Object> stats = getBatchStats(tenantId, from, to);
+						successCount = ((Number) stats.getOrDefault("success_count", 0)).longValue();
+						Object amtObj = stats.get("total_amount");
+						totalAmount = amtObj != null ? new BigDecimal(amtObj.toString()) : BigDecimal.ZERO;
+
+						// Fallback to direct demand table if batch log is empty
+						if (successCount == 0 && totalCount > 0) {
+							Map<String, Object> directStats = getDirectDemandStats(tenantId, from, to);
+							long directSuccess = ((Number) directStats.getOrDefault("success_count", 0)).longValue();
+							if (directSuccess > 0) {
+								successCount = directSuccess;
+								Object directAmt = directStats.get("total_amount");
+								totalAmount = directAmt != null ? new BigDecimal(directAmt.toString()) : BigDecimal.ZERO;
+							}
+						}
+
+						if (successCount >= totalCount && totalCount > 0) {
+							log.info("All {} sewerage connections processed for tenant: {}", totalCount, tenantId);
+							break;
+						}
+
+						if (successCount > 0 && successCount == prevSuccessCount) {
+							unchangedCount++;
+							if (unchangedCount >= 3) {
+								log.info("Sewerage demand processing stabilized for tenant {}: successCount={}, totalCount={}",
+										tenantId, successCount, totalCount);
+								break;
+							}
+						} else {
+							unchangedCount = 0;
+						}
+						prevSuccessCount = successCount;
+					} catch (Exception e) {
+						log.error("Error fetching sewerage batch stats during polling: {}", e.getMessage());
+					}
+					try {
+						Thread.sleep(15000L);
+					} catch (InterruptedException ie) {
+						Thread.currentThread().interrupt();
+						break;
+					}
+				}
+
+				long failureCount = Math.max(0, totalCount - successCount);
+				boolean timedOut = successCount == 0 && totalCount > 0;
+
+				String localizationMessage = "";
+				try {
+					localizationMessage = utils.getLocalizationMessages(tenantId, requestInfo);
+				} catch (Exception e) {
+					log.debug("Failed to fetch localization messages for sewerage completion email: {}", e.getMessage());
+				}
+
+				String template = utils.getMessageTemplate(SWCalculationConstant.SW_DEMAND_GEN_COMPLETION_EMAIL_TEMPLATE, localizationMessage);
+				if (StringUtils.isEmpty(template)) {
+					log.debug("{} not found in localization service. Skipping sewerage completion email.",
+							SWCalculationConstant.SW_DEMAND_GEN_COMPLETION_EMAIL_TEMPLATE);
+					return;
+				}
+
+				String failedConnectionsRows = "";
+				if (template.contains("{failedConnectionsRows}") && allConnectionNos != null) {
+					failedConnectionsRows = buildFailedConnectionsRows(tenantId, from, to, allConnectionNos);
+				}
+
+				Date fromDate = from != null ? new Date(from) : new Date(startTime);
+				String billingCycle = getIstDateFormat("MMMM yyyy").format(fromDate);
+
+				Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kolkata"));
+				cal.setTime(fromDate);
+				int year = cal.get(Calendar.YEAR);
+				String financialYear = year + "-" + ((year + 1) % 100);
+
+				String generatedOn = getIstDateFormat("dd-MMM-yyyy hh:mm a").format(new Date(startTime));
+				String completedOn = getIstDateFormat("dd-MMM-yyyy hh:mm a").format(new Date());
+
+				long durationMs = Math.max(0L, System.currentTimeMillis() - startTime);
+				long durationMin = (durationMs / 1000) / 60;
+				long durationSec = (durationMs / 1000) % 60;
+				String duration = durationMin + "m " + durationSec + "s";
+
+				String statusLabel = timedOut ? "TIMEOUT" : (failureCount > 0 ? "PARTIALLY COMPLETED" : "SUCCESS");
+				String statusColor = timedOut ? "#ef4444" : (failureCount > 0 ? "#f59e0b" : "#10b981");
+				String cityName = getCityName(tenantId);
+
+				double successPct = totalCount > 0 ? ((double) successCount / totalCount) * 100 : 0;
+				String successPercentage = String.format("%.1f", successPct);
+
+				String formattedFrom = from != null ? getIstDateFormat("dd-MMM-yyyy").format(new Date(from)) : "N/A";
+				String formattedTo = to != null ? getIstDateFormat("dd-MMM-yyyy").format(new Date(to)) : "N/A";
+
+				String customizedMsg = template
+						.replace("{tenantId}", StringUtils.defaultString(tenantId))
+						.replace("{cityName}", StringUtils.defaultString(cityName))
+						.replace("{billingCycle}", StringUtils.defaultString(billingCycle))
+						.replace("{formattedFrom}", StringUtils.defaultString(formattedFrom))
+						.replace("{formattedTo}", StringUtils.defaultString(formattedTo))
+						.replace("{financialYear}", StringUtils.defaultString(financialYear))
+						.replace("{generatedOn}", StringUtils.defaultString(generatedOn))
+						.replace("{completedOn}", StringUtils.defaultString(completedOn))
+						.replace("{duration}", StringUtils.defaultString(duration))
+						.replace("{statusLabel}", StringUtils.defaultString(statusLabel))
+						.replace("{statusColor}", StringUtils.defaultString(statusColor))
+						.replace("{totalCount}", String.valueOf(totalCount))
+						.replace("{successCount}", String.valueOf(successCount))
+						.replace("{failureCount}", String.valueOf(failureCount))
+						.replace("{successPercentage}", StringUtils.defaultString(successPercentage))
+						.replace("{totalAmount}", CURRENCY_FORMAT.format(totalAmount))
+						.replace("{failedConnectionsRows}", StringUtils.defaultString(failedConnectionsRows));
+
+				String subject;
+				String body;
+				if (customizedMsg.contains("<h2>") && customizedMsg.contains("</h2>")
+						&& customizedMsg.indexOf("<h2>") < customizedMsg.indexOf("</h2>")) {
+					subject = customizedMsg.substring(customizedMsg.indexOf("<h2>") + 4, customizedMsg.indexOf("</h2>"));
+					body = customizedMsg.substring(customizedMsg.indexOf("</h2>") + 5);
+				} else {
+					subject = "Sewerage Demand Generation Completed - " + cityName + " (" + billingCycle + ")";
+					body = customizedMsg;
+				}
+
+				Set<String> toRecipients = utils.getTenantEmailIds(Collections.singleton(tenantId), requestInfo);
+				if (toRecipients == null || toRecipients.isEmpty()) {
+					toRecipients = getToRecipients();
+				}
+
+				Email email = Email.builder()
+						.emailTo(toRecipients)
+						.emailCc(getCcRecipients())
+						.subject(subject)
+						.body(body)
+						.isHTML(true)
+						.build();
+
+				swCalculationProducer.push(configs.getEmailNotifTopic(), EmailRequest.builder().requestInfo(requestInfo).email(email).build());
+				log.info("Sewerage completion email pushed to Kafka for tenant: {} (To: {}, Cc: {})",
+						tenantId, toRecipients, getCcRecipients());
 			} catch (Exception e) {
-				log.error("⚠️ Error fetching batch stats during polling: {}", e.getMessage());
+				log.error("Failed to process and send sewerage completion email for tenant: {} | {}", tenantId, e.getMessage(), e);
 			}
-			try {
-				Thread.sleep(10000); // Poll every 10 seconds
-			} catch (InterruptedException ie) {
-				Thread.currentThread().interrupt();
-				log.error("❌ Polling thread interrupted");
-				break;
-			}
-		}
+		});
+	}
 
-		long failureCount = Math.max(0, totalCount - successCount);
-		boolean timedOut = (System.currentTimeMillis() - pollStartTime) >= 15 * 60 * 1000;
-
-		// Query successes to find failed connection numbers
+	private String buildFailedConnectionsRows(String tenantId, Long from, Long to, List<String> allConnectionNos) {
 		List<String> successfulConnectionNos = getSuccessfulConnectionNos(tenantId, from, to);
 		Set<String> successSet = new HashSet<>(successfulConnectionNos);
 
 		List<String> failedConnectionNos = allConnectionNos.stream()
+				.filter(Objects::nonNull)
 				.filter(conn -> !successSet.contains(conn))
 				.collect(Collectors.toList());
 
-		// Query reasons for failures from error log if any
 		Map<String, String> failureReasons = getFailureReasons(tenantId, from, to);
 
-		// Build failures HTML rows
 		StringBuilder failedRowsBuilder = new StringBuilder();
 		if (failedConnectionNos.isEmpty()) {
-			failedRowsBuilder.append("<tr><td colspan=\"3\" style=\"color: #10b981; font-weight: bold; text-align: center;\">🎉 All connections processed successfully! No failures reported.</td></tr>");
+			failedRowsBuilder.append("<tr><td colspan=\"3\" style=\"color: #10b981; font-weight: bold; text-align: center;\">All connections processed successfully! No failures reported.</td></tr>");
 		} else {
 			int count = 1;
 			for (String failedConn : failedConnectionNos) {
@@ -129,7 +386,9 @@ public class DemandSchedulerNotificationService {
 							.append(" more failed connections.</td></tr>");
 					break;
 				}
-				String reason = failureReasons.getOrDefault(failedConn, "Calculation failed / check server logs");
+				String reason = StringUtils.defaultString(
+						failureReasons.getOrDefault(failedConn, "Calculation failed / check server logs"),
+						"Calculation failed / check server logs");
 				failedRowsBuilder.append("<tr>")
 						.append("<td>").append(count++).append("</td>")
 						.append("<td>").append(failedConn).append("</td>")
@@ -137,67 +396,7 @@ public class DemandSchedulerNotificationService {
 						.append("</tr>");
 			}
 		}
-
-		String localizationMessage = "";
-		try {
-			localizationMessage = utils.getLocalizationMessages(tenantId, requestInfo);
-		} catch (Exception e) {
-			log.warn("Failed to fetch localization messages", e);
-		}
-
-		String template = utils.getMessageTemplate("SW_DEMAND_GEN_COMPLETION_EMAIL_TEMPLATE", localizationMessage);
-		if (StringUtils.isEmpty(template)) {
-			log.warn("⚠️ SW_DEMAND_GEN_COMPLETION_EMAIL_TEMPLATE not found in localization service. Skipping completion email.");
-			return;
-		}
-
-		Date fromDate = new Date(from);
-		String billingCycle = getIstDateFormat("MMMM yyyy").format(fromDate);
-
-		Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Asia/Kolkata"));
-		cal.setTime(fromDate);
-		int year = cal.get(Calendar.YEAR);
-		String financialYear = year + "-" + ((year + 1) % 100);
-
-		String generatedOn = getIstDateFormat("dd-MMM-yyyy hh:mm a").format(new Date(startTime));
-		String completedOn = getIstDateFormat("dd-MMM-yyyy hh:mm a").format(new Date());
-
-		long durationMs = System.currentTimeMillis() - startTime;
-		long durationMin = (durationMs / 1000) / 60;
-		long durationSec = (durationMs / 1000) % 60;
-		String duration = durationMin + "m " + durationSec + "s";
-
-		String statusLabel = timedOut ? "COMPLETED (TIMEOUT)" : "SUCCESS";
-		String statusColor = timedOut ? "#ef4444" : "#10b981";
-
-		String htmlBody = template
-				.replace("{tenantId}", tenantId)
-				.replace("{billingCycle}", billingCycle)
-				.replace("{financialYear}", financialYear)
-				.replace("{generatedOn}", generatedOn)
-				.replace("{completedOn}", completedOn)
-				.replace("{duration}", duration)
-				.replace("{statusLabel}", statusLabel)
-				.replace("{statusColor}", statusColor)
-				.replace("{totalCount}", String.valueOf(totalCount))
-				.replace("{successCount}", String.valueOf(successCount))
-				.replace("{failureCount}", String.valueOf(failureCount))
-				.replace("{totalAmount}", totalAmount.setScale(2, BigDecimal.ROUND_HALF_UP).toString())
-				.replace("{failedConnectionsRows}", failedRowsBuilder.toString());
-
-		Set<String> toRecipients = utils.getTenantEmailIds(Collections.singleton(tenantId), requestInfo);
-		if (toRecipients == null || toRecipients.isEmpty()) {
-			toRecipients = Arrays.stream(configs.getMailRecipients().split(",")).map(String::trim).collect(Collectors.toSet());
-		}
-
-		Email email = Email.builder()
-				.emailTo(toRecipients)
-				.subject("Sewerage Demand Generation Completed - " + tenantId)
-				.body(htmlBody)
-				.isHTML(true)
-				.build();
-		swCalculationProducer.push(configs.getEmailNotifTopic(), EmailRequest.builder().email(email).build());
-		log.info("📧 Completion email notification pushed to Kafka for tenant: {}", tenantId);
+		return failedRowsBuilder.toString();
 	}
 
 	private Map<String, Object> getBatchStats(String tenantId, Long from, Long to) {
@@ -210,7 +409,38 @@ public class DemandSchedulerNotificationService {
 		params.put("from", from);
 		params.put("to", to);
 
-		return jdbcTemplate.queryForMap(statsQuery, params);
+		try {
+			return jdbcTemplate.queryForMap(statsQuery, params);
+		} catch (Exception e) {
+			log.warn("Error executing batch stats query on eg_sw_batch_connection_log: {}", e.getMessage());
+			Map<String, Object> emptyMap = new HashMap<>();
+			emptyMap.put("success_count", 0L);
+			emptyMap.put("total_amount", BigDecimal.ZERO);
+			return emptyMap;
+		}
+	}
+
+	private Map<String, Object> getDirectDemandStats(String tenantId, Long from, Long to) {
+		String query = "SELECT COUNT(DISTINCT d.consumercode) as success_count, COALESCE(SUM(dd.taxamount), 0) as total_amount " +
+				"FROM egbs_demand_v1 d " +
+				"INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id " +
+				"WHERE d.tenantid = :tenantId AND d.taxperiodfrom = :from AND d.taxperiodto = :to " +
+				"AND d.businessservice = 'SW' AND d.status = 'ACTIVE'";
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("tenantId", tenantId);
+		params.put("from", from);
+		params.put("to", to);
+
+		try {
+			return jdbcTemplate.queryForMap(query, params);
+		} catch (Exception e) {
+			log.warn("Direct sewerage demand stats query failed: {}", e.getMessage());
+			Map<String, Object> emptyMap = new HashMap<>();
+			emptyMap.put("success_count", 0L);
+			emptyMap.put("total_amount", BigDecimal.ZERO);
+			return emptyMap;
+		}
 	}
 
 	private List<String> getSuccessfulConnectionNos(String tenantId, Long from, Long to) {
@@ -223,16 +453,27 @@ public class DemandSchedulerNotificationService {
 		params.put("to", to);
 
 		try {
-			return jdbcTemplate.queryForList(query, params, String.class);
+			List<String> list = jdbcTemplate.queryForList(query, params, String.class);
+			if (list != null && !list.isEmpty()) {
+				return list;
+			}
 		} catch (Exception e) {
-			log.warn("⚠️ Failed to query successful connections list: {}", e.getMessage());
+			log.warn("Failed to query successful sewerage connections list from log: {}", e.getMessage());
+		}
+
+		String directQuery = "SELECT DISTINCT d.consumercode FROM egbs_demand_v1 d " +
+				"WHERE d.tenantid = :tenantId AND d.taxperiodfrom = :from AND d.taxperiodto = :to " +
+				"AND d.businessservice = 'SW' AND d.status = 'ACTIVE'";
+		try {
+			return jdbcTemplate.queryForList(directQuery, params, String.class);
+		} catch (Exception e) {
+			log.warn("Failed to query successful sewerage connections list directly: {}", e.getMessage());
 			return new ArrayList<>();
 		}
 	}
 
 	private Map<String, String> getFailureReasons(String tenantId, Long from, Long to) {
 		Map<String, String> results = new HashMap<>();
-		// Try to query eg_sw_demand_generation_error if it exists
 		String query = "SELECT connectionno, errormessage FROM eg_sw_demand_generation_error " +
 				"WHERE tenantid = :tenantId AND fromdate = :from AND todate = :to";
 
@@ -251,7 +492,7 @@ public class DemandSchedulerNotificationService {
 				}
 			}
 		} catch (Exception e) {
-			log.info("ℹ️ Table eg_sw_demand_generation_error not available, using default fallback messages. Details: {}", e.getMessage());
+			log.debug("Table eg_sw_demand_generation_error not available: {}", e.getMessage());
 		}
 		return results;
 	}

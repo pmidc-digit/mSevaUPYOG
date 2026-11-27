@@ -320,7 +320,8 @@ public class SWCalculationUtil {
 		StringBuilder uri = new StringBuilder();
 		uri.append(config.getLocalizationHost()).append(config.getLocalizationContextPath())
 				.append(config.getLocalizationSearchEndpoint()).append("?").append("locale=").append(locale)
-				.append("&tenantId=").append(tenantId).append("&module=").append(SWCalculationConstant.MODULE);
+				.append("&tenantId=").append(tenantId)
+				.append("&module=").append(SWCalculationConstant.MODULE).append(",").append(SWCalculationConstant.MODULE_SW);
 
 		return uri;
 	}

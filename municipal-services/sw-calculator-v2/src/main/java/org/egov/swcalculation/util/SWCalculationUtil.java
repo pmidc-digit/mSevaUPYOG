@@ -317,9 +317,19 @@ public class SWCalculationUtil {
 			}
 		}
 
+		String host = StringUtils.stripEnd(StringUtils.defaultString(config.getLocalizationHost()), "/");
+		String contextPath = StringUtils.strip(StringUtils.defaultString(config.getLocalizationContextPath()), "/");
+		String searchEndpoint = StringUtils.stripStart(StringUtils.defaultString(config.getLocalizationSearchEndpoint()), "/");
+
 		StringBuilder uri = new StringBuilder();
-		uri.append(config.getLocalizationHost()).append(config.getLocalizationContextPath())
-				.append(config.getLocalizationSearchEndpoint()).append("?").append("locale=").append(locale)
+		uri.append(host);
+		if (!contextPath.isEmpty()) {
+			uri.append("/").append(contextPath);
+		}
+		if (!searchEndpoint.isEmpty()) {
+			uri.append("/").append(searchEndpoint);
+		}
+		uri.append("?").append("locale=").append(locale)
 				.append("&tenantId=").append(tenantId)
 				.append("&module=").append(SWCalculationConstant.MODULE).append(",").append(SWCalculationConstant.MODULE_SW);
 
@@ -337,10 +347,12 @@ public class SWCalculationUtil {
 	 */
 	@SuppressWarnings("rawtypes")
 	public String getLocalizationMessages(String tenantId, RequestInfo requestInfo) {
-		Object response = serviceRequestRepository.fetchResult(getUri(tenantId, requestInfo), requestInfo);
+		StringBuilder uri = getUri(tenantId, requestInfo);
+		Object response = serviceRequestRepository.fetchResult(uri, requestInfo != null ? requestInfo : new RequestInfo());
 		if (response instanceof LinkedHashMap) {
 			return new JSONObject((LinkedHashMap) response).toString();
 		}
+		log.warn("Localization service returned null or unexpected payload from URI: {}", uri);
 		return "{}";
 	}
 

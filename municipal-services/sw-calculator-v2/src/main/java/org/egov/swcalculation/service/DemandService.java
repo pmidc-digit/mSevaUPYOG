@@ -1658,6 +1658,9 @@ public class DemandService {
 			}
 
 			// ── Step 5: partition connections and process in parallel threads ──────
+			demandSchedulerNotificationService.clearFailureTracker(
+					tenantId,
+					connectionNos.stream().map(SewerageDetails::getConnectionNo).collect(Collectors.toList()));
 			int connPoolSize = configs.getConnectionThreadPoolSize() != null
 					? configs.getConnectionThreadPoolSize() : 3;
 			int partitionSize = Math.max(1, (int) Math.ceil((double) connectionNos.size() / connPoolSize));

@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,7 @@ import org.egov.swcalculation.constants.SWCalculationConstant;
 import org.egov.swcalculation.producer.SWCalculationProducer;
 import org.egov.swcalculation.util.SWCalculationUtil;
 import org.egov.swcalculation.web.models.*;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,7 @@ public class DemandSchedulerNotificationService {
 
 	private static final DecimalFormat CURRENCY_FORMAT = new DecimalFormat("#,##,##0.00");
 	private static final DecimalFormat COUNT_FORMAT = new DecimalFormat("#,##,###");
+	private final ConcurrentHashMap<String, ConcurrentHashMap<String, String>> recentBatchFailures = new ConcurrentHashMap<>();
 
 	private Set<String> getToRecipients() {
 		String recipients = configs.getMailRecipients();
@@ -92,13 +95,14 @@ public class DemandSchedulerNotificationService {
 		try {
 			localizationMessage = utils.getLocalizationMessages(primaryTenant, requestInfo);
 		} catch (Exception e) {
-			log.debug("Failed to fetch localization messages for sewerage start email: {}", e.getMessage());
+			log.warn("Failed to fetch localization messages for sewerage start email (tenant: {}): {}", primaryTenant, e.getMessage());
 		}
 
 		String template = utils.getMessageTemplate(SWCalculationConstant.SW_DEMAND_GEN_START_EMAIL_TEMPLATE, localizationMessage);
 		if (StringUtils.isEmpty(template)) {
-			log.debug("{} not found in localization service. Skipping consolidated sewerage start email.",
-					SWCalculationConstant.SW_DEMAND_GEN_START_EMAIL_TEMPLATE);
+			log.info("Skipping consolidated sewerage start email: {} not found in localization service (modules: {},{}).",
+					SWCalculationConstant.SW_DEMAND_GEN_START_EMAIL_TEMPLATE,
+					SWCalculationConstant.MODULE, SWCalculationConstant.MODULE_SW);
 			return;
 		}
 
@@ -187,6 +191,70 @@ public class DemandSchedulerNotificationService {
 		sendConsolidatedStartEmail(Collections.singletonList(singleSummary), requestInfo);
 	}
 
+	public void clearFailureTracker(String tenantId, List<String> connectionNos) {
+		if (StringUtils.isBlank(tenantId) || connectionNos == null || connectionNos.isEmpty()) {
+			return;
+		}
+		ConcurrentHashMap<String, String> tenantFailures = recentBatchFailures.get(tenantId);
+		if (tenantFailures != null) {
+			connectionNos.stream().filter(Objects::nonNull).forEach(tenantFailures::remove);
+		}
+	}
+
+	/**
+	 * Records batch-level demand calculation errors from the Kafka consumer so completion reports
+	 * reflect accurate failure counts and reasons immediately without waiting for full poll timeout.
+	 */
+	public void recordBatchFailure(CalculationReq request, Throwable ex) {
+		if (request == null || request.getCalculationCriteria() == null || request.getCalculationCriteria().isEmpty()) {
+			return;
+		}
+		try {
+			String reason = formatFailureReason(ex);
+			for (CalculationCriteria criteria : request.getCalculationCriteria()) {
+				if (criteria == null || StringUtils.isBlank(criteria.getTenantId()) || StringUtils.isBlank(criteria.getConnectionNo())) {
+					continue;
+				}
+				ConcurrentHashMap<String, String> tenantMap = recentBatchFailures
+						.computeIfAbsent(criteria.getTenantId(), k -> new ConcurrentHashMap<>());
+				if (tenantMap.size() < 5000) {
+					tenantMap.put(criteria.getConnectionNo(), reason);
+				}
+			}
+		} catch (Exception e) {
+			log.debug("Unable to record batch failure details for notification tracker: {}", e.getMessage());
+		}
+	}
+
+	private String formatFailureReason(Throwable ex) {
+		if (ex == null) {
+			return "Calculation failed / check server logs";
+		}
+		String raw = null;
+		if (ex instanceof CustomException) {
+			CustomException ce = (CustomException) ex;
+			raw = StringUtils.isNotBlank(ce.getCode()) && !ce.getCode().equals(ce.getMessage())
+					? ce.getCode() + ": " + StringUtils.defaultString(ce.getMessage())
+					: ce.getMessage();
+		}
+		if (StringUtils.isBlank(raw)) {
+			raw = StringUtils.defaultIfBlank(ex.getMessage(), ex.getClass().getSimpleName());
+		}
+		String escaped = raw.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+		return escaped.length() > 200 ? escaped.substring(0, 197) + "..." : escaped;
+	}
+
+	private long countRecordedFailures(String tenantId, Set<String> targetConnections) {
+		if (StringUtils.isBlank(tenantId) || targetConnections == null || targetConnections.isEmpty()) {
+			return 0L;
+		}
+		ConcurrentHashMap<String, String> tenantMap = recentBatchFailures.get(tenantId);
+		if (tenantMap == null || tenantMap.isEmpty()) {
+			return 0L;
+		}
+		return targetConnections.stream().filter(tenantMap::containsKey).count();
+	}
+
 	/**
 	 * Sends completion email per tenant asynchronously with success, failure, and total revenue metrics.
 	 * Template fetched strictly from localization service (message table).
@@ -197,28 +265,31 @@ public class DemandSchedulerNotificationService {
 		CompletableFuture.runAsync(() -> {
 			try {
 				long totalCount = allConnectionNos != null ? allConnectionNos.size() : 0;
+				Set<String> targetConnSet = allConnectionNos != null
+						? allConnectionNos.stream().filter(Objects::nonNull).collect(Collectors.toSet())
+						: Collections.emptySet();
 				long successCount = 0;
+				long recordedFailureCount = 0;
 				BigDecimal totalAmount = BigDecimal.ZERO;
 
-				// Wait for Kafka consumers to pick up batches and log results to eg_sw_batch_connection_log
-				long initialWaitMs = Math.max(60000L, totalCount * 500L);
-				initialWaitMs = Math.min(initialWaitMs, 5 * 60 * 1000L);
-				log.info("Waiting {}s for Kafka consumer to process {} sewerage connections for tenant: {}",
-						initialWaitMs / 1000, totalCount, tenantId);
+				// Poll every 10s up to (initialWaitMs + 3 min) and exit early once all connections succeed or fail.
+				long initialWaitMs = Math.min(Math.max(60000L, totalCount * 500L), 5 * 60 * 1000L);
+				long maxMonitorMs = initialWaitMs + 3 * 60 * 1000L;
+				long pollStartTime = System.currentTimeMillis();
+				long prevSuccessCount = -1;
+				int unchangedCount = 0;
+				log.info("Monitoring Kafka consumer up to {}s to process {} sewerage connections for tenant: {}",
+						maxMonitorMs / 1000, totalCount, tenantId);
 
 				try {
-					Thread.sleep(initialWaitMs);
+					Thread.sleep(10000L);
 				} catch (InterruptedException ie) {
 					Thread.currentThread().interrupt();
 					log.error("Initial wait interrupted for sewerage completion email (tenant: {})", tenantId);
 					return;
 				}
 
-				long pollStartTime = System.currentTimeMillis();
-				long prevSuccessCount = -1;
-				int unchangedCount = 0;
-
-				while (System.currentTimeMillis() - pollStartTime < 3 * 60 * 1000L) {
+				while (System.currentTimeMillis() - pollStartTime < maxMonitorMs) {
 					try {
 						Map<String, Object> stats = getBatchStats(tenantId, from, to);
 						successCount = ((Number) stats.getOrDefault("success_count", 0)).longValue();
@@ -236,12 +307,17 @@ public class DemandSchedulerNotificationService {
 							}
 						}
 
-						if (successCount >= totalCount && totalCount > 0) {
-							log.info("All {} sewerage connections processed for tenant: {}", totalCount, tenantId);
+						recordedFailureCount = countRecordedFailures(tenantId, targetConnSet);
+						long resolvedCount = successCount + recordedFailureCount;
+
+						if (totalCount > 0 && resolvedCount >= totalCount) {
+							log.info("All {} sewerage connections resolved for tenant {} (success={}, failed={}).",
+									totalCount, tenantId, successCount, recordedFailureCount);
 							break;
 						}
 
-						if (successCount > 0 && successCount == prevSuccessCount) {
+						long elapsedMs = System.currentTimeMillis() - pollStartTime;
+						if (elapsedMs >= initialWaitMs && successCount > 0 && successCount == prevSuccessCount) {
 							unchangedCount++;
 							if (unchangedCount >= 3) {
 								log.info("Sewerage demand processing stabilized for tenant {}: successCount={}, totalCount={}",
@@ -256,33 +332,39 @@ public class DemandSchedulerNotificationService {
 						log.error("Error fetching sewerage batch stats during polling: {}", e.getMessage());
 					}
 					try {
-						Thread.sleep(15000L);
+						Thread.sleep(10000L);
 					} catch (InterruptedException ie) {
 						Thread.currentThread().interrupt();
 						break;
 					}
 				}
 
+				recordedFailureCount = Math.max(recordedFailureCount, countRecordedFailures(tenantId, targetConnSet));
 				long failureCount = Math.max(0, totalCount - successCount);
-				boolean timedOut = successCount == 0 && totalCount > 0;
+				boolean allFailed = successCount == 0 && recordedFailureCount > 0;
+				boolean timedOut = successCount == 0 && recordedFailureCount == 0 && totalCount > 0;
 
 				String localizationMessage = "";
 				try {
 					localizationMessage = utils.getLocalizationMessages(tenantId, requestInfo);
 				} catch (Exception e) {
-					log.debug("Failed to fetch localization messages for sewerage completion email: {}", e.getMessage());
+					log.warn("Failed to fetch localization messages for sewerage completion email (tenant: {}): {}", tenantId, e.getMessage());
 				}
 
 				String template = utils.getMessageTemplate(SWCalculationConstant.SW_DEMAND_GEN_COMPLETION_EMAIL_TEMPLATE, localizationMessage);
 				if (StringUtils.isEmpty(template)) {
-					log.debug("{} not found in localization service. Skipping sewerage completion email.",
-							SWCalculationConstant.SW_DEMAND_GEN_COMPLETION_EMAIL_TEMPLATE);
+					log.info("Skipping sewerage completion email (tenant: {}): {} not found in localization service (modules: {},{}).",
+							tenantId, SWCalculationConstant.SW_DEMAND_GEN_COMPLETION_EMAIL_TEMPLATE,
+							SWCalculationConstant.MODULE, SWCalculationConstant.MODULE_SW);
+					clearFailureTracker(tenantId, allConnectionNos);
 					return;
 				}
 
 				String failedConnectionsRows = "";
 				if (template.contains("{failedConnectionsRows}") && allConnectionNos != null) {
 					failedConnectionsRows = buildFailedConnectionsRows(tenantId, from, to, allConnectionNos);
+				} else {
+					clearFailureTracker(tenantId, allConnectionNos);
 				}
 
 				Date fromDate = from != null ? new Date(from) : new Date(startTime);
@@ -301,8 +383,8 @@ public class DemandSchedulerNotificationService {
 				long durationSec = (durationMs / 1000) % 60;
 				String duration = durationMin + "m " + durationSec + "s";
 
-				String statusLabel = timedOut ? "TIMEOUT" : (failureCount > 0 ? "PARTIALLY COMPLETED" : "SUCCESS");
-				String statusColor = timedOut ? "#ef4444" : (failureCount > 0 ? "#f59e0b" : "#10b981");
+				String statusLabel = allFailed ? "FAILED" : (timedOut ? "TIMEOUT" : (failureCount > 0 ? "PARTIALLY COMPLETED" : "SUCCESS"));
+				String statusColor = (allFailed || timedOut) ? "#ef4444" : (failureCount > 0 ? "#f59e0b" : "#10b981");
 				String cityName = getCityName(tenantId);
 
 				double successPct = totalCount > 0 ? ((double) successCount / totalCount) * 100 : 0;
@@ -372,7 +454,13 @@ public class DemandSchedulerNotificationService {
 				.filter(conn -> !successSet.contains(conn))
 				.collect(Collectors.toList());
 
-		Map<String, String> failureReasons = getFailureReasons(tenantId, from, to);
+		Map<String, String> failureReasons = new HashMap<>();
+		ConcurrentHashMap<String, String> trackedFailures = recentBatchFailures.get(tenantId);
+		if (trackedFailures != null) {
+			failureReasons.putAll(trackedFailures);
+		}
+		failureReasons.putAll(getFailureReasons(tenantId, from, to));
+		clearFailureTracker(tenantId, allConnectionNos);
 
 		StringBuilder failedRowsBuilder = new StringBuilder();
 		if (failedConnectionNos.isEmpty()) {

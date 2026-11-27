@@ -108,6 +108,12 @@ import {
   FireNOCModule,
   FireNOCLinks,
 } from "@mseva/digit-ui-module-firenoc";
+import {
+  TransferAppointmentModule,
+  TransferAppointmentLinks,
+  TransferAppointmentComponents,
+  initTransferAppointmentComponents,
+} from "@mseva/digit-ui-module-transferappointment";
 
 import { initReportsComponents } from "@mseva/digit-ui-module-reports";
 
@@ -153,6 +159,7 @@ const enabledModules = [
   "GarbageCollection",
   "KibanaDashboard",
   "OBPSKibanaDashboard",
+  "TransferAppointment",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -194,6 +201,9 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ...PGRAIComponents,
   FIRENOCModule: FireNOCModule,
   FIRENOCLinks: FireNOCLinks,
+  TransferAppointmentModule,
+  TransferAppointmentLinks,
+  ...TransferAppointmentComponents,
 });
 initPGRComponents();
 initSWACHComponents();
@@ -204,6 +214,7 @@ initChallanGenerationComponents();
 initGarbageCollectionComponents();
 initRentAndLeaseComponents();
 initHRMSComponents();
+initTransferAppointmentComponents();
 initTLComponents();
 initReceiptsComponents();
 initOBPSComponents();

@@ -9,9 +9,11 @@ import JurisdictionDetails from "./JurisdictionDetails";
  * Employee App Router for Transfer & Appointment Module
  * Supports distinct routes for Search & Results vs. Employee Jurisdiction Details
  */
-const App = () => {
+const App = ({ path: propPath, url: propUrl }) => {
   const { t } = useTranslation();
-  const { path } = useRouteMatch();
+  const match = useRouteMatch();
+  const rawPath = propPath || match?.path;
+  const path = (Array.isArray(rawPath) ? rawPath[0] : (typeof rawPath === "string" ? rawPath.split(",")[0] : rawPath)) || "/digit-ui/employee/transferAppointment";
   const location = useLocation();
 
   const isDetailsRoute = location.pathname.includes("/details/");
@@ -49,16 +51,25 @@ const App = () => {
       </div>
       <Switch>
         <PrivateRoute
-          path={[`${path}/jurisdiction/details/:tenantId/:code`, `${path}/details/:tenantId/:code`]}
+          path={[
+            `${path}/jurisdiction/details/:tenantId/:code`,
+            `${path}/details/:tenantId/:code`,
+            "/digit-ui/employee/transferAppointment/jurisdiction/details/:tenantId/:code",
+            "/digit-ui/employee/transferappointment/jurisdiction/details/:tenantId/:code",
+            "/digit-ui/employee/transferAppointment/details/:tenantId/:code",
+            "/digit-ui/employee/transferappointment/details/:tenantId/:code",
+          ]}
           component={() => <JurisdictionDetails />}
         />
         <PrivateRoute
-          path={`${path}/jurisdiction`}
-          component={() => <JurisdictionManagement />}
-        />
-        {/* Default route redirects to jurisdiction management */}
-        <PrivateRoute
-          path={`${path}`}
+          path={[
+            `${path}/jurisdiction`,
+            "/digit-ui/employee/transferAppointment/jurisdiction",
+            "/digit-ui/employee/transferappointment/jurisdiction",
+            `${path}`,
+            "/digit-ui/employee/transferAppointment",
+            "/digit-ui/employee/transferappointment",
+          ]}
           component={() => <JurisdictionManagement />}
         />
       </Switch>

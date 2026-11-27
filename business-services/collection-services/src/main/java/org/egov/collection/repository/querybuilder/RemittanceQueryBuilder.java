@@ -229,7 +229,7 @@ public class RemittanceQueryBuilder {
         String sortBy = (criteria.getSortBy() == null ? "rem.referenceDate" : "rem." + criteria.getSortBy());
         String sortOrder = (criteria.getSortOrder() == null ? "DESC" : criteria
                 .getSortOrder());
-        selectQuery.append(" ORDER BY ").append(sortBy).append(" ").append(sortOrder);
+        selectQuery.append(" ORDER BY ").append(safeSortColumn(sortBy)).append(" ").append(safeSortOrder(sortOrder));
     }
 
     private static String addPaginationClause(StringBuilder selectQuery, Map<String, Object> preparedStatementValues,
@@ -245,4 +245,16 @@ public class RemittanceQueryBuilder {
             return selectQuery.toString();
     }
 
+    // Sort column and direction cannot be bound as parameters, so restrict them to safe values
+    private static String safeSortColumn(String sortBy) {
+        if (sortBy == null || !sortBy.trim().matches("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?$"))
+            throw new org.egov.tracer.model.CustomException("INVALID_SORT_BY", "sortBy must be a single column name");
+        return sortBy.trim();
+    }
+
+    private static String safeSortOrder(String sortOrder) {
+        if (sortOrder != null && ("ASC".equalsIgnoreCase(sortOrder.trim()) || "DESC".equalsIgnoreCase(sortOrder.trim())))
+            return sortOrder.trim();
+        throw new org.egov.tracer.model.CustomException("INVALID_SORT_ORDER", "sortOrder must be ASC or DESC");
+    }
 }

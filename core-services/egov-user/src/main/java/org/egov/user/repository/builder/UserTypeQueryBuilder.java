@@ -220,8 +220,14 @@ public class UserTypeQueryBuilder {
     }
 
     private void addOrderByClause(final StringBuilder selectQuery, final UserSearchCriteria userSearchCriteria) {
-        final String sortBy = userSearchCriteria.getSort() != null && !userSearchCriteria.getSort().isEmpty()
-                ? " userdata." + userSearchCriteria.getSort().get(0) : "userdata.id";
+        String sortBy = "userdata.id";
+        if (userSearchCriteria.getSort() != null && !userSearchCriteria.getSort().isEmpty()) {
+            // Sort column cannot be bound as a parameter, so restrict it to "column" or "column asc|desc"
+            final String sort = userSearchCriteria.getSort().get(0);
+            if (sort == null || !sort.trim().matches("(?i)^[a-z_][a-z0-9_]*(\\s+(asc|desc))?$"))
+                throw new org.egov.tracer.model.CustomException("INVALID_SORT", "sort must be a single column name");
+            sortBy = " userdata." + sort.trim();
+        }
         selectQuery.append(" ORDER BY ").append(sortBy);
     }
 

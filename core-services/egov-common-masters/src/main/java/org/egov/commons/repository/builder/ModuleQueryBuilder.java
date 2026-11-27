@@ -40,6 +40,8 @@
 
 package org.egov.commons.repository.builder;
 
+import org.egov.commons.util.SortValidator;
+
 import java.util.List;
 
 import org.egov.commons.config.ApplicationProperties;
@@ -119,7 +121,7 @@ public class ModuleQueryBuilder {
 	private void addOrderByClause(StringBuilder selectQuery, ModuleGetRequest moduleGetRequest) {
 		String sortBy = (moduleGetRequest.getSortBy() == null ? "name" : moduleGetRequest.getSortBy());
 		String sortOrder = (moduleGetRequest.getSortOrder() == null ? "ASC" : moduleGetRequest.getSortOrder());
-		selectQuery.append(" ORDER BY " + sortBy + " " + sortOrder);
+		selectQuery.append(" ORDER BY " + SortValidator.column(sortBy) + " " + SortValidator.order(sortOrder));
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

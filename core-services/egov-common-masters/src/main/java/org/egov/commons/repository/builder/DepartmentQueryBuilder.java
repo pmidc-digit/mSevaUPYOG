@@ -40,6 +40,8 @@
 
 package org.egov.commons.repository.builder;
 
+import org.egov.commons.util.SortValidator;
+
 import org.egov.commons.web.contract.DepartmentGetRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +124,7 @@ public class DepartmentQueryBuilder {
 				: departmentGetRequest.getSortBy());
 		String sortOrder = (departmentGetRequest.getSortOrder() == null ? "ASC"
 				: departmentGetRequest.getSortOrder());
-		selectQuery.append(" ORDER BY " + sortBy + " " + sortOrder);
+		selectQuery.append(" ORDER BY " + SortValidator.column(sortBy) + " " + SortValidator.order(sortOrder));
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

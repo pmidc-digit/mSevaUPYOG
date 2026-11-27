@@ -109,7 +109,7 @@ public class CollectionConfigQueryBuilder {
 				: collectionConfigGetRequest.getSortBy());
 		String sortOrder = (collectionConfigGetRequest.getSortOrder() == null ? "ASC"
 				: collectionConfigGetRequest.getSortOrder());
-		selectQuery.append(" ORDER BY " + sortBy + " " + sortOrder);
+		selectQuery.append(" ORDER BY " + safeSortColumn(sortBy) + " " + safeSortOrder(sortOrder));
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -157,5 +157,17 @@ public class CollectionConfigQueryBuilder {
 		}
 		return query.append(")").toString();
 	}
+    // Sort column and direction cannot be bound as parameters, so restrict them to safe values
+    private static String safeSortColumn(String sortBy) {
+        if (sortBy == null || !sortBy.trim().matches("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?$"))
+            throw new org.egov.tracer.model.CustomException("INVALID_SORT_BY", "sortBy must be a single column name");
+        return sortBy.trim();
+    }
+
+    private static String safeSortOrder(String sortOrder) {
+        if (sortOrder != null && ("ASC".equalsIgnoreCase(sortOrder.trim()) || "DESC".equalsIgnoreCase(sortOrder.trim())))
+            return sortOrder.trim();
+        throw new org.egov.tracer.model.CustomException("INVALID_SORT_ORDER", "sortOrder must be ASC or DESC");
+    }
 }
 

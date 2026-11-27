@@ -68,7 +68,7 @@ public class BusinessDetailsQueryBuilderTest {
 				+ " eg_business_accountdetails bad ON bd.id=bad.businessdetails"
 				+ " FULL JOIN eg_business_subledgerinfo basd ON bad.id=basd.businessaccountdetail"
 				+ " WHERE bd.tenantId = ? AND bd.id IN (1, 2) AND bc.code = ? AND bd.isenabled = ?"
-				+ " AND bd.code IN ('TL','PT') ORDER BY bd.code DESC", query);
+				+ " AND bd.code IN (?,?) ORDER BY bd.code DESC", query);
 	}
 
 }

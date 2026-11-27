@@ -52,7 +52,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -76,7 +76,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.fund = :fund AND"
                         + " rem.function = :function AND rem.reasonForDelay = :reasonForDelay AND rem.remarks = :remarks AND"
                         + " rem.referenceDate >= :fromDate AND rem.referenceDate <= :toDate AND rem.voucherHeader = :voucherHeader"
-                        + " AND rem.id IN (:ids) ORDER BY rem.Sort By asc) result) result_offset WHERE offset_ > :offset AND"
+                        + " AND rem.id IN (:ids) ORDER BY rem.sortBy asc) result) result_offset WHERE offset_ > :offset AND"
                         + " offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
@@ -97,7 +97,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -121,7 +121,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.fund = :fund AND"
                         + " rem.function = :function AND rem.reasonForDelay = :reasonForDelay AND rem.remarks = :remarks AND"
                         + " rem.referenceDate >= :fromDate AND rem.referenceDate <= :toDate AND rem.voucherHeader = :voucherHeader"
-                        + " AND rem.id IN (:ids) ORDER BY rem.Sort By asc) result) result_offset WHERE offset_ > :offset AND"
+                        + " AND rem.id IN (:ids) ORDER BY rem.sortBy asc) result) result_offset WHERE offset_ > :offset AND"
                         + " offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
@@ -142,7 +142,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -165,7 +165,7 @@ class RemittanceQueryBuilderTest {
                         + ".remittance LEFT OUTER JOIN egcl_remittancereceipt remRec ON rem.id=remRec.remittance  WHERE  rem.tenantId"
                         + " =:tenantId AND rem.status = :status AND rem.fund = :fund AND rem.function = :function AND rem.reasonForDelay"
                         + " = :reasonForDelay AND rem.remarks = :remarks AND rem.referenceDate >= :fromDate AND rem.referenceDate"
-                        + " <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.Sort By asc)"
+                        + " <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.sortBy asc)"
                         + " result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
@@ -186,7 +186,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -209,7 +209,7 @@ class RemittanceQueryBuilderTest {
                         + ".remittance LEFT OUTER JOIN egcl_remittancereceipt remRec ON rem.id=remRec.remittance  WHERE  rem.tenantId"
                         + " =:tenantId AND rem.status = :status AND rem.fund = :fund AND rem.function = :function AND rem.reasonForDelay"
                         + " = :reasonForDelay AND rem.remarks = :remarks AND rem.referenceDate >= :fromDate AND rem.referenceDate"
-                        + " <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.Sort By asc)"
+                        + " <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.sortBy asc)"
                         + " result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
@@ -230,7 +230,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -254,7 +254,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.fund = :fund AND"
                         + " rem.function = :function AND rem.reasonForDelay = :reasonForDelay AND rem.remarks = :remarks AND"
                         + " rem.referenceDate <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY"
-                        + " rem.Sort By asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
+                        + " rem.sortBy asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
         assertEquals(12, stringObjectMap.size());
@@ -274,7 +274,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -298,7 +298,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.fund = :fund AND"
                         + " rem.reasonForDelay = :reasonForDelay AND rem.remarks = :remarks AND rem.referenceDate >= :fromDate"
                         + " AND rem.referenceDate <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER"
-                        + " BY rem.Sort By asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
+                        + " BY rem.sortBy asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
         assertEquals(12, stringObjectMap.size());
@@ -318,7 +318,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -342,7 +342,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.function = :function"
                         + " AND rem.reasonForDelay = :reasonForDelay AND rem.remarks = :remarks AND rem.referenceDate >= :fromDate"
                         + " AND rem.referenceDate <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER"
-                        + " BY rem.Sort By asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
+                        + " BY rem.sortBy asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
         assertEquals(12, stringObjectMap.size());
@@ -362,7 +362,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -385,7 +385,7 @@ class RemittanceQueryBuilderTest {
                         + "  WHERE  rem.tenantId =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND"
                         + " rem.fund = :fund AND rem.function = :function AND rem.reasonForDelay = :reasonForDelay AND rem.remarks"
                         + " = :remarks AND rem.referenceDate >= :fromDate AND rem.referenceDate <= :toDate AND rem.voucherHeader"
-                        + " = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.Sort By asc",
+                        + " = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.sortBy asc",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
         assertEquals(11, stringObjectMap.size());
@@ -405,7 +405,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay(null);
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -428,7 +428,7 @@ class RemittanceQueryBuilderTest {
                         + ".remittance LEFT OUTER JOIN egcl_remittancereceipt remRec ON rem.id=remRec.remittance  WHERE  rem.tenantId"
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.fund = :fund AND"
                         + " rem.function = :function AND rem.remarks = :remarks AND rem.referenceDate >= :fromDate AND rem.referenceDate"
-                        + " <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.Sort By asc)"
+                        + " <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.sortBy asc)"
                         + " result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
@@ -465,7 +465,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(stringList);
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -489,7 +489,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.referenceNumber IN (:referenceNumbers)   AND rem.bankaccount in (:bankaccount) AND"
                         + " rem.status = :status AND rem.fund = :fund AND rem.function = :function AND rem.reasonForDelay ="
                         + " :reasonForDelay AND rem.remarks = :remarks AND rem.referenceDate >= :fromDate AND rem.referenceDate"
-                        + " <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.Sort By asc)"
+                        + " <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY rem.sortBy asc)"
                         + " result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
@@ -510,7 +510,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks(null);
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -534,7 +534,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.fund = :fund AND"
                         + " rem.function = :function AND rem.reasonForDelay = :reasonForDelay AND rem.referenceDate >= :fromDate"
                         + " AND rem.referenceDate <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER"
-                        + " BY rem.Sort By asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
+                        + " BY rem.sortBy asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
         assertEquals(12, stringObjectMap.size());
@@ -599,7 +599,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder(null);
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -623,7 +623,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.fund = :fund AND"
                         + " rem.function = :function AND rem.reasonForDelay = :reasonForDelay AND rem.remarks = :remarks AND"
                         + " rem.referenceDate >= :fromDate AND rem.referenceDate <= :toDate AND rem.voucherHeader = :voucherHeader"
-                        + " AND rem.id IN (:ids) ORDER BY rem.Sort By DESC) result) result_offset WHERE offset_ > :offset AND"
+                        + " AND rem.id IN (:ids) ORDER BY rem.sortBy DESC) result) result_offset WHERE offset_ > :offset AND"
                         + " offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
@@ -644,7 +644,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus(null);
         remittanceSearchRequest.setTenantId("42");
@@ -668,7 +668,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.fund = :fund AND rem.function = :function"
                         + " AND rem.reasonForDelay = :reasonForDelay AND rem.remarks = :remarks AND rem.referenceDate >= :fromDate"
                         + " AND rem.referenceDate <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER"
-                        + " BY rem.Sort By asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
+                        + " BY rem.sortBy asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
         assertEquals(12, stringObjectMap.size());
@@ -688,7 +688,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId(null);
@@ -712,7 +712,7 @@ class RemittanceQueryBuilderTest {
                         + " rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.fund = :fund AND rem.function ="
                         + " :function AND rem.reasonForDelay = :reasonForDelay AND rem.remarks = :remarks AND rem.referenceDate"
                         + " >= :fromDate AND rem.referenceDate <= :toDate AND rem.voucherHeader = :voucherHeader AND rem.id IN"
-                        + " (:ids) ORDER BY rem.Sort By asc) result) result_offset WHERE offset_ > :offset AND offset_ <=" + " :limit",
+                        + " (:ids) ORDER BY rem.sortBy asc) result) result_offset WHERE offset_ > :offset AND offset_ <=" + " :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(86400001L, remittanceSearchRequest.getToDate().longValue());
         assertEquals(12, stringObjectMap.size());
@@ -732,7 +732,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");
@@ -756,7 +756,7 @@ class RemittanceQueryBuilderTest {
                         + " =:tenantId AND rem.bankaccount in (:bankaccount) AND rem.status = :status AND rem.fund = :fund AND"
                         + " rem.function = :function AND rem.reasonForDelay = :reasonForDelay AND rem.remarks = :remarks AND"
                         + " rem.referenceDate >= :fromDate AND rem.voucherHeader = :voucherHeader AND rem.id IN (:ids) ORDER BY"
-                        + " rem.Sort By asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
+                        + " rem.sortBy asc) result) result_offset WHERE offset_ > :offset AND offset_ <= :limit",
                 RemittanceQueryBuilder.getRemittanceSearchQuery(remittanceSearchRequest, stringObjectMap));
         assertEquals(12, stringObjectMap.size());
     }
@@ -775,7 +775,7 @@ class RemittanceQueryBuilderTest {
         remittanceSearchRequest.setReasonForDelay("Just cause");
         remittanceSearchRequest.setReferenceNumbers(new ArrayList<>());
         remittanceSearchRequest.setRemarks("Remarks");
-        remittanceSearchRequest.setSortBy("Sort By");
+        remittanceSearchRequest.setSortBy("sortBy");
         remittanceSearchRequest.setSortOrder("asc");
         remittanceSearchRequest.setStatus("Status");
         remittanceSearchRequest.setTenantId("42");

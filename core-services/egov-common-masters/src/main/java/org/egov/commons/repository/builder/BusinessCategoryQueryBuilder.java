@@ -1,5 +1,7 @@
 package org.egov.commons.repository.builder;
 
+import org.egov.commons.util.SortValidator;
+
 import java.util.List;
 
 import org.egov.commons.model.BusinessCategoryCriteria;
@@ -78,7 +80,7 @@ public class BusinessCategoryQueryBuilder {
 	private void addOrderByClause(StringBuilder selectQuery, BusinessCategoryCriteria criteria) {
 		String sortBy = (criteria.getSortBy() == null ? "name" : criteria.getSortBy());
 		String sortOrder = (criteria.getSortOrder() == null ? "ASC" : criteria.getSortOrder());
-		selectQuery.append(" ORDER BY " + sortBy + " " + sortOrder);
+		selectQuery.append(" ORDER BY " + SortValidator.column(sortBy) + " " + SortValidator.order(sortOrder));
 	}
 
 	private boolean addAndClauseIfRequired(boolean appendAndClauseFlag, StringBuilder queryString) {

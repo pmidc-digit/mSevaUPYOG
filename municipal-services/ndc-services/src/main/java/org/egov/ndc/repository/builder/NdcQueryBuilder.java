@@ -142,7 +142,7 @@ public class NdcQueryBuilder {
 		}
 	}
 	public String getExistingUuids(String tableName, List<String> uuids) {
-		return "SELECT uuid FROM " + tableName + " WHERE uuid IN (" + uuids.stream().map(uuid -> "'" + uuid + "'").collect(Collectors.joining(",")) + ")";
+		return "SELECT uuid FROM " + tableName + " WHERE uuid IN (" + uuids.stream().map(uuid -> "?").collect(Collectors.joining(",")) + ")";
 	}
 
 	public String checkApplicationExists(String uuid) {

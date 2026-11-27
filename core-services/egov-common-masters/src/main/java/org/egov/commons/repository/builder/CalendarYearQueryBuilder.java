@@ -40,6 +40,8 @@
 
 package org.egov.commons.repository.builder;
 
+import org.egov.commons.util.SortValidator;
+
 import static org.springframework.util.StringUtils.isEmpty;
 
 import java.util.List;
@@ -149,7 +151,7 @@ public class CalendarYearQueryBuilder {
         final String sortBy = calendarYearGetRequest.getSortBy() == null ? "name" : calendarYearGetRequest.getSortBy();
         final String sortOrder = calendarYearGetRequest.getSortOrder() == null ? "DESC"
                 : calendarYearGetRequest.getSortOrder();
-        selectQuery.append(" ORDER BY " + sortBy + " " + sortOrder);
+        selectQuery.append(" ORDER BY " + SortValidator.column(sortBy) + " " + SortValidator.order(sortOrder));
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

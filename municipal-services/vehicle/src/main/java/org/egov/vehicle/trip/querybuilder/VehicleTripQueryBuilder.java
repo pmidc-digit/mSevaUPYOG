@@ -25,7 +25,7 @@ public class VehicleTripQueryBuilder {
 	private VehicleConfiguration config;
 
 	private String convertListToString(List<String> namesList) {
-		return String.join(",", namesList.stream().map(name -> ("'" + name + "'")).collect(Collectors.toList()));
+		return String.join(",", namesList.stream().map(name -> "?").collect(Collectors.toList()));
 	}
 
 	public String getVehicleLogExistQuery(String vehicleLogId, List<Object> preparedStmtList) {

@@ -426,24 +426,24 @@ public class PaymentRepository {
 		if (Isapp) {
 			if (businessservice.equals("WS")) {
 
-				queryString = "select oldconnectionno from eg_ws_connection where applicationno='" + consumerCode + "'";
+				queryString = "select oldconnectionno from eg_ws_connection where applicationno=:consumerCode";
 			} else {
-				queryString = "select oldconnectionno from eg_sw_connection where applicationno='" + consumerCode + "'";
+				queryString = "select oldconnectionno from eg_sw_connection where applicationno=:consumerCode";
 
 			}
 		} else {
 			if (businessservice.equals("WS")) {
 
-				queryString = "select oldconnectionno from eg_ws_connection where connectionno='" + consumerCode + "'";
+				queryString = "select oldconnectionno from eg_ws_connection where connectionno=:consumerCode";
 			} else {
-				queryString = "select oldconnectionno from eg_sw_connection where connectionno='" + consumerCode + "'";
+				queryString = "select oldconnectionno from eg_sw_connection where connectionno=:consumerCode";
 
 			}
 		}
 		log.info("Query: " + queryString);
 		try {
 			// res = jdbcTemplate.queryForList(queryString, String.class);
-			res = namedParameterJdbcTemplate.query(queryString, new SingleColumnRowMapper<>(String.class));
+			res = namedParameterJdbcTemplate.query(queryString, Collections.singletonMap("consumerCode", consumerCode), new SingleColumnRowMapper<>(String.class));
 		} catch (Exception ex) {
 			log.error("Exception while reading bill scheduler status" + ex.getMessage());
 		}
@@ -453,6 +453,7 @@ public class PaymentRepository {
 	public List<String> fetchLandArea(String consumerCode, String businessservice) {
 		List<String> res = new ArrayList<>();
 		Map<String, Object> preparedStatementValues = new HashMap<>();
+		preparedStatementValues.put("consumerCode", consumerCode);
 		String queryString = "";
 		Boolean Isapp = false;
 		if (consumerCode.contains("WS_AP"))
@@ -460,24 +461,24 @@ public class PaymentRepository {
 		if (Isapp) {
 			if (businessservice.equals("WS")) {
 				queryString = "select a2.landarea from eg_ws_connection a1 inner join eg_pt_property a2 on a1.property_id= a2.propertyid"
-						+ " where a1.applicationno = '" + consumerCode + "'"
+						+ " where a1.applicationno = :consumerCode"
 						+ " and a1.status='Active'"
 						+ " and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 			} else {
 				queryString = "select a2.landarea from eg_sw_connection a1 inner join eg_pt_property a2 on a1.property_id= a2.propertyid"
-						+ " where a1.applicationno = '" + consumerCode + "'"
+						+ " where a1.applicationno = :consumerCode"
 						+ " and a1.status='Active'"
 						+ " and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 			}
 		} else {
 			if (businessservice.equals("WS")) {
 				queryString = "select a2.landarea from eg_ws_connection a1 inner join eg_pt_property a2 on a1.property_id= a2.propertyid"
-						+ " where a1.connectionno = '" + consumerCode + "'"
+						+ " where a1.connectionno = :consumerCode"
 						+ " and a1.status='Active'"
 						+ " and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 			} else {
 				queryString = "select a2.landarea from eg_sw_connection a1 inner join eg_pt_property a2 on a1.property_id= a2.propertyid"
-						+ " where a1.connectionno = '" + consumerCode + "'"
+						+ " where a1.connectionno = :consumerCode"
 						+ " and a1.status='Active' "
 						+ " and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 			}
@@ -498,6 +499,7 @@ public class PaymentRepository {
 	public List<String> fetchUsageCategory(String consumerCode,String businessservice) {
 		List<String> res = new ArrayList<>();
 		Map<String, Object> preparedStatementValues = new HashMap<>();
+		preparedStatementValues.put("consumerCode", consumerCode);
 		 String queryString = "";  // Declare queryString outside the if-else block
 			Boolean Isapp=false;
 			if (consumerCode.contains("WS_AP") || consumerCode.contains("SW_AP"))
@@ -506,13 +508,13 @@ public class PaymentRepository {
 	    if(businessservice.equals("WS")) {
 	    	queryString = "SELECT a2.usagecategory FROM eg_ws_connection a1 " +
 	                  "INNER JOIN eg_pt_property a2 ON a1.property_id = a2.propertyid " +
-	                  "WHERE a1.applicationno = '" + consumerCode + "' " +
+	                  "WHERE a1.applicationno = :consumerCode " +
 	                  "AND (a2.status = 'ACTIVE' OR a2.status = 'PENDINGWS');";
 	    	
 	    }else {
 	    	queryString = "SELECT a2.usagecategory FROM eg_sw_connection a1 " +
 	                  "INNER JOIN eg_pt_property a2 ON a1.property_id = a2.propertyid " +
-	                  "WHERE a1.applicationno = '" + consumerCode + "' " +
+	                  "WHERE a1.applicationno = :consumerCode " +
 	                  "AND (a2.status = 'ACTIVE' OR a2.status = 'PENDINGWS');";
 	    }
 	}
@@ -521,12 +523,12 @@ public class PaymentRepository {
 		  if(businessservice.equals("WS")) {
 			  queryString = "SELECT a2.usagecategory FROM eg_ws_connection a1 " +
 	                  "INNER JOIN eg_pt_property a2 ON a1.property_id = a2.propertyid " +
-	                  "WHERE a1.applicationno = '" + consumerCode + "' " +
+	                  "WHERE a1.applicationno = :consumerCode " +
 	                  "AND (a2.status = 'ACTIVE' OR a2.status = 'PENDINGWS');";
 			    }else {
 			    	queryString = "SELECT a2.usagecategory FROM eg_sw_connection a1 " +
 			                  "INNER JOIN eg_pt_property a2 ON a1.property_id = a2.propertyid " +
-			                  "WHERE a1.applicationno = '" + consumerCode + "' " +
+			                  "WHERE a1.applicationno = :consumerCode " +
 			                  "AND (a2.status = 'ACTIVE' OR a2.status = 'PENDINGWS');";
 			    }	
 	}
@@ -543,6 +545,7 @@ public class PaymentRepository {
 	public List<String> fetchpropertyid(String consumerCode,String businessservice) {
 		List<String> res = new ArrayList<>();
 		Map<String, Object> preparedStatementValues = new HashMap<>();
+		preparedStatementValues.put("consumerCode", consumerCode);
 		 String queryString = "";  // Declare queryString outside the if-else block
 			Boolean Isapp=false;
 			if (consumerCode.contains("WS_AP") || consumerCode.contains("SW_AP")) 
@@ -550,21 +553,21 @@ public class PaymentRepository {
 	if (Isapp) {
 	    if(businessservice.equals("WS")) {
 		 queryString = "select a2.propertyid from eg_ws_connection a1 inner join eg_pt_property a2 on a1.property_id= a2.propertyid"
-				+ " where a1.applicationno = '"+consumerCode+"'"
+				+ " where a1.applicationno = :consumerCode"
 				+ " and a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 	    }else {
 	    	 queryString = "select a2.propertyid from eg_sw_connection a1 inner join eg_pt_property a2 on a1.property_id= a2.propertyid"
-	 				+ " where a1.applicationno = '"+consumerCode+"'" 
+	 				+ " where a1.applicationno = :consumerCode" 
 	 				+ " and a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 	    }}
 	else {
 		 if(businessservice.equals("WS")) {
 			 queryString = "select a2.propertyid from eg_ws_connection a1 inner join eg_pt_property a2 on a1.property_id= a2.propertyid"
-					+ " where a1.connectionno = '"+consumerCode+"'"
+					+ " where a1.connectionno = :consumerCode"
 					+ " and a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 		    }else {
 		    	 queryString = "select a2.propertyid from eg_sw_connection a1 inner join eg_pt_property a2 on a1.property_id= a2.propertyid"
-		 				+ " where a1.connectionno = '"+consumerCode+"'"
+		 				+ " where a1.connectionno = :consumerCode"
 		 				+ " and a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 		    }
 		
@@ -581,6 +584,7 @@ public class PaymentRepository {
 	public List<String> fetchadresss(String consumerCode,String businessservice) {
 		List<String> res = new ArrayList<>();
 		Map<String, Object> preparedStatementValues = new HashMap<>();
+		preparedStatementValues.put("consumerCode", consumerCode);
 		 String queryString = "";  // Declare queryString outside the if-else block
 			Boolean Isapp=false;
 			if (consumerCode.contains("WS_AP") || consumerCode.contains("SW_AP")) 
@@ -591,14 +595,14 @@ public class PaymentRepository {
 	    	 queryString = "select CONCAT(doorno,'.',buildingname,'.',city) as address from eg_ws_connection a1 "
 	 				+ " inner join eg_pt_property a2 on a1.property_id = a2.propertyid "
 	 				+ " inner join eg_pt_address a3 on a2.id=a3.propertyid "
-	 				+ " where a1.applicationno='"+consumerCode+"'"
+	 				+ " where a1.applicationno=:consumerCode"
 	 				+ " a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 	 			       
 	    }else {               
 	    	queryString = "select CONCAT(doorno,'.',buildingname,'.',city) as address from eg_sw_connection a1 "
 					+ " inner join eg_pt_property a2 on a1.property_id = a2.propertyid "
 					+ " inner join eg_pt_address a3 on a2.id=a3.propertyid "
-					+ " where a1.applicationno='"+consumerCode+"'"
+					+ " where a1.applicationno=:consumerCode"
 					+ " a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 				       
 	    }
@@ -608,14 +612,14 @@ public class PaymentRepository {
 			 queryString = "select CONCAT(doorno,'.',buildingname,'.',city) as address from eg_ws_connection a1 "
 						+ " inner join eg_pt_property a2 on a1.property_id = a2.propertyid "
 						+ " inner join eg_pt_address a3 on a2.id=a3.propertyid "
-						+ " where a1.connectionno='"+consumerCode+"';"
+						+ " where a1.connectionno=:consumerCode;"
 						+ " a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 					       
 		    }else {
 		    	queryString = "select   CONCAT(doorno,'.',buildingname,'.',city) as address from eg_sw_connection a1 "
 						+ " inner join eg_pt_property a2 on a1.property_id = a2.propertyid "
 						+ " inner join eg_pt_address a3 on a2.id=a3.propertyid "
-						+ " where a1.connectionno='"+consumerCode+"';"
+						+ " where a1.connectionno=:consumerCode;"
 						+ " a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 					     
 		    }
@@ -643,19 +647,20 @@ public class PaymentRepository {
 			    consumercode =   iterate.next();			  
 		}		
 		Map<String, Object> preparedStatementValues = new HashMap<>();
+		preparedStatementValues.put("consumercode", consumercode);
 		String queryString;
 		if (consumercode.contains("WS_AP")) {
 		    queryString = "select a2.usagecategory from eg_ws_connection a1 "
 				+ " inner join eg_pt_property a2 on a1.property_id = a2.propertyid "
 				+ " inner join eg_pt_address a3 on a2.id=a3.propertyid "
-				+ " where a1.applicationno='"+consumercode+"'"
+				+ " where a1.applicationno=:consumercode"
 				+ " and a1.status='ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 		log.info("Query for fetchPaymentIdsByCriteria: " +queryString);
 		} else {
 			queryString = "select a2.usagecategory from eg_sw_connection a1 "
 					+ " inner join eg_pt_property a2 on a1.property_id = a2.propertyid "
 					+ " inner join eg_pt_address a3 on a2.id=a3.propertyid "
-					+ " where a1.applicationno='"+consumercode+"'"
+					+ " where a1.applicationno=:consumercode"
 					+ " and a1.status='ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 			log.info("Query for fetchPaymentIdsByCriteria: " +queryString);
 		}
@@ -674,12 +679,13 @@ public class PaymentRepository {
 			    consumercode =   iterate.next();			  
 		}
 		Map<String, Object> preparedStatementValues = new HashMap<>();
+		preparedStatementValues.put("consumercode", consumercode);
 		String queryString;
 		if (consumercode.contains("WS_AP")) {
 		 queryString = "select CONCAT(doorno,buildingname,city) as address from eg_ws_connection a1 "
 				+ " inner join eg_pt_property a2 on a1.property_id = a2.propertyid "
 				+ " inner join eg_pt_address a3 on a2.id=a3.propertyid "
-				+ " where a1.applicationno='"+consumercode+"'"
+				+ " where a1.applicationno=:consumercode"
 			        + " a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 		log.info("Query for fetchAddressByApplicationno: " +queryString);
 		}
@@ -687,7 +693,7 @@ public class PaymentRepository {
 			 queryString = "select CONCAT(doorno,buildingname,city) as address from eg_sw_connection a1 "
 						+ " inner join eg_pt_property a2 on a1.property_id = a2.propertyid "
 						+ " inner join eg_pt_address a3 on a2.id=a3.propertyid "
-						+ " where a1.applicationno='"+consumercode+"'"
+						+ " where a1.applicationno=:consumercode"
 				        + " a1.status = 'ACTIVE' and (a2.status='ACTIVE' or a2.status ='PENDINGWS');";
 				log.info("Query for fetchAddressByApplicationno: " +queryString);
 		}
@@ -1062,9 +1068,10 @@ public class PaymentRepository {
 public List<String> fetchConsumerCodeByReceiptNumber(String receiptnumber) {
 		List<String> res = new ArrayList<>();
 		Map<String, Object> preparedStatementValues = new HashMap<>();
+		preparedStatementValues.put("receiptnumber", receiptnumber);
 		String queryString = "select bill.consumercode from egcl_paymentdetail pd, egcl_bill bill "
 				+ " where bill.id=pd.billid  "
-				+ " and pd.receiptnumber='"+receiptnumber+"'";
+				+ " and pd.receiptnumber=:receiptnumber";
 		log.info("Query: " +queryString);
 		try {
 			res = namedParameterJdbcTemplate.query(queryString, preparedStatementValues, new SingleColumnRowMapper<>(String.class));

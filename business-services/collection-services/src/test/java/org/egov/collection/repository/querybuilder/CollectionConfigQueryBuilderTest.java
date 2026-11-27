@@ -60,7 +60,7 @@ class CollectionConfigQueryBuilderTest {
         when(collectionConfigGetRequest.getPageNumber()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getPageSize()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getName()).thenReturn("Name");
-        when(collectionConfigGetRequest.getSortBy()).thenReturn("Sort By");
+        when(collectionConfigGetRequest.getSortBy()).thenReturn("sortBy");
         when(collectionConfigGetRequest.getSortOrder()).thenReturn("asc");
         when(collectionConfigGetRequest.getTenantId()).thenReturn("42");
         LocalDateTime atStartOfDayResult = LocalDate.of(1970, 1, 1).atStartOfDay();
@@ -71,7 +71,7 @@ class CollectionConfigQueryBuilderTest {
         assertEquals(
                 "SELECT c.keyname as key, cv.value as value FROM egcl_configuration c JOIN egcl_configurationvalues cv"
                         + " ON c.id = cv.keyid WHERE cv.tenantId = ? AND c.id IN () AND c.keyname = ? AND cv.effectiveFrom = ?"
-                        + " ORDER BY Sort By asc LIMIT ? OFFSET ?",
+                        + " ORDER BY sortBy asc LIMIT ? OFFSET ?",
                 this.collectionConfigQueryBuilder.getQuery(collectionConfigGetRequest, objectList));
         verify(collectionConfigGetRequest, atLeast(1)).getPageNumber();
         verify(collectionConfigGetRequest, atLeast(1)).getPageSize();
@@ -90,7 +90,7 @@ class CollectionConfigQueryBuilderTest {
         when(collectionConfigGetRequest.getPageNumber()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getPageSize()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getName()).thenReturn(null);
-        when(collectionConfigGetRequest.getSortBy()).thenReturn("Sort By");
+        when(collectionConfigGetRequest.getSortBy()).thenReturn("sortBy");
         when(collectionConfigGetRequest.getSortOrder()).thenReturn("asc");
         when(collectionConfigGetRequest.getTenantId()).thenReturn("42");
         LocalDateTime atStartOfDayResult = LocalDate.of(1970, 1, 1).atStartOfDay();
@@ -99,7 +99,7 @@ class CollectionConfigQueryBuilderTest {
         when(collectionConfigGetRequest.getId()).thenReturn(new ArrayList<>());
         ArrayList<Object> objectList = new ArrayList<>();
         assertEquals("SELECT c.keyname as key, cv.value as value FROM egcl_configuration c JOIN egcl_configurationvalues cv"
-                + " ON c.id = cv.keyid WHERE cv.tenantId = ? AND c.id IN () AND cv.effectiveFrom = ? ORDER BY Sort By asc"
+                + " ON c.id = cv.keyid WHERE cv.tenantId = ? AND c.id IN () AND cv.effectiveFrom = ? ORDER BY sortBy asc"
                 + " LIMIT ? OFFSET ?", this.collectionConfigQueryBuilder.getQuery(collectionConfigGetRequest, objectList));
         verify(collectionConfigGetRequest, atLeast(1)).getPageNumber();
         verify(collectionConfigGetRequest, atLeast(1)).getPageSize();
@@ -118,7 +118,7 @@ class CollectionConfigQueryBuilderTest {
         when(collectionConfigGetRequest.getPageNumber()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getPageSize()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getName()).thenReturn("Name");
-        when(collectionConfigGetRequest.getSortBy()).thenReturn("Sort By");
+        when(collectionConfigGetRequest.getSortBy()).thenReturn("sortBy");
         when(collectionConfigGetRequest.getSortOrder()).thenReturn("asc");
         when(collectionConfigGetRequest.getTenantId()).thenReturn(null);
         LocalDateTime atStartOfDayResult = LocalDate.of(1970, 1, 1).atStartOfDay();
@@ -127,7 +127,7 @@ class CollectionConfigQueryBuilderTest {
         when(collectionConfigGetRequest.getId()).thenReturn(new ArrayList<>());
         ArrayList<Object> objectList = new ArrayList<>();
         assertEquals("SELECT c.keyname as key, cv.value as value FROM egcl_configuration c JOIN egcl_configurationvalues cv"
-                + " ON c.id = cv.keyid WHERE c.id IN () AND c.keyname = ? AND cv.effectiveFrom = ? ORDER BY Sort By asc"
+                + " ON c.id = cv.keyid WHERE c.id IN () AND c.keyname = ? AND cv.effectiveFrom = ? ORDER BY sortBy asc"
                 + " LIMIT ? OFFSET ?", this.collectionConfigQueryBuilder.getQuery(collectionConfigGetRequest, objectList));
         verify(collectionConfigGetRequest, atLeast(1)).getPageNumber();
         verify(collectionConfigGetRequest, atLeast(1)).getPageSize();
@@ -146,14 +146,14 @@ class CollectionConfigQueryBuilderTest {
         when(collectionConfigGetRequest.getPageNumber()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getPageSize()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getName()).thenReturn("Name");
-        when(collectionConfigGetRequest.getSortBy()).thenReturn("Sort By");
+        when(collectionConfigGetRequest.getSortBy()).thenReturn("sortBy");
         when(collectionConfigGetRequest.getSortOrder()).thenReturn("asc");
         when(collectionConfigGetRequest.getTenantId()).thenReturn("42");
         when(collectionConfigGetRequest.getEffectiveFrom()).thenReturn(null);
         when(collectionConfigGetRequest.getId()).thenReturn(new ArrayList<>());
         ArrayList<Object> objectList = new ArrayList<>();
         assertEquals("SELECT c.keyname as key, cv.value as value FROM egcl_configuration c JOIN egcl_configurationvalues cv"
-                + " ON c.id = cv.keyid WHERE cv.tenantId = ? AND c.id IN () AND c.keyname = ? ORDER BY Sort By asc LIMIT"
+                + " ON c.id = cv.keyid WHERE cv.tenantId = ? AND c.id IN () AND c.keyname = ? ORDER BY sortBy asc LIMIT"
                 + " ? OFFSET ?", this.collectionConfigQueryBuilder.getQuery(collectionConfigGetRequest, objectList));
         verify(collectionConfigGetRequest, atLeast(1)).getPageNumber();
         verify(collectionConfigGetRequest, atLeast(1)).getPageSize();
@@ -174,7 +174,7 @@ class CollectionConfigQueryBuilderTest {
         when(collectionConfigGetRequest.getPageNumber()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getPageSize()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getName()).thenReturn("Name");
-        when(collectionConfigGetRequest.getSortBy()).thenReturn("Sort By");
+        when(collectionConfigGetRequest.getSortBy()).thenReturn("sortBy");
         when(collectionConfigGetRequest.getSortOrder()).thenReturn("asc");
         when(collectionConfigGetRequest.getTenantId()).thenReturn("42");
         LocalDateTime atStartOfDayResult = LocalDate.of(1970, 1, 1).atStartOfDay();
@@ -185,7 +185,7 @@ class CollectionConfigQueryBuilderTest {
         assertEquals(
                 "SELECT c.keyname as key, cv.value as value FROM egcl_configuration c JOIN egcl_configurationvalues cv"
                         + " ON c.id = cv.keyid WHERE cv.tenantId = ? AND c.id IN (4) AND c.keyname = ? AND cv.effectiveFrom = ?"
-                        + " ORDER BY Sort By asc LIMIT ? OFFSET ?",
+                        + " ORDER BY sortBy asc LIMIT ? OFFSET ?",
                 this.collectionConfigQueryBuilder.getQuery(collectionConfigGetRequest, objectList));
         verify(collectionConfigGetRequest, atLeast(1)).getPageNumber();
         verify(collectionConfigGetRequest, atLeast(1)).getPageSize();
@@ -207,7 +207,7 @@ class CollectionConfigQueryBuilderTest {
         when(collectionConfigGetRequest.getPageNumber()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getPageSize()).thenReturn((short) 1);
         when(collectionConfigGetRequest.getName()).thenReturn("Name");
-        when(collectionConfigGetRequest.getSortBy()).thenReturn("Sort By");
+        when(collectionConfigGetRequest.getSortBy()).thenReturn("sortBy");
         when(collectionConfigGetRequest.getSortOrder()).thenReturn("asc");
         when(collectionConfigGetRequest.getTenantId()).thenReturn("42");
         LocalDateTime atStartOfDayResult = LocalDate.of(1970, 1, 1).atStartOfDay();
@@ -218,7 +218,7 @@ class CollectionConfigQueryBuilderTest {
         assertEquals(
                 "SELECT c.keyname as key, cv.value as value FROM egcl_configuration c JOIN egcl_configurationvalues cv"
                         + " ON c.id = cv.keyid WHERE cv.tenantId = ? AND c.id IN (4, 4) AND c.keyname = ? AND cv.effectiveFrom ="
-                        + " ? ORDER BY Sort By asc LIMIT ? OFFSET ?",
+                        + " ? ORDER BY sortBy asc LIMIT ? OFFSET ?",
                 this.collectionConfigQueryBuilder.getQuery(collectionConfigGetRequest, objectList));
         verify(collectionConfigGetRequest, atLeast(1)).getPageNumber();
         verify(collectionConfigGetRequest, atLeast(1)).getPageSize();

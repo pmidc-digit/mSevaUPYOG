@@ -33,6 +33,30 @@ public class BillQueryBuilder {
 
 	public static final String BILL_STATUS_UPDATE_BATCH_QUERY = "UPDATE egbs_bill_v1 SET status=? WHERE id = ?";
 
+	public static final String EXPIRE_BILLS_QUERY = "UPDATE egbs_bill_v1 SET status = 'EXPIRED', isactive = false, lastmodifiedby = ?, lastmodifieddate = ? "
+			+ "WHERE tenantid = ? AND id IN (SELECT billid FROM egbs_billdetail_v1 WHERE tenantid = ? AND consumercode = ? AND billid != ?)";
+
+	public static final String EXPIRE_BILL_DETAILS_QUERY = "UPDATE egbs_billdetail_v1 SET expirydate = ?, lastmodifiedby = ?, lastmodifieddate = ? "
+			+ "WHERE tenantid = ? AND consumercode = ? AND billid != ?";
+
+	public static final String EXPIRE_ALL_BILLS_QUERY = "UPDATE egbs_bill_v1 SET status = 'EXPIRED', isactive = false, lastmodifiedby = ?, lastmodifieddate = ? "
+			+ "WHERE tenantid = ? AND id IN (SELECT billid FROM egbs_billdetail_v1 WHERE tenantid = ? AND consumercode = ?)";
+
+	public static final String EXPIRE_ALL_BILL_DETAILS_QUERY = "UPDATE egbs_billdetail_v1 SET expirydate = ?, lastmodifiedby = ?, lastmodifieddate = ? "
+			+ "WHERE tenantid = ? AND consumercode = ?";
+
+	public static final String ACTIVATE_BILL_QUERY = "UPDATE egbs_bill_v1 SET status = 'ACTIVE', isactive = true, iscancelled = false, lastmodifiedby = ?, lastmodifieddate = ? "
+			+ "WHERE tenantid = ? AND id = ?";
+
+	public static final String EXTEND_BILL_DETAIL_QUERY = "UPDATE egbs_billdetail_v1 SET expirydate = ?, lastmodifiedby = ?, lastmodifieddate = ? "
+			+ "WHERE tenantid = ? AND billid = ?";
+
+	public static final String EXPIRE_BILLS_FOR_PERIOD_EXCEPT_QUERY = "UPDATE egbs_bill_v1 SET status = 'EXPIRED', isactive = false, lastmodifiedby = ?, lastmodifieddate = ? "
+			+ "WHERE tenantid = ? AND id IN (SELECT billid FROM egbs_billdetail_v1 WHERE tenantid = ? AND consumercode = ? AND businessservice = ? AND fromperiod = ? AND toperiod = ? AND billid != ?)";
+
+	public static final String EXPIRE_BILL_DETAILS_FOR_PERIOD_EXCEPT_QUERY = "UPDATE egbs_billdetail_v1 SET expirydate = ?, lastmodifiedby = ?, lastmodifieddate = ? "
+			+ "WHERE tenantid = ? AND consumercode = ? AND businessservice = ? AND fromperiod = ? AND toperiod = ? AND billid != ?";
+
 	public static final String INSERT_BILL_QUERY = "INSERT into egbs_bill_v1 "
 			+ "(id, tenantid, payername, payeraddress, payeremail, isactive, iscancelled, createdby, createddate, lastmodifiedby, lastmodifieddate,"
 			+ " mobilenumber, status, additionaldetails, payerid, consumercode)"

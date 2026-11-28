@@ -1068,44 +1068,114 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 				? requestInfo.getUserInfo().getUuid()
 				: "SYSTEM";
 
-		log.info("Reconciling bill for tenantId: {}, consumerCode: {}, businessService: {}, billId: {}",
+		log.info("[BILL_RECONCILE] START - tenantId: {}, consumerCode: {}, businessService: {}, billId: {}",
 				tenantId, consumerCode, businessService, txnBillId);
 
-		Long extendedExpiryDate = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1);
-		Long expiryTime = System.currentTimeMillis();
+		try {
+			Long extendedExpiryDate = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1);
+			Long expiryTime = System.currentTimeMillis();
 
-		BillSearchCriteria searchCriteria = BillSearchCriteria.builder()
-				.tenantId(tenantId)
-				.consumerCode(Collections.singleton(consumerCode))
-				.service(businessService)
-				.status(BillStatus.ACTIVE)
-				.build();
-		List<BillV2> activeBills = billRepository.findBill(searchCriteria);
+			// 1. Fetch target transaction bill first to inspect its status of data, businessService, and period
+			BillSearchCriteria targetCriteria = BillSearchCriteria.builder()
+					.tenantId(tenantId)
+					.billId(Collections.singleton(txnBillId))
+					.build();
+			List<BillV2> targetBills = billRepository.findBill(targetCriteria);
 
-		String activeBillId = (!CollectionUtils.isEmpty(activeBills)) ? activeBills.get(0).getId() : null;
-		log.info("Currently active bill for consumerCode {}: {}, target txn billId: {}", consumerCode, activeBillId,
-				txnBillId);
+			if (CollectionUtils.isEmpty(targetBills)) {
+				log.warn("[BILL_RECONCILE] Target bill not found. tenantId: {}, billId: {}", tenantId, txnBillId);
+				return BillResponseV2.builder()
+						.resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
+						.bill(Collections.emptyList())
+						.build();
+			}
 
-		if (activeBillId != null && activeBillId.equals(txnBillId)) {
-			log.info("Active bill matches transaction bill {}. Extending its expiry date.", txnBillId);
-			billRepository.activateAndExtendBill(tenantId, txnBillId, extendedExpiryDate, modifiedBy);
-		} else {
-			log.info("Active bill ({}) differs from transaction bill ({}). Expiring other bills and activating txn bill.",
-					activeBillId, txnBillId);
-			billRepository.expireBillsForConsumerCodeExcept(tenantId, consumerCode, txnBillId, modifiedBy, expiryTime);
-			billRepository.activateAndExtendBill(tenantId, txnBillId, extendedExpiryDate, modifiedBy);
+			BillV2 targetBill = targetBills.get(0);
+			BillStatus txnBillStatus = targetBill.getStatus();
+			log.info("[BILL_RECONCILE] Target billId: {}, current status: {}", txnBillId, txnBillStatus);
+
+			// If bill is already PAID, no reconciliation needed
+			if (BillStatus.PAID.equals(txnBillStatus)) {
+				log.info("[BILL_RECONCILE] BillId: {} is already PAID. No activation or expiry required.", txnBillId);
+				return BillResponseV2.builder()
+						.resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
+						.bill(targetBills)
+						.build();
+			}
+
+			Long fromPeriod = null;
+			Long toPeriod = null;
+			if (!CollectionUtils.isEmpty(targetBill.getBillDetails())) {
+				BillDetailV2 detail = targetBill.getBillDetails().get(0);
+				fromPeriod = detail.getFromPeriod();
+				toPeriod = detail.getToPeriod();
+				if (StringUtils.isEmpty(businessService)) {
+					businessService = detail.getBusinessService();
+				}
+			}
+			if (StringUtils.isEmpty(businessService)) {
+				businessService = targetBill.getBusinessService();
+			}
+			log.info("[BILL_RECONCILE] Extracted from target bill - service: {}, fromPeriod: {}, toPeriod: {}",
+					businessService, fromPeriod, toPeriod);
+
+			// 2. Search for currently active bill matching consumerCode, service, and period
+			BillSearchCriteria.BillSearchCriteriaBuilder searchCriteriaBuilder = BillSearchCriteria.builder()
+					.tenantId(tenantId)
+					.consumerCode(Collections.singleton(consumerCode))
+					.service(businessService)
+					.status(BillStatus.ACTIVE);
+
+			if (fromPeriod != null) {
+				searchCriteriaBuilder.fromPeriod(fromPeriod);
+			}
+			if (toPeriod != null) {
+				searchCriteriaBuilder.toPeriod(toPeriod);
+			}
+
+			BillSearchCriteria searchCriteria = searchCriteriaBuilder.build();
+			List<BillV2> activeBills = billRepository.findBill(searchCriteria);
+
+			String activeBillId = (!CollectionUtils.isEmpty(activeBills)) ? activeBills.get(0).getId() : null;
+			BillStatus activeBillStatus = (!CollectionUtils.isEmpty(activeBills)) ? activeBills.get(0).getStatus() : null;
+			log.info("[BILL_RECONCILE] Active bill for consumerCode {}: id: {}, status: {}, target txn billId: {}",
+					consumerCode, activeBillId, activeBillStatus, txnBillId);
+
+			// 3. Activate/extend target bill and expire conflicting bills for the same period
+			if (activeBillId != null && activeBillId.equals(txnBillId)) {
+				log.info("[BILL_RECONCILE] Active bill matches target billId {}. Extending expiry date.", txnBillId);
+				billRepository.activateAndExtendBill(tenantId, txnBillId, extendedExpiryDate, modifiedBy);
+			} else {
+				log.info("[BILL_RECONCILE] Active bill ({}) differs from target bill ({}). Expiring other bills for period [{} - {}] and activating target bill.",
+						activeBillId, txnBillId, fromPeriod, toPeriod);
+				if (businessService != null && fromPeriod != null && toPeriod != null) {
+					billRepository.expireBillsForConsumerCodeAndPeriodExcept(tenantId, consumerCode, businessService,
+							fromPeriod, toPeriod, txnBillId, modifiedBy, expiryTime);
+				} else {
+					billRepository.expireBillsForConsumerCodeExcept(tenantId, consumerCode, txnBillId, modifiedBy,
+							expiryTime);
+				}
+				billRepository.activateAndExtendBill(tenantId, txnBillId, extendedExpiryDate, modifiedBy);
+			}
+
+			List<BillV2> resultBills = billRepository.findBill(targetCriteria);
+			log.info("[BILL_RECONCILE] SUCCESS - Reconciled billId: {}, resultCount: {}", txnBillId,
+					resultBills != null ? resultBills.size() : 0);
+
+			return BillResponseV2.builder()
+					.resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
+					.bill(resultBills)
+					.build();
+
+		} catch (CustomException ce) {
+			log.error("[BILL_RECONCILE] CustomException while reconciling billId: {}, consumerCode: {}", txnBillId,
+					consumerCode, ce);
+			throw ce;
+		} catch (Exception e) {
+			log.error("[BILL_RECONCILE] Unexpected error while reconciling billId: {}, consumerCode: {}", txnBillId,
+					consumerCode, e);
+			throw new CustomException("EGBS_RECONCILE_BILL_ERROR", "Failed to reconcile bill: " + e.getMessage());
 		}
-
-		BillSearchCriteria targetCriteria = BillSearchCriteria.builder()
-				.tenantId(tenantId)
-				.billId(Collections.singleton(txnBillId))
-				.build();
-		List<BillV2> resultBills = billRepository.findBill(targetCriteria);
-
-		return BillResponseV2.builder()
-				.resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
-				.bill(resultBills)
-				.build();
 	}
 
 }

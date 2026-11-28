@@ -318,28 +318,20 @@ public String  getLatestActiveBillId(CancelBillCriteria cancelBillCriteria){
 		long currentTime = System.currentTimeMillis();
 
 		if (excludeBillId != null) {
-			String expireBillsQuery = "UPDATE egbs_bill_v1 SET status = 'EXPIRED', isactive = false, lastmodifiedby = ?, lastmodifieddate = ? "
-					+ "WHERE tenantid = ? AND id IN (SELECT billid FROM egbs_billdetail_v1 WHERE tenantid = ? AND consumercode = ? AND billid != ?)";
-			int billsUpdated = jdbcTemplate.update(expireBillsQuery, modifiedBy, currentTime, tenantId, tenantId,
-					consumerCode, excludeBillId);
+			int billsUpdated = jdbcTemplate.update(BillQueryBuilder.EXPIRE_BILLS_QUERY, modifiedBy, currentTime,
+					tenantId, tenantId, consumerCode, excludeBillId);
 
-			String expireDetailsQuery = "UPDATE egbs_billdetail_v1 SET expirydate = ?, lastmodifiedby = ?, lastmodifieddate = ? "
-					+ "WHERE tenantid = ? AND consumercode = ? AND billid != ?";
-			int detailsUpdated = jdbcTemplate.update(expireDetailsQuery, expiryTime, modifiedBy, currentTime, tenantId,
-					consumerCode, excludeBillId);
+			int detailsUpdated = jdbcTemplate.update(BillQueryBuilder.EXPIRE_BILL_DETAILS_QUERY, expiryTime,
+					modifiedBy, currentTime, tenantId, consumerCode, excludeBillId);
 
 			log.info("Expired other bills for consumerCode: {}, except billId: {} (bills updated: {}, details updated: {})",
 					consumerCode, excludeBillId, billsUpdated, detailsUpdated);
 		} else {
-			String expireBillsQuery = "UPDATE egbs_bill_v1 SET status = 'EXPIRED', isactive = false, lastmodifiedby = ?, lastmodifieddate = ? "
-					+ "WHERE tenantid = ? AND id IN (SELECT billid FROM egbs_billdetail_v1 WHERE tenantid = ? AND consumercode = ?)";
-			int billsUpdated = jdbcTemplate.update(expireBillsQuery, modifiedBy, currentTime, tenantId, tenantId,
-					consumerCode);
+			int billsUpdated = jdbcTemplate.update(BillQueryBuilder.EXPIRE_ALL_BILLS_QUERY, modifiedBy, currentTime,
+					tenantId, tenantId, consumerCode);
 
-			String expireDetailsQuery = "UPDATE egbs_billdetail_v1 SET expirydate = ?, lastmodifiedby = ?, lastmodifieddate = ? "
-					+ "WHERE tenantid = ? AND consumercode = ?";
-			int detailsUpdated = jdbcTemplate.update(expireDetailsQuery, expiryTime, modifiedBy, currentTime, tenantId,
-					consumerCode);
+			int detailsUpdated = jdbcTemplate.update(BillQueryBuilder.EXPIRE_ALL_BILL_DETAILS_QUERY, expiryTime,
+					modifiedBy, currentTime, tenantId, consumerCode);
 
 			log.info("Expired all bills for consumerCode: {} (bills updated: {}, details updated: {})", consumerCode,
 					billsUpdated, detailsUpdated);
@@ -347,17 +339,35 @@ public String  getLatestActiveBillId(CancelBillCriteria cancelBillCriteria){
 	}
 
 	@Transactional
+	public void expireBillsForConsumerCodeAndPeriodExcept(String tenantId, String consumerCode, String businessService,
+			Long fromPeriod, Long toPeriod, String excludeBillId, String modifiedBy, Long expiryTime) {
+		long currentTime = System.currentTimeMillis();
+
+		if (businessService != null && fromPeriod != null && toPeriod != null && excludeBillId != null) {
+			int billsUpdated = jdbcTemplate.update(BillQueryBuilder.EXPIRE_BILLS_FOR_PERIOD_EXCEPT_QUERY,
+					modifiedBy, currentTime, tenantId, tenantId, consumerCode, businessService, fromPeriod, toPeriod,
+					excludeBillId);
+
+			int detailsUpdated = jdbcTemplate.update(BillQueryBuilder.EXPIRE_BILL_DETAILS_FOR_PERIOD_EXCEPT_QUERY,
+					expiryTime, modifiedBy, currentTime, tenantId, consumerCode, businessService, fromPeriod, toPeriod,
+					excludeBillId);
+
+			log.info("Expired other bills for consumerCode: {}, service: {}, period: [{} - {}], except billId: {} (bills updated: {}, details updated: {})",
+					consumerCode, businessService, fromPeriod, toPeriod, excludeBillId, billsUpdated, detailsUpdated);
+		} else {
+			expireBillsForConsumerCodeExcept(tenantId, consumerCode, excludeBillId, modifiedBy, expiryTime);
+		}
+	}
+
+	@Transactional
 	public void activateAndExtendBill(String tenantId, String billId, Long extendedExpiryDate, String modifiedBy) {
 		long currentTime = System.currentTimeMillis();
 
-		String activateBillQuery = "UPDATE egbs_bill_v1 SET status = 'ACTIVE', isactive = true, iscancelled = false, lastmodifiedby = ?, lastmodifieddate = ? "
-				+ "WHERE tenantid = ? AND id = ?";
-		int billsUpdated = jdbcTemplate.update(activateBillQuery, modifiedBy, currentTime, tenantId, billId);
+		int billsUpdated = jdbcTemplate.update(BillQueryBuilder.ACTIVATE_BILL_QUERY, modifiedBy, currentTime,
+				tenantId, billId);
 
-		String extendDetailQuery = "UPDATE egbs_billdetail_v1 SET expirydate = ?, lastmodifiedby = ?, lastmodifieddate = ? "
-				+ "WHERE tenantid = ? AND billid = ?";
-		int detailsUpdated = jdbcTemplate.update(extendDetailQuery, extendedExpiryDate, modifiedBy, currentTime, tenantId,
-				billId);
+		int detailsUpdated = jdbcTemplate.update(BillQueryBuilder.EXTEND_BILL_DETAIL_QUERY, extendedExpiryDate,
+				modifiedBy, currentTime, tenantId, billId);
 
 		log.info("Activated and extended billId: {} with expiryDate: {} (bills updated: {}, details updated: {})",
 				billId, extendedExpiryDate, billsUpdated, detailsUpdated);
